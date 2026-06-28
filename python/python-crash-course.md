@@ -2,35 +2,30 @@
 
 # Python Crash Course
 
-Get up and running with Python fast. This covers the stuff you'll use every day.
-
----
-
 ## Table of Contents
-
-- [1. Hello Python](#1-hello-python)
-- [2. Variables & Types](#2-variables--types)
-- [3. Operators](#3-operators)
-- [4. Strings](#4-strings)
-- [5. Data Structures](#5-data-structures)
-- [6. Control Flow](#6-control-flow)
-- [7. Loops](#7-loops)
-- [8. Functions](#8-functions)
-- [9. List Comprehensions](#9-list-comprehensions)
-- [10. Classes (OOP)](#10-classes-oop)
-- [11. Error Handling](#11-error-handling)
-- [12. Modules & Imports](#12-modules--imports)
-- [13. File I/O](#13-file-io)
-- [14. Iterators & Generators](#14-iterators--generators)
-- [15. Decorators](#15-decorators)
-- [16. Context Managers](#16-context-managers)
-- [17. Type Hints](#17-type-hints)
-- [18. Unpacking & Useful Patterns](#18-unpacking--useful-patterns)
-- [19. Common Standard Library](#19-common-standard-library)
-- [20. Virtual Environments & Packages](#20-virtual-environments--packages)
-- [21. Async/Await (Quick Intro)](#21-asyncawait-quick-intro)
-- [22. Pythonic Tips](#22-pythonic-tips)
-- [Quick Reference Card](#quick-reference-card)
+1. [1. Hello Python](#1-hello-python)
+2. [2. Variables & Types](#2-variables--types)
+3. [3. Operators](#3-operators)
+4. [4. Strings](#4-strings)
+5. [5. Data Structures](#5-data-structures)
+6. [6. Control Flow](#6-control-flow)
+7. [7. Loops](#7-loops)
+8. [8. Functions](#8-functions)
+9. [9. List Comprehensions](#9-list-comprehensions)
+10. [10. Classes (OOP)](#10-classes-oop)
+11. [11. Error Handling](#11-error-handling)
+12. [12. Modules & Imports](#12-modules--imports)
+13. [13. File I/O](#13-file-io)
+14. [14. Iterators & Generators](#14-iterators--generators)
+15. [15. Decorators](#15-decorators)
+16. [16. Context Managers](#16-context-managers)
+17. [17. Type Hints](#17-type-hints)
+18. [18. Unpacking & Useful Patterns](#18-unpacking--useful-patterns)
+19. [19. Common Standard Library](#19-common-standard-library)
+20. [20. Virtual Environments & Packages](#20-virtual-environments--packages)
+21. [21. Async/Await (Quick Intro)](#21-asyncawait-quick-intro)
+22. [22. Pythonic Tips](#22-pythonic-tips)
+23. [Quick Reference Card](#quick-reference-card)
 
 ---
 

@@ -2,12 +2,7 @@
 
 # Python Course
 
-A fast-paced, comprehensive guide to Python. Every section builds on the last — by the end, you'll have a solid foundation to write real-world Python code.
-
----
-
 ## Table of Contents
-
 1. [Getting Started](#1-getting-started)
 2. [Variables & Data Types](#2-variables--data-types)
 3. [Operators](#3-operators)
