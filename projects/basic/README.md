@@ -21,6 +21,7 @@ same OpenAI-compatible Python client.
 1. Install dependencies:
 
 ```bash
+# INSIDE THE PROJECT FOLDER i.e., c:\Workspace\ai\projects\basic
 python -m pip install -e ".[dev]"     # installs the package + pytest + ruff
 ```
 
