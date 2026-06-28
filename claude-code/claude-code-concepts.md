@@ -1,6 +1,6 @@
 [<- Claude Code Quick](claude-code-quick.md)
 
-# Comprehensive Study Guide: Mastering Claude Code
+# Claude Code Concepts
 
 **Claude Code** is an AI-powered, agentic coding tool by Anthropic that operates directly within your terminal, setting it apart from IDE-embedded tools like Copilot or Cursor. It requires an Anthropic Pro ($17/month) or Max subscription. The tool is designed to integrate seamlessly into your existing development workflow, acting more like a junior or mid-level developer working alongside you rather than an entirely automated "vibe coding" solution.
 
