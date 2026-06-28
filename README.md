@@ -1,5 +1,9 @@
 [Resources](Resources.md)
 
+# Python
+1. [Python Basics](python/python-basics.md)
+2. [Python Advanced](python/python-advanced.md)
+
 # AI
 1. [AI Career](ai/ai-career.md)
 2. [AI Roadmap](ai/ai-roadmap.md)
