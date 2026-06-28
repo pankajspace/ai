@@ -876,6 +876,27 @@ print(dog.name, dog.sound, dog.breed)
 
 ### Multiple Inheritance & MRO
 
+Python supports **multiple inheritance** — a class can inherit from more than one parent.
+
+```python
+class Flyer:
+    def move(self):
+        return "Flying"
+
+class Swimmer:
+    def move(self):
+        return "Swimming"
+
+class Duck(Flyer, Swimmer):    # inherits from both
+    pass
+
+Duck().move()   # "Flying" — Flyer is listed first, so it wins
+```
+
+### The Diamond Problem
+
+Occurs when a class inherits from two classes that share a common ancestor.
+
 ```python
 class A:
     def greet(self):
@@ -889,13 +910,61 @@ class C(A):
     def greet(self):
         return "Hello from C"
 
-class D(B, C):   # inherits from both B and C
+class D(B, C):   # 💎 Diamond: both parents share A
     pass
 
-d = D()
-print(d.greet())   # "Hello from B" — follows MRO (Method Resolution Order)
-print(D.__mro__)   # D -> B -> C -> A -> object
+#       A
+#      / \
+#     B   C
+#      \ /
+#       D
 ```
+
+**Python's fix: MRO (Method Resolution Order)** — uses **C3 linearization** to create a deterministic, left-to-right, depth-first order that respects the hierarchy.
+
+```python
+d = D()
+print(d.greet())   # "Hello from B" — B comes before C in MRO
+print(D.__mro__)   # (D, B, C, A, object)
+```
+
+### Cooperative super() with **kwargs
+
+When using multiple inheritance, use `super()` with `**kwargs` so every class in the MRO chain gets its arguments correctly — no class is called twice.
+
+```python
+class Animal:
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)      # pass remaining args up
+        self.name = name
+
+class Dog(Animal):
+    def __init__(self, breed, **kwargs):
+        super().__init__(**kwargs)
+        self.breed = breed
+
+class Pet(Animal):
+    def __init__(self, owner, **kwargs):
+        super().__init__(**kwargs)
+        self.owner = owner
+
+class DomesticDog(Dog, Pet):
+    pass
+
+d = DomesticDog(name="Rex", breed="Lab", owner="Alice")
+# super().__init__() follows MRO: DomesticDog → Dog → Pet → Animal
+# ✅ All __init__ methods run exactly once, no duplicates
+
+print(d.name, d.breed, d.owner)   # Rex Lab Alice
+print(DomesticDog.__mro__)
+# (DomesticDog, Dog, Pet, Animal, object)
+```
+
+> **Key rules:**
+> - MRO goes **left-to-right**, then **up** — inspect with `ClassName.__mro__` or `ClassName.mro()`
+> - Always use `super()` (not parent class name) to cooperate with MRO
+> - Pass `**kwargs` through `__init__` chains to handle varying constructor signatures
+> - Python raises `TypeError` if it can't compute a consistent MRO (e.g., conflicting orderings)
 
 ### Properties (Getters & Setters)
 

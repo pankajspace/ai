@@ -6,6 +6,34 @@ Get up and running with Python fast. This covers the stuff you'll use every day.
 
 ---
 
+## Table of Contents
+
+- [1. Hello Python](#1-hello-python)
+- [2. Variables & Types](#2-variables--types)
+- [3. Operators](#3-operators)
+- [4. Strings](#4-strings)
+- [5. Data Structures](#5-data-structures)
+- [6. Control Flow](#6-control-flow)
+- [7. Loops](#7-loops)
+- [8. Functions](#8-functions)
+- [9. List Comprehensions](#9-list-comprehensions)
+- [10. Classes (OOP)](#10-classes-oop)
+- [11. Error Handling](#11-error-handling)
+- [12. Modules & Imports](#12-modules--imports)
+- [13. File I/O](#13-file-io)
+- [14. Iterators & Generators](#14-iterators--generators)
+- [15. Decorators](#15-decorators)
+- [16. Context Managers](#16-context-managers)
+- [17. Type Hints](#17-type-hints)
+- [18. Unpacking & Useful Patterns](#18-unpacking--useful-patterns)
+- [19. Common Standard Library](#19-common-standard-library)
+- [20. Virtual Environments & Packages](#20-virtual-environments--packages)
+- [21. Async/Await (Quick Intro)](#21-asyncawait-quick-intro)
+- [22. Pythonic Tips](#22-pythonic-tips)
+- [Quick Reference Card](#quick-reference-card)
+
+---
+
 ## 1. Hello Python
 
 ```bash
@@ -56,7 +84,8 @@ bool(0)               # False  (0, "", [], None → falsy)
 ```python
 # Arithmetic
 5 + 3    # 8       5 - 3    # 2
-5 * 3    # 15      5 / 3    # 1.66  (always float)
+5 * 3    # 15      
+5 / 3    # 1.66  (always float)
 5 // 3   # 1       (floor div)
 5 % 3    # 2       (modulo)
 5 ** 3   # 125     (power)
@@ -386,6 +415,90 @@ class Cat(Animal):
 Dog("Rex").speak()    # "Rex: Woof!"
 isinstance(Dog("Rex"), Animal)  # True
 ```
+
+### Multiple Inheritance & The Diamond Problem
+
+Python supports **multiple inheritance** — a class can inherit from more than one parent.
+
+```python
+class Flyer:
+    def move(self):
+        return "Flying"
+
+class Swimmer:
+    def move(self):
+        return "Swimming"
+
+class Duck(Flyer, Swimmer):    # inherits from both
+    pass
+
+Duck().move()   # "Flying" — Flyer is listed first, so it wins
+```
+
+**The Diamond Problem** occurs when a class inherits from two classes that share a common ancestor:
+
+```python
+class Animal:
+    def speak(self):
+        return "..."
+
+class Dog(Animal):
+    def speak(self):
+        return "Woof!"
+
+class Pet(Animal):
+    def speak(self):
+        return "I'm a pet!"
+
+class DomesticDog(Dog, Pet):   # 💎 Diamond: both parents share Animal
+    pass
+
+#       Animal
+#       /    \
+#     Dog    Pet
+#       \    /
+#    DomesticDog
+```
+
+**Python's fix: MRO (Method Resolution Order)** — uses **C3 linearization** to create a deterministic, left-to-right, depth-first order that respects the hierarchy.
+
+```python
+DomesticDog.__mro__
+# (DomesticDog, Dog, Pet, Animal, object)
+
+DomesticDog().speak()   # "Woof!" — Dog comes before Pet in MRO
+```
+
+**Use `super()` to cooperate across the MRO chain:**
+
+```python
+class Animal:
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)      # pass remaining args up
+        self.name = name
+
+class Dog(Animal):
+    def __init__(self, breed, **kwargs):
+        super().__init__(**kwargs)
+        self.breed = breed
+
+class Pet(Animal):
+    def __init__(self, owner, **kwargs):
+        super().__init__(**kwargs)
+        self.owner = owner
+
+class DomesticDog(Dog, Pet):
+    pass
+
+d = DomesticDog(name="Rex", breed="Lab", owner="Alice")
+# super().__init__() follows MRO: DomesticDog → Dog → Pet → Animal
+# ✅ All __init__ methods run, no duplicates
+```
+
+> **Key rules:**
+> - MRO goes **left-to-right**, then **up** — check with `ClassName.__mro__`
+> - Always use `super()` (not parent name) to play nice with MRO
+> - Pass `**kwargs` through `__init__` chains to handle varying signatures
 
 ### Properties
 
