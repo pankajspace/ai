@@ -21,13 +21,13 @@ same OpenAI-compatible Python client.
 1. Install dependencies:
 
 ```bash
-pip install -e ".[dev]"     # installs the package + pytest + ruff
+python -m pip install -e ".[dev]"     # installs the package + pytest + ruff
 ```
 
 For runtime only (no dev tools):
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 2. Configure API keys:
