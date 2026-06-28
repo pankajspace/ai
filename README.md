@@ -1,8 +1,9 @@
 [Resources](Resources.md)
 
 # Python
-1. [Python Course](python/python-course.md)
-2. [Python Resources](python/python-resources.md)
+1. [Python Crash Course](python/python-crash-course.md)
+2. [Python Course](python/python-course.md)
+3. [Python Resources](python/python-resources.md)
 
 # AI
 1. [AI Career](ai/ai-career.md)
