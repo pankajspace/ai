@@ -1,3 +1,5 @@
+[<- README](../../README.md)
+
 # AI Infused Learning
 
 LLM-powered demos showing how to make prompt calls against two different AI

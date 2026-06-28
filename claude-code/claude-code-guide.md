@@ -1,4 +1,4 @@
-[<- Claude Code Quick](claude-code-quick.md)
+[<- README](../README.md)
 
 # Claude Code: Complete Practical Guide
 

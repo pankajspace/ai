@@ -1,4 +1,4 @@
-[<- AI Quick](00-ai-quick.md)
+[<- README](../README.md)
 
 Here is a detailed, topic-by-topic study guide to take you from the absolute basics to advanced AI concepts. You can use these keywords and topics to search for tutorials, courses, and documentation.
 
@@ -151,7 +151,3 @@ Once you're comfortable with the above, you can specialize in these exciting dom
     * **CI/CD for ML:** Automating the training and deployment pipeline.
 
 This detailed guide provides a clear roadmap. Take it one topic at a time, ensure you understand the theory, and immediately apply it by writing code and working on small projects. Good luck on your AI journey!
-
----
-
-[<- ML AI](ml-ai-quick.md)
