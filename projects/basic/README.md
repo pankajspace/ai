@@ -10,7 +10,6 @@ same OpenAI-compatible Python client.
 
 ## Prerequisites
 
-- Python 3.9+
 - An [OpenAI API key](https://platform.openai.com/api-keys) (for `travel`)
 - A [Groq API key](https://console.groq.com/keys) (for `joke`) — free tier available
 
@@ -18,12 +17,25 @@ same OpenAI-compatible Python client.
 
 ## Setup
 
-1. Install dependencies:
+1. Install Podman:
 
-```bash
-# INSIDE THE PROJECT FOLDER i.e., projects/basic
-pip install -r requirements.txt
-```
+   **macOS**:
+   ```bash
+   brew install podman podman-compose
+   podman machine init
+   podman machine start
+   ```
+
+   **Linux**:
+   ```bash
+   # Debian/Ubuntu
+   sudo apt install podman podman-compose
+
+   # Fedora/RHEL
+   sudo dnf install podman podman-compose
+   ```
+
+   **Windows** — [Podman Desktop](https://podman-desktop.io/) (includes WSL 2 backend)
 
 2. Configure API keys:
 
@@ -34,13 +46,20 @@ cp .env.example .env
 #   GROQ_API_KEY=gsk_...
 ```
 
+3. Build the image:
+
+```bash
+# INSIDE THE PROJECT FOLDER i.e., projects/basic
+podman-compose build
+```
+
 ---
 
 ## Running
 
 ```bash
-PYTHONPATH=src python src/joke.py
-PYTHONPATH=src python src/travel.py
+podman-compose run --rm joke
+podman-compose run --rm travel
 ```
 
 ---
@@ -68,9 +87,14 @@ use the same `openai` Python package — only the `base_url` and `api_key` diffe
 ## Project structure
 
 ```
-project/
+projects/basic/
 ├── requirements.txt        # runtime dependencies
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
 ├── .env.example            # template — copy to .env and fill in API keys
+├── .gitignore
+├── README.md
 └── src/
     ├── config.py           # env loading + API client factories
     ├── joke.py             # joke feature: builds prompt + calls Groq
@@ -93,30 +117,6 @@ project/
 - Accepts a `city` parameter (default: `"Bangalore"`)
 - Sends a two-message chat completion to `gpt-4o-mini`
 - Returns the assistant's reply as a plain string
-
----
-
-## Linting
-
-```bash
-ruff check src    # lint
-ruff format src   # auto-format
-```
-
----
-
-## Configuration files
-
-### `requirements.txt`
-
-```
-openai
-python-dotenv
-```
-
-Runtime dependencies:
-- `openai` — SDK used to call both OpenAI and Groq APIs.
-- `python-dotenv` — loads `OPENAI_API_KEY` / `GROQ_API_KEY` from `.env`.
 
 ---
 
