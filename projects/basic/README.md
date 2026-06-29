@@ -130,6 +130,121 @@ ruff format src tests   # auto-format
 
 ---
 
+## Understanding `pyproject.toml`
+
+`pyproject.toml` is the single configuration file that controls packaging,
+dependencies, testing, and linting for this project. It follows the modern
+Python standard ([PEP 517](https://peps.python.org/pep-0517/) /
+[PEP 621](https://peps.python.org/pep-0621/)).
+
+### `[build-system]`
+
+```toml
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+```
+
+Tells Python tools (pip, build) _how_ to build the project:
+- `requires` — packages needed at build time (not at runtime).
+- `build-backend` — the module pip calls to produce a distributable. Using
+  `setuptools.build_meta` enables PEP 517 builds without a legacy `setup.py`.
+
+### `[project]`
+
+```toml
+[project]
+name = "ai-learning"
+version = "1.0.0"
+description = "Small demos of LLM-powered prompt calls using OpenAI and Groq."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "openai>=1.0",
+    "python-dotenv>=1.0",
+]
+```
+
+Core project metadata and **runtime** dependencies:
+
+| Field              | Purpose                                                                |
+|--------------------|------------------------------------------------------------------------|
+| `name`             | Package identity used by pip and PyPI                                  |
+| `version`          | Semantic version of the package                                        |
+| `readme`           | File used as the long description (shown on PyPI)                      |
+| `requires-python`  | Enforces a minimum interpreter version                                 |
+| `dependencies`     | Packages installed automatically when you `pip install` this project   |
+
+The two runtime deps map directly to code:
+- `openai` — the SDK used to call both OpenAI and Groq APIs.
+- `python-dotenv` — loads `OPENAI_API_KEY` / `GROQ_API_KEY` from `.env`.
+
+### `[project.optional-dependencies]`
+
+```toml
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+```
+
+Defines an optional **extras group** called `dev`. This is what the bracket
+suffix in the install command activates:
+
+```bash
+pip install -e ".[dev]"   # installs runtime deps + pytest + ruff
+```
+
+Keeping dev tools optional means production deployments stay lean — only
+`openai` and `python-dotenv` are installed.
+
+### `[tool.setuptools]`
+
+```toml
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["config", "joke", "travel"]
+```
+
+Configures the **src layout**:
+- `package-dir` — maps the root namespace (`""`) to the `src/` folder, so
+  setuptools knows where to find importable code.
+- `py-modules` — lists individual module files (not packages/folders). This is
+  why `config`, `joke`, and `travel` can be imported directly without a
+  surrounding `__init__.py`.
+
+### `[tool.pytest.ini_options]`
+
+```toml
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+```
+
+Configures pytest without needing a separate `pytest.ini` or `setup.cfg`:
+- `pythonpath` — adds `src/` to `sys.path` before tests run, so `import joke`
+  and `import travel` resolve correctly inside `tests/`.
+- `testpaths` — tells pytest to look only in `tests/`, keeping discovery fast
+  and predictable.
+
+### `[tool.ruff]`
+
+```toml
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+```
+
+Configures the ruff linter/formatter:
+- `line-length` — maximum characters per line (100, slightly wider than the
+  default 88 to allow longer string literals without forced line breaks).
+- `src` — tells ruff which directories contain first-party code, enabling
+  accurate import classification (first-party vs third-party) for import
+  sorting rules.
+
+---
+
 ## How the Groq integration works
 
 Groq provides an **OpenAI-compatible REST API** at `https://api.groq.com/openai/v1`.
