@@ -22,7 +22,7 @@ same OpenAI-compatible Python client.
    **macOS**:
    ```bash
    brew install podman podman-compose
-   podman machine init
+   podman machine init --provider applehv
    podman machine start
    ```
 
