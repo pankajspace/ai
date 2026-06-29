@@ -27,8 +27,6 @@
 22. [22. Pythonic Tips](#22-pythonic-tips)
 23. [Quick Reference Card](#quick-reference-card)
 
----
-
 ## 1. Hello Python
 
 ```bash
@@ -43,8 +41,6 @@ print("Hello, World!")    # your first program
 # Single-line comment
 """Multi-line comment / docstring"""
 ```
-
----
 
 ## 2. Variables & Types
 
@@ -72,14 +68,12 @@ float("3.14")         # 3.14
 bool(0)               # False  (0, "", [], None → falsy)
 ```
 
----
-
 ## 3. Operators
 
 ```python
 # Arithmetic
 5 + 3    # 8       5 - 3    # 2
-5 * 3    # 15      
+5 * 3    # 15
 5 / 3    # 1.66  (always float)
 5 // 3   # 1       (floor div)
 5 % 3    # 2       (modulo)
@@ -104,8 +98,6 @@ a is b           # same object in memory?
 # Ternary
 status = "adult" if age >= 18 else "minor"
 ```
-
----
 
 ## 4. Strings
 
@@ -140,8 +132,6 @@ f"{1000000:,}"             # "1,000,000"
 # s[0] = "h"   ❌ TypeError
 s = "h" + s[1:]  # ✅ create new string
 ```
-
----
 
 ## 5. Data Structures
 
@@ -234,8 +224,6 @@ a - b    # difference
 unique = list(set([1, 1, 2, 2, 3]))
 ```
 
----
-
 ## 6. Control Flow
 
 ```python
@@ -258,8 +246,6 @@ match command:
 ```
 
 > Python uses **indentation** (4 spaces) instead of `{}` braces!
-
----
 
 ## 7. Loops
 
@@ -293,8 +279,6 @@ for i in range(10):
     if i == 7: break          # stop at 7
     print(i)
 ```
-
----
 
 ## 8. Functions
 
@@ -342,8 +326,6 @@ def add(val, lst=None):
     return lst
 ```
 
----
-
 ## 9. List Comprehensions
 
 The Pythonic way to transform/filter data.
@@ -367,8 +349,6 @@ lengths = {len(w) for w in ["hi", "hello", "hey"]}
 # Generator expression (lazy — saves memory)
 total = sum(x**2 for x in range(1_000_000))
 ```
-
----
 
 ## 10. Classes (OOP)
 
@@ -538,8 +518,6 @@ p = Point(1.0, 2.0)
 print(p)              # Point(x=1.0, y=2.0, label='origin')
 ```
 
----
-
 ## 11. Error Handling
 
 ```python
@@ -569,8 +547,6 @@ class AppError(Exception):
 
 `ValueError` · `TypeError` · `KeyError` · `IndexError` · `FileNotFoundError` · `AttributeError` · `ZeroDivisionError` · `ImportError` · `NameError`
 
----
-
 ## 12. Modules & Imports
 
 ```python
@@ -586,8 +562,6 @@ from collections import defaultdict
 if __name__ == "__main__":
     main()
 ```
-
----
 
 ## 13. File I/O
 
@@ -620,8 +594,6 @@ Path("new/dir").mkdir(parents=True, exist_ok=True)
 list(Path(".").glob("**/*.py"))        # find all .py files
 ```
 
----
-
 ## 14. Iterators & Generators
 
 ```python
@@ -644,8 +616,6 @@ def fibonacci():
 fib = fibonacci()
 [next(fib) for _ in range(8)]   # [0, 1, 1, 2, 3, 5, 8, 13]
 ```
-
----
 
 ## 15. Decorators
 
@@ -670,8 +640,6 @@ def slow_func():
 slow_func()   # "slow_func: 1.0012s"
 ```
 
----
-
 ## 16. Context Managers
 
 Guarantee cleanup code runs (like `try/finally` but cleaner).
@@ -695,8 +663,6 @@ with timer():
     time.sleep(1)
 ```
 
----
-
 ## 17. Type Hints
 
 Optional static typing — not enforced at runtime, but great for documentation and IDE support.
@@ -714,8 +680,6 @@ def find(user_id: int) -> Optional[str]:   # str or None
 
 # Check with: pip install mypy && mypy script.py
 ```
-
----
 
 ## 18. Unpacking & Useful Patterns
 
@@ -743,8 +707,6 @@ sorted(items, key=lambda x: x.name)
 map(func, iterable)                  # apply func to each
 filter(func, iterable)               # keep matching items
 ```
-
----
 
 ## 19. Common Standard Library
 
@@ -784,8 +746,6 @@ dd = defaultdict(list)
 dd["key"].append("val")                # no KeyError for missing keys
 ```
 
----
-
 ## 20. Virtual Environments & Packages
 
 ```bash
@@ -801,8 +761,6 @@ pip install -r requirements.txt     # restore dependencies
 
 deactivate                          # exit venv
 ```
-
----
 
 ## 21. Async/Await (Quick Intro)
 
@@ -824,8 +782,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
----
 
 ## 22. Pythonic Tips
 
@@ -867,8 +823,6 @@ if (n := len(data)) > 10:
 | Constants  | `UPPER_CASE`      | `MAX_RETRIES = 3`  |
 | Private    | `_prefix`         | `self._internal`   |
 
----
-
 ## Quick Reference Card
 
 ```python
@@ -906,7 +860,5 @@ with open("f") as f: f.read()
 # Imports
 from module import thing
 ```
-
----
 
 > 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Course](python-course.md).

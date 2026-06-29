@@ -39,8 +39,6 @@
 34. [Pythonic Idioms & Best Practices](#34-pythonic-idioms--best-practices)
 35. [What's Next?](#35-whats-next)
 
----
-
 ## 1. Getting Started
 
 ### Installing Python
@@ -80,8 +78,6 @@ This is a multi-line string,
 often used as a docstring or block comment.
 """
 ```
-
----
 
 ## 2. Variables & Data Types
 
@@ -129,8 +125,6 @@ bool(0)             # False  (0, "", [], None are falsy)
 bool(1)             # True   (everything else is truthy)
 list("abc")         # ['a', 'b', 'c']
 ```
-
----
 
 ## 3. Operators
 
@@ -226,8 +220,6 @@ age = 20
 status = "adult" if age >= 18 else "minor"
 ```
 
----
-
 ## 4. Strings In Depth
 
 Strings are **immutable sequences** of Unicode characters.
@@ -289,8 +281,6 @@ s = "hello"
 # s[0] = "H"   # ❌ TypeError — strings can't be modified in place
 s = "H" + s[1:]  # ✅ creates a new string: "Hello"
 ```
-
----
 
 ## 5. Data Structures
 
@@ -439,8 +429,6 @@ students = [
 students[0]["grades"][2]   # 92
 ```
 
----
-
 ## 6. Control Flow
 
 ### if / elif / else
@@ -490,8 +478,6 @@ match point:
     case (x, y):
         print(f"Point at ({x}, {y})")
 ```
-
----
 
 ## 7. Loops
 
@@ -578,8 +564,6 @@ else:
 for i in range(5):
     pass   # do nothing (useful during development)
 ```
-
----
 
 ## 8. Functions
 
@@ -670,8 +654,6 @@ print(calculate_bmi.__doc__)
 help(calculate_bmi)
 ```
 
----
-
 ## 9. Scope & Closures
 
 ### LEGB Rule
@@ -735,8 +717,6 @@ double(5)    # 10
 triple(5)    # 15
 ```
 
----
-
 ## 10. List Comprehensions & Generator Expressions
 
 ### List Comprehensions
@@ -787,8 +767,6 @@ next(gen)    # 1
 # Often used directly in functions
 total = sum(x ** 2 for x in range(1000))
 ```
-
----
 
 ## 11. Object-Oriented Programming (OOP)
 
@@ -1049,8 +1027,6 @@ rect = Rectangle(4, 5)   # ✅
 print(rect.area())       # 20
 ```
 
----
-
 ## 12. Magic / Dunder Methods
 
 These special methods let you customize how your objects behave with built-in operations.
@@ -1112,8 +1088,6 @@ print(v1[0])          # 1
 | `__eq__`, `__lt__`, etc. | `==`, `<`, etc.  | Comparisons               |
 | `__add__`, `__mul__`, etc. | `+`, `*`, etc. | Arithmetic                |
 | `__hash__`        | `hash(obj)`            | Hashing (for sets/dicts)   |
-
----
 
 ## 13. Modules & Packages
 
@@ -1184,8 +1158,6 @@ from .string_ops import clean
 
 # Now you can do: from helpers import multiply, clean
 ```
-
----
 
 ## 14. Error Handling
 
@@ -1268,8 +1240,6 @@ except InsufficientFundsError as e:
     print(e)           # Cannot withdraw $150. Balance: $100
     print(e.balance)   # 100
 ```
-
----
 
 ## 15. File I/O
 
@@ -1399,8 +1369,6 @@ for py_file in Path(".").glob("**/*.py"):   # recursive
 Path("new/nested/dir").mkdir(parents=True, exist_ok=True)
 ```
 
----
-
 ## 16. Iterators & Generators
 
 ### Iterators
@@ -1497,8 +1465,6 @@ for error in errors:
     print(error)
 ```
 
----
-
 ## 17. Decorators
 
 A decorator wraps a function to add behavior before/after it runs.
@@ -1587,8 +1553,6 @@ db2 = Database()   # (no print — same instance returned)
 print(db1 is db2)  # True
 ```
 
----
-
 ## 18. Context Managers
 
 Ensure setup/teardown code always runs (like `try/finally` but cleaner).
@@ -1645,8 +1609,6 @@ def managed_resource(name):
         print(f"Releasing {name}")
 ```
 
----
-
 ## 19. Type Hints
 
 Python is dynamically typed, but type hints add **optional static typing** for documentation and IDE support.
@@ -1692,8 +1654,6 @@ Vector: TypeAlias = list[float]
 ```
 
 > **Note:** Type hints are **not enforced** at runtime. Use tools like `mypy` for static checking: `pip install mypy && mypy your_script.py`
-
----
 
 ## 20. Lambda, Map, Filter, Reduce
 
@@ -1751,8 +1711,6 @@ maximum = reduce(lambda a, b: a if a > b else b, nums)  # 5
 # With initial value
 total = reduce(lambda acc, x: acc + x, nums, 100)  # 115
 ```
-
----
 
 ## 21. *args & **kwargs
 
@@ -1812,8 +1770,6 @@ kwargs = {"a": 1, "b": 2, "c": 3}
 add(**kwargs)        # 6  (unpacks dict into keyword args)
 ```
 
----
-
 ## 22. Unpacking & Destructuring
 
 ```python
@@ -1840,8 +1796,6 @@ custom = {"size": 20, "weight": 5}
 merged = {**defaults, **custom}
 # {"color": "blue", "size": 20, "weight": 5}
 ```
-
----
 
 ## 23. String Formatting
 
@@ -1878,8 +1832,6 @@ message = (
     f"Pi:   {pi:.4f}"
 )
 ```
-
----
 
 ## 24. Regular Expressions
 
@@ -1950,8 +1902,6 @@ match.group("domain")   # "example.com"
 | `(?:...)`   | Non-capturing group              |
 | `a\|b`      | Alternation (a or b)             |
 
----
-
 ## 25. Date & Time
 
 ```python
@@ -2015,8 +1965,6 @@ time_module.sleep(2)                     # pause for 2 seconds
 | `%I` | Hour (01-12)   | 02       |
 | `%p` | AM/PM          | PM       |
 
----
-
 ## 26. Collections Module
 
 Advanced container types beyond the built-in ones.
@@ -2070,8 +2018,6 @@ config = ChainMap(user_prefs, defaults)
 config["color"]       # "red"   (first dict wins)
 config["size"]        # 10      (falls through to defaults)
 ```
-
----
 
 ## 27. Dataclasses
 
@@ -2137,8 +2083,6 @@ r = Rectangle(4, 5)
 r.area               # 20.0
 ```
 
----
-
 ## 28. Enums
 
 Define named constants with `enum`.
@@ -2188,8 +2132,6 @@ match direction:
     case Direction.NORTH:
         print("Going north!")
 ```
-
----
 
 ## 29. Async / Await (Asyncio)
 
@@ -2264,8 +2206,6 @@ async def main():
     async with AsyncDB() as db:
         print("Using database")
 ```
-
----
 
 ## 30. Concurrency: Threading & Multiprocessing
 
@@ -2347,8 +2287,6 @@ with Pool(processes=4) as pool:
 
 > **The GIL (Global Interpreter Lock):** Python threads can't run Python code truly in parallel (only one thread executes Python bytecode at a time). For CPU-bound work, use `multiprocessing` to spin up separate processes.
 
----
-
 ## 31. Virtual Environments & Dependency Management
 
 ### Why Virtual Environments?
@@ -2419,8 +2357,6 @@ build-backend = "setuptools.backends._legacy:_Backend"
 - **`uv`** — Extremely fast package manager and virtualenv tool (Rust-based)
 - **`poetry`** — Dependency management + packaging
 - **`conda`** — Popular in data science (manages Python versions too)
-
----
 
 ## 32. Testing
 
@@ -2499,8 +2435,6 @@ pytest test_math.py        # specific file
 pytest -k "test_add"       # run tests matching pattern
 pytest --tb=short          # shorter tracebacks
 ```
-
----
 
 ## 33. Useful Standard Library Modules
 
@@ -2582,8 +2516,6 @@ print(result.stdout)
 # enum — covered in section 28
 # collections — covered in section 26
 ```
-
----
 
 ## 34. Pythonic Idioms & Best Practices
 
@@ -2721,8 +2653,6 @@ shallow = original.copy()          # nested lists are shared!
 deep = copy.deepcopy(original)     # fully independent copy
 ```
 
----
-
 ## 35. What's Next?
 
 You now have a solid foundation in Python. Here are recommended paths depending on your interests:
@@ -2746,7 +2676,5 @@ You now have a solid foundation in Python. Here are recommended paths depending 
 - 📖 [Python Cookbook (O'Reilly)](https://www.oreilly.com/library/view/python-cookbook-3rd/9781449357337/)
 - 🧠 [LeetCode](https://leetcode.com/) — practice problem solving
 - 🧠 [Project Euler](https://projecteuler.net/) — math + programming challenges
-
----
 
 > *"Python is a language that lets you work quickly and integrate systems more effectively."* — python.org
