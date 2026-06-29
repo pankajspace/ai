@@ -118,8 +118,6 @@ Runtime dependencies:
 - `openai` — SDK used to call both OpenAI and Groq APIs.
 - `python-dotenv` — loads `OPENAI_API_KEY` / `GROQ_API_KEY` from `.env`.
 
-
-
 ---
 
 ## How the Groq integration works
