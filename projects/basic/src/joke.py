@@ -1,8 +1,15 @@
 """Generate a joke using the Llama 3.3 70B model hosted on Groq."""
 
+import random
 from config import get_groq_client
 
 JOKE_MODEL = "llama-3.3-70b-versatile"
+
+CATEGORIES = [
+    "a pun", "a knock-knock joke", "a one-liner", "a dad joke",
+    "a science joke", "a programming joke", "an animal joke",
+    "a food joke", "a sports joke", "a history joke",
+]
 
 
 def get_joke() -> str:
@@ -12,12 +19,14 @@ def get_joke() -> str:
         The text of the assistant's reply.
     """
 
+    category = random.choice(CATEGORIES)
     client = get_groq_client()
     response = client.chat.completions.create(
         model=JOKE_MODEL,
+        temperature=1.3,
         messages=[
-            {"role": "system", "content": "You are a funny joke teller."},
-            {"role": "user", "content": "Tell me a joke."},
+            {"role": "system", "content": "You are a comedian with a huge repertoire of jokes. Never repeat the same joke twice."},
+            {"role": "user", "content": f"Tell me {category}. Just the joke, no commentary."},
         ],
     )
     return response.choices[0].message.content
