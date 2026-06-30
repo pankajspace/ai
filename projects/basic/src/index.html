@@ -168,6 +168,8 @@
         <div class="card">
             <h2>&#x1F602; Joke Generator</h2>
             <p class="description">Get a fresh joke from Llama 3.3 70B via Groq.</p>
+            <input type="text" id="jokeTopicInput"
+                placeholder="Topic (e.g. cats, programming) — or leave blank for random" />
             <button class="btn-joke" id="jokeBtn" onclick="fetchJoke()">Tell me a joke</button>
             <div class="result" id="jokeResult"></div>
         </div>
@@ -196,12 +198,17 @@
         async function fetchJoke() {
             const btn = document.getElementById("jokeBtn");
             const result = document.getElementById("jokeResult");
+            const topic = document.getElementById("jokeTopicInput").value.trim();
             if (!btn.dataset.label) btn.dataset.label = btn.textContent;
             setLoading(btn, result, true);
             result.className = "result visible";
             result.textContent = "";
             try {
-                const res = await fetch(`${API}/joke`);
+                const res = await fetch(`${API}/joke`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topic }),
+                });
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 result.textContent = data.result;

@@ -138,7 +138,7 @@ projects/basic/
 
 **`app.py`**
 - `GET /` — serves `index.html`
-- `GET /joke` — calls `get_joke()` and returns `{ "result": "..." }` with `Cache-Control: no-store`
+- `POST /joke` — accepts `{ "topic": "..." }` (optional), calls `get_joke(topic)`, returns `{ "result": "..." }` with `Cache-Control: no-store`
 - `POST /travel` — accepts `{ "city": "..." }`, calls `get_travel_suggestion(city)`, returns `{ "result": "..." }`
 - Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080`)
 

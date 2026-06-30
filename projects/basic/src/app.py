@@ -15,10 +15,12 @@ def index():
     return send_from_directory(".", "index.html")
 
 
-@app.route("/joke", methods=["GET"])
+@app.route("/joke", methods=["POST"])
 def joke():
+    data = request.get_json(force=True)
+    topic = (data.get("topic") or "").strip()
     try:
-        text = get_joke()
+        text = get_joke(topic)
         response = jsonify({"result": text})
         response.headers["Cache-Control"] = "no-store"
         return response
