@@ -4,9 +4,9 @@
 
 - `techtoday.click` / `www.techtoday.click` → **Reserved** for future use (untouched)
 - `app.techtoday.click` → **Single subdomain for all projects**, separated by URL path
-  - `app.techtoday.click/ai/` → Current Flask/AI project
-  - `app.techtoday.click/blog/` → Future project
-  - `app.techtoday.click/api/` → Future project
+  - `app.techtoday.click/ai-01/` → Current Flask/AI project
+  - `app.techtoday.click/ai-02/` → Future project
+  - `app.techtoday.click/ai-03/` → Future project
 
 ---
 
@@ -30,19 +30,19 @@ Route 53 (techtoday.click hosted zone)
                               │  HTTPS :443 (Let's Encrypt — free) │
                               │  HTTP  :80  → redirect to HTTPS    │
                               │                                    │
-                              │  /ai/*   → localhost:5000          │
-                              │  /blog/* → localhost:5001 (future) │
-                              │  /api/*  → localhost:5002 (future) │
+                              │  /ai-01/* → localhost:5000          │
+                              │  /ai-02/* → localhost:5001 (future) │
+                              │  /ai-03/* → localhost:5002 (future) │
                               └────────────────────────────────────┘
                                          │
                               Docker Compose
-                              ├── ai-project    (port 5000, from ECR)
-                              ├── blog-project  (port 5001, future)
-                              └── api-project   (port 5002, future)
+                              ├── ai-01  (port 5000, from ECR)
+                              ├── ai-02  (port 5001, future)
+                              └── ai-03  (port 5002, future)
 
               ECR (per-project image repositories)
-              ├── techtoday/ai-project
-              └── techtoday/blog-project (future)
+              ├── techtoday/ai-01
+              └── techtoday/ai-02 (future)
 
               Secrets Manager → API keys injected as env vars at container startup
               CloudWatch Agent → logs from EC2 + containers
@@ -56,7 +56,7 @@ Route 53 (techtoday.click hosted zone)
 1. **No ALB** — Nginx replaces the Application Load Balancer, saving ~$16/month
 2. **No Fargate** — Containers run directly on EC2, saving ~$9/month per service vs Fargate
 3. **Free SSL** — Let's Encrypt / Certbot provides a free, auto-renewing HTTPS cert; no ACM needed
-4. **Path-based routing** — Nginx `location /ai/` blocks route requests to the correct container port
+4. **Path-based routing** — Nginx `location /ai-01/` blocks route requests to the correct container port
 5. **Single DNS record** — One A record for `app.techtoday.click`; no new records for new projects
 6. **Easy to add projects** — New project = new Docker Compose service + new Nginx `location` block
 7. **Main domain untouched** — Only `app.techtoday.click` A record is added to Route 53
@@ -84,7 +84,7 @@ Route 53 (techtoday.click hosted zone)
 
 ---
 
-## Step-by-Step Deployment: `app.techtoday.click/ai`
+## Step-by-Step Deployment: `app.techtoday.click/ai-01`
 
 ### Prerequisites
 - AWS CLI configured (`aws configure`)
@@ -94,8 +94,8 @@ Route 53 (techtoday.click hosted zone)
 ---
 
 ### Step 1 — Launch EC2 Instance
+> **One-time.** Done once for the entire server. Repeat only if you ever need to replace or recreate the EC2 instance.
 
-**CLI:**
 ```bash
 # Get the latest Amazon Linux 2023 AMI ID
 AMI_ID=$(aws ec2 describe-images \
@@ -134,8 +134,8 @@ echo "Instance ID: $INSTANCE_ID"
 ---
 
 ### Step 2 — Allocate Elastic IP
+> **One-time.** Done once. The Elastic IP remains assigned even when the instance is stopped, so the DNS record never needs updating.
 
-**CLI:**
 ```bash
 # Allocate an Elastic IP
 ALLOC_ID=$(aws ec2 allocate-address --domain vpc --query "AllocationId" --output text)
@@ -160,8 +160,8 @@ echo "Elastic IP: $ELASTIC_IP"
 ---
 
 ### Step 3 — Install Docker, Docker Compose, and Nginx on EC2
-
-SSH into the instance, then run:
+> **One-time.** Done once when the instance is first provisioned. Repeat only if the instance is rebuilt from scratch.
+, then run:
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -188,8 +188,8 @@ exit
 ---
 
 ### Step 4 — Create Route 53 A Record
+> **One-time.** Done once for all projects. Every future project reuses this same DNS record — no updates needed.
 
-> **One-time step.** All future projects share this same DNS record.
 
 **CLI:**
 ```bash
@@ -219,8 +219,8 @@ aws route53 change-resource-record-sets \
 ---
 
 ### Step 5 — Request SSL Certificate with Let's Encrypt
+> **One-time.** Certbot sets up a cron job that auto-renews the certificate every 90 days. No manual action needed after the initial setup.
 
-SSH into the instance:
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -237,8 +237,8 @@ Certbot automatically edits the Nginx config to add HTTPS and sets up a cron for
 ---
 
 ### Step 6 — Configure Nginx Path Routing
+> **Repeat per new project.** The initial `location /ai-01/` block is set up once. Each time a new project is added, append a new `location /ai-XX/` block and reload Nginx.
 
-Create `/etc/nginx/conf.d/app.conf`:
 
 ```bash
 sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
@@ -257,7 +257,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/app.techtoday.click/privkey.pem;
     include             /etc/letsencrypt/options-ssl-nginx.conf;
 
-    location /ai/ {
+    location /ai-01/ {
         proxy_pass         http://localhost:5000;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
@@ -266,7 +266,7 @@ server {
     }
 
     # Add new projects here:
-    # location /blog/ {
+    # location /ai-02/ {
     #     proxy_pass http://localhost:5001;
     #     ...
     # }
@@ -279,11 +279,11 @@ sudo nginx -t && sudo systemctl reload nginx
 ---
 
 ### Step 7 — Store Secrets in Secrets Manager
+> **One-time per project.** Repeat only when rotating or updating an API key for a specific project (`aws secretsmanager put-secret-value ...`).
 
-**CLI:**
 ```bash
 aws secretsmanager create-secret \
-  --name "techtoday/ai-project/openai-api-key" \
+  --name "techtoday/ai-01/openai-api-key" \
   --secret-string '{"OPENAI_API_KEY":"sk-..."}'
 ```
 
@@ -291,13 +291,13 @@ aws secretsmanager create-secret \
 1. Open **Secrets Manager** → **Store a new secret**
 2. Choose **Other type of secret**
 3. Add key `OPENAI_API_KEY` with your actual key value → Next
-4. Set secret name to `techtoday/ai-project/openai-api-key` → Next → Store
+4. Set secret name to `techtoday/ai-01/openai-api-key` → Next → Store
 
 ---
 
 ### Step 8 — Create IAM Role for EC2 (Secrets + ECR Access)
+> **One-time.** Done once for the whole server. All projects deployed to this EC2 instance share this role — no changes needed when adding new projects.
 
-**CLI:**
 ```bash
 # Create role for EC2 instance
 aws iam create-role \
@@ -341,12 +341,12 @@ aws ec2 associate-iam-instance-profile \
 ---
 
 ### Step 9 — Create ECR Repository & Push Image
+> **One-time per project** to create the repository. The initial manual image push is also done once here. All subsequent pushes after code changes are handled automatically by CI/CD (see the GitHub Actions section).
 
-**CLI:**
 ```bash
 REGION=us-east-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO_NAME=techtoday/ai-project
+REPO_NAME=techtoday/ai-01
 
 aws ecr create-repository --repository-name $REPO_NAME --region $REGION
 
@@ -366,38 +366,38 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 **AWS Console:**
 1. Open **Elastic Container Registry** → **Repositories** → **Create repository**
-2. Name `techtoday/ai-project`, enable **Scan on push** → **Create**
+2. Name `techtoday/ai-01`, enable **Scan on push** → **Create**
 3. Click the repo → **View push commands** → follow the 4 steps shown
 
 ---
 
 ### Step 10 — Create Docker Compose File on EC2
-
-SSH into the instance and create `/home/ec2-user/docker-compose.yml`:
+> **One-time per project** to add the service entry. Update this file when adding a new project (uncomment the next service block) or when environment variables change.
+ `/home/ec2-user/docker-compose.yml`:
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
 
 cat > ~/docker-compose.yml << 'EOF'
 services:
-  ai-project:
-    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/ai-project:latest
+  ai-01:
+    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/ai-01:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
-      - PATH_PREFIX=/ai
+      - PATH_PREFIX=/ai-01
     env_file:
-      - ~/secrets/ai-project.env
+      - ~/secrets/ai-01.env
 
-  # blog-project (future):
-  # blog-project:
-  #   image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/blog-project:latest
+  # ai-02 (future):
+  # ai-02:
+  #   image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/ai-02:latest
   #   restart: unless-stopped
   #   ports:
   #     - "5001:5000"
   #   environment:
-  #     - PATH_PREFIX=/blog
+  #     - PATH_PREFIX=/ai-02
 EOF
 ```
 
@@ -406,11 +406,11 @@ Fetch secrets from Secrets Manager into the env file:
 ```bash
 mkdir -p ~/secrets
 aws secretsmanager get-secret-value \
-  --secret-id techtoday/ai-project/openai-api-key \
+  --secret-id techtoday/ai-01/openai-api-key \
   --query SecretString --output text | \
   python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/ai-project.env
-chmod 600 ~/secrets/ai-project.env
+  > ~/secrets/ai-01.env
+chmod 600 ~/secrets/ai-01.env
 
 # Authenticate Docker to ECR, then start
 aws ecr get-login-password --region us-east-1 | \
@@ -422,19 +422,19 @@ docker compose pull && docker compose up -d
 ---
 
 ### Step 11 — Verify
+> **Repeat after every deployment** to confirm the update is live and the container is responding correctly.
 
-```bash
-curl -I https://app.techtoday.click/ai/
+curl -I https://app.techtoday.click/ai-01/
 ```
 
 ---
 
 ## Adding a New Project (Future Pattern)
 
-1. Create ECR repo: `aws ecr create-repository --repository-name techtoday/blog-project`
+1. Create ECR repo: `aws ecr create-repository --repository-name techtoday/ai-02`
 2. Build and push image to ECR
 3. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
-4. Add a new `location /blog/` block to `/etc/nginx/conf.d/app.conf` pointing to `localhost:5001`
+4. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf` pointing to `localhost:5001`
 5. Run `docker compose pull && docker compose up -d` and `sudo nginx -t && sudo systemctl reload nginx`
 6. **No new DNS record, no new EC2, no new SSL cert** — everything reuses what's already there
 
@@ -496,10 +496,10 @@ aws iam put-role-policy \
 
 **Step C — Create the workflow file:**
 
-Save as `.github/workflows/deploy-ai-project.yml`:
+Save as `.github/workflows/deploy-ai-01.yml`:
 
 ```yaml
-name: Deploy ai-project
+name: Deploy ai-01
 
 on:
   push:
@@ -509,7 +509,7 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: techtoday/ai-project
+  ECR_REPOSITORY: techtoday/ai-01
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
@@ -556,12 +556,12 @@ jobs:
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
-            # Pull new image and restart only the ai-project service (zero-downtime)
-            docker compose -f ~/docker-compose.yml pull ai-project
-            docker compose -f ~/docker-compose.yml up -d --no-deps ai-project
+            # Pull new image and restart only the ai-01 service (zero-downtime)
+            docker compose -f ~/docker-compose.yml pull ai-01
+            docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
 ```
 
-> The `--no-deps` flag restarts only the `ai-project` container without touching other running services.
+> The `--no-deps` flag restarts only the `ai-01` container without touching other running services.
 
 ---
 
@@ -592,7 +592,7 @@ jobs:
 
 13. **CloudWatch Agent** — Install on EC2 to ship system metrics and Docker logs to CloudWatch
 14. **Set up billing alerts** — Create a CloudWatch billing alarm at $15/month to catch unexpected charges early
-15. **Structured logging** — Log in JSON from Flask; use `docker compose logs -f ai-project` locally and CloudWatch Logs Insights in production
+15. **Structured logging** — Log in JSON from Flask; use `docker compose logs -f ai-01` locally and CloudWatch Logs Insights in production
 
 ### Cost
 
@@ -638,7 +638,7 @@ The Nginx + EC2 setup handles hundreds of thousands of requests/month comfortabl
 
 ## Flask Path Prefix Configuration
 
-Because Nginx forwards the full path (e.g., `/ai/joke`) to the container, each Flask app must mount routes under its path prefix. Use a Blueprint with an environment-variable-driven prefix:
+Because Nginx forwards the full path (e.g., `/ai-01/joke`) to the container, each Flask app must mount routes under its path prefix. Use a Blueprint with an environment-variable-driven prefix:
 
 ```python
 # src/app.py
@@ -675,7 +675,7 @@ def travel():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai in production, empty locally
+PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
 app.register_blueprint(bp, url_prefix=PREFIX)
 
 if __name__ == "__main__":
@@ -683,7 +683,7 @@ if __name__ == "__main__":
 ```
 
 - **Locally**: `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel` (unchanged)
-- **On EC2**: `PATH_PREFIX=/ai` → routes are `/ai/`, `/ai/joke`, `/ai/travel`
+- **On EC2**: `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`
 
 ---
 
@@ -692,9 +692,9 @@ if __name__ == "__main__":
 ```
 .github/
   workflows/
-    deploy-ai-project.yml    ← CI/CD workflow (Step C above)
+    deploy-ai-01.yml         ← CI/CD workflow (Step C above)
 projects/
-  basic/          → app.techtoday.click/ai/   (current, PATH_PREFIX=/ai)
-  blog/           → app.techtoday.click/blog/ (future,  PATH_PREFIX=/blog)
-  api/            → app.techtoday.click/api/  (future,  PATH_PREFIX=/api)
+  basic/          → app.techtoday.click/ai-01/  (current, PATH_PREFIX=/ai-01)
+  project-02/     → app.techtoday.click/ai-02/  (future,  PATH_PREFIX=/ai-02)
+  project-03/     → app.techtoday.click/ai-03/  (future,  PATH_PREFIX=/ai-03)
 ```
