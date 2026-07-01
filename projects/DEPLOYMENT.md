@@ -125,6 +125,169 @@ aws --version
 # Expected output: aws-cli/2.x.x Python/3.x.x ...
 ```
 
+**Create an IAM user for CLI access:**
+
+> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine (or to configure CloudShell when not using the console session). If you already have an IAM user with the required permissions, skip to [Configure credentials](#configure-credentials) below.
+>
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+
+**CLI:**
+
+```bash
+# 1. Create the IAM user
+aws iam create-user --user-name techtoday-admin
+
+# 2. Create a custom policy with the permissions needed for this guide
+#    (EC2, Route 53, IAM, Secrets Manager, ECR, S3, CloudFront, STS)
+aws iam create-policy \
+  --policy-name TechTodayAdminPolicy \
+  --policy-document '{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "EC2Full",
+        "Effect": "Allow",
+        "Action": [
+          "ec2:RunInstances",
+          "ec2:DescribeInstances",
+          "ec2:DescribeImages",
+          "ec2:CreateSecurityGroup",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:AllocateAddress",
+          "ec2:AssociateAddress",
+          "ec2:DescribeAddresses",
+          "ec2:AssociateIamInstanceProfile",
+          "ec2:CreateKeyPair",
+          "ec2:DescribeKeyPairs"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "Route53",
+        "Effect": "Allow",
+        "Action": [
+          "route53:ListHostedZones",
+          "route53:ChangeResourceRecordSets",
+          "route53:GetHostedZone"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "IAMRolesAndPolicies",
+        "Effect": "Allow",
+        "Action": [
+          "iam:CreateRole",
+          "iam:PutRolePolicy",
+          "iam:CreateInstanceProfile",
+          "iam:AddRoleToInstanceProfile",
+          "iam:CreateOpenIDConnectProvider",
+          "iam:CreateUser",
+          "iam:CreatePolicy",
+          "iam:AttachUserPolicy",
+          "iam:CreateAccessKey",
+          "iam:ListUsers",
+          "iam:GetRole",
+          "iam:GetPolicy",
+          "iam:ListAttachedUserPolicies"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "SecretsManager",
+        "Effect": "Allow",
+        "Action": [
+          "secretsmanager:CreateSecret",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:PutSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        "Resource": "arn:aws:secretsmanager:*:*:secret:techtoday/*"
+      },
+      {
+        "Sid": "ECR",
+        "Effect": "Allow",
+        "Action": [
+          "ecr:CreateRepository",
+          "ecr:DescribeRepositories",
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:PutImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImageScanningConfiguration",
+          "ecr:DescribeImages",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "S3ForStaticSite",
+        "Effect": "Allow",
+        "Action": [
+          "s3:CreateBucket",
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ],
+        "Resource": [
+          "arn:aws:s3:::techtoday-site",
+          "arn:aws:s3:::techtoday-site/*"
+        ]
+      },
+      {
+        "Sid": "CloudFront",
+        "Effect": "Allow",
+        "Action": [
+          "cloudfront:CreateDistribution",
+          "cloudfront:CreateInvalidation",
+          "cloudfront:GetDistribution"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "STS",
+        "Effect": "Allow",
+        "Action": ["sts:GetCallerIdentity"],
+        "Resource": "*"
+      }
+    ]
+  }'
+
+# 3. Attach the policy to the user
+#    Replace ACCOUNT_ID with your 12-digit AWS account ID
+aws iam attach-user-policy \
+  --user-name techtoday-admin \
+  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/TechTodayAdminPolicy
+
+# 4. Create an access key pair for programmatic access
+aws iam create-access-key --user-name techtoday-admin
+#    Save the AccessKeyId and SecretAccessKey from the output — the secret
+#    is shown only once and cannot be retrieved later.
+```
+
+> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see "Configure credentials" below) and avoid using root credentials for day-to-day work.
+
+**AWS Console:**
+
+1. Open **IAM** → **Users** → **Create user**
+2. **User name:** `techtoday-admin` → **Next**
+3. **Set permissions:** select **Attach policies directly**
+   - Click **Create policy** (opens a new tab):
+     - Switch to the **JSON** editor and paste the policy document from the CLI section above
+     - **Policy name:** `TechTodayAdminPolicy` → **Create policy**
+   - Back on the user creation tab, click the refresh icon (🔄) next to the policy search box
+   - Search for `TechTodayAdminPolicy`, check the box → **Next**
+4. Review and click **Create user**
+5. **Generate access keys:** Click the new user name → **Security credentials** tab → **Create access key**
+   - **Use case:** select **Command Line Interface (CLI)** → check the confirmation box → **Next**
+   - **Description tag:** `local-cli` (optional) → **Create access key**
+   - **Copy both the Access Key ID and Secret Access Key** — the secret is shown only once. Store them securely (e.g., a password manager). → **Done**
+
+> **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday-admin` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
+
 **Configure credentials:**
 
 ```bash
@@ -133,12 +296,14 @@ aws configure
 
 You will be prompted for:
 
-1. **AWS Access Key ID** — from your IAM user
-2. **AWS Secret Access Key** — from your IAM user
+1. **AWS Access Key ID** — from the IAM user access key created above
+2. **AWS Secret Access Key** — from the IAM user access key created above
 3. **Default region name** — e.g., `us-east-1`
 4. **Default output format** — `json` (recommended)
 
-> The IAM identity needs permissions for EC2, Route 53, IAM, Secrets Manager, and ECR. See [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) for the roles and policies used in this project.
+> These credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. If you need to switch between multiple AWS accounts or users, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
+>
+> The IAM roles in [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
 ---
 
@@ -559,22 +724,25 @@ aws iam put-role-policy \
 
 ### IAM & Security
 
-1. **Least privilege** — EC2 role allows only `secretsmanager:GetSecretValue` on `techtoday/*` and ECR read
-2. **No static credentials in CI/CD** — GitHub Actions uses OIDC; SSH key is a GitHub Secret
-3. **Secrets Manager only** — API keys are never in `docker-compose.yml`, repo files, or images
-4. **Restrict SSH** — after setup, tighten the security group SSH rule to your IP only (`YOUR_IP/32`)
-5. **HTTPS enforced** — Nginx redirects all HTTP to HTTPS; certs auto-renew via Certbot cron
+1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user (see [Create an IAM user](#1-aws-cli-v2)) instead of root credentials for all local `aws` commands
+2. **Enable MFA** — turn on multi-factor authentication for the IAM user and the root account
+3. **Rotate access keys** — rotate the IAM user's access keys periodically (`aws iam create-access-key` → update `aws configure` → `aws iam delete-access-key` for the old key)
+4. **Least privilege** — EC2 role allows only `secretsmanager:GetSecretValue` on `techtoday/*` and ECR read; the IAM user policy is scoped to the specific services used in this guide
+5. **No static credentials in CI/CD** — GitHub Actions uses OIDC; SSH key is a GitHub Secret
+6. **Secrets Manager only** — API keys are never in `docker-compose.yml`, repo files, or images
+7. **Restrict SSH** — after setup, tighten the security group SSH rule to your IP only (`YOUR_IP/32`)
+8. **HTTPS enforced** — Nginx redirects all HTTP to HTTPS; certs auto-renew via Certbot cron
 
 ### Container & Image
 
-6. **Tag images three ways** — full git SHA, build tag (`YYYYMMDD-HHMMSS-<run>-<sha>`), and `latest`
-7. **ECR scan on push** — `scanOnPush=true` on every repository
-8. **`restart: unless-stopped`** — containers restart automatically after EC2 reboots
+9. **Tag images three ways** — full git SHA, build tag (`YYYYMMDD-HHMMSS-<run>-<sha>`), and `latest`
+10. **ECR scan on push** — `scanOnPush=true` on every repository
+11. **`restart: unless-stopped`** — containers restart automatically after EC2 reboots
 
 ### Cost
 
-9. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
-10. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
+12. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
+13. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
 
 ---
 
