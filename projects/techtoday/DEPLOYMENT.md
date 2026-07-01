@@ -8,10 +8,8 @@ This document covers everything needed to deploy the `techtoday` static site to 
 
 ## Deployment Target
 
-| Domain | Path | Type |
-|---|---|---|
-| `techtoday.click` | `/` | Static files (HTML, CSS, JS) |
-| `www.techtoday.click` | `/` | Redirect → `techtoday.click` |
+1. `techtoday.click` — path `/` — Static files (HTML, CSS, JS)
+2. `www.techtoday.click` — path `/` — Redirect → `techtoday.click`
 
 The static files in `src/` are served directly from the root of the main domain. No Docker container or application server is needed.
 

@@ -30,10 +30,8 @@ This guide covers the shared development workflow, CI/CD pipeline, manual deploy
 
 Each project has its own GitHub Actions workflow under `.github/workflows/`:
 
-| Project | Workflow | Trigger path |
-|---|---|---|
-| basic (ai-01) | [deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) | `projects/basic/**` |
-| techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/src/**` |
+1. **basic (ai-01)** — [deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) — trigger path `projects/basic/**`
+2. **techtoday** — [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) — trigger path `projects/techtoday/src/**`
 
 **Container projects (basic, etc.):** on push to `main`, the workflow builds the Docker image, pushes it to ECR with three tags (git SHA, human-readable build tag, and `latest`), then SSHes into EC2 and restarts only that project's container.
 
