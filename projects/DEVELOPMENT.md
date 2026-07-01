@@ -9,6 +9,25 @@ This guide covers the shared development workflow, CI/CD pipeline, manual deploy
 
 ---
 
+## Local Machine Prerequisites
+
+These tools are used across the commands in this guide (committing, manual deploy, rollback):
+
+1. **git** — for every commit/push command below.
+2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for install steps and required IAM permissions.
+3. **SSH client** with the `.pem` key for the EC2 instance — used to SSH in during manual deploy/rollback. See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for setup.
+4. **Docker CLI** — builds/tags/pushes/pulls images in the manual deploy and rollback commands below.
+   - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
+   - Linux: `sudo apt install docker.io` / `sudo dnf install docker`
+   - Already using Podman for local dev of `basic`? Podman's CLI is Docker-compatible — run `alias docker=podman` instead of installing Docker separately.
+5. **rsync** — manually deploys the `techtoday` static site.
+   - macOS/Linux: preinstalled
+   - Windows: use WSL, Git Bash, or `cwRsync`
+
+Project-specific local dev tools (e.g., Podman for `basic`) are documented in each project's own `DEVELOPMENT.md`.
+
+---
+
 ## Committing and Pushing
 
 1. Stage and commit with a conventional message:

@@ -68,6 +68,28 @@ Route 53 (techtoday.click hosted zone)
 
 ---
 
+## Local Machine Prerequisites
+
+Install and configure these on your local machine before running any of the one-time setup steps below, or before doing any manual deploy/rollback (see [DEVELOPMENT.md](DEVELOPMENT.md)):
+
+1. **AWS CLI v2** — runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
+   - macOS: `brew install awscli`
+   - Linux: see [AWS CLI install docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+   - Windows: [AWS CLI MSI installer](https://awscli.amazonaws.com/AWSCLIV2.msi)
+   - Configure credentials: `aws configure` (needs an IAM identity with permissions for EC2, Route 53, IAM, Secrets Manager, and ECR)
+2. **SSH client** — connects to the EC2 instance (`ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP`).
+   - macOS/Linux: preinstalled
+   - Windows: built-in OpenSSH client (Windows 10+), Git Bash, or WSL
+   - Download the `.pem` key pair created in Step 1 and restrict its permissions: `chmod 400 YOUR_KEY.pem` (macOS/Linux) or `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` (Windows PowerShell)
+3. **git** — clones this repository and pushes the changes that trigger CI/CD.
+   - macOS: `brew install git` (or Xcode Command Line Tools)
+   - Linux: `sudo apt install git` / `sudo dnf install git`
+   - Windows: [Git for Windows](https://git-scm.com/download/win)
+
+> Docker/Podman is only needed for manual container deploys or rollback — see the [common Development Guide](DEVELOPMENT.md#local-machine-prerequisites).
+
+---
+
 ## One-Time Infrastructure Setup
 
 These steps are done once for the entire server and shared by all projects.

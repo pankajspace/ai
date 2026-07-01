@@ -23,6 +23,15 @@ This project has no project-specific secrets or environment variables — it's a
 
 ---
 
+## Local Machine Prerequisites
+
+In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git):
+
+1. **rsync** — required for deploying updates via Option A (Nginx on EC2). Preinstalled on macOS/Linux; Windows users can use WSL or Git Bash.
+2. **AWS CLI** — also required for Option B (S3 + CloudFront) `s3 sync` / `cloudfront create-invalidation` commands, and for the Route 53 A record command in Option A.
+
+---
+
 ## Recommended Options
 
 ### Option A — Nginx on Existing EC2 (Simplest)

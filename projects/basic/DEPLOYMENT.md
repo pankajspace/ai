@@ -27,6 +27,14 @@ Project-specific values (set as described in the steps below):
 
 ---
 
+## Local Machine Prerequisites
+
+In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git), Steps 3 and 5 below require:
+
+1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5. Podman's CLI is Docker-compatible, so `alias docker=podman` works if you already have Podman installed for local dev (see [DEVELOPMENT.md](DEVELOPMENT.md)).
+
+---
+
 ## Step 1 — Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).

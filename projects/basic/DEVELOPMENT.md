@@ -11,6 +11,7 @@ This guide covers local development for `projects/basic`, which runs at `app.tec
 1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose)
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
 3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
+4. **Docker CLI** — only needed for the one-time initial image push in [DEPLOYMENT.md](DEPLOYMENT.md#step-3--initial-image-build-and-push) or for manual deploy/rollback; not required for the local dev loop below. Since Podman's CLI is Docker-compatible, you can skip installing Docker separately and run `alias docker=podman`. See the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) for AWS CLI/SSH details needed for deployment.
 
 ### Install Podman
 

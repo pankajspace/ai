@@ -8,7 +8,9 @@ This guide covers local development for the `techtoday` static site.
 
 ## Prerequisites
 
-No tools required beyond a modern browser. Optionally, Python 3 for a local server.
+No tools required beyond a modern browser and `git`. Optionally, Python 3 for a local server.
+
+Manual/fallback deploy (see [DEPLOYMENT.md](DEPLOYMENT.md)) additionally requires `rsync` and the shared tools in the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) (AWS CLI, SSH client).
 
 ---
 
