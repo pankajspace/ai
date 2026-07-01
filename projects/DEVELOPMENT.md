@@ -49,6 +49,7 @@ This guide covers everything needed to work on the `projects/basic` app day-to-d
    git checkout -b feat/short-description
    ```
 3. Make code changes under `src/`.
+   > The `web` service mounts `./src` into the container as a volume, so edits to any file under `src/` (Python, HTML, etc.) are picked up immediately — **no rebuild required**.
 4. Run the app locally to check your change:
    ```bash
    podman-compose up web
@@ -59,7 +60,7 @@ This guide covers everything needed to work on the `projects/basic` app day-to-d
    podman-compose run --rm joke
    podman-compose run --rm travel
    ```
-6. Rebuild the image whenever `requirements.txt` or the `Dockerfile` changes:
+6. Rebuild the image only when `requirements.txt` or the `Dockerfile` changes (not needed for `src/` edits):
    ```bash
    podman-compose build
    ```

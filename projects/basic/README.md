@@ -64,6 +64,8 @@ GROQ_API_KEY=gsk_...
 podman-compose build
 ```
 
+> You only need to rebuild when `Dockerfile` or `requirements.txt` changes. Edits to files under `src/` are reflected immediately via a volume mount — just save and reload the browser.
+
 ### 4. Run
 
 **Web UI** — open [http://localhost:8080](http://localhost:8080) in your browser:
@@ -87,7 +89,7 @@ podman-compose run --rm travel
 Calls **Groq** (Llama 3.3 70B Versatile) to generate a random joke. A random category (pun, dad joke, knock-knock, one-liner, etc.) is chosen on every request, and `temperature=1.3` ensures a different response each time.
 
 ### ✈️ Travel Suggestion
-Calls **OpenAI** (GPT-4o mini) to suggest one thing to do in any city you enter. Defaults to Bangalore if no city is provided.
+Calls **OpenAI** (GPT-4o mini) to suggest one thing to do in any city you enter. A city name is required.
 
 ---
 
