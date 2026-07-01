@@ -69,19 +69,119 @@ Route 53 (techtoday.click hosted zone)
 
 Install and configure these on your local machine before running any of the one-time setup steps below, or before doing any manual deploy/rollback (see [DEVELOPMENT.md](DEVELOPMENT.md)):
 
-1. **AWS CLI v2** — runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
-   - macOS: `brew install awscli`
-   - Linux: see [AWS CLI install docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-   - Windows: [AWS CLI MSI installer](https://awscli.amazonaws.com/AWSCLIV2.msi)
-   - Configure credentials: `aws configure` (needs an IAM identity with permissions for EC2, Route 53, IAM, Secrets Manager, and ECR)
-2. **SSH client** — connects to the EC2 instance (`ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP`).
-   - macOS/Linux: preinstalled
-   - Windows: built-in OpenSSH client (Windows 10+), Git Bash, or WSL
-   - Download the `.pem` key pair created in Step 1 and restrict its permissions: `chmod 400 YOUR_KEY.pem` (macOS/Linux) or `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` (Windows PowerShell)
-3. **git** — clones this repository and pushes the changes that trigger CI/CD.
-   - macOS: `brew install git` (or Xcode Command Line Tools)
-   - Linux: `sudo apt install git` / `sudo dnf install git`
-   - Windows: [Git for Windows](https://git-scm.com/download/win)
+### 1. AWS CLI v2
+
+Runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
+
+**macOS**
+
+```bash
+# Option A — Homebrew (recommended)
+brew install awscli
+
+# Option B — Official installer
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+sudo installer -pkg AWSCLIV2.pkg -target /
+rm AWSCLIV2.pkg
+```
+
+**Linux (Debian/Ubuntu)**
+
+```bash
+sudo apt update && sudo apt install -y unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+rm -rf awscliv2.zip aws/
+```
+
+**Linux (Fedora/RHEL)**
+
+```bash
+sudo dnf install -y unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+rm -rf awscliv2.zip aws/
+```
+
+> **ARM64 (e.g., Graviton, Apple Silicon under Linux):** replace `x86_64` with `aarch64` in the URL above.
+
+**Windows**
+
+1. Download and run the [AWS CLI MSI installer](https://awscli.amazonaws.com/AWSCLIV2.msi).
+2. Follow the on-screen prompts (defaults are fine).
+3. Alternatively, install via `winget`:
+   ```powershell
+   winget install Amazon.AWSCLI
+   ```
+
+**Verify installation (all platforms):**
+
+```bash
+aws --version
+# Expected output: aws-cli/2.x.x Python/3.x.x ...
+```
+
+**Configure credentials:**
+
+```bash
+aws configure
+```
+
+You will be prompted for:
+
+1. **AWS Access Key ID** — from your IAM user
+2. **AWS Secret Access Key** — from your IAM user
+3. **Default region name** — e.g., `us-east-1`
+4. **Default output format** — `json` (recommended)
+
+> The IAM identity needs permissions for EC2, Route 53, IAM, Secrets Manager, and ECR. See [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) for the roles and policies used in this project.
+
+---
+
+### 2. SSH Client
+
+Connects to the EC2 instance (`ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP`).
+
+- **macOS/Linux:** preinstalled
+- **Windows:** built-in OpenSSH client (Windows 10+), Git Bash, or WSL
+
+Download the `.pem` key pair created in Step 1 and restrict its permissions:
+
+```bash
+# macOS / Linux
+chmod 400 YOUR_KEY.pem
+```
+
+```powershell
+# Windows PowerShell
+icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
+```
+
+---
+
+### 3. git
+
+Clones this repository and pushes the changes that trigger CI/CD.
+
+**macOS**
+```bash
+brew install git
+# or: xcode-select --install  (includes git)
+```
+
+**Linux (Debian/Ubuntu)**
+```bash
+sudo apt install git
+```
+
+**Linux (Fedora/RHEL)**
+```bash
+sudo dnf install git
+```
+
+**Windows** — [Git for Windows](https://git-scm.com/download/win)
 
 > Docker/Podman is only needed for manual container deploys or rollback — see the [common Development Guide](DEVELOPMENT.md#local-machine-prerequisites).
 
