@@ -19,15 +19,15 @@ Route 53 (techtoday.click hosted zone)
                                          │
                                          ▼
                               EC2 Instance (t2.micro, free tier / ~$8/month)
-                              ┌────────────────────────────────────────────┐
-                              │  Nginx (reverse proxy + static files)      │
-                              │  HTTPS :443 (Let's Encrypt — free)         │
-                              │  HTTP  :80  → redirect to HTTPS            │
-                              │                                            │
-                              │  techtoday.click/   → /var/www/techtoday  │
-                              │  /ai-01/*           → localhost:5000       │
+                              ┌───────────────────────────────────────────────┐
+                              │  Nginx (reverse proxy + static files)         │
+                              │  HTTPS :443 (Let's Encrypt — free)            │
+                              │  HTTP  :80  → redirect to HTTPS               │
+                              │                                               │
+                              │  techtoday.click/   → /var/www/techtoday      │
+                              │  /ai-01/*           → localhost:5000          │
                               │  /ai-02/*           → localhost:5001 (future) │
-                              └────────────────────────────────────────────┘
+                              └───────────────────────────────────────────────┘
                                          │
                               Docker Compose (app subdomain only)
                               ├── ai-01  (port 5000, from ECR)
@@ -72,6 +72,8 @@ Install and configure these on your local machine before running any of the one-
 ### 1. AWS CLI v2
 
 Runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
+
+> **Zero-install alternative — AWS CloudShell:** If you don't want to install the AWS CLI locally, you can run any `aws` command directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/). Click the **CloudShell** icon (terminal prompt `>_`) in the top navigation bar of the AWS Console. CloudShell comes with the AWS CLI pre-installed and pre-authenticated with your console session — no `aws configure` needed. It works for all pure `aws` commands in this guide (EC2, Route 53, IAM, ECR, Secrets Manager, S3). It does **not** work for steps that require local files (e.g., `docker build`, `rsync`, SSH with a local `.pem` key).
 
 **macOS**
 
@@ -193,6 +195,8 @@ These steps are done once for the entire server and shared by all projects.
 
 ### Step 1 — Launch EC2 Instance
 
+> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
+
 ```bash
 AMI_ID=$(aws ec2 describe-images \
   --owners amazon \
@@ -227,6 +231,8 @@ INSTANCE_ID=$(aws ec2 run-instances \
 
 ### Step 2 — Allocate Elastic IP
 
+> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
 ```bash
 ALLOC_ID=$(aws ec2 allocate-address --domain vpc --query "AllocationId" --output text)
 aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id $ALLOC_ID
@@ -235,6 +241,13 @@ ELASTIC_IP=$(aws ec2 describe-addresses \
   --query "Addresses[0].PublicIp" --output text)
 echo "Elastic IP: $ELASTIC_IP"
 ```
+
+**AWS Console:**
+1. Open **EC2** → **Elastic IPs** → **Allocate Elastic IP address**
+2. Leave defaults (Amazon's pool of IPv4 addresses) → click **Allocate**
+3. Select the new Elastic IP → **Actions** → **Associate Elastic IP address**
+4. Choose the `app-server` instance → click **Associate**
+5. Note the allocated IP — you'll use it as `$ELASTIC_IP` in subsequent steps
 
 ---
 
@@ -262,6 +275,8 @@ exit  # log out and back in for docker group to take effect
 
 ### Step 4 — Create Route 53 A Records
 
+> **CloudShell / Console alternative:** This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
 ```bash
 HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
   --query "HostedZones[?Name=='techtoday.click.'].Id" --output text | sed 's|/hostedzone/||')
@@ -276,6 +291,14 @@ aws route53 change-resource-record-sets \
     ]
   }'
 ```
+
+**AWS Console:**
+1. Open **Route 53** → **Hosted zones** → click the `techtoday.click` zone
+2. Click **Create record** for each of the three records below:
+   - **Record name:** leave blank (for `techtoday.click`), **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
+   - **Record name:** `www`, **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
+   - **Record name:** `app`, **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
+3. Click **Create records** after each
 
 ---
 
@@ -372,6 +395,8 @@ sudo nginx -t && sudo systemctl reload nginx
 ### Step 7 — Create IAM Role for EC2 (ECR + Secrets Access)
 
 > **One-time.** All projects on this EC2 instance share this role.
+>
+> **CloudShell / Console alternative:** This step uses only `aws iam` and `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 ```bash
 aws iam create-role \
@@ -403,11 +428,40 @@ aws ec2 associate-iam-instance-profile \
   --iam-instance-profile Name=ec2-app-server-profile
 ```
 
+**AWS Console:**
+1. Open **IAM** → **Roles** → **Create role**
+2. **Trusted entity type:** AWS service → **Use case:** EC2 → **Next**
+3. Skip adding policies for now (we'll add an inline policy) → **Next**
+4. **Role name:** `ec2-app-server-role` → **Create role**
+5. Open the newly created role → **Permissions** tab → **Add permissions** → **Create inline policy**
+6. Switch to the **JSON** editor and paste:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": ["secretsmanager:GetSecretValue"],
+         "Resource": "arn:aws:secretsmanager:*:*:secret:techtoday/*"
+       },
+       {
+         "Effect": "Allow",
+         "Action": ["ecr:GetAuthorizationToken", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+7. **Policy name:** `AllowAppSecrets` → **Create policy**
+8. Attach the role to the EC2 instance: open **EC2** → **Instances** → select `app-server` → **Actions** → **Security** → **Modify IAM role** → select `ec2-app-server-role` → **Update IAM role**
+
 ---
 
 ### Step 8 — Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
+>
+> **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 ```bash
 aws iam create-open-id-connect-provider \
@@ -441,6 +495,40 @@ aws iam put-role-policy \
         "Resource":"arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"}
     ]}'
 ```
+
+**AWS Console:**
+1. **Create the OIDC provider:** Open **IAM** → **Identity providers** → **Add provider**
+   - **Provider type:** OpenID Connect
+   - **Provider URL:** `https://token.actions.githubusercontent.com` → click **Get thumbprint**
+   - **Audience:** `sts.amazonaws.com` → **Add provider**
+2. **Create the deploy role:** Open **IAM** → **Roles** → **Create role**
+   - **Trusted entity type:** Web identity
+   - **Identity provider:** select `token.actions.githubusercontent.com`
+   - **Audience:** `sts.amazonaws.com` → **Next**
+   - Skip managed policies → **Next**
+   - **Role name:** `github-actions-deploy` → **Create role**
+3. **Edit the trust policy:** Open the role → **Trust relationships** tab → **Edit trust policy** → add the `StringLike` condition for your repo:
+   ```json
+   "Condition": {
+     "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
+     "StringLike": { "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/main" }
+   }
+   ```
+4. **Add inline policy:** On the role's **Permissions** tab → **Add permissions** → **Create inline policy** → switch to **JSON** editor and paste:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       { "Effect": "Allow", "Action": ["ecr:GetAuthorizationToken"], "Resource": "*" },
+       {
+         "Effect": "Allow",
+         "Action": ["ecr:BatchCheckLayerAvailability", "ecr:PutImage", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload"],
+         "Resource": "arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"
+       }
+     ]
+   }
+   ```
+5. **Policy name:** `ECRPushAndSSH` → **Create policy**
 
 **GitHub Secrets to create** (repo → Settings → Secrets and variables → Actions):
 
@@ -565,6 +653,8 @@ In addition to the shared tools in the [Local Machine Prerequisites](#local-mach
 ## Step 1 — Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
+>
+> **CloudShell / Console alternative:** This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 ```bash
 aws secretsmanager create-secret \
@@ -582,6 +672,8 @@ aws secretsmanager create-secret \
 ## Step 2 — Create ECR Repository
 
 > **One-time.**
+>
+> **CloudShell / Console alternative:** This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 ```bash
 REGION=us-east-1
@@ -594,11 +686,19 @@ aws ecr put-image-scanning-configuration \
   --image-scanning-configuration scanOnPush=true
 ```
 
+**AWS Console:**
+1. Open **ECR** → **Repositories** → **Create repository**
+2. **Repository name:** `techtoday/ai-01`
+3. **Image scan settings:** enable **Scan on push**
+4. Leave other defaults → **Create repository**
+
 ---
 
 ## Step 3 — Initial Image Build and Push
 
 > **One-time.** Subsequent pushes are handled automatically by CI/CD.
+>
+> **Note:** This step requires Docker and local project files — it cannot be run from AWS CloudShell or the Console. Use your local terminal.
 
 ```bash
 REGION=us-east-1
@@ -808,6 +908,8 @@ sudo nginx -t && sudo systemctl reload nginx
 
 **Add Route 53 A records for `techtoday.click` and `www.techtoday.click`:**
 
+> **CloudShell / Console alternative:** The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
+
 ```bash
 HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
   --query "HostedZones[?Name=='techtoday.click.'].Id" --output text | sed 's|/hostedzone/||')
@@ -838,11 +940,18 @@ aws route53 change-resource-record-sets \
   }'
 ```
 
+**AWS Console:**
+1. Open **Route 53** → **Hosted zones** → click `techtoday.click`
+2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
+3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
+
 ---
 
 ### Option B — S3 + CloudFront (Zero-Maintenance)
 
 Best for pure static hosting with global CDN, no EC2 involvement.
+
+> **CloudShell / Console alternative:** The S3 and CloudFront commands in this section can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) (except `s3 sync` from local files — use the Console upload UI instead). Console UI steps are shown alongside each CLI command below.
 
 **1. Create an S3 bucket:**
 
@@ -851,6 +960,8 @@ aws s3api create-bucket \
   --bucket techtoday-site \
   --region us-east-1
 ```
+
+**AWS Console:** Open **S3** → **Create bucket** → **Bucket name:** `techtoday-site` → **Region:** `us-east-1` → **Create bucket**
 
 **2. Upload site files:**
 
@@ -864,13 +975,19 @@ aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
   --cache-control "public, max-age=60"
 ```
 
+**AWS Console:** Open the `techtoday-site` bucket → **Upload** → drag and drop all files from `projects/techtoday/src/` → **Upload**. To set cache headers, select the uploaded files → **Actions** → **Edit metadata** → add `Cache-Control` = `public, max-age=86400` (use `max-age=60` for `index.html`).
+
 **3. Create a CloudFront distribution** pointing to the S3 bucket, with:
 - Default root object: `index.html`
 - HTTPS redirect enforced
 - Custom domain: `techtoday.click` and `www.techtoday.click`
 - ACM certificate (us-east-1 region required for CloudFront)
 
+**AWS Console:** Open **CloudFront** → **Create distribution** → **Origin domain:** select the `techtoday-site.s3.amazonaws.com` bucket → **Default root object:** `index.html` → **Viewer protocol policy:** Redirect HTTP to HTTPS → **Alternate domain names (CNAMEs):** add `techtoday.click` and `www.techtoday.click` → **Custom SSL certificate:** select your ACM certificate (must be in `us-east-1`) → **Create distribution**
+
 **4. Create Route 53 A alias records** pointing `techtoday.click` and `www.techtoday.click` to the CloudFront distribution domain.
+
+**AWS Console:** Open **Route 53** → **Hosted zones** → `techtoday.click` → **Create record** → **Record type:** `A` → toggle **Alias** on → **Route traffic to:** CloudFront distribution → select your distribution → **Create records**. Repeat for `www`.
 
 ---
 
@@ -890,6 +1007,8 @@ No Nginx reload is needed — static files are served directly.
 ---
 
 ## Deploying Updates (Option B — S3 + CloudFront)
+
+> **Note:** The `s3 sync` command below requires access to local project files — it cannot be run from AWS CloudShell. Use your local terminal, or upload files via the S3 Console UI (**S3** → `techtoday-site` bucket → **Upload**). The `cloudfront create-invalidation` command can be run in CloudShell.
 
 ```bash
 aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \

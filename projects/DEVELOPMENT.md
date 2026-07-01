@@ -11,7 +11,8 @@ This guide covers the shared development workflow, CI/CD pipeline, manual deploy
 These tools are used across the commands in this guide (committing, manual deploy, rollback):
 
 1. **git** — for every commit/push command below.
-2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for install steps and required IAM permissions.
+2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#1-aws-cli-v2) for install steps and required IAM permissions.
+   > **Zero-install alternative — AWS CloudShell:** You can run pure `aws` commands (e.g., `aws ecr describe-images` for rollback) directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) — no local install or `aws configure` needed. CloudShell does **not** work for commands that require local files (`docker build`, `rsync`) or SSH.
 3. **SSH client** with the `.pem` key for the EC2 instance — used to SSH in during manual deploy/rollback. See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for setup.
 4. **Docker CLI** — builds/tags/pushes/pulls images in the manual deploy and rollback commands below.
    - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
@@ -72,6 +73,8 @@ curl -I https://app.techtoday.click/ai-01/
 
 Use only if CI/CD is broken or you need to deploy outside a `main` push.
 
+> **Note:** Manual deployment requires local tools (Docker, SSH, rsync) and access to project files — it cannot be done entirely from AWS CloudShell or the AWS Console. Use your local terminal.
+
 ### Static projects (techtoday)
 
 ```bash
@@ -113,6 +116,7 @@ Every container deploy tags the image with a human-readable **build tag** (`YYYY
    aws ecr describe-images --repository-name techtoday/ai-01 --region us-east-1 \
      --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
    ```
+   > **CloudShell / Console alternative:** You can run the `aws ecr describe-images` command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or view image tags in the AWS Console: open **ECR** → **Repositories** → `techtoday/ai-01` → **Images** tab — tags and push dates are listed in the table.
 2. SSH in and re-point `latest` at the chosen build tag:
    ```bash
    ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
