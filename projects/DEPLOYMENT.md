@@ -288,7 +288,7 @@ aws iam create-access-key --user-name techtoday-admin
 
 > **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday-admin` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
 
-**Configure credentials:**
+#### Configure credentials
 
 ```bash
 aws configure
@@ -972,12 +972,14 @@ Because Nginx forwards the full path (e.g., `/ai-01/joke`) to the container, Fla
 
 ```python
 # src/app.py (abbreviated)
-PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
-app.register_blueprint(bp, url_prefix=PREFIX)
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
 - **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`
 - **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`
+
+The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/ai-01/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
 
 ---
 
