@@ -1,4 +1,4 @@
-[← README](../../README.md) · [Development Guide](DEVELOPMENT.md) · [Deployment Guide](DEPLOYMENT.md)
+[← README](../../README.md) · [Development Guide](../DEVELOPMENT.md) · [Deployment Guide](../DEPLOYMENT.md)
 
 # TechToday — Home Page
 
@@ -17,8 +17,6 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── DEPLOYMENT.md       ← deployment steps specific to this project
-├── DEVELOPMENT.md      ← local dev workflow for this project
 └── src/
     ├── index.html      ← single page, entry point
     ├── css/
@@ -26,6 +24,8 @@ projects/techtoday/
     └── js/
         └── main.js     ← mobile nav toggle, no external libraries
 ```
+
+> Deployment and development guides live in [../DEPLOYMENT.md](../DEPLOYMENT.md) and [../DEVELOPMENT.md](../DEVELOPMENT.md) (shared across all projects).
 
 ---
 
@@ -67,4 +67,4 @@ python3 -m http.server 8000
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the full deployment steps (S3 + CloudFront, or Nginx on EC2).
+See [DEPLOYMENT.md](../DEPLOYMENT.md) for the full deployment steps (S3 + CloudFront, or Nginx on EC2).

@@ -358,7 +358,7 @@ aws iam put-role-policy \
 2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
 3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Create the project's own `DEPLOYMENT.md` following `basic/DEPLOYMENT.md` as a template
+5. Add a new project-specific deployment section to this file, following the `basic (ai-01)` section below as a template
 6. **No new DNS record, no new EC2, no new SSL cert needed**
 
 ---
@@ -429,7 +429,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 # Deployment — AI Playground (basic / ai-01)
 
-This document covers deployment steps specific to the `basic` project (`app.techtoday.click/ai-01/`). For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM, OIDC) see the [common deployment guide](../DEPLOYMENT.md).
+This section covers deployment steps specific to the `basic` project (`app.techtoday.click/ai-01/`). For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM, OIDC) see the [common deployment guide](#aws-deployment-architecture--techtodayclick) above.
 
 ---
 
@@ -444,7 +444,7 @@ This document covers deployment steps specific to the `basic` project (`app.tech
 
 ## Secrets & Environment Variables Used By This Project
 
-Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
 
 Project-specific values (set as described in the steps below):
 
@@ -456,7 +456,7 @@ Project-specific values (set as described in the steps below):
 
 ## Local Machine Prerequisites
 
-In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git), Steps 3 and 5 below require:
+In addition to the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client, git), Steps 3 and 5 below require:
 
 1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5. Podman's CLI is Docker-compatible, so `alias docker=podman` works if you already have Podman installed for local dev (see [DEVELOPMENT.md](DEVELOPMENT.md)).
 
@@ -609,13 +609,13 @@ app.register_blueprint(bp, url_prefix=PREFIX)
 
 ## CI/CD
 
-Automated via [.github/workflows/deploy-ai-01.yml](../../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [common deployment guide](../DEPLOYMENT.md) for OIDC and GitHub Secrets setup.
+Automated via [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [OIDC and GitHub Secrets setup](#step-8--set-up-github-oidc-and-deploy-role-cicd) section above.
 
 ---
 
 # Deployment — TechToday Home Page
 
-This document covers everything needed to deploy the `techtoday` static site to production at `techtoday.click`. For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM) see the [common deployment guide](../DEPLOYMENT.md).
+This section covers everything needed to deploy the `techtoday` static site to production at `techtoday.click`. For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM) see the [common deployment guide](#aws-deployment-architecture--techtodayclick) above.
 
 ---
 
@@ -630,7 +630,7 @@ The static files in `src/` are served directly from the root of the main domain.
 
 ## Secrets & Environment Variables Used By This Project
 
-Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
 
 This project has no project-specific secrets or environment variables — it's a static site with no server-side API keys.
 
@@ -638,7 +638,7 @@ This project has no project-specific secrets or environment variables — it's a
 
 ## Local Machine Prerequisites
 
-In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git):
+In addition to the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client, git):
 
 1. **rsync** — required for deploying updates via Option A (Nginx on EC2). Preinstalled on macOS/Linux; Windows users can use WSL or Git Bash.
 2. **AWS CLI** — also required for Option B (S3 + CloudFront) `s3 sync` / `cloudfront create-invalidation` commands, and for the Route 53 A record command in Option A.
@@ -819,4 +819,4 @@ curl -I https://techtoday.click/
 
 ## CI/CD (Automatic Deploy on Push)
 
-See [.github/workflows/deploy-techtoday.yml](../../.github/workflows/deploy-techtoday.yml) for the automated deploy pipeline. It triggers on any push to `main` that touches `projects/techtoday/src/**` and runs `rsync` (Option A) to copy the updated static files to EC2.
+See [.github/workflows/deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) for the automated deploy pipeline. It triggers on any push to `main` that touches `projects/techtoday/src/**` and runs `rsync` (Option A) to copy the updated static files to EC2.

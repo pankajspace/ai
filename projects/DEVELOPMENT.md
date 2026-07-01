@@ -21,7 +21,7 @@ These tools are used across the commands in this guide (committing, manual deplo
    - macOS/Linux: preinstalled
    - Windows: use WSL, Git Bash, or `cwRsync`
 
-Project-specific local dev tools (e.g., Podman for `basic`) are documented in each project's own `DEVELOPMENT.md`.
+Project-specific local dev tools (e.g., Podman for `basic`) are documented in the project-specific sections below.
 
 ---
 
@@ -149,7 +149,7 @@ Every container deploy tags the image with a human-readable **build tag** (`YYYY
 
 # Development — AI Playground (basic / ai-01)
 
-This guide covers local development for `projects/basic`, which runs at `app.techtoday.click/ai-01/`. For CI/CD, manual deploy, and rollback see the [common development guide](../DEVELOPMENT.md).
+This section covers local development for `projects/basic`, which runs at `app.techtoday.click/ai-01/`. For CI/CD, manual deploy, and rollback see the [common sections](#development--deployment-workflow) above.
 
 ---
 
@@ -158,7 +158,7 @@ This guide covers local development for `projects/basic`, which runs at `app.tec
 1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose)
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
 3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
-4. **Docker CLI** — only needed for the one-time initial image push in [DEPLOYMENT.md](DEPLOYMENT.md#step-3--initial-image-build-and-push) or for manual deploy/rollback; not required for the local dev loop below. Since Podman's CLI is Docker-compatible, you can skip installing Docker separately and run `alias docker=podman`. See the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) for AWS CLI/SSH details needed for deployment.
+4. **Docker CLI** — only needed for the one-time initial image push in [DEPLOYMENT.md](DEPLOYMENT.md#step-3--initial-image-build-and-push) or for manual deploy/rollback; not required for the local dev loop below. Since Podman's CLI is Docker-compatible, you can skip installing Docker separately and run `alias docker=podman`. See the [Local Machine Prerequisites](#local-machine-prerequisites) section above for AWS CLI/SSH details needed for deployment.
 
 ### Install Podman
 
@@ -246,7 +246,7 @@ Open a PR targeting `main`. Only changes under `projects/basic/**` trigger the p
 
 ## Production Deployment
 
-Automated via GitHub Actions on merge to `main`. See the [common development guide](../DEVELOPMENT.md) for the full CI/CD workflow, manual fallback deploy, and rollback instructions.
+Automated via GitHub Actions on merge to `main`. See the [common sections](#production-deployment-automatic) above for the full CI/CD workflow, manual fallback deploy, and rollback instructions.
 
 ---
 
@@ -260,7 +260,7 @@ This guide covers local development for the `techtoday` static site.
 
 No tools required beyond a modern browser and `git`. Optionally, Python 3 for a local server.
 
-Manual/fallback deploy (see [DEPLOYMENT.md](DEPLOYMENT.md)) additionally requires `rsync` and the shared tools in the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) (AWS CLI, SSH client).
+Manual/fallback deploy (see [DEPLOYMENT.md](DEPLOYMENT.md)) additionally requires `rsync` and the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client).
 
 ---
 
