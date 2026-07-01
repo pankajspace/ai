@@ -2,10 +2,7 @@
 
 # Development & Deployment Workflow
 
-This guide covers the shared development workflow, CI/CD pipeline, manual deploy, and rollback process for all projects. Project-specific setup and local dev loops live in each project's own `DEVELOPMENT.md`:
-
-1. [basic (ai-01) — DEVELOPMENT.md](basic/DEVELOPMENT.md)
-2. [techtoday (home page) — DEVELOPMENT.md](techtoday/DEVELOPMENT.md)
+This guide covers the shared development workflow, CI/CD pipeline, manual deploy, and rollback process for all projects, as well as project-specific setup and local dev loops.
 
 ---
 
@@ -146,3 +143,183 @@ Every container deploy tags the image with a human-readable **build tag** (`YYYY
 1. [Full AWS architecture and one-time infrastructure setup](DEPLOYMENT.md)
 2. [basic project README](basic/README.md)
 3. [techtoday project README](techtoday/README.md)
+
+
+---
+
+# Development — AI Playground (basic / ai-01)
+
+This guide covers local development for `projects/basic`, which runs at `app.techtoday.click/ai-01/`. For CI/CD, manual deploy, and rollback see the [common development guide](../DEVELOPMENT.md).
+
+---
+
+## Prerequisites
+
+1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose)
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
+3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
+4. **Docker CLI** — only needed for the one-time initial image push in [DEPLOYMENT.md](DEPLOYMENT.md#step-3--initial-image-build-and-push) or for manual deploy/rollback; not required for the local dev loop below. Since Podman's CLI is Docker-compatible, you can skip installing Docker separately and run `alias docker=podman`. See the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) for AWS CLI/SSH details needed for deployment.
+
+### Install Podman
+
+**macOS**
+```bash
+brew install podman podman-compose
+podman machine init --provider applehv
+podman machine start
+```
+
+**Linux (Debian/Ubuntu)**
+```bash
+sudo apt install podman podman-compose
+```
+
+**Linux (Fedora/RHEL)**
+```bash
+sudo dnf install podman podman-compose
+```
+
+**Windows** — [Podman Desktop](https://podman-desktop.io/) (includes WSL 2 backend)
+
+---
+
+## One-Time Local Setup
+
+```bash
+cd projects/basic
+cp .env.example .env
+# Fill in OPENAI_API_KEY and GROQ_API_KEY in .env
+podman-compose build
+```
+
+---
+
+## Day-to-Day Development Loop
+
+1. Sync `main` before starting:
+   ```bash
+   git checkout main && git pull origin main
+   ```
+2. Create a feature branch:
+   ```bash
+   git checkout -b feat/short-description
+   ```
+3. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
+4. Run the web UI:
+   ```bash
+   podman-compose up web
+   # open http://localhost:8080
+   ```
+5. Run individual features from the CLI:
+   ```bash
+   podman-compose run --rm joke
+   podman-compose run --rm travel
+   ```
+6. Rebuild only when `requirements.txt` or `Dockerfile` changes:
+   ```bash
+   podman-compose build
+   ```
+7. Tear down when done:
+   ```bash
+   podman-compose down
+   ```
+
+### Useful Commands
+
+1. Tail logs: `podman-compose logs -f web`
+2. Shell into container: `podman-compose run --rm web bash`
+3. Container status: `podman-compose ps`
+
+---
+
+## Committing and Pushing
+
+```bash
+git add projects/basic
+git commit -m "feat(ai-01): short description"
+git push -u origin feat/short-description
+```
+
+Open a PR targeting `main`. Only changes under `projects/basic/**` trigger the production deploy of `ai-01`.
+
+---
+
+## Production Deployment
+
+Automated via GitHub Actions on merge to `main`. See the [common development guide](../DEVELOPMENT.md) for the full CI/CD workflow, manual fallback deploy, and rollback instructions.
+
+---
+
+# Development — TechToday Home Page
+
+This guide covers local development for the `techtoday` static site.
+
+---
+
+## Prerequisites
+
+No tools required beyond a modern browser and `git`. Optionally, Python 3 for a local server.
+
+Manual/fallback deploy (see [DEPLOYMENT.md](DEPLOYMENT.md)) additionally requires `rsync` and the shared tools in the [common Development Guide](../DEVELOPMENT.md#local-machine-prerequisites) (AWS CLI, SSH client).
+
+---
+
+## Local Preview
+
+**Direct file open (fastest):**
+
+```bash
+open projects/techtoday/src/index.html
+```
+
+**Local HTTP server** (better for testing — matches production serving behavior):
+
+```bash
+cd projects/techtoday/src
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+---
+
+## Day-to-Day Workflow
+
+1. Sync `main` before starting:
+   ```bash
+   git checkout main && git pull origin main
+   ```
+2. Create a feature branch:
+   ```bash
+   git checkout -b feat/short-description
+   ```
+3. Edit files under `src/` — save and reload the browser to see changes.
+4. Commit and push:
+   ```bash
+   git add projects/techtoday/
+   git commit -m "feat(techtoday): short description"
+   git push -u origin feat/short-description
+   ```
+5. Open a pull request targeting `main`.
+
+---
+
+## Key Files
+
+1. `src/index.html` — single HTML page; all content lives here
+2. `src/css/style.css` — all styles; dark-theme design tokens are CSS custom properties at the top of the file
+3. `src/js/main.js` — mobile nav toggle only; keep this file minimal
+
+---
+
+## Adding a New Project Card
+
+1. Open `src/index.html`.
+2. Locate the `<div class="grid">` inside `<section id="projects">`.
+3. Copy an existing `<div class="card">` block and update the icon, title, description, link, and status badge.
+4. Status values: `<span class="status live">Live</span>` or `<span class="status soon">Coming soon</span>`.
+
+---
+
+## Production Deploy
+
+See [DEPLOYMENT.md](DEPLOYMENT.md).

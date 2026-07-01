@@ -2,10 +2,7 @@
 
 # AWS Deployment Architecture — techtoday.click
 
-This document covers the shared AWS infrastructure used by all projects. Project-specific deployment steps live in each project's own `DEPLOYMENT.md`:
-
-1. [basic (ai-01) — DEPLOYMENT.md](basic/DEPLOYMENT.md)
-2. [techtoday (home page) — DEPLOYMENT.md](techtoday/DEPLOYMENT.md)
+This document covers the shared AWS infrastructure used by all projects as well as project-specific deployment steps.
 
 ---
 
@@ -426,3 +423,400 @@ Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit
 ## When to Upgrade to ECS Fargate + ALB
 
 Upgrade when a project needs to scale beyond a single EC2 instance, requires zero-downtime blue/green deployments, or sustained concurrent traffic consistently exceeds what a `t3.small` can handle.
+
+
+---
+
+# Deployment — AI Playground (basic / ai-01)
+
+This document covers deployment steps specific to the `basic` project (`app.techtoday.click/ai-01/`). For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM, OIDC) see the [common deployment guide](../DEPLOYMENT.md).
+
+---
+
+## Deployment Target
+
+- **URL:** `https://app.techtoday.click/ai-01/`
+- **Container port:** `5000` (mapped to EC2 port `5000`)
+- **ECR repository:** `techtoday/ai-01`
+- **Path prefix env var:** `PATH_PREFIX=/ai-01`
+
+---
+
+## Secrets & Environment Variables Used By This Project
+
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+
+Project-specific values (set as described in the steps below):
+
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
+2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
+3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
+
+---
+
+## Local Machine Prerequisites
+
+In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git), Steps 3 and 5 below require:
+
+1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5. Podman's CLI is Docker-compatible, so `alias docker=podman` works if you already have Podman installed for local dev (see [DEVELOPMENT.md](DEVELOPMENT.md)).
+
+---
+
+## Step 1 — Store API Keys in Secrets Manager
+
+> **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
+
+```bash
+aws secretsmanager create-secret \
+  --name "techtoday/ai-01/openai-api-key" \
+  --secret-string '{"OPENAI_API_KEY":"sk-...", "GROQ_API_KEY":"gsk_..."}'
+```
+
+**AWS Console:**
+1. Open **Secrets Manager** → **Store a new secret** → **Other type of secret**
+2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
+3. Set secret name to `techtoday/ai-01/openai-api-key` → Store
+
+---
+
+## Step 2 — Create ECR Repository
+
+> **One-time.**
+
+```bash
+REGION=us-east-1
+REPO_NAME=techtoday/ai-01
+
+aws ecr create-repository --repository-name $REPO_NAME --region $REGION
+
+aws ecr put-image-scanning-configuration \
+  --repository-name $REPO_NAME \
+  --image-scanning-configuration scanOnPush=true
+```
+
+---
+
+## Step 3 — Initial Image Build and Push
+
+> **One-time.** Subsequent pushes are handled automatically by CI/CD.
+
+```bash
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME=techtoday/ai-01
+
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+cd projects/basic
+docker build -t $REPO_NAME .
+docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+```
+
+---
+
+## Step 4 — Add Nginx Location Block
+
+> **One-time.** Adds the `/ai-01/` route to the existing Nginx config on EC2.
+
+SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
+
+```nginx
+location /ai-01/ {
+    proxy_pass         http://localhost:5000;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+}
+```
+
+Then:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+---
+
+## Step 5 — Add Service to Docker Compose on EC2
+
+> **One-time.** Adds the `ai-01` service to `~/docker-compose.yml` on EC2.
+
+```bash
+ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+
+# Fetch secrets into env file
+mkdir -p ~/secrets
+aws secretsmanager get-secret-value \
+  --secret-id techtoday/ai-01/openai-api-key \
+  --query SecretString --output text | \
+  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+  > ~/secrets/ai-01.env
+chmod 600 ~/secrets/ai-01.env
+```
+
+Add to `~/docker-compose.yml`:
+
+```yaml
+services:
+  ai-01:
+    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/ai-01:latest
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PATH_PREFIX=/ai-01
+    env_file:
+      - ~/secrets/ai-01.env
+```
+
+Authenticate and start:
+
+```bash
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
+
+docker compose -f ~/docker-compose.yml pull ai-01
+docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
+```
+
+---
+
+## Step 6 — Verify
+
+```bash
+curl -I https://app.techtoday.click/ai-01/
+```
+
+---
+
+## Flask Path Prefix Configuration
+
+Because Nginx forwards the full path (e.g., `/ai-01/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
+
+```python
+# src/app.py (abbreviated)
+PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
+app.register_blueprint(bp, url_prefix=PREFIX)
+```
+
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`
+- **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`
+
+---
+
+## CI/CD
+
+Automated via [.github/workflows/deploy-ai-01.yml](../../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [common deployment guide](../DEPLOYMENT.md) for OIDC and GitHub Secrets setup.
+
+---
+
+# Deployment — TechToday Home Page
+
+This document covers everything needed to deploy the `techtoday` static site to production at `techtoday.click`. For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM) see the [common deployment guide](../DEPLOYMENT.md).
+
+---
+
+## Deployment Target
+
+1. `techtoday.click` — path `/` — Static files (HTML, CSS, JS)
+2. `www.techtoday.click` — path `/` — Redirect → `techtoday.click`
+
+The static files in `src/` are served directly from the root of the main domain. No Docker container or application server is needed.
+
+---
+
+## Secrets & Environment Variables Used By This Project
+
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+
+This project has no project-specific secrets or environment variables — it's a static site with no server-side API keys.
+
+---
+
+## Local Machine Prerequisites
+
+In addition to the shared tools in the [common Deployment Guide](../DEPLOYMENT.md#local-machine-prerequisites) (AWS CLI, SSH client, git):
+
+1. **rsync** — required for deploying updates via Option A (Nginx on EC2). Preinstalled on macOS/Linux; Windows users can use WSL or Git Bash.
+2. **AWS CLI** — also required for Option B (S3 + CloudFront) `s3 sync` / `cloudfront create-invalidation` commands, and for the Route 53 A record command in Option A.
+
+---
+
+## Recommended Options
+
+### Option A — Nginx on Existing EC2 (Simplest)
+
+Serve the static files from the same EC2 instance that hosts `app.techtoday.click`. Nginx already runs there.
+
+**One-time setup: add a server block for `techtoday.click`**
+
+```bash
+ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+
+sudo mkdir -p /var/www/techtoday
+sudo chown ec2-user:ec2-user /var/www/techtoday
+```
+
+Add to `/etc/nginx/conf.d/app.conf` (alongside the existing `app.techtoday.click` block):
+
+```nginx
+server {
+    listen 80;
+    server_name techtoday.click www.techtoday.click;
+    return 301 https://techtoday.click$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name techtoday.click;
+
+    ssl_certificate     /etc/letsencrypt/live/techtoday.click/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/techtoday.click/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+
+    root  /var/www/techtoday;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name www.techtoday.click;
+
+    ssl_certificate     /etc/letsencrypt/live/techtoday.click/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/techtoday.click/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+
+    return 301 https://techtoday.click$request_uri;
+}
+```
+
+**Request SSL cert for the main domain (skip if already issued):**
+
+> **Skip if already done.** ACM certs in the AWS console are for CloudFront/ALB only and do not apply here. Run this only if Let's Encrypt certs for `techtoday.click` are not yet installed on EC2 (verify with `sudo certbot certificates`).
+
+```bash
+sudo certbot --nginx -d techtoday.click -d www.techtoday.click
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**Add Route 53 A records for `techtoday.click` and `www.techtoday.click`:**
+
+```bash
+HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
+  --query "HostedZones[?Name=='techtoday.click.'].Id" --output text | sed 's|/hostedzone/||')
+
+aws route53 change-resource-record-sets \
+  --hosted-zone-id $HOSTED_ZONE_ID \
+  --change-batch '{
+    "Changes": [
+      {
+        "Action": "UPSERT",
+        "ResourceRecordSet": {
+          "Name": "techtoday.click",
+          "Type": "A",
+          "TTL": 300,
+          "ResourceRecords": [{"Value": "'"$ELASTIC_IP"'"}]
+        }
+      },
+      {
+        "Action": "UPSERT",
+        "ResourceRecordSet": {
+          "Name": "www.techtoday.click",
+          "Type": "A",
+          "TTL": 300,
+          "ResourceRecords": [{"Value": "'"$ELASTIC_IP"'"}]
+        }
+      }
+    ]
+  }'
+```
+
+---
+
+### Option B — S3 + CloudFront (Zero-Maintenance)
+
+Best for pure static hosting with global CDN, no EC2 involvement.
+
+**1. Create an S3 bucket:**
+
+```bash
+aws s3api create-bucket \
+  --bucket techtoday-site \
+  --region us-east-1
+```
+
+**2. Upload site files:**
+
+```bash
+aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
+  --delete \
+  --cache-control "public, max-age=86400"
+
+# Set shorter cache for HTML so updates propagate quickly
+aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
+  --cache-control "public, max-age=60"
+```
+
+**3. Create a CloudFront distribution** pointing to the S3 bucket, with:
+- Default root object: `index.html`
+- HTTPS redirect enforced
+- Custom domain: `techtoday.click` and `www.techtoday.click`
+- ACM certificate (us-east-1 region required for CloudFront)
+
+**4. Create Route 53 A alias records** pointing `techtoday.click` and `www.techtoday.click` to the CloudFront distribution domain.
+
+---
+
+## Deploying Updates (Option A — Nginx on EC2)
+
+After any change to files in `src/`:
+
+```bash
+# From the repo root
+rsync -avz --delete \
+  projects/techtoday/src/ \
+  ec2-user@$ELASTIC_IP:/var/www/techtoday/
+```
+
+No Nginx reload is needed — static files are served directly.
+
+---
+
+## Deploying Updates (Option B — S3 + CloudFront)
+
+```bash
+aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
+  --delete \
+  --cache-control "public, max-age=86400"
+
+aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
+  --cache-control "public, max-age=60"
+
+# Invalidate the CloudFront cache so visitors see the new version immediately
+DISTRIBUTION_ID=<your-cloudfront-distribution-id>
+aws cloudfront create-invalidation \
+  --distribution-id $DISTRIBUTION_ID \
+  --paths "/*"
+```
+
+---
+
+## Verify
+
+```bash
+curl -I https://techtoday.click/
+# Expect: HTTP/2 200, content-type: text/html
+```
+
+---
+
+## CI/CD (Automatic Deploy on Push)
+
+See [.github/workflows/deploy-techtoday.yml](../../.github/workflows/deploy-techtoday.yml) for the automated deploy pipeline. It triggers on any push to `main` that touches `projects/techtoday/src/**` and runs `rsync` (Option A) to copy the updated static files to EC2.
