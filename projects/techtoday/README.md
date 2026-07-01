@@ -61,7 +61,7 @@ python3 -m http.server 8000
 1. Open `src/index.html`.
 2. Inside the `<div class="grid">` in the `#projects` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and status badge (`live` or `soon`).
-4. If the project is live, use `<span class="status live">Live</span>`; remove the card or keep it hidden until then.
+4. Set the status badge: `<span class="status live">Live</span>` for a running project, or `<span class="status soon">Coming soon</span>` for one that is not yet live.
 
 ---
 

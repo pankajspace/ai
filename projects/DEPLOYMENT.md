@@ -61,7 +61,7 @@ Route 53 (techtoday.click hosted zone)
 5. **ECR storage** — ~$0.10/GB/month
 6. **Each additional project** — **+$0/month** (same EC2, new Docker Compose service + Nginx block)
 
-> Use a `t2.small` (~$17/month) when running 3+ memory-intensive projects simultaneously.
+> Use a `t3.small` (~$17/month) when running 3+ memory-intensive projects simultaneously.
 
 ---
 

@@ -141,7 +141,7 @@ projects/basic/
 
 **`index.html`**
 - Self-contained single-page UI with two cards
-- Uses `fetch()` with relative URLs (`/joke`, `/travel`) so it works on any host/port
+- Uses `fetch()` against an `API` base that defaults to `""` locally and is rewritten to `PATH_PREFIX` (e.g. `/ai-01`) by the `index` route in production, so the same page works both locally and behind the Nginx path prefix
 - Displays a loading spinner while waiting and renders errors inline
 
 ---
