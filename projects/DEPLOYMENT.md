@@ -162,6 +162,10 @@ aws route53 change-resource-record-sets \
 
 ### Step 5 — Request SSL Certificates
 
+> **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
+>
+> **Note:** ACM certificates (visible in AWS Certificate Manager console) are for CloudFront/ALB only and cannot be used directly with Nginx on EC2. This step installs separate Let's Encrypt certs via Certbot.
+
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
 
@@ -360,6 +364,40 @@ aws iam put-role-policy \
 
 9. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
 10. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
+
+---
+
+## Secrets & Environment Variables Reference
+
+A complete list of every secret and environment variable used across all projects, and where each one lives.
+
+### GitHub Actions Secrets
+
+Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
+
+Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
+
+1. `AWS_REGION` — AWS region, e.g. `us-east-1`
+2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
+3. `AWS_DEPLOY_ROLE_ARN` — full ARN of the `github-actions-deploy` IAM role, e.g. `arn:aws:iam::123456789012:role/github-actions-deploy`
+4. `EC2_HOST` — Elastic IP of the EC2 instance, e.g. `1.2.3.4`
+5. `EC2_SSH_KEY` — full contents of the `.pem` private key file (include the `-----BEGIN RSA PRIVATE KEY-----` header/footer)
+
+### AWS Secrets Manager
+
+Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
+
+Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
+
+1. Secret name: `techtoday/ai-01/openai-api-key`
+   - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
+   - `GROQ_API_KEY` — Groq API key (`gsk_...`)
+
+### Docker Compose Environment Variables
+
+Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
+
+1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
 
 ---
 

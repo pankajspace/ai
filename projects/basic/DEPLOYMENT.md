@@ -15,6 +15,18 @@ This document covers deployment steps specific to the `basic` project (`app.tech
 
 ---
 
+## Secrets & Environment Variables Used By This Project
+
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+
+Project-specific values (set as described in the steps below):
+
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
+2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
+3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
+
+---
+
 ## Step 1 — Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).

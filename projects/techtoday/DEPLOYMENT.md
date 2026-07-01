@@ -15,6 +15,14 @@ The static files in `src/` are served directly from the root of the main domain.
 
 ---
 
+## Secrets & Environment Variables Used By This Project
+
+Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [common deployment guide](../DEPLOYMENT.md#secrets--environment-variables-reference) — set them in GitHub repo Settings, not here.
+
+This project has no project-specific secrets or environment variables — it's a static site with no server-side API keys.
+
+---
+
 ## Recommended Options
 
 ### Option A — Nginx on Existing EC2 (Simplest)
@@ -67,7 +75,9 @@ server {
 }
 ```
 
-**Request SSL cert for the main domain:**
+**Request SSL cert for the main domain (skip if already issued):**
+
+> **Skip if already done.** ACM certs in the AWS console are for CloudFront/ALB only and do not apply here. Run this only if Let's Encrypt certs for `techtoday.click` are not yet installed on EC2 (verify with `sudo certbot certificates`).
 
 ```bash
 sudo certbot --nginx -d techtoday.click -d www.techtoday.click
