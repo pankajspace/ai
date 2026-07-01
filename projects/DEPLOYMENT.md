@@ -350,7 +350,7 @@ sudo dnf install git
 
 **Windows** — [Git for Windows](https://git-scm.com/download/win)
 
-> Docker/Podman is only needed for manual container deploys or rollback — see the [common Development Guide](DEVELOPMENT.md#local-machine-prerequisites).
+> Docker is only needed for local dev, manual container deploys, or rollback — see the [common Development Guide](DEVELOPMENT.md#local-machine-prerequisites).
 
 ---
 
@@ -818,7 +818,7 @@ Project-specific values (set as described in the steps below):
 
 In addition to the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client, git), Steps 3 and 5 below require:
 
-1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5. Podman's CLI is Docker-compatible, so `alias docker=podman` works if you already have Podman installed for local dev (see [DEVELOPMENT.md](DEVELOPMENT.md)).
+1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5 (see [DEVELOPMENT.md](DEVELOPMENT.md)).
 
 ---
 

@@ -14,15 +14,14 @@ These tools are used across the commands in this guide (committing, manual deplo
 2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#1-aws-cli-v2) for install steps, IAM user creation, and required permissions.
    > **Zero-install alternative — AWS CloudShell:** You can run pure `aws` commands (e.g., `aws ecr describe-images` for rollback) directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) — no local install or `aws configure` needed. CloudShell does **not** work for commands that require local files (`docker build`, `rsync`) or SSH.
 3. **SSH client** with the `.pem` key for the EC2 instance — used to SSH in during manual deploy/rollback. See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for setup.
-4. **Docker CLI** — builds/tags/pushes/pulls images in the manual deploy and rollback commands below.
+4. **Docker CLI** — builds/tags/pushes/pulls images, and runs the local dev loop for `basic` (see below).
    - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
-   - Linux: `sudo apt install docker.io` / `sudo dnf install docker`
-   - Already using Podman for local dev of `basic`? Podman's CLI is Docker-compatible — run `alias docker=podman` instead of installing Docker separately.
+   - Linux: `sudo apt install docker.io docker-compose-plugin` / `sudo dnf install docker docker-compose-plugin`
 5. **rsync** — manually deploys the `techtoday` static site.
    - macOS/Linux: preinstalled
    - Windows: use WSL, Git Bash, or `cwRsync`
 
-Project-specific local dev tools (e.g., Podman for `basic`) are documented in the project-specific sections below.
+Project-specific local dev tools (e.g., Docker Compose for `basic`) are documented in the project-specific sections below.
 
 ---
 
@@ -161,31 +160,9 @@ This section covers local development for `projects/basic`, which runs at `app.t
 
 ## Prerequisites
 
-1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose)
+1. [Docker](https://www.docker.com/) + Docker Compose — used for both the local dev loop below and manual deploy/rollback. See the [Local Machine Prerequisites](#local-machine-prerequisites) section above for install steps, and AWS CLI/SSH details needed for deployment.
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
 3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
-4. **Docker CLI** — only needed for the one-time initial image push in [DEPLOYMENT.md](DEPLOYMENT.md#step-3--initial-image-build-and-push) or for manual deploy/rollback; not required for the local dev loop below. Since Podman's CLI is Docker-compatible, you can skip installing Docker separately and run `alias docker=podman`. See the [Local Machine Prerequisites](#local-machine-prerequisites) section above for AWS CLI/SSH details needed for deployment.
-
-### Install Podman
-
-**macOS**
-```bash
-brew install podman podman-compose
-podman machine init --provider applehv
-podman machine start
-```
-
-**Linux (Debian/Ubuntu)**
-```bash
-sudo apt install podman podman-compose
-```
-
-**Linux (Fedora/RHEL)**
-```bash
-sudo dnf install podman podman-compose
-```
-
-**Windows** — [Podman Desktop](https://podman-desktop.io/) (includes WSL 2 backend)
 
 ---
 
@@ -195,7 +172,7 @@ sudo dnf install podman podman-compose
 cd projects/basic
 cp .env.example .env
 # Fill in OPENAI_API_KEY and GROQ_API_KEY in .env
-podman-compose build
+docker compose build
 ```
 
 ---
@@ -213,28 +190,28 @@ podman-compose build
 3. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
 4. Run the web UI:
    ```bash
-   podman-compose up web
+   docker compose up web
    # open http://localhost:8080
    ```
 5. Run individual features from the CLI:
    ```bash
-   podman-compose run --rm joke
-   podman-compose run --rm travel
+   docker compose run --rm joke
+   docker compose run --rm travel
    ```
 6. Rebuild only when `requirements.txt` or `Dockerfile` changes:
    ```bash
-   podman-compose build
+   docker compose build
    ```
 7. Tear down when done:
    ```bash
-   podman-compose down
+   docker compose down
    ```
 
 ### Useful Commands
 
-1. Tail logs: `podman-compose logs -f web`
-2. Shell into container: `podman-compose run --rm web bash`
-3. Container status: `podman-compose ps`
+1. Tail logs: `docker compose logs -f web`
+2. Shell into container: `docker compose run --rm web bash`
+3. Container status: `docker compose ps`
 
 ---
 

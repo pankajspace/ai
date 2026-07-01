@@ -2,36 +2,31 @@
 
 # AI Infused Learning
 
-LLM-powered demos showing how to call two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Podman container.
+LLM-powered demos showing how to call two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
 
 ---
 
 ## Prerequisites
 
-1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose) — container runtime
+1. [Docker](https://www.docker.com/) + Docker Compose — container runtime
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
 3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
 
-### Install Podman
+### Install Docker
 
-**macOS**
-```bash
-brew install podman podman-compose
-podman machine init --provider applehv
-podman machine start
-```
+**macOS** — [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
 
 **Linux (Debian/Ubuntu)**
 ```bash
-sudo apt install podman podman-compose
+sudo apt install docker.io docker-compose-plugin
 ```
 
 **Linux (Fedora/RHEL)**
 ```bash
-sudo dnf install podman podman-compose
+sudo dnf install docker docker-compose-plugin
 ```
 
-**Windows** — [Podman Desktop](https://podman-desktop.io/) (includes WSL 2 backend)
+**Windows** — [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes WSL 2 backend)
 
 ---
 
@@ -61,7 +56,7 @@ GROQ_API_KEY=gsk_...
 ### 3. Build the container image
 
 ```bash
-podman-compose build
+docker compose build
 ```
 
 > You only need to rebuild when `Dockerfile` or `requirements.txt` changes. Edits to files under `src/` are reflected immediately via a volume mount — just save and reload the browser.
@@ -71,14 +66,14 @@ podman-compose build
 **Web UI** — open [http://localhost:8080](http://localhost:8080) in your browser:
 
 ```bash
-podman-compose up web
+docker compose up web
 ```
 
 **CLI** — run each feature directly and print output to the terminal:
 
 ```bash
-podman-compose run --rm joke
-podman-compose run --rm travel
+docker compose run --rm joke
+docker compose run --rm travel
 ```
 
 ---
