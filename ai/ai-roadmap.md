@@ -1,4 +1,4 @@
-[<- AI Quick](00-ai-quick.md)
+[<- README](../README.md)
 
 Got it 👍 — since you want a **flexible, topic-based roadmap**, I’ll give you a structured set of **topics → subtopics → resources → coding/research tasks**.
 You can **jump around depending on interest**, but covering them all will give you a strong foundation for **research-level AI**.

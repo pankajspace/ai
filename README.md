@@ -12,4 +12,6 @@
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 # Projects
-1. [basic](projects/basic/README.md)
+1. [Deployment Guide](projects/DEPLOYMENT.md)
+2. [Development Guide](projects/DEVELOPMENT.md)
+3. [basic](projects/basic/README.md)
