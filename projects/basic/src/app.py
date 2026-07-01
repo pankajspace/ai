@@ -1,21 +1,32 @@
 """Flask server exposing joke and travel suggestion endpoints."""
 
-from flask import Flask, jsonify, request, send_from_directory
+import os
+
+from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
 from joke import get_joke
 from travel import get_travel_suggestion
 
+# URL path prefix Nginx forwards under in production, e.g. "/ai-01".
+# Unset locally, so routes are mounted at the root ("/", "/joke", "/travel").
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
 app = Flask(__name__, static_folder=".")
 CORS(app)
 
+bp = Blueprint("main", __name__)
 
-@app.route("/")
+
+@bp.route("/")
 def index():
-    return send_from_directory(".", "index.html")
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('const API = "";', f'const API = "{PATH_PREFIX}";')
+    return app.response_class(html, mimetype="text/html")
 
 
-@app.route("/joke", methods=["POST"])
+@bp.route("/joke", methods=["POST"])
 def joke():
     data = request.get_json(force=True)
     topic = (data.get("topic") or "").strip()
@@ -28,7 +39,7 @@ def joke():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/travel", methods=["POST"])
+@bp.route("/travel", methods=["POST"])
 def travel():
     data = request.get_json(force=True)
     city = (data.get("city") or "").strip() or "Bangalore"
@@ -37,6 +48,9 @@ def travel():
         return jsonify({"result": text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
 if __name__ == "__main__":
