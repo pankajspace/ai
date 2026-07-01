@@ -15,3 +15,4 @@
 1. [Deployment Guide](projects/DEPLOYMENT.md)
 2. [Development Guide](projects/DEVELOPMENT.md)
 3. [basic](projects/basic/README.md)
+4. [techtoday](projects/techtoday/README.md)

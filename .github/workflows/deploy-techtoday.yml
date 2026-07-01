@@ -1,0 +1,61 @@
+# Builds and deploys the "techtoday" static home page to production.
+#
+# Trigger: any push to `main` that changes a file under `projects/techtoday/src/`.
+#
+# What happens, step by step:
+#   1. Check out the repo so the site files are available.
+#   2. Assume a scoped AWS IAM role via OIDC — no long-lived AWS access keys
+#      are stored in GitHub Secrets.
+#   3. rsync the contents of projects/techtoday/src/ to /var/www/techtoday/
+#      on the production EC2 instance via SSH. Nginx serves these files
+#      directly — no Docker container, no image build, no registry.
+#   4. Write a deploy summary to the Actions job summary.
+#
+# See projects/techtoday/DEPLOYMENT.md for the one-time Nginx and DNS setup,
+# and projects/DEVELOPMENT.md for the everyday commit → deploy workflow.
+name: Deploy techtoday
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/techtoday/src/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy static files via rsync
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            projects/techtoday/src/ \
+            ec2-user@${{ secrets.EC2_HOST }}:/var/www/techtoday/
+
+      - name: Record deploy in job summary
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "### Deployed techtoday home page" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`$SHORT_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target: \`/var/www/techtoday/\` on \`${{ secrets.EC2_HOST }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Live at: https://techtoday.click/" >> "$GITHUB_STEP_SUMMARY"

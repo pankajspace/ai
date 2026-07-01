@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Development & Deployment Guide](../DEVELOPMENT.md)
+[← README](../../README.md) | [Development Guide](DEVELOPMENT.md) | [Deployment Guide](DEPLOYMENT.md)
 
 # AI Infused Learning
 
