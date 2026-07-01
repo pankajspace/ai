@@ -114,18 +114,16 @@ a = b = c = 0           # all point to 0
 
 ### Core Data Types
 
-| Type      | Example                        | Mutable? |
-|-----------|--------------------------------|----------|
-| `int`     | `42`, `-7`, `0b1010`          | No       |
-| `float`   | `3.14`, `-0.001`, `1e10`     | No       |
-| `complex` | `3 + 4j`                      | No       |
-| `bool`    | `True`, `False`               | No       |
-| `str`     | `"hello"`, `'world'`         | No       |
-| `list`    | `[1, 2, 3]`                  | **Yes**  |
-| `tuple`   | `(1, 2, 3)`                  | No       |
-| `set`     | `{1, 2, 3}`                  | **Yes**  |
-| `dict`    | `{"a": 1, "b": 2}`           | **Yes**  |
-| `None`    | `None`                        | No       |
+1. `int` — `42`, `-7`, `0b1010` — immutable
+2. `float` — `3.14`, `-0.001`, `1e10` — immutable
+3. `complex` — `3 + 4j` — immutable
+4. `bool` — `True`, `False` — immutable
+5. `str` — `"hello"`, `'world'` — immutable
+6. `list` — `[1, 2, 3]` — **mutable**
+7. `tuple` — `(1, 2, 3)` — immutable
+8. `set` — `{1, 2, 3}` — **mutable**
+9. `dict` — `{"a": 1, "b": 2}` — **mutable**
+10. `None` — `None` — immutable
 
 ### Type Checking & Conversion
 
@@ -1088,22 +1086,20 @@ print(v1[0])          # 1
 
 ### Common Dunder Methods Reference
 
-| Method            | Trigger                | Purpose                    |
-|-------------------|------------------------|----------------------------|
-| `__init__`        | `ClassName()`          | Constructor                |
-| `__str__`         | `str(obj)`, `print()`  | Human-readable string      |
-| `__repr__`        | `repr(obj)`, REPL      | Developer string           |
-| `__len__`         | `len(obj)`             | Length                     |
-| `__getitem__`     | `obj[key]`             | Index/key access           |
-| `__setitem__`     | `obj[key] = val`       | Index/key assignment       |
-| `__contains__`    | `x in obj`             | Membership test            |
-| `__iter__`        | `for x in obj`         | Iteration                  |
-| `__next__`        | `next(obj)`            | Next value in iteration    |
-| `__call__`        | `obj()`                | Make instance callable     |
-| `__enter__/__exit__` | `with obj:`         | Context manager            |
-| `__eq__`, `__lt__`, etc. | `==`, `<`, etc.  | Comparisons               |
-| `__add__`, `__mul__`, etc. | `+`, `*`, etc. | Arithmetic                |
-| `__hash__`        | `hash(obj)`            | Hashing (for sets/dicts)   |
+1. `__init__` — triggered by `ClassName()` — Constructor
+2. `__str__` — triggered by `str(obj)`, `print()` — Human-readable string
+3. `__repr__` — triggered by `repr(obj)`, REPL — Developer string
+4. `__len__` — triggered by `len(obj)` — Length
+5. `__getitem__` — triggered by `obj[key]` — Index/key access
+6. `__setitem__` — triggered by `obj[key] = val` — Index/key assignment
+7. `__contains__` — triggered by `x in obj` — Membership test
+8. `__iter__` — triggered by `for x in obj` — Iteration
+9. `__next__` — triggered by `next(obj)` — Next value in iteration
+10. `__call__` — triggered by `obj()` — Make instance callable
+11. `__enter__` / `__exit__` — triggered by `with obj:` — Context manager
+12. `__eq__`, `__lt__`, etc. — triggered by `==`, `<`, etc. — Comparisons
+13. `__add__`, `__mul__`, etc. — triggered by `+`, `*`, etc. — Arithmetic
+14. `__hash__` — triggered by `hash(obj)` — Hashing (for sets/dicts)
 
 ## 13. Modules & Packages
 
@@ -1196,19 +1192,17 @@ finally:
 
 ### Common Built-in Exceptions
 
-| Exception            | When It Occurs                        |
-|----------------------|---------------------------------------|
-| `ValueError`         | Wrong value (e.g., `int("abc")`)      |
-| `TypeError`          | Wrong type (e.g., `"a" + 1`)         |
-| `KeyError`           | Missing dict key                      |
-| `IndexError`         | List index out of range               |
-| `AttributeError`     | Missing attribute/method              |
-| `FileNotFoundError`  | File doesn't exist                    |
-| `ZeroDivisionError`  | Division by zero                      |
-| `ImportError`        | Failed import                         |
-| `StopIteration`      | Iterator exhausted                    |
-| `RuntimeError`       | Generic runtime error                 |
-| `NameError`          | Undefined variable                    |
+1. `ValueError` — Wrong value (e.g., `int("abc")`)
+2. `TypeError` — Wrong type (e.g., `"a" + 1`)
+3. `KeyError` — Missing dict key
+4. `IndexError` — List index out of range
+5. `AttributeError` — Missing attribute/method
+6. `FileNotFoundError` — File doesn't exist
+7. `ZeroDivisionError` — Division by zero
+8. `ImportError` — Failed import
+9. `StopIteration` — Iterator exhausted
+10. `RuntimeError` — Generic runtime error
+11. `NameError` — Undefined variable
 
 ### Raising Exceptions
 
@@ -1294,14 +1288,12 @@ with open("output.txt", "w") as f:
 
 ### File Modes
 
-| Mode | Description                               |
-|------|-------------------------------------------|
-| `r`  | Read (default)                            |
-| `w`  | Write (creates/overwrites)                |
-| `a`  | Append                                    |
-| `x`  | Exclusive creation (fails if exists)      |
-| `b`  | Binary mode (e.g., `rb`, `wb`)            |
-| `+`  | Read and write (e.g., `r+`)              |
+1. `r` — Read (default)
+2. `w` — Write (creates/overwrites)
+3. `a` — Append
+4. `x` — Exclusive creation (fails if exists)
+5. `b` — Binary mode (e.g., `rb`, `wb`)
+6. `+` — Read and write (e.g., `r+`)
 
 ### Working with JSON
 
@@ -1900,23 +1892,21 @@ match.group("domain")   # "example.com"
 
 ### Common Regex Patterns
 
-| Pattern     | Matches                          |
-|-------------|----------------------------------|
-| `.`         | Any character (except newline)   |
-| `\d`        | Digit `[0-9]`                    |
-| `\w`        | Word character `[a-zA-Z0-9_]`   |
-| `\s`        | Whitespace                       |
-| `\b`        | Word boundary                    |
-| `^` / `$`   | Start / end of string            |
-| `*`         | 0 or more                        |
-| `+`         | 1 or more                        |
-| `?`         | 0 or 1                           |
-| `{n,m}`     | Between n and m times            |
-| `[abc]`     | Character class                  |
-| `[^abc]`    | Negated character class          |
-| `(...)      | Capture group                    |
-| `(?:...)`   | Non-capturing group              |
-| `a\|b`      | Alternation (a or b)             |
+1. `.` — Any character (except newline)
+2. `\d` — Digit `[0-9]`
+3. `\w` — Word character `[a-zA-Z0-9_]`
+4. `\s` — Whitespace
+5. `\b` — Word boundary
+6. `^` / `$` — Start / end of string
+7. `*` — 0 or more
+8. `+` — 1 or more
+9. `?` — 0 or 1
+10. `{n,m}` — Between n and m times
+11. `[abc]` — Character class
+12. `[^abc]` — Negated character class
+13. `(...)` — Capture group
+14. `(?:...)` — Non-capturing group
+15. `a|b` — Alternation (a or b)
 
 ## 25. Date & Time
 
@@ -1968,18 +1958,16 @@ time_module.sleep(2)                     # pause for 2 seconds
 
 ### Common Format Codes
 
-| Code | Meaning         | Example  |
-|------|-----------------|----------|
-| `%Y` | 4-digit year   | 2024     |
-| `%m` | Month (01-12)  | 06       |
-| `%d` | Day (01-31)    | 15       |
-| `%H` | Hour (00-23)   | 14       |
-| `%M` | Minute (00-59) | 30       |
-| `%S` | Second (00-59) | 00       |
-| `%B` | Full month     | June     |
-| `%A` | Full weekday   | Saturday |
-| `%I` | Hour (01-12)   | 02       |
-| `%p` | AM/PM          | PM       |
+1. `%Y` — 4-digit year — e.g. `2024`
+2. `%m` — Month (01-12) — e.g. `06`
+3. `%d` — Day (01-31) — e.g. `15`
+4. `%H` — Hour (00-23) — e.g. `14`
+5. `%M` — Minute (00-59) — e.g. `30`
+6. `%S` — Second (00-59) — e.g. `00`
+7. `%B` — Full month — e.g. `June`
+8. `%A` — Full weekday — e.g. `Saturday`
+9. `%I` — Hour (01-12) — e.g. `02`
+10. `%p` — AM/PM — e.g. `PM`
 
 ## 26. Collections Module
 
@@ -2294,12 +2282,10 @@ with Pool(processes=4) as pool:
 
 ### When to Use What
 
-| Scenario      | Use                     | Why                                  |
-|---------------|-------------------------|--------------------------------------|
-| Network I/O   | `asyncio` or `threading` | Waiting, not computing              |
-| File I/O      | `threading`             | Blocked on disk                      |
-| CPU-heavy     | `multiprocessing`       | Bypass GIL, use multiple cores       |
-| Simple scripts | `asyncio`              | Clean, modern, no race conditions    |
+1. Network I/O — use `asyncio` or `threading` — Waiting, not computing
+2. File I/O — use `threading` — Blocked on disk
+3. CPU-heavy — use `multiprocessing` — Bypass GIL, use multiple cores
+4. Simple scripts — use `asyncio` — Clean, modern, no race conditions
 
 > **The GIL (Global Interpreter Lock):** Python threads can't run Python code truly in parallel (only one thread executes Python bytecode at a time). For CPU-bound work, use `multiprocessing` to spin up separate processes.
 
@@ -2618,15 +2604,13 @@ result = " ".join(words)
 
 ### PEP 8 — Style Guide Highlights
 
-| Rule                  | Example                        |
-|-----------------------|--------------------------------|
-| Snake_case functions  | `my_function()`                |
-| PascalCase classes    | `MyClass`                      |
-| UPPER_CASE constants  | `MAX_RETRIES = 3`              |
-| 4-space indentation   | Always (never tabs)            |
-| Max line length       | 79–120 characters              |
-| `_private` attributes | `self._internal_state`         |
-| `__name_mangling`     | `self.__really_private`        |
+1. Snake_case functions — `my_function()`
+2. PascalCase classes — `MyClass`
+3. UPPER_CASE constants — `MAX_RETRIES = 3`
+4. 4-space indentation — always (never tabs)
+5. Max line length — 79–120 characters
+6. `_private` attributes — `self._internal_state`
+7. `__name_mangling` — `self.__really_private`
 
 ### Common Gotchas
 
