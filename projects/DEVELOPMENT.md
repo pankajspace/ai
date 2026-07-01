@@ -100,7 +100,7 @@ Deployment is automated via GitHub Actions ([.github/workflows/deploy-ai-01.yml]
 1. On every push to `main` that touches `projects/basic/**`, the workflow:
    1. Builds the Docker image from [Dockerfile](basic/Dockerfile).
    2. Pushes it to Amazon ECR with three tags: the git SHA, `latest`, and a human-readable **build tag** in the form `YYYYMMDD-HHMMSS-<run-number>-<short-sha>` (e.g. `20260701-153045-42-a1b2c3d`) — sortable by build time and traceable to the exact commit and Actions run.
-   3. SSHes into the production EC2 instance and runs `docker compose pull` + `docker compose up -d --no-deps ai-01`, restarting only the `ai-01` container (zero downtime for other services).
+   3. SSHes into the production EC2 instance and runs `docker compose -f ~/docker-compose.yml pull ai-01` + `docker compose -f ~/docker-compose.yml up -d --no-deps ai-01`, restarting only the `ai-01` container (zero downtime for other services).
 2. Once merged, watch the run under the repo's **Actions** tab to confirm it succeeds. The run summary lists the build tag for that deployment — copy it down or note it somewhere if you may need to roll back to it later.
 3. Verify the live site:
    ```bash
@@ -139,8 +139,8 @@ Use this only if CI/CD is broken or you need to deploy outside of a `main` push.
    ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
    aws ecr get-login-password --region us-east-1 | \
      docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
-   docker compose pull ai-01
-   docker compose up -d --no-deps ai-01
+   docker compose -f ~/docker-compose.yml pull ai-01
+   docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
    ```
 3. Verify:
    ```bash

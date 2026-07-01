@@ -115,7 +115,7 @@ aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0
 
-# Launch t3.micro instance (replace YOUR_KEY_PAIR with your key name)
+# Launch t2.micro instance (replace YOUR_KEY_PAIR with your key name)
 INSTANCE_ID=$(aws ec2 run-instances \
   --image-id $AMI_ID \
   --instance-type t2.micro \
@@ -163,7 +163,8 @@ echo "Elastic IP: $ELASTIC_IP"
 
 ### Step 3 — Install Docker, Docker Compose, and Nginx on EC2
 > **One-time.** Done once when the instance is first provisioned. Repeat only if the instance is rebuilt from scratch.
-, then run:
+
+SSH into the instance, then run:
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -191,7 +192,6 @@ exit
 
 ### Step 4 — Create Route 53 A Record
 > **One-time.** Done once for all projects. Every future project reuses this same DNS record — no updates needed.
-
 
 **CLI:**
 ```bash
@@ -223,7 +223,6 @@ aws route53 change-resource-record-sets \
 ### Step 5 — Request SSL Certificate with Let's Encrypt
 > **One-time.** Certbot sets up a cron job that auto-renews the certificate every 90 days. No manual action needed after the initial setup.
 
-
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
 
@@ -240,7 +239,6 @@ Certbot automatically edits the Nginx config to add HTTPS and sets up a cron for
 
 ### Step 6 — Configure Nginx Path Routing
 > **Repeat per new project.** The initial `location /ai-01/` block is set up once. Each time a new project is added, append a new `location /ai-XX/` block and reload Nginx.
-
 
 ```bash
 sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
@@ -375,7 +373,8 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 ### Step 10 — Create Docker Compose File on EC2
 > **One-time per project** to add the service entry. Update this file when adding a new project (uncomment the next service block) or when environment variables change.
- `/home/ec2-user/docker-compose.yml`:
+
+Create `/home/ec2-user/docker-compose.yml`:
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -418,6 +417,14 @@ chmod 600 ~/secrets/ai-01.env
 aws ecr get-login-password --region us-east-1 | \
   docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
 
+# This is the ONE time it's safe to use the bare `docker compose up -d`
+# (with no -f flag and no service name): at this point in the setup,
+# ai-01 is the only service in the file and nothing else is running yet,
+# so there's nothing else it could disturb. From here on, every other
+# deployment (automatic CI/CD, manual fallback, rollback, or adding a new
+# project) targets the file and service explicitly — see
+# projects/DEVELOPMENT.md, Sections 4-6 — so an update to one project
+# never restarts or disturbs any other project sharing this host.
 docker compose pull && docker compose up -d
 ```
 
@@ -426,6 +433,7 @@ docker compose pull && docker compose up -d
 ### Step 11 — Verify
 > **Repeat after every deployment** to confirm the update is live and the container is responding correctly.
 
+```bash
 curl -I https://app.techtoday.click/ai-01/
 ```
 
@@ -437,7 +445,8 @@ curl -I https://app.techtoday.click/ai-01/
 2. Build and push image to ECR
 3. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
 4. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf` pointing to `localhost:5001`
-5. Run `docker compose pull && docker compose up -d` and `sudo nginx -t && sudo systemctl reload nginx`
+5. Run `docker compose -f ~/docker-compose.yml pull ai-02 && docker compose -f ~/docker-compose.yml up -d --no-deps ai-02`, then `sudo nginx -t && sudo systemctl reload nginx`
+   - Unlike Step 10's very first bring-up, ai-01 is already running at this point — always scope the command with `-f ~/docker-compose.yml` and `--no-deps <service>` so this new project's deployment can't restart or disturb ai-01 (or any other existing project).
 6. **No new DNS record, no new EC2, no new SSL cert** — everything reuses what's already there
 
 ---
@@ -498,72 +507,18 @@ aws iam put-role-policy \
 
 **Step C — Create the workflow file:**
 
-Save as `.github/workflows/deploy-ai-01.yml`:
+The full, up-to-date workflow lives at [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) — treat that file as the single source of truth rather than copying it here, so this doc can't drift out of sync with the real pipeline.
 
-```yaml
-name: Deploy ai-01
+At a high level, the workflow:
 
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'projects/basic/**'
+1. Checks out the repo.
+2. Assumes a scoped AWS IAM role via OIDC (Step B above) — no static AWS keys stored in GitHub.
+3. Logs Docker in to ECR.
+4. Computes a human-readable build tag (`YYYYMMDD-HHMMSS-<run-number>-<short-sha>`) and pushes the image to ECR under three tags: the git SHA, the build tag, and `latest`.
+5. Records the build tag in the run's job summary for easy rollback reference.
+6. SSHes into the EC2 host and runs `docker compose -f ~/docker-compose.yml pull ai-01` followed by `docker compose -f ~/docker-compose.yml up -d --no-deps ai-01` — `--no-deps` ensures only the `ai-01` container restarts, leaving any other project running on the same host untouched.
 
-env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: techtoday/ai-01
-  IMAGE_TAG: ${{ github.sha }}
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write   # required for OIDC
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          cd projects/basic
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-      - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Re-authenticate Docker to ECR
-            aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
-              docker login --username AWS --password-stdin \
-              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-
-            # Pull new image and restart only the ai-01 service (zero-downtime)
-            docker compose -f ~/docker-compose.yml pull ai-01
-            docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
-```
-
-> The `--no-deps` flag restarts only the `ai-01` container without touching other running services.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for how this fits into the everyday commit → deploy → rollback workflow.
 
 ---
 
@@ -579,7 +534,7 @@ jobs:
 
 ### Container & Image
 
-6. **Tag images with git SHA** — CI/CD tags with `github.sha` in addition to `latest` for traceable rollback
+6. **Tag every image three ways** — CI/CD tags each build with the full `github.sha`, a human-readable build tag (`YYYYMMDD-HHMMSS-<run-number>-<short-sha>`), and `latest`. The build tag is the one to reach for during rollback since it's easy to read and sort; see [DEVELOPMENT.md](DEVELOPMENT.md)'s Rollback section
 7. **ECR scan on push** — `scanOnPush=true` on every repository; review findings before promoting
 8. **Non-root user in Dockerfile** — Add `RUN useradd -m appuser && USER appuser` to avoid running as root
 9. **Container health checks** — Add a `healthcheck` in `docker-compose.yml` so Docker can detect and restart unhealthy containers

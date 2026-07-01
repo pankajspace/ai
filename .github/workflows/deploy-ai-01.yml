@@ -1,21 +1,53 @@
+# Builds and deploys the "ai-01" project (projects/basic) to production.
+#
+# Trigger: any push to `main` that changes a file under `projects/basic/`.
+#
+# What happens, step by step:
+#   1. Check out the repo so the Dockerfile and source code are available.
+#   2. Assume a scoped AWS IAM role via OIDC — no long-lived AWS access keys
+#      are ever stored in GitHub Secrets.
+#   3. Log the local Docker CLI in to our private ECR registry.
+#   4. Compute a human-readable build tag for this run.
+#   5. Build the image once and push it to ECR under three tags: the full
+#      git SHA, the human-readable build tag, and `latest`.
+#   6. Write the build tag to the run's job summary so it's easy to find
+#      later if a rollback is ever needed.
+#   7. SSH into the production EC2 host and tell Docker Compose to pull and
+#      restart only the `ai-01` container — every other service already
+#      running on that host (e.g. a future `ai-02`) is left untouched.
+#
+# See projects/DEPLOYMENT.md ("CI/CD: Auto-Deploy on Push to main") for the
+# one-time AWS/GitHub setup this workflow depends on (OIDC provider, IAM
+# roles, GitHub secrets), and projects/DEVELOPMENT.md for day-to-day usage,
+# manual fallback deployment, and rollback instructions.
 name: Deploy ai-01
 
 on:
   push:
     branches: [main]
+    # Only run when this project's own files change, so unrelated commits
+    # (e.g. edits to a different project, or to root-level docs) don't
+    # trigger an unnecessary redeploy of ai-01.
     paths:
       - 'projects/basic/**'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: techtoday/ai-01
+  # Full 40-character git commit SHA for this run. Pushed as one of the three
+  # image tags below — useful for exact traceability, if less readable than
+  # the build tag computed further down.
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # required for OIDC
+      # id-token: write lets this job request a short-lived OIDC token from
+      # GitHub, which configure-aws-credentials then exchanges for temporary
+      # AWS credentials. This avoids storing a static AWS access key/secret
+      # as a GitHub Secret.
+      id-token: write
       contents: read
 
     steps:
@@ -23,20 +55,32 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials via OIDC
+        # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
+        # role is scoped to ECR push permissions only (see DEPLOYMENT.md,
+        # "CI/CD" Step B) — this job cannot touch any other AWS resource.
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        # Authenticates the runner's Docker CLI against our ECR registry
+        # using the temporary credentials obtained in the previous step.
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Compute a human-readable build tag
+        # Generates a sortable, human-friendly tag for this build, in the
+        # form YYYYMMDD-HHMMSS-<run-number>-<short-sha>
+        #   e.g. 20260701-153045-42-a1b2c3d
+        # This is much easier to recognize than a raw 40-character SHA when
+        # scanning the ECR console or CLI output, and it doubles as a small
+        # audit trail: at a glance you can tell when the image was built,
+        # which Actions run built it (the run number), and the exact commit
+        # it was built from (the short SHA). This is the tag documented in
+        # projects/DEVELOPMENT.md's Rollback section.
         id: vars
         run: |
-          # e.g. 20260701-153045-42-a1b2c3d — sortable, and identifies
-          # when it was built, which run built it, and the exact commit.
           SHORT_SHA=$(git rev-parse --short HEAD)
           BUILD_TAG=$(date -u +'%Y%m%d-%H%M%S')-${GITHUB_RUN_NUMBER}-${SHORT_SHA}
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
@@ -48,33 +92,61 @@ jobs:
           BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
         run: |
           cd projects/basic
+
+          # Build the image once...
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+          # ...then apply two more tags to that same image, so all three
+          # tags point at identical image layers:
+          #   - $BUILD_TAG : human-readable, use this one for rollback.
+          #   - latest     : what production's docker-compose.yml always
+          #                  pulls; moving this tag forward is what actually
+          #                  ships the change to the running container.
           docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                       $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
           docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                       $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Record build tag in job summary
+        # Writes the build tag to this run's summary page (visible in the
+        # Actions tab UI) so you don't have to dig through raw logs to find
+        # it later if you ever need to roll back to this exact build.
         run: |
           echo "### Deployed image tags" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deploy to EC2 via SSH
+        # Connects to the production host and tells Docker Compose to pull
+        # the ":latest" image just pushed above and restart only the ai-01
+        # container.
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Re-authenticate Docker to ECR
+            # The OIDC-derived AWS credentials from the earlier step only
+            # exist on this GitHub Actions runner, not on the EC2 host — so
+            # the EC2 host authenticates to ECR itself, using the IAM
+            # instance role already attached to it (see DEPLOYMENT.md
+            # Step 8, "Create IAM Role for EC2").
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
-            # Pull new image and restart only the ai-01 service (zero-downtime)
+            # -f ~/docker-compose.yml : always target the one production
+            #     compose file explicitly, regardless of the SSH session's
+            #     working directory.
+            # pull ai-01              : only fetch the new image for this
+            #     project, not every service defined in the compose file.
+            # up -d --no-deps ai-01   : only recreate the ai-01 container;
+            #     --no-deps stops Compose from touching any other service
+            #     (e.g. a future ai-02) defined in the same compose file, so
+            #     this deploy has zero downtime for unrelated projects.
             docker compose -f ~/docker-compose.yml pull ai-01
             docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
