@@ -542,7 +542,11 @@ aws iam put-role-policy \
 
 ## Adding a New App Project
 
-1. Create ECR repo: `aws ecr create-repository --repository-name techtoday/ai-02`
+1. Create ECR repo:
+   ```bash
+   aws ecr create-repository --repository-name techtoday/ai-02
+   ```
+   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-02` → **Create repository**
 2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
 3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
@@ -790,6 +794,8 @@ docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
 curl -I https://app.techtoday.click/ai-01/
 ```
 
+**Browser alternative:** Simply open [https://app.techtoday.click/ai-01/](https://app.techtoday.click/ai-01/) in your browser and confirm the page loads.
+
 ---
 
 ## Flask Path Prefix Configuration
@@ -1033,6 +1039,8 @@ aws cloudfront create-invalidation \
 curl -I https://techtoday.click/
 # Expect: HTTP/2 200, content-type: text/html
 ```
+
+**Browser alternative:** Open [https://techtoday.click/](https://techtoday.click/) in your browser and confirm the home page loads.
 
 ---
 

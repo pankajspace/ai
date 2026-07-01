@@ -62,6 +62,8 @@ curl -I https://techtoday.click/
 curl -I https://app.techtoday.click/ai-01/
 ```
 
+**Browser alternative:** Open [https://techtoday.click/](https://techtoday.click/) and [https://app.techtoday.click/ai-01/](https://app.techtoday.click/ai-01/) in your browser and confirm both pages load.
+
 ### Prerequisites (configured once, do not repeat unless rotating)
 
 1. GitHub repo secrets: `EC2_SSH_KEY`, `EC2_HOST`, `AWS_DEPLOY_ROLE_ARN`, `AWS_REGION`, `AWS_ACCOUNT_ID`
