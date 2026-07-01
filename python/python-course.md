@@ -43,14 +43,30 @@
 
 ### Installing Python
 
-Download from [python.org](https://www.python.org/downloads/). On install, **check "Add Python to PATH"**.
+**Windows**
+1. Download the installer from [python.org](https://www.python.org/downloads/).
+2. Run it and **check "Add Python to PATH"** before clicking Install.
+3. Verify:
+   ```powershell
+   python --version
+   pip --version
+   ```
 
-Verify installation:
-
+**macOS**
 ```bash
-python --version   # or python3 --version on macOS/Linux
-pip --version
+brew install python
+python3 --version
+pip3 --version
 ```
+
+**Linux (Debian/Ubuntu)**
+```bash
+sudo apt update && sudo apt install python3 python3-pip
+python3 --version
+pip3 --version
+```
+
+> On macOS/Linux the commands are `python3`/`pip3` unless you've aliased `python`/`pip` to point at Python 3.
 
 ### Running Python Code
 

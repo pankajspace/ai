@@ -8,8 +8,9 @@ This guide covers everything needed to work on the `projects/basic` app day-to-d
 
 ## 1. One-Time Local Setup
 
-1. Install [Podman](https://podman.io/) and `podman-compose`:
+1. Install [Podman](https://podman.io/) and `podman-compose` (see the full [Install Podman](basic/README.md#install-podman) instructions for macOS, Linux, and Windows):
    ```bash
+   # macOS
    brew install podman podman-compose
    podman machine init --provider applehv
    podman machine start
@@ -119,6 +120,8 @@ If you need to rotate an API key used in production, update the secret in AWS Se
 ## 5. Manual Deployment (Fallback)
 
 Use this only if CI/CD is broken or you need to deploy outside of a `main` push.
+
+> **Windows users:** see [DEPLOYMENT.md's "Connecting from Windows" note](DEPLOYMENT.md#step-3--install-docker-docker-compose-and-nginx-on-ec2) for `ssh -i YOUR_KEY.pem` and `.pem` permission equivalents before running the commands below.
 
 1. Build and push the image to ECR:
    ```bash

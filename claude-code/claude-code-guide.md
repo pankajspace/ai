@@ -14,15 +14,21 @@
 
 ## Prerequisites
 
+Node.js 18+ is required. Install it first if you don't already have it:
+
+1. **Windows** — download the LTS installer from [nodejs.org](https://nodejs.org/), or `winget install OpenJS.NodeJS.LTS`
+2. **macOS** — `brew install node`
+3. **Linux (Debian/Ubuntu)** — `sudo apt install nodejs npm` (or use [nvm](https://github.com/nvm-sh/nvm) for a newer version than the distro package)
+
 ```bash
+# Verify Node.js
+node --version
+
 # Install Claude Code
 npm install -g @anthropic-ai/claude-code
 
 # Verify
 claude --version
-
-# Node.js 18+ required
-node --version
 ```
 
 ---

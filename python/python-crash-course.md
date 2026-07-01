@@ -29,10 +29,12 @@
 
 ## 1. Hello Python
 
+> Don't have Python installed yet? See [Installing Python](python-course.md#installing-python) for Windows/macOS/Linux setup steps.
+
 ```bash
-python --version          # check installation
-python script.py          # run a file
-python                    # interactive REPL
+python --version          # check installation (macOS/Linux: python3 --version)
+python script.py          # run a file (macOS/Linux: python3 script.py)
+python                    # interactive REPL (macOS/Linux: python3)
 ```
 
 ```python

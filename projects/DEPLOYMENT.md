@@ -164,6 +164,11 @@ echo "Elastic IP: $ELASTIC_IP"
 ### Step 3 — Install Docker, Docker Compose, and Nginx on EC2
 > **One-time.** Done once when the instance is first provisioned. Repeat only if the instance is rebuilt from scratch.
 
+> **Connecting from Windows:** every `ssh -i YOUR_KEY.pem ...` command in this guide assumes a Unix-like shell.
+> 1. **Windows 10/11** — the built-in OpenSSH client works from PowerShell or Command Prompt; no extra install needed. Restrict the key file's permissions with `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
+> 2. **WSL (Windows Subsystem for Linux)** — run the commands exactly as shown (Ubuntu/Debian userland), including `chmod 400 YOUR_KEY.pem`.
+> 3. **macOS/Linux** — run `chmod 400 YOUR_KEY.pem` once after downloading the key, then use the commands as shown.
+
 SSH into the instance, then run:
 
 ```bash
