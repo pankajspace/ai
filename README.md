@@ -1,4 +1,4 @@
-[Resources](Resources.md)
+[RESOURCES](RESOURCES.md)
 
 # Python
 1. [Python Crash Course](python/python-crash-course.md)
