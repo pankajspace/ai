@@ -8,7 +8,7 @@ LLM-powered demos showing how to call two different AI providers — **OpenAI** 
 
 ## Prerequisites
 
-1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose) — container runtime (replaces Docker)
+1. [Podman](https://podman.io/) + [podman-compose](https://github.com/containers/podman-compose) — container runtime
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
 3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
 
