@@ -115,13 +115,9 @@ These tools are used across the commands in this guide (committing, manual deplo
 2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#1-aws-cli-v2) for install steps, IAM user creation, and required permissions.
    > **Zero-install alternative — AWS CloudShell:** You can run pure `aws` commands (e.g., `aws ecr describe-images` for rollback) directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) — no local install or `aws configure` needed. CloudShell does **not** work for commands that require local files (`docker build`, `rsync`) or SSH.
 3. **SSH client** with the `.pem` key for the EC2 instance — used to SSH in during manual deploy/rollback. See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for setup.
-4. **Docker CLI + daemon** — builds/tags/pushes/pulls images, and runs the local dev loop for `basic` (see below).
+4. **Docker CLI + daemon** — builds/tags/pushes/pulls images, and runs the local dev loop for `basic` (see below). Full platform-specific install steps with verification are in the [Development Setup](#development-setup) section above.
    - macOS **Option A (recommended):** [Docker Desktop](https://www.docker.com/products/docker-desktop/) — bundles the daemon, CLI, and Compose plugin.
-   - macOS **Option B (Homebrew):** `brew install docker` only installs the CLI — the daemon does **not** start automatically on macOS. You also need a runtime and the Compose plugin:
-     ```bash
-     brew install docker docker-compose colima
-     colima start   # starts the daemon; re-run after each reboot
-     ```
+   - macOS **Option B (Homebrew):** three separate packages are required — `brew install docker`, then `brew install docker-compose`, then `brew install colima && colima start`. See [Development Setup](#development-setup) for the full step-by-step.
    - Linux: `sudo apt install docker.io docker-compose-plugin` / `sudo dnf install docker docker-compose-plugin`, then `sudo systemctl enable --now docker`
 5. **rsync** — manually deploys the `techtoday` static site.
    - macOS/Linux: preinstalled

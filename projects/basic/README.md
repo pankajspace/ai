@@ -47,7 +47,7 @@ If you installed Docker via Homebrew, three separate packages are required:
 **Why three steps:**
 1. `brew install docker` gives you only the CLI. Without a daemon, `/var/run/docker.sock` does not exist and every `docker` command fails.
 2. `brew install docker-compose` installs the Compose plugin. Without it, `docker compose` is an unknown command.
-3. `colima start` starts the Linux VM that runs the daemon and creates the socket.
+3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the daemon and creates the socket file.
 
 **Full setup:**
 ```bash

@@ -526,7 +526,7 @@ sudo dnf install git
 
 **Windows** — [Git for Windows](https://git-scm.com/download/win)
 
-> Docker is only needed for local dev, manual container deploys, or rollback — see the [common Development Guide](DEVELOPMENT.md#local-machine-prerequisites).
+> Docker is only needed for local dev, manual container deploys, or rollback — see the [Development Setup](DEVELOPMENT.md#development-setup) section in the Development Guide.
 
 ---
 
