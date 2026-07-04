@@ -2,15 +2,33 @@
 
 # AI Infused Learning
 
-LLM-powered demos showing how to call two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
+A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
+
+The project is structured so that each feature lives in its own module (`joke.py`, `travel.py`, etc.) and is exposed through a thin Flask endpoint.  This makes it easy to add, remove, or modify individual features without touching unrelated code.
+
+---
+
+## Features
+
+### 😂 Joke Generator
+Calls **Groq** (Llama 3.3 70B Versatile) to generate a joke on a topic you provide.  `temperature=1.3` pushes the model toward creative, varied responses so you get a fresh joke on every request.
+
+### ✈️ Travel Suggestion
+Calls **OpenAI** (GPT-4o mini) with a witty-travel-guide persona to suggest one thing to do in any city you enter.
+
+### 🔎 Website Summarizer
+Takes any URL, fetches the page with a browser-like User-Agent, strips away scripts / navigation / footer noise, then asks **GPT-4o mini** to produce a short markdown summary of what remains.
+
+### 🥊 LLM Arena
+Sends the exact same prompt to both **GPT-4o mini** (OpenAI) and **Llama 3.3 70B** (Groq) and displays both replies side by side, making it easy to compare how a proprietary model and an open-source model handle the same question.
 
 ---
 
 ## Prerequisites
 
 1. [Docker](https://www.docker.com/) + Docker Compose — container runtime
-2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
-3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
+3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
 
 ### Install Docker
 
@@ -32,7 +50,7 @@ sudo dnf install docker docker-compose-plugin
 
 ## Quick Start
 
-### 1. Clone and enter the project folder
+### 1. Enter the project folder
 
 ```bash
 cd projects/basic
@@ -59,11 +77,11 @@ GROQ_API_KEY=gsk_...
 docker compose build
 ```
 
-> You only need to rebuild when `Dockerfile` or `requirements.txt` changes. Edits to files under `src/` are reflected immediately via a volume mount — just save and reload the browser.
+> You only need to rebuild when `Dockerfile` or `requirements.txt` changes.  Edits to any file under `src/` are reflected immediately via a volume mount — save the file and reload the browser.
 
 ### 4. Run
 
-**Web UI** — open [http://localhost:8080](http://localhost:8080) in your browser:
+**Web UI** — open [http://localhost:8080](http://localhost:8080):
 
 ```bash
 docker compose up web
@@ -80,28 +98,13 @@ docker compose run --rm arena
 
 ---
 
-## Features
-
-### 😂 Joke Generator
-Calls **Groq** (Llama 3.3 70B Versatile) to generate a random joke. A random category (pun, dad joke, knock-knock, one-liner, etc.) is chosen on every request, and `temperature=1.3` ensures a different response each time.
-
-### ✈️ Travel Suggestion
-Calls **OpenAI** (GPT-4o mini) to suggest one thing to do in any city you enter. A city name is required.
-
-### 🔎 Website Summarizer
-Scrapes any URL you enter (stripping scripts, navigation, and other noise) and calls **OpenAI** (GPT-4o mini) to return a short, friendly markdown summary of the page. A URL is required.
-
-### 🥊 LLM Arena
-Sends one prompt to both **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) and shows both replies side by side so you can compare them. A prompt is required.
-
----
-
 ## Environment Variables
 
-1. `OPENAI_API_KEY` — required by `travel`; get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-2. `GROQ_API_KEY` — required by `joke`; get it from [console.groq.com/keys](https://console.groq.com/keys) — free tier available
+1. `OPENAI_API_KEY` — used by `travel`, `summarize`, and `arena` (Model A).  Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+2. `GROQ_API_KEY` — used by `joke` and `arena` (Model B).  Get it from [console.groq.com/keys](https://console.groq.com/keys) — free tier available.
+3. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/ai-01"`).  Controls the URL prefix the Flask Blueprint is mounted under.  Leave it unset for local development.
 
-Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
+Variables are loaded from `.env` at runtime via `python-dotenv`.  See `.env.example` for the expected format.
 
 ---
 
@@ -110,84 +113,107 @@ Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.examp
 ```
 projects/basic/
 ├── Dockerfile              # single image used by all services
-├── docker-compose.yml      # defines web, joke, and travel services
-├── requirements.txt        # runtime dependencies (openai, flask, requests, …)
+├── docker-compose.yml      # defines web, joke, travel, summarize, and arena services
+├── requirements.txt        # runtime dependencies
 ├── .env.example            # template — copy to .env and fill in keys
 ├── .gitignore
 ├── .dockerignore
 ├── README.md
 └── src/
     ├── config.py           # loads .env; exposes get_openai_client() / get_groq_client()
-    ├── joke.py             # calls Groq → returns a random joke string
-    ├── travel.py           # calls OpenAI → returns a city suggestion string
-    ├── scraper.py          # fetches and cleans the text of a web page
-    ├── summarizer.py       # scrapes a URL then calls OpenAI → returns a summary
-    ├── arena.py            # sends one prompt to OpenAI + Groq → returns both replies
-    ├── app.py              # Flask server — serves the UI and exposes API endpoints
-    └── index.html          # single-page web UI
+    ├── joke.py             # Groq → Llama 3.3 70B → random joke
+    ├── travel.py           # OpenAI → GPT-4o mini → city activity suggestion
+    ├── scraper.py          # requests + BeautifulSoup → cleaned page text
+    ├── summarizer.py       # scraper + OpenAI → markdown page summary
+    ├── arena.py            # OpenAI + Groq → side-by-side model comparison
+    ├── app.py              # Flask server — Blueprint routes + index.html serving
+    └── index.html          # single-page web UI (vanilla JS, no build step)
 ```
 
-### Module Responsibilities
+---
+
+## Module Responsibilities
 
 **`config.py`**
-- Calls `load_dotenv()` on import so every other module inherits the environment
-- `get_openai_client()` — returns an `OpenAI` client using `OPENAI_API_KEY`
-- `get_groq_client()` — returns an `OpenAI` client pointed at `https://api.groq.com/openai/v1`
+- Calls `load_dotenv()` at import time so every module that imports `config` automatically has `.env` values in `os.environ`.
+- `get_openai_client()` — constructs an `OpenAI` client with `OPENAI_API_KEY`.
+- `get_groq_client()` — constructs an `OpenAI` client with `GROQ_API_KEY` and `base_url` set to `https://api.groq.com/openai/v1`.  No extra SDK is needed because Groq's API is wire-compatible with OpenAI's.
 
 **`joke.py`**
-- Picks a random joke category on each call
-- Calls `llama-3.3-70b-versatile` on Groq with `temperature=1.3` for variety
-- Returns the joke as a plain string; can also be run directly via `python joke.py`
+- `get_joke(topic)` — sends a user prompt to `llama-3.3-70b-versatile` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
+- Can be run directly: `python joke.py`.
 
 **`travel.py`**
-- Accepts a `city` argument (defaults to `"Bangalore"`)
-- Calls `gpt-4o-mini` on OpenAI with a witty travel-guide system prompt
-- Returns the suggestion as a plain string; can also be run directly via `python travel.py`
+- `get_travel_suggestion(city)` — sends a prompt to `gpt-4o-mini` on OpenAI using a witty travel-guide system prompt.  Defaults to `"Bangalore"` if no city is provided.
+- Can be run directly: `python travel.py`.
 
 **`scraper.py`**
-- `fetch_website_contents(url)` — adds an `https://` scheme if missing, downloads the page with a browser-like User-Agent, strips noisy tags (`script`, `style`, `nav`, `footer`, `header`, `img`, `input`), and returns the title plus cleaned text
-- Returns an error message string instead of raising if the page cannot be fetched
+- `fetch_website_contents(url)` — prepends `https://` if missing, downloads the page with a browser-like `User-Agent` header, and uses BeautifulSoup to strip `<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<img>`, and `<input>` tags before extracting plain text.
+- Returns a formatted string (`Title: …\n\nPage contents:\n…`) ready to embed in an LLM prompt, or an error message string if the fetch fails.
 
 **`summarizer.py`**
-- `summarize(url)` — calls `fetch_website_contents(url)` then `gpt-4o-mini` on OpenAI with a markdown summary system prompt
-- Returns the summary as a plain string; can also be run directly via `python summarizer.py`
+- `summarize(url)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion with a markdown-summary system prompt.
+- The two steps are deliberately separate so the scraper can be reused by other features independently.
+- Can be run directly: `python summarizer.py`.
 
 **`arena.py`**
-- `battle(prompt)` — sends the same prompt to `gpt-4o-mini` on OpenAI and `llama-3.3-70b-versatile` on Groq
-- Returns a dict `{ "model_a": {model, reply}, "model_b": {model, reply} }`; can also be run directly via `python arena.py`
+- `_ask(client, model, prompt)` — private helper that fires one chat completion and returns the reply text.  Kept separate so `battle()` stays readable.
+- `battle(prompt)` — calls `_ask` twice (OpenAI then Groq) and returns a dict `{ "model_a": {model, reply}, "model_b": {model, reply} }`.
+- Can be run directly: `python arena.py`.
 
 **`app.py`**
-- `GET /` — serves `index.html`
-- `POST /joke` — accepts `{ "topic": "..." }` (optional), calls `get_joke(topic)`, returns `{ "result": "..." }` with `Cache-Control: no-store`
-- `POST /travel` — accepts `{ "city": "..." }`, calls `get_travel_suggestion(city)`, returns `{ "result": "..." }`
-- `POST /summarize` — accepts `{ "url": "..." }` (required), calls `summarize(url)`, returns `{ "result": "..." }`
-- `POST /arena` — accepts `{ "prompt": "..." }` (required), calls `battle(prompt)`, returns `{ "result": { "model_a": …, "model_b": … } }`
-- Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080`)
+- All routes are attached to a Flask `Blueprint` so the entire API surface can be mounted under a runtime `PATH_PREFIX` without changing individual route strings.
+- `GET /` — reads `index.html`, replaces the `const API = "";` placeholder with `PATH_PREFIX`, and returns the patched HTML.  This keeps the same HTML file working both locally (empty prefix) and in production (e.g. `/ai-01`).
+- `POST /joke` — body: `{ "topic": "..." }` (optional) → `{ "result": "..." }` with `Cache-Control: no-store`.
+- `POST /travel` — body: `{ "city": "..." }` (required) → `{ "result": "..." }`.
+- `POST /summarize` — body: `{ "url": "..." }` (required) → `{ "result": "..." }`.  Returns HTTP 400 if `url` is missing.
+- `POST /arena` — body: `{ "prompt": "..." }` (required) → `{ "result": { "model_a": {…}, "model_b": {…} } }`.  Returns HTTP 400 if `prompt` is missing.
+- Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080` by `docker-compose.yml`).
 
 **`index.html`**
-- Self-contained single-page UI with two cards
-- Uses `fetch()` against an `API` base that defaults to `""` locally and is rewritten to `PATH_PREFIX` (e.g. `/ai-01`) by the `index` route in production, so the same page works both locally and behind the Nginx path prefix
-- Displays a loading spinner while waiting and renders errors inline
+- Self-contained single-page app — no framework, no build step, no dependencies.
+- Four cards: Joke Generator, Travel Suggestion, Website Summarizer, LLM Arena.
+- Each card disables its button until the required input has a value, shows a spinner during the request, and renders errors inline without a page reload.
+- Uses `const API = "";` as a base URL placeholder.  At runtime the Flask `index` route replaces this with `PATH_PREFIX` so the same file works locally and behind an Nginx path prefix.
 
 ---
 
 ## How the Groq Integration Works
 
-Groq exposes an **OpenAI-compatible REST API** at `https://api.groq.com/openai/v1`, so the standard `openai` Python package can target it by overriding `base_url`:
+Groq exposes an **OpenAI-compatible REST API** at `https://api.groq.com/openai/v1`.  Because the request/response format is identical to OpenAI's, the official `openai` Python package can target Groq by overriding `base_url`:
 
 ```python
 from openai import OpenAI
 
-client = OpenAI(
+groq_client = OpenAI(
     api_key="<your-groq-key>",
     base_url="https://api.groq.com/openai/v1",
 )
 
-response = client.chat.completions.create(
+response = groq_client.chat.completions.create(
     model="llama-3.3-70b-versatile",
-    messages=[...],
+    messages=[{"role": "user", "content": "Hello!"}],
 )
+print(response.choices[0].message.content)
 ```
 
-No extra SDK is needed. Both providers use the exact same `client.chat.completions.create(...)` call — only `api_key` and `base_url` differ, which is why a shared `config.py` cleanly centralises the setup.
+No extra SDK is needed.  The `config.py` module handles this so the rest of the codebase never needs to know which provider it is talking to — it just calls `get_openai_client()` or `get_groq_client()` and uses the same `.chat.completions.create(...)` interface either way.
+
+---
+
+## How the Scraper Works
+
+The Website Summarizer feature cannot just give a raw URL to the model — LLMs don't browse the internet during inference.  Instead, `scraper.py` acts as the model's eyes:
+
+1. **Fetch** — `requests.get()` downloads the raw HTML using a browser-like `User-Agent` header so most servers respond normally.
+2. **Parse** — `BeautifulSoup` builds a DOM tree from the HTML.
+3. **Clean** — Tags that carry no useful text content (`<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<img>`, `<input>`) are removed from the tree.
+4. **Extract** — `soup.get_text(separator="\n", strip=True)` collapses what remains into a block of plain text.
+5. **Format** — The title and body text are combined into a single string and embedded in the GPT-4o mini prompt by `summarizer.py`.
+
+---
+
+## Production Routing
+
+In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /ai-01 { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/ai-01` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See [DEPLOYMENT.md](../DEPLOYMENT.md) for the full infrastructure setup.
 
