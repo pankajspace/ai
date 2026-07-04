@@ -127,18 +127,29 @@ Project-specific local dev tools (e.g., Docker Compose for `basic`) are document
 
 ---
 
-## Committing and Pushing
+## Day-to-Day Git Workflow
 
-1. Stage and commit with a conventional message:
+These steps apply to every project. The project-specific sections below cover the local dev tools and commands unique to each project (Docker Compose, local preview, etc.).
+
+1. Sync `main` before starting:
+   ```bash
+   git checkout main && git pull origin main
+   ```
+2. Create a feature branch:
+   ```bash
+   git checkout -b feat/short-description
+   ```
+3. Edit and test locally — see the project-specific section below.
+4. Stage and commit with a conventional message:
    ```bash
    git add projects/<project-name>/
    git commit -m "feat(<project>): short description"
    ```
-2. Push and open a pull request:
+5. Push and open a pull request:
    ```bash
    git push -u origin feat/short-description
    ```
-3. After approval, merge to `main` (prefer "Squash and merge").
+6. After approval, merge to `main` (prefer "Squash and merge").
 
 > Each project's CI/CD workflow is scoped to its own folder path, so commits to one project do not trigger a redeploy of another.
 
@@ -281,32 +292,26 @@ docker compose build
 
 ## Day-to-Day Development Loop
 
-1. Sync `main` before starting:
-   ```bash
-   git checkout main && git pull origin main
-   ```
-2. Create a feature branch:
-   ```bash
-   git checkout -b feat/short-description
-   ```
-3. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
-4. Run the web UI:
+Follow the [common git workflow](#day-to-day-git-workflow) above for branching, committing, and opening a PR. Use `git add projects/basic` and `feat(ai-01): …` as the commit prefix. The steps below cover the project-specific local dev loop.
+
+1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
+2. Run the web UI:
    ```bash
    docker compose up web
    # open http://localhost:8080
    ```
-5. Run individual features from the CLI:
+3. Run individual features from the CLI:
    ```bash
    docker compose run --rm joke
    docker compose run --rm travel
    docker compose run --rm summarize
    docker compose run --rm arena
    ```
-6. Rebuild only when `requirements.txt` or `Dockerfile` changes:
+4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
    ```bash
    docker compose build
    ```
-7. Tear down when done:
+5. Tear down when done:
    ```bash
    docker compose down
    ```
@@ -316,18 +321,6 @@ docker compose build
 1. Tail logs: `docker compose logs -f web`
 2. Shell into container: `docker compose run --rm web bash`
 3. Container status: `docker compose ps`
-
----
-
-## Committing and Pushing
-
-```bash
-git add projects/basic
-git commit -m "feat(ai-01): short description"
-git push -u origin feat/short-description
-```
-
-Open a PR targeting `main`. Only changes under `projects/basic/**` trigger the production deploy of `ai-01`.
 
 ---
 
@@ -371,22 +364,9 @@ python3 -m http.server 8000
 
 ## Day-to-Day Workflow
 
-1. Sync `main` before starting:
-   ```bash
-   git checkout main && git pull origin main
-   ```
-2. Create a feature branch:
-   ```bash
-   git checkout -b feat/short-description
-   ```
-3. Edit files under `src/` — save and reload the browser to see changes.
-4. Commit and push:
-   ```bash
-   git add projects/techtoday/
-   git commit -m "feat(techtoday): short description"
-   git push -u origin feat/short-description
-   ```
-5. Open a pull request targeting `main`.
+Follow the [common git workflow](#day-to-day-git-workflow) above for branching, committing, and opening a PR. Use `git add projects/techtoday/` and `feat(techtoday): …` as the commit prefix.
+
+1. Edit files under `src/` — save and reload the browser to see changes.
 
 ---
 
