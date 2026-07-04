@@ -20,7 +20,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1.5rem;
         }
 
         h1 {
@@ -32,25 +32,25 @@
         .subtitle {
             color: #757575;
             font-size: 0.875rem;
-            margin: 4px 0 2rem;
+            margin: 6px 0 2.5rem;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
             width: 100%;
-            max-width: 740px;
+            max-width: 95vw;
         }
 
         .card {
             background: #1e1e1e;
-            border-radius: 4px;
-            padding: 1.5rem;
+            border-radius: 8px;
+            padding: 2rem;
             box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .card h2 {
@@ -158,6 +158,28 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        .arena-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .arena-col {
+            background: #2a2a2a;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #bdbdbd;
+            white-space: pre-wrap;
+        }
+
+        .arena-col .model-name {
+            font-weight: 600;
+            color: #90caf9;
+            margin-bottom: 6px;
         }
     </style>
 </head>
@@ -349,8 +371,7 @@
                 if (data.error) throw new Error(data.error);
                 const a = data.result.model_a;
                 const b = data.result.model_b;
-                result.textContent =
-                    `🤖 ${a.model}\n${a.reply}\n\n🤖 ${b.model}\n${b.reply}`;
+                result.innerHTML = `<div class="arena-grid"><div class="arena-col"><div class="model-name">🤖 ${a.model}</div>${a.reply}</div><div class="arena-col"><div class="model-name">🤖 ${b.model}</div>${b.reply}</div></div>`;
             } catch (e) {
                 result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
             } finally {
