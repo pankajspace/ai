@@ -86,7 +86,7 @@ Open a Pull Request on GitHub → get it reviewed → **Squash and merge** into 
 Merging to `main` triggers CI/CD automatically — no manual steps needed.
 
 - **basic (ai-01)** — `deploy-ai-01.yml` — trigger path `projects/basic/**`
-- **techtoday** — `deploy-techtoday.yml` — trigger path `projects/techtoday/src/**`
+- **techtoday** — `deploy-techtoday.yml` — trigger path `projects/techtoday/**`
 
 Watch the run under **GitHub → Actions** to confirm it succeeds.
 
