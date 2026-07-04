@@ -905,6 +905,50 @@ aws iam put-role-policy \
 
 ---
 
+### 3.11. Secrets & Environment Variables Reference
+
+A complete list of every secret and environment variable used across all projects, and where each one lives.
+
+#### GitHub Actions Secrets
+
+Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
+
+Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
+
+1. `AWS_REGION` — AWS region, e.g. `us-east-1`
+2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
+3. `AWS_DEPLOY_ROLE_ARN` — full ARN of the `github-actions-deploy` IAM role, e.g. `arn:aws:iam::123456789012:role/github-actions-deploy`
+4. `EC2_HOST` — Elastic IP of the EC2 instance, e.g. `1.2.3.4`
+5. `EC2_SSH_KEY` — full contents of the `.pem` private key file (include the `-----BEGIN RSA PRIVATE KEY-----` header/footer)
+
+#### AWS Secrets Manager
+
+Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
+
+Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
+
+1. Secret name: `techtoday/ai-01/openai-api-key`
+   - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
+   - `GROQ_API_KEY` — Groq API key (`gsk_...`)
+
+#### Docker Compose Environment Variables
+
+Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
+
+1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
+
+#### Per-Project Secrets (ai-01)
+
+Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-secrets-manager)):
+
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
+2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
+3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
+
+> TechToday has no project-specific secrets or environment variables — it's a static site.
+
+---
+
 ## 4. Project-Specific Production Setup
 
 After completing § 3, follow the subsection for each project you want to deploy.

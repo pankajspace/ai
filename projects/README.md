@@ -2,7 +2,7 @@
 
 # Projects — techtoday.click
 
-This document covers the AWS infrastructure architecture, day-to-day development workflows, CI/CD pipeline, manual deploy, and rollback process for all projects. For step-by-step setup instructions (tool installation, AWS infrastructure, production setup, local dev setup), see the [Setup Guide](SETUP.md).
+Architecture, configuration reference, and design decisions for all projects. For step-by-step setup, see the [Setup Guide](SETUP.md). For day-to-day development and deployment commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
@@ -65,135 +65,6 @@ Route 53 (techtoday.click hosted zone)
 
 ---
 
-## Day-to-Day Git Workflow
-
-These steps apply to every project. The project-specific sections below cover the local dev tools and commands unique to each project (Docker Compose, local preview, etc.).
-
-1. Sync `main` before starting:
-   ```bash
-   git checkout main && git pull origin main
-   ```
-2. Create a feature branch:
-   ```bash
-   git checkout -b feat/short-description
-   ```
-3. Edit and test locally — see the project-specific section below.
-4. Stage and commit with a conventional message:
-   ```bash
-   git add projects/<project-name>/
-   git commit -m "feat(<project>): short description"
-   ```
-5. Push and open a pull request:
-   ```bash
-   git push -u origin feat/short-description
-   ```
-6. After approval, merge to `main` (prefer "Squash and merge").
-
-> Each project's CI/CD workflow is scoped to its own folder path, so commits to one project do not trigger a redeploy of another.
-
----
-
-## Production Deployment (Automatic)
-
-Each project has its own GitHub Actions workflow under `.github/workflows/`:
-
-1. **basic (ai-01)** — [deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) — trigger path `projects/basic/**`
-2. **techtoday** — [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) — trigger path `projects/techtoday/src/**`
-
-**Container projects (basic, etc.):** on push to `main`, the workflow builds the Docker image, pushes it to ECR with three tags (git SHA, human-readable build tag, and `latest`), then SSHes into EC2 and restarts only that project's container.
-
-**Static projects (techtoday):** on push to `main`, the workflow rsyncs the `src/` folder to `/var/www/techtoday` on EC2. No container involved.
-
-Once merged, watch the run under **Actions** to confirm it succeeds. Container deploys record a build tag in the job summary — note it for potential rollback.
-
-Verify after any deploy:
-```bash
-curl -I https://techtoday.click/
-curl -I https://app.techtoday.click/ai-01/
-```
-
-**Browser alternative:** Open [https://techtoday.click/](https://techtoday.click/) and [https://app.techtoday.click/ai-01/](https://app.techtoday.click/ai-01/) in your browser and confirm both pages load.
-
-### Prerequisites (configured once, do not repeat unless rotating)
-
-1. GitHub repo secrets: `EC2_SSH_KEY`, `EC2_HOST`, `AWS_DEPLOY_ROLE_ARN`, `AWS_REGION`, `AWS_ACCOUNT_ID` — see [Setup Guide § 3.10](SETUP.md#310-set-up-github-oidc-and-deploy-role-cicd)
-2. AWS-side infra already provisioned per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup)
-
----
-
-## Manual Deployment (Fallback)
-
-Use only if CI/CD is broken or you need to deploy outside a `main` push.
-
-> **Note:** Manual deployment requires local tools (Docker, SSH, rsync) and access to project files — it cannot be done entirely from AWS CloudShell or the AWS Console. Use your local terminal. For tool installation, see [Setup Guide § 1](SETUP.md#1-local-machine-prerequisites).
-
-### Static projects (techtoday)
-
-```bash
-rsync -avz --delete \
-  projects/techtoday/src/ \
-  ec2-user@$ELASTIC_IP:/var/www/techtoday/
-```
-
-### Container projects (basic / ai-01)
-
-```bash
-REGION=us-east-1
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO_NAME=techtoday/ai-01
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-cd projects/basic
-docker build -t $REPO_NAME .
-docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
-  aws ecr get-login-password --region us-east-1 | \
-    docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
-  docker compose -f ~/docker-compose.yml pull ai-01
-  docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
-```
-
----
-
-## Rollback (Container Projects)
-
-Every container deploy tags the image with a human-readable **build tag** (`YYYYMMDD-HHMMSS-<run-number>-<short-sha>`), in addition to `latest`. Use this tag to roll back without remembering a raw SHA.
-
-1. Find the build tag — check the **Actions** job summary of the last good run, or list ECR tags:
-   ```bash
-   aws ecr describe-images --repository-name techtoday/ai-01 --region us-east-1 \
-     --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
-   ```
-   > **CloudShell / Console alternative:** You can run the `aws ecr describe-images` command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or view image tags in the AWS Console: open **ECR** → **Repositories** → `techtoday/ai-01` → **Images** tab — tags and push dates are listed in the table.
-2. SSH in and re-point `latest` at the chosen build tag:
-   ```bash
-   ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
-
-   REGION=us-east-1
-   ACCOUNT_ID=<your-aws-account-id>
-   ROLLBACK_TAG=<build-tag>   # e.g. 20260701-153045-42-a1b2c3d
-
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-   docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:$ROLLBACK_TAG
-   docker tag  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:$ROLLBACK_TAG \
-               $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
-   docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
-   ```
-3. Verify:
-   ```bash
-   curl -I https://app.techtoday.click/ai-01/
-   ```
-
-> Fix the underlying bug and merge promptly — the next successful push overwrites `:latest`. The build tag itself is never overwritten and remains a permanent reference.
-
----
-
 ## Best Practices
 
 ### IAM & Security
@@ -220,37 +91,16 @@ Every container deploy tags the image with a human-readable **build tag** (`YYYY
 
 ---
 
-## Secrets & Environment Variables Reference
+## CI/CD Workflows
 
-A complete list of every secret and environment variable used across all projects, and where each one lives.
+Each project has its own GitHub Actions workflow under `.github/workflows/`:
 
-### GitHub Actions Secrets
+| Project | Workflow | Trigger Path | What It Does |
+|---|---|---|---|
+| basic (ai-01) | [deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
+| techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/src/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 
-Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
-
-Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
-
-1. `AWS_REGION` — AWS region, e.g. `us-east-1`
-2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
-3. `AWS_DEPLOY_ROLE_ARN` — full ARN of the `github-actions-deploy` IAM role, e.g. `arn:aws:iam::123456789012:role/github-actions-deploy`
-4. `EC2_HOST` — Elastic IP of the EC2 instance, e.g. `1.2.3.4`
-5. `EC2_SSH_KEY` — full contents of the `.pem` private key file (include the `-----BEGIN RSA PRIVATE KEY-----` header/footer)
-
-### AWS Secrets Manager
-
-Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
-
-Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
-
-1. Secret name: `techtoday/ai-01/openai-api-key`
-   - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
-   - `GROQ_API_KEY` — Groq API key (`gsk_...`)
-
-### Docker Compose Environment Variables
-
-Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
-
-1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
+Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
 
 ---
 
@@ -262,7 +112,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 # AI Playground (basic / ai-01)
 
-For initial setup (tools, production, local dev), see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01) and [§ 2.1](SETUP.md#21-ai-playground-basic--ai-01).
+For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic--ai-01) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
@@ -272,18 +122,6 @@ For initial setup (tools, production, local dev), see [Setup Guide § 4.1](SETUP
 - **Container port:** `5000` (mapped to EC2 port `5000`)
 - **ECR repository:** `techtoday/ai-01`
 - **Path prefix env var:** `PATH_PREFIX=/ai-01`
-
----
-
-## Secrets & Environment Variables (ai-01)
-
-Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
-
-Project-specific values (set as described in [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01)):
-
-1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
-2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
-3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
 
 ---
 
@@ -304,49 +142,9 @@ The served `index.html` also needs to know the prefix so its `fetch()` calls hit
 
 ---
 
-## Day-to-Day Development Loop (ai-01)
-
-Follow the [common git workflow](#day-to-day-git-workflow) above for branching, committing, and opening a PR. Use `git add projects/basic` and `feat(ai-01): …` as the commit prefix. The steps below cover the project-specific local dev loop.
-
-1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
-2. Run the web UI:
-   ```bash
-   docker compose up web
-   # open http://localhost:8080
-   ```
-3. Run individual features from the CLI:
-   ```bash
-   docker compose run --rm joke
-   docker compose run --rm travel
-   docker compose run --rm summarize
-   docker compose run --rm arena
-   ```
-4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
-   ```bash
-   docker compose build
-   ```
-5. Tear down when done:
-   ```bash
-   docker compose down
-   ```
-
-### Useful Commands
-
-1. Tail logs: `docker compose logs -f web`
-2. Shell into container: `docker compose run --rm web bash`
-3. Container status: `docker compose ps`
-
----
-
-## CI/CD (ai-01)
-
-Automated via [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [OIDC and GitHub Secrets setup](SETUP.md#310-set-up-github-oidc-and-deploy-role-cicd) in the Setup Guide.
-
----
-
 # TechToday Home Page
 
-For initial setup (production Nginx/SSL/DNS, local preview), see [Setup Guide § 4.2](SETUP.md#42-techtoday-home-page) and [§ 2.2](SETUP.md#22-techtoday-home-page).
+For setup, see [Setup Guide § 4.2](SETUP.md#42-techtoday-home-page) (production) and [§ 2.2](SETUP.md#22-techtoday-home-page) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
@@ -358,14 +156,6 @@ For initial setup (production Nginx/SSL/DNS, local preview), see [Setup Guide §
 The static files in `src/` are served directly from the root of the main domain. No Docker container or application server is needed.
 
 This project has no project-specific secrets or environment variables — it's a static site with no server-side API keys.
-
----
-
-## Day-to-Day Workflow (techtoday)
-
-Follow the [common git workflow](#day-to-day-git-workflow) above for branching, committing, and opening a PR. Use `git add projects/techtoday/` and `feat(techtoday): …` as the commit prefix.
-
-1. Edit files under `src/` — save and reload the browser to see changes.
 
 ---
 
@@ -440,9 +230,3 @@ aws cloudfront create-invalidation \
   --distribution-id $DISTRIBUTION_ID \
   --paths "/*"
 ```
-
----
-
-## CI/CD (techtoday)
-
-See [.github/workflows/deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) for the automated deploy pipeline. It triggers on any push to `main` that touches `projects/techtoday/src/**` and runs `rsync` (Option A) to copy the updated static files to EC2.
