@@ -1,11 +1,13 @@
-"""Flask server exposing joke and travel suggestion endpoints."""
+"""Flask server exposing joke, travel, summarize, and arena endpoints."""
 
 import os
 
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
+from arena import battle
 from joke import get_joke
+from summarizer import summarize
 from travel import get_travel_suggestion
 
 # URL path prefix Nginx forwards under in production, e.g. "/ai-01".
@@ -46,6 +48,32 @@ def travel():
     try:
         text = get_travel_suggestion(city)
         return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        text = summarize(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/arena", methods=["POST"])
+def arena():
+    data = request.get_json(force=True)
+    prompt = (data.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        result = battle(prompt)
+        return jsonify({"result": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

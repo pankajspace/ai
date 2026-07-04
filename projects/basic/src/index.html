@@ -188,6 +188,27 @@
             <div class="result" id="travelResult"></div>
         </div>
 
+        <!-- Summarizer Card -->
+        <div class="card">
+            <h2>&#x1F50E; Website Summarizer</h2>
+            <p>Paste a URL and let GPT-4o mini summarize the page.</p>
+            <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" oninput="onUrlInput()" />
+            <span class="validation" id="urlValidation"></span>
+            <button id="summarizeBtn" onclick="fetchSummary()" disabled>Summarize</button>
+            <div class="result" id="summarizeResult"></div>
+        </div>
+
+        <!-- Arena Card -->
+        <div class="card">
+            <h2>&#x1F94A; LLM Arena</h2>
+            <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
+            <input type="text" id="promptInput" placeholder="Ask both models the same thing"
+                oninput="onPromptInput()" />
+            <span class="validation" id="promptValidation"></span>
+            <button id="arenaBtn" onclick="fetchArena()" disabled>Battle</button>
+            <div class="result" id="arenaResult"></div>
+        </div>
+
     </div>
 
     <script>
@@ -257,6 +278,79 @@
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 result.textContent = data.result;
+            } catch (e) {
+                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+            } finally {
+                setLoading(btn, result, false);
+            }
+        }
+
+        function onUrlInput() {
+            const val = document.getElementById("urlInput").value.trim();
+            document.getElementById("summarizeBtn").disabled = !val;
+            document.getElementById("urlValidation").textContent = "";
+        }
+
+        async function fetchSummary() {
+            const btn = document.getElementById("summarizeBtn");
+            const result = document.getElementById("summarizeResult");
+            const url = document.getElementById("urlInput").value.trim();
+            if (!url) {
+                document.getElementById("urlValidation").textContent = "Please enter a website URL.";
+                document.getElementById("urlInput").focus();
+                return;
+            }
+            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+            setLoading(btn, result, true);
+            result.className = "result visible";
+            result.textContent = "";
+            try {
+                const res = await fetch(`${API}/summarize`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url }),
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                result.textContent = data.result;
+            } catch (e) {
+                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+            } finally {
+                setLoading(btn, result, false);
+            }
+        }
+
+        function onPromptInput() {
+            const val = document.getElementById("promptInput").value.trim();
+            document.getElementById("arenaBtn").disabled = !val;
+            document.getElementById("promptValidation").textContent = "";
+        }
+
+        async function fetchArena() {
+            const btn = document.getElementById("arenaBtn");
+            const result = document.getElementById("arenaResult");
+            const prompt = document.getElementById("promptInput").value.trim();
+            if (!prompt) {
+                document.getElementById("promptValidation").textContent = "Please enter a prompt.";
+                document.getElementById("promptInput").focus();
+                return;
+            }
+            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+            setLoading(btn, result, true);
+            result.className = "result visible";
+            result.textContent = "";
+            try {
+                const res = await fetch(`${API}/arena`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt }),
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                const a = data.result.model_a;
+                const b = data.result.model_b;
+                result.textContent =
+                    `🤖 ${a.model}\n${a.reply}\n\n🤖 ${b.model}\n${b.reply}`;
             } catch (e) {
                 result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
             } finally {

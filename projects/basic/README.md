@@ -74,6 +74,8 @@ docker compose up web
 ```bash
 docker compose run --rm joke
 docker compose run --rm travel
+docker compose run --rm summarize
+docker compose run --rm arena
 ```
 
 ---
@@ -85,6 +87,12 @@ Calls **Groq** (Llama 3.3 70B Versatile) to generate a random joke. A random cat
 
 ### ✈️ Travel Suggestion
 Calls **OpenAI** (GPT-4o mini) to suggest one thing to do in any city you enter. A city name is required.
+
+### 🔎 Website Summarizer
+Scrapes any URL you enter (stripping scripts, navigation, and other noise) and calls **OpenAI** (GPT-4o mini) to return a short, friendly markdown summary of the page. A URL is required.
+
+### 🥊 LLM Arena
+Sends one prompt to both **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) and shows both replies side by side so you can compare them. A prompt is required.
 
 ---
 
@@ -103,7 +111,7 @@ Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.examp
 projects/basic/
 ├── Dockerfile              # single image used by all services
 ├── docker-compose.yml      # defines web, joke, and travel services
-├── requirements.txt        # runtime dependencies (openai, flask, …)
+├── requirements.txt        # runtime dependencies (openai, flask, requests, …)
 ├── .env.example            # template — copy to .env and fill in keys
 ├── .gitignore
 ├── .dockerignore
@@ -112,6 +120,9 @@ projects/basic/
     ├── config.py           # loads .env; exposes get_openai_client() / get_groq_client()
     ├── joke.py             # calls Groq → returns a random joke string
     ├── travel.py           # calls OpenAI → returns a city suggestion string
+    ├── scraper.py          # fetches and cleans the text of a web page
+    ├── summarizer.py       # scrapes a URL then calls OpenAI → returns a summary
+    ├── arena.py            # sends one prompt to OpenAI + Groq → returns both replies
     ├── app.py              # Flask server — serves the UI and exposes API endpoints
     └── index.html          # single-page web UI
 ```
@@ -133,10 +144,24 @@ projects/basic/
 - Calls `gpt-4o-mini` on OpenAI with a witty travel-guide system prompt
 - Returns the suggestion as a plain string; can also be run directly via `python travel.py`
 
+**`scraper.py`**
+- `fetch_website_contents(url)` — adds an `https://` scheme if missing, downloads the page with a browser-like User-Agent, strips noisy tags (`script`, `style`, `nav`, `footer`, `header`, `img`, `input`), and returns the title plus cleaned text
+- Returns an error message string instead of raising if the page cannot be fetched
+
+**`summarizer.py`**
+- `summarize(url)` — calls `fetch_website_contents(url)` then `gpt-4o-mini` on OpenAI with a markdown summary system prompt
+- Returns the summary as a plain string; can also be run directly via `python summarizer.py`
+
+**`arena.py`**
+- `battle(prompt)` — sends the same prompt to `gpt-4o-mini` on OpenAI and `llama-3.3-70b-versatile` on Groq
+- Returns a dict `{ "model_a": {model, reply}, "model_b": {model, reply} }`; can also be run directly via `python arena.py`
+
 **`app.py`**
 - `GET /` — serves `index.html`
 - `POST /joke` — accepts `{ "topic": "..." }` (optional), calls `get_joke(topic)`, returns `{ "result": "..." }` with `Cache-Control: no-store`
 - `POST /travel` — accepts `{ "city": "..." }`, calls `get_travel_suggestion(city)`, returns `{ "result": "..." }`
+- `POST /summarize` — accepts `{ "url": "..." }` (required), calls `summarize(url)`, returns `{ "result": "..." }`
+- `POST /arena` — accepts `{ "prompt": "..." }` (required), calls `battle(prompt)`, returns `{ "result": { "model_a": …, "model_b": … } }`
 - Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080`)
 
 **`index.html`**
