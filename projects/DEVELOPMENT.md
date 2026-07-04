@@ -6,6 +6,107 @@ This guide covers the shared development workflow, CI/CD pipeline, manual deploy
 
 ---
 
+## Development Setup
+
+Before running any project locally you need three things working on your machine: the Docker **daemon**, the Docker **CLI**, and the Docker **Compose plugin**. On macOS these are three separate components — a common source of confusion. Follow the section for your OS fully before running any `docker compose` command.
+
+### macOS — Option A: Docker Desktop (recommended)
+
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components (daemon, CLI, Compose plugin) in one installer — nothing else needed.
+
+1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
+2. Open **Docker Desktop** from Applications. The first launch takes 15–30 seconds to start the VM.
+3. Wait until the whale icon in the menu bar shows **"Docker Desktop is running"**.
+4. Verify:
+   ```bash
+   docker info             # prints server details — not an error
+   docker compose version  # prints: Docker Compose version v2.x.x
+   ```
+
+### macOS — Option B: Homebrew + Colima (no GUI)
+
+This is the path you will end up on if you installed Docker via `brew install docker`. It requires three separate install steps because Homebrew splits the components across separate packages.
+
+**Why three steps are needed:**
+
+1. `brew install docker` — installs only the CLI client. There is no daemon, so `/var/run/docker.sock` does not exist and every `docker` command fails with `dial unix /var/run/docker.sock: no such file or directory`.
+2. `brew install docker-compose` — installs the Compose plugin. Without it, `docker compose` is an unknown command.
+3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and creates the socket file.
+
+**Full setup:**
+
+```bash
+# Step 1 — Docker CLI
+brew install docker
+docker --version          # verify: Docker version 29.x.x
+
+# Step 2 — Compose plugin
+brew install docker-compose
+docker compose version    # verify: Docker Compose version v2.x.x
+
+# Step 3 — Daemon runtime (Colima)
+brew install colima
+colima start              # starts the VM; creates /var/run/docker.sock
+docker info               # verify: prints server version and container info
+```
+
+> **After every reboot** you must run `colima start` again before using Docker. Check if it is already running with `colima status`. Stop it with `colima stop`.
+
+**Common errors and fixes:**
+
+1. `docker: unknown command: docker compose`
+   — Compose plugin is not installed.
+   Fix: `brew install docker-compose`
+
+2. `dial unix /var/run/docker.sock: connect: no such file or directory`
+   — The Docker daemon is not running.
+   Fix: `colima start`
+
+3. `permission denied while trying to connect to the Docker daemon socket`
+   — Your user is not in the `docker` group.
+   Fix: `sudo usermod -aG docker $USER` then log out and back in.
+
+### Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
+```
+
+Verify:
+```bash
+docker info
+docker compose version
+```
+
+### Linux (Fedora/RHEL)
+
+```bash
+sudo dnf install docker docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
+```
+
+Verify:
+```bash
+docker info
+docker compose version
+```
+
+### Windows
+
+1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, the daemon, CLI, and Compose plugin.
+2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
+3. Verify in PowerShell or Command Prompt:
+   ```powershell
+   docker info
+   docker compose version
+   ```
+
+---
+
 ## Local Machine Prerequisites
 
 These tools are used across the commands in this guide (committing, manual deploy, rollback):
@@ -14,9 +115,14 @@ These tools are used across the commands in this guide (committing, manual deplo
 2. **AWS CLI v2** (configured via `aws configure`) — used in the manual deploy and rollback commands (`aws sts`, `aws ecr`). See the [common Deployment Guide](DEPLOYMENT.md#1-aws-cli-v2) for install steps, IAM user creation, and required permissions.
    > **Zero-install alternative — AWS CloudShell:** You can run pure `aws` commands (e.g., `aws ecr describe-images` for rollback) directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) — no local install or `aws configure` needed. CloudShell does **not** work for commands that require local files (`docker build`, `rsync`) or SSH.
 3. **SSH client** with the `.pem` key for the EC2 instance — used to SSH in during manual deploy/rollback. See the [common Deployment Guide](DEPLOYMENT.md#local-machine-prerequisites) for setup.
-4. **Docker CLI** — builds/tags/pushes/pulls images, and runs the local dev loop for `basic` (see below).
-   - macOS: [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
-   - Linux: `sudo apt install docker.io docker-compose-plugin` / `sudo dnf install docker docker-compose-plugin`
+4. **Docker CLI + daemon** — builds/tags/pushes/pulls images, and runs the local dev loop for `basic` (see below).
+   - macOS **Option A (recommended):** [Docker Desktop](https://www.docker.com/products/docker-desktop/) — bundles the daemon, CLI, and Compose plugin.
+   - macOS **Option B (Homebrew):** `brew install docker` only installs the CLI — the daemon does **not** start automatically on macOS. You also need a runtime and the Compose plugin:
+     ```bash
+     brew install docker docker-compose colima
+     colima start   # starts the daemon; re-run after each reboot
+     ```
+   - Linux: `sudo apt install docker.io docker-compose-plugin` / `sudo dnf install docker docker-compose-plugin`, then `sudo systemctl enable --now docker`
 5. **rsync** — manually deploys the `techtoday` static site.
    - macOS/Linux: preinstalled
    - Windows: use WSL, Git Bash, or `cwRsync`

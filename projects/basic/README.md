@@ -24,27 +24,103 @@ Sends the exact same prompt to both **GPT-4o mini** (OpenAI) and **Llama 3.3 70B
 
 ---
 
-## Prerequisites
+## Development Setup
 
-1. [Docker](https://www.docker.com/) + Docker Compose — container runtime
-2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
-3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
+Before running the project locally you need the Docker **daemon**, Docker **CLI**, and Docker **Compose plugin** all working together. On macOS these are three separate components. Follow the section for your OS fully — skipping any step is the most common cause of errors.
 
-### Install Docker
+### macOS — Option A: Docker Desktop (recommended)
 
-**macOS** — [Docker Desktop](https://www.docker.com/products/docker-desktop/) or `brew install docker`
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components in one installer.
 
-**Linux (Debian/Ubuntu)**
+1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
+2. Open **Docker Desktop** from Applications and wait for the whale icon in the menu bar to show **"Docker Desktop is running"** (15–30 seconds on first launch).
+3. Verify:
+   ```bash
+   docker info             # prints server details — no error
+   docker compose version  # prints: Docker Compose version v2.x.x
+   ```
+
+### macOS — Option B: Homebrew + Colima (no GUI)
+
+If you installed Docker via Homebrew, three separate packages are required:
+
+**Why three steps:**
+1. `brew install docker` gives you only the CLI. Without a daemon, `/var/run/docker.sock` does not exist and every `docker` command fails.
+2. `brew install docker-compose` installs the Compose plugin. Without it, `docker compose` is an unknown command.
+3. `colima start` starts the Linux VM that runs the daemon and creates the socket.
+
+**Full setup:**
 ```bash
-sudo apt install docker.io docker-compose-plugin
+# 1 — CLI
+brew install docker
+docker --version           # verify: Docker version 29.x.x
+
+# 2 — Compose plugin
+brew install docker-compose
+docker compose version     # verify: Docker Compose version v2.x.x
+
+# 3 — Daemon (Colima)
+brew install colima
+colima start               # starts VM + creates /var/run/docker.sock
+docker info                # verify: server version printed, no error
 ```
 
-**Linux (Fedora/RHEL)**
+> **After every reboot** run `colima start` before using Docker. Check status: `colima status`. Stop: `colima stop`.
+
+**Common errors and fixes:**
+
+1. `docker: unknown command: docker compose`
+   — Compose plugin missing.
+   Fix: `brew install docker-compose`
+
+2. `dial unix /var/run/docker.sock: connect: no such file or directory`
+   — Docker daemon is not running.
+   Fix: `colima start`
+
+3. `permission denied while trying to connect to the Docker daemon socket`
+   — User not in the `docker` group.
+   Fix: `sudo usermod -aG docker $USER` then log out and back in.
+
+### Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install docker.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
+
+# Verify
+docker info && docker compose version
+```
+
+### Linux (Fedora/RHEL)
+
 ```bash
 sudo dnf install docker docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
+
+# Verify
+docker info && docker compose version
 ```
 
-**Windows** — [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes WSL 2 backend)
+### Windows
+
+1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, daemon, CLI, and Compose plugin.
+2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
+3. Verify in PowerShell:
+   ```powershell
+   docker info
+   docker compose version
+   ```
+
+---
+
+## Prerequisites
+
+1. Docker + Docker Compose — installed and running per the [Development Setup](#development-setup) section above
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
+3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
 
 ---
 
