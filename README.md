@@ -21,7 +21,7 @@
 2. [Projects Guide](projects/README.md)
 3. [Daily Cheatsheet](projects/DAILY.md)
 
-## List of Projects
+## List of Projects (Increasing Complexity)
 1. [techtoday](projects/techtoday/README.md)
 2. [basic](projects/basic/README.md)
 
