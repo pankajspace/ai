@@ -248,6 +248,7 @@ docker info            # ✓ Server version printed
 docker compose version # ✓ Docker Compose version v2.x.x
 ssh -V                 # ✓ OpenSSH_10.x
 git --version          # ✓ git version 2.x.x
+rsync --version        # ✓ openrsync: protocol version 29
 ```
 
 ---
