@@ -1,4 +1,4 @@
-[← README](../README.md) · [Projects Guide](README.md)
+[← README](../README.md) · [Projects Guide](README.md) · [Daily Cheatsheet](DAILY.md)
 
 # Project Setup Guide — techtoday.click
 

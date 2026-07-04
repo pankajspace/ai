@@ -18,3 +18,4 @@
 # Documentation
 1. [Setup Guide](projects/SETUP.md)
 2. [Projects Guide](projects/README.md)
+3. [Daily Cheatsheet](projects/DAILY.md)
