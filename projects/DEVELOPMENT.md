@@ -161,8 +161,8 @@ This section covers local development for `projects/basic`, which runs at `app.t
 ## Prerequisites
 
 1. [Docker](https://www.docker.com/) + Docker Compose — used for both the local dev loop below and manual deploy/rollback. See the [Local Machine Prerequisites](#local-machine-prerequisites) section above for install steps, and AWS CLI/SSH details needed for deployment.
-2. [OpenAI API key](https://platform.openai.com/api-keys) — required for the `travel` feature
-3. [Groq API key](https://console.groq.com/keys) — required for the `joke` feature; free tier available
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
+3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
 
 ---
 
@@ -197,6 +197,8 @@ docker compose build
    ```bash
    docker compose run --rm joke
    docker compose run --rm travel
+   docker compose run --rm summarize
+   docker compose run --rm arena
    ```
 6. Rebuild only when `requirements.txt` or `Dockerfile` changes:
    ```bash

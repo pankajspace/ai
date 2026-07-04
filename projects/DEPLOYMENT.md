@@ -808,8 +808,8 @@ Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC
 
 Project-specific values (set as described in the steps below):
 
-1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
-2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key`
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
+2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
 3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
 
 ---
@@ -976,8 +976,8 @@ PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty l
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
-- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`
-- **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`, `/summarize`, `/arena`
+- **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`, `/ai-01/summarize`, `/ai-01/arena`
 
 The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/ai-01/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
 
