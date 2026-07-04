@@ -27,7 +27,8 @@ def get_openai_client() -> OpenAI:
     # The OpenAI constructor reads api_key from the environment automatically
     # if you pass it explicitly, which makes the dependency visible at the
     # call site rather than relying on an implicit env lookup inside the SDK.
-    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    # We dont need BASE_URL as its the default for OpenAI as https://api.openai.com/v1
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY")) 
 
 
 def get_groq_client() -> OpenAI:
