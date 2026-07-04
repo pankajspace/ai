@@ -116,8 +116,8 @@ curl -I https://app.techtoday.click/ai-01/
 
 ### Prerequisites (configured once, do not repeat unless rotating)
 
-1. GitHub repo secrets: `EC2_SSH_KEY`, `EC2_HOST`, `AWS_DEPLOY_ROLE_ARN`, `AWS_REGION`, `AWS_ACCOUNT_ID` — see [Setup Guide § 2.10](SETUP.md#210-set-up-github-oidc-and-deploy-role-cicd)
-2. AWS-side infra already provisioned per [Setup Guide § 2](SETUP.md#2-one-time-aws-infrastructure-setup)
+1. GitHub repo secrets: `EC2_SSH_KEY`, `EC2_HOST`, `AWS_DEPLOY_ROLE_ARN`, `AWS_REGION`, `AWS_ACCOUNT_ID` — see [Setup Guide § 3.10](SETUP.md#310-set-up-github-oidc-and-deploy-role-cicd)
+2. AWS-side infra already provisioned per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup)
 
 ---
 
@@ -198,7 +198,7 @@ Every container deploy tags the image with a human-readable **build tag** (`YYYY
 
 ### IAM & Security
 
-1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user (see [Setup Guide § 2.1](SETUP.md#21-create-iam-user-for-cli-access)) instead of root credentials for all local `aws` commands
+1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user (see [Setup Guide § 3.1](SETUP.md#31-create-iam-user-for-cli-access)) instead of root credentials for all local `aws` commands
 2. **Enable MFA** — turn on multi-factor authentication for the IAM user and the root account
 3. **Rotate access keys** — rotate the IAM user's access keys periodically (`aws iam create-access-key` → update `aws configure` → `aws iam delete-access-key` for the old key)
 4. **Least privilege** — EC2 role allows only `secretsmanager:GetSecretValue` on `techtoday/*` and ECR read; the IAM user policy is scoped to the specific services used in this guide
@@ -262,7 +262,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 # AI Playground (basic / ai-01)
 
-For initial setup (tools, production, local dev), see [Setup Guide § 3.1](SETUP.md#31-ai-playground-basic--ai-01) and [§ 4.1](SETUP.md#41-ai-playground-basic--ai-01).
+For initial setup (tools, production, local dev), see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01) and [§ 2.1](SETUP.md#21-ai-playground-basic--ai-01).
 
 ---
 
@@ -279,7 +279,7 @@ For initial setup (tools, production, local dev), see [Setup Guide § 3.1](SETUP
 
 Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
 
-Project-specific values (set as described in [Setup Guide § 3.1](SETUP.md#31-ai-playground-basic--ai-01)):
+Project-specific values (set as described in [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01)):
 
 1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
 2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
@@ -340,13 +340,13 @@ Follow the [common git workflow](#day-to-day-git-workflow) above for branching, 
 
 ## CI/CD (ai-01)
 
-Automated via [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [OIDC and GitHub Secrets setup](SETUP.md#210-set-up-github-oidc-and-deploy-role-cicd) in the Setup Guide.
+Automated via [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [OIDC and GitHub Secrets setup](SETUP.md#310-set-up-github-oidc-and-deploy-role-cicd) in the Setup Guide.
 
 ---
 
 # TechToday Home Page
 
-For initial setup (production Nginx/SSL/DNS, local preview), see [Setup Guide § 3.2](SETUP.md#32-techtoday-home-page) and [§ 4.2](SETUP.md#42-techtoday-home-page).
+For initial setup (production Nginx/SSL/DNS, local preview), see [Setup Guide § 4.2](SETUP.md#42-techtoday-home-page) and [§ 2.2](SETUP.md#22-techtoday-home-page).
 
 ---
 

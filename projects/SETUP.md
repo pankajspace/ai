@@ -159,7 +159,7 @@ aws --version
 # Expected output: aws-cli/2.x.x Python/3.x.x ...
 ```
 
-> Credential configuration requires an IAM user — you'll create one in [§ 2.1](#21-create-iam-user-for-cli-access) and configure credentials in [§ 2.2](#22-configure-aws-cli-credentials).
+> Credential configuration requires an IAM user — you'll create one in [§ 3.1](#31-create-iam-user-for-cli-access) and configure credentials in [§ 3.2](#32-configure-aws-cli-credentials).
 
 ---
 
@@ -181,7 +181,7 @@ ssh -V
 # If not found: Settings → Apps → Optional Features → Add "OpenSSH Client"
 ```
 
-> Key pair setup comes later in [§ 2.3](#23-launch-ec2-instance) after you create the EC2 instance and download the `.pem` file.
+> Key pair setup comes later in [§ 3.3](#33-launch-ec2-instance) after you create the EC2 instance and download the `.pem` file.
 
 ---
 
@@ -252,15 +252,96 @@ git --version          # ✓ git version 2.x.x
 
 ---
 
-## 2. One-Time AWS Infrastructure Setup
+## 2. Local Development Setup
+
+### 2.1. AI Playground (basic / ai-01)
+
+#### 2.1.1. Prerequisites
+
+1. [Docker](https://www.docker.com/) + Docker Compose — installed in [§ 1.1](#11-docker-cli--daemon--compose-plugin)
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
+3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
+
+#### 2.1.2. One-Time Local Setup
+
+```bash
+cd projects/basic
+cp .env.example .env
+# Fill in OPENAI_API_KEY and GROQ_API_KEY in .env
+docker compose build
+```
+
+#### 2.1.3. Day-to-Day Development Loop
+
+1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
+2. Run the web UI:
+   ```bash
+   docker compose up web
+   # open http://localhost:8080
+   ```
+3. Run individual features from the CLI:
+   ```bash
+   docker compose run --rm joke
+   docker compose run --rm travel
+   docker compose run --rm summarize
+   docker compose run --rm arena
+   ```
+4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
+   ```bash
+   docker compose build
+   ```
+5. Tear down when done:
+   ```bash
+   docker compose down
+   ```
+
+#### 2.1.4. Useful Commands
+
+1. Tail logs: `docker compose logs -f web`
+2. Shell into container: `docker compose run --rm web bash`
+3. Container status: `docker compose ps`
+
+---
+
+### 2.2. TechToday Home Page
+
+#### 2.2.1. Prerequisites
+
+No tools required beyond a modern browser and `git`.
+
+#### 2.2.2. Local Preview
+
+**Direct file open (fastest):**
+
+```bash
+open projects/techtoday/src/index.html
+```
+
+**Local HTTP server** (better for testing — matches production serving behavior):
+
+```bash
+cd projects/techtoday/src
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+#### 2.2.3. Key Files
+
+1. `src/index.html` — single HTML page; all content lives here
+2. `src/css/style.css` — all styles; dark-theme design tokens are CSS custom properties at the top of the file
+3. `src/js/main.js` — mobile nav toggle only; keep this file minimal
+
+---
+
+## 3. One-Time AWS Infrastructure Setup
 
 These steps are done **once** for the entire server and shared by all projects. Follow them in order.
 
-### 2.1. Create IAM User for CLI Access
+### 3.1. Create IAM User for CLI Access
 
-> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 2.2](#22-configure-aws-cli-credentials).
+> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 3.2](#32-configure-aws-cli-credentials).
 >
-> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 2.9](#29-create-iam-role-for-ec2-ecr--secrets-access) and [§ 2.10](#210-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 3.9](#39-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.10](#310-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
 >
 > **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -401,7 +482,7 @@ aws iam create-access-key --user-name techtoday-admin
 #    is shown only once and cannot be retrieved later.
 ```
 
-> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see [§ 2.2](#22-configure-aws-cli-credentials)) and avoid using root credentials for day-to-day work.
+> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see [§ 3.2](#32-configure-aws-cli-credentials)) and avoid using root credentials for day-to-day work.
 
 **AWS Console:**
 
@@ -423,7 +504,7 @@ aws iam create-access-key --user-name techtoday-admin
 
 ---
 
-### 2.2. Configure AWS CLI Credentials
+### 3.2. Configure AWS CLI Credentials
 
 ```bash
 aws configure
@@ -431,8 +512,8 @@ aws configure
 
 You will be prompted for:
 
-1. **AWS Access Key ID** — from the IAM user access key created in [§ 2.1](#21-create-iam-user-for-cli-access)
-2. **AWS Secret Access Key** — from the IAM user access key created in [§ 2.1](#21-create-iam-user-for-cli-access)
+1. **AWS Access Key ID** — from the IAM user access key created in [§ 3.1](#31-create-iam-user-for-cli-access)
+2. **AWS Secret Access Key** — from the IAM user access key created in [§ 3.1](#31-create-iam-user-for-cli-access)
 3. **Default region name** — e.g., `us-east-1`
 4. **Default output format** — `json` (recommended)
 
@@ -445,11 +526,11 @@ aws sts get-caller-identity
 
 > Credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. For multiple AWS accounts, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
 >
-> The IAM roles in [§ 2.9](#29-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 2.10](#210-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
+> The IAM roles in [§ 3.9](#39-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 3.10](#310-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
 ---
 
-### 2.3. Launch EC2 Instance
+### 3.3. Launch EC2 Instance
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
 
@@ -505,7 +586,7 @@ icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 
 ---
 
-### 2.4. Allocate Elastic IP
+### 3.4. Allocate Elastic IP
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -535,7 +616,7 @@ ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
 
 ---
 
-### 2.5. Install Docker, Docker Compose, and Nginx on EC2
+### 3.5. Install Docker, Docker Compose, and Nginx on EC2
 
 > **Connecting from Windows:** use `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
 
@@ -557,7 +638,7 @@ exit  # log out and back in for docker group to take effect
 
 ---
 
-### 2.6. Create Route 53 A Records
+### 3.6. Create Route 53 A Records
 
 > **CloudShell / Console alternative:** This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -586,7 +667,7 @@ aws route53 change-resource-record-sets \
 
 ---
 
-### 2.7. Request SSL Certificates
+### 3.7. Request SSL Certificates
 
 > **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
 >
@@ -604,7 +685,7 @@ sudo certbot renew --dry-run  # verify auto-renewal
 
 ---
 
-### 2.8. Configure Nginx
+### 3.8. Configure Nginx
 
 ```bash
 sudo mkdir -p /var/www/techtoday
@@ -676,7 +757,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-### 2.9. Create IAM Role for EC2 (ECR + Secrets Access)
+### 3.9. Create IAM Role for EC2 (ECR + Secrets Access)
 
 > **One-time.** All projects on this EC2 instance share this role.
 >
@@ -741,7 +822,7 @@ aws ec2 associate-iam-instance-profile \
 
 ---
 
-### 2.10. Set Up GitHub OIDC and Deploy Role (CI/CD)
+### 3.10. Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
 >
@@ -824,15 +905,15 @@ aws iam put-role-policy \
 
 ---
 
-## 3. Project-Specific Production Setup
+## 4. Project-Specific Production Setup
 
-After completing § 2, follow the subsection for each project you want to deploy.
+After completing § 3, follow the subsection for each project you want to deploy.
 
-### 3.1. AI Playground (basic / ai-01)
+### 4.1. AI Playground (basic / ai-01)
 
 Deploys to `https://app.techtoday.click/ai-01/` — container port `5000`, ECR repo `techtoday/ai-01`.
 
-#### 3.1.1. Store API Keys in Secrets Manager
+#### 4.1.1. Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
 >
@@ -849,7 +930,7 @@ aws secretsmanager create-secret \
 2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
 3. Set secret name to `techtoday/ai-01/openai-api-key` → Store
 
-#### 3.1.2. Create ECR Repository
+#### 4.1.2. Create ECR Repository
 
 > **One-time.**
 >
@@ -872,7 +953,7 @@ aws ecr put-image-scanning-configuration \
 3. **Image scan settings:** enable **Scan on push**
 4. Leave other defaults → **Create repository**
 
-#### 3.1.3. Initial Image Build and Push
+#### 4.1.3. Initial Image Build and Push
 
 > **One-time.** Subsequent pushes are handled automatically by CI/CD.
 >
@@ -892,9 +973,9 @@ docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAM
 docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 ```
 
-#### 3.1.4. Add Nginx Location Block
+#### 4.1.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [§ 2.8](#28-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
+> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -914,7 +995,7 @@ Then:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-#### 3.1.5. Add Service to Docker Compose on EC2
+#### 4.1.5. Add Service to Docker Compose on EC2
 
 > **One-time.** Adds the `ai-01` service to `~/docker-compose.yml` on EC2.
 
@@ -956,7 +1037,7 @@ docker compose -f ~/docker-compose.yml pull ai-01
 docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
 ```
 
-#### 3.1.6. Verify Production Deployment
+#### 4.1.6. Verify Production Deployment
 
 ```bash
 curl -I https://app.techtoday.click/ai-01/
@@ -966,13 +1047,13 @@ curl -I https://app.techtoday.click/ai-01/
 
 ---
 
-### 3.2. TechToday Home Page
+### 4.2. TechToday Home Page
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
-> **Already done** if you followed [§ 2](#2-one-time-aws-infrastructure-setup) above — Steps 2.6–2.8 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
+> **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.6–3.8 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
-#### 3.2.1. Add Nginx Server Block
+#### 4.2.1. Add Nginx Server Block
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -1018,7 +1099,7 @@ server {
 }
 ```
 
-#### 3.2.2. Request SSL Certificate
+#### 4.2.2. Request SSL Certificate
 
 > **Skip if already done.** ACM certs in the AWS console are for CloudFront/ALB only and do not apply here. Run this only if Let's Encrypt certs for `techtoday.click` are not yet installed on EC2 (verify with `sudo certbot certificates`).
 
@@ -1027,7 +1108,7 @@ sudo certbot --nginx -d techtoday.click -d www.techtoday.click
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-#### 3.2.3. Add Route 53 DNS Records
+#### 4.2.3. Add Route 53 DNS Records
 
 > **CloudShell / Console alternative:** The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
 
@@ -1066,7 +1147,7 @@ aws route53 change-resource-record-sets \
 2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 
-#### 3.2.4. Deploy Static Files
+#### 4.2.4. Deploy Static Files
 
 ```bash
 # From the repo root
@@ -1077,7 +1158,7 @@ rsync -avz --delete \
 
 No Nginx reload is needed — static files are served directly.
 
-#### 3.2.5. Verify Production Deployment
+#### 4.2.5. Verify Production Deployment
 
 ```bash
 curl -I https://techtoday.click/
@@ -1085,87 +1166,6 @@ curl -I https://techtoday.click/
 ```
 
 **Browser alternative:** Open [https://techtoday.click/](https://techtoday.click/) in your browser and confirm the home page loads.
-
----
-
-## 4. Local Development Setup
-
-### 4.1. AI Playground (basic / ai-01)
-
-#### 4.1.1. Prerequisites
-
-1. [Docker](https://www.docker.com/) + Docker Compose — installed in [§ 1.1](#11-docker-cli--daemon--compose-plugin)
-2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
-3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
-
-#### 4.1.2. One-Time Local Setup
-
-```bash
-cd projects/basic
-cp .env.example .env
-# Fill in OPENAI_API_KEY and GROQ_API_KEY in .env
-docker compose build
-```
-
-#### 4.1.3. Day-to-Day Development Loop
-
-1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
-2. Run the web UI:
-   ```bash
-   docker compose up web
-   # open http://localhost:8080
-   ```
-3. Run individual features from the CLI:
-   ```bash
-   docker compose run --rm joke
-   docker compose run --rm travel
-   docker compose run --rm summarize
-   docker compose run --rm arena
-   ```
-4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
-   ```bash
-   docker compose build
-   ```
-5. Tear down when done:
-   ```bash
-   docker compose down
-   ```
-
-#### 4.1.4. Useful Commands
-
-1. Tail logs: `docker compose logs -f web`
-2. Shell into container: `docker compose run --rm web bash`
-3. Container status: `docker compose ps`
-
----
-
-### 4.2. TechToday Home Page
-
-#### 4.2.1. Prerequisites
-
-No tools required beyond a modern browser and `git`.
-
-#### 4.2.2. Local Preview
-
-**Direct file open (fastest):**
-
-```bash
-open projects/techtoday/src/index.html
-```
-
-**Local HTTP server** (better for testing — matches production serving behavior):
-
-```bash
-cd projects/techtoday/src
-python3 -m http.server 8000
-# open http://localhost:8000
-```
-
-#### 4.2.3. Key Files
-
-1. `src/index.html` — single HTML page; all content lives here
-2. `src/css/style.css` — all styles; dark-theme design tokens are CSS custom properties at the top of the file
-3. `src/js/main.js` — mobile nav toggle only; keep this file minimal
 
 ---
 
@@ -1179,5 +1179,6 @@ python3 -m http.server 8000
 2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
 3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Add a new project-specific section to this file (§ 3 and § 4), following the `ai-01` sections as a template
+5. Add a new project-specific section to this file (§ 2 and § 4), following the `ai-01` sections as a template
 6. **No new DNS record, no new EC2, no new SSL cert needed**
+
