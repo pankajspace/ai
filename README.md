@@ -12,9 +12,9 @@
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 # Projects
-3. [techtoday](projects/techtoday/README.md)
-4. [basic](projects/basic/README.md)
+1. [techtoday](projects/techtoday/README.md)
+2. [basic](projects/basic/README.md)
 
-# Docs
-1. [Deployment Guide](projects/DEPLOYMENT.md)
-2. [Development Guide](projects/DEVELOPMENT.md)
+# Documentation
+1. [Development Guide](projects/DEVELOPMENT.md)
+2. [Deployment Guide](projects/DEPLOYMENT.md)
