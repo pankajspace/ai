@@ -21,164 +21,12 @@ docker compose version # Docker Compose version v2.x.x
 ssh -V                 # OpenSSH_x.x
 ```
 
-If any of these fail, follow the relevant setup section below.
+If any fail, see the detailed setup instructions:
 
----
-
-### 1. Docker (CLI + Daemon + Compose Plugin)
-
-Docker is needed for building and pushing images during manual deploys and for running containers locally. On macOS, three separate components are required — a common source of errors.
-
-#### macOS — Option A: Docker Desktop (recommended)
-
-[Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components in one installer.
-
-1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
-2. Open **Docker Desktop** from Applications and wait for the whale icon in the menu bar to show **"Docker Desktop is running"** (15–30 seconds on first launch).
-3. Verify:
-   ```bash
-   docker info             # prints server details — no error
-   docker compose version  # prints: Docker Compose version v2.x.x
-   ```
-
-#### macOS — Option B: Homebrew + Colima (no GUI)
-
-`brew install docker` only installs the CLI. The daemon and Compose plugin are separate — all three are required:
-
-1. `brew install docker` — CLI only. Without the daemon, `/var/run/docker.sock` does not exist and every `docker` command fails with `dial unix /var/run/docker.sock: no such file or directory`.
-2. `brew install docker-compose` — Compose plugin. Without it, `docker compose` is an unknown command.
-3. `brew install colima` + `colima start` — lightweight Linux VM that runs the daemon and creates the socket.
-
-**Full setup:**
-```bash
-# CLI
-brew install docker
-docker --version           # verify: Docker version 29.x.x
-
-# Compose plugin
-brew install docker-compose
-docker compose version     # verify: Docker Compose version v2.x.x
-
-# Daemon (Colima)
-brew install colima
-colima start               # starts VM + creates /var/run/docker.sock
-docker info                # verify: server version printed, no error
-```
-
-> **After every reboot** run `colima start` before using Docker. Check status: `colima status`. Stop: `colima stop`.
-
-**Common errors and fixes:**
-
-1. `docker: unknown command: docker compose`
-   — Compose plugin not installed.
-   Fix: `brew install docker-compose`
-
-2. `dial unix /var/run/docker.sock: connect: no such file or directory`
-   — Docker daemon is not running.
-   Fix: `colima start`
-
-3. `permission denied while trying to connect to the Docker daemon socket`
-   — User not in the `docker` group.
-   Fix: `sudo usermod -aG docker $USER` then log out and back in.
-
-#### Linux (Debian/Ubuntu)
-
-```bash
-sudo apt update
-sudo apt install docker.io docker-compose-plugin
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER   # log out and back in after this
-
-# Verify
-docker info && docker compose version
-```
-
-#### Linux (Fedora/RHEL)
-
-```bash
-sudo dnf install docker docker-compose-plugin
-sudo systemctl enable --now docker
-sudo usermod -aG docker $USER   # log out and back in after this
-
-# Verify
-docker info && docker compose version
-```
-
-#### Windows
-
-1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, daemon, CLI, and Compose plugin.
-2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
-3. Verify in PowerShell:
-   ```powershell
-   docker info
-   docker compose version
-   ```
-
----
-
-### 2. AWS CLI
-
-Used for every `aws ecr`, `aws sts`, `aws secretsmanager`, and `aws ec2` command in this guide. See the detailed [AWS CLI v2 install and configure instructions](#1-aws-cli-v2) in the Local Machine Prerequisites section below.
-
-Quick install:
-
-```bash
-# macOS
-brew install awscli
-aws configure   # enter Access Key ID, Secret, region, output format
-
-# Verify
-aws --version
-aws sts get-caller-identity   # prints your account ID — confirms credentials work
-```
-
-> **Zero-install alternative:** [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs in your browser with the CLI pre-authenticated. Works for all pure `aws` commands but not for steps that need local files (`docker build`, `rsync`, SSH with a `.pem` key).
-
----
-
-### 3. SSH Client
-
-Used to connect to the EC2 instance for manual deploys, initial server setup, and rollback.
-
-- **macOS / Linux** — preinstalled. Verify: `ssh -V`
-- **Windows** — built-in OpenSSH (Windows 10+), Git Bash, or WSL
-
-Set correct permissions on your `.pem` key file or SSH will refuse it:
-
-```bash
-# macOS / Linux
-chmod 400 YOUR_KEY.pem
-
-# Windows PowerShell
-icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
-```
-
-Test the connection:
-```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP   # should open a shell on the EC2 instance
-```
-
----
-
-### 4. git
-
-Used to push commits that trigger the CI/CD pipelines.
-
-```bash
-# macOS
-brew install git       # or: xcode-select --install
-
-# Linux (Debian/Ubuntu)
-sudo apt install git
-
-# Linux (Fedora/RHEL)
-sudo dnf install git
-
-# Verify
-git --version
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
-```
+1. **Docker (CLI + Daemon + Compose Plugin)** — see [Development Setup](DEVELOPMENT.md#development-setup) in the Development Guide for full platform-specific install steps.
+2. **AWS CLI v2** — see [AWS CLI v2](#1-aws-cli-v2) below for install, IAM user creation, and credential configuration. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is a zero-install alternative for pure `aws` commands.
+3. **SSH Client** — see [SSH Client](#2-ssh-client) below for key permissions and connection test.
+4. **git** — see [git](#3-git) below for install steps.
 
 ---
 
@@ -485,10 +333,10 @@ You will be prompted for:
 
 ### 2. SSH Client
 
-Connects to the EC2 instance (`ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP`).
+Connects to the EC2 instance for manual deploys, initial server setup, and rollback.
 
-- **macOS/Linux:** preinstalled
-- **Windows:** built-in OpenSSH client (Windows 10+), Git Bash, or WSL
+- **macOS / Linux** — preinstalled. Verify: `ssh -V`
+- **Windows** — built-in OpenSSH (Windows 10+), Git Bash, or WSL
 
 Download the `.pem` key pair created in Step 1 and restrict its permissions:
 
@@ -500,6 +348,11 @@ chmod 400 YOUR_KEY.pem
 ```powershell
 # Windows PowerShell
 icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
+```
+
+Test the connection:
+```bash
+ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP   # should open a shell on the EC2 instance
 ```
 
 ---
@@ -525,6 +378,13 @@ sudo dnf install git
 ```
 
 **Windows** — [Git for Windows](https://git-scm.com/download/win)
+
+**Verify (all platforms):**
+```bash
+git --version
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
 
 > Docker is only needed for local dev, manual container deploys, or rollback — see the [Development Setup](DEVELOPMENT.md#development-setup) section in the Development Guide.
 
@@ -1066,7 +926,7 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 ## Step 4 — Add Nginx Location Block
 
-> **One-time.** Adds the `/ai-01/` route to the existing Nginx config on EC2.
+> **One-time.** Already included in the full Nginx config from [Step 6 — Configure Nginx](#step-6--configure-nginx) above. Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -1202,6 +1062,8 @@ In addition to the shared tools in the [Local Machine Prerequisites](#local-mach
 ### Option A — Nginx on Existing EC2 (Simplest)
 
 Serve the static files from the same EC2 instance that hosts `app.techtoday.click`. Nginx already runs there.
+
+> **Already done** if you followed the [one-time infrastructure setup](#one-time-infrastructure-setup) above — Steps 3–6 create the document root, Nginx config, SSL certificates, and DNS records for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
 **One-time setup: add a server block for `techtoday.click`**
 
