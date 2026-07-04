@@ -1,4 +1,4 @@
-[← README](../../README.md) · [Development Guide](../DEVELOPMENT.md) · [Deployment Guide](../DEPLOYMENT.md)
+[← README](../../README.md) · [Setup Guide](../SETUP.md) · [Projects Guide](../README.md)
 
 # TechToday — Home Page
 
@@ -25,7 +25,7 @@ projects/techtoday/
         └── main.js     ← mobile nav toggle, no external libraries
 ```
 
-> Deployment and development guides live in [../DEPLOYMENT.md](../DEPLOYMENT.md) and [../DEVELOPMENT.md](../DEVELOPMENT.md) (shared across all projects).
+> Setup and project guides live in [../SETUP.md](../SETUP.md) and [../README.md](../README.md) (shared across all projects).
 
 ---
 
@@ -67,4 +67,4 @@ python3 -m http.server 8000
 
 ## Deployment
 
-See [DEPLOYMENT.md](../DEPLOYMENT.md) for the full deployment steps (S3 + CloudFront, or Nginx on EC2).
+See the [Projects Guide](../README.md) for deployment options (S3 + CloudFront, or Nginx on EC2), or the [Setup Guide](../SETUP.md) for step-by-step production setup.

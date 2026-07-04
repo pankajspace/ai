@@ -1,4 +1,4 @@
-[← README](../../README.md) | [Development Guide](../DEVELOPMENT.md) | [Deployment Guide](../DEPLOYMENT.md)
+[← README](../../README.md) | [Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
 
 # AI Infused Learning
 
@@ -291,5 +291,5 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 
 ## Production Routing
 
-In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /ai-01 { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/ai-01` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See [DEPLOYMENT.md](../DEPLOYMENT.md) for the full infrastructure setup.
+In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /ai-01 { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/ai-01` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See the [Projects Guide](../README.md) for the full architecture, or the [Setup Guide](../SETUP.md) for step-by-step infrastructure setup.
 

@@ -16,5 +16,5 @@
 2. [basic](projects/basic/README.md)
 
 # Documentation
-1. [Development Guide](projects/DEVELOPMENT.md)
-2. [Deployment Guide](projects/DEPLOYMENT.md)
+1. [Setup Guide](projects/SETUP.md)
+2. [Projects Guide](projects/README.md)

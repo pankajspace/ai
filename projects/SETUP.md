@@ -1,99 +1,109 @@
-[← README](../README.md) · [Development Guide](DEVELOPMENT.md)
+[← README](../README.md) · [Projects Guide](README.md)
 
-# AWS Deployment Architecture — techtoday.click
+# Project Setup Guide — techtoday.click
 
-This document covers the shared AWS infrastructure used by all projects as well as project-specific deployment steps.
+Everything you need to go from a blank machine to running projects locally and in production. Follow the sections in order — each one builds on the previous.
 
 ---
 
-## Deployment Setup
+## 1. Local Machine Prerequisites
 
-Everything you need installed and configured on your local machine before running any command in this guide. Verify each tool is working before proceeding to the infrastructure steps.
+Install and configure these tools on your local machine before running any other command in this guide.
 
-### Quick Checklist
+### 1.1. Docker (CLI + Daemon + Compose Plugin)
 
-Run these four commands. All four must succeed before continuing:
+Docker is required for building container images locally, running the local dev loop (`docker compose up`), and pushing images to ECR during manual deploys.
+
+> **Important:** On macOS, `brew install docker` installs **only** the CLI — the daemon and Compose plugin are separate packages. This is the most common source of "Cannot connect to the Docker daemon" errors.
+
+**macOS — Option A: Docker Desktop (recommended)**
+
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components (daemon, CLI, Compose plugin) in one installer — nothing else needed.
+
+1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
+2. Open **Docker Desktop** from Applications. The first launch takes 15–30 seconds to start the VM.
+3. Wait until the whale icon in the menu bar shows **"Docker Desktop is running"**.
+4. Verify:
+   ```bash
+   docker info             # prints server details — not an error
+   docker compose version  # prints: Docker Compose version v2.x.x
+   ```
+
+**macOS — Option B: Homebrew + Colima (no GUI, no license)**
+
+This is the path you will end up on if you installed Docker via `brew install docker`. It requires three separate install steps because Homebrew splits the components across separate packages.
+
+**Why three steps are needed:**
+
+1. `brew install docker` — installs only the CLI client. There is no daemon, so `/var/run/docker.sock` does not exist and every `docker` command fails with `dial unix /var/run/docker.sock: no such file or directory`.
+2. `brew install docker-compose` — installs the Compose plugin. Without it, `docker compose` is an unknown command.
+3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and creates the socket file.
+
+**Full setup:**
 
 ```bash
-aws --version          # AWS CLI v2.x.x
-docker info            # server version printed — no "cannot connect" error
-docker compose version # Docker Compose version v2.x.x
-ssh -V                 # OpenSSH_x.x
+# Step 1 — Docker CLI
+brew install docker
+docker --version          # verify: Docker version 29.x.x
+
+# Step 2 — Compose plugin
+brew install docker-compose
+docker compose version    # verify: Docker Compose version v2.x.x
+
+# Step 3 — Daemon runtime (Colima)
+brew install colima
+colima start              # starts the VM; creates /var/run/docker.sock
+docker info               # verify: prints server version and container info
 ```
 
-If any fail, see the detailed setup instructions:
+> **After every reboot** you must run `colima start` again before using Docker. Check if it is already running with `colima status`. Stop it with `colima stop`.
 
-1. **Docker (CLI + Daemon + Compose Plugin)** — see [Development Setup](DEVELOPMENT.md#development-setup) in the Development Guide for full platform-specific install steps.
-2. **AWS CLI v2** — see [AWS CLI v2](#1-aws-cli-v2) below for install, IAM user creation, and credential configuration. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is a zero-install alternative for pure `aws` commands.
-3. **SSH Client** — see [SSH Client](#2-ssh-client) below for key permissions and connection test.
-4. **git** — see [git](#3-git) below for install steps.
+**Linux (Debian/Ubuntu)**
 
----
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
 
-## Architecture Overview
-
-```
-Internet
-   │
-   ▼
-Route 53 (techtoday.click hosted zone)
-   ├── techtoday.click          → A record → EC2 Elastic IP  (static home page)
-   ├── www.techtoday.click      → A record → EC2 Elastic IP  (redirects to techtoday.click)
-   └── app.techtoday.click      → A record → EC2 Elastic IP  (all app projects)
-                                         │
-                                         ▼
-                              EC2 Instance (t2.micro, free tier / ~$8/month)
-                              ┌───────────────────────────────────────────────┐
-                              │  Nginx (reverse proxy + static files)         │
-                              │  HTTPS :443 (Let's Encrypt — free)            │
-                              │  HTTP  :80  → redirect to HTTPS               │
-                              │                                               │
-                              │  techtoday.click/   → /var/www/techtoday      │
-                              │  /ai-01/*           → localhost:5000          │
-                              │  /ai-02/*           → localhost:5001 (future) │
-                              └───────────────────────────────────────────────┘
-                                         │
-                              Docker Compose (app subdomain only)
-                              ├── ai-01  (port 5000, from ECR)
-                              └── ai-02  (port 5001, future)
-
-              ECR             → per-project image repositories (techtoday/ai-*)
-              Secrets Manager → API keys injected as env vars at container start
-              GitHub Actions  → CI/CD on push to main (per-project workflows)
+# Verify
+docker info
+docker compose version
 ```
 
+**Linux (Fedora/RHEL)**
+
+```bash
+sudo dnf install -y docker docker-compose-plugin
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER   # log out and back in after this
+
+# Verify
+docker info
+docker compose version
+```
+
+**Windows**
+
+1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, the daemon, CLI, and Compose plugin.
+2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
+3. Verify in PowerShell or Command Prompt:
+   ```powershell
+   docker info
+   docker compose version
+   ```
+
+**Common errors and fixes:**
+
+| Error | Cause | Fix |
+|---|---|---|
+| `Cannot connect to the Docker daemon` | Daemon not running | macOS: open Docker Desktop or run `colima start`; Linux: `sudo systemctl start docker` |
+| `docker compose: unknown command` | Compose plugin missing | `brew install docker-compose` (macOS) or `sudo apt install docker-compose-plugin` (Linux) |
+| `permission denied … docker.sock` | User not in docker group | `sudo usermod -aG docker $USER` then log out and back in |
+
 ---
 
-## Why This Architecture
-
-1. **No ALB** — Nginx replaces the Application Load Balancer, saving ~$16/month
-2. **No Fargate** — Containers run directly on EC2; static files served directly by Nginx
-3. **Free SSL** — Let's Encrypt / Certbot auto-renews certs; no ACM needed
-4. **Path-based routing** — Nginx `location /ai-*/` blocks route requests to the correct container
-5. **Single DNS record for apps** — One A record for `app.techtoday.click`; no new records per project
-6. **Easy to add projects** — New app project = new Docker Compose service + new Nginx `location` block
-7. **Secrets management** — Secrets Manager injects API keys at container startup
-
----
-
-## Cost
-
-1. **EC2 t2.micro** — free on AWS Free Tier (first 12 months); ~$8/month on-demand after that
-2. **Elastic IP** — free while attached to a running instance
-3. **Route 53 hosted zone** — $0.50/month
-4. **Secrets Manager** — ~$0.40/secret/month
-5. **ECR storage** — ~$0.10/GB/month
-6. **Each additional project** — **+$0/month** (same EC2, new Docker Compose service + Nginx block)
-
-> Use a `t3.small` (~$17/month) when running 3+ memory-intensive projects simultaneously.
-
----
-
-## Local Machine Prerequisites
-
-Install and configure these on your local machine before running any of the one-time setup steps below, or before doing any manual deploy/rollback (see [DEVELOPMENT.md](DEVELOPMENT.md)):
-
-### 1. AWS CLI v2
+### 1.2. AWS CLI v2
 
 Runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
 
@@ -149,11 +159,110 @@ aws --version
 # Expected output: aws-cli/2.x.x Python/3.x.x ...
 ```
 
-**Create an IAM user for CLI access:**
+> Credential configuration requires an IAM user — you'll create one in [§ 2.1](#21-create-iam-user-for-cli-access) and configure credentials in [§ 2.2](#22-configure-aws-cli-credentials).
 
-> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine (or to configure CloudShell when not using the console session). If you already have an IAM user with the required permissions, skip to [Configure credentials](#configure-credentials) below.
+---
+
+### 1.3. SSH Client
+
+Connects to the EC2 instance for initial server setup, manual deploys, and rollback.
+
+**macOS / Linux** — preinstalled. Verify:
+
+```bash
+ssh -V
+# Expected: OpenSSH_10.x ...
+```
+
+**Windows** — OpenSSH is built into Windows 10+. Verify in PowerShell:
+
+```powershell
+ssh -V
+# If not found: Settings → Apps → Optional Features → Add "OpenSSH Client"
+```
+
+> Key pair setup comes later in [§ 2.3](#23-launch-ec2-instance) after you create the EC2 instance and download the `.pem` file.
+
+---
+
+### 1.4. git
+
+Clones this repository and pushes the changes that trigger CI/CD.
+
+**macOS**
+
+```bash
+# Option A — Homebrew
+brew install git
+
+# Option B — Xcode Command Line Tools (includes git)
+xcode-select --install
+```
+
+**Linux (Debian/Ubuntu)**
+
+```bash
+sudo apt update && sudo apt install -y git
+```
+
+**Linux (Fedora/RHEL)**
+
+```bash
+sudo dnf install -y git
+```
+
+**Windows** — download and install from [git-scm.com/download/win](https://git-scm.com/download/win)
+
+**Verify and configure (all platforms):**
+
+```bash
+git --version
+# Expected: git version 2.x.x
+
+# Set your identity (one-time, used in commit messages)
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+# Verify config
+git config --global --list
+```
+
+---
+
+### 1.5. rsync
+
+Deploys the `techtoday` static site to EC2.
+
+- **macOS / Linux** — preinstalled. Verify: `rsync --version`
+- **Windows** — use WSL, Git Bash, or `cwRsync`
+
+---
+
+### 1.6. Verification Checklist
+
+Run all five commands. All must succeed before continuing to § 2:
+
+```bash
+aws --version          # ✓ aws-cli/2.x.x
+docker info            # ✓ Server version printed
+docker compose version # ✓ Docker Compose version v2.x.x
+ssh -V                 # ✓ OpenSSH_10.x
+git --version          # ✓ git version 2.x.x
+```
+
+---
+
+## 2. One-Time AWS Infrastructure Setup
+
+These steps are done **once** for the entire server and shared by all projects. Follow them in order.
+
+### 2.1. Create IAM User for CLI Access
+
+> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 2.2](#22-configure-aws-cli-credentials).
 >
-> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 2.9](#29-create-iam-role-for-ec2-ecr--secrets-access) and [§ 2.10](#210-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+>
+> **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 **CLI:**
 
@@ -292,7 +401,7 @@ aws iam create-access-key --user-name techtoday-admin
 #    is shown only once and cannot be retrieved later.
 ```
 
-> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see "Configure credentials" below) and avoid using root credentials for day-to-day work.
+> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see [§ 2.2](#22-configure-aws-cli-credentials)) and avoid using root credentials for day-to-day work.
 
 **AWS Console:**
 
@@ -312,7 +421,9 @@ aws iam create-access-key --user-name techtoday-admin
 
 > **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday-admin` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
 
-#### Configure credentials
+---
+
+### 2.2. Configure AWS CLI Credentials
 
 ```bash
 aws configure
@@ -320,81 +431,25 @@ aws configure
 
 You will be prompted for:
 
-1. **AWS Access Key ID** — from the IAM user access key created above
-2. **AWS Secret Access Key** — from the IAM user access key created above
+1. **AWS Access Key ID** — from the IAM user access key created in [§ 2.1](#21-create-iam-user-for-cli-access)
+2. **AWS Secret Access Key** — from the IAM user access key created in [§ 2.1](#21-create-iam-user-for-cli-access)
 3. **Default region name** — e.g., `us-east-1`
 4. **Default output format** — `json` (recommended)
 
-> These credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. If you need to switch between multiple AWS accounts or users, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
+**Verify credentials are working:**
+
+```bash
+aws sts get-caller-identity
+# Should print your Account, UserId, and Arn — not an error
+```
+
+> Credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. For multiple AWS accounts, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
 >
-> The IAM roles in [Step 7](#step-7--create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [Step 8](#step-8--set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
+> The IAM roles in [§ 2.9](#29-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 2.10](#210-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
 ---
 
-### 2. SSH Client
-
-Connects to the EC2 instance for manual deploys, initial server setup, and rollback.
-
-- **macOS / Linux** — preinstalled. Verify: `ssh -V`
-- **Windows** — built-in OpenSSH (Windows 10+), Git Bash, or WSL
-
-Download the `.pem` key pair created in Step 1 and restrict its permissions:
-
-```bash
-# macOS / Linux
-chmod 400 YOUR_KEY.pem
-```
-
-```powershell
-# Windows PowerShell
-icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
-```
-
-Test the connection:
-```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP   # should open a shell on the EC2 instance
-```
-
----
-
-### 3. git
-
-Clones this repository and pushes the changes that trigger CI/CD.
-
-**macOS**
-```bash
-brew install git
-# or: xcode-select --install  (includes git)
-```
-
-**Linux (Debian/Ubuntu)**
-```bash
-sudo apt install git
-```
-
-**Linux (Fedora/RHEL)**
-```bash
-sudo dnf install git
-```
-
-**Windows** — [Git for Windows](https://git-scm.com/download/win)
-
-**Verify (all platforms):**
-```bash
-git --version
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
-```
-
-> Docker is only needed for local dev, manual container deploys, or rollback — see the [Development Setup](DEVELOPMENT.md#development-setup) section in the Development Guide.
-
----
-
-## One-Time Infrastructure Setup
-
-These steps are done once for the entire server and shared by all projects.
-
-### Step 1 — Launch EC2 Instance
+### 2.3. Launch EC2 Instance
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
 
@@ -428,9 +483,29 @@ INSTANCE_ID=$(aws ec2 run-instances \
 4. Under **Network settings**: create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
 5. Click **Launch instance**
 
+**Set up your SSH key pair:**
+
+After creating or downloading the `.pem` key file:
+
+```bash
+# macOS / Linux — restrict permissions (SSH refuses keys with open permissions)
+chmod 400 YOUR_KEY.pem
+
+# Verify permissions
+ls -la YOUR_KEY.pem
+# Expected: -r--------  (read-only for owner)
+```
+
+```powershell
+# Windows PowerShell
+icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
+```
+
+> **Troubleshooting:** If you get `Permission denied (publickey)`, check: (1) key file permissions are `400`, (2) you're using the correct `.pem` file for this instance, (3) the username is `ec2-user` (Amazon Linux) not `ubuntu` or `root`.
+
 ---
 
-### Step 2 — Allocate Elastic IP
+### 2.4. Allocate Elastic IP
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -450,9 +525,17 @@ echo "Elastic IP: $ELASTIC_IP"
 4. Choose the `app-server` instance → click **Associate**
 5. Note the allocated IP — you'll use it as `$ELASTIC_IP` in subsequent steps
 
+**Test SSH connection:**
+
+```bash
+ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+# Should open a shell on the EC2 instance
+# Type 'exit' to disconnect
+```
+
 ---
 
-### Step 3 — Install Docker, Docker Compose, and Nginx on EC2
+### 2.5. Install Docker, Docker Compose, and Nginx on EC2
 
 > **Connecting from Windows:** use `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
 
@@ -474,7 +557,7 @@ exit  # log out and back in for docker group to take effect
 
 ---
 
-### Step 4 — Create Route 53 A Records
+### 2.6. Create Route 53 A Records
 
 > **CloudShell / Console alternative:** This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -503,7 +586,7 @@ aws route53 change-resource-record-sets \
 
 ---
 
-### Step 5 — Request SSL Certificates
+### 2.7. Request SSL Certificates
 
 > **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
 >
@@ -521,7 +604,7 @@ sudo certbot renew --dry-run  # verify auto-renewal
 
 ---
 
-### Step 6 — Configure Nginx
+### 2.8. Configure Nginx
 
 ```bash
 sudo mkdir -p /var/www/techtoday
@@ -593,7 +676,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-### Step 7 — Create IAM Role for EC2 (ECR + Secrets Access)
+### 2.9. Create IAM Role for EC2 (ECR + Secrets Access)
 
 > **One-time.** All projects on this EC2 instance share this role.
 >
@@ -658,7 +741,7 @@ aws ec2 associate-iam-instance-profile \
 
 ---
 
-### Step 8 — Set Up GitHub OIDC and Deploy Role (CI/CD)
+### 2.10. Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
 >
@@ -741,124 +824,15 @@ aws iam put-role-policy \
 
 ---
 
-## Adding a New App Project
+## 3. Project-Specific Production Setup
 
-1. Create ECR repo:
-   ```bash
-   aws ecr create-repository --repository-name techtoday/ai-02
-   ```
-   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-02` → **Create repository**
-2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
-3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
-4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Add a new project-specific deployment section to this file, following the `basic (ai-01)` section below as a template
-6. **No new DNS record, no new EC2, no new SSL cert needed**
+After completing § 2, follow the subsection for each project you want to deploy.
 
----
+### 3.1. AI Playground (basic / ai-01)
 
-## Best Practices
+Deploys to `https://app.techtoday.click/ai-01/` — container port `5000`, ECR repo `techtoday/ai-01`.
 
-### IAM & Security
-
-1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user (see [Create an IAM user](#1-aws-cli-v2)) instead of root credentials for all local `aws` commands
-2. **Enable MFA** — turn on multi-factor authentication for the IAM user and the root account
-3. **Rotate access keys** — rotate the IAM user's access keys periodically (`aws iam create-access-key` → update `aws configure` → `aws iam delete-access-key` for the old key)
-4. **Least privilege** — EC2 role allows only `secretsmanager:GetSecretValue` on `techtoday/*` and ECR read; the IAM user policy is scoped to the specific services used in this guide
-5. **No static credentials in CI/CD** — GitHub Actions uses OIDC; SSH key is a GitHub Secret
-6. **Secrets Manager only** — API keys are never in `docker-compose.yml`, repo files, or images
-7. **Restrict SSH** — after setup, tighten the security group SSH rule to your IP only (`YOUR_IP/32`)
-8. **HTTPS enforced** — Nginx redirects all HTTP to HTTPS; certs auto-renew via Certbot cron
-
-### Container & Image
-
-9. **Tag images three ways** — full git SHA, build tag (`YYYYMMDD-HHMMSS-<run>-<sha>`), and `latest`
-10. **ECR scan on push** — `scanOnPush=true` on every repository
-11. **`restart: unless-stopped`** — containers restart automatically after EC2 reboots
-
-### Cost
-
-12. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
-13. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
-
----
-
-## Secrets & Environment Variables Reference
-
-A complete list of every secret and environment variable used across all projects, and where each one lives.
-
-### GitHub Actions Secrets
-
-Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
-
-Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
-
-1. `AWS_REGION` — AWS region, e.g. `us-east-1`
-2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
-3. `AWS_DEPLOY_ROLE_ARN` — full ARN of the `github-actions-deploy` IAM role, e.g. `arn:aws:iam::123456789012:role/github-actions-deploy`
-4. `EC2_HOST` — Elastic IP of the EC2 instance, e.g. `1.2.3.4`
-5. `EC2_SSH_KEY` — full contents of the `.pem` private key file (include the `-----BEGIN RSA PRIVATE KEY-----` header/footer)
-
-### AWS Secrets Manager
-
-Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
-
-Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
-
-1. Secret name: `techtoday/ai-01/openai-api-key`
-   - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
-   - `GROQ_API_KEY` — Groq API key (`gsk_...`)
-
-### Docker Compose Environment Variables
-
-Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
-
-1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
-
----
-
-## When to Upgrade to ECS Fargate + ALB
-
-Upgrade when a project needs to scale beyond a single EC2 instance, requires zero-downtime blue/green deployments, or sustained concurrent traffic consistently exceeds what a `t3.small` can handle.
-
-
----
-
-# Deployment — AI Playground (basic / ai-01)
-
-This section covers deployment steps specific to the `basic` project (`app.techtoday.click/ai-01/`). For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM, OIDC) see the [common deployment guide](#aws-deployment-architecture--techtodayclick) above.
-
----
-
-## Deployment Target
-
-- **URL:** `https://app.techtoday.click/ai-01/`
-- **Container port:** `5000` (mapped to EC2 port `5000`)
-- **ECR repository:** `techtoday/ai-01`
-- **Path prefix env var:** `PATH_PREFIX=/ai-01`
-
----
-
-## Secrets & Environment Variables Used By This Project
-
-Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
-
-Project-specific values (set as described in the steps below):
-
-1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
-2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
-3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
-
----
-
-## Local Machine Prerequisites
-
-In addition to the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client, git), Steps 3 and 5 below require:
-
-1. **Docker CLI** — builds/tags/pushes the image in Step 3, and logs in to ECR in Step 5 (see [DEVELOPMENT.md](DEVELOPMENT.md)).
-
----
-
-## Step 1 — Store API Keys in Secrets Manager
+#### 3.1.1. Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
 >
@@ -875,9 +849,7 @@ aws secretsmanager create-secret \
 2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
 3. Set secret name to `techtoday/ai-01/openai-api-key` → Store
 
----
-
-## Step 2 — Create ECR Repository
+#### 3.1.2. Create ECR Repository
 
 > **One-time.**
 >
@@ -900,9 +872,7 @@ aws ecr put-image-scanning-configuration \
 3. **Image scan settings:** enable **Scan on push**
 4. Leave other defaults → **Create repository**
 
----
-
-## Step 3 — Initial Image Build and Push
+#### 3.1.3. Initial Image Build and Push
 
 > **One-time.** Subsequent pushes are handled automatically by CI/CD.
 >
@@ -922,11 +892,9 @@ docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAM
 docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 ```
 
----
+#### 3.1.4. Add Nginx Location Block
 
-## Step 4 — Add Nginx Location Block
-
-> **One-time.** Already included in the full Nginx config from [Step 6 — Configure Nginx](#step-6--configure-nginx) above. Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
+> **One-time.** Already included in the full Nginx config from [§ 2.8](#28-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -946,9 +914,7 @@ Then:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
----
-
-## Step 5 — Add Service to Docker Compose on EC2
+#### 3.1.5. Add Service to Docker Compose on EC2
 
 > **One-time.** Adds the `ai-01` service to `~/docker-compose.yml` on EC2.
 
@@ -990,9 +956,7 @@ docker compose -f ~/docker-compose.yml pull ai-01
 docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
 ```
 
----
-
-## Step 6 — Verify
+#### 3.1.6. Verify Production Deployment
 
 ```bash
 curl -I https://app.techtoday.click/ai-01/
@@ -1002,70 +966,13 @@ curl -I https://app.techtoday.click/ai-01/
 
 ---
 
-## Flask Path Prefix Configuration
+### 3.2. TechToday Home Page
 
-Because Nginx forwards the full path (e.g., `/ai-01/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
+Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
-```python
-# src/app.py (abbreviated)
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
-app.register_blueprint(bp, url_prefix=PATH_PREFIX)
-```
+> **Already done** if you followed [§ 2](#2-one-time-aws-infrastructure-setup) above — Steps 2.6–2.8 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
-- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`, `/summarize`, `/arena`
-- **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`, `/ai-01/summarize`, `/ai-01/arena`
-
-The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/ai-01/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
-
----
-
-## CI/CD
-
-Automated via [.github/workflows/deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml). Triggers on any push to `main` touching `projects/basic/**`. See the [OIDC and GitHub Secrets setup](#step-8--set-up-github-oidc-and-deploy-role-cicd) section above.
-
----
-
-# Deployment — TechToday Home Page
-
-This section covers everything needed to deploy the `techtoday` static site to production at `techtoday.click`. For shared AWS infrastructure (EC2, Route 53, Nginx, SSL, IAM) see the [common deployment guide](#aws-deployment-architecture--techtodayclick) above.
-
----
-
-## Deployment Target
-
-1. `techtoday.click` — path `/` — Static files (HTML, CSS, JS)
-2. `www.techtoday.click` — path `/` — Redirect → `techtoday.click`
-
-The static files in `src/` are served directly from the root of the main domain. No Docker container or application server is needed.
-
----
-
-## Secrets & Environment Variables Used By This Project
-
-Shared CI/CD secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) are documented once in the [Secrets & Environment Variables Reference](#secrets--environment-variables-reference) section above — set them in GitHub repo Settings, not here.
-
-This project has no project-specific secrets or environment variables — it's a static site with no server-side API keys.
-
----
-
-## Local Machine Prerequisites
-
-In addition to the shared tools in the [Local Machine Prerequisites](#local-machine-prerequisites) section above (AWS CLI, SSH client, git):
-
-1. **rsync** — required for deploying updates via Option A (Nginx on EC2). Preinstalled on macOS/Linux; Windows users can use WSL or Git Bash.
-2. **AWS CLI** — also required for Option B (S3 + CloudFront) `s3 sync` / `cloudfront create-invalidation` commands, and for the Route 53 A record command in Option A.
-
----
-
-## Recommended Options
-
-### Option A — Nginx on Existing EC2 (Simplest)
-
-Serve the static files from the same EC2 instance that hosts `app.techtoday.click`. Nginx already runs there.
-
-> **Already done** if you followed the [one-time infrastructure setup](#one-time-infrastructure-setup) above — Steps 3–6 create the document root, Nginx config, SSL certificates, and DNS records for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
-
-**One-time setup: add a server block for `techtoday.click`**
+#### 3.2.1. Add Nginx Server Block
 
 ```bash
 ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
@@ -1111,7 +1018,7 @@ server {
 }
 ```
 
-**Request SSL cert for the main domain (skip if already issued):**
+#### 3.2.2. Request SSL Certificate
 
 > **Skip if already done.** ACM certs in the AWS console are for CloudFront/ALB only and do not apply here. Run this only if Let's Encrypt certs for `techtoday.click` are not yet installed on EC2 (verify with `sudo certbot certificates`).
 
@@ -1120,7 +1027,7 @@ sudo certbot --nginx -d techtoday.click -d www.techtoday.click
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-**Add Route 53 A records for `techtoday.click` and `www.techtoday.click`:**
+#### 3.2.3. Add Route 53 DNS Records
 
 > **CloudShell / Console alternative:** The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
 
@@ -1159,55 +1066,7 @@ aws route53 change-resource-record-sets \
 2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 
----
-
-### Option B — S3 + CloudFront (Zero-Maintenance)
-
-Best for pure static hosting with global CDN, no EC2 involvement.
-
-> **CloudShell / Console alternative:** The S3 and CloudFront commands in this section can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) (except `s3 sync` from local files — use the Console upload UI instead). Console UI steps are shown alongside each CLI command below.
-
-**1. Create an S3 bucket:**
-
-```bash
-aws s3api create-bucket \
-  --bucket techtoday-site \
-  --region us-east-1
-```
-
-**AWS Console:** Open **S3** → **Create bucket** → **Bucket name:** `techtoday-site` → **Region:** `us-east-1` → **Create bucket**
-
-**2. Upload site files:**
-
-```bash
-aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
-  --delete \
-  --cache-control "public, max-age=86400"
-
-# Set shorter cache for HTML so updates propagate quickly
-aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
-  --cache-control "public, max-age=60"
-```
-
-**AWS Console:** Open the `techtoday-site` bucket → **Upload** → drag and drop all files from `projects/techtoday/src/` → **Upload**. To set cache headers, select the uploaded files → **Actions** → **Edit metadata** → add `Cache-Control` = `public, max-age=86400` (use `max-age=60` for `index.html`).
-
-**3. Create a CloudFront distribution** pointing to the S3 bucket, with:
-- Default root object: `index.html`
-- HTTPS redirect enforced
-- Custom domain: `techtoday.click` and `www.techtoday.click`
-- ACM certificate (us-east-1 region required for CloudFront)
-
-**AWS Console:** Open **CloudFront** → **Create distribution** → **Origin domain:** select the `techtoday-site.s3.amazonaws.com` bucket → **Default root object:** `index.html` → **Viewer protocol policy:** Redirect HTTP to HTTPS → **Alternate domain names (CNAMEs):** add `techtoday.click` and `www.techtoday.click` → **Custom SSL certificate:** select your ACM certificate (must be in `us-east-1`) → **Create distribution**
-
-**4. Create Route 53 A alias records** pointing `techtoday.click` and `www.techtoday.click` to the CloudFront distribution domain.
-
-**AWS Console:** Open **Route 53** → **Hosted zones** → `techtoday.click` → **Create record** → **Record type:** `A` → toggle **Alias** on → **Route traffic to:** CloudFront distribution → select your distribution → **Create records**. Repeat for `www`.
-
----
-
-## Deploying Updates (Option A — Nginx on EC2)
-
-After any change to files in `src/`:
+#### 3.2.4. Deploy Static Files
 
 ```bash
 # From the repo root
@@ -1218,30 +1077,7 @@ rsync -avz --delete \
 
 No Nginx reload is needed — static files are served directly.
 
----
-
-## Deploying Updates (Option B — S3 + CloudFront)
-
-> **Note:** The `s3 sync` command below requires access to local project files — it cannot be run from AWS CloudShell. Use your local terminal, or upload files via the S3 Console UI (**S3** → `techtoday-site` bucket → **Upload**). The `cloudfront create-invalidation` command can be run in CloudShell.
-
-```bash
-aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
-  --delete \
-  --cache-control "public, max-age=86400"
-
-aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
-  --cache-control "public, max-age=60"
-
-# Invalidate the CloudFront cache so visitors see the new version immediately
-DISTRIBUTION_ID=<your-cloudfront-distribution-id>
-aws cloudfront create-invalidation \
-  --distribution-id $DISTRIBUTION_ID \
-  --paths "/*"
-```
-
----
-
-## Verify
+#### 3.2.5. Verify Production Deployment
 
 ```bash
 curl -I https://techtoday.click/
@@ -1252,6 +1088,96 @@ curl -I https://techtoday.click/
 
 ---
 
-## CI/CD (Automatic Deploy on Push)
+## 4. Local Development Setup
 
-See [.github/workflows/deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) for the automated deploy pipeline. It triggers on any push to `main` that touches `projects/techtoday/src/**` and runs `rsync` (Option A) to copy the updated static files to EC2.
+### 4.1. AI Playground (basic / ai-01)
+
+#### 4.1.1. Prerequisites
+
+1. [Docker](https://www.docker.com/) + Docker Compose — installed in [§ 1.1](#11-docker-cli--daemon--compose-plugin)
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
+3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
+
+#### 4.1.2. One-Time Local Setup
+
+```bash
+cd projects/basic
+cp .env.example .env
+# Fill in OPENAI_API_KEY and GROQ_API_KEY in .env
+docker compose build
+```
+
+#### 4.1.3. Day-to-Day Development Loop
+
+1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
+2. Run the web UI:
+   ```bash
+   docker compose up web
+   # open http://localhost:8080
+   ```
+3. Run individual features from the CLI:
+   ```bash
+   docker compose run --rm joke
+   docker compose run --rm travel
+   docker compose run --rm summarize
+   docker compose run --rm arena
+   ```
+4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
+   ```bash
+   docker compose build
+   ```
+5. Tear down when done:
+   ```bash
+   docker compose down
+   ```
+
+#### 4.1.4. Useful Commands
+
+1. Tail logs: `docker compose logs -f web`
+2. Shell into container: `docker compose run --rm web bash`
+3. Container status: `docker compose ps`
+
+---
+
+### 4.2. TechToday Home Page
+
+#### 4.2.1. Prerequisites
+
+No tools required beyond a modern browser and `git`.
+
+#### 4.2.2. Local Preview
+
+**Direct file open (fastest):**
+
+```bash
+open projects/techtoday/src/index.html
+```
+
+**Local HTTP server** (better for testing — matches production serving behavior):
+
+```bash
+cd projects/techtoday/src
+python3 -m http.server 8000
+# open http://localhost:8000
+```
+
+#### 4.2.3. Key Files
+
+1. `src/index.html` — single HTML page; all content lives here
+2. `src/css/style.css` — all styles; dark-theme design tokens are CSS custom properties at the top of the file
+3. `src/js/main.js` — mobile nav toggle only; keep this file minimal
+
+---
+
+## 5. Adding a New Project
+
+1. Create ECR repo:
+   ```bash
+   aws ecr create-repository --repository-name techtoday/ai-02
+   ```
+   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-02` → **Create repository**
+2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
+3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
+4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
+5. Add a new project-specific section to this file (§ 3 and § 4), following the `ai-01` sections as a template
+6. **No new DNS record, no new EC2, no new SSL cert needed**
