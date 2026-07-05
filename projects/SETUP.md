@@ -16,7 +16,7 @@ Docker is required for building container images locally, running the local dev 
 
 > **Important:** On macOS, `brew install docker` installs **only** the CLI — the daemon and Compose plugin are separate packages. This is the most common source of "Cannot connect to the Docker daemon" errors.
 
-**macOS — Option A: Docker Desktop (recommended)**
+#### 1.1.1. macOS — Option A: Docker Desktop (recommended)
 
 [Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components (daemon, CLI, Compose plugin) in one installer — nothing else needed.
 
@@ -29,17 +29,17 @@ Docker is required for building container images locally, running the local dev 
    docker compose version  # prints: Docker Compose version v2.x.x
    ```
 
-**macOS — Option B: Homebrew + Colima (no GUI, no license)**
+#### 1.1.2. macOS — Option B: Homebrew + Colima (no GUI, no license)
 
 This is the path you will end up on if you installed Docker via `brew install docker`. It requires three separate install steps because Homebrew splits the components across separate packages.
 
-**Why three steps are needed:**
+##### Why Three Steps Are Needed
 
 1. `brew install docker` — installs only the CLI client. There is no daemon, so `/var/run/docker.sock` does not exist and every `docker` command fails with `dial unix /var/run/docker.sock: no such file or directory`.
 2. `brew install docker-compose` — installs the Compose plugin. Without it, `docker compose` is an unknown command.
 3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and creates the socket file.
 
-**Full setup:**
+##### Full Setup
 
 ```bash
 # Step 1 — Docker CLI
@@ -58,7 +58,7 @@ docker info               # verify: prints server version and container info
 
 > **After every reboot** you must run `colima start` again before using Docker. Check if it is already running with `colima status`. Stop it with `colima stop`.
 
-**Linux (Debian/Ubuntu)**
+#### 1.1.3. Linux (Debian/Ubuntu)
 
 ```bash
 sudo apt update
@@ -71,7 +71,7 @@ docker info
 docker compose version
 ```
 
-**Linux (Fedora/RHEL)**
+#### 1.1.4. Linux (Fedora/RHEL)
 
 ```bash
 sudo dnf install -y docker docker-compose-plugin
@@ -83,7 +83,7 @@ docker info
 docker compose version
 ```
 
-**Windows**
+#### 1.1.5. Windows
 
 1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, the daemon, CLI, and Compose plugin.
 2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
@@ -93,7 +93,7 @@ docker compose version
    docker compose version
    ```
 
-**Common errors and fixes:**
+#### 1.1.6. Common Errors and Fixes
 
 1. Error: `Cannot connect to the Docker daemon`
   Cause: Daemon not running
@@ -113,7 +113,7 @@ Runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws e
 
 > **Zero-install alternative — AWS CloudShell:** If you don't want to install the AWS CLI locally, you can run any `aws` command directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/). Click the **CloudShell** icon (terminal prompt `>_`) in the top navigation bar of the AWS Console. CloudShell comes with the AWS CLI pre-installed and pre-authenticated with your console session — no `aws configure` needed. It works for all pure `aws` commands in this guide (EC2, Route 53, IAM, ECR, Secrets Manager, S3). It does **not** work for steps that require local files (e.g., `docker build`, `rsync`, SSH with a local `.pem` key).
 
-**macOS**
+#### 1.2.1. macOS
 
 ```bash
 # Option A — Homebrew (recommended)
@@ -125,7 +125,7 @@ sudo installer -pkg AWSCLIV2.pkg -target /
 rm AWSCLIV2.pkg
 ```
 
-**Linux (Debian/Ubuntu)**
+#### 1.2.2. Linux (Debian/Ubuntu)
 
 ```bash
 sudo apt update && sudo apt install -y unzip curl
@@ -135,7 +135,7 @@ sudo ./aws/install
 rm -rf awscliv2.zip aws/
 ```
 
-**Linux (Fedora/RHEL)**
+#### 1.2.3. Linux (Fedora/RHEL)
 
 ```bash
 sudo dnf install -y unzip curl
@@ -147,7 +147,7 @@ rm -rf awscliv2.zip aws/
 
 > **ARM64 (e.g., Graviton, Apple Silicon under Linux):** replace `x86_64` with `aarch64` in the URL above.
 
-**Windows**
+#### 1.2.4. Windows
 
 1. Download and run the [AWS CLI MSI installer](https://awscli.amazonaws.com/AWSCLIV2.msi).
 2. Follow the on-screen prompts (defaults are fine).
@@ -156,7 +156,7 @@ rm -rf awscliv2.zip aws/
    winget install Amazon.AWSCLI
    ```
 
-**Verify installation (all platforms):**
+#### 1.2.5. Verify Installation
 
 ```bash
 aws --version
@@ -171,14 +171,18 @@ aws --version
 
 Connects to the EC2 instance for initial server setup, manual deploys, and rollback.
 
-**macOS / Linux** — preinstalled. Verify:
+#### 1.3.1. macOS / Linux
+
+Preinstalled. Verify:
 
 ```bash
 ssh -V
 # Expected: OpenSSH_10.x ...
 ```
 
-**Windows** — OpenSSH is built into Windows 10+. Verify in PowerShell:
+#### 1.3.2. Windows
+
+OpenSSH is built into Windows 10+. Verify in PowerShell:
 
 ```powershell
 ssh -V
@@ -193,7 +197,7 @@ ssh -V
 
 Clones this repository and pushes the changes that trigger CI/CD.
 
-**macOS**
+#### 1.4.1. macOS
 
 ```bash
 # Option A — Homebrew
@@ -203,21 +207,23 @@ brew install git
 xcode-select --install
 ```
 
-**Linux (Debian/Ubuntu)**
+#### 1.4.2. Linux (Debian/Ubuntu)
 
 ```bash
 sudo apt update && sudo apt install -y git
 ```
 
-**Linux (Fedora/RHEL)**
+#### 1.4.3. Linux (Fedora/RHEL)
 
 ```bash
 sudo dnf install -y git
 ```
 
-**Windows** — download and install from [git-scm.com/download/win](https://git-scm.com/download/win)
+#### 1.4.4. Windows
 
-**Verify and configure (all platforms):**
+Download and install from [git-scm.com/download/win](https://git-scm.com/download/win)
+
+#### 1.4.5. Verify and Configure
 
 ```bash
 git --version
@@ -316,13 +322,13 @@ No tools required beyond a modern browser and `git`.
 
 #### 2.2.2. Local Preview
 
-**Direct file open (fastest):**
+##### Direct File Open (fastest)
 
 ```bash
 open projects/techtoday/src/index.html
 ```
 
-**Local HTTP server** (better for testing — matches production serving behavior):
+##### Local HTTP Server
 
 ```bash
 cd projects/techtoday/src
@@ -347,10 +353,11 @@ These steps are done **once** for the entire server and shared by all projects. 
 > **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 3.2](#32-configure-aws-cli-credentials).
 >
 > **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
->
-> **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
-**CLI:**
+#### CloudShell / Console alternative
+This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.1.1. CLI
 
 ```bash
 # 1. Create the IAM user
@@ -380,7 +387,10 @@ aws iam create-policy \
           "ec2:DescribeKeyPairs",
           "ec2:CreateDefaultVpc",
           "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets"
+          "ec2:DescribeSubnets",
+          "ec2:CreateDefaultSubnet",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:ModifySubnetAttribute"
         ],
         "Resource": "*"
       },
@@ -492,7 +502,7 @@ aws iam create-access-key --user-name techtoday-admin
 
 > **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see [§ 3.2](#32-configure-aws-cli-credentials)) and avoid using root credentials for day-to-day work.
 
-**AWS Console:**
+#### 3.1.2. AWS Console
 
 1. Open **IAM** → **Users** → **Create user**
 2. **User name:** `techtoday-admin` → **Next**
@@ -525,7 +535,7 @@ You will be prompted for:
 3. **Default region name** — e.g., `us-east-1`
 4. **Default output format** — `json` (recommended)
 
-**Verify credentials are working:**
+#### 3.2.1. Verify Credentials
 
 ```bash
 aws sts get-caller-identity
@@ -538,7 +548,7 @@ aws sts get-caller-identity
 
 ---
 
-### 3.3. Create Default VPC
+### 3.3. Create Default VPC and Subnets
 
 > **Skip if your account already has a VPC in this region.** Check first:
 > ```bash
@@ -547,36 +557,64 @@ aws sts get-caller-identity
 > If the output lists any VPCs, skip to [§ 3.4](#34-launch-ec2-instance).
 >
 > **Why this is needed:** Every EC2 instance, security group, and subnet must belong to a VPC. New AWS accounts and accounts where the default VPC was previously deleted have no VPC, which blocks instance and security group creation.
->
-> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
-**CLI:**
+#### CloudShell / Console alternative
+This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.3.1. CLI
 
 ```bash
 # Create the default VPC (one per region; fails gracefully if one already exists)
 aws ec2 create-default-vpc
 
-# Verify — the VPC and its default subnets across AZs
+# Verify the VPC
 aws ec2 describe-vpcs \
   --filters "Name=isDefault,Values=true" \
   --query "Vpcs[0].{VpcId:VpcId,CidrBlock:CidrBlock,State:State}" --output table
 
+# create-default-vpc creates default subnets automatically — verify them:
 aws ec2 describe-subnets \
   --filters "Name=defaultForAz,Values=true" \
   --query "Subnets[*].{SubnetId:SubnetId,AZ:AvailabilityZone,CidrBlock:CidrBlock}" --output table
 ```
 
-**AWS Console:**
+> **If the subnet list is empty** (subnets were deleted separately from the VPC), recreate one default subnet per Availability Zone:
+> ```bash
+> # List available AZs in the region
+> aws ec2 describe-availability-zones \
+>   --filters "Name=state,Values=available" \
+>   --query "AvailabilityZones[*].ZoneName" --output text
+>
+> # Create a default subnet in each AZ (repeat for each zone shown above)
+> aws ec2 create-default-subnet --availability-zone us-east-1a
+> aws ec2 create-default-subnet --availability-zone us-east-1b
+> aws ec2 create-default-subnet --availability-zone us-east-1c
+> # Add more lines if your region has additional AZs
+> ```
+
+#### 3.3.2. AWS Console
 1. Open **VPC** → **Your VPCs**
 2. If no VPCs are listed, click **Actions** → **Create default VPC** → **Create default VPC**
    - Alternatively, from the EC2 **Launch instances** page, click **create a new default VPC** in the yellow warning banner at the top of the Network settings section
-3. AWS creates the VPC (`172.31.0.0/16`) with a default subnet in every Availability Zone — no additional configuration is needed
+3. AWS creates the VPC (`172.31.0.0/16`) with a default subnet in every Availability Zone — verify under **VPC** → **Subnets**
+4. **If subnets are missing** (the Subnets list is empty for this VPC), create them manually:
+   > **Before doing anything else:** open **VPC** → **Subnets** and filter by this VPC's ID. If **any subnets appear** — even one — **stop completely.** You do not need to create subnets. Close the Create Subnet page and continue to [§ 3.4](#34-launch-ec2-instance). Getting a "CIDR overlaps" error when trying to create a subnet is itself proof that a subnet already exists.
+   - Only proceed below if the filtered Subnets list is completely empty.
+   - **VPC ID:** select the default VPC (`172.31.0.0/16`)
+   - **Subnet name:** `techtoday-subnet`
+   - **Availability Zone:** `us-east-1a`
+   - **IPv4 subnet CIDR block:** try `172.31.96.0/20` — this is outside the range AWS assigns to default subnets, so it will not overlap
+   - Click **Create subnet**
+   - Select the new subnet → **Actions** → **Edit subnet settings** → enable **Auto-assign public IPv4 address** → **Save**
 
 ---
 
 ### 3.4. Launch EC2 Instance
 
-> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
+#### CloudShell / Console alternative
+This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
+
+#### 3.4.1. CLI
 
 ```bash
 AMI_ID=$(aws ec2 describe-images \
@@ -589,7 +627,7 @@ VPC_ID=$(aws ec2 describe-vpcs \
   --query "Vpcs[0].VpcId" --output text)
 
 SG_ID=$(aws ec2 create-security-group \
-  --group-name app-server-sg \
+  --group-name techtoday-server-sg \
   --description "EC2 app server - allow SSH, HTTP, HTTPS" \
   --vpc-id $VPC_ID \
   --query "GroupId" --output text)
@@ -601,34 +639,34 @@ aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port
 INSTANCE_ID=$(aws ec2 run-instances \
   --image-id $AMI_ID \
   --instance-type t2.micro \
-  --key-name YOUR_KEY_PAIR \
+  --key-name techtoday_PAIR \
   --security-group-ids $SG_ID \
   --query "Instances[0].InstanceId" --output text)
 ```
 
-**AWS Console:**
+#### 3.4.2. AWS Console
 1. Open **EC2** → **Instances** → **Launch instances**
-2. Name: `app-server`, AMI: **Amazon Linux 2023**, Instance type: `t2.micro`
+2. Name: `techtoday-server`, AMI: **Amazon Linux 2023**, Instance type: `t2.micro`
 3. Key pair: select or create a key pair (save the `.pem` file)
 4. Under **Network settings**: the default VPC from [§ 3.3](#33-create-default-vpc) is auto-selected; create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
 5. Click **Launch instance**
 
-**Set up your SSH key pair:**
+#### 3.4.3. Set Up SSH Key Pair
 
 After creating or downloading the `.pem` key file:
 
 ```bash
 # macOS / Linux — restrict permissions (SSH refuses keys with open permissions)
-chmod 400 YOUR_KEY.pem
+chmod 400 techtoday.pem
 
 # Verify permissions
-ls -la YOUR_KEY.pem
+ls -la techtoday.pem
 # Expected: -r--------  (read-only for owner)
 ```
 
 ```powershell
 # Windows PowerShell
-icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
+icacls techtoday.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 ```
 
 > **Troubleshooting:** If you get `Permission denied (publickey)`, check: (1) key file permissions are `400`, (2) you're using the correct `.pem` file for this instance, (3) the username is `ec2-user` (Amazon Linux) not `ubuntu` or `root`.
@@ -637,7 +675,10 @@ icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 
 ### 3.5. Allocate Elastic IP
 
-> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+#### CloudShell / Console alternative
+This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.5.1. CLI
 
 ```bash
 ALLOC_ID=$(aws ec2 allocate-address --domain vpc --query "AllocationId" --output text)
@@ -648,29 +689,41 @@ ELASTIC_IP=$(aws ec2 describe-addresses \
 echo "Elastic IP: $ELASTIC_IP"
 ```
 
-**AWS Console:**
+#### 3.5.2. AWS Console
 1. Open **EC2** → **Elastic IPs** → **Allocate Elastic IP address**
 2. Leave defaults (Amazon's pool of IPv4 addresses) → click **Allocate**
 3. Select the new Elastic IP → **Actions** → **Associate Elastic IP address**
-4. Choose the `app-server` instance → click **Associate**
+4. Choose the `techtoday-server` instance → click **Associate**
 5. Note the allocated IP — you'll use it as `$ELASTIC_IP` in subsequent steps
 
-**Test SSH connection:**
+#### 3.5.3. Test SSH Connection
+
+> **Before connecting:** open **EC2 → Instances**, click `techtoday-server`, and wait until **Instance state** shows `Running` and **Status checks** shows `2/2 checks passed`. This can take 1–3 minutes after the Elastic IP is associated.
+
+> **Console path note:** if you followed the AWS Console steps above, `$ELASTIC_IP` is not set in your terminal. Use the actual IP directly (e.g., `44.193.134.238`).
 
 ```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+# or, using the actual IP if the variable is not set:
+# ssh -i techtoday.pem ec2-user@44.193.134.238
 # Should open a shell on the EC2 instance
 # Type 'exit' to disconnect
 ```
+
+> **If SSH hangs silently (no output, have to Ctrl+C):**
+> This means the security group is **dropping** port 22 packets. Go to **EC2 → Instances → techtoday-server → Security tab → click the security group → Inbound rules**. If there is no SSH / port 22 rule, click **Edit inbound rules → Add rule → Type: SSH → Source: Anywhere-IPv4 (0.0.0.0/0) → Save rules**. Then retry SSH.
+>
+> **If SSH immediately prints `Permission denied (publickey)`:**
+> The connection reached the server but the key was rejected. Check: (1) key permissions are `400` (`chmod 400 techtoday.pem`), (2) username is `ec2-user` not `ubuntu` or `root`, (3) you are using the `.pem` that matches the key pair selected when launching the instance.
 
 ---
 
 ### 3.6. Install Docker, Docker Compose, and Nginx on EC2
 
-> **Connecting from Windows:** use `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
+> **Connecting from Windows:** use `icacls techtoday.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
 
 ```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 sudo dnf update -y
 sudo dnf install -y docker nginx certbot python3-certbot-nginx aws-cli
@@ -689,7 +742,10 @@ exit  # log out and back in for docker group to take effect
 
 ### 3.7. Create Route 53 A Records
 
-> **CloudShell / Console alternative:** This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+#### CloudShell / Console alternative
+This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.7.1. CLI
 
 ```bash
 HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
@@ -706,7 +762,7 @@ aws route53 change-resource-record-sets \
   }'
 ```
 
-**AWS Console:**
+#### 3.7.2. AWS Console
 1. Open **Route 53** → **Hosted zones** → click the `techtoday.click` zone
 2. Click **Create record** for each of the three records below:
    - **Record name:** leave blank (for `techtoday.click`), **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
@@ -723,7 +779,7 @@ aws route53 change-resource-record-sets \
 > **Note:** ACM certificates (visible in AWS Certificate Manager console) are for CloudFront/ALB only and cannot be used directly with Nginx on EC2. This step installs separate Let's Encrypt certs via Certbot.
 
 ```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 # Wait ~2 minutes for DNS propagation, then:
 sudo certbot --nginx -d techtoday.click -d www.techtoday.click
@@ -809,19 +865,22 @@ sudo nginx -t && sudo systemctl reload nginx
 ### 3.10. Create IAM Role for EC2 (ECR + Secrets Access)
 
 > **One-time.** All projects on this EC2 instance share this role.
->
-> **CloudShell / Console alternative:** This step uses only `aws iam` and `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### CloudShell / Console alternative
+This step uses only `aws iam` and `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.10.1. CLI
 
 ```bash
 aws iam create-role \
-  --role-name ec2-app-server-role \
+  --role-name ec2-techtoday-server-role \
   --assume-role-policy-document '{
     "Version":"2012-10-17",
     "Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},
     "Action":"sts:AssumeRole"}]}'
 
 aws iam put-role-policy \
-  --role-name ec2-app-server-role \
+  --role-name ec2-techtoday-server-role \
   --policy-name AllowAppSecrets \
   --policy-document '{
     "Version":"2012-10-17",
@@ -833,20 +892,20 @@ aws iam put-role-policy \
        "Resource":"*"}
     ]}'
 
-aws iam create-instance-profile --instance-profile-name ec2-app-server-profile
+aws iam create-instance-profile --instance-profile-name ec2-techtoday-server-profile
 aws iam add-role-to-instance-profile \
-  --instance-profile-name ec2-app-server-profile \
-  --role-name ec2-app-server-role
+  --instance-profile-name ec2-techtoday-server-profile \
+  --role-name ec2-techtoday-server-role
 aws ec2 associate-iam-instance-profile \
   --instance-id $INSTANCE_ID \
-  --iam-instance-profile Name=ec2-app-server-profile
+  --iam-instance-profile Name=ec2-techtoday-server-profile
 ```
 
-**AWS Console:**
+#### 3.10.2. AWS Console
 1. Open **IAM** → **Roles** → **Create role**
 2. **Trusted entity type:** AWS service → **Use case:** EC2 → **Next**
 3. Skip adding policies for now (we'll add an inline policy) → **Next**
-4. **Role name:** `ec2-app-server-role` → **Create role**
+4. **Role name:** `ec2-techtoday-server-role` → **Create role**
 5. Open the newly created role → **Permissions** tab → **Add permissions** → **Create inline policy**
 6. Switch to the **JSON** editor and paste:
    ```json
@@ -867,15 +926,18 @@ aws ec2 associate-iam-instance-profile \
    }
    ```
 7. **Policy name:** `AllowAppSecrets` → **Create policy**
-8. Attach the role to the EC2 instance: open **EC2** → **Instances** → select `app-server` → **Actions** → **Security** → **Modify IAM role** → select `ec2-app-server-role` → **Update IAM role**
+8. Attach the role to the EC2 instance: open **EC2** → **Instances** → select `techtoday-server` → **Actions** → **Security** → **Modify IAM role** → select `ec2-techtoday-server-role` → **Update IAM role**
 
 ---
 
 ### 3.11. Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
->
-> **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### CloudShell / Console alternative
+This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+#### 3.11.1. CLI
 
 ```bash
 aws iam create-open-id-connect-provider \
@@ -910,7 +972,7 @@ aws iam put-role-policy \
     ]}'
 ```
 
-**AWS Console:**
+#### 3.11.2. AWS Console
 1. **Create the OIDC provider:** Open **IAM** → **Identity providers** → **Add provider**
    - **Provider type:** OpenID Connect
    - **Provider URL:** `https://token.actions.githubusercontent.com` → click **Get thumbprint**
@@ -944,7 +1006,9 @@ aws iam put-role-policy \
    ```
 5. **Policy name:** `ECRPushAndSSH` → **Create policy**
 
-**GitHub Secrets to create** (repo → Settings → Secrets and variables → Actions):
+#### 3.11.3. GitHub Secrets
+
+Set at: repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
 1. `EC2_SSH_KEY` — full content of the `.pem` file
 2. `EC2_HOST` — the Elastic IP
@@ -958,7 +1022,7 @@ aws iam put-role-policy \
 
 A complete list of every secret and environment variable used across all projects, and where each one lives.
 
-#### GitHub Actions Secrets
+#### 3.12.1. GitHub Actions Secrets
 
 Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
 
@@ -970,7 +1034,7 @@ Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
 4. `EC2_HOST` — Elastic IP of the EC2 instance, e.g. `1.2.3.4`
 5. `EC2_SSH_KEY` — full contents of the `.pem` private key file (include the `-----BEGIN RSA PRIVATE KEY-----` header/footer)
 
-#### AWS Secrets Manager
+#### 3.12.2. AWS Secrets Manager
 
 Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
 
@@ -980,13 +1044,13 @@ Accessed by the EC2 instance at container startup (never stored in the repo or D
    - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
    - `GROQ_API_KEY` — Groq API key (`gsk_...`)
 
-#### Docker Compose Environment Variables
+#### 3.12.3. Docker Compose Environment Variables
 
 Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
 
 1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
 
-#### Per-Project Secrets (ai-01)
+#### 3.12.4. Per-Project Secrets (ai-01)
 
 Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-secrets-manager)):
 
@@ -1009,8 +1073,11 @@ Deploys to `https://app.techtoday.click/ai-01/` — container port `5000`, ECR r
 #### 4.1.1. Store API Keys in Secrets Manager
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
->
-> **CloudShell / Console alternative:** This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CloudShell / Console alternative
+This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CLI
 
 ```bash
 aws secretsmanager create-secret \
@@ -1018,7 +1085,7 @@ aws secretsmanager create-secret \
   --secret-string '{"OPENAI_API_KEY":"sk-...", "GROQ_API_KEY":"gsk_..."}'
 ```
 
-**AWS Console:**
+##### AWS Console
 1. Open **Secrets Manager** → **Store a new secret** → **Other type of secret**
 2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
 3. Set secret name to `techtoday/ai-01/openai-api-key` → Store
@@ -1026,8 +1093,11 @@ aws secretsmanager create-secret \
 #### 4.1.2. Create ECR Repository
 
 > **One-time.**
->
-> **CloudShell / Console alternative:** This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CloudShell / Console alternative
+This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CLI
 
 ```bash
 REGION=us-east-1
@@ -1040,7 +1110,7 @@ aws ecr put-image-scanning-configuration \
   --image-scanning-configuration scanOnPush=true
 ```
 
-**AWS Console:**
+##### AWS Console
 1. Open **ECR** → **Repositories** → **Create repository**
 2. **Repository name:** `techtoday/ai-01`
 3. **Image scan settings:** enable **Scan on push**
@@ -1093,7 +1163,7 @@ sudo nginx -t && sudo systemctl reload nginx
 > **One-time.** Adds the `ai-01` service to `~/docker-compose.yml` on EC2.
 
 ```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 # Fetch secrets into env file
 mkdir -p ~/secrets
@@ -1149,7 +1219,7 @@ Deploys to `https://techtoday.click/` — static files served by Nginx, no Docke
 #### 4.2.1. Add Nginx Server Block
 
 ```bash
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 sudo mkdir -p /var/www/techtoday
 sudo chown ec2-user:ec2-user /var/www/techtoday
@@ -1203,7 +1273,10 @@ sudo nginx -t && sudo systemctl reload nginx
 
 #### 4.2.3. Add Route 53 DNS Records
 
-> **CloudShell / Console alternative:** The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
+##### CloudShell / Console alternative
+The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
+
+##### CLI
 
 ```bash
 HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
@@ -1235,7 +1308,7 @@ aws route53 change-resource-record-sets \
   }'
 ```
 
-**AWS Console:**
+##### AWS Console
 1. Open **Route 53** → **Hosted zones** → click `techtoday.click`
 2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**

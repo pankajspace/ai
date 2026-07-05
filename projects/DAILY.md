@@ -111,7 +111,9 @@ aws ecr describe-images --repository-name techtoday/ai-01 --region us-east-1 \
   --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
 
 # 2. SSH in and roll back
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+# Remember $ELASTIC_IP is the public IP of the EC2 instance (from AWS console → EC2 → Instances → techtoday-server)
+# So $ELASTIC_IP for us is 44.193.134.238
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 REGION=us-east-1
 ACCOUNT_ID=<your-aws-account-id>
@@ -159,7 +161,7 @@ docker build -t techtoday/ai-01 .
 docker tag techtoday/ai-01:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
 docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
 
-ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
   aws ecr get-login-password --region us-east-1 | \
     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
   docker compose -f ~/docker-compose.yml pull ai-01
