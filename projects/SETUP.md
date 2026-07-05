@@ -185,7 +185,7 @@ ssh -V
 # If not found: Settings → Apps → Optional Features → Add "OpenSSH Client"
 ```
 
-> Key pair setup comes later in [§ 3.3](#33-launch-ec2-instance) after you create the EC2 instance and download the `.pem` file.
+> Key pair setup comes later in [§ 3.4](#34-launch-ec2-instance) after you create the EC2 instance and download the `.pem` file.
 
 ---
 
@@ -346,7 +346,7 @@ These steps are done **once** for the entire server and shared by all projects. 
 
 > **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 3.2](#32-configure-aws-cli-credentials).
 >
-> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 3.9](#39-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.10](#310-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
 >
 > **CloudShell / Console alternative:** This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -377,7 +377,10 @@ aws iam create-policy \
           "ec2:DescribeAddresses",
           "ec2:AssociateIamInstanceProfile",
           "ec2:CreateKeyPair",
-          "ec2:DescribeKeyPairs"
+          "ec2:DescribeKeyPairs",
+          "ec2:CreateDefaultVpc",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets"
         ],
         "Resource": "*"
       },
@@ -531,11 +534,47 @@ aws sts get-caller-identity
 
 > Credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. For multiple AWS accounts, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
 >
-> The IAM roles in [§ 3.9](#39-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 3.10](#310-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
+> The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
 ---
 
-### 3.3. Launch EC2 Instance
+### 3.3. Create Default VPC
+
+> **Skip if your account already has a VPC in this region.** Check first:
+> ```bash
+> aws ec2 describe-vpcs --query "Vpcs[*].{VpcId:VpcId,IsDefault:IsDefault,State:State}" --output table
+> ```
+> If the output lists any VPCs, skip to [§ 3.4](#34-launch-ec2-instance).
+>
+> **Why this is needed:** Every EC2 instance, security group, and subnet must belong to a VPC. New AWS accounts and accounts where the default VPC was previously deleted have no VPC, which blocks instance and security group creation.
+>
+> **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+**CLI:**
+
+```bash
+# Create the default VPC (one per region; fails gracefully if one already exists)
+aws ec2 create-default-vpc
+
+# Verify — the VPC and its default subnets across AZs
+aws ec2 describe-vpcs \
+  --filters "Name=isDefault,Values=true" \
+  --query "Vpcs[0].{VpcId:VpcId,CidrBlock:CidrBlock,State:State}" --output table
+
+aws ec2 describe-subnets \
+  --filters "Name=defaultForAz,Values=true" \
+  --query "Subnets[*].{SubnetId:SubnetId,AZ:AvailabilityZone,CidrBlock:CidrBlock}" --output table
+```
+
+**AWS Console:**
+1. Open **VPC** → **Your VPCs**
+2. If no VPCs are listed, click **Actions** → **Create default VPC** → **Create default VPC**
+   - Alternatively, from the EC2 **Launch instances** page, click **create a new default VPC** in the yellow warning banner at the top of the Network settings section
+3. AWS creates the VPC (`172.31.0.0/16`) with a default subnet in every Availability Zone — no additional configuration is needed
+
+---
+
+### 3.4. Launch EC2 Instance
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
 
@@ -545,9 +584,14 @@ AMI_ID=$(aws ec2 describe-images \
   --filters "Name=name,Values=al2023-ami-*-x86_64" "Name=state,Values=available" \
   --query "sort_by(Images,&CreationDate)[-1].ImageId" --output text)
 
+VPC_ID=$(aws ec2 describe-vpcs \
+  --filters "Name=isDefault,Values=true" \
+  --query "Vpcs[0].VpcId" --output text)
+
 SG_ID=$(aws ec2 create-security-group \
   --group-name app-server-sg \
   --description "EC2 app server - allow SSH, HTTP, HTTPS" \
+  --vpc-id $VPC_ID \
   --query "GroupId" --output text)
 
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
@@ -566,7 +610,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
 1. Open **EC2** → **Instances** → **Launch instances**
 2. Name: `app-server`, AMI: **Amazon Linux 2023**, Instance type: `t2.micro`
 3. Key pair: select or create a key pair (save the `.pem` file)
-4. Under **Network settings**: create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
+4. Under **Network settings**: the default VPC from [§ 3.3](#33-create-default-vpc) is auto-selected; create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
 5. Click **Launch instance**
 
 **Set up your SSH key pair:**
@@ -591,7 +635,7 @@ icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 
 ---
 
-### 3.4. Allocate Elastic IP
+### 3.5. Allocate Elastic IP
 
 > **CloudShell / Console alternative:** This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -621,7 +665,7 @@ ssh -i YOUR_KEY.pem ec2-user@$ELASTIC_IP
 
 ---
 
-### 3.5. Install Docker, Docker Compose, and Nginx on EC2
+### 3.6. Install Docker, Docker Compose, and Nginx on EC2
 
 > **Connecting from Windows:** use `icacls YOUR_KEY.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"` instead of `chmod 400`.
 
@@ -643,7 +687,7 @@ exit  # log out and back in for docker group to take effect
 
 ---
 
-### 3.6. Create Route 53 A Records
+### 3.7. Create Route 53 A Records
 
 > **CloudShell / Console alternative:** This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
@@ -672,7 +716,7 @@ aws route53 change-resource-record-sets \
 
 ---
 
-### 3.7. Request SSL Certificates
+### 3.8. Request SSL Certificates
 
 > **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
 >
@@ -690,7 +734,7 @@ sudo certbot renew --dry-run  # verify auto-renewal
 
 ---
 
-### 3.8. Configure Nginx
+### 3.9. Configure Nginx
 
 ```bash
 sudo mkdir -p /var/www/techtoday
@@ -762,7 +806,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-### 3.9. Create IAM Role for EC2 (ECR + Secrets Access)
+### 3.10. Create IAM Role for EC2 (ECR + Secrets Access)
 
 > **One-time.** All projects on this EC2 instance share this role.
 >
@@ -827,7 +871,7 @@ aws ec2 associate-iam-instance-profile \
 
 ---
 
-### 3.10. Set Up GitHub OIDC and Deploy Role (CI/CD)
+### 3.11. Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
 >
@@ -910,7 +954,7 @@ aws iam put-role-policy \
 
 ---
 
-### 3.11. Secrets & Environment Variables Reference
+### 3.12. Secrets & Environment Variables Reference
 
 A complete list of every secret and environment variable used across all projects, and where each one lives.
 
@@ -1024,7 +1068,7 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 #### 4.1.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
+> **One-time.** Already included in the full Nginx config from [§ 3.9](#39-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -1100,7 +1144,7 @@ curl -I https://app.techtoday.click/ai-01/
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
-> **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.6–3.8 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
+> **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.7–3.9 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
 #### 4.2.1. Add Nginx Server Block
 
