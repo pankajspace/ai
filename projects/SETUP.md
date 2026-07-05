@@ -95,11 +95,15 @@ docker compose version
 
 **Common errors and fixes:**
 
-| Error | Cause | Fix |
-|---|---|---|
-| `Cannot connect to the Docker daemon` | Daemon not running | macOS: open Docker Desktop or run `colima start`; Linux: `sudo systemctl start docker` |
-| `docker compose: unknown command` | Compose plugin missing | `brew install docker-compose` (macOS) or `sudo apt install docker-compose-plugin` (Linux) |
-| `permission denied … docker.sock` | User not in docker group | `sudo usermod -aG docker $USER` then log out and back in |
+1. Error: `Cannot connect to the Docker daemon`
+  Cause: Daemon not running
+  Fix: macOS: open Docker Desktop or run `colima start`; Linux: `sudo systemctl start docker`
+2. Error: `docker compose: unknown command`
+  Cause: Compose plugin missing
+  Fix: `brew install docker-compose` (macOS) or `sudo apt install docker-compose-plugin` (Linux)
+3. Error: `permission denied ... docker.sock`
+  Cause: User not in docker group
+  Fix: `sudo usermod -aG docker $USER` then log out and back in
 
 ---
 
