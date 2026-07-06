@@ -344,6 +344,57 @@ python3 -m http.server 8000
 
 ---
 
+### 2.3. LangChain Lab (langchain)
+
+#### 2.3.1. Prerequisites
+
+1. [Docker](https://www.docker.com/) + Docker Compose — installed in [§ 1.1](#11-docker-cli--daemon--compose-plugin)
+2. [OpenAI API key](https://platform.openai.com/api-keys) — required for all three features (`summarize`, `chat`, `agent`); every feature uses GPT-4o mini, so no Groq key is needed
+
+#### 2.3.2. One-Time Local Setup
+
+```bash
+cd projects/langchain
+cp .env.example .env
+# Fill in OPENAI_API_KEY in .env
+docker compose build
+```
+
+#### 2.3.3. Day-to-Day Development Loop
+
+1. Edit files under `src/` — changes are picked up immediately via volume mount, no rebuild needed.
+2. Run the web UI:
+   ```bash
+   docker compose up web
+   # open http://localhost:8081
+   ```
+3. Run individual features from the CLI:
+   ```bash
+   docker compose run --rm summarize
+   docker compose run --rm chat
+   docker compose run --rm agent
+   ```
+4. Rebuild only when `requirements.txt` or `Dockerfile` changes:
+   ```bash
+   docker compose build
+   ```
+5. Tear down when done:
+   ```bash
+   docker compose down
+   ```
+
+#### 2.3.4. Key Files
+
+1. `src/config.py` — loads `.env`; builds the LangChain `ChatOpenAI` and raw OpenAI clients
+2. `src/summarizer.py` — LangChain `prompt | model | parser` chain
+3. `src/chat.py` — memory chat using a `MessagesPlaceholder` and re-sent history
+4. `src/agent.py` — tool-using shop agent (OpenAI function calling)
+5. `src/app.py` — Flask server (Blueprint + `PATH_PREFIX`) exposing `/summarize`, `/chat`, `/agent`
+
+> The local web port is `8081` (basic uses `8080`) so both projects can run at the same time.
+
+---
+
 ## 3. One-Time AWS Infrastructure Setup
 
 These steps are done **once** for the entire server and shared by all projects. Follow them in order.
@@ -730,9 +781,17 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
+    location /langchain/ {
+        proxy_pass         http://localhost:5001;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
     # Add new projects here:
-    # location /ai-02/ {
-    #     proxy_pass http://localhost:5001;
+    # location /ai-03/ {
+    #     proxy_pass http://localhost:5002;
     #     ...
     # }
 }
@@ -952,7 +1011,7 @@ A complete list of every secret and environment variable used across all project
 
 Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
 
-Shared by all project workflows (`deploy-basic.yml`, `deploy-techtoday.yml`):
+Shared by all project workflows (`deploy-basic.yml`, `deploy-langchain.yml`, `deploy-techtoday.yml`):
 
 1. `AWS_REGION` — AWS region, e.g. `us-east-1`
 2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
@@ -983,6 +1042,15 @@ Project-specific values (set as described in [§ 4.2.1](#421-store-api-keys-in-s
 1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `travel`, `summarize`, and `arena`
 2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `joke` and `arena`
 3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
+
+#### 3.12.5. Per-Project Secrets (langchain)
+
+Project-specific values (reuses the same `techtoday/secrets` secret as basic):
+
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by all three features (`summarize`, `chat`, `agent`)
+2. `PATH_PREFIX` — set to `/langchain` directly in `~/docker-compose.yml` on EC2 (not secret)
+
+> LangChain Lab needs no Groq key — every feature uses GPT-4o mini. Since `OPENAI_API_KEY` already lives in `techtoday/secrets`, no new secret is required.
 
 > TechToday has no project-specific secrets or environment variables — it's a static site.
 
@@ -1402,16 +1470,141 @@ curl -I https://app.techtoday.click/basic/
 
 ---
 
+### 4.3. LangChain Lab (langchain)
+
+Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (mapped to host `5001`), ECR repo `techtoday/langchain`. The steps are identical to the basic project; only the names, port, and path prefix differ.
+
+#### 4.3.1. Store API Key in Secrets Manager
+
+> **Already done** if you deployed the basic project — LangChain Lab reuses the same `techtoday/secrets` secret and only needs `OPENAI_API_KEY`, which is already stored there. No action required.
+
+#### 4.3.2. Create ECR Repository
+
+> **One-time.**
+
+```bash
+REGION=us-east-1
+aws ecr create-repository --repository-name techtoday/langchain --region $REGION
+```
+
+**AWS Console:** Open **ECR** → **Repositories** → **Create repository** → name `techtoday/langchain` → leave defaults → **Create repository**
+
+#### 4.3.3. Initial Image Build and Push
+
+> **One-time.** Subsequent pushes are handled automatically by CI/CD. Requires Docker running locally and the cloned repo — same prerequisites and per-OS notes as [§ 4.2.3](#423-initial-image-build-and-push).
+
+```bash
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME=techtoday/langchain
+
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+cd projects/langchain
+docker build --platform linux/amd64 -t $REPO_NAME .
+docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+```
+
+> On Apple Silicon Macs, `--platform linux/amd64` is required (see the note in [§ 4.2.3](#423-initial-image-build-and-push)).
+
+#### 4.3.4. Add Nginx Location Block
+
+> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `langchain` to a server configured before this project existed.
+
+Add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
+
+```nginx
+location /langchain/ {
+    proxy_pass         http://localhost:5001;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+}
+```
+
+Then:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### 4.3.5. Add Service to Docker Compose on EC2
+
+> **One-time.** Adds the `langchain` service to `~/docker-compose.yml` on EC2.
+
+```bash
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+
+# Fetch secrets into an env file (reuses the shared techtoday/secrets secret)
+mkdir -p ~/secrets
+aws secretsmanager get-secret-value \
+  --secret-id techtoday/secrets \
+  --query SecretString --output text | \
+  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+  > ~/secrets/langchain.env
+chmod 600 ~/secrets/langchain.env
+```
+
+Resolve the image URL, then append the service block under the existing `services:` key in `~/docker-compose.yml`:
+
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REGION=us-east-1
+IMAGE="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/langchain:latest"
+echo $IMAGE   # verify before using it below
+```
+
+Add the following block (aligned with the existing `basic` service). Note the host port is `5001` to avoid clashing with `basic` on `5000`:
+
+```yaml
+  langchain:
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/langchain:latest
+    restart: unless-stopped
+    command: python src/app.py
+    ports:
+      - "5001:5000"
+    environment:
+      - PATH_PREFIX=/langchain
+    env_file:
+      - ~/secrets/langchain.env
+```
+
+Authenticate and start:
+
+```bash
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+docker compose -f ~/docker-compose.yml pull langchain
+docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+```
+
+#### 4.3.6. Verify Production Deployment
+
+```bash
+curl -I https://app.techtoday.click/langchain/
+```
+
+**Browser alternative:** Open [https://app.techtoday.click/langchain/](https://app.techtoday.click/langchain/) in your browser and confirm the page loads.
+
+---
+
 ## 5. Adding a New Project
+
+> `basic` (port 5000) and `langchain` (port 5001) are already deployed. A third project would use the next free port (e.g. `5002`). Use `langchain` (§ 4.3) as the copy-paste template.
 
 1. Create ECR repo:
    ```bash
-   aws ecr create-repository --repository-name techtoday/ai-02
+   aws ecr create-repository --repository-name techtoday/ai-03
    ```
-   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-02` → **Create repository**
-2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
-3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
-4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Add a new project-specific section to this file (§ 2 and § 4), following the `basic` sections as a template
-6. **No new DNS record, no new EC2, no new SSL cert needed**
+   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-03` → **Create repository**
+2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5002)
+3. Add a new `location /ai-03/` block to `/etc/nginx/conf.d/app.conf`
+4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-03` + `sudo nginx -t && sudo systemctl reload nginx`
+5. Add a new project-specific section to this file (§ 2 and § 4), following the `langchain` sections as a template
+6. Add a new CI/CD workflow (`deploy-ai-03.yml`), following `deploy-langchain.yml` as a template
+7. **No new DNS record, no new EC2, no new SSL cert needed**
 

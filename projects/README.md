@@ -26,12 +26,12 @@ Route 53 (techtoday.click hosted zone)
                               │                                               │
                               │  techtoday.click/   → /var/www/techtoday      │
                               │  /basic/*           → localhost:5000          │
-                              │  /ai-02/*           → localhost:5001 (future) │
+                              │  /langchain/*       → localhost:5001          │
                               └───────────────────────────────────────────────┘
                                          │
                               Docker Compose (app subdomain only)
-                              ├── basic  (port 5000, from ECR)
-                              └── ai-02  (port 5001, future)
+                              ├── basic      (port 5000, from ECR)
+                              └── langchain  (port 5001, from ECR)
 
               ECR             → per-project image repositories (techtoday/ai-*)
               Secrets Manager → API keys injected as env vars at container start
@@ -98,6 +98,7 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 | Project | Workflow | Trigger Path | What It Does |
 |---|---|---|---|
 | basic | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
+| langchain | [deploy-langchain.yml](../.github/workflows/deploy-langchain.yml) | `projects/langchain/**` | Build → ECR push → SSH pull + restart container |
 | techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 
 Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
@@ -139,6 +140,41 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 - **On EC2:** `PATH_PREFIX=/basic` → routes are `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
 
 The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/basic/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
+
+---
+
+# LangChain Lab (langchain)
+
+For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [Setup Guide § 4.3](SETUP.md#43-langchain-lab-langchain) (production) and [§ 2.3](SETUP.md#23-langchain-lab-langchain) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+
+This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
+
+---
+
+## Deployment Target (langchain)
+
+- **URL:** `https://app.techtoday.click/langchain/`
+- **Container port:** `5000` (mapped to EC2 port `5001`)
+- **ECR repository:** `techtoday/langchain`
+- **Path prefix env var:** `PATH_PREFIX=/langchain`
+- **Secret:** only `OPENAI_API_KEY` (no Groq key — every feature uses GPT-4o mini)
+
+---
+
+## Flask Path Prefix Configuration (langchain)
+
+Identical to the basic project: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
+
+```python
+# src/app.py (abbreviated)
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /langchain in production, empty locally
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+```
+
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/summarize`, `/chat`, `/agent`
+- **On EC2:** `PATH_PREFIX=/langchain` → routes are `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`
+
+The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
 
 ---
 

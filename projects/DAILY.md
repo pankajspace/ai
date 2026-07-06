@@ -48,6 +48,27 @@ docker compose ps                # container status
 docker compose down              # tear down
 ```
 
+### LangChain Lab (langchain)
+
+```bash
+cd projects/langchain
+
+# Start the web UI (hot-reload via volume mount)
+docker compose up web
+# → http://localhost:8081
+
+# Or run individual features from the CLI
+docker compose run --rm summarize
+docker compose run --rm chat
+docker compose run --rm agent
+```
+
+**Rebuild** (only when `requirements.txt` or `Dockerfile` changes):
+
+```bash
+docker compose build
+```
+
 ### TechToday Home Page
 
 ```bash
@@ -69,6 +90,10 @@ python3 -m http.server 8000
 git add projects/basic/
 git commit -m "feat(basic): short description"
 
+# LangChain Lab
+git add projects/langchain/
+git commit -m "feat(langchain): short description"
+
 # TechToday
 git add projects/techtoday/
 git commit -m "feat(techtoday): short description"
@@ -86,6 +111,7 @@ Open a Pull Request on GitHub → get it reviewed → **Squash and merge** into 
 Merging to `main` triggers CI/CD automatically — no manual steps needed.
 
 - **basic** — `deploy-basic.yml` — trigger path `projects/basic/**`
+- **langchain** — `deploy-langchain.yml` — trigger path `projects/langchain/**`
 - **techtoday** — `deploy-techtoday.yml` — trigger path `projects/techtoday/**`
 
 Watch the run under **GitHub → Actions** to confirm it succeeds.
@@ -96,14 +122,18 @@ Watch the run under **GitHub → Actions** to confirm it succeeds.
 
 ```bash
 curl -I https://app.techtoday.click/basic/
+curl -I https://app.techtoday.click/langchain/
 curl -I https://techtoday.click/
 ```
 
-Or just open both URLs in a browser.
+Or just open the URLs in a browser.
 
 ---
 
 ## 6. Rollback (Container Projects Only)
+
+> Applies to both container projects. Substitute the repo/service name for the
+> project you're rolling back: `basic` or `langchain`.
 
 ```bash
 # 1. Find the last good build tag
@@ -147,23 +177,26 @@ rsync -avz --delete \
   ec2-user@$ELASTIC_IP:/var/www/techtoday/
 ```
 
-### AI Playground (container)
+### Container projects (basic / langchain)
+
+Set `PROJECT` to the container project you're deploying — `basic` or `langchain`.
 
 ```bash
+PROJECT=basic          # or: langchain
 REGION=us-east-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
-cd projects/basic
-docker build --platform linux/amd64 -t techtoday/basic .
-docker tag techtoday/basic:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
+cd projects/$PROJECT
+docker build --platform linux/amd64 -t techtoday/$PROJECT .
+docker tag techtoday/$PROJECT:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/$PROJECT:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/$PROJECT:latest
 
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
   aws ecr get-login-password --region us-east-1 | \
     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-  docker compose -f ~/docker-compose.yml pull basic
-  docker compose -f ~/docker-compose.yml up -d --no-deps basic
+  docker compose -f ~/docker-compose.yml pull $PROJECT
+  docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT
 ```

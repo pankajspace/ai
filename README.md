@@ -14,7 +14,11 @@
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 
-# Projects 
+# Projects
+
+## Study : Shivank Agarwal
+1. [AI Infused Learning - 1](study/01-AI-Infused-Learning-1/ai-infused-learning-1.md) : 27-06-2026
+2. [AI Infused Learning - 2](study/02-AI-Infus\..ed-Learning-2/ai-infused-learning-2.md) : 04-07-2026
 
 ## Documentation
 1. [Setup Guide](projects/SETUP.md)
@@ -24,4 +28,5 @@
 ## List of Projects (Increasing Complexity)
 1. [techtoday](projects/techtoday/README.md)
 2. [basic](projects/basic/README.md)
+3. [langchain](projects/langchain/README.md)
 

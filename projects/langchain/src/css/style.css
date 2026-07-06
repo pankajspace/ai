@@ -1,0 +1,351 @@
+/* LangChain Lab — dark theme stylesheet (shares TechToday design tokens) */
+
+:root {
+    --bg: #121212;
+    --bg-elevated: #1e1e1e;
+    --bg-elevated-2: #2a2a2a;
+    --border: #2c2c2c;
+    --text: #e0e0e0;
+    --text-faint: #757575;
+    --accent: #90caf9;
+    --primary: #1565c0;
+    --primary-hover: #1976d2;
+    --danger: #ef9a9a;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Header / Nav */
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(18, 18, 18, 0.9);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.brand:hover {
+    text-decoration: none;
+}
+
+.brand .logo {
+    width: 28px;
+    height: 28px;
+}
+
+/* Hero */
+
+.hero {
+    padding: 1rem 1.5rem 0.75rem;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.hero .subtitle {
+    color: var(--text-faint);
+    font-size: 1rem;
+    margin-top: 0.375rem;
+}
+
+/* Sections */
+
+section {
+    padding: 0.75rem 0;
+}
+
+/* Cards grid */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* A card that spans both columns — used by the memory chat. */
+.card-wide {
+    grid-column: 1 / -1;
+}
+
+.card h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.card p {
+    font-size: 0.8125rem;
+    color: var(--text-faint);
+    line-height: 1.5;
+}
+
+.card p code {
+    background: var(--bg-elevated-2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    color: var(--accent);
+}
+
+/* Form controls */
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #424242;
+    font-size: 0.9375rem;
+    color: var(--text);
+    background: transparent;
+    outline: none;
+}
+
+input[type="text"]::placeholder {
+    color: #616161;
+}
+
+input[type="text"]:focus {
+    border-bottom-color: var(--accent);
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+button:active {
+    box-shadow: none;
+}
+
+button:disabled {
+    background: #424242;
+    color: var(--text-faint);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* A subtle text-only button (used for "reset conversation"). */
+.link-btn {
+    align-self: flex-start;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+}
+
+.link-btn:hover {
+    background: none;
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+/* Results */
+
+.result {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #bdbdbd;
+    background: var(--bg-elevated-2);
+    border-left: 3px solid var(--primary);
+    padding: 10px 12px;
+    white-space: pre-wrap;
+    display: none;
+}
+
+.result.visible {
+    display: block;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.validation {
+    font-size: 0.75rem;
+    color: var(--danger);
+    margin-top: -6px;
+}
+
+.validation:empty {
+    display: none;
+}
+
+/* Spinner */
+
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Memory chat */
+
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 120px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: var(--bg-elevated-2);
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.chat-window:empty::before {
+    content: "Your conversation will appear here.";
+    color: var(--text-faint);
+    font-size: 0.8125rem;
+}
+
+.bubble {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.bubble.user {
+    align-self: flex-end;
+    background: var(--primary);
+    color: #fff;
+    border-bottom-right-radius: 2px;
+}
+
+.bubble.bot {
+    align-self: flex-start;
+    background: #333;
+    color: #e0e0e0;
+    border-bottom-left-radius: 2px;
+}
+
+.bubble.error {
+    align-self: flex-start;
+    background: transparent;
+    color: var(--danger);
+    padding-left: 0;
+}
+
+.chat-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.chat-input-row input {
+    flex: 1;
+}
+
+/* Footer */
+
+footer {
+    border-top: 1px solid var(--border);
+    padding: 1rem 0;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.8125rem;
+}
+
+/* Responsive */
+
+@media (max-width: 720px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
