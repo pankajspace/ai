@@ -54,11 +54,23 @@ def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
-    # The HTML file hard-codes 'const API = "";' (empty = relative URL, works
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
-    html = html.replace('const API = "";', f'const API = "{PATH_PREFIX}";')
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
     return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/<path:filename>")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/<path:filename>")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
 
 
 @bp.route("/joke", methods=["POST"])

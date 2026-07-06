@@ -5,252 +5,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Playground</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Roboto, system-ui, sans-serif;
-            background: #121212;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        a {
-            color: #90caf9;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        /* Header / Nav */
-
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: rgba(18, 18, 18, 0.9);
-            backdrop-filter: blur(6px);
-            border-bottom: 1px solid #2c2c2c;
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 1080px;
-            margin: 0 auto;
-            padding: 0.75rem 1.5rem;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.125rem;
-            font-weight: 500;
-            color: #e0e0e0;
-        }
-
-        .brand:hover {
-            text-decoration: none;
-        }
-
-        .brand .logo {
-            width: 28px;
-            height: 28px;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2.5rem 1.5rem;
-        }
-
-        /* Footer */
-
-        footer {
-            border-top: 1px solid #2c2c2c;
-            padding: 1rem 0;
-            text-align: center;
-            color: #757575;
-            font-size: 0.8125rem;
-        }
-
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 500;
-            color: #90caf9;
-        }
-
-        .subtitle {
-            color: #757575;
-            font-size: 0.875rem;
-            margin: 6px 0 2.5rem;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            width: 100%;
-            max-width: 95vw;
-        }
-
-        .card {
-            background: #1e1e1e;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        .card h2 {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #90caf9;
-        }
-
-        .card p {
-            font-size: 0.8125rem;
-            color: #757575;
-            line-height: 1.5;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 8px 0;
-            border: none;
-            border-bottom: 1px solid #424242;
-            font-size: 0.9375rem;
-            color: #e0e0e0;
-            background: transparent;
-            outline: none;
-        }
-
-        input[type="text"]::placeholder {
-            color: #616161;
-        }
-
-        input[type="text"]:focus {
-            border-bottom-color: #90caf9;
-        }
-
-        button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            letter-spacing: .04em;
-            text-transform: uppercase;
-            cursor: pointer;
-            background: #1565c0;
-            color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, .4);
-        }
-
-        button:hover {
-            background: #1976d2;
-        }
-
-        button:active {
-            box-shadow: none;
-        }
-
-        button:disabled {
-            background: #424242;
-            color: #757575;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .result {
-            font-size: 0.875rem;
-            line-height: 1.6;
-            color: #bdbdbd;
-            background: #2a2a2a;
-            border-left: 3px solid #1565c0;
-            padding: 10px 12px;
-            white-space: pre-wrap;
-            display: none;
-        }
-
-        .result.visible {
-            display: block;
-        }
-
-        .error {
-            color: #ef9a9a;
-        }
-
-        .validation {
-            font-size: 0.75rem;
-            color: #ef9a9a;
-            margin-top: -6px;
-        }
-
-        .validation:empty {
-            display: none;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #fff;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin .7s linear infinite;
-            vertical-align: middle;
-            margin-right: 6px;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .arena-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .arena-col {
-            background: #2a2a2a;
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            line-height: 1.6;
-            color: #bdbdbd;
-            white-space: pre-wrap;
-        }
-
-        .arena-col .model-name {
-            font-weight: 600;
-            color: #90caf9;
-            margin-bottom: 6px;
-        }
-    </style>
+    <meta name="description"
+        content="AI Playground — joke generator, travel suggestions, website summarizer, and LLM Arena powered by Groq and OpenAI." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="css/style.css" />
 </head>
 
-<body>
+<body data-api-base="">
     <header>
-        <nav class="nav">
+        <nav class="nav container">
             <a href="https://techtoday.click" class="brand">
                 <span class="logo">⚡</span>
                 <span>TechToday</span>
@@ -259,205 +23,68 @@
     </header>
 
     <main>
-        <h1>AI Playground</h1>
-        <p class="subtitle">Powered by Groq and OpenAI</p>
-
-        <div class="cards">
-
-            <!-- Joke Card -->
-            <div class="card">
-                <h2>&#x1F602; Joke Generator</h2>
-                <p>Get a fresh joke from Llama 3.3 70B via Groq.</p>
-                <input type="text" id="jokeTopicInput" placeholder="Topic (e.g. cats, programming)"
-                    oninput="onJokeInput()" />
-                <button id="jokeBtn" onclick="fetchJoke()" disabled>Tell me a joke</button>
-                <div class="result" id="jokeResult"></div>
+        <section class="hero">
+            <div class="container">
+                <h1>AI Playground</h1>
+                <p class="subtitle">Powered by Groq and OpenAI</p>
             </div>
+        </section>
 
-            <!-- Travel Card -->
-            <div class="card">
-                <h2>&#x2708;&#xFE0F; Travel Suggestion</h2>
-                <p>Ask GPT-4o mini what to do in any city.</p>
-                <input type="text" id="cityInput" placeholder="Enter a city (e.g. Tokyo)" oninput="onCityInput()" />
-                <span class="validation" id="cityValidation"></span>
-                <button id="travelBtn" onclick="fetchTravel()" disabled>Suggest something</button>
-                <div class="result" id="travelResult"></div>
+        <section id="tools">
+            <div class="container">
+                <div class="grid">
+
+                    <!-- Joke Card -->
+                    <div class="card">
+                        <h2>&#x1F602; Joke Generator</h2>
+                        <p>Get a fresh joke from Llama 3.3 70B via Groq.</p>
+                        <input type="text" id="jokeTopicInput" placeholder="Topic (e.g. cats, programming)" />
+                        <button id="jokeBtn" disabled>Tell me a joke</button>
+                        <div class="result" id="jokeResult"></div>
+                    </div>
+
+                    <!-- Travel Card -->
+                    <div class="card">
+                        <h2>&#x2708;&#xFE0F; Travel Suggestion</h2>
+                        <p>Ask GPT-4o mini what to do in any city.</p>
+                        <input type="text" id="cityInput" placeholder="Enter a city (e.g. Tokyo)" />
+                        <span class="validation" id="cityValidation"></span>
+                        <button id="travelBtn" disabled>Suggest something</button>
+                        <div class="result" id="travelResult"></div>
+                    </div>
+
+                    <!-- Summarizer Card -->
+                    <div class="card">
+                        <h2>&#x1F50E; Website Summarizer</h2>
+                        <p>Paste a URL and let GPT-4o mini summarize the page.</p>
+                        <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" />
+                        <span class="validation" id="urlValidation"></span>
+                        <button id="summarizeBtn" disabled>Summarize</button>
+                        <div class="result" id="summarizeResult"></div>
+                    </div>
+
+                    <!-- Arena Card -->
+                    <div class="card">
+                        <h2>&#x1F94A; LLM Arena</h2>
+                        <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
+                        <input type="text" id="promptInput" placeholder="Ask both models the same thing" />
+                        <span class="validation" id="promptValidation"></span>
+                        <button id="arenaBtn" disabled>Battle</button>
+                        <div class="result" id="arenaResult"></div>
+                    </div>
+
+                </div>
             </div>
-
-            <!-- Summarizer Card -->
-            <div class="card">
-                <h2>&#x1F50E; Website Summarizer</h2>
-                <p>Paste a URL and let GPT-4o mini summarize the page.</p>
-                <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" oninput="onUrlInput()" />
-                <span class="validation" id="urlValidation"></span>
-                <button id="summarizeBtn" onclick="fetchSummary()" disabled>Summarize</button>
-                <div class="result" id="summarizeResult"></div>
-            </div>
-
-            <!-- Arena Card -->
-            <div class="card">
-                <h2>&#x1F94A; LLM Arena</h2>
-                <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
-                <input type="text" id="promptInput" placeholder="Ask both models the same thing"
-                    oninput="onPromptInput()" />
-                <span class="validation" id="promptValidation"></span>
-                <button id="arenaBtn" onclick="fetchArena()" disabled>Battle</button>
-                <div class="result" id="arenaResult"></div>
-            </div>
-
-        </div>
+        </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 TechToday.</p>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
-    <script>
-        const API = "";
-
-        function setLoading(btn, result, loading) {
-            btn.disabled = loading;
-            btn.innerHTML = loading
-                ? `<span class="spinner"></span> Loading…`
-                : btn.dataset.label;
-        }
-
-        async function fetchJoke() {
-            const btn = document.getElementById("jokeBtn");
-            const result = document.getElementById("jokeResult");
-            const topic = document.getElementById("jokeTopicInput").value.trim();
-            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
-            setLoading(btn, result, true);
-            result.className = "result visible";
-            result.textContent = "";
-            try {
-                const res = await fetch(`${API}/joke`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ topic }),
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                result.textContent = data.result;
-            } catch (e) {
-                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
-            } finally {
-                setLoading(btn, result, false);
-            }
-        }
-
-        function onJokeInput() {
-            const val = document.getElementById("jokeTopicInput").value.trim();
-            document.getElementById("jokeBtn").disabled = !val;
-        }
-
-        function onCityInput() {
-            const val = document.getElementById("cityInput").value.trim();
-            document.getElementById("travelBtn").disabled = !val;
-            document.getElementById("cityValidation").textContent = "";
-        }
-
-        async function fetchTravel() {
-            const btn = document.getElementById("travelBtn");
-            const result = document.getElementById("travelResult");
-            const city = document.getElementById("cityInput").value.trim();
-            if (!city) {
-                document.getElementById("cityValidation").textContent = "Please enter a city name.";
-                document.getElementById("cityInput").focus();
-                return;
-            }
-            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
-            setLoading(btn, result, true);
-            result.className = "result visible";
-            result.textContent = "";
-            try {
-                const res = await fetch(`${API}/travel`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ city }),
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                result.textContent = data.result;
-            } catch (e) {
-                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
-            } finally {
-                setLoading(btn, result, false);
-            }
-        }
-
-        function onUrlInput() {
-            const val = document.getElementById("urlInput").value.trim();
-            document.getElementById("summarizeBtn").disabled = !val;
-            document.getElementById("urlValidation").textContent = "";
-        }
-
-        async function fetchSummary() {
-            const btn = document.getElementById("summarizeBtn");
-            const result = document.getElementById("summarizeResult");
-            const url = document.getElementById("urlInput").value.trim();
-            if (!url) {
-                document.getElementById("urlValidation").textContent = "Please enter a website URL.";
-                document.getElementById("urlInput").focus();
-                return;
-            }
-            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
-            setLoading(btn, result, true);
-            result.className = "result visible";
-            result.textContent = "";
-            try {
-                const res = await fetch(`${API}/summarize`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ url }),
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                result.textContent = data.result;
-            } catch (e) {
-                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
-            } finally {
-                setLoading(btn, result, false);
-            }
-        }
-
-        function onPromptInput() {
-            const val = document.getElementById("promptInput").value.trim();
-            document.getElementById("arenaBtn").disabled = !val;
-            document.getElementById("promptValidation").textContent = "";
-        }
-
-        async function fetchArena() {
-            const btn = document.getElementById("arenaBtn");
-            const result = document.getElementById("arenaResult");
-            const prompt = document.getElementById("promptInput").value.trim();
-            if (!prompt) {
-                document.getElementById("promptValidation").textContent = "Please enter a prompt.";
-                document.getElementById("promptInput").focus();
-                return;
-            }
-            if (!btn.dataset.label) btn.dataset.label = btn.textContent;
-            setLoading(btn, result, true);
-            result.className = "result visible";
-            result.textContent = "";
-            try {
-                const res = await fetch(`${API}/arena`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt }),
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                const a = data.result.model_a;
-                const b = data.result.model_b;
-                result.innerHTML = `<div class="arena-grid"><div class="arena-col"><div class="model-name">🤖 ${a.model}</div>${a.reply}</div><div class="arena-col"><div class="model-name">🤖 ${b.model}</div>${b.reply}</div></div>`;
-            } catch (e) {
-                result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
-            } finally {
-                setLoading(btn, result, false);
-            }
-        }
-    </script>
+    <script src="js/main.js"></script>
 </body>
 
 </html>
