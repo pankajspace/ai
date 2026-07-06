@@ -163,7 +163,7 @@ aws --version
 # Expected output: aws-cli/2.x.x Python/3.x.x ...
 ```
 
-> Credential configuration requires an IAM user — you'll create one in [§ 3.1](#31-create-iam-user-for-cli-access) and configure credentials in [§ 3.2](#32-configure-aws-cli-credentials).
+> Credential configuration requires an IAM user — you'll create one in [§ 3.1](#31-create-iam-user-for-cli-access) and log in via [§ 3.2](#32-authenticate-aws-cli-with-aws-login).
 
 ---
 
@@ -350,9 +350,9 @@ These steps are done **once** for the entire server and shared by all projects. 
 
 ### 3.1. Create IAM User for CLI Access
 
-> **One-time.** You need an IAM user with programmatic access to run the `aws` commands in this guide from your local machine. If you already have an IAM user with the required permissions, skip to [§ 3.2](#32-configure-aws-cli-credentials).
+> **One-time.** You need an IAM user to run the `aws` commands in this guide from your local machine. If you already have an IAM user in the admin group with the `SignInLocalDevelopmentAccess` policy attached, skip to [§ 3.2](#32-authenticate-aws-cli-with-aws-login).
 >
-> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating IAM users with only the permissions they need ([least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege)). The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating separate IAM users for day-to-day work. The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
 
 #### CloudShell / Console alternative
 This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
@@ -361,179 +361,47 @@ This step uses only `aws iam` commands — you can run them in [AWS CloudShell](
 
 ```bash
 # 1. Create the IAM user
-aws iam create-user --user-name techtoday-admin
+aws iam create-user --user-name techtoday
 
-# 2. Create a custom policy with the permissions needed for this guide
-#    (EC2, Route 53, IAM, Secrets Manager, ECR, S3, CloudFront, STS)
-aws iam create-policy \
-  --policy-name TechTodayAdminPolicy \
-  --policy-document '{
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "EC2Full",
-        "Effect": "Allow",
-        "Action": [
-          "ec2:RunInstances",
-          "ec2:DescribeInstances",
-          "ec2:DescribeImages",
-          "ec2:CreateSecurityGroup",
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:AllocateAddress",
-          "ec2:AssociateAddress",
-          "ec2:DescribeAddresses",
-          "ec2:AssociateIamInstanceProfile",
-          "ec2:CreateKeyPair",
-          "ec2:DescribeKeyPairs",
-          "ec2:CreateDefaultVpc",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets",
-          "ec2:CreateDefaultSubnet",
-          "ec2:DescribeAvailabilityZones",
-          "ec2:ModifySubnetAttribute"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "Route53",
-        "Effect": "Allow",
-        "Action": [
-          "route53:ListHostedZones",
-          "route53:ChangeResourceRecordSets",
-          "route53:GetHostedZone"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "IAMRolesAndPolicies",
-        "Effect": "Allow",
-        "Action": [
-          "iam:CreateRole",
-          "iam:PutRolePolicy",
-          "iam:CreateInstanceProfile",
-          "iam:AddRoleToInstanceProfile",
-          "iam:CreateOpenIDConnectProvider",
-          "iam:CreateUser",
-          "iam:CreatePolicy",
-          "iam:AttachUserPolicy",
-          "iam:CreateAccessKey",
-          "iam:ListUsers",
-          "iam:GetRole",
-          "iam:GetPolicy",
-          "iam:ListAttachedUserPolicies"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "SecretsManager",
-        "Effect": "Allow",
-        "Action": [
-          "secretsmanager:CreateSecret",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:PutSecretValue",
-          "secretsmanager:DescribeSecret"
-        ],
-        "Resource": "arn:aws:secretsmanager:*:*:secret:techtoday/*"
-      },
-      {
-        "Sid": "ECR",
-        "Effect": "Allow",
-        "Action": [
-          "ecr:CreateRepository",
-          "ecr:DescribeRepositories",
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:PutImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImageScanningConfiguration",
-          "ecr:DescribeImages",
-          "ecr:BatchGetImage",
-          "ecr:GetDownloadUrlForLayer"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "S3ForStaticSite",
-        "Effect": "Allow",
-        "Action": [
-          "s3:CreateBucket",
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ],
-        "Resource": [
-          "arn:aws:s3:::techtoday-site",
-          "arn:aws:s3:::techtoday-site/*"
-        ]
-      },
-      {
-        "Sid": "CloudFront",
-        "Effect": "Allow",
-        "Action": [
-          "cloudfront:CreateDistribution",
-          "cloudfront:CreateInvalidation",
-          "cloudfront:GetDistribution"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "STS",
-        "Effect": "Allow",
-        "Action": ["sts:GetCallerIdentity"],
-        "Resource": "*"
-      }
-    ]
-  }'
+# 2. Add the user to the admin group (grants full AWS permissions)
+aws iam add-user-to-group --user-name techtoday --group-name admin
 
-# 3. Attach the policy to the user
+# 3. Attach the SignInLocalDevelopmentAccess policy to enable `aws login`
 #    Replace ACCOUNT_ID with your 12-digit AWS account ID
 aws iam attach-user-policy \
-  --user-name techtoday-admin \
-  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/TechTodayAdminPolicy
-
-# 4. Create an access key pair for programmatic access
-aws iam create-access-key --user-name techtoday-admin
-#    Save the AccessKeyId and SecretAccessKey from the output — the secret
-#    is shown only once and cannot be retrieved later.
+  --user-name techtoday \
+  --policy-arn arn:aws:iam::ACCOUNT_ID:policy/SignInLocalDevelopmentAccess
 ```
 
-> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user's credentials immediately (see [§ 3.2](#32-configure-aws-cli-credentials)) and avoid using root credentials for day-to-day work.
+> **Note:** If this is a brand-new AWS account and you are running the commands above as the root user, you can use the root credentials temporarily. After creating the IAM user, switch to the IAM user immediately via `aws login` (see [§ 3.2](#32-authenticate-aws-cli-with-aws-login)) and avoid using root credentials for day-to-day work.
+>
+> **Prerequisites:** The `admin` group must already exist in your AWS account with the `AdministratorAccess` policy attached. If it doesn't, create it first: **IAM** → **User groups** → **Create group** → name `admin` → attach the `AdministratorAccess` AWS managed policy → **Create group**.
 
 #### 3.1.2. AWS Console
 
 1. Open **IAM** → **Users** → **Create user**
-2. **User name:** `techtoday-admin` → **Next**
-3. **Set permissions:** select **Attach policies directly**
-   - Click **Create policy** (opens a new tab):
-     - Switch to the **JSON** editor and paste the policy document from the CLI section above
-     - **Policy name:** `TechTodayAdminPolicy` → **Create policy**
-   - Back on the user creation tab, click the refresh icon (🔄) next to the policy search box
-   - Search for `TechTodayAdminPolicy`, check the box → **Next**
+2. **User name:** `techtoday` → **Next**
+3. **Set permissions:** select **Add user to group**
+   - Select the `admin` group → **Next**
 4. Review and click **Create user**
-5. **Generate access keys:** Click the new user name → **Security credentials** tab → **Create access key**
-   - **Use case:** select **Command Line Interface (CLI)** → check the confirmation box → **Next**
-   - **Description tag:** `local-cli` (optional) → **Create access key**
-   - **Copy both the Access Key ID and Secret Access Key** — the secret is shown only once. Store them securely (e.g., a password manager). → **Done**
+5. **Attach SignInLocalDevelopmentAccess:** Click the new user name → **Permissions** tab → **Add permissions** → **Attach policies directly**
+   - Search for `SignInLocalDevelopmentAccess`, check the box → **Next** → **Add permissions**
 
-> **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday-admin` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
+> **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
 
 ---
 
-### 3.2. Configure AWS CLI Credentials
+### 3.2. Authenticate AWS CLI with `aws login`
+
+The `aws login` command opens a browser-based sign-in flow. It issues short-lived session credentials — no long-lived access keys to manage or rotate.
 
 ```bash
-aws configure
+aws login
 ```
 
-You will be prompted for:
+This opens your default browser to the AWS sign-in page. Sign in with the `techtoday` IAM user credentials (username + password). Once authenticated, the CLI receives temporary session credentials automatically.
 
-1. **AWS Access Key ID** — from the IAM user access key created in [§ 3.1](#31-create-iam-user-for-cli-access)
-2. **AWS Secret Access Key** — from the IAM user access key created in [§ 3.1](#31-create-iam-user-for-cli-access)
-3. **Default region name** — e.g., `us-east-1`
-4. **Default output format** — `json` (recommended)
+> **First-time IAM user?** If the IAM user does not have a console password yet, set one in the AWS Console: **IAM** → **Users** → `techtoday` → **Security credentials** → **Console sign-in** → **Enable console access** → set a password.
 
 #### 3.2.1. Verify Credentials
 
@@ -542,7 +410,14 @@ aws sts get-caller-identity
 # Should print your Account, UserId, and Arn — not an error
 ```
 
-> Credentials are stored in `~/.aws/credentials` and `~/.aws/config`. They are never committed to git. For multiple AWS accounts, use [named profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html): `aws configure --profile techtoday`, then add `--profile techtoday` to each command or set `export AWS_PROFILE=techtoday`.
+#### 3.2.2. Re-authenticate When Sessions Expire
+
+Session credentials from `aws login` are temporary. When they expire, simply run `aws login` again to get a fresh session.
+
+> **Region configuration:** If you haven't set a default region, configure it once:
+> ```bash
+> aws configure set region us-east-1
+> ```
 >
 > The IAM roles in [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
@@ -647,7 +522,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
 #### 3.4.2. AWS Console
 1. Open **EC2** → **Instances** → **Launch instances**
 2. Name: `techtoday-server`, AMI: **Amazon Linux 2023**, Instance type: `t2.micro`
-3. Key pair: select or create a key pair (save the `.pem` file)
+3. Key pair: select or create a key pair (save the `.pem` file) (We can create multiple key pairs for different Operating Systems for the same EC2 instance)
 4. Under **Network settings**: the default VPC from [§ 3.3](#33-create-default-vpc) is auto-selected; create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
 5. Click **Launch instance**
 
@@ -715,6 +590,33 @@ ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 >
 > **If SSH immediately prints `Permission denied (publickey)`:**
 > The connection reached the server but the key was rejected. Check: (1) key permissions are `400` (`chmod 400 techtoday.pem`), (2) username is `ec2-user` not `ubuntu` or `root`, (3) you are using the `.pem` that matches the key pair selected when launching the instance.
+>
+> **If you lost the original `.pem` file:**
+> AWS only lets you download the private key **once** at creation time — there is no way to retrieve it later. To regain access:
+>
+> 1. **Connect via EC2 Instance Connect:** Go to **EC2 → Instances → select instance → Connect → EC2 Instance Connect tab → Connect**. This opens a browser-based SSH session with no key file needed.
+> 2. **Create a new key pair locally:**
+>    ```bash
+>    # On your local machine — create a new key pair
+>    aws ec2 create-key-pair --key-name techtoday-new \
+>      --query "KeyMaterial" --output text > techtoday-new.pem
+>    chmod 400 techtoday-new.pem
+>    ```
+>    Or create one in the Console: **EC2 → Key Pairs → Create key pair** → download the `.pem` file.
+> 3. **Extract the public key from the new `.pem` file:**
+>    ```bash
+>    # On your local machine
+>    ssh-keygen -y -f techtoday-new.pem
+>    # Prints: ssh-rsa AAAA... (copy the entire output)
+>    ```
+> 4. **Add it on the EC2 instance** (in the EC2 Instance Connect browser session):
+>    ```bash
+>    echo "ssh-rsa AAAA...your-full-public-key..." >> ~/.ssh/authorized_keys
+>    ```
+> 5. **SSH from your local machine with the new key:**
+>    ```bash
+>    ssh -i techtoday-new.pem ec2-user@44.193.134.238
+>    ```
 
 ---
 
