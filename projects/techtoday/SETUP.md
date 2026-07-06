@@ -1,4 +1,4 @@
-[← Project README](README.md) | [Project Daily](DAILY.md) | [Shared Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
+[← Project README](README.md) | [Project Daily](DAILY.md) | [Shared Setup Guide](../SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
 
 # TechToday Home Page — Setup
 

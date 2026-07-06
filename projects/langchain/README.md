@@ -1,4 +1,4 @@
-[← README](../../README.md) | [Project Setup](SETUP.md) | [Project Daily](DAILY.md) | [Projects Guide](../README.md)
+[← README](../../README.md) | [Project Setup](SETUP.md) | [Project Daily](DAILY.md) | [Architecture Guide](../ARCHITECTURE.md)
 
 # LangChain Lab
 
@@ -100,4 +100,4 @@ Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing 
 3. **ECR repository:** `techtoday/langchain`
 4. **Path prefix env var:** `PATH_PREFIX=/langchain`
 
-Merging to `main` triggers CI/CD automatically. For the full production deploy steps, see [SETUP.md § 2](SETUP.md#2-production-deployment) and for day-to-day commands see [DAILY.md](DAILY.md). See also the [Projects Guide](../README.md).
+Merging to `main` triggers CI/CD automatically. For the full production deploy steps, see [SETUP.md § 2](SETUP.md#2-production-deployment) and for day-to-day commands see [DAILY.md](DAILY.md). See also the [Architecture Guide](../ARCHITECTURE.md).

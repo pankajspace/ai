@@ -1,8 +1,8 @@
-[← Project README](README.md) | [Project Setup](SETUP.md) | [Shared Cheatsheet](../DAILY.md) | [Projects Guide](../README.md)
+[← Project README](README.md) | [Project Setup](SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
 
 # LangChain Lab (langchain) — Daily Cheatsheet
 
-Quick-reference commands for day-to-day work on the **LangChain Lab (langchain)** project. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Shared Cheatsheet](../DAILY.md).
+Quick-reference commands for day-to-day work on the **LangChain Lab (langchain)** project. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Development Workflow](../ARCHITECTURE.md#development-workflow).
 
 Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (host port `5001`), ECR repo `techtoday/langchain`.
 

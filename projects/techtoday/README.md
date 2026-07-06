@@ -1,4 +1,4 @@
-[← README](../../README.md) · [Project Setup](SETUP.md) · [Project Daily](DAILY.md) · [Projects Guide](../README.md)
+[← README](../../README.md) · [Project Setup](SETUP.md) · [Project Daily](DAILY.md) · [Architecture Guide](../ARCHITECTURE.md)
 
 # TechToday — Home Page
 
@@ -25,7 +25,7 @@ projects/techtoday/
         └── main.js     ← mobile nav toggle, no external libraries
 ```
 
-> Project setup lives in [SETUP.md](SETUP.md) and daily commands in [DAILY.md](DAILY.md). Shared infrastructure and architecture live in [../SETUP.md](../SETUP.md) and [../README.md](../README.md).
+> Project setup lives in [SETUP.md](SETUP.md) and daily commands in [DAILY.md](DAILY.md). Shared infrastructure and architecture live in [../SETUP.md](../SETUP.md) and [../ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ---
 
@@ -67,4 +67,4 @@ python3 -m http.server 8000
 
 ## Deployment
 
-See [SETUP.md § 2](SETUP.md#2-production-deployment) for step-by-step production setup, or the [Projects Guide](../README.md) for alternative deployment options (S3 + CloudFront).
+See [SETUP.md § 2](SETUP.md#2-production-deployment) for step-by-step production setup, or the [Architecture Guide](../ARCHITECTURE.md) for alternative deployment options (S3 + CloudFront).

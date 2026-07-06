@@ -21,9 +21,8 @@
 2. [AI Infused Learning - 2](study/02-AI-Infused-Learning-2/ai-infused-learning-2.md) : 04-07-2026
 
 ## Documentation
-1. [Setup Guide](projects/SETUP.md)
-2. [Projects Guide](projects/README.md)
-3. [Daily Cheatsheet](projects/DAILY.md)
+1. [Architecture Guide](projects/ARCHITECTURE.md)
+2. [Setup Guide](projects/SETUP.md)
 
 ## List of Projects (Increasing Complexity)
 1. [techtoday](projects/techtoday/README.md)

@@ -1,8 +1,8 @@
-[← Project README](README.md) | [Project Setup](SETUP.md) | [Shared Cheatsheet](../DAILY.md) | [Projects Guide](../README.md)
+[← Project README](README.md) | [Project Setup](SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
 
 # TechToday Home Page — Daily Cheatsheet
 
-Quick-reference commands for day-to-day work on the **TechToday home page**. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Shared Cheatsheet](../DAILY.md).
+Quick-reference commands for day-to-day work on the **TechToday home page**. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Development Workflow](../ARCHITECTURE.md#development-workflow).
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no container.
 

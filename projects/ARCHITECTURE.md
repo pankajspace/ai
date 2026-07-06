@@ -1,8 +1,8 @@
-[← README](../README.md) · [Setup Guide](SETUP.md) · [Daily Cheatsheet](DAILY.md)
+[← README](../README.md) · [Setup Guide](SETUP.md)
 
-# Projects — techtoday.click
+# Projects Architecture — techtoday.click
 
-Architecture, configuration reference, and design decisions for all projects. For step-by-step setup, see the [Setup Guide](SETUP.md). For day-to-day development and deployment commands, see the [Daily Cheatsheet](DAILY.md).
+Architecture, configuration reference, design decisions, and the shared development workflow for all projects. For step-by-step setup, see the [Setup Guide](SETUP.md). For day-to-day commands, see each project's own `DAILY.md` (linked from the [Development Workflow](#development-workflow) section below).
 
 ---
 
@@ -108,6 +108,53 @@ Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3
 ## When to Upgrade to ECS Fargate + ALB
 
 Upgrade when a project needs to scale beyond a single EC2 instance, requires zero-downtime blue/green deployments, or sustained concurrent traffic consistently exceeds what a `t3.small` can handle.
+
+---
+
+## Development Workflow
+
+The shared git flow for all projects. Per-project develop / commit / deploy / rollback commands live in each project's own cheatsheet:
+
+1. **TechToday Home Page** — [techtoday/DAILY.md](techtoday/DAILY.md)
+2. **AI Playground (basic)** — [basic/DAILY.md](basic/DAILY.md)
+3. **LangChain Lab (langchain)** — [langchain/DAILY.md](langchain/DAILY.md)
+
+### 1. Start a Feature
+
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/short-description
+```
+
+### 2. Develop, Commit & Deploy
+
+Follow your project's cheatsheet for the local dev loop, commit scope, and deployment:
+
+1. [techtoday/DAILY.md](techtoday/DAILY.md) — static preview; deploys to the root domain
+2. [basic/DAILY.md](basic/DAILY.md) — web UI on port 8080; deploys to `/basic/`
+3. [langchain/DAILY.md](langchain/DAILY.md) — web UI on port 8081; deploys to `/langchain/`
+
+Each project scopes its commits to its own folder (e.g. `git add projects/basic/`), then opens a PR and **squash-merges** into `main`.
+
+### 3. Deploy (Automatic)
+
+Merging to `main` triggers CI/CD automatically — no manual steps needed. Each project has its own workflow (see [CI/CD Workflows](#cicd-workflows) above), triggered only when that project's files change. Watch the run under **GitHub → Actions** to confirm it succeeds.
+
+### 4. Verify Production
+
+```bash
+curl -I https://techtoday.click/
+curl -I https://app.techtoday.click/basic/
+curl -I https://app.techtoday.click/langchain/
+```
+
+Or just open the URLs in a browser.
+
+### 5. Rollback & Manual Deploy
+
+These are project-specific — see the **Rollback** and **Manual Deploy** sections in each project's cheatsheet ([techtoday](techtoday/DAILY.md), [basic](basic/DAILY.md), [langchain](langchain/DAILY.md)).
+
+> Reminder: `$ELASTIC_IP` is the public IP of the EC2 instance (AWS console → EC2 → Instances → techtoday-server). For us it is `44.193.134.238`.
 
 ---
 
