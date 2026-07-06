@@ -25,12 +25,12 @@ Route 53 (techtoday.click hosted zone)
                               │  HTTP  :80  → redirect to HTTPS               │
                               │                                               │
                               │  techtoday.click/   → /var/www/techtoday      │
-                              │  /ai-01/*           → localhost:5000          │
+                              │  /basic/*           → localhost:5000          │
                               │  /ai-02/*           → localhost:5001 (future) │
                               └───────────────────────────────────────────────┘
                                          │
                               Docker Compose (app subdomain only)
-                              ├── ai-01  (port 5000, from ECR)
+                              ├── basic  (port 5000, from ECR)
                               └── ai-02  (port 5001, future)
 
               ECR             → per-project image repositories (techtoday/ai-*)
@@ -97,7 +97,7 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 
 | Project | Workflow | Trigger Path | What It Does |
 |---|---|---|---|
-| basic (ai-01) | [deploy-ai-01.yml](../.github/workflows/deploy-ai-01.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
+| basic (basic) | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
 | techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 
 Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
@@ -110,35 +110,35 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 ---
 
-# AI Playground (basic / ai-01)
+# AI Playground (basic / basic)
 
-For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--ai-01) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic--ai-01) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic--basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
 ## Deployment Target
 
-- **URL:** `https://app.techtoday.click/ai-01/`
+- **URL:** `https://app.techtoday.click/basic/`
 - **Container port:** `5000` (mapped to EC2 port `5000`)
-- **ECR repository:** `techtoday/ai-01`
-- **Path prefix env var:** `PATH_PREFIX=/ai-01`
+- **ECR repository:** `techtoday/basic`
+- **Path prefix env var:** `PATH_PREFIX=/basic`
 
 ---
 
 ## Flask Path Prefix Configuration
 
-Because Nginx forwards the full path (e.g., `/ai-01/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
+Because Nginx forwards the full path (e.g., `/basic/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
 # src/app.py (abbreviated)
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /ai-01 in production, empty locally
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /basic in production, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
 - **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`, `/summarize`, `/arena`
-- **On EC2:** `PATH_PREFIX=/ai-01` → routes are `/ai-01/`, `/ai-01/joke`, `/ai-01/travel`, `/ai-01/summarize`, `/ai-01/arena`
+- **On EC2:** `PATH_PREFIX=/basic` → routes are `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
 
-The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/ai-01/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
+The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/basic/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
 
 ---
 

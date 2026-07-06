@@ -1,4 +1,4 @@
-# Builds and deploys the "ai-01" project (projects/basic) to production.
+# Builds and deploys the "basic" project (projects/basic) to production.
 #
 # Trigger: any push to `main` that changes a file under `projects/basic/`.
 #
@@ -13,27 +13,27 @@
 #   6. Write the build tag to the run's job summary so it's easy to find
 #      later if a rollback is ever needed.
 #   7. SSH into the production EC2 host and tell Docker Compose to pull and
-#      restart only the `ai-01` container — every other service already
+#      restart only the `basic` container — every other service already
 #      running on that host (e.g. a future `ai-02`) is left untouched.
 #
 # See projects/DEPLOYMENT.md ("CI/CD: Auto-Deploy on Push to main") for the
 # one-time AWS/GitHub setup this workflow depends on (OIDC provider, IAM
 # roles, GitHub secrets), and projects/DEVELOPMENT.md for day-to-day usage,
 # manual fallback deployment, and rollback instructions.
-name: Deploy ai-01
+name: Deploy basic
 
 on:
   push:
     branches: [main]
     # Only run when this project's own files change, so unrelated commits
     # (e.g. edits to a different project, or to root-level docs) don't
-    # trigger an unnecessary redeploy of ai-01.
+    # trigger an unnecessary redeploy of basic.
     paths:
       - 'projects/basic/**'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: techtoday/ai-01
+  ECR_REPOSITORY: techtoday/basic
   # Full 40-character git commit SHA for this run. Pushed as one of the three
   # image tags below — useful for exact traceability, if less readable than
   # the build tag computed further down.
@@ -122,7 +122,7 @@ jobs:
 
       - name: Deploy to EC2 via SSH
         # Connects to the production host and tells Docker Compose to pull
-        # the ":latest" image just pushed above and restart only the ai-01
+        # the ":latest" image just pushed above and restart only the basic
         # container.
         uses: appleboy/ssh-action@v1
         with:
@@ -142,11 +142,11 @@ jobs:
             # -f ~/docker-compose.yml : always target the one production
             #     compose file explicitly, regardless of the SSH session's
             #     working directory.
-            # pull ai-01              : only fetch the new image for this
+            # pull basic              : only fetch the new image for this
             #     project, not every service defined in the compose file.
-            # up -d --no-deps ai-01   : only recreate the ai-01 container;
+            # up -d --no-deps basic   : only recreate the basic container;
             #     --no-deps stops Compose from touching any other service
             #     (e.g. a future ai-02) defined in the same compose file, so
             #     this deploy has zero downtime for unrelated projects.
-            docker compose -f ~/docker-compose.yml pull ai-01
-            docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
+            docker compose -f ~/docker-compose.yml pull basic
+            docker compose -f ~/docker-compose.yml up -d --no-deps basic

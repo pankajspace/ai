@@ -6,8 +6,8 @@ Architecture notes
   ``app``.  This lets us register the entire Blueprint under a runtime
   URL prefix (``PATH_PREFIX``) without touching individual route strings.
 - In local development PATH_PREFIX is empty, so routes are at "/", "/joke",
-  etc.  In production Nginx forwards ``/ai-01/...`` traffic to the container
-  and PATH_PREFIX is set to "/ai-01", keeping every URL consistent.
+  etc.  In production Nginx forwards ``/basic/...`` traffic to the container
+  and PATH_PREFIX is set to "/basic", keeping every URL consistent.
 - flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
   page can call the API even if it is served from a different origin during
   development.
@@ -27,7 +27,7 @@ from travel import get_travel_suggestion
 # Configuration
 # ---------------------------------------------------------------------------
 
-# PATH_PREFIX is set by the deployment environment (e.g. "/ai-01") so the app
+# PATH_PREFIX is set by the deployment environment (e.g. "/basic") so the app
 # works correctly behind an Nginx location block.  Locally it is empty string,
 # which mounts all routes at the root.
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")

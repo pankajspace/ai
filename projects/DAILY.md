@@ -17,7 +17,7 @@ git checkout -b feat/short-description
 
 ## 2. Develop Locally
 
-### AI Playground (basic / ai-01)
+### AI Playground (basic / basic)
 
 ```bash
 cd projects/basic
@@ -67,7 +67,7 @@ python3 -m http.server 8000
 ```bash
 # AI Playground
 git add projects/basic/
-git commit -m "feat(ai-01): short description"
+git commit -m "feat(basic): short description"
 
 # TechToday
 git add projects/techtoday/
@@ -85,7 +85,7 @@ Open a Pull Request on GitHub → get it reviewed → **Squash and merge** into 
 
 Merging to `main` triggers CI/CD automatically — no manual steps needed.
 
-- **basic (ai-01)** — `deploy-ai-01.yml` — trigger path `projects/basic/**`
+- **basic (basic)** — `deploy-basic.yml` — trigger path `projects/basic/**`
 - **techtoday** — `deploy-techtoday.yml` — trigger path `projects/techtoday/**`
 
 Watch the run under **GitHub → Actions** to confirm it succeeds.
@@ -95,7 +95,7 @@ Watch the run under **GitHub → Actions** to confirm it succeeds.
 ## 5. Verify Production
 
 ```bash
-curl -I https://app.techtoday.click/ai-01/
+curl -I https://app.techtoday.click/basic/
 curl -I https://techtoday.click/
 ```
 
@@ -107,7 +107,7 @@ Or just open both URLs in a browser.
 
 ```bash
 # 1. Find the last good build tag
-aws ecr describe-images --repository-name techtoday/ai-01 --region us-east-1 \
+aws ecr describe-images --repository-name techtoday/basic --region us-east-1 \
   --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
 
 # 2. SSH in and roll back
@@ -122,13 +122,13 @@ ROLLBACK_TAG=<build-tag>   # e.g. 20260701-153045-42-a1b2c3d
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
-docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:$ROLLBACK_TAG
-docker tag  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:$ROLLBACK_TAG \
-            $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
-docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
+docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:$ROLLBACK_TAG
+docker tag  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:$ROLLBACK_TAG \
+            $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
 
 # 3. Verify
-curl -I https://app.techtoday.click/ai-01/
+curl -I https://app.techtoday.click/basic/
 ```
 
 > Fix the bug and merge promptly — the next push to `main` overwrites `:latest`.
@@ -157,13 +157,13 @@ aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 cd projects/basic
-docker build -t techtoday/ai-01 .
-docker tag techtoday/ai-01:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-01:latest
+docker build -t techtoday/basic .
+docker tag techtoday/basic:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
 
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
   aws ecr get-login-password --region us-east-1 | \
     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-  docker compose -f ~/docker-compose.yml pull ai-01
-  docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
+  docker compose -f ~/docker-compose.yml pull basic
+  docker compose -f ~/docker-compose.yml up -d --no-deps basic
 ```

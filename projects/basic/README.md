@@ -178,7 +178,7 @@ docker compose run --rm arena
 
 1. `OPENAI_API_KEY` — used by `travel`, `summarize`, and `arena` (Model A).  Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. `GROQ_API_KEY` — used by `joke` and `arena` (Model B).  Get it from [console.groq.com/keys](https://console.groq.com/keys) — free tier available.
-3. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/ai-01"`).  Controls the URL prefix the Flask Blueprint is mounted under.  Leave it unset for local development.
+3. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/basic"`).  Controls the URL prefix the Flask Blueprint is mounted under.  Leave it unset for local development.
 
 Variables are loaded from `.env` at runtime via `python-dotenv`.  See `.env.example` for the expected format.
 
@@ -239,7 +239,7 @@ projects/basic/
 
 **`app.py`**
 - All routes are attached to a Flask `Blueprint` so the entire API surface can be mounted under a runtime `PATH_PREFIX` without changing individual route strings.
-- `GET /` — reads `index.html`, replaces the `const API = "";` placeholder with `PATH_PREFIX`, and returns the patched HTML.  This keeps the same HTML file working both locally (empty prefix) and in production (e.g. `/ai-01`).
+- `GET /` — reads `index.html`, replaces the `const API = "";` placeholder with `PATH_PREFIX`, and returns the patched HTML.  This keeps the same HTML file working both locally (empty prefix) and in production (e.g. `/basic`).
 - `POST /joke` — body: `{ "topic": "..." }` (optional) → `{ "result": "..." }` with `Cache-Control: no-store`.
 - `POST /travel` — body: `{ "city": "..." }` (required) → `{ "result": "..." }`.
 - `POST /summarize` — body: `{ "url": "..." }` (required) → `{ "result": "..." }`.  Returns HTTP 400 if `url` is missing.
@@ -291,5 +291,5 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 
 ## Production Routing
 
-In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /ai-01 { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/ai-01` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See the [Projects Guide](../README.md) for the full architecture, or the [Setup Guide](../SETUP.md) for step-by-step infrastructure setup.
+In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /basic { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/basic` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See the [Projects Guide](../README.md) for the full architecture, or the [Setup Guide](../SETUP.md) for step-by-step infrastructure setup.
 

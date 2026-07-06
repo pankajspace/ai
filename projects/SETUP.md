@@ -265,7 +265,7 @@ rsync --version        # ✓ openrsync: protocol version 29
 
 ## 2. Local Development Setup
 
-### 2.1. AI Playground (basic / ai-01)
+### 2.1. AI Playground (basic / basic)
 
 #### 2.1.1. Prerequisites
 
@@ -722,7 +722,7 @@ server {
     listen 80;
     server_name app.techtoday.click;
 
-    location /ai-01/ {
+    location /basic/ {
         proxy_pass         http://localhost:5000;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
@@ -802,7 +802,7 @@ aws iam create-instance-profile --instance-profile-name ec2-techtoday-server-pro
 aws iam add-role-to-instance-profile \
   --instance-profile-name ec2-techtoday-server-profile \
   --role-name ec2-techtoday-server-role
-  
+
 aws ec2 associate-iam-instance-profile \
   --instance-id $INSTANCE_ID \
   --iam-instance-profile Name=ec2-techtoday-server-profile
@@ -887,7 +887,8 @@ aws iam put-role-policy \
 2. **Create the deploy role:** Open **IAM** → **Roles** → **Create role**
    - **Trusted entity type:** Web identity
    - **Identity provider:** select `token.actions.githubusercontent.com`
-   - **Audience:** `sts.amazonaws.com` → **Next**
+   - **Audience:** `sts.amazonaws.com`
+   - **GitHub Organization:** `YOUR_GITHUB_ORG` (replace with your org name or your username) → **Next**
    - Skip managed policies → **Next**
    - **Role name:** `github-actions-deploy` → **Create role**
 3. **Edit the trust policy:** Open the role → **Trust relationships** tab → **Edit trust policy** → add the `StringLike` condition for your repo:
@@ -933,7 +934,7 @@ A complete list of every secret and environment variable used across all project
 
 Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
 
-Shared by all project workflows (`deploy-ai-01.yml`, `deploy-techtoday.yml`):
+Shared by all project workflows (`deploy-basic.yml`, `deploy-techtoday.yml`):
 
 1. `AWS_REGION` — AWS region, e.g. `us-east-1`
 2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
@@ -947,7 +948,7 @@ Set at: **AWS Console → Secrets Manager → Store a new secret → Other type 
 
 Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
 
-1. Secret name: `techtoday/ai-01/openai-api-key`
+1. Secret name: `techtoday/secrets`
    - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
    - `GROQ_API_KEY` — Groq API key (`gsk_...`)
 
@@ -955,14 +956,14 @@ Accessed by the EC2 instance at container startup (never stored in the repo or D
 
 Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
 
-1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/ai-01` — tells Flask which prefix Nginx forwards under
+1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/basic` — tells Flask which prefix Nginx forwards under
 
-#### 3.12.4. Per-Project Secrets (ai-01)
+#### 3.12.4. Per-Project Secrets (basic)
 
 Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-secrets-manager)):
 
-1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `travel`, `summarize`, and `arena`
-2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/ai-01/openai-api-key` — used by `joke` and `arena`
+1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `travel`, `summarize`, and `arena`
+2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `joke` and `arena`
 3. `PATH_PREFIX` — set directly in `~/docker-compose.yml` on EC2 (not secret)
 
 > TechToday has no project-specific secrets or environment variables — it's a static site.
@@ -973,9 +974,9 @@ Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-s
 
 After completing § 3, follow the subsection for each project you want to deploy.
 
-### 4.1. AI Playground (basic / ai-01)
+### 4.1. AI Playground (basic / basic)
 
-Deploys to `https://app.techtoday.click/ai-01/` — container port `5000`, ECR repo `techtoday/ai-01`.
+Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR repo `techtoday/basic`.
 
 #### 4.1.1. Store API Keys in Secrets Manager
 
@@ -988,14 +989,14 @@ This step uses only `aws secretsmanager` commands — you can run them in [AWS C
 
 ```bash
 aws secretsmanager create-secret \
-  --name "techtoday/ai-01/openai-api-key" \
+  --name "techtoday/secrets" \
   --secret-string '{"OPENAI_API_KEY":"sk-...", "GROQ_API_KEY":"gsk_..."}'
 ```
 
 ##### AWS Console
 1. Open **Secrets Manager** → **Store a new secret** → **Other type of secret**
 2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
-3. Set secret name to `techtoday/ai-01/openai-api-key` → Store
+3. Set secret name to `techtoday/secrets` → Store
 
 #### 4.1.2. Create ECR Repository
 
@@ -1008,7 +1009,7 @@ This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](
 
 ```bash
 REGION=us-east-1
-REPO_NAME=techtoday/ai-01
+REPO_NAME=techtoday/basic
 
 aws ecr create-repository --repository-name $REPO_NAME --region $REGION
 
@@ -1019,7 +1020,7 @@ aws ecr put-image-scanning-configuration \
 
 ##### AWS Console
 1. Open **ECR** → **Repositories** → **Create repository**
-2. **Repository name:** `techtoday/ai-01`
+2. **Repository name:** `techtoday/basic`
 3. **Image scan settings:** enable **Scan on push**
 4. Leave other defaults → **Create repository**
 
@@ -1032,7 +1033,7 @@ aws ecr put-image-scanning-configuration \
 ```bash
 REGION=us-east-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO_NAME=techtoday/ai-01
+REPO_NAME=techtoday/basic
 
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
@@ -1045,12 +1046,12 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 #### 4.1.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
+> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `basic` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
 ```nginx
-location /ai-01/ {
+location /basic/ {
     proxy_pass         http://localhost:5000;
     proxy_set_header   Host $host;
     proxy_set_header   X-Real-IP $remote_addr;
@@ -1067,7 +1068,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 #### 4.1.5. Add Service to Docker Compose on EC2
 
-> **One-time.** Adds the `ai-01` service to `~/docker-compose.yml` on EC2.
+> **One-time.** Adds the `basic` service to `~/docker-compose.yml` on EC2.
 
 ```bash
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
@@ -1075,26 +1076,26 @@ ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 # Fetch secrets into env file
 mkdir -p ~/secrets
 aws secretsmanager get-secret-value \
-  --secret-id techtoday/ai-01/openai-api-key \
+  --secret-id techtoday/secrets \
   --query SecretString --output text | \
   python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/ai-01.env
-chmod 600 ~/secrets/ai-01.env
+  > ~/secrets/basic.env
+chmod 600 ~/secrets/basic.env
 ```
 
 Add to `~/docker-compose.yml`:
 
 ```yaml
 services:
-  ai-01:
-    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/ai-01:latest
+  basic:
+    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/basic:latest
     restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
-      - PATH_PREFIX=/ai-01
+      - PATH_PREFIX=/basic
     env_file:
-      - ~/secrets/ai-01.env
+      - ~/secrets/basic.env
 ```
 
 Authenticate and start:
@@ -1103,17 +1104,17 @@ Authenticate and start:
 aws ecr get-login-password --region us-east-1 | \
   docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
 
-docker compose -f ~/docker-compose.yml pull ai-01
-docker compose -f ~/docker-compose.yml up -d --no-deps ai-01
+docker compose -f ~/docker-compose.yml pull basic
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
 ```
 
 #### 4.1.6. Verify Production Deployment
 
 ```bash
-curl -I https://app.techtoday.click/ai-01/
+curl -I https://app.techtoday.click/basic/
 ```
 
-**Browser alternative:** Simply open [https://app.techtoday.click/ai-01/](https://app.techtoday.click/ai-01/) in your browser and confirm the page loads.
+**Browser alternative:** Simply open [https://app.techtoday.click/basic/](https://app.techtoday.click/basic/) in your browser and confirm the page loads.
 
 ---
 
@@ -1252,6 +1253,6 @@ curl -I https://techtoday.click/
 2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5001)
 3. Add a new `location /ai-02/` block to `/etc/nginx/conf.d/app.conf`
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-02` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Add a new project-specific section to this file (§ 2 and § 4), following the `ai-01` sections as a template
+5. Add a new project-specific section to this file (§ 2 and § 4), following the `basic` sections as a template
 6. **No new DNS record, no new EC2, no new SSL cert needed**
 
