@@ -593,7 +593,7 @@ echo "Elastic IP: $ELASTIC_IP"
 
 > **Before connecting:** open **EC2 → Instances**, click `techtoday-server`, and wait until **Instance state** shows `Running` and **Status checks** shows `2/2 checks passed`. This can take 1–3 minutes after the Elastic IP is associated.
 
-> **Console path note:** if you followed the AWS Console steps above, `$ELASTIC_IP` is not set in your terminal. Use the actual IP directly (e.g., `44.193.134.238`).
+> **Console path note:** if you followed the AWS Console steps above, `$ELASTIC_IP` is not set in your terminal. Use the actual IP directly (e.g., `xx.xxx.xxx.xxx`).
 
 ```bash
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
