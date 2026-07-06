@@ -16,7 +16,9 @@ Two scripts turn "add a new project" from a long list of terminal + SSH commands
 1. Local machine prerequisites from the shared Setup Guide § 1 (Docker, AWS CLI, SSH, git).
 2. The one-time AWS infrastructure from the shared Setup Guide § 3 (EC2, ECR access, Secrets Manager, Nginx, SSL) must already exist.
 3. AWS CLI authenticated (`aws sts get-caller-identity` works).
-4. SSH access to the EC2 host with the key named in `lib.sh` (`techtoday.pem` by default).
+4. SSH access to the EC2 host. Keep the private key **outside the repo** — the default is `~/.ssh/techtoday.pem` (set `SSH_KEY` in `.env` to change it). Never commit a `.pem` key.
+
+> The SSH key is only needed for the one-time `provision-project.sh` run per project. Routine deploys happen through GitHub Actions (which stores the key as the `EC2_SSH_KEY` secret), so the key is not required for day-to-day work.
 
 ---
 
@@ -111,7 +113,7 @@ Available variables:
 2. `ECR_NAMESPACE` — ECR repo prefix (default `techtoday`).
 3. `SECRET_ID` — shared Secrets Manager secret (default `techtoday/secrets`).
 4. `ELASTIC_IP` — EC2 public IP (default `44.193.134.238`).
-5. `EC2_USER` / `SSH_KEY` — SSH user and key file (default `ec2-user` / `techtoday.pem`).
+5. `EC2_USER` / `SSH_KEY` — SSH user and key file (default `ec2-user` / `~/.ssh/techtoday.pem`).
 6. `REMOTE_COMPOSE` / `REMOTE_SECRETS_DIR` / `REMOTE_NGINX_CONF` — paths on the EC2 host.
 7. `APP_DOMAIN` — app subdomain (default `app.techtoday.click`).
 8. `LOCAL_BASE_PORT` / `PROD_BASE_PORT` — port bases (default `8080` / `5000`).

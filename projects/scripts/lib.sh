@@ -50,9 +50,13 @@ SECRET_ID="${SECRET_ID:-techtoday/secrets}"
 # Public IP / hostname of the EC2 instance that runs the containers.
 ELASTIC_IP="${ELASTIC_IP:-44.193.134.238}"
 
-# SSH user and key used to reach the EC2 instance.
+# SSH user and key used to reach the EC2 instance. Keep the private key
+# OUTSIDE the repo (e.g. ~/.ssh/) so it can never be committed accidentally.
 EC2_USER="${EC2_USER:-ec2-user}"
-SSH_KEY="${SSH_KEY:-techtoday.pem}"
+SSH_KEY="${SSH_KEY:-~/.ssh/techtoday.pem}"
+# Expand a leading ~ in SSH_KEY to the local $HOME (tilde is not expanded
+# when it comes from a quoted variable or the .env file).
+SSH_KEY="${SSH_KEY/#\~/$HOME}"
 
 # Paths on the EC2 host.
 REMOTE_COMPOSE="${REMOTE_COMPOSE:-~/docker-compose.yml}"
