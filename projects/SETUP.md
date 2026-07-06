@@ -507,8 +507,11 @@ SG_ID=$(aws ec2 create-security-group \
   --vpc-id $VPC_ID \
   --query "GroupId" --output text)
 
+# SSH — for terminal access; see security note below
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr 0.0.0.0/0
+# HTTP — required for Let's Encrypt ACME challenges and HTTP→HTTPS redirects
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr 0.0.0.0/0
+# HTTPS — serves all production traffic
 aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 443 --cidr 0.0.0.0/0
 
 INSTANCE_ID=$(aws ec2 run-instances \
@@ -519,11 +522,26 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --query "Instances[0].InstanceId" --output text)
 ```
 
+> **Security group rules explained:**
+>
+> | Rule | Port | Source | Why |
+> |------|------|--------|-----|
+> | SSH | 22 | `0.0.0.0/0` | Terminal access to the instance |
+> | HTTP | 80 | `0.0.0.0/0` | Let's Encrypt ACME challenges + HTTP→HTTPS redirects |
+> | HTTPS | 443 | `0.0.0.0/0` | Serves all production traffic |
+>
+> **Do not add** an "All traffic from self" rule (source = the security group itself) — it is unnecessary for a single-instance setup and widens the attack surface.
+>
+> **SSH hardening (optional):** For tighter security, restrict SSH to your IP only: replace `0.0.0.0/0` with your public IP (e.g., `203.0.113.42/32`). In the Console, choose **My IP** from the source dropdown. Downside: you'll need to update the rule whenever your IP changes (e.g., different WiFi network). For a personal project with key-based auth, `0.0.0.0/0` is acceptable.
+
 #### 3.4.2. AWS Console
 1. Open **EC2** → **Instances** → **Launch instances**
 2. Name: `techtoday-server`, AMI: **Amazon Linux 2023**, Instance type: `t2.micro`
-3. Key pair: select or create a key pair (save the `.pem` file) (We can create multiple key pairs for different Operating Systems for the same EC2 instance)
-4. Under **Network settings**: the default VPC from [§ 3.3](#33-create-default-vpc) is auto-selected; create a new security group, allow SSH (22), HTTP (80), HTTPS (443) from `0.0.0.0/0`
+3. Key pair: select or create a key pair (save the `.pem` file). Choose `.pem` format for macOS/Linux or `.ppk` for Windows (PuTTY)
+4. Under **Network settings**: the default VPC from [§ 3.3](#33-create-default-vpc) is auto-selected; create a new security group with these three inbound rules:
+   - **SSH** (port 22) — source: `0.0.0.0/0` (or **My IP** for tighter security)
+   - **HTTP** (port 80) — source: `0.0.0.0/0`
+   - **HTTPS** (port 443) — source: `0.0.0.0/0`
 5. Click **Launch instance**
 
 #### 3.4.3. Set Up SSH Key Pair
@@ -674,45 +692,20 @@ aws route53 change-resource-record-sets \
 
 ---
 
-### 3.8. Request SSL Certificates
+### 3.8. Configure Nginx
 
-> **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
->
-> **Note:** ACM certificates (visible in AWS Certificate Manager console) are for CloudFront/ALB only and cannot be used directly with Nginx on EC2. This step installs separate Let's Encrypt certs via Certbot.
+> **Must be done before requesting SSL certificates.** Certbot's `--nginx` plugin needs an existing server block with a matching `server_name` directive to install certs into.
 
 ```bash
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
-# Wait ~2 minutes for DNS propagation, then:
-sudo certbot --nginx -d techtoday.click -d www.techtoday.click
-sudo certbot --nginx -d app.techtoday.click
-
-sudo certbot renew --dry-run  # verify auto-renewal
-```
-
----
-
-### 3.9. Configure Nginx
-
-```bash
 sudo mkdir -p /var/www/techtoday
 
-sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
-# Redirect all HTTP to HTTPS
+# Main domain — static home page
+sudo tee /etc/nginx/conf.d/techtoday.conf > /dev/null << 'EOF'
 server {
     listen 80;
-    server_name techtoday.click www.techtoday.click app.techtoday.click;
-    return 301 https://$host$request_uri;
-}
-
-# Main domain — static home page
-server {
-    listen 443 ssl;
-    server_name techtoday.click;
-
-    ssl_certificate     /etc/letsencrypt/live/techtoday.click/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/techtoday.click/privkey.pem;
-    include             /etc/letsencrypt/options-ssl-nginx.conf;
+    server_name techtoday.click www.techtoday.click;
 
     root  /var/www/techtoday;
     index index.html;
@@ -721,27 +714,13 @@ server {
         try_files $uri $uri/ /index.html;
     }
 }
-
-# www → main domain redirect
-server {
-    listen 443 ssl;
-    server_name www.techtoday.click;
-
-    ssl_certificate     /etc/letsencrypt/live/techtoday.click/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/techtoday.click/privkey.pem;
-    include             /etc/letsencrypt/options-ssl-nginx.conf;
-
-    return 301 https://techtoday.click$request_uri;
-}
+EOF
 
 # App subdomain — Docker container projects
+sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
 server {
-    listen 443 ssl;
+    listen 80;
     server_name app.techtoday.click;
-
-    ssl_certificate     /etc/letsencrypt/live/app.techtoday.click/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/app.techtoday.click/privkey.pem;
-    include             /etc/letsencrypt/options-ssl-nginx.conf;
 
     location /ai-01/ {
         proxy_pass         http://localhost:5000;
@@ -761,6 +740,30 @@ EOF
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+> **What happens next:** These are HTTP-only configs. In the next step ([§ 3.9](#39-request-ssl-certificates)), Certbot will automatically modify these files to add `listen 443 ssl`, SSL certificate paths, and HTTP→HTTPS redirects.
+
+---
+
+### 3.9. Request SSL Certificates
+
+> **Skip if already done.** If Let's Encrypt certs are already installed on this EC2 instance (check with `sudo certbot certificates`), skip this step.
+>
+> **Prerequisites:** Nginx must be configured with matching `server_name` blocks ([§ 3.8](#38-configure-nginx)) and DNS records must point to this instance ([§ 3.7](#37-create-route-53-a-records)).
+>
+> **Note:** ACM certificates (visible in AWS Certificate Manager console) are for CloudFront/ALB only and cannot be used directly with Nginx on EC2. This step installs separate Let's Encrypt certs via Certbot.
+
+```bash
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+
+# Wait ~2 minutes for DNS propagation, then:
+sudo certbot --nginx -d techtoday.click -d www.techtoday.click
+sudo certbot --nginx -d app.techtoday.click
+
+sudo certbot renew --dry-run  # verify auto-renewal
+```
+
+> Certbot automatically modifies the Nginx config files from [§ 3.8](#38-configure-nginx) to add SSL listeners, certificate paths, and HTTP→HTTPS redirects. No manual Nginx editing needed after this step.
 
 ---
 
@@ -795,9 +798,11 @@ aws iam put-role-policy \
     ]}'
 
 aws iam create-instance-profile --instance-profile-name ec2-techtoday-server-profile
+
 aws iam add-role-to-instance-profile \
   --instance-profile-name ec2-techtoday-server-profile \
   --role-name ec2-techtoday-server-role
+  
 aws ec2 associate-iam-instance-profile \
   --instance-id $INSTANCE_ID \
   --iam-instance-profile Name=ec2-techtoday-server-profile
@@ -1040,7 +1045,7 @@ docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
 
 #### 4.1.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [§ 3.9](#39-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
+> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `ai-01` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -1116,7 +1121,7 @@ curl -I https://app.techtoday.click/ai-01/
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
-> **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.7–3.9 create the DNS records, SSL certs, and Nginx config for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
+> **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.7–3.9 create the DNS records, Nginx config, and SSL certs for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
 #### 4.2.1. Add Nginx Server Block
 
