@@ -1208,8 +1208,8 @@ aws ecr get-login-password --region $REGION | \
 
 cd projects/basic
 docker build -t $REPO_NAME .
-docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
 
 > **macOS with Colima:** make sure the VM is running before executing these commands:
@@ -1256,8 +1256,8 @@ aws ecr get-login-password --region $REGION | \
 
 cd projects/basic
 docker build -t $REPO_NAME .
-docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
 
 > **WSL + Docker Desktop:** Docker Desktop on Windows exposes the daemon to WSL automatically — no extra setup needed. If using a standalone WSL Docker install, make sure the daemon is running inside WSL with `sudo service docker start`.
