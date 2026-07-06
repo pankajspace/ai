@@ -960,7 +960,7 @@ Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit
 
 #### 3.12.4. Per-Project Secrets (basic)
 
-Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-secrets-manager)):
+Project-specific values (set as described in [§ 4.2.1](#421-store-api-keys-in-secrets-manager)):
 
 1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `travel`, `summarize`, and `arena`
 2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `joke` and `arena`
@@ -974,157 +974,13 @@ Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-s
 
 After completing § 3, follow the subsection for each project you want to deploy.
 
-### 4.1. AI Playground (basic)
-
-Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR repo `techtoday/basic`.
-
-#### 4.1.1. Store API Keys in Secrets Manager
-
-> **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
-
-##### CloudShell / Console alternative
-This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
-##### CLI
-
-```bash
-aws secretsmanager create-secret \
-  --name "techtoday/secrets" \
-  --secret-string '{"OPENAI_API_KEY":"sk-...", "GROQ_API_KEY":"gsk_..."}'
-```
-
-##### AWS Console
-1. Open **Secrets Manager** → **Store a new secret** → **Other type of secret**
-2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
-3. Set secret name to `techtoday/secrets` → Store
-
-#### 4.1.2. Create ECR Repository
-
-> **One-time.**
-
-##### CloudShell / Console alternative
-This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
-##### CLI
-
-```bash
-REGION=us-east-1
-REPO_NAME=techtoday/basic
-
-aws ecr create-repository --repository-name $REPO_NAME --region $REGION
-
-aws ecr put-image-scanning-configuration \
-  --repository-name $REPO_NAME \
-  --image-scanning-configuration scanOnPush=true
-```
-
-##### AWS Console
-1. Open **ECR** → **Repositories** → **Create repository**
-2. **Repository name:** `techtoday/basic`
-3. **Image scan settings:** enable **Scan on push**
-4. Leave other defaults → **Create repository**
-
-#### 4.1.3. Initial Image Build and Push
-
-> **One-time.** Subsequent pushes are handled automatically by CI/CD.
->
-> **Note:** This step requires Docker and local project files — it cannot be run from AWS CloudShell or the Console. Use your local terminal.
-
-```bash
-REGION=us-east-1
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO_NAME=techtoday/basic
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-cd projects/basic
-docker build -t $REPO_NAME .
-docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
-```
-
-#### 4.1.4. Add Nginx Location Block
-
-> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `basic` to a server that was configured before this project existed.
-
-SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
-
-```nginx
-location /basic/ {
-    proxy_pass         http://localhost:5000;
-    proxy_set_header   Host $host;
-    proxy_set_header   X-Real-IP $remote_addr;
-    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header   X-Forwarded-Proto $scheme;
-}
-```
-
-Then:
-
-```bash
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-#### 4.1.5. Add Service to Docker Compose on EC2
-
-> **One-time.** Adds the `basic` service to `~/docker-compose.yml` on EC2.
-
-```bash
-ssh -i techtoday.pem ec2-user@$ELASTIC_IP
-
-# Fetch secrets into env file
-mkdir -p ~/secrets
-aws secretsmanager get-secret-value \
-  --secret-id techtoday/secrets \
-  --query SecretString --output text | \
-  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/basic.env
-chmod 600 ~/secrets/basic.env
-```
-
-Add to `~/docker-compose.yml`:
-
-```yaml
-services:
-  basic:
-    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/basic:latest
-    restart: unless-stopped
-    ports:
-      - "5000:5000"
-    environment:
-      - PATH_PREFIX=/basic
-    env_file:
-      - ~/secrets/basic.env
-```
-
-Authenticate and start:
-
-```bash
-aws ecr get-login-password --region us-east-1 | \
-  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
-
-docker compose -f ~/docker-compose.yml pull basic
-docker compose -f ~/docker-compose.yml up -d --no-deps basic
-```
-
-#### 4.1.6. Verify Production Deployment
-
-```bash
-curl -I https://app.techtoday.click/basic/
-```
-
-**Browser alternative:** Simply open [https://app.techtoday.click/basic/](https://app.techtoday.click/basic/) in your browser and confirm the page loads.
-
----
-
-### 4.2. TechToday Home Page
+### 4.1. TechToday Home Page
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
 > **Already done** if you followed [§ 3](#3-one-time-aws-infrastructure-setup) above — Steps 3.7–3.9 create the DNS records, Nginx config, and SSL certs for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
-#### 4.2.1. Add Nginx Server Block
+#### 4.1.1. Add Nginx Server Block
 
 ```bash
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
@@ -1170,7 +1026,7 @@ server {
 }
 ```
 
-#### 4.2.2. Request SSL Certificate
+#### 4.1.2. Request SSL Certificate
 
 > **Skip if already done.** ACM certs in the AWS console are for CloudFront/ALB only and do not apply here. Run this only if Let's Encrypt certs for `techtoday.click` are not yet installed on EC2 (verify with `sudo certbot certificates`).
 
@@ -1179,7 +1035,7 @@ sudo certbot --nginx -d techtoday.click -d www.techtoday.click
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-#### 4.2.3. Add Route 53 DNS Records
+#### 4.1.3. Add Route 53 DNS Records
 
 ##### CloudShell / Console alternative
 The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
@@ -1221,7 +1077,9 @@ aws route53 change-resource-record-sets \
 2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 
-#### 4.2.4. Deploy Static Files
+#### 4.1.4. Deploy Static Files
+
+##### macOS / Linux
 
 ```bash
 # From the repo root
@@ -1229,6 +1087,33 @@ rsync -avz --delete \
   projects/techtoday/src/ \
   ec2-user@$ELASTIC_IP:/var/www/techtoday/
 ```
+
+##### Windows (WSL)
+
+`rsync` is not available natively on Windows. The simplest option is to run the same command inside a **WSL terminal**:
+
+```bash
+# From the repo root inside WSL
+rsync -avz --delete \
+  projects/techtoday/src/ \
+  ec2-user@$ELASTIC_IP:/var/www/techtoday/
+```
+
+> **WSL path to the .pem file:** if the key is stored on the Windows filesystem (e.g., `C:\Users\you\techtoday.pem`), reference it as `/mnt/c/Users/you/techtoday.pem` inside WSL and make sure permissions are set: `chmod 400 /mnt/c/Users/you/techtoday.pem`.
+
+##### Windows (Git Bash)
+
+If you have Git for Windows installed, open **Git Bash** and run the same command as the macOS/Linux section — Git Bash includes rsync and uses forward-slash paths:
+
+```bash
+rsync -avz --delete \
+  projects/techtoday/src/ \
+  ec2-user@$ELASTIC_IP:/var/www/techtoday/
+```
+
+##### Windows (CI/CD alternative)
+
+If you prefer not to install WSL or Git Bash, push your changes to `main` — the `deploy-techtoday.yml` GitHub Actions workflow runs rsync automatically on a Linux runner. No local rsync installation needed.
 
 No Nginx reload is needed — static files are served directly.
 
@@ -1239,7 +1124,7 @@ No Nginx reload is needed — static files are served directly.
 > ```
 > Then re-run the rsync command or re-trigger the GitHub Actions workflow.
 
-#### 4.2.5. Verify Production Deployment
+#### 4.1.5. Verify Production Deployment
 
 ```bash
 curl -I https://techtoday.click/
@@ -1247,6 +1132,207 @@ curl -I https://techtoday.click/
 ```
 
 **Browser alternative:** Open [https://techtoday.click/](https://techtoday.click/) in your browser and confirm the home page loads.
+
+---
+
+### 4.2. AI Playground (basic)
+
+Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR repo `techtoday/basic`.
+
+#### 4.2.1. Store API Keys in Secrets Manager
+
+> **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
+
+##### CloudShell / Console alternative
+This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CLI
+
+```bash
+aws secretsmanager create-secret \
+  --name "techtoday/secrets" \
+  --secret-string '{"OPENAI_API_KEY":"sk-...", "GROQ_API_KEY":"gsk_..."}'
+```
+
+##### AWS Console
+1. Open **Secrets Manager** → **Store a new secret** → **Other type of secret**
+2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
+3. Set secret name to `techtoday/secrets` → Store
+
+#### 4.2.2. Create ECR Repository
+
+> **One-time.**
+
+##### CloudShell / Console alternative
+This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
+
+##### CLI
+
+```bash
+REGION=us-east-1
+REPO_NAME=techtoday/basic
+
+aws ecr create-repository --repository-name $REPO_NAME --region $REGION
+```
+
+> **Note:** Image scanning is no longer configured per-repository. It has been moved to registry-level configuration via repository filtering.
+
+##### AWS Console
+1. Open **ECR** → **Repositories** → **Create repository**
+2. **Repository name:** `techtoday/basic`
+3. Leave all other defaults → **Create repository**
+
+#### 4.2.3. Initial Image Build and Push
+
+> **One-time.** Subsequent pushes are handled automatically by CI/CD.
+>
+> **Note:** This step requires Docker running locally and the cloned repo files. It **cannot** be run from AWS CloudShell or the Console — CloudShell has no access to your local filesystem or Docker daemon.
+
+##### Prerequisites
+
+1. Docker daemon is running — verify with `docker info` (no error means it's running)
+2. AWS CLI is authenticated — verify with `aws sts get-caller-identity`
+3. You are in the **root of the cloned repo** (`cd` to the folder that contains `projects/`)
+
+##### macOS / Linux (bash or zsh)
+
+Open **Terminal** and run:
+
+```bash
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME=techtoday/basic
+
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+cd projects/basic
+docker build -t $REPO_NAME .
+docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+```
+
+> **macOS with Colima:** make sure the VM is running before executing these commands:
+> ```bash
+> colima status   # if not running:
+> colima start
+> ```
+
+##### Windows (PowerShell)
+
+Open **PowerShell** (or **Windows Terminal** with a PowerShell tab) and run:
+
+```powershell
+$REGION    = "us-east-1"
+$REPO_NAME = "techtoday/basic"
+$ACCOUNT_ID = (aws sts get-caller-identity --query Account --output text)
+
+aws ecr get-login-password --region $REGION |
+  docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+
+cd projects\basic
+docker build -t $REPO_NAME .
+docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+```
+
+> **PowerShell differences from bash:**
+> 1. Variables are assigned with `$VAR = "value"` (no `export`, no `$()` wrapping)
+> 2. Command substitution uses `(...)` not `$(...)` on the right-hand side of assignments
+> 3. Path separator is `\` — use `cd projects\basic` instead of `cd projects/basic`
+> 4. Line continuation uses a backtick `` ` `` — the pipe `|` at the end of a line works without one
+
+##### Windows (WSL — Ubuntu or Debian)
+
+If you have WSL installed, you can use the exact same bash commands as the macOS/Linux section above. Open a **WSL terminal** and run:
+
+```bash
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME=techtoday/basic
+
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+cd projects/basic
+docker build -t $REPO_NAME .
+docker tag $REPO_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest
+```
+
+> **WSL + Docker Desktop:** Docker Desktop on Windows exposes the daemon to WSL automatically — no extra setup needed. If using a standalone WSL Docker install, make sure the daemon is running inside WSL with `sudo service docker start`.
+
+#### 4.2.4. Add Nginx Location Block
+
+> **One-time.** Already included in the full Nginx config from [§ 3.8](#38-configure-nginx). Only repeat this step when adding `basic` to a server that was configured before this project existed.
+
+SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
+
+```nginx
+location /basic/ {
+    proxy_pass         http://localhost:5000;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+}
+```
+
+Then:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### 4.2.5. Add Service to Docker Compose on EC2
+
+> **One-time.** Adds the `basic` service to `~/docker-compose.yml` on EC2.
+
+```bash
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+
+# Fetch secrets into env file
+mkdir -p ~/secrets
+aws secretsmanager get-secret-value \
+  --secret-id techtoday/secrets \
+  --query SecretString --output text | \
+  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+  > ~/secrets/basic.env
+chmod 600 ~/secrets/basic.env
+```
+
+Add to `~/docker-compose.yml`:
+
+```yaml
+services:
+  basic:
+    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/basic:latest
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - PATH_PREFIX=/basic
+    env_file:
+      - ~/secrets/basic.env
+```
+
+Authenticate and start:
+
+```bash
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
+
+docker compose -f ~/docker-compose.yml pull basic
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
+```
+
+#### 4.2.6. Verify Production Deployment
+
+```bash
+curl -I https://app.techtoday.click/basic/
+```
+
+**Browser alternative:** Simply open [https://app.techtoday.click/basic/](https://app.techtoday.click/basic/) in your browser and confirm the page loads.
 
 ---
 
