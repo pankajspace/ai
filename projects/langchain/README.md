@@ -96,7 +96,7 @@ Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing 
 ## Deployment Target
 
 1. **URL:** `https://app.techtoday.click/langchain/`
-2. **Container port:** `5000` (mapped to host port `8081` locally)
+2. **Container port:** `5000` (host port `8081` locally, `5001` on EC2)
 3. **ECR repository:** `techtoday/langchain`
 4. **Path prefix env var:** `PATH_PREFIX=/langchain`
 

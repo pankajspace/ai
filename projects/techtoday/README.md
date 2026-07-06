@@ -25,7 +25,7 @@ projects/techtoday/
         └── main.js     ← mobile nav toggle, no external libraries
 ```
 
-> Setup and project guides live in [../SETUP.md](../SETUP.md) and [../README.md](../README.md) (shared across all projects).
+> Project setup lives in [SETUP.md](SETUP.md) and daily commands in [DAILY.md](DAILY.md). Shared infrastructure and architecture live in [../SETUP.md](../SETUP.md) and [../README.md](../README.md).
 
 ---
 
@@ -67,4 +67,4 @@ python3 -m http.server 8000
 
 ## Deployment
 
-See the [Projects Guide](../README.md) for deployment options (S3 + CloudFront, or Nginx on EC2), or the [Setup Guide](../SETUP.md) for step-by-step production setup.
+See [SETUP.md § 2](SETUP.md#2-production-deployment) for step-by-step production setup, or the [Projects Guide](../README.md) for alternative deployment options (S3 + CloudFront).
