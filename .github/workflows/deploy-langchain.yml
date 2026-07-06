@@ -1,6 +1,6 @@
-# Builds and deploys the "basic" project (projects/basic) to production.
+# Builds and deploys the "langchain" project (projects/langchain) to production.
 #
-# Trigger: any push to `main` that changes a file under `projects/basic/`.
+# Trigger: any push to `main` that changes a file under `projects/langchain/`.
 #
 # What happens, step by step:
 #   1. Check out the repo so the Dockerfile and source code are available.
@@ -13,27 +13,27 @@
 #   6. Write the build tag to the run's job summary so it's easy to find
 #      later if a rollback is ever needed.
 #   7. SSH into the production EC2 host and tell Docker Compose to pull and
-#      restart only the `basic` container — every other service already
-#      running on that host (e.g. `langchain`) is left untouched.
+#      restart only the `langchain` container — every other service already
+#      running on that host (e.g. `basic`) is left untouched.
 #
 # See projects/SETUP.md (§ 3.11 "Set Up GitHub OIDC and Deploy Role") for the
 # one-time AWS/GitHub setup this workflow depends on (OIDC provider, IAM
 # roles, GitHub secrets), and projects/DAILY.md for day-to-day usage,
 # manual fallback deployment, and rollback instructions.
-name: Deploy basic
+name: Deploy langchain
 
 on:
   push:
     branches: [main]
     # Only run when this project's own files change, so unrelated commits
     # (e.g. edits to a different project, or to root-level docs) don't
-    # trigger an unnecessary redeploy of basic.
+    # trigger an unnecessary redeploy of langchain.
     paths:
-      - 'projects/basic/**'
+      - 'projects/langchain/**'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REPOSITORY: techtoday/basic
+  ECR_REPOSITORY: techtoday/langchain
   # Full 40-character git commit SHA for this run. Pushed as one of the three
   # image tags below — useful for exact traceability, if less readable than
   # the build tag computed further down.
@@ -92,7 +92,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
         run: |
-          cd projects/basic
+          cd projects/langchain
 
           # Build the image once...
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -123,7 +123,7 @@ jobs:
 
       - name: Deploy to EC2 via SSH
         # Connects to the production host and tells Docker Compose to pull
-        # the ":latest" image just pushed above and restart only the basic
+        # the ":latest" image just pushed above and restart only the langchain
         # container.
         uses: appleboy/ssh-action@v1
         with:
@@ -143,11 +143,11 @@ jobs:
             # -f ~/docker-compose.yml : always target the one production
             #     compose file explicitly, regardless of the SSH session's
             #     working directory.
-            # pull basic              : only fetch the new image for this
+            # pull langchain          : only fetch the new image for this
             #     project, not every service defined in the compose file.
-            # up -d --no-deps basic   : only recreate the basic container;
+            # up -d --no-deps langchain : only recreate the langchain container;
             #     --no-deps stops Compose from touching any other service
-            #     (e.g. langchain) defined in the same compose file, so
-            #     this deploy has zero downtime for unrelated projects.
-            docker compose -f ~/docker-compose.yml pull basic
-            docker compose -f ~/docker-compose.yml up -d --no-deps basic
+            #     (e.g. basic) defined in the same compose file, so this
+            #     deploy has zero downtime for unrelated projects.
+            docker compose -f ~/docker-compose.yml pull langchain
+            docker compose -f ~/docker-compose.yml up -d --no-deps langchain

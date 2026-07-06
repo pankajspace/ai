@@ -1,4 +1,4 @@
-[← README](../../README.md) | [Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
+[← README](../../README.md) | [Project Setup](SETUP.md) | [Shared Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
 
 # AI Infused Learning
 

@@ -113,7 +113,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 # AI Playground (basic)
 
-For setup, see [Setup Guide § 4.2](SETUP.md#42-ai-playground-basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [basic/SETUP.md](basic/SETUP.md) — [local dev](basic/SETUP.md#1-local-development) and [production](basic/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
@@ -145,7 +145,7 @@ The served `index.html` also needs to know the prefix so its `fetch()` calls hit
 
 # LangChain Lab (langchain)
 
-For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [Setup Guide § 4.3](SETUP.md#43-langchain-lab-langchain) (production) and [§ 2.3](SETUP.md#23-langchain-lab-langchain) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [langchain/SETUP.md](langchain/SETUP.md) — [local dev](langchain/SETUP.md#1-local-development) and [production](langchain/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
 
@@ -180,7 +180,7 @@ The served `index.html` also needs the prefix; the `index` route injects it by r
 
 # TechToday Home Page
 
-For setup, see [Setup Guide § 4.1](SETUP.md#41-techtoday-home-page) (production) and [§ 2.2](SETUP.md#22-techtoday-home-page) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [techtoday/SETUP.md](techtoday/SETUP.md) — [local dev](techtoday/SETUP.md#1-local-development) and [production](techtoday/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 

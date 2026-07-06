@@ -1,4 +1,4 @@
-[← README](../../README.md) | [Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
+[← README](../../README.md) | [Project Setup](SETUP.md) | [Shared Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
 
 # LangChain Lab
 
@@ -78,29 +78,16 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 
 ## Local Development
 
-Requires Docker (daemon + CLI + Compose plugin). See the [basic project README](../basic/README.md#development-setup) for full Docker setup instructions per OS.
+Quick start (requires Docker — daemon + CLI + Compose plugin):
 
 ```bash
 cd projects/langchain
-
-# 1 — add your key
 cp .env.example .env          # then paste your OpenAI key inside
-
-# 2 — start the web UI (hot-reload via volume mount)
 docker compose up web
 # → http://localhost:8081
-
-# Or run individual features from the CLI
-docker compose run --rm summarize
-docker compose run --rm chat
-docker compose run --rm agent
 ```
 
-**Rebuild** (only when `requirements.txt` or `Dockerfile` changes):
-
-```bash
-docker compose build
-```
+For prerequisites, the full dev loop, and per-OS Docker setup, see [SETUP.md § 1](SETUP.md#1-local-development).
 
 Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing credit).
 
@@ -113,4 +100,4 @@ Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing 
 3. **ECR repository:** `techtoday/langchain`
 4. **Path prefix env var:** `PATH_PREFIX=/langchain`
 
-Merging to `main` triggers CI/CD automatically. See the [Projects Guide](../README.md) and [Daily Cheatsheet](../DAILY.md) for the shared deployment workflow.
+Merging to `main` triggers CI/CD automatically. For the full production deploy steps, see [SETUP.md § 2](SETUP.md#2-production-deployment). See also the [Projects Guide](../README.md) and [Daily Cheatsheet](../DAILY.md).
