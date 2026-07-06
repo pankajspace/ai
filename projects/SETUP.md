@@ -1232,6 +1232,13 @@ rsync -avz --delete \
 
 No Nginx reload is needed — static files are served directly.
 
+> **Troubleshooting:** If rsync fails with `Permission denied (13)` or `failed to set times`, the directory is owned by root. Fix it on the EC2 instance:
+> ```bash
+> ssh -i ~/techtoday.pem ec2-user@$ELASTIC_IP
+> sudo chown -R ec2-user:ec2-user /var/www/techtoday
+> ```
+> Then re-run the rsync command or re-trigger the GitHub Actions workflow.
+
 #### 4.2.5. Verify Production Deployment
 
 ```bash
