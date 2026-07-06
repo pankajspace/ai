@@ -267,9 +267,9 @@ rsync --version        # ✓ openrsync: protocol version 29
 
 Local development is project-specific. Each project's `SETUP.md` covers its prerequisites, one-time setup, and day-to-day loop:
 
-1. **AI Playground (basic)** — [basic/SETUP.md § 1](basic/SETUP.md#1-local-development)
-2. **LangChain Lab (langchain)** — [langchain/SETUP.md § 1](langchain/SETUP.md#1-local-development)
-3. **TechToday Home Page** — [techtoday/SETUP.md § 1](techtoday/SETUP.md#1-local-development)
+1. **TechToday Home Page** — [techtoday/SETUP.md § 1](techtoday/SETUP.md#1-local-development)
+2. **AI Playground (basic)** — [basic/SETUP.md § 1](basic/SETUP.md#1-local-development)
+3. **LangChain Lab (langchain)** — [langchain/SETUP.md § 1](langchain/SETUP.md#1-local-development)
 
 > Complete the [local machine prerequisites](#1-local-machine-prerequisites) above before starting any project.
 

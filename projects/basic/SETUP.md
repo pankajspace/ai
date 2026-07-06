@@ -1,4 +1,4 @@
-[← Project README](README.md) | [Shared Setup Guide](../SETUP.md) | [Projects Guide](../README.md) | [Daily Cheatsheet](../DAILY.md)
+[← Project README](README.md) | [Project Daily](DAILY.md) | [Shared Setup Guide](../SETUP.md) | [Projects Guide](../README.md)
 
 # AI Playground (basic) — Setup
 

@@ -97,9 +97,9 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 
 | Project | Workflow | Trigger Path | What It Does |
 |---|---|---|---|
+| techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 | basic | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
 | langchain | [deploy-langchain.yml](../.github/workflows/deploy-langchain.yml) | `projects/langchain/**` | Build → ECR push → SSH pull + restart container |
-| techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 
 Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
 
@@ -111,76 +111,9 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 ---
 
-# AI Playground (basic)
-
-For setup, see [basic/SETUP.md](basic/SETUP.md) — [local dev](basic/SETUP.md#1-local-development) and [production](basic/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
-
----
-
-## Deployment Target
-
-- **URL:** `https://app.techtoday.click/basic/`
-- **Container port:** `5000` (mapped to EC2 port `5000`)
-- **ECR repository:** `techtoday/basic`
-- **Path prefix env var:** `PATH_PREFIX=/basic`
-
----
-
-## Flask Path Prefix Configuration
-
-Because Nginx forwards the full path (e.g., `/basic/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
-
-```python
-# src/app.py (abbreviated)
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /basic in production, empty locally
-app.register_blueprint(bp, url_prefix=PATH_PREFIX)
-```
-
-- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`, `/summarize`, `/arena`
-- **On EC2:** `PATH_PREFIX=/basic` → routes are `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
-
-The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/basic/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
-
----
-
-# LangChain Lab (langchain)
-
-For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [langchain/SETUP.md](langchain/SETUP.md) — [local dev](langchain/SETUP.md#1-local-development) and [production](langchain/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
-
-This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
-
----
-
-## Deployment Target (langchain)
-
-- **URL:** `https://app.techtoday.click/langchain/`
-- **Container port:** `5000` (mapped to EC2 port `5001`)
-- **ECR repository:** `techtoday/langchain`
-- **Path prefix env var:** `PATH_PREFIX=/langchain`
-- **Secret:** only `OPENAI_API_KEY` (no Groq key — every feature uses GPT-4o mini)
-
----
-
-## Flask Path Prefix Configuration (langchain)
-
-Identical to the basic project: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
-
-```python
-# src/app.py (abbreviated)
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /langchain in production, empty locally
-app.register_blueprint(bp, url_prefix=PATH_PREFIX)
-```
-
-- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/summarize`, `/chat`, `/agent`
-- **On EC2:** `PATH_PREFIX=/langchain` → routes are `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`
-
-The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
-
----
-
 # TechToday Home Page
 
-For setup, see [techtoday/SETUP.md](techtoday/SETUP.md) — [local dev](techtoday/SETUP.md#1-local-development) and [production](techtoday/SETUP.md#2-production-deployment). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [techtoday/SETUP.md](techtoday/SETUP.md) — [local dev](techtoday/SETUP.md#1-local-development) and [production](techtoday/SETUP.md#2-production-deployment). For daily commands, see [techtoday/DAILY.md](techtoday/DAILY.md).
 
 ---
 
@@ -266,3 +199,70 @@ aws cloudfront create-invalidation \
   --distribution-id $DISTRIBUTION_ID \
   --paths "/*"
 ```
+
+---
+
+# AI Playground (basic)
+
+For setup, see [basic/SETUP.md](basic/SETUP.md) — [local dev](basic/SETUP.md#1-local-development) and [production](basic/SETUP.md#2-production-deployment). For daily commands, see [basic/DAILY.md](basic/DAILY.md).
+
+---
+
+## Deployment Target
+
+- **URL:** `https://app.techtoday.click/basic/`
+- **Container port:** `5000` (mapped to EC2 port `5000`)
+- **ECR repository:** `techtoday/basic`
+- **Path prefix env var:** `PATH_PREFIX=/basic`
+
+---
+
+## Flask Path Prefix Configuration
+
+Because Nginx forwards the full path (e.g., `/basic/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
+
+```python
+# src/app.py (abbreviated)
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /basic in production, empty locally
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+```
+
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/joke`, `/travel`, `/summarize`, `/arena`
+- **On EC2:** `PATH_PREFIX=/basic` → routes are `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
+
+The served `index.html` also needs to know the prefix so its `fetch()` calls hit `/basic/joke` instead of `/joke`. The `index` route injects it by rewriting the page's `const API = "";` line with the current `PATH_PREFIX` value before returning the HTML.
+
+---
+
+# LangChain Lab (langchain)
+
+For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [langchain/SETUP.md](langchain/SETUP.md) — [local dev](langchain/SETUP.md#1-local-development) and [production](langchain/SETUP.md#2-production-deployment). For daily commands, see [langchain/DAILY.md](langchain/DAILY.md).
+
+This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
+
+---
+
+## Deployment Target (langchain)
+
+- **URL:** `https://app.techtoday.click/langchain/`
+- **Container port:** `5000` (mapped to EC2 port `5001`)
+- **ECR repository:** `techtoday/langchain`
+- **Path prefix env var:** `PATH_PREFIX=/langchain`
+- **Secret:** only `OPENAI_API_KEY` (no Groq key — every feature uses GPT-4o mini)
+
+---
+
+## Flask Path Prefix Configuration (langchain)
+
+Identical to the basic project: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
+
+```python
+# src/app.py (abbreviated)
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /langchain in production, empty locally
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+```
+
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/summarize`, `/chat`, `/agent`
+- **On EC2:** `PATH_PREFIX=/langchain` → routes are `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`
+
+The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
