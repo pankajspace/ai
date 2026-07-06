@@ -265,7 +265,7 @@ rsync --version        # ✓ openrsync: protocol version 29
 
 ## 2. Local Development Setup
 
-### 2.1. AI Playground (basic / basic)
+### 2.1. AI Playground (basic)
 
 #### 2.1.1. Prerequisites
 
@@ -974,7 +974,7 @@ Project-specific values (set as described in [§ 4.1.1](#411-store-api-keys-in-s
 
 After completing § 3, follow the subsection for each project you want to deploy.
 
-### 4.1. AI Playground (basic / basic)
+### 4.1. AI Playground (basic)
 
 Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR repo `techtoday/basic`.
 

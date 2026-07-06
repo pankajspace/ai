@@ -17,7 +17,7 @@ git checkout -b feat/short-description
 
 ## 2. Develop Locally
 
-### AI Playground (basic / basic)
+### AI Playground (basic)
 
 ```bash
 cd projects/basic
@@ -85,7 +85,7 @@ Open a Pull Request on GitHub → get it reviewed → **Squash and merge** into 
 
 Merging to `main` triggers CI/CD automatically — no manual steps needed.
 
-- **basic (basic)** — `deploy-basic.yml` — trigger path `projects/basic/**`
+- **basic** — `deploy-basic.yml` — trigger path `projects/basic/**`
 - **techtoday** — `deploy-techtoday.yml` — trigger path `projects/techtoday/**`
 
 Watch the run under **GitHub → Actions** to confirm it succeeds.

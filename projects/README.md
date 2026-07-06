@@ -97,7 +97,7 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 
 | Project | Workflow | Trigger Path | What It Does |
 |---|---|---|---|
-| basic (basic) | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
+| basic | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
 | techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 
 Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
@@ -110,9 +110,9 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 ---
 
-# AI Playground (basic / basic)
+# AI Playground (basic)
 
-For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic--basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic--basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
