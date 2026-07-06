@@ -948,9 +948,35 @@ After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructur
 
 ## 5. Adding a New Project
 
-> `basic` (port 5000) and `langchain` (port 5001) are already deployed. A third project would use the next free port (e.g. `5002`). Use the `langchain` project folder as the copy-paste template.
+> `basic` (local 8080 / prod 5000) and `langchain` (local 8081 / prod 5001) are already deployed. A third project uses the next free ports (local 8082 / prod 5002). **No new DNS record, no new EC2, and no new SSL cert are ever needed.**
 
-1. Create ECR repo:
+### 5.1. Automated (recommended)
+
+Two scripts in `projects/scripts/` do all of the work — see `projects/scripts/README.md` for full details.
+
+```bash
+cd projects/scripts
+
+# 1. Scaffold the repo: clones a template, assigns the next free port,
+#    and generates .github/workflows/deploy-<name>.yml
+./new-project.sh ai-03
+
+# 2. Replace the template code in projects/ai-03/src/ and test locally:
+#    cd ../ai-03 && docker compose up web
+
+# 3. One-time production provisioning: creates the ECR repo, builds & pushes
+#    the image, and configures the EC2 host (env file, Docker Compose service,
+#    Nginx location block, restart) — all the terminal + SSH steps in one go.
+./provision-project.sh ai-03
+```
+
+After that, pushes to `main` under `projects/ai-03/` auto-deploy via the generated workflow. The provisioning script is idempotent, so it is safe to re-run.
+
+### 5.2. Manual (fallback)
+
+If you prefer to run the steps by hand (or need to debug), the equivalent manual commands are:
+
+1. Create the ECR repo:
    ```bash
    aws ecr create-repository --repository-name techtoday/ai-03
    ```
@@ -960,5 +986,4 @@ After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructur
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-03` + `sudo nginx -t && sudo systemctl reload nginx`
 5. Document the new project's local dev + production setup in its folder, following the `langchain` project as a template, and add it to the project lists in [§ 2](#2-local-development-setup) and [§ 4](#4-project-specific-production-setup)
 6. Add a new CI/CD workflow (`deploy-ai-03.yml`), following `deploy-langchain.yml` as a template
-7. **No new DNS record, no new EC2, no new SSL cert needed**
 
