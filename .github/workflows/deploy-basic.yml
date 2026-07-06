@@ -16,9 +16,9 @@
 #      restart only the `basic` container — every other service already
 #      running on that host (e.g. a future `ai-02`) is left untouched.
 #
-# See projects/DEPLOYMENT.md ("CI/CD: Auto-Deploy on Push to main") for the
+# See projects/SETUP.md (§ 3.11 "Set Up GitHub OIDC and Deploy Role") for the
 # one-time AWS/GitHub setup this workflow depends on (OIDC provider, IAM
-# roles, GitHub secrets), and projects/DEVELOPMENT.md for day-to-day usage,
+# roles, GitHub secrets), and projects/DAILY.md for day-to-day usage,
 # manual fallback deployment, and rollback instructions.
 name: Deploy basic
 
@@ -56,8 +56,8 @@ jobs:
 
       - name: Configure AWS credentials via OIDC
         # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
-        # role is scoped to ECR push permissions only (see DEPLOYMENT.md,
-        # "CI/CD" Step B) — this job cannot touch any other AWS resource.
+        # role is scoped to ECR push permissions only (see SETUP.md
+        # § 3.11 "Set Up GitHub OIDC and Deploy Role") — this job cannot touch any other AWS resource.
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -79,7 +79,7 @@ jobs:
         # audit trail: at a glance you can tell when the image was built,
         # which Actions run built it (the run number), and the exact commit
         # it was built from (the short SHA). This is the tag documented in
-        # projects/DEVELOPMENT.md's Rollback section.
+        # projects/DAILY.md's Rollback section.
         id: vars
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
@@ -134,8 +134,8 @@ jobs:
             # The OIDC-derived AWS credentials from the earlier step only
             # exist on this GitHub Actions runner, not on the EC2 host — so
             # the EC2 host authenticates to ECR itself, using the IAM
-            # instance role already attached to it (see DEPLOYMENT.md
-            # Step 7, "Create IAM Role for EC2").
+            # instance role already attached to it (see SETUP.md
+            # § 3.10 "Create IAM Role for EC2").
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com

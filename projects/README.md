@@ -81,7 +81,7 @@ Route 53 (techtoday.click hosted zone)
 ### Container & Image
 
 9. **Tag images three ways** — full git SHA, build tag (`YYYYMMDD-HHMMSS-<run>-<sha>`), and `latest`
-10. **ECR scan on push** — `scanOnPush=true` on every repository
+10. **ECR image scanning** — configured at registry level via repository filtering (not per-repository `scanOnPush`)
 11. **`restart: unless-stopped`** — containers restart automatically after EC2 reboots
 
 ### Cost
@@ -112,7 +112,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 # AI Playground (basic)
 
-For setup, see [Setup Guide § 4.1](SETUP.md#41-ai-playground-basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [Setup Guide § 4.2](SETUP.md#42-ai-playground-basic) (production) and [§ 2.1](SETUP.md#21-ai-playground-basic) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
@@ -144,7 +144,7 @@ The served `index.html` also needs to know the prefix so its `fetch()` calls hit
 
 # TechToday Home Page
 
-For setup, see [Setup Guide § 4.2](SETUP.md#42-techtoday-home-page) (production) and [§ 2.2](SETUP.md#22-techtoday-home-page) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
+For setup, see [Setup Guide § 4.1](SETUP.md#41-techtoday-home-page) (production) and [§ 2.2](SETUP.md#22-techtoday-home-page) (local dev). For daily commands, see the [Daily Cheatsheet](DAILY.md).
 
 ---
 
