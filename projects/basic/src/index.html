@@ -19,8 +19,72 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        a {
+            color: #90caf9;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Header / Nav */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(18, 18, 18, 0.9);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid #2c2c2c;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .brand:hover {
+            text-decoration: none;
+        }
+
+        .brand .logo {
+            width: 28px;
+            height: 28px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             padding: 2.5rem 1.5rem;
+        }
+
+        /* Footer */
+
+        footer {
+            border-top: 1px solid #2c2c2c;
+            padding: 1rem 0;
+            text-align: center;
+            color: #757575;
+            font-size: 0.8125rem;
         }
 
         h1 {
@@ -185,53 +249,68 @@
 </head>
 
 <body>
-    <h1>AI Playground</h1>
-    <p class="subtitle">Powered by Groq and OpenAI</p>
+    <header>
+        <nav class="nav">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
 
-    <div class="cards">
+    <main>
+        <h1>AI Playground</h1>
+        <p class="subtitle">Powered by Groq and OpenAI</p>
 
-        <!-- Joke Card -->
-        <div class="card">
-            <h2>&#x1F602; Joke Generator</h2>
-            <p>Get a fresh joke from Llama 3.3 70B via Groq.</p>
-            <input type="text" id="jokeTopicInput" placeholder="Topic (e.g. cats, programming)"
-                oninput="onJokeInput()" />
-            <button id="jokeBtn" onclick="fetchJoke()" disabled>Tell me a joke</button>
-            <div class="result" id="jokeResult"></div>
+        <div class="cards">
+
+            <!-- Joke Card -->
+            <div class="card">
+                <h2>&#x1F602; Joke Generator</h2>
+                <p>Get a fresh joke from Llama 3.3 70B via Groq.</p>
+                <input type="text" id="jokeTopicInput" placeholder="Topic (e.g. cats, programming)"
+                    oninput="onJokeInput()" />
+                <button id="jokeBtn" onclick="fetchJoke()" disabled>Tell me a joke</button>
+                <div class="result" id="jokeResult"></div>
+            </div>
+
+            <!-- Travel Card -->
+            <div class="card">
+                <h2>&#x2708;&#xFE0F; Travel Suggestion</h2>
+                <p>Ask GPT-4o mini what to do in any city.</p>
+                <input type="text" id="cityInput" placeholder="Enter a city (e.g. Tokyo)" oninput="onCityInput()" />
+                <span class="validation" id="cityValidation"></span>
+                <button id="travelBtn" onclick="fetchTravel()" disabled>Suggest something</button>
+                <div class="result" id="travelResult"></div>
+            </div>
+
+            <!-- Summarizer Card -->
+            <div class="card">
+                <h2>&#x1F50E; Website Summarizer</h2>
+                <p>Paste a URL and let GPT-4o mini summarize the page.</p>
+                <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" oninput="onUrlInput()" />
+                <span class="validation" id="urlValidation"></span>
+                <button id="summarizeBtn" onclick="fetchSummary()" disabled>Summarize</button>
+                <div class="result" id="summarizeResult"></div>
+            </div>
+
+            <!-- Arena Card -->
+            <div class="card">
+                <h2>&#x1F94A; LLM Arena</h2>
+                <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
+                <input type="text" id="promptInput" placeholder="Ask both models the same thing"
+                    oninput="onPromptInput()" />
+                <span class="validation" id="promptValidation"></span>
+                <button id="arenaBtn" onclick="fetchArena()" disabled>Battle</button>
+                <div class="result" id="arenaResult"></div>
+            </div>
+
         </div>
+    </main>
 
-        <!-- Travel Card -->
-        <div class="card">
-            <h2>&#x2708;&#xFE0F; Travel Suggestion</h2>
-            <p>Ask GPT-4o mini what to do in any city.</p>
-            <input type="text" id="cityInput" placeholder="Enter a city (e.g. Tokyo)" oninput="onCityInput()" />
-            <span class="validation" id="cityValidation"></span>
-            <button id="travelBtn" onclick="fetchTravel()" disabled>Suggest something</button>
-            <div class="result" id="travelResult"></div>
-        </div>
-
-        <!-- Summarizer Card -->
-        <div class="card">
-            <h2>&#x1F50E; Website Summarizer</h2>
-            <p>Paste a URL and let GPT-4o mini summarize the page.</p>
-            <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" oninput="onUrlInput()" />
-            <span class="validation" id="urlValidation"></span>
-            <button id="summarizeBtn" onclick="fetchSummary()" disabled>Summarize</button>
-            <div class="result" id="summarizeResult"></div>
-        </div>
-
-        <!-- Arena Card -->
-        <div class="card">
-            <h2>&#x1F94A; LLM Arena</h2>
-            <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
-            <input type="text" id="promptInput" placeholder="Ask both models the same thing"
-                oninput="onPromptInput()" />
-            <span class="validation" id="promptValidation"></span>
-            <button id="arenaBtn" onclick="fetchArena()" disabled>Battle</button>
-            <div class="result" id="arenaResult"></div>
-        </div>
-
-    </div>
+    <footer>
+        <p>&copy; 2026 TechToday.</p>
+    </footer>
 
     <script>
         const API = "";
