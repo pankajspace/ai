@@ -157,7 +157,7 @@ aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 cd projects/basic
-docker build -t techtoday/basic .
+docker build --platform linux/amd64 -t techtoday/basic .
 docker tag techtoday/basic:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
 docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest
 

@@ -765,6 +765,24 @@ sudo certbot renew --dry-run  # verify auto-renewal
 
 > Certbot automatically modifies the Nginx config files from [§ 3.8](#38-configure-nginx) to add SSL listeners, certificate paths, and HTTP→HTTPS redirects. No manual Nginx editing needed after this step.
 
+> **If the browser shows "Not Secure" after setup:** the HTTP→HTTPS redirect for `app.techtoday.click` may be missing — this happens when the Nginx config is recreated after Certbot ran. Verify and fix:
+> ```bash
+> sudo grep -A3 "listen 80" /etc/nginx/conf.d/app.conf
+> ```
+> If the `listen 80` block does **not** contain `return 301 https://`, add it:
+> ```bash
+> sudo nano /etc/nginx/conf.d/app.conf
+> ```
+> Ensure a redirect-only `listen 80` block exists:
+> ```nginx
+> server {
+>     listen 80;
+>     server_name app.techtoday.click;
+>     return 301 https://$host$request_uri;
+> }
+> ```
+> Then: `sudo nginx -t && sudo systemctl reload nginx`
+
 ---
 
 ### 3.10. Create IAM Role for EC2 (ECR + Secrets Access)
@@ -1207,10 +1225,12 @@ aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 cd projects/basic
-docker build -t $REPO_NAME .
+docker build --platform linux/amd64 -t $REPO_NAME .
 docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
+
+> **`--platform linux/amd64` is required on Apple Silicon Macs** (M1/M2/M3). Without it, Docker builds a native `arm64` image that cannot run on the `x86_64` EC2 instance, producing the error `no matching manifest for linux/amd64`.
 
 > **macOS with Colima:** make sure the VM is running before executing these commands:
 > ```bash
@@ -1231,7 +1251,7 @@ aws ecr get-login-password --region $REGION |
   docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
 
 cd projects\basic
-docker build -t $REPO_NAME .
+docker build --platform linux/amd64 -t $REPO_NAME .
 docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
@@ -1255,7 +1275,7 @@ aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 cd projects/basic
-docker build -t $REPO_NAME .
+docker build --platform linux/amd64 -t $REPO_NAME .
 docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
@@ -1303,11 +1323,47 @@ chmod 600 ~/secrets/basic.env
 
 Add to `~/docker-compose.yml`:
 
-```yaml
+First, resolve the placeholders for your account:
+
+```bash
+# Get your account ID and set the full image URL
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REGION=us-east-1
+IMAGE="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/basic:latest"
+echo $IMAGE   # verify it looks correct before using it below
+```
+
+**If `~/docker-compose.yml` does not exist yet** (first project), create it from scratch:
+
+```bash
+cat > ~/docker-compose.yml << EOF
 services:
   basic:
-    image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/techtoday/basic:latest
+    image: $IMAGE
     restart: unless-stopped
+    command: python src/app.py
+    ports:
+      - "5000:5000"
+    environment:
+      - PATH_PREFIX=/basic
+    env_file:
+      - ~/secrets/basic.env
+EOF
+```
+
+**If `~/docker-compose.yml` already exists** (adding to an existing file), open it with nano and append the new service block under the existing `services:` key:
+
+```bash
+nano ~/docker-compose.yml
+```
+
+Add the following block, indented under the existing `services:` key (aligned with any other existing services):
+
+```yaml
+  basic:
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/basic:latest
+    restart: unless-stopped
+    command: python src/app.py
     ports:
       - "5000:5000"
     environment:
@@ -1316,11 +1372,21 @@ services:
       - ~/secrets/basic.env
 ```
 
-Authenticate and start:
+Save and exit nano: `Ctrl+O` → Enter → `Ctrl+X`.
+
+Verify the file looks correct:
 
 ```bash
-aws ecr get-login-password --region us-east-1 | \
-  docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com
+cat ~/docker-compose.yml
+```
+
+Authenticate and start:
+
+> **Note:** `$ACCOUNT_ID` and `$REGION` must be set in your current shell session. If you opened a new terminal or SSHed back in, re-run the two export lines from the block above before continuing.
+
+```bash
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 docker compose -f ~/docker-compose.yml pull basic
 docker compose -f ~/docker-compose.yml up -d --no-deps basic
