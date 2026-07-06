@@ -42,8 +42,18 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+
+          # Handle both true multiline secrets and single-line secrets with
+          # escaped \n, and normalize CRLF line endings.
+          KEY_CONTENT='${{ secrets.EC2_SSH_KEY }}'
+          if printf '%s' "$KEY_CONTENT" | grep -q '\\n'; then
+            printf '%b' "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/deploy_key
+          else
+            printf '%s' "$KEY_CONTENT" | tr -d '\r' > ~/.ssh/deploy_key
+          fi
+
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy static files via rsync
