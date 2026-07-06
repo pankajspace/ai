@@ -58,9 +58,10 @@ jobs:
         # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
         # role is scoped to ECR push permissions only (see DEPLOYMENT.md,
         # "CI/CD" Step B) — this job cannot touch any other AWS resource.
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          source-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
