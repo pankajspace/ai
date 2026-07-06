@@ -4,7 +4,7 @@
 
 A collection of LangChain-powered demos that show three core building blocks of AI engineering — **chains**, **memory**, and **agents** — using **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
 
-This project mirrors the architecture of the [AI Playground (basic)](../basic/README.md) project: each feature lives in its own module (`summarizer.py`, `chat.py`, `agent.py`) and is exposed through a thin Flask endpoint. This makes it easy to add, remove, or modify individual features without touching unrelated code.
+This project mirrors the architecture of the AI Playground (basic) project: each feature lives in its own module (`summarizer.py`, `chat.py`, `agent.py`) and is exposed through a thin Flask endpoint. This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
 ---
 
@@ -87,8 +87,6 @@ docker compose up web
 # → http://localhost:8081
 ```
 
-For prerequisites, the full dev loop, and per-OS Docker setup, see [SETUP.md § 1](SETUP.md#1-local-development).
-
 Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing credit).
 
 ---
@@ -100,4 +98,4 @@ Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing 
 3. **ECR repository:** `techtoday/langchain`
 4. **Path prefix env var:** `PATH_PREFIX=/langchain`
 
-Merging to `main` triggers CI/CD automatically. For the full production deploy steps, see [SETUP.md § 2](SETUP.md#2-production-deployment) and for day-to-day commands see [DAILY.md](DAILY.md). See also the [Architecture Guide](../ARCHITECTURE.md).
+Merging to `main` triggers CI/CD automatically.

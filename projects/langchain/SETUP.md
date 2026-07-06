@@ -2,10 +2,10 @@
 
 # LangChain Lab (langchain) — Setup
 
-Setup for the **LangChain Lab (langchain)** project only. Shared, one-time steps live in the [Shared Setup Guide](../SETUP.md):
+Setup for the **LangChain Lab (langchain)** project only. Two groups of shared, one-time steps must be completed first:
 
-1. **Local machine prerequisites** (Docker, AWS CLI, SSH, git, rsync) — [Shared § 1](../SETUP.md#1-local-machine-prerequisites)
-2. **One-time AWS infrastructure** (IAM, VPC, EC2, Elastic IP, Route 53, Nginx, SSL, IAM roles, OIDC) — [Shared § 3](../SETUP.md#3-one-time-aws-infrastructure-setup)
+1. **Local machine prerequisites** — Docker, AWS CLI, SSH, git, rsync
+2. **One-time AWS infrastructure** — IAM, VPC, EC2, Elastic IP, Route 53, Nginx, SSL, IAM roles, OIDC
 
 Complete those first, then follow this file to run the project locally and deploy it.
 
@@ -15,7 +15,7 @@ Complete those first, then follow this file to run the project locally and deplo
 
 ### 1.1. Prerequisites
 
-1. [Docker](https://www.docker.com/) + Docker Compose — installed in [Shared § 1.1](../SETUP.md#11-docker-cli--daemon--compose-plugin)
+1. [Docker](https://www.docker.com/) + Docker Compose
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for all three features (`summarize`, `chat`, `agent`); every feature uses GPT-4o mini, so no Groq key is needed
 
 ### 1.2. One-Time Local Setup
@@ -64,9 +64,9 @@ docker compose build
 
 ## 2. Production Deployment
 
-Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (mapped to host `5001`), ECR repo `techtoday/langchain`. The steps are identical to the [basic project](../basic/SETUP.md#2-production-deployment); only the names, port, and path prefix differ.
+Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (mapped to host `5001`), ECR repo `techtoday/langchain`. The steps are identical to the basic project's production deployment; only the names, port, and path prefix differ.
 
-> Complete the [Shared AWS infrastructure setup](../SETUP.md#3-one-time-aws-infrastructure-setup) first.
+> Complete the shared one-time AWS infrastructure setup first.
 
 ### 2.1. Store API Key in Secrets Manager
 
@@ -85,7 +85,7 @@ aws ecr create-repository --repository-name techtoday/langchain --region $REGION
 
 ### 2.3. Initial Image Build and Push
 
-> **One-time.** Subsequent pushes are handled automatically by CI/CD. Requires Docker running locally and the cloned repo — same prerequisites and per-OS notes as the [basic project § 2.3](../basic/SETUP.md#23-initial-image-build-and-push).
+> **One-time.** Subsequent pushes are handled automatically by CI/CD. Requires Docker running locally and the cloned repo (same prerequisites and per-OS notes as the basic project).
 
 ```bash
 REGION=us-east-1
@@ -101,11 +101,11 @@ docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${RE
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
 
-> On Apple Silicon Macs, `--platform linux/amd64` is required (see the note in the [basic project § 2.3](../basic/SETUP.md#23-initial-image-build-and-push)).
+> On Apple Silicon Macs, `--platform linux/amd64` is required, so the image runs on the `x86_64` EC2 instance.
 
 ### 2.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [Shared § 3.8](../SETUP.md#38-configure-nginx). Only repeat this step when adding `langchain` to a server configured before this project existed.
+> **One-time.** Already included in the shared Nginx configuration. Only repeat this step when adding `langchain` to a server configured before this project existed.
 
 Add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -193,4 +193,4 @@ Project-specific values used by this project (reuses the same `techtoday/secrets
 1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by all three features (`summarize`, `chat`, `agent`)
 2. `PATH_PREFIX` — set to `/langchain` directly in `~/docker-compose.yml` on EC2 (not secret)
 
-LangChain Lab needs no Groq key — every feature uses GPT-4o mini. Since `OPENAI_API_KEY` already lives in `techtoday/secrets`, no new secret is required. See the full [Secrets & Environment Variables Reference](../SETUP.md#312-secrets--environment-variables-reference) in the shared guide.
+LangChain Lab needs no Groq key — every feature uses GPT-4o mini. Since `OPENAI_API_KEY` already lives in `techtoday/secrets`, no new secret is required.

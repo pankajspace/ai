@@ -2,10 +2,10 @@
 
 # TechToday Home Page — Setup
 
-Setup for the **TechToday home page** only. Shared, one-time steps live in the [Shared Setup Guide](../SETUP.md):
+Setup for the **TechToday home page** only. Two groups of shared, one-time steps must be completed first:
 
-1. **Local machine prerequisites** (git, rsync) — [Shared § 1](../SETUP.md#1-local-machine-prerequisites)
-2. **One-time AWS infrastructure** (EC2, Elastic IP, Route 53, Nginx, SSL) — [Shared § 3](../SETUP.md#3-one-time-aws-infrastructure-setup)
+1. **Local machine prerequisites** — git, rsync
+2. **One-time AWS infrastructure** — EC2, Elastic IP, Route 53, Nginx, SSL
 
 This is a static site — no Docker, no API keys, no application server.
 
@@ -45,7 +45,7 @@ python3 -m http.server 8000
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no Docker container needed.
 
-> **Already done** if you followed [Shared § 3](../SETUP.md#3-one-time-aws-infrastructure-setup) — Steps 3.7–3.9 create the DNS records, Nginx config, and SSL certs for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
+> **Already done** if you completed the shared one-time AWS infrastructure setup — it creates the DNS records, Nginx config, and SSL certs for all domains. The details below are kept for reference or for adding TechToday to a server set up independently.
 
 ### 2.1. Add Nginx Server Block
 

@@ -2,7 +2,7 @@
 
 # LangChain Lab (langchain) — Daily Cheatsheet
 
-Quick-reference commands for day-to-day work on the **LangChain Lab (langchain)** project. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Development Workflow](../ARCHITECTURE.md#development-workflow).
+Quick-reference commands for day-to-day work on the **LangChain Lab (langchain)** project. Assumes the project setup is complete.
 
 Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (host port `5001`), ECR repo `techtoday/langchain`.
 

@@ -2,10 +2,10 @@
 
 # AI Playground (basic) — Setup
 
-Setup for the **AI Playground (basic)** project only. Shared, one-time steps live in the [Shared Setup Guide](../SETUP.md):
+Setup for the **AI Playground (basic)** project only. Two groups of shared, one-time steps must be completed first:
 
-1. **Local machine prerequisites** (Docker, AWS CLI, SSH, git, rsync) — [Shared § 1](../SETUP.md#1-local-machine-prerequisites)
-2. **One-time AWS infrastructure** (IAM, VPC, EC2, Elastic IP, Route 53, Nginx, SSL, IAM roles, OIDC) — [Shared § 3](../SETUP.md#3-one-time-aws-infrastructure-setup)
+1. **Local machine prerequisites** — Docker, AWS CLI, SSH, git, rsync
+2. **One-time AWS infrastructure** — IAM, VPC, EC2, Elastic IP, Route 53, Nginx, SSL, IAM roles, OIDC
 
 Complete those first, then follow this file to run the project locally and deploy it.
 
@@ -15,7 +15,7 @@ Complete those first, then follow this file to run the project locally and deplo
 
 ### 1.1. Prerequisites
 
-1. [Docker](https://www.docker.com/) + Docker Compose — installed in [Shared § 1.1](../SETUP.md#11-docker-cli--daemon--compose-plugin)
+1. [Docker](https://www.docker.com/) + Docker Compose
 2. [OpenAI API key](https://platform.openai.com/api-keys) — required for `travel`, `summarize`, and `arena`
 3. [Groq API key](https://console.groq.com/keys) — required for `joke` and `arena`; free tier available
 
@@ -64,7 +64,7 @@ docker compose build
 
 Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR repo `techtoday/basic`.
 
-> Complete the [Shared AWS infrastructure setup](../SETUP.md#3-one-time-aws-infrastructure-setup) first.
+> Complete the shared one-time AWS infrastructure setup first.
 
 ### 2.1. Store API Keys in Secrets Manager
 
@@ -193,7 +193,7 @@ docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 
 ### 2.4. Add Nginx Location Block
 
-> **One-time.** Already included in the full Nginx config from [Shared § 3.8](../SETUP.md#38-configure-nginx). Only repeat this step when adding `basic` to a server that was configured before this project existed.
+> **One-time.** Already included in the shared Nginx configuration. Only repeat this step when adding `basic` to a server that was configured before this project existed.
 
 SSH into the EC2 instance and add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
 
@@ -319,4 +319,3 @@ Project-specific values used by this project:
 2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `joke` and `arena`
 3. `PATH_PREFIX` — set to `/basic` directly in `~/docker-compose.yml` on EC2 (not secret)
 
-See the full [Secrets & Environment Variables Reference](../SETUP.md#312-secrets--environment-variables-reference) in the shared guide.

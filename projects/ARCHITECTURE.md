@@ -2,7 +2,7 @@
 
 # Projects Architecture — techtoday.click
 
-Architecture, configuration reference, design decisions, and the shared development workflow for all projects. For step-by-step setup, see the [Setup Guide](SETUP.md). For day-to-day commands, see each project's own `DAILY.md` (linked from the [Development Workflow](#development-workflow) section below).
+Architecture, configuration reference, design decisions, and the shared development workflow for all projects.
 
 ---
 
@@ -69,7 +69,7 @@ Route 53 (techtoday.click hosted zone)
 
 ### IAM & Security
 
-1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user (see [Setup Guide § 3.1](SETUP.md#31-create-iam-user-for-cli-access)) instead of root credentials for all local `aws` commands
+1. **Dedicated IAM user for CLI** — use the `techtoday-admin` IAM user instead of root credentials for all local `aws` commands
 2. **Enable MFA** — turn on multi-factor authentication for the IAM user and the root account
 3. **Rotate access keys** — rotate the IAM user's access keys periodically (`aws iam create-access-key` → update `aws configure` → `aws iam delete-access-key` for the old key)
 4. **Least privilege** — EC2 role allows only `secretsmanager:GetSecretValue` on `techtoday/*` and ECR read; the IAM user policy is scoped to the specific services used in this guide
@@ -101,7 +101,7 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 | basic | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
 | langchain | [deploy-langchain.yml](../.github/workflows/deploy-langchain.yml) | `projects/langchain/**` | Build → ECR push → SSH pull + restart container |
 
-Prerequisites: GitHub repo secrets + AWS infra per [Setup Guide § 3](SETUP.md#3-one-time-aws-infrastructure-setup).
+Prerequisites: GitHub repo secrets + the one-time AWS infrastructure setup.
 
 ---
 
@@ -113,11 +113,7 @@ Upgrade when a project needs to scale beyond a single EC2 instance, requires zer
 
 ## Development Workflow
 
-The shared git flow for all projects. Per-project develop / commit / deploy / rollback commands live in each project's own cheatsheet:
-
-1. **TechToday Home Page** — [techtoday/DAILY.md](techtoday/DAILY.md)
-2. **AI Playground (basic)** — [basic/DAILY.md](basic/DAILY.md)
-3. **LangChain Lab (langchain)** — [langchain/DAILY.md](langchain/DAILY.md)
+The shared git flow for all projects. Per-project develop / commit / deploy / rollback commands live in each project's own folder.
 
 ### 1. Start a Feature
 
@@ -128,11 +124,11 @@ git checkout -b feat/short-description
 
 ### 2. Develop, Commit & Deploy
 
-Follow your project's cheatsheet for the local dev loop, commit scope, and deployment:
+Each project has its own local dev loop and deployment target:
 
-1. [techtoday/DAILY.md](techtoday/DAILY.md) — static preview; deploys to the root domain
-2. [basic/DAILY.md](basic/DAILY.md) — web UI on port 8080; deploys to `/basic/`
-3. [langchain/DAILY.md](langchain/DAILY.md) — web UI on port 8081; deploys to `/langchain/`
+1. **techtoday** — static preview; deploys to the root domain
+2. **basic** — web UI on port 8080; deploys to `/basic/`
+3. **langchain** — web UI on port 8081; deploys to `/langchain/`
 
 Each project scopes its commits to its own folder (e.g. `git add projects/basic/`), then opens a PR and **squash-merges** into `main`.
 
@@ -152,15 +148,13 @@ Or just open the URLs in a browser.
 
 ### 5. Rollback & Manual Deploy
 
-These are project-specific — see the **Rollback** and **Manual Deploy** sections in each project's cheatsheet ([techtoday](techtoday/DAILY.md), [basic](basic/DAILY.md), [langchain](langchain/DAILY.md)).
+These are project-specific — each project folder documents its own **Rollback** and **Manual Deploy** steps.
 
 > Reminder: `$ELASTIC_IP` is the public IP of the EC2 instance (AWS console → EC2 → Instances → techtoday-server). For us it is `44.193.134.238`.
 
 ---
 
 # TechToday Home Page
-
-For setup, see [techtoday/SETUP.md](techtoday/SETUP.md) — [local dev](techtoday/SETUP.md#1-local-development) and [production](techtoday/SETUP.md#2-production-deployment). For daily commands, see [techtoday/DAILY.md](techtoday/DAILY.md).
 
 ---
 
@@ -251,8 +245,6 @@ aws cloudfront create-invalidation \
 
 # AI Playground (basic)
 
-For setup, see [basic/SETUP.md](basic/SETUP.md) — [local dev](basic/SETUP.md#1-local-development) and [production](basic/SETUP.md#2-production-deployment). For daily commands, see [basic/DAILY.md](basic/DAILY.md).
-
 ---
 
 ## Deployment Target
@@ -282,8 +274,6 @@ The served `index.html` also needs to know the prefix so its `fetch()` calls hit
 ---
 
 # LangChain Lab (langchain)
-
-For the project-specific README, see [langchain/README.md](langchain/README.md). For setup, see [langchain/SETUP.md](langchain/SETUP.md) — [local dev](langchain/SETUP.md#1-local-development) and [production](langchain/SETUP.md#2-production-deployment). For daily commands, see [langchain/DAILY.md](langchain/DAILY.md).
 
 This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
 

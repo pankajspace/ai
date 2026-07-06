@@ -265,11 +265,11 @@ rsync --version        # ✓ openrsync: protocol version 29
 
 ## 2. Local Development Setup
 
-Local development is project-specific. Each project's `SETUP.md` covers its prerequisites, one-time setup, and day-to-day loop:
+Local development is project-specific. Each project folder documents its own prerequisites, one-time setup, and day-to-day loop:
 
-1. **TechToday Home Page** — [techtoday/SETUP.md § 1](techtoday/SETUP.md#1-local-development)
-2. **AI Playground (basic)** — [basic/SETUP.md § 1](basic/SETUP.md#1-local-development)
-3. **LangChain Lab (langchain)** — [langchain/SETUP.md § 1](langchain/SETUP.md#1-local-development)
+1. **TechToday Home Page** — `projects/techtoday/`
+2. **AI Playground (basic)** — `projects/basic/`
+3. **LangChain Lab (langchain)** — `projects/langchain/`
 
 > Complete the [local machine prerequisites](#1-local-machine-prerequisites) above before starting any project.
 
@@ -917,7 +917,7 @@ Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit
 
 #### 3.12.4. Per-Project Secrets (basic)
 
-Project-specific values (set as described in [basic/SETUP.md § 2.1](basic/SETUP.md#21-store-api-keys-in-secrets-manager)):
+Project-specific values (set when deploying the `basic` project):
 
 1. `OPENAI_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `travel`, `summarize`, and `arena`
 2. `GROQ_API_KEY` — AWS Secrets Manager, secret `techtoday/secrets` — used by `joke` and `arena`
@@ -938,17 +938,17 @@ Project-specific values (reuses the same `techtoday/secrets` secret as basic):
 
 ## 4. Project-Specific Production Setup
 
-After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructure-setup) above, follow each project's own `SETUP.md` to deploy it. Each covers the project's secrets, ECR repo, image build/push, Nginx location block, Docker Compose service, and verification:
+After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructure-setup) above, each project folder documents its own deployment — secrets, ECR repo, image build/push, Nginx location block, Docker Compose service, and verification:
 
-1. **TechToday Home Page** (static site) — [techtoday/SETUP.md § 2](techtoday/SETUP.md#2-production-deployment)
-2. **AI Playground (basic)** (`/basic/`, port 5000) — [basic/SETUP.md § 2](basic/SETUP.md#2-production-deployment)
-3. **LangChain Lab (langchain)** (`/langchain/`, port 5001) — [langchain/SETUP.md § 2](langchain/SETUP.md#2-production-deployment)
+1. **TechToday Home Page** (static site) — `projects/techtoday/`
+2. **AI Playground (basic)** (`/basic/`, port 5000) — `projects/basic/`
+3. **LangChain Lab (langchain)** (`/langchain/`, port 5001) — `projects/langchain/`
 
 ---
 
 ## 5. Adding a New Project
 
-> `basic` (port 5000) and `langchain` (port 5001) are already deployed. A third project would use the next free port (e.g. `5002`). Use [langchain/SETUP.md](langchain/SETUP.md) as the copy-paste template.
+> `basic` (port 5000) and `langchain` (port 5001) are already deployed. A third project would use the next free port (e.g. `5002`). Use the `langchain` project folder as the copy-paste template.
 
 1. Create ECR repo:
    ```bash
@@ -958,7 +958,7 @@ After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructur
 2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5002)
 3. Add a new `location /ai-03/` block to `/etc/nginx/conf.d/app.conf`
 4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-03` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Add a `SETUP.md` in the new project's folder (local dev + production), following [langchain/SETUP.md](langchain/SETUP.md) as a template, and link it from [§ 2](#2-local-development-setup) and [§ 4](#4-project-specific-production-setup)
+5. Document the new project's local dev + production setup in its folder, following the `langchain` project as a template, and add it to the project lists in [§ 2](#2-local-development-setup) and [§ 4](#4-project-specific-production-setup)
 6. Add a new CI/CD workflow (`deploy-ai-03.yml`), following `deploy-langchain.yml` as a template
 7. **No new DNS record, no new EC2, no new SSL cert needed**
 

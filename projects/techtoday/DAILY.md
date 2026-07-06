@@ -2,7 +2,7 @@
 
 # TechToday Home Page — Daily Cheatsheet
 
-Quick-reference commands for day-to-day work on the **TechToday home page**. Assumes setup from [SETUP.md](SETUP.md) is complete. For the shared git flow (branch, PR, merge), see the [Development Workflow](../ARCHITECTURE.md#development-workflow).
+Quick-reference commands for day-to-day work on the **TechToday home page**. Assumes the project setup is complete.
 
 Deploys to `https://techtoday.click/` — static files served by Nginx, no container.
 

@@ -291,5 +291,5 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 
 ## Production Routing
 
-In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /basic { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/basic` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.  See [SETUP.md § 2](SETUP.md#2-production-deployment) for step-by-step deployment, or the [Architecture Guide](../ARCHITECTURE.md) for the full architecture.
+In production the app runs inside a Docker container on an EC2 instance behind Nginx.  Nginx is configured with a `location /basic { proxy_pass http://localhost:5000; }` block that strips the prefix and forwards requests to the container.  The `PATH_PREFIX` environment variable is set to `/basic` so the Flask Blueprint mounts all routes under that path and the `index.html` JavaScript sends API calls to the correct URL.
 

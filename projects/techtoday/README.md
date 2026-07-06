@@ -25,8 +25,6 @@ projects/techtoday/
         └── main.js     ← mobile nav toggle, no external libraries
 ```
 
-> Project setup lives in [SETUP.md](SETUP.md) and daily commands in [DAILY.md](DAILY.md). Shared infrastructure and architecture live in [../SETUP.md](../SETUP.md) and [../ARCHITECTURE.md](../ARCHITECTURE.md).
-
 ---
 
 ## Design
@@ -67,4 +65,4 @@ python3 -m http.server 8000
 
 ## Deployment
 
-See [SETUP.md § 2](SETUP.md#2-production-deployment) for step-by-step production setup, or the [Architecture Guide](../ARCHITECTURE.md) for alternative deployment options (S3 + CloudFront).
+This is a static site — the `src/` files are served directly by Nginx from the root domain (or optionally via S3 + CloudFront).
