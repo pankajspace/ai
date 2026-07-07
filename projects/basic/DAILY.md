@@ -1,5 +1,3 @@
-[← Project README](README.md) | [Project Setup](SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
-
 # AI Playground (basic) — Daily Cheatsheet
 
 Quick-reference commands for day-to-day work on the **AI Playground (basic)** project. Assumes the project setup is complete.

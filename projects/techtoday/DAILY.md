@@ -1,5 +1,3 @@
-[← Project README](README.md) | [Project Setup](SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
-
 # TechToday Home Page — Daily Cheatsheet
 
 Quick-reference commands for day-to-day work on the **TechToday home page**. Assumes the project setup is complete.

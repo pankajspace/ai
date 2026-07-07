@@ -1,5 +1,3 @@
-[← Project README](README.md) | [Project Daily](DAILY.md) | [Shared Setup Guide](../SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
-
 # LangChain Lab (langchain) — Setup
 
 Setup for the **LangChain Lab (langchain)** project only. Two groups of shared, one-time steps must be completed first:

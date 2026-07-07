@@ -1,5 +1,3 @@
-[← Project README](README.md) | [Project Setup](SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
-
 # LangChain Lab (langchain) — Daily Cheatsheet
 
 Quick-reference commands for day-to-day work on the **LangChain Lab (langchain)** project. Assumes the project setup is complete.

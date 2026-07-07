@@ -1,5 +1,3 @@
-[← Project README](README.md) | [Project Daily](DAILY.md) | [Shared Setup Guide](../SETUP.md) | [Architecture Guide](../ARCHITECTURE.md)
-
 # TechToday Home Page — Setup
 
 Setup for the **TechToday home page** only. Two groups of shared, one-time steps must be completed first:

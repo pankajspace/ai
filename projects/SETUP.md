@@ -1,4 +1,4 @@
-[← README](../README.md) · [Architecture Guide](ARCHITECTURE.md) · [Projects Reference](PROJECTS.md)
+[← README](../README.md)
 
 # Project Setup Guide — techtoday.click
 
@@ -1174,7 +1174,7 @@ curl -I https://app.techtoday.click/ai-03/
 
 ### 3.8. Update the Shared Docs
 
-1. Add the project to the combined index in [PROJECTS.md](PROJECTS.md) — both the local-dev and production lists.
+1. Add the project to `PROJECTS.md` — both the local-dev and production lists.
 2. If the project introduced new secrets, document them in [§ 2.12](#212-secrets--environment-variables-reference).
 3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`.
 

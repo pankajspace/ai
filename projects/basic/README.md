@@ -1,4 +1,4 @@
-[← README](../../README.md) | [Project Setup](SETUP.md) | [Project Daily](DAILY.md) | [Architecture Guide](../ARCHITECTURE.md)
+[← README](../../README.md)
 
 # AI Infused Learning
 
