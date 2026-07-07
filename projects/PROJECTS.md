@@ -10,8 +10,8 @@ documented once using the `template` project as the worked example — plus the
 handful of parameters that differ per project. This page stays focused on project
 workflow; each project's own README describes what it does and how its code works.
 
-**Before you start:** complete local machine prerequisites before any local work,
-and complete one-time AWS infrastructure setup before any production deployment.
+**Before you start:** complete [local machine prerequisites](SETUP.md#1-local-machine-prerequisites) before any local work,
+and complete [one-time AWS infrastructure setup](SETUP.md#2-one-time-aws-infrastructure) before any production deployment.
 Both are done once and shared by every project.
 
 ## 2. Container App Reference
@@ -54,7 +54,7 @@ deployment workflow documented below; only these parameters differ.
 
 The worked example below uses the `template` project (local port `8090`, keyless
 `echo` feature). For a real project, substitute its name and local port from the
-Container App Specs section — e.g. `basic` (`8080`) or `langchain` (`8081`).
+[Container App Specs](#container-app-specs) section — e.g. `basic` (`8080`) or `langchain` (`8081`).
 
 ### One-Time Setup
 
@@ -110,7 +110,7 @@ git checkout -b feat/short-description
 
 ### 2. Develop & Commit
 
-Edit files under `src/` (hot-reloaded locally — see Container App Local Development).
+Edit files under `src/` (hot-reloaded locally — see [Container App Local Development](#3-container-app-local-development)).
 Scope each commit to the project folder so its CI/CD workflow triggers on its own:
 
 ```bash
@@ -206,9 +206,9 @@ needed** — the app subdomain, instance, and cert are all shared.
 The walkthrough below provisions a container project named `ai-03` end to end,
 starting from the `template` project. Substitute your own name and the next free
 ports throughout. It assumes the
-one-time AWS infrastructure (EC2,
+[one-time AWS infrastructure](SETUP.md#2-one-time-aws-infrastructure) (EC2,
 ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place, and
-follows the Container App Shared Conventions
+follows the [Container App Shared Conventions](#container-app-shared-conventions)
 for ports and naming.
 
 ### 1. Scaffold the Project Folder
@@ -246,7 +246,7 @@ services:
       - ./src:/app/src
 ```
 
-Test it locally before touching production using Container App Local Development
+Test it locally before touching production using the [Container App Local Development](#3-container-app-local-development)
 loop (with the new port `8082`).
 
 ### 2. Create the ECR Repository
@@ -494,9 +494,9 @@ and confirm the page loads over HTTPS.
 
 ### 8. Update the Shared Docs
 
-1. Add the project to Container App Specs.
+1. Add the project to [Container App Specs](#container-app-specs).
 2. If the project introduced new secrets, document them in the shared setup notes.
-3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`. Day-to-day work then follows Container App Local Development and Container App Daily Usage above.
+3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`. Day-to-day work then follows [Container App Local Development](#3-container-app-local-development) and [Container App Daily Usage](#4-container-app-daily-usage) above.
 
 ## 6. Static Site
 
@@ -522,7 +522,7 @@ cd projects/techtoday/src && python3 -m http.server 8000   # → http://localhos
 
 ### TechToday Static Site Daily Usage
 
-Same git flow as the container apps,
+Same git flow as the [container apps](#4-container-app-daily-usage),
 scoping commits to `projects/techtoday/`. Merging to `main` triggers
 `deploy-techtoday.yml`, which `rsync`s `src/` to `/var/www/techtoday` on EC2 — no
 build and no container. **Manual deploy** (fallback, only if CI/CD is broken):
@@ -544,10 +544,10 @@ then re-run.
 
 The root domain's Nginx server block, SSL certificate, and Route 53 records are
 part of the **one-time server infrastructure**, created once in
-the shared infrastructure setup (Route 53 A records,
+the [shared infrastructure setup](SETUP.md#2-one-time-aws-infrastructure) (Route 53 A records,
 the Nginx config with the `/var/www/techtoday` root, and the Let's Encrypt cert).
 You only touch those when standing up a brand-new server — routine updates are just
-the `rsync` deploy in TechToday Static Site Daily Usage above.
+the `rsync` deploy in [TechToday Static Site Daily Usage](#techtoday-static-site-daily-usage) above.
 
 ### Static Site Alternative Hosting
 
