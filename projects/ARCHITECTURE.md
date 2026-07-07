@@ -47,7 +47,7 @@ Route 53 (techtoday.click hosted zone)
 3. **Free SSL** — Let's Encrypt / Certbot auto-renews certs; no ACM needed
 4. **Path-based routing** — Nginx `location /ai-*/` blocks route requests to the correct container
 5. **Single DNS record for apps** — One A record for `app.techtoday.click`; no new records per project
-6. **Easy to add projects** — New app project = new Docker Compose service + new Nginx `location` block, both automated by the scripts in `projects/scripts/`
+6. **Easy to add projects** — New app project = new Docker Compose service + new Nginx `location` block
 7. **Secrets management** — Secrets Manager injects API keys at container startup
 
 ---
