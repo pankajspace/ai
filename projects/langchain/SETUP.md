@@ -70,25 +70,60 @@ Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (m
 
 > **Already done** if you deployed the basic project — LangChain Lab reuses the same `techtoday/secrets` secret and only needs `OPENAI_API_KEY`, which is already stored there. No action required.
 
-**Verify or add the key (AWS Console):** open **Secrets Manager** → `techtoday/secrets` → **Retrieve secret value**. If `OPENAI_API_KEY` is present, you're done. To add it, click **Edit** → **Add row** → key `OPENAI_API_KEY`, value `sk-...` → **Save**.
-
-**CLI alternative:**
+#### CLI
 
 ```bash
 # Check the key exists (prints the JSON secret)
 aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text
 ```
 
+If `OPENAI_API_KEY` is missing, add it. `put-secret-value` replaces the whole secret string, so merge first:
+
+```bash
+CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['OPENAI_API_KEY']='sk-...'; print(json.dumps(d))")
+aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
+```
+
+#### AWS Console
+
+1. Open **Secrets Manager** → `techtoday/secrets` → **Retrieve secret value**
+2. If `OPENAI_API_KEY` is present, you're done
+3. To add it, click **Edit** → **Add row** → key `OPENAI_API_KEY`, value `sk-...` → **Save**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the same `aws secretsmanager` commands in the browser with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly. Confirm the Region selector shows `us-east-1` (Secrets Manager is Region-scoped).
+2. Paste the `get-secret-value` (and, if needed, the merge / `put-secret-value`) commands from the CLI section above — `python3` is pre-installed in CloudShell, so they run unchanged.
+
 ### 2.2. Create ECR Repository
 
 > **One-time.**
+
+#### CLI
 
 ```bash
 REGION=us-east-1
 aws ecr create-repository --repository-name techtoday/langchain --region $REGION
 ```
 
-**AWS Console:** Open **ECR** → **Repositories** → **Create repository** → name `techtoday/langchain` → leave defaults → **Create repository**
+#### AWS Console
+
+1. Open **ECR** → **Repositories** → **Create repository**
+2. **Repository name:** `techtoday/langchain`
+3. Leave the remaining defaults (private repository, mutable tags) → **Create repository**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws ecr` command in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the `aws ecr create-repository` command from the CLI section above — it runs unchanged.
+
+> Creating the repository works in CloudShell, but the image build and push in [§ 2.3](#23-initial-image-build-and-push) need local Docker and the cloned repo, so run those from your local terminal.
 
 ### 2.3. Initial Image Build and Push
 

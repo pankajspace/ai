@@ -102,9 +102,6 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ### 2.3. Add Route 53 DNS Records
 
-#### CloudShell / Console alternative
-The `aws route53` command below can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console UI shown after the CLI block.
-
 #### CLI
 
 ```bash
@@ -141,6 +138,16 @@ aws route53 change-resource-record-sets \
 1. Open **Route 53** → **Hosted zones** → click `techtoday.click`
 2. **Create record:** leave name blank, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
 3. **Create record:** name `www`, **Type:** `A`, **Value:** paste Elastic IP, **TTL:** `300` → **Create records**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws route53` command in the browser with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly. Route 53 is a global service, so the Region selector does not matter.
+2. If `$ELASTIC_IP` is not already set in this session, set it first with `ELASTIC_IP=<your-elastic-ip>`.
+3. Paste the `aws route53` commands from the CLI section above — they run unchanged.
+
+> This is a pure `aws route53` call, so CloudShell runs it identically to a local terminal. The static-file deploy in [§ 2.4](#24-deploy-static-files) uses `rsync` from the cloned repo and must run from your local terminal instead.
 
 ### 2.4. Deploy Static Files
 

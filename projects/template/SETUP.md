@@ -79,24 +79,78 @@ path prefix differ.
 ### 2.1. Store Any Secrets
 
 If your project needs API keys, add them to the shared `techtoday/secrets`
-secret in AWS Secrets Manager (**Secrets Manager** → `techtoday/secrets` →
-**Retrieve secret value** → **Edit** → add key/value → **Save**). The EC2
-instance role already grants read access to everything under `techtoday/*`.
+secret in AWS Secrets Manager. The EC2 instance role already grants read access
+to everything under `techtoday/*`.
 
 > If your project reuses only keys that already exist (e.g. `OPENAI_API_KEY`),
 > skip this step.
 
+#### CLI
+
+`put-secret-value` replaces the entire secret string, so fetch the current value,
+add your key, and write it back:
+
+```bash
+# Fetch the current secret, add/overwrite a key, and write it back
+CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['NEW_KEY']='new-value'; print(json.dumps(d))")
+aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
+```
+
+Replace `NEW_KEY` / `new-value` with your project's key and value.
+
+#### AWS Console
+
+1. Open **Secrets Manager** → `techtoday/secrets` → **Retrieve secret value**
+2. Click **Edit** → **Add row** → enter the new key and value
+3. Click **Save**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the same
+`aws secretsmanager` commands in the browser with no local install — the AWS CLI
+is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open
+   [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/)
+   directly. Confirm the Region selector shows `us-east-1` (Secrets Manager is
+   Region-scoped).
+2. Paste the fetch/merge/write-back commands from the CLI section above —
+   `python3` is pre-installed in CloudShell, so they run unchanged.
+
 ### 2.2. Create ECR Repository
 
 > **One-time.**
+
+#### CLI
 
 ```bash
 REGION=us-east-1
 aws ecr create-repository --repository-name techtoday/<project-name> --region $REGION
 ```
 
-**AWS Console:** **ECR** → **Repositories** → **Create repository** → name
-`techtoday/<project-name>` → leave defaults → **Create repository**
+#### AWS Console
+
+1. Open **ECR** → **Repositories** → **Create repository**
+2. **Repository name:** `techtoday/<project-name>`
+3. Leave the remaining defaults (private repository, mutable tags) → **Create repository**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws ecr`
+command in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the
+   Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open
+   [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/)
+   directly.
+3. Paste the `aws ecr create-repository` command from the CLI section above,
+   replacing `<project-name>` with your project name — it runs unchanged.
+
+> Creating the repository works in CloudShell, but the image build and push in
+> [§ 2.3](#23-initial-image-build-and-push) need local Docker and the cloned repo,
+> so run those from your local terminal.
 
 ### 2.3. Initial Image Build and Push
 

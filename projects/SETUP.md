@@ -111,7 +111,7 @@ docker compose version
 
 Runs every `aws ec2`, `aws route53`, `aws iam`, `aws secretsmanager`, and `aws ecr` command in this guide.
 
-> **Zero-install alternative — AWS CloudShell:** If you don't want to install the AWS CLI locally, you can run any `aws` command directly in your browser via [AWS CloudShell](https://console.aws.amazon.com/cloudshell/). Click the **CloudShell** icon (terminal prompt `>_`) in the top navigation bar of the AWS Console. CloudShell comes with the AWS CLI pre-installed and pre-authenticated with your console session — no `aws configure` needed. It works for all pure `aws` commands in this guide (EC2, Route 53, IAM, ECR, Secrets Manager, S3). It does **not** work for steps that require local files (e.g., `docker build`, `rsync`, SSH with a local `.pem` key).
+> **Prefer not to install anything?** You can run every `aws` command in this guide from your browser instead — see [§ 1.2.6. AWS CloudShell](#126-aws-cloudshell-zero-install-alternative).
 
 #### 1.2.1. macOS
 
@@ -164,6 +164,26 @@ aws --version
 ```
 
 > Credential configuration requires an IAM user — you'll create one in [§ 2.1](#21-create-iam-user-for-cli-access) and log in via [§ 2.2](#22-authenticate-aws-cli-with-aws-login).
+
+#### 1.2.6. AWS CloudShell (Zero-Install Alternative)
+
+If you would rather not install the AWS CLI locally at all, [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) gives you a browser-based terminal with the AWS CLI v2 pre-installed and automatically authenticated from your Console sign-in — no download, no `aws configure`, and no long-lived access keys to manage or rotate.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) (use the `techtoday` IAM user once it exists — see [§ 2.1](#21-create-iam-user-for-cli-access)).
+2. Confirm the Region selector in the top-right shows `us-east-1` — CloudShell always runs in the Region currently selected in the Console.
+3. Click the **CloudShell** icon (the `>_` terminal prompt) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+4. Wait a few seconds for the environment to start, then run any `aws` command from this guide exactly as written.
+
+**What works and what doesn't:**
+
+1. Works for every pure-`aws` step in this guide — EC2, Route 53, IAM, ECR, Secrets Manager, and S3.
+2. Does **not** work for steps that touch your local machine — `docker build`, `docker push`, `rsync`, or SSH with a local `.pem` key — because CloudShell has no access to your local filesystem or Docker daemon.
+
+**Handy to know:**
+
+1. CloudShell includes 1 GB of persistent storage in your home directory that survives between sessions.
+2. Sessions time out after roughly 20 minutes of inactivity; reconnecting starts a fresh shell while the home directory persists.
+3. `git`, `python3`, `pip`, and `jq` are also pre-installed, so you can clone the repo and run helper scripts directly in CloudShell when a step doesn't need local Docker or SSH.
 
 ---
 
@@ -273,9 +293,6 @@ These steps are done **once** for the entire server and shared by all projects. 
 >
 > **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating separate IAM users for day-to-day work. The IAM roles in [§ 2.10](#210-create-iam-role-for-ec2-ecr--secrets-access) and [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
 
-#### CloudShell / Console alternative
-This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
 #### 2.1.1. CLI
 
 ```bash
@@ -307,6 +324,16 @@ aws iam attach-user-policy \
    - Search for `SignInLocalDevelopmentAccess`, check the box → **Next** → **Add permissions**
 
 > **Security tip:** Enable MFA on this IAM user. Go to **IAM** → **Users** → `techtoday` → **Security credentials** → **Assign MFA device** → follow the prompts with an authenticator app.
+
+#### 2.1.3. AWS CloudShell
+
+Prefer the browser over a local install? [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is a terminal built into the AWS Console with the AWS CLI pre-installed and pre-authenticated from your Console sign-in — no `aws configure` or access keys required.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector in the top-right shows `us-east-1`.
+2. Click the **CloudShell** icon (the `>_` terminal prompt) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Once the shell starts, paste the same `aws iam` commands from the [CLI](#211-cli) section above — they run unchanged. Remember to replace `ACCOUNT_ID` with your 12-digit AWS account ID.
+
+> Every command in this step is a pure `aws iam` call, so CloudShell runs it identically to a local terminal. Because CloudShell is already signed in as your Console user, you can run these commands even before completing the local `aws login` in [§ 2.2](#22-authenticate-aws-cli-with-aws-login).
 
 ---
 
@@ -351,9 +378,6 @@ Session credentials from `aws login` are temporary. When they expire, simply run
 > If the output lists any VPCs, skip to [§ 2.4](#24-launch-ec2-instance).
 >
 > **Why this is needed:** Every EC2 instance, security group, and subnet must belong to a VPC. New AWS accounts and accounts where the default VPC was previously deleted have no VPC, which blocks instance and security group creation.
-
-#### CloudShell / Console alternative
-This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 #### 2.3.1. CLI
 
@@ -401,12 +425,19 @@ aws ec2 describe-subnets \
    - Click **Create subnet**
    - Select the new subnet → **Actions** → **Edit subnet settings** → enable **Auto-assign public IPv4 address** → **Save**
 
+#### 2.3.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws ec2` commands for this step in the browser with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1` (VPCs and subnets are Region-scoped, so CloudShell must be in the target Region).
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the `aws ec2 create-default-vpc` / `describe-*` / `create-default-subnet` commands from the [CLI](#231-cli) section above — they run unchanged.
+
+> These are all pure `aws ec2` calls, so CloudShell behaves exactly like a local terminal for this step.
+
 ---
 
 ### 2.4. Launch EC2 Instance
-
-#### CloudShell / Console alternative
-This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the AWS Console UI shown below.
 
 #### 2.4.1. CLI
 
@@ -463,7 +494,17 @@ INSTANCE_ID=$(aws ec2 run-instances \
    - **HTTPS** (port 443) — source: `0.0.0.0/0`
 5. Click **Launch instance**
 
-#### 2.4.3. Set Up SSH Key Pair
+#### 2.4.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) can run the `aws ec2` commands that create the security group and launch the instance, without a local AWS CLI install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the block from the [CLI](#241-cli) section above **as a single session** — the `AMI_ID`, `VPC_ID`, `SG_ID`, and `INSTANCE_ID` shell variables are set along the way and reused by later commands here and in [§ 2.5](#25-allocate-elastic-ip) and [§ 2.7](#27-create-route-53-a-records), so keep the same CloudShell tab open.
+
+> The `--key-name` value must reference a key pair that already exists in this Region. CloudShell cannot download the resulting `.pem` file to your machine, so create/download the key pair in the [AWS Console](#242-aws-console) first, then reference its name here. The SSH steps in [§ 2.4.4](#244-set-up-ssh-key-pair) still run from your local terminal.
+
+#### 2.4.4. Set Up SSH Key Pair
 
 After creating or downloading the `.pem` key file:
 
@@ -487,9 +528,6 @@ icacls techtoday.pem /inheritance:r /grant:r "$($env:USERNAME):(R)"
 
 ### 2.5. Allocate Elastic IP
 
-#### CloudShell / Console alternative
-This step uses only `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
 #### 2.5.1. CLI
 
 ```bash
@@ -508,7 +546,17 @@ echo "Elastic IP: $ELASTIC_IP"
 4. Choose the `techtoday-server` instance → click **Associate**
 5. Note the allocated IP — you'll use it as `$ELASTIC_IP` in subsequent steps
 
-#### 2.5.3. Test SSH Connection
+#### 2.5.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws ec2` address commands for this step in the browser.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the commands from the [CLI](#251-cli) section above. Run them in the **same CloudShell session** you used for [§ 2.4](#24-launch-ec2-instance) so that `$INSTANCE_ID` is still set; the block also exports `$ELASTIC_IP` for use in [§ 2.7](#27-create-route-53-a-records).
+
+> The SSH connection test in [§ 2.5.4](#254-test-ssh-connection) needs your local `.pem` key, so run that part from your local terminal rather than CloudShell.
+
+#### 2.5.4. Test SSH Connection
 
 > **Before connecting:** open **EC2 → Instances**, click `techtoday-server`, and wait until **Instance state** shows `Running` and **Status checks** shows `2/2 checks passed`. This can take 1–3 minutes after the Elastic IP is associated.
 
@@ -581,9 +629,6 @@ exit  # log out and back in for docker group to take effect
 
 ### 2.7. Create Route 53 A Records
 
-#### CloudShell / Console alternative
-This step uses only `aws route53` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
 #### 2.7.1. CLI
 
 ```bash
@@ -608,6 +653,16 @@ aws route53 change-resource-record-sets \
    - **Record name:** `www`, **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
    - **Record name:** `app`, **Type:** `A`, **Value:** paste the Elastic IP, **TTL:** `300`
 3. Click **Create records** after each
+
+#### 2.7.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws route53` commands for this step in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and open the **CloudShell** icon (`>_`) in the top navigation bar, or go to [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+2. Route 53 is a global service, so the Region selector does not matter here.
+3. Paste the commands from the [CLI](#271-cli) section above. Run them in the **same CloudShell session** used for [§ 2.5](#25-allocate-elastic-ip) so `$ELASTIC_IP` is still set; otherwise set it first with `ELASTIC_IP=<your-elastic-ip>`.
+
+> All commands here are pure `aws route53` calls, so CloudShell runs them identically to a local terminal.
 
 ---
 
@@ -716,9 +771,6 @@ sudo certbot renew --dry-run  # verify auto-renewal
 
 > **One-time.** All projects on this EC2 instance share this role.
 
-#### CloudShell / Console alternative
-This step uses only `aws iam` and `aws ec2` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
 #### 2.10.1. CLI
 
 ```bash
@@ -780,14 +832,21 @@ aws ec2 associate-iam-instance-profile \
 7. **Policy name:** `AllowAppSecrets` → **Create policy**
 8. Attach the role to the EC2 instance: open **EC2** → **Instances** → select `techtoday-server` → **Actions** → **Security** → **Modify IAM role** → select `ec2-techtoday-server-role` → **Update IAM role**
 
+#### 2.10.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs all of this step's `aws iam` and `aws ec2` commands in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the block from the [CLI](#2101-cli) section above. Run it in the **same CloudShell session** used for [§ 2.4](#24-launch-ec2-instance) so `$INSTANCE_ID` is still set for the final `associate-iam-instance-profile` command; otherwise set it first with `INSTANCE_ID=<your-instance-id>`.
+
+> IAM is a global service and the `aws ec2` calls here are Region-scoped, so keep CloudShell in `us-east-1` to match the instance.
+
 ---
 
 ### 2.11. Set Up GitHub OIDC and Deploy Role (CI/CD)
 
 > **One-time.** Shared by all projects' GitHub Actions workflows.
-
-#### CloudShell / Console alternative
-This step uses only `aws iam` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 #### 2.11.1. CLI
 
@@ -859,7 +918,17 @@ aws iam put-role-policy \
    ```
 5. **Policy name:** `ECRPushAndSSH` → **Create policy**
 
-#### 2.11.3. GitHub Secrets
+#### 2.11.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs this step's `aws iam` commands in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and open the **CloudShell** icon (`>_`) in the top navigation bar, or go to [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+2. IAM is a global service, so the Region selector does not matter here.
+3. Paste the commands from the [CLI](#2111-cli) section above, replacing `ACCOUNT_ID` with your 12-digit AWS account ID and `YOUR_GITHUB_ORG` / `YOUR_REPO_NAME` with your GitHub org and repository.
+
+> The GitHub repository secrets in [§ 2.11.4](#2114-github-secrets) are set in GitHub, not AWS, so CloudShell is not involved in that part.
+
+#### 2.11.4. GitHub Secrets
 
 Set at: repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
@@ -973,12 +1042,29 @@ docker compose up web      # → http://localhost:8082
 
 > **One-time.** Holds the project's container images.
 
+#### 3.2.1. CLI
+
 ```bash
 REGION=us-east-1
 aws ecr create-repository --repository-name techtoday/ai-03 --region $REGION
 ```
 
-**CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-03` → leave defaults → **Create repository**
+#### 3.2.2. AWS Console
+
+1. Open **ECR** → **Repositories** → **Create repository**
+2. **Repository name:** `techtoday/ai-03`
+3. Leave the remaining defaults (private repository, mutable tags, no scan-on-push)
+4. Click **Create repository**
+
+#### 3.2.3. AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the same `aws ecr` command with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the `aws ecr create-repository` command from the CLI section above — it runs unchanged.
+
+> This is a pure `aws ecr` call, so CloudShell runs it identically to a local terminal. Pushing images ([§ 3.3](#33-build-and-push-the-initial-image)) still needs local Docker and the cloned repo, so it cannot run in CloudShell.
 
 ### 3.3. Build and Push the Initial Image
 

@@ -180,9 +180,9 @@ This project has no project-specific secrets or environment variables — it's a
 
 ## Option B — S3 + CloudFront (Zero-Maintenance)
 
-Best for pure static hosting with global CDN, no EC2 involvement.
+Best for pure static hosting with global CDN, no EC2 involvement. This option creates four things: an S3 bucket, the uploaded site files, a CloudFront distribution, and Route 53 alias records. Pick whichever of the three methods below suits you.
 
-> **CloudShell / Console alternative:** The S3 and CloudFront commands in this section can be run in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) (except `s3 sync` from local files — use the Console upload UI instead). Console UI steps are shown alongside each CLI command below.
+### CLI
 
 **1. Create an S3 bucket:**
 
@@ -191,8 +191,6 @@ aws s3api create-bucket \
   --bucket techtoday-site \
   --region us-east-1
 ```
-
-**AWS Console:** Open **S3** → **Create bucket** → **Bucket name:** `techtoday-site` → **Region:** `us-east-1` → **Create bucket**
 
 **2. Upload site files:**
 
@@ -206,25 +204,35 @@ aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
   --cache-control "public, max-age=60"
 ```
 
-**AWS Console:** Open the `techtoday-site` bucket → **Upload** → drag and drop all files from `projects/techtoday/src/` → **Upload**. To set cache headers, select the uploaded files → **Actions** → **Edit metadata** → add `Cache-Control` = `public, max-age=86400` (use `max-age=60` for `index.html`).
-
 **3. Create a CloudFront distribution** pointing to the S3 bucket, with:
 - Default root object: `index.html`
 - HTTPS redirect enforced
 - Custom domain: `techtoday.click` and `www.techtoday.click`
 - ACM certificate (us-east-1 region required for CloudFront)
 
-**AWS Console:** Open **CloudFront** → **Create distribution** → **Origin domain:** select the `techtoday-site.s3.amazonaws.com` bucket → **Default root object:** `index.html` → **Viewer protocol policy:** Redirect HTTP to HTTPS → **Alternate domain names (CNAMEs):** add `techtoday.click` and `www.techtoday.click` → **Custom SSL certificate:** select your ACM certificate (must be in `us-east-1`) → **Create distribution**
-
 **4. Create Route 53 A alias records** pointing `techtoday.click` and `www.techtoday.click` to the CloudFront distribution domain.
 
-**AWS Console:** Open **Route 53** → **Hosted zones** → `techtoday.click` → **Create record** → **Record type:** `A` → toggle **Alias** on → **Route traffic to:** CloudFront distribution → select your distribution → **Create records**. Repeat for `www`.
+### AWS Console
+
+1. **Create the S3 bucket:** Open **S3** → **Create bucket** → **Bucket name:** `techtoday-site` → **Region:** `us-east-1` → **Create bucket**
+2. **Upload site files:** Open the `techtoday-site` bucket → **Upload** → drag and drop all files from `projects/techtoday/src/` → **Upload**. To set cache headers, select the uploaded files → **Actions** → **Edit metadata** → add `Cache-Control` = `public, max-age=86400` (use `max-age=60` for `index.html`).
+3. **Create the CloudFront distribution:** Open **CloudFront** → **Create distribution** → **Origin domain:** select the `techtoday-site.s3.amazonaws.com` bucket → **Default root object:** `index.html` → **Viewer protocol policy:** Redirect HTTP to HTTPS → **Alternate domain names (CNAMEs):** add `techtoday.click` and `www.techtoday.click` → **Custom SSL certificate:** select your ACM certificate (must be in `us-east-1`) → **Create distribution**
+4. **Create the Route 53 records:** Open **Route 53** → **Hosted zones** → `techtoday.click` → **Create record** → **Record type:** `A` → toggle **Alias** on → **Route traffic to:** CloudFront distribution → select your distribution → **Create records**. Repeat for `www`.
+
+### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the S3 and CloudFront CLI commands in the browser with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/), confirm the Region selector shows `us-east-1` (S3 bucket creation and the CloudFront ACM certificate must both be in `us-east-1`), then click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+2. Run the `aws s3api create-bucket` command (step 1) directly in CloudShell.
+3. For the file upload (step 2), `aws s3 sync` cannot read your local repo from CloudShell. Either clone the repo inside CloudShell first (`git clone <repo-url>` — `git` is pre-installed) and run the `sync` / `cp` commands from there, or upload the files via the S3 Console **Upload** UI.
+4. Create the CloudFront distribution and Route 53 alias records (steps 3–4) using the **AWS Console** steps above — alias records and distributions are far simpler to configure in the Console than via raw CLI.
 
 ---
 
 ## Deploying Updates (Option B — S3 + CloudFront)
 
-> **Note:** The `s3 sync` command below requires access to local project files — it cannot be run from AWS CloudShell. Use your local terminal, or upload files via the S3 Console UI (**S3** → `techtoday-site` bucket → **Upload**). The `cloudfront create-invalidation` command can be run in CloudShell.
+### CLI
 
 ```bash
 aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
@@ -240,6 +248,19 @@ aws cloudfront create-invalidation \
   --distribution-id $DISTRIBUTION_ID \
   --paths "/*"
 ```
+
+### AWS Console
+
+1. **Upload the updated files:** Open the `techtoday-site` bucket → **Upload** → drag and drop the files from `projects/techtoday/src/` → **Upload**. Re-apply the `Cache-Control` metadata as in the initial upload (`max-age=86400`, or `max-age=60` for `index.html`).
+2. **Invalidate the CloudFront cache:** Open **CloudFront** → select your distribution → **Invalidations** tab → **Create invalidation** → add the path `/*` → **Create invalidation**.
+
+### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) can run the CloudFront invalidation, but the `s3 sync` step needs your local files.
+
+1. Open **CloudShell** (the `>_` icon in the top navigation bar) with the Region set to `us-east-1`.
+2. The `aws s3 sync` / `aws s3 cp` commands read from the cloned repo, which CloudShell cannot access. Either clone the repo inside CloudShell first (`git clone <repo-url>`) and run them from there, or upload the updated files via the S3 Console **Upload** UI instead.
+3. Run the `aws cloudfront create-invalidation` command directly in CloudShell — it has no local dependencies.
 
 ---
 

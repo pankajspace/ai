@@ -68,9 +68,6 @@ Deploys to `https://app.techtoday.click/basic/` — container port `5000`, ECR r
 
 > **One-time per project.** Repeat only when rotating keys (`aws secretsmanager put-secret-value`).
 
-#### CloudShell / Console alternative
-This step uses only `aws secretsmanager` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
-
 #### CLI
 
 ```bash
@@ -84,12 +81,19 @@ aws secretsmanager create-secret \
 2. Add keys `OPENAI_API_KEY` and `GROQ_API_KEY` with their values → Next
 3. Set secret name to `techtoday/secrets` → Store
 
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws secretsmanager` command in the browser with no local install — the AWS CLI is pre-installed and pre-authenticated from your Console sign-in.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1` (Secrets Manager is Region-scoped).
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the `aws secretsmanager create-secret` command from the CLI section above, substituting your real `OPENAI_API_KEY` and `GROQ_API_KEY` values.
+
+> This is a pure `aws secretsmanager` call, so CloudShell runs it identically to a local terminal.
+
 ### 2.2. Create ECR Repository
 
 > **One-time.**
-
-#### CloudShell / Console alternative
-This step uses only `aws ecr` commands — you can run them in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or use the Console UI shown below.
 
 #### CLI
 
@@ -106,6 +110,16 @@ aws ecr create-repository --repository-name $REPO_NAME --region $REGION
 1. Open **ECR** → **Repositories** → **Create repository**
 2. **Repository name:** `techtoday/basic`
 3. Leave all other defaults → **Create repository**
+
+#### AWS CloudShell
+
+[AWS CloudShell](https://console.aws.amazon.com/cloudshell/) runs the `aws ecr` command in the browser with no local install.
+
+1. Sign in to the [AWS Console](https://console.aws.amazon.com/) and confirm the Region selector shows `us-east-1`.
+2. Click the **CloudShell** icon (`>_`) in the top navigation bar, or open [console.aws.amazon.com/cloudshell](https://console.aws.amazon.com/cloudshell/) directly.
+3. Paste the `aws ecr create-repository` command from the CLI section above — it runs unchanged.
+
+> Creating the repository works in CloudShell, but the image build and push in [§ 2.3](#23-initial-image-build-and-push) need local Docker and the cloned repo, so run those from your local terminal.
 
 ### 2.3. Initial Image Build and Push
 
