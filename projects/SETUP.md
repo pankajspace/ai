@@ -1137,7 +1137,7 @@ server {
 }
 ```
 
-In `nano`, save with `Ctrl+O` → `Enter`, then exit with `Ctrl+X`. Then validate the syntax and reload (a reload is zero-downtime — it does not drop existing connections):
+In `nano`, save and exit. Then validate the syntax and reload (a reload is zero-downtime — it does not drop existing connections):
 
 ```bash
 sudo nginx -t              # must print "syntax is ok" and "test is successful"
@@ -1194,7 +1194,7 @@ services:
       - ~/secrets/ai-03.env
 ```
 
-Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo` command above (or paste the whole resolved URL). Save with `Ctrl+O` → `Enter` → `Ctrl+X`.
+Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo` command above (or paste the whole resolved URL). Save and exit nano.
 
 > **YAML is indentation-sensitive:** the service name (`ai-03:`) must be indented exactly two spaces, and its keys (`image:`, `ports:`, …) four spaces. Use spaces, never tabs. Verify the file parses before starting:
 > ```bash

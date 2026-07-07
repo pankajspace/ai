@@ -293,7 +293,7 @@ Add the following block, indented under the existing `services:` key (aligned wi
       - ~/secrets/basic.env
 ```
 
-Save and exit nano: `Ctrl+O` → Enter → `Ctrl+X`.
+Save and exit nano.
 
 Verify the file looks correct:
 

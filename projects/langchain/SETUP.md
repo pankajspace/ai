@@ -137,7 +137,7 @@ REPO_NAME=techtoday/langchain
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
-cd projects/langchain
+cd projects/langchain # Assuming you're in the root of the repo
 docker build --platform linux/amd64 -t $REPO_NAME .
 docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
@@ -182,8 +182,6 @@ location /langchain/ {
     proxy_set_header   X-Forwarded-Proto $scheme;
 }
 ```
-
-In `nano`, save with `Ctrl+O` → `Enter`, then exit with `Ctrl+X`. Validate the syntax and reload (a reload is zero-downtime):
 
 ```bash
 sudo nginx -t              # must print "syntax is ok" and "test is successful"
@@ -242,7 +240,7 @@ services:
       - ~/secrets/langchain.env
 ```
 
-Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo $IMAGE` command above (or paste the whole resolved URL). Save with `Ctrl+O` → `Enter` → `Ctrl+X`.
+Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo $IMAGE` command above (or paste the whole resolved URL). Save and exit nano (see [NANO.md](NANO.md) for shortcuts).
 
 > **YAML is indentation-sensitive:** the service name (`langchain:`) must be indented exactly two spaces, and its keys (`image:`, `ports:`, …) four spaces. Use spaces, never tabs. Verify the file parses before starting:
 > ```bash
@@ -250,6 +248,8 @@ Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo $IMAGE` com
 > ```
 
 Authenticate and start:
+
+> Run these **on the EC2 host** (in the same SSH session from the top of this section):
 
 ```bash
 aws ecr get-login-password --region $REGION | \
