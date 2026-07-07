@@ -948,18 +948,193 @@ After completing the [one-time AWS infrastructure](#3-one-time-aws-infrastructur
 
 ## 5. Adding a New Project
 
-> `basic` (local 8080 / prod 5000) and `langchain` (local 8081 / prod 5001) are already deployed. A third project uses the next free ports (local 8082 / prod 5002). **No new DNS record, no new EC2, and no new SSL cert are ever needed.**
+> `basic` (local 8080 / prod 5000) and `langchain` (local 8081 / prod 5001) are already deployed. A third container project uses the next free ports (local 8082 / prod 5002). **No new DNS record, no new EC2, and no new SSL cert are ever needed** — the app subdomain, instance, and wildcard-free cert are all shared.
 
-Run these steps by hand to add a new project:
+The walkthrough below adds a container project named `ai-03` end to end. Substitute your own name and the next free ports throughout. It assumes the [one-time AWS infrastructure](#3-one-time-aws-infrastructure-setup) (EC2, ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place.
 
-1. Create the ECR repo:
-   ```bash
-   aws ecr create-repository --repository-name techtoday/ai-03
+> **Port convention:** each container listens on `5000` *inside* the container and is published on a unique *host* port. `basic` → `5000`, `langchain` → `5001`, so the next project uses `5002`. Locally, map to the next free `808x` port (`basic` → `8080`, `langchain` → `8081`, next → `8082`) so every project can run side by side.
+
+### 5.1. Scaffold the Project Folder
+
+Clone the `langchain` project as a template — it already has the Flask + Docker layout wired for path-prefix routing.
+
+```bash
+cd projects
+cp -r langchain ai-03
+cd ai-03
+
+# Remove the template's local env file and any build artifacts
+rm -f .env
+```
+
+Then adjust the copied files for the new project:
+
+1. `docker-compose.yml` — change the `web` service's published port from `8081` to the next free local port (`8082`):
+   ```yaml
+   services:
+     web:
+       build: .
+       env_file: .env
+       command: python src/app.py
+       ports:
+         - "8082:5000"     # was 8081:5000
+       volumes:
+         - ./src:/app/src
    ```
-   **CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-03` → **Create repository**
-2. Add a new service to `~/docker-compose.yml` on EC2 with a new port (e.g., 5002)
-3. Add a new `location /ai-03/` block to `/etc/nginx/conf.d/app.conf`
-4. Deploy: `docker compose -f ~/docker-compose.yml up -d --no-deps ai-03` + `sudo nginx -t && sudo systemctl reload nginx`
-5. Document the new project's local dev + production setup in its folder, following the `langchain` project as a template, and add it to the project lists in [§ 2](#2-local-development-setup) and [§ 4](#4-project-specific-production-setup)
-6. Add a new CI/CD workflow (`deploy-ai-03.yml`), following `deploy-langchain.yml` as a template
+2. `src/` — replace the LangChain feature code with your project's code. Keep `src/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
+3. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
+4. `README.md`, `SETUP.md`, `DAILY.md` — update names, ports, and feature descriptions to match the new project.
+
+Test locally before touching production:
+
+```bash
+cp .env.example .env      # fill in any required keys
+docker compose build
+docker compose up web      # → http://localhost:8082
+```
+
+### 5.2. Create the ECR Repository
+
+> **One-time.** Holds the project's container images.
+
+```bash
+REGION=us-east-1
+aws ecr create-repository --repository-name techtoday/ai-03 --region $REGION
+```
+
+**CloudShell / Console alternative:** Run the command above in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), or use the Console: **ECR** → **Repositories** → **Create repository** → name `techtoday/ai-03` → leave defaults → **Create repository**
+
+### 5.3. Build and Push the Initial Image
+
+> **One-time.** After this first manual push, every later push is handled automatically by the CI/CD workflow added in [§ 5.6](#56-add-the-cicd-workflow). Requires Docker running locally and the cloned repo.
+
+```bash
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REPO_NAME=techtoday/ai-03
+
+# Authenticate the local Docker CLI to the private ECR registry
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+cd projects/ai-03
+docker build --platform linux/amd64 -t $REPO_NAME .
+docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
+```
+
+> `--platform linux/amd64` is required on Apple Silicon Macs so the image runs on the `x86_64` EC2 instance.
+
+### 5.4. Store Any New Secrets
+
+If your project needs API keys or other secrets, add them to the shared `techtoday/secrets` secret in AWS Secrets Manager (**Secrets Manager** → `techtoday/secrets` → **Retrieve secret value** → **Edit** → add key/value → **Save**). The EC2 instance role from [§ 3.10](#310-create-iam-role-for-ec2-ecr--secrets-access) already grants read access to everything under `techtoday/*`, so no new IAM changes are needed.
+
+> If your project reuses only keys that already exist (e.g. `OPENAI_API_KEY`), skip this step.
+
+### 5.5. Wire Up the EC2 Host
+
+SSH into production and add the project to Nginx and Docker Compose.
+
+```bash
+ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+```
+
+#### 5.5.1. Add the Nginx Location Block
+
+Add a `location` block inside the existing `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
+
+```nginx
+location /ai-03/ {
+    proxy_pass         http://localhost:5002;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+}
+```
+
+Then validate and reload:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### 5.5.2. Create the Secrets Env File
+
+Fetch the shared secret into a per-project env file that the container reads at startup:
+
+```bash
+mkdir -p ~/secrets
+aws secretsmanager get-secret-value \
+  --secret-id techtoday/secrets \
+  --query SecretString --output text | \
+  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+  > ~/secrets/ai-03.env
+chmod 600 ~/secrets/ai-03.env
+```
+
+#### 5.5.3. Add the Service to Docker Compose
+
+Resolve the image URL, then append a service block under the existing `services:` key in `~/docker-compose.yml`:
+
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+REGION=us-east-1
+echo "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-03:latest"   # verify before pasting below
+```
+
+```yaml
+  ai-03:
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/ai-03:latest
+    restart: unless-stopped
+    command: python src/app.py
+    ports:
+      - "5002:5000"          # unique host port; container still listens on 5000
+    environment:
+      - PATH_PREFIX=/ai-03
+    env_file:
+      - ~/secrets/ai-03.env
+```
+
+Authenticate, pull, and start only the new container (leaving `basic` and `langchain` untouched):
+
+```bash
+aws ecr get-login-password --region $REGION | \
+  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+docker compose -f ~/docker-compose.yml pull ai-03
+docker compose -f ~/docker-compose.yml up -d --no-deps ai-03
+```
+
+### 5.6. Add the CI/CD Workflow
+
+Automate future deploys so every push to `main` under `projects/ai-03/` rebuilds and redeploys just this project.
+
+```bash
+cp .github/workflows/deploy-langchain.yml .github/workflows/deploy-ai-03.yml
+```
+
+Edit `deploy-ai-03.yml` and change every `langchain` reference to `ai-03`:
+
+1. `name:` → `Deploy ai-03`
+2. `on.push.paths` → `- 'projects/ai-03/**'`
+3. `env.ECR_REPOSITORY` → `techtoday/ai-03`
+4. The build step's `cd projects/langchain` → `cd projects/ai-03`
+5. Both `pull`/`up` commands in the SSH deploy step → `... pull ai-03` and `... up -d --no-deps ai-03`
+
+The workflow reuses the same shared GitHub secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) from [§ 3.11](#311-set-up-github-oidc-and-deploy-role-cicd) and [§ 3.12](#312-secrets--environment-variables-reference) — no new secrets to configure.
+
+### 5.7. Verify
+
+```bash
+curl -I https://app.techtoday.click/ai-03/
+```
+
+**Browser alternative:** open [https://app.techtoday.click/ai-03/](https://app.techtoday.click/ai-03/) and confirm the page loads over HTTPS.
+
+### 5.8. Update the Shared Docs
+
+1. Add the project to the local-dev list in [§ 2](#2-local-development-setup) and the production list in [§ 4](#4-project-specific-production-setup).
+2. If the project introduced new secrets, document them in [§ 3.12](#312-secrets--environment-variables-reference).
+3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`.
 
