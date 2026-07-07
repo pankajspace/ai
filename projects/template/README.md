@@ -8,8 +8,8 @@ path-prefix routing, so a new project is deploy-ready after a folder copy and a
 few find-and-replace edits.
 
 > **This folder is a template — do not deploy it as-is.** Copy it to a new
-> project folder, then follow the checklist below. The full end-to-end
-> walkthrough lives in [projects/SETUP.md § 3 — Adding a New Project](../SETUP.md#3-adding-a-new-project).
+> project folder, then follow the end-to-end walkthrough in
+> [PROJECTS.md § Adding a New Project](../PROJECTS.md#adding-a-new-project).
 
 ---
 
@@ -74,43 +74,9 @@ returning the HTML.
 
 ---
 
-## Try It Locally
+## Try It Locally & Create a New Project
 
-The starter `echo` feature needs no keys, so the template runs immediately:
-
-```bash
-cd projects/template
-cp .env.example .env
-docker compose up web
-# → http://localhost:8090
-```
-
-Type a message in the Echo card and confirm it posts to `/echo` and renders a
-reply.
-
----
-
-## Create a New Project From This Template
-
-Short version (full walkthrough in [SETUP.md § 3](../SETUP.md#3-adding-a-new-project)):
-
-1. **Copy the folder** — from `projects/`, run `cp -r template <project-name>`.
-2. **Pick ports** — in `docker-compose.yml`, change the `web` service's local
-   port (`8090`) to the next free `808x` (basic=8080, langchain=8081, …). The
-   container still listens on `5000`.
-3. **Rename in the UI** — update the title, hero, and card text in
-   `src/index.html`, plus the headings in these docs.
-4. **Add your features** — replace `src/echo.py` with your own feature modules
-   and add matching routes in `src/app.py` and cards in `src/index.html` /
-   `src/js/main.js`.
-5. **Declare dependencies & secrets** — add libraries to `requirements.txt` and
-   any keys to `.env.example` (and store them in AWS Secrets Manager for prod).
-6. **Enable CI/CD** — copy `deploy.yml.template` to
-   `.github/workflows/deploy-<project-name>.yml` and replace the
-   `PROJECT_NAME` tokens.
-7. **Deploy** — follow SETUP.md § 3 to create the ECR repo, add the Nginx
-   `location` block, and add the Docker Compose service on EC2.
-
-See also this folder's own [SETUP.md](SETUP.md) and [DAILY.md](DAILY.md) for
-the per-project setup and day-to-day command references (written with
-`<project-name>` / `<local-port>` / `<host-port>` placeholders to fill in).
+The starter `echo` feature needs no keys, so a fresh copy runs immediately with
+`docker compose up web` (→ http://localhost:8090). The local-dev loop, the
+copy-and-rename checklist, and the full deployment walkthrough are documented
+once in [PROJECTS.md § Adding a New Project](../PROJECTS.md#adding-a-new-project).

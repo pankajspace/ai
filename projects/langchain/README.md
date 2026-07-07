@@ -74,28 +74,4 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 
----
-
-## Local Development
-
-Quick start (requires Docker — daemon + CLI + Compose plugin):
-
-```bash
-cd projects/langchain
-cp .env.example .env          # then paste your OpenAI key inside
-docker compose up web
-# → http://localhost:8081
-```
-
-Get an OpenAI key at https://platform.openai.com/api-keys (add a little billing credit).
-
----
-
-## Deployment Target
-
-1. **URL:** `https://app.techtoday.click/langchain/`
-2. **Container port:** `5000` (host port `8081` locally, `5001` on EC2)
-3. **ECR repository:** `techtoday/langchain`
-4. **Path prefix env var:** `PATH_PREFIX=/langchain`
-
-Merging to `main` triggers CI/CD automatically.
+> Local development, deployment, secrets, and day-to-day usage are documented in [PROJECTS.md § LangChain Lab](../PROJECTS.md#langchain-lab-langchain).

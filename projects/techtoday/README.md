@@ -36,24 +36,6 @@ projects/techtoday/
 
 ---
 
-## Local Preview
-
-Open `src/index.html` directly in any browser — no server needed:
-
-```bash
-open projects/techtoday/src/index.html
-```
-
-Or serve it locally with Python's built-in server (useful for testing relative asset paths):
-
-```bash
-cd projects/techtoday/src
-python3 -m http.server 8000
-# open http://localhost:8000
-```
-
----
-
 ## Adding a New Project Card
 
 1. Open `src/index.html`.
@@ -61,8 +43,4 @@ python3 -m http.server 8000
 3. Update the icon, heading, description, link `href`, and status badge (`live` or `soon`).
 4. Set the status badge: `<span class="status live">Live</span>` for a running project, or `<span class="status soon">Coming soon</span>` for one that is not yet live.
 
----
-
-## Deployment
-
-This is a static site — the `src/` files are served directly by Nginx from the root domain (or optionally via S3 + CloudFront).
+> Local preview, deployment (Nginx on EC2 or S3 + CloudFront), and daily usage are documented in [PROJECTS.md § TechToday Home Page](../PROJECTS.md#techtoday-home-page--static-site).
