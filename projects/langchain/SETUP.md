@@ -70,6 +70,15 @@ Deploys to `https://app.techtoday.click/langchain/` — container port `5000` (m
 
 > **Already done** if you deployed the basic project — LangChain Lab reuses the same `techtoday/secrets` secret and only needs `OPENAI_API_KEY`, which is already stored there. No action required.
 
+**Verify or add the key (AWS Console):** open **Secrets Manager** → `techtoday/secrets` → **Retrieve secret value**. If `OPENAI_API_KEY` is present, you're done. To add it, click **Edit** → **Add row** → key `OPENAI_API_KEY`, value `sk-...` → **Save**.
+
+**CLI alternative:**
+
+```bash
+# Check the key exists (prints the JSON secret)
+aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text
+```
+
 ### 2.2. Create ECR Repository
 
 > **One-time.**
@@ -100,12 +109,34 @@ docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
 
 > On Apple Silicon Macs, `--platform linux/amd64` is required, so the image runs on the `x86_64` EC2 instance.
+>
+> **This step has no Console equivalent** — `docker build`/`docker push` need Docker and the repo on your local machine, so CloudShell cannot run them.
+
+**Verify the push (Console):** open **ECR** → **Repositories** → `techtoday/langchain` and confirm an image tagged `latest` appears. Or from the CLI:
+
+```bash
+aws ecr list-images --repository-name techtoday/langchain --region $REGION
+```
 
 ### 2.4. Add Nginx Location Block
 
 > **One-time.** Already included in the shared Nginx configuration. Only repeat this step when adding `langchain` to a server configured before this project existed.
 
-Add to the `server { listen 443 ... server_name app.techtoday.click; }` block in `/etc/nginx/conf.d/app.conf`:
+The Nginx config lives **on the EC2 host**, so connect a shell one of two ways:
+
+1. **SSH (from your local machine):**
+   ```bash
+   ssh -i techtoday.pem ec2-user@$ELASTIC_IP
+   ```
+2. **Browser-based (no key file) — EC2 Instance Connect:** open **EC2** → **Instances** → select `techtoday-server` → **Connect** → **EC2 Instance Connect** tab → **Connect**.
+
+Open the app config in an editor:
+
+```bash
+sudo nano /etc/nginx/conf.d/app.conf
+```
+
+Inside the existing `server { listen 443 ssl ... server_name app.techtoday.click; }` block (the one Certbot created — **not** the `listen 80` redirect block), add a `location` block next to the existing `/basic/` block:
 
 ```nginx
 location /langchain/ {
@@ -117,11 +148,14 @@ location /langchain/ {
 }
 ```
 
-Then:
+In `nano`, save with `Ctrl+O` → `Enter`, then exit with `Ctrl+X`. Validate the syntax and reload (a reload is zero-downtime):
 
 ```bash
-sudo nginx -t && sudo systemctl reload nginx
+sudo nginx -t              # must print "syntax is ok" and "test is successful"
+sudo systemctl reload nginx
 ```
+
+> **If `nginx -t` fails**, it prints the offending file and line number. Reopen the file, fix the reported line (usually a missing `;` or unbalanced `}`), and re-run `nginx -t` before reloading — Nginx keeps serving the old config until a reload succeeds.
 
 ### 2.5. Add Service to Docker Compose on EC2
 
@@ -149,9 +183,18 @@ IMAGE="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/langchain:latest"
 echo $IMAGE   # verify before using it below
 ```
 
-Add the following block (aligned with the existing `basic` service). Note the host port is `5001` to avoid clashing with `basic` on `5000`:
+Add the following block (aligned with the existing `basic` service). Note the host port is `5001` to avoid clashing with `basic` on `5000`. Open the compose file with an editor:
+
+```bash
+nano ~/docker-compose.yml
+```
+
+Under the existing top-level `services:` key (at the same indentation as the `basic` service, two spaces in), add:
 
 ```yaml
+services:
+  # ...existing basic service...
+
   langchain:
     image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/langchain:latest
     restart: unless-stopped
@@ -163,6 +206,13 @@ Add the following block (aligned with the existing `basic` service). Note the ho
     env_file:
       - ~/secrets/langchain.env
 ```
+
+Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo $IMAGE` command above (or paste the whole resolved URL). Save with `Ctrl+O` → `Enter` → `Ctrl+X`.
+
+> **YAML is indentation-sensitive:** the service name (`langchain:`) must be indented exactly two spaces, and its keys (`image:`, `ports:`, …) four spaces. Use spaces, never tabs. Verify the file parses before starting:
+> ```bash
+> docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+> ```
 
 Authenticate and start:
 
