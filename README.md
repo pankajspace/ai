@@ -23,6 +23,7 @@
 ## Documentation
 1. [Architecture Guide](projects/ARCHITECTURE.md)
 2. [Setup Guide](projects/SETUP.md)
+3. [Projects Reference](projects/PROJECTS.md)
 
 ## List of Projects (Increasing Complexity)
 1. [techtoday](projects/techtoday/README.md)

@@ -1,4 +1,4 @@
-[← README](../README.md) · [Setup Guide](SETUP.md)
+[← README](../README.md) · [Setup Guide](SETUP.md) · [Projects Reference](PROJECTS.md)
 
 # Projects Architecture — techtoday.click
 

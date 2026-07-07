@@ -16,7 +16,7 @@
 #      restart only the `basic` container — every other service already
 #      running on that host (e.g. `langchain`) is left untouched.
 #
-# See projects/SETUP.md (§ 3.11 "Set Up GitHub OIDC and Deploy Role") for the
+# See projects/SETUP.md (§ 2.11 "Set Up GitHub OIDC and Deploy Role") for the
 # one-time AWS/GitHub setup this workflow depends on (OIDC provider, IAM
 # roles, GitHub secrets), and projects/DAILY.md for day-to-day usage,
 # manual fallback deployment, and rollback instructions.
@@ -57,7 +57,7 @@ jobs:
       - name: Configure AWS credentials via OIDC
         # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
         # role is scoped to ECR push permissions only (see SETUP.md
-        # § 3.11 "Set Up GitHub OIDC and Deploy Role") — this job cannot touch any other AWS resource.
+        # § 2.11 "Set Up GitHub OIDC and Deploy Role") — this job cannot touch any other AWS resource.
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
@@ -135,7 +135,7 @@ jobs:
             # exist on this GitHub Actions runner, not on the EC2 host — so
             # the EC2 host authenticates to ECR itself, using the IAM
             # instance role already attached to it (see SETUP.md
-            # § 3.10 "Create IAM Role for EC2").
+            # § 2.10 "Create IAM Role for EC2").
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
