@@ -4,6 +4,8 @@ An index of every project in this repo. Each project folder documents its own se
 
 > Complete the shared prerequisites in `SETUP.md` first — the local machine prerequisites (§ 1) before any local work, and the one-time AWS infrastructure (§ 2) before any production deployment.
 
+> Starting something new? The [`template` project](template/README.md) is a copy-me Flask + Docker starter, already wired for the shared path-prefix routing. See SETUP.md § 3.
+
 ---
 
 ## Local Development
@@ -24,4 +26,4 @@ After completing the one-time AWS infrastructure (SETUP.md § 2), each project f
 2. **AI Playground (basic)** (`/basic/`, port 5000) — `projects/basic/`
 3. **LangChain Lab (langchain)** (`/langchain/`, port 5001) — `projects/langchain/`
 
-> Adding a new project? Follow SETUP.md § 3 — Adding a New Project.
+> Adding a new project? Copy the [`template` project](template/README.md) and follow SETUP.md § 3 — Adding a New Project.

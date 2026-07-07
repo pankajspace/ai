@@ -934,20 +934,17 @@ The walkthrough below adds a container project named `ai-03` end to end. Substit
 
 ### 3.1. Scaffold the Project Folder
 
-Clone the `langchain` project as a template — it already has the Flask + Docker layout wired for path-prefix routing.
+Copy the [`template` project](template/README.md) — a minimal Flask + Docker starter already wired for path-prefix routing, with a keyless `echo` feature so it runs out of the box.
 
 ```bash
 cd projects
-cp -r langchain ai-03
+cp -r template ai-03
 cd ai-03
-
-# Remove the template's local env file and any build artifacts
-rm -f .env
 ```
 
 Then adjust the copied files for the new project:
 
-1. `docker-compose.yml` — change the `web` service's published port from `8081` to the next free local port (`8082`):
+1. `docker-compose.yml` — change the `web` service's published port from the template's `8090` to the next free local port (`8082`):
    ```yaml
    services:
      web:
@@ -955,13 +952,14 @@ Then adjust the copied files for the new project:
        env_file: .env
        command: python src/app.py
        ports:
-         - "8082:5000"     # was 8081:5000
+         - "8082:5000"     # was 8090:5000
        volumes:
          - ./src:/app/src
    ```
-2. `src/` — replace the LangChain feature code with your project's code. Keep `src/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
-3. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
-4. `README.md`, `SETUP.md`, `DAILY.md` — update names, ports, and feature descriptions to match the new project.
+2. `src/` — replace the starter `echo` feature (`src/echo.py`, its route in `src/app.py`, and its card in `src/index.html` / `src/js/main.js`) with your project's code. Keep `src/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
+3. `requirements.txt` — add any libraries your features need (e.g. `openai`, `langchain`).
+4. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
+5. `README.md`, `SETUP.md`, `DAILY.md` — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
 
 Test locally before touching production:
 
@@ -1129,38 +1127,30 @@ docker compose -f ~/docker-compose.yml up -d --no-deps ai-03
 
 ### 3.6. Add the CI/CD Workflow
 
-Automate future deploys so every push to `main` under `projects/ai-03/` rebuilds and redeploys just this project.
+Automate future deploys so every push to `main` under `projects/ai-03/` rebuilds and redeploys just this project. The template ships a ready-made workflow (`deploy.yml.template`) that uses a single `PROJECT_NAME` token — copy it into `.github/workflows/` and replace the token.
 
 ```bash
-cp .github/workflows/deploy-langchain.yml .github/workflows/deploy-ai-03.yml
+cp projects/ai-03/deploy.yml.template .github/workflows/deploy-ai-03.yml
 ```
 
-Every `langchain` reference in the copied file must become `ai-03`. The five spots to change are:
-
-1. `name:` → `Deploy ai-03`
-2. `on.push.paths` → `- 'projects/ai-03/**'`
-3. `env.ECR_REPOSITORY` → `techtoday/ai-03`
-4. The build step's `cd projects/langchain` → `cd projects/ai-03`
-5. Both `pull`/`up` commands in the SSH deploy step → `... pull ai-03` and `... up -d --no-deps ai-03`
-
-Because every occurrence of the word `langchain` in this file refers to the project, a single global replace does all five at once:
+A single global replace turns every `PROJECT_NAME` token into the project name (used for the workflow name, trigger path, ECR repo, build directory, and both `pull`/`up` service names):
 
 ```bash
 # macOS (BSD sed)
-sed -i '' 's/langchain/ai-03/g' .github/workflows/deploy-ai-03.yml
+sed -i '' 's/PROJECT_NAME/ai-03/g' .github/workflows/deploy-ai-03.yml
 
 # Linux (GNU sed)
-sed -i 's/langchain/ai-03/g' .github/workflows/deploy-ai-03.yml
+sed -i 's/PROJECT_NAME/ai-03/g' .github/workflows/deploy-ai-03.yml
 ```
 
-Confirm no `langchain` references remain, then eyeball the result:
+Confirm no `PROJECT_NAME` tokens remain, then eyeball the result:
 
 ```bash
-grep -n langchain .github/workflows/deploy-ai-03.yml   # should print nothing
+grep -n PROJECT_NAME .github/workflows/deploy-ai-03.yml   # should print nothing
 grep -nE 'name:|paths:|ECR_REPOSITORY|cd projects|pull ai-03|up -d' .github/workflows/deploy-ai-03.yml
 ```
 
-> **Console / no-terminal alternative:** create the file directly on GitHub — open your repo → **Add file** → **Create new file** → name it `.github/workflows/deploy-ai-03.yml`, paste the edited contents, then **Commit changes**. Or edit it in the GitHub web editor by pressing `.` in the repo to open github.dev.
+> **Console / no-terminal alternative:** create the file directly on GitHub — open your repo → **Add file** → **Create new file** → name it `.github/workflows/deploy-ai-03.yml`, paste the edited contents (template with `PROJECT_NAME` → `ai-03`), then **Commit changes**. Or edit it in the GitHub web editor by pressing `.` in the repo to open github.dev.
 
 The workflow reuses the same shared GitHub secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) from [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) and [§ 2.12](#212-secrets--environment-variables-reference) — no new secrets to configure.
 
