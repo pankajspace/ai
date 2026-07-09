@@ -95,6 +95,26 @@ def summarizer():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route("/scrape", methods=["POST"])
+def scrape():
+    """Scrape a URL and return its cleaned text.
+
+    Request body (JSON): ``{ "url": "<website URL>" }``
+    Response (JSON):     ``{ "result": "<cleaned text>" }``
+    Error response:      ``{ "error": "<message>" }``
+    """
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        from scraper import fetch_website_contents
+        text = fetch_website_contents(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.route("/chat", methods=["POST"])
 def chat():
     """Reply to a message using the conversation history for memory.

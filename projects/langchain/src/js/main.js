@@ -161,6 +161,17 @@ function setupChat() {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupCard({
+        inputId: "scrapeInput",
+        buttonId: "scrapeBtn",
+        resultId: "scrapeResult",
+        validationId: "scrapeValidation",
+        requiredMessage: "Please enter a website URL.",
+        endpoint: "/scrape",
+        field: "url",
+        render: renderText,
+    });
+
+    setupCard({
         inputId: "urlInput",
         buttonId: "summarizeBtn",
         resultId: "summarizeResult",

@@ -10,6 +10,9 @@ This project mirrors the architecture of the AI Playground (basic) project: each
 
 ## Features
 
+### 🕷️ Web Scraper
+Fetches and cleans the readable text contents of a web page using LangChain's `WebBaseLoader`. This differentiates it from basic scraping projects by leveraging the LangChain ecosystem. It acts as a foundational utility that provides clean text for other LangChain features (like the Website Summarizer) to process without wasting tokens on HTML boilerplate.
+
 ### 🔎 Website Summarizer
 Takes any URL, fetches the page with a browser-like User-Agent, strips away scripts / navigation / footer noise, then runs the cleaned text through a LangChain `prompt | model | parser` chain to produce a short markdown summary. This is the classic summarizer rebuilt "the LangChain way".
 
@@ -46,7 +49,7 @@ projects/langchain/
 1. `config.py` is the single place that knows about API keys and the model name. Every other module calls `get_chat_model()` (LangChain `ChatOpenAI`) or `get_openai_client()` (raw OpenAI SDK) instead of constructing a client itself.
 2. `summarizer.py` and `chat.py` are built as LangChain chains (`prompt | model | parser`), which is the Class 2 way of composing a request.
 3. `agent.py` uses the native OpenAI SDK because the function-calling request/response shape is clearest in the raw API.
-4. `scraper.py` performs plain web scraping — no AI — so it can be reused by any feature that needs page text.
+4. `scraper.py` uses LangChain's `WebBaseLoader` to perform web scraping — integrating with the LangChain ecosystem — so it can be reused by any feature that needs page text.
 5. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/langchain/` in production.
 
 ### Path prefix routing
@@ -71,6 +74,7 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 1. `POST /summarize` — body `{ "url": "<website URL>" }` → `{ "result": "<markdown summary>" }`
 2. `POST /chat` — body `{ "message": "<text>", "history": [ {"role", "content"}, ... ] }` → `{ "result": "<reply>" }`
 3. `POST /agent` — body `{ "message": "<text>" }` → `{ "result": "<reply>" }`
+4. `POST /scrape` — body `{ "url": "<website URL>" }` → `{ "result": "<cleaned text>" }`
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 
