@@ -153,6 +153,11 @@ def ask(user_message: str) -> str:
         messages.append(msg)
         for call in msg.tool_calls:
             fn_name = call.function.name
+
+            # This is how it was used earlier when we had only one tool
+            # args = json.loads(call.function.arguments)  # read the request...
+            # result = get_price(args["item"])            # ...and run the tool
+
             args = json.loads(call.function.arguments)
             # Look up the tool function from the registry and call it.
             fn = TOOL_FUNCTIONS.get(fn_name)
