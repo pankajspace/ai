@@ -13,12 +13,13 @@
 ## Claude Code
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
-
-# Projects
-
 ## Study AI : Shivank Agarwal
 1. [AI Infused Learning - 1](study/01-AI-Infused-Learning-1/ai-infused-learning-1.md) : 27-06-2026
 2. [AI Infused Learning - 2](study/02-AI-Infused-Learning-2/ai-infused-learning-2.md) : 04-07-2026
+
+---
+
+# Projects
 
 ## Documentation
 1. [Architecture Guide](projects/ARCHITECTURE.md)
