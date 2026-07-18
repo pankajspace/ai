@@ -291,7 +291,7 @@ These steps are done **once** for the entire server and shared by all projects. 
 
 > **One-time.** You need an IAM user to run the `aws` commands in this guide from your local machine. If you already have an IAM user in the admin group with the `SignInLocalDevelopmentAccess` policy attached, skip to [§ 2.2](#22-authenticate-aws-cli-with-aws-login).
 >
-> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating separate IAM users for day-to-day work. The IAM roles in [§ 2.10](#210-create-iam-role-for-ec2-ecr--secrets-access) and [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
+> **Why an IAM user and not the root account?** The root account has unrestricted access and cannot be scoped down. AWS strongly recommends creating separate IAM users for day-to-day work. The IAM roles in [§ 2.10](#210-create-iam-role-for-ec2-ecr-secrets-access) and [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) are for EC2 and GitHub Actions respectively — this IAM user is for **your local machine**.
 
 #### 2.1.1. CLI
 
@@ -365,7 +365,7 @@ Session credentials from `aws login` are temporary. When they expire, simply run
 > aws configure set region us-east-1
 > ```
 >
-> The IAM roles in [§ 2.10](#210-create-iam-role-for-ec2-ecr--secrets-access) (EC2 instance role) and [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
+> The IAM roles in [§ 2.10](#210-create-iam-role-for-ec2-ecr-secrets-access) (EC2 instance role) and [§ 2.11](#211-set-up-github-oidc-and-deploy-role-cicd) (GitHub Actions OIDC role) are separate from this IAM user — they are assumed by AWS services, not by your local CLI.
 
 ---
 
@@ -975,14 +975,14 @@ Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit
 #### 2.12.4. Per-Project Secrets
 
 Which project uses which key (and which need no secret at all) is documented per
-project in [PROJECTS.md § Container App Specs](PROJECTS.md#container-app-specs).
+project in [PROJECTS.md § Container App Specs](PROJECTS.md#32-container-app-specs).
 When a new project needs a new key, add it to the shared `techtoday/secrets`
 secret in § 2.12.2 above.
 
 > TechToday has no project-specific secrets or environment variables — it's a static site.
 
 > **Adding a new project?** The full end-to-end walkthrough now lives in
-> [PROJECTS.md § Adding a New Project](PROJECTS.md#adding-a-new-project).
+> [PROJECTS.md § Adding a New Project](PROJECTS.md#6-adding-a-new-container-app).
 
 
 

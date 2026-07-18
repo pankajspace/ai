@@ -7,10 +7,6 @@ is a minimal Flask + Docker app, already wired for the shared Nginx
 path-prefix routing, so a new project is deploy-ready after a folder copy and a
 few find-and-replace edits.
 
-> **This folder is a template — do not deploy it as-is.** Copy it to a new
-> project folder, then follow the end-to-end walkthrough in
-> [PROJECTS.md § Adding a New Project](../PROJECTS.md#adding-a-new-project).
-
 ---
 
 ## What's Inside
@@ -79,4 +75,4 @@ returning the HTML.
 The starter `echo` feature needs no keys, so a fresh copy runs immediately with
 `docker compose up web` (→ http://localhost:8090). The local-dev loop, the
 copy-and-rename checklist, and the full deployment walkthrough are documented
-once in [PROJECTS.md § Adding a New Project](../PROJECTS.md#adding-a-new-project).
+once in [PROJECTS.md § Adding a New Project](../PROJECTS.md#6-adding-a-new-container-app).

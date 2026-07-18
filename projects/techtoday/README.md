@@ -43,4 +43,4 @@ projects/techtoday/
 3. Update the icon, heading, description, link `href`, and status badge (`live` or `soon`).
 4. Set the status badge: `<span class="status live">Live</span>` for a running project, or `<span class="status soon">Coming soon</span>` for one that is not yet live.
 
-> Local preview, deployment (Nginx on EC2 or S3 + CloudFront), and daily usage are documented in [PROJECTS.md § TechToday Home Page](../PROJECTS.md#techtoday-home-page--static-site).
+

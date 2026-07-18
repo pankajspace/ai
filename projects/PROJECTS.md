@@ -11,12 +11,108 @@ handful of parameters that differ per project. This page stays focused on projec
 workflow; each project's own README describes what it does and how its code works.
 
 **Before you start:** complete [local machine prerequisites](SETUP.md#1-local-machine-prerequisites) before any local work,
-and complete [one-time AWS infrastructure setup](SETUP.md#2-one-time-aws-infrastructure) before any production deployment.
+and complete [one-time AWS infrastructure setup](SETUP.md#2-one-time-aws-infrastructure-setup) before any production deployment.
 Both are done once and shared by every project.
 
-## 2. Container App Reference
+## 2. Static Site
 
-### 2.1. Container App Shared Conventions
+The `techtoday` home page is plain HTML/CSS/JS served directly from the root domain
+— no Docker container, no application server, and no secrets. It follows none of the
+container-app conventions below, so its full workflow lives here before the
+container-app sections begin.
+
+### 2.1. TechToday Deployment Target
+
+1. `techtoday.click` — path `/` — static files served by Nginx from `/var/www/techtoday`.
+2. `www.techtoday.click` — path `/` — redirect → `techtoday.click`.
+
+### 2.2. TechToday Static Site Local Development
+
+No tools required beyond a browser and `git`:
+
+```bash
+# Run on: local machine
+open projects/techtoday/src/index.html          # fastest
+# or serve it (useful for relative asset paths):
+cd projects/techtoday/src && python3 -m http.server 8000   # → http://localhost:8000
+```
+
+### 2.3. TechToday Static Site Daily Usage
+
+Same git flow as the [container apps](#5-container-app-daily-usage),
+scoping commits to `projects/techtoday/`. Merging to `main` triggers
+`deploy-techtoday.yml`, which `rsync`s `src/` to `/var/www/techtoday` on EC2 — no
+build and no container. **Manual deploy** (fallback, only if CI/CD is broken):
+
+```bash
+# Run on: local machine, from the repo root
+rsync -avz --delete projects/techtoday/src/ ec2-user@$ELASTIC_IP:/var/www/techtoday/
+```
+
+No Nginx reload is needed — static files are served directly.
+
+On Windows, run the same command inside **WSL** or **Git Bash**.
+
+**Troubleshooting:** if `rsync` fails with `Permission denied (13)`, the directory
+is root-owned — fix it on EC2 with `sudo chown -R ec2-user:ec2-user /var/www/techtoday`,
+then re-run.
+
+### 2.4. TechToday First-Time Server Setup
+
+The root domain's Nginx server block, SSL certificate, and Route 53 records are
+part of the **one-time server infrastructure**, created once in
+the [shared infrastructure setup](SETUP.md#2-one-time-aws-infrastructure-setup) (Route 53 A records,
+the Nginx config with the `/var/www/techtoday` root, and the Let's Encrypt cert).
+You only touch those when standing up a brand-new server — routine updates are just
+the `rsync` deploy in [TechToday Static Site Daily Usage](#23-techtoday-static-site-daily-usage) above.
+
+### 2.5. Static Site Alternative Hosting
+
+Best for pure static hosting with a global CDN and no EC2 involvement.
+
+#### 2.5.1. Create the Bucket and Upload the Site
+
+```bash
+# Run on: local machine
+aws s3api create-bucket --bucket techtoday-site --region us-east-1
+
+# Upload the site (short cache on HTML so updates propagate quickly)
+aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
+  --delete --cache-control "public, max-age=86400"
+aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
+  --cache-control "public, max-age=60"
+```
+
+#### 2.5.2. Create a CloudFront Distribution
+
+Point it to the bucket, with default root
+object `index.html`, HTTPS redirect enforced, custom domains `techtoday.click` and
+`www.techtoday.click`, and an ACM certificate **in `us-east-1`** (required for
+CloudFront).
+
+#### 2.5.3. Create Route 53 A Alias Records
+
+Point both names at the CloudFront domain.
+
+Steps 2–3 are far simpler in the **AWS Console** (**CloudFront** → **Create
+distribution**; **Route 53** → **Create record** → toggle **Alias** → CloudFront
+distribution). CloudShell can run the S3 commands, but `aws s3 sync` needs the
+cloned repo, so clone it in CloudShell first or upload via the S3 Console.
+
+#### 2.5.4. Deploying Updates
+
+Re-run the `aws s3 sync` / `aws s3 cp` commands above, then
+invalidate the cache so visitors see the new version immediately:
+
+```bash
+# Run on: local machine
+DISTRIBUTION_ID=<your-cloudfront-distribution-id>
+aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+```
+
+## 3. Container App Reference
+
+### 3.1. Container App Shared Conventions
 
 These apply to every **container app**. The static `techtoday` home page follows
 none of them.
@@ -27,12 +123,12 @@ none of them.
 4. **Routing** — one A record (`app.techtoday.click`), one EC2 instance, and one SSL cert are shared by every container app. A new project is a new Nginx `location` block plus a new Docker Compose service — **never** a new DNS record, instance, or cert.
 5. **Path-prefix routing** — because Nginx forwards the full path (e.g. `/basic/joke`) to the container, each Flask app mounts its routes on a Blueprint registered under `PATH_PREFIX` (`/<name>` in production, empty locally), and its `index` route rewrites the served HTML so the browser calls the prefixed endpoints. Each project's README documents this for its own routes.
 
-### 2.2. Container App Specs
+### 3.2. Container App Specs
 
 Every container app follows the same local-development, daily-usage, and
 deployment workflow documented below; only these parameters differ.
 
-#### 2.2.1. AI Playground (`basic`)
+#### 3.2.1. AI Playground (`basic`)
 
 1. **URL:** `https://app.techtoday.click/basic/`
 2. **Ports:** container `5000` → EC2 host `5000`; local dev `8080`
@@ -40,7 +136,7 @@ deployment workflow documented below; only these parameters differ.
 4. **Path prefix:** `PATH_PREFIX=/basic` → routes `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
 5. **Secrets** (in `techtoday/secrets`): `OPENAI_API_KEY` (travel, summarize, arena) and `GROQ_API_KEY` (joke, arena)
 
-#### 2.2.2. LangChain Lab (`langchain`)
+#### 3.2.2. LangChain Lab (`langchain`)
 
 1. **URL:** `https://app.techtoday.click/langchain/`
 2. **Ports:** container `5000` → EC2 host `5001`; local dev `8081`
@@ -50,13 +146,13 @@ deployment workflow documented below; only these parameters differ.
 
 `PATH_PREFIX` is set directly in `~/docker-compose.yml` on EC2 (not a secret).
 
-## 3. Container App Local Development
+## 4. Container App Local Development
 
 The worked example below uses the `template` project (local port `8090`, keyless
 `echo` feature). For a real project, substitute its name and local port from the
-[Container App Specs](#22-container-app-specs) section — e.g. `basic` (`8080`) or `langchain` (`8081`).
+[Container App Specs](#32-container-app-specs) section — e.g. `basic` (`8080`) or `langchain` (`8081`).
 
-### 3.1. One-Time Setup
+### 4.1. One-Time Setup
 
 ```bash
 # Run on: local machine
@@ -68,7 +164,7 @@ docker compose build
 Never commit `.env` — it is already listed in `.gitignore`. Two projects can run
 at once because each maps a different local `808x` port.
 
-### 3.2. Day-to-Day Loop
+### 4.2. Day-to-Day Loop
 
 ```bash
 # Run on: local machine
@@ -86,7 +182,7 @@ docker compose build
 docker compose down
 ```
 
-### 3.3. Useful Commands
+### 4.3. Useful Commands
 
 ```bash
 # Run on: local machine
@@ -95,12 +191,12 @@ docker compose run --rm web bash # shell into the container
 docker compose ps                # container status
 ```
 
-## 4. Container App Daily Usage
+## 5. Container App Daily Usage
 
 The shared git flow for every project, with the `template` project as the example.
 Substitute your project's name throughout.
 
-### 4.1. Start a Feature
+### 5.1. Start a Feature
 
 ```bash
 # Run on: local machine
@@ -108,9 +204,9 @@ git checkout main && git pull origin main
 git checkout -b feat/short-description
 ```
 
-### 4.2. Develop & Commit
+### 5.2. Develop & Commit
 
-Edit files under `src/` (hot-reloaded locally — see [Container App Local Development](#3-container-app-local-development)).
+Edit files under `src/` (hot-reloaded locally — see [Container App Local Development](#4-container-app-local-development)).
 Scope each commit to the project folder so its CI/CD workflow triggers on its own:
 
 ```bash
@@ -122,14 +218,14 @@ git push -u origin feat/short-description
 
 Open a Pull Request → get it reviewed → **Squash and merge** into `main`.
 
-### 4.3. Deploy (Automatic)
+### 5.3. Deploy (Automatic)
 
 Merging to `main` triggers CI/CD automatically — no manual steps needed. Each
 project has its own workflow (e.g. `deploy-template.yml`, trigger path
 `projects/template/**`), so only the changed project redeploys. Watch the run under
 **GitHub → Actions** to confirm it succeeds.
 
-### 4.4. Verify Production
+### 5.4. Verify Production
 
 ```bash
 # Run on: local machine
@@ -138,7 +234,7 @@ curl -I https://app.techtoday.click/template/
 
 Or just open the URL in a browser.
 
-### 4.5. Rollback
+### 5.5. Rollback
 
 Roll back to a previous image when a deploy goes bad:
 
@@ -169,7 +265,7 @@ curl -I https://app.techtoday.click/template/
 
 Fix the bug and merge promptly — the next push to `main` overwrites `:latest`.
 
-### 4.6. Manual Deploy (Fallback)
+### 5.6. Manual Deploy (Fallback)
 
 Use only if CI/CD is broken:
 
@@ -196,7 +292,7 @@ ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 Reminder: `$ELASTIC_IP` is the public IP of the EC2 instance (AWS console → EC2 →
 Instances → techtoday-server). For us it is `44.193.134.238`.
 
-## 5. Add a Container App
+## 6. Adding a new Container App
 
 `basic` (local 8080 / prod 5000) and `langchain` (local 8081 / prod 5001) are
 already deployed. A third container project uses the next free ports (local 8082
@@ -206,12 +302,12 @@ needed** — the app subdomain, instance, and cert are all shared.
 The walkthrough below provisions a container project named `ai-03` end to end,
 starting from the `template` project. Substitute your own name and the next free
 ports throughout. It assumes the
-[one-time AWS infrastructure](SETUP.md#2-one-time-aws-infrastructure) (EC2,
+[one-time AWS infrastructure](SETUP.md#2-one-time-aws-infrastructure-setup) (EC2,
 ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place, and
-follows the [Container App Shared Conventions](#21-container-app-shared-conventions)
+follows the [Container App Shared Conventions](#31-container-app-shared-conventions)
 for ports and naming.
 
-### 5.1. Scaffold the Project Folder
+### 6.1. Scaffold the Project Folder
 
 Copy the `template` project — a minimal Flask + Docker
 starter already wired for path-prefix routing, with a keyless `echo` feature so it
@@ -246,10 +342,10 @@ services:
       - ./src:/app/src
 ```
 
-Test it locally before touching production using the [Container App Local Development](#3-container-app-local-development)
+Test it locally before touching production using the [Container App Local Development](#4-container-app-local-development)
 loop (with the new port `8082`).
 
-### 5.2. Create the ECR Repository
+### 6.2. Create the ECR Repository
 
 **One-time.** Holds the project's container images.
 
@@ -265,10 +361,10 @@ repository**. The same `aws ecr` command also runs unchanged in **AWS CloudShell
 Pushing images in step 3 still needs local
 Docker and the cloned repo, so it cannot run in CloudShell.
 
-### 5.3. Build and Push the Initial Image
+### 6.3. Build and Push the Initial Image
 
 **One-time.** After this first manual push, every later push is handled
-automatically by the CI/CD workflow added in step 6.
+automatically by the CI/CD workflow added later in this walkthrough.
 Requires Docker running locally and the cloned repo.
 
 ```bash
@@ -295,7 +391,7 @@ macOS with Colima, make sure the VM is running first (`colima status` / `colima 
 **This step has no Console equivalent** — `docker build`/`docker push` need Docker
 and the repo on your local machine, so CloudShell cannot run them.
 
-### 5.4. Verify the Push
+### 6.4. Verify the Push
 
 **ECR** → **Repositories** → `techtoday/ai-03` should show an
 image tagged `latest`, or from the CLI:
@@ -305,7 +401,7 @@ image tagged `latest`, or from the CLI:
 aws ecr list-images --repository-name techtoday/ai-03 --region $REGION
 ```
 
-### 5.5. Store Any New Secrets
+### 6.5. Store Any New Secrets
 
 If your project needs API keys, add them to the shared `techtoday/secrets` secret
 (**Secrets Manager** → `techtoday/secrets` → **Retrieve secret value** → **Edit** →
@@ -326,7 +422,7 @@ If your project reuses only keys that already exist (e.g. `OPENAI_API_KEY`), ski
 this step. The first project to need secrets creates the secret instead:
 `aws secretsmanager create-secret --name techtoday/secrets --secret-string '{"OPENAI_API_KEY":"sk-..."}'`.
 
-### 5.6. Wire Up the EC2 Host
+### 6.6. Wire Up the EC2 Host
 
 The Nginx and Docker Compose config live **on the EC2 host**, so these steps need a
 shell on the server. Connect either by **SSH** from your local machine:
@@ -338,7 +434,7 @@ ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 
 …or, with no key file, via **EC2 Instance Connect**: open **EC2** → **Instances** → select `techtoday-server` → **Connect** → **EC2 Instance Connect** tab → **Connect**.
 
-#### 5.6.1. Add the Nginx Location Block
+#### 6.6.1. Add the Nginx Location Block
 
 ```bash
 # Run on: EC2 host (via SSH)
@@ -378,7 +474,7 @@ sudo systemctl reload nginx
 reported line (usually a missing `;` or unbalanced `}`) and re-run `nginx -t`
 before reloading — Nginx keeps serving the old config until a reload succeeds.
 
-#### 5.6.2. Create the Secrets Env File
+#### 6.6.2. Create the Secrets Env File
 
 Fetch the shared secret into a per-project env file that the container reads at
 startup:
@@ -394,7 +490,7 @@ aws secretsmanager get-secret-value \
 chmod 600 ~/secrets/ai-03.env
 ```
 
-#### 5.6.3. Add the Service to Docker Compose
+#### 6.6.3. Add the Service to Docker Compose
 
 Resolve the image URL, then append a service block under the existing `services:`
 key in `~/docker-compose.yml`:
@@ -452,7 +548,7 @@ docker compose -f ~/docker-compose.yml pull ai-03
 docker compose -f ~/docker-compose.yml up -d --no-deps ai-03
 ```
 
-### 5.7. Add the CI/CD Workflow
+### 6.7. Add the CI/CD Workflow
 
 Automate future deploys so every push to `main` under `projects/ai-03/` rebuilds
 and redeploys just this project. The template ships a ready-made workflow
@@ -480,115 +576,20 @@ The workflow reuses the same shared GitHub secrets (`AWS_REGION`, `AWS_ACCOUNT_I
 `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) already configured for the repo — no new
 secrets to configure.
 
-### 5.8. Verify
+### 6.8. Verify
 
 ```bash
 # Run on: local machine
 curl -I https://app.techtoday.click/ai-03/
 ```
 
-#### 5.8.1. Browser Verification
+#### 6.8.1. Browser Verification
 
 Open https://app.techtoday.click/ai-03/
 and confirm the page loads over HTTPS.
 
-### 5.9. Update the Shared Docs
+### 6.9. Update the Shared Docs
 
-1. Add the project to [Container App Specs](#22-container-app-specs).
+1. Add the project to [Container App Specs](#32-container-app-specs).
 2. If the project introduced new secrets, document them in the shared setup notes.
-3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`. Day-to-day work then follows [Container App Local Development](#3-container-app-local-development) and [Container App Daily Usage](#4-container-app-daily-usage) above.
-
-## 6. Static Site
-
-The `techtoday` home page is plain HTML/CSS/JS served directly from the root domain
-— no Docker container, no application server, and no secrets. It follows none of the
-container-app conventions above, so its full workflow lives here.
-
-### 6.1. TechToday Deployment Target
-
-1. `techtoday.click` — path `/` — static files served by Nginx from `/var/www/techtoday`.
-2. `www.techtoday.click` — path `/` — redirect → `techtoday.click`.
-
-### 6.2. TechToday Static Site Local Development
-
-No tools required beyond a browser and `git`:
-
-```bash
-# Run on: local machine
-open projects/techtoday/src/index.html          # fastest
-# or serve it (useful for relative asset paths):
-cd projects/techtoday/src && python3 -m http.server 8000   # → http://localhost:8000
-```
-
-### 6.3. TechToday Static Site Daily Usage
-
-Same git flow as the [container apps](#4-container-app-daily-usage),
-scoping commits to `projects/techtoday/`. Merging to `main` triggers
-`deploy-techtoday.yml`, which `rsync`s `src/` to `/var/www/techtoday` on EC2 — no
-build and no container. **Manual deploy** (fallback, only if CI/CD is broken):
-
-```bash
-# Run on: local machine, from the repo root
-rsync -avz --delete projects/techtoday/src/ ec2-user@$ELASTIC_IP:/var/www/techtoday/
-```
-
-No Nginx reload is needed — static files are served directly.
-
-On Windows, run the same command inside **WSL** or **Git Bash**.
-
-**Troubleshooting:** if `rsync` fails with `Permission denied (13)`, the directory
-is root-owned — fix it on EC2 with `sudo chown -R ec2-user:ec2-user /var/www/techtoday`,
-then re-run.
-
-### 6.4. TechToday First-Time Server Setup
-
-The root domain's Nginx server block, SSL certificate, and Route 53 records are
-part of the **one-time server infrastructure**, created once in
-the [shared infrastructure setup](SETUP.md#2-one-time-aws-infrastructure) (Route 53 A records,
-the Nginx config with the `/var/www/techtoday` root, and the Let's Encrypt cert).
-You only touch those when standing up a brand-new server — routine updates are just
-the `rsync` deploy in [TechToday Static Site Daily Usage](#63-techtoday-static-site-daily-usage) above.
-
-### 6.5. Static Site Alternative Hosting
-
-Best for pure static hosting with a global CDN and no EC2 involvement.
-
-#### 6.5.1. Create the Bucket and Upload the Site
-
-```bash
-# Run on: local machine
-aws s3api create-bucket --bucket techtoday-site --region us-east-1
-
-# Upload the site (short cache on HTML so updates propagate quickly)
-aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
-  --delete --cache-control "public, max-age=86400"
-aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
-  --cache-control "public, max-age=60"
-```
-
-#### 6.5.2. Create a CloudFront Distribution
-
-Point it to the bucket, with default root
-object `index.html`, HTTPS redirect enforced, custom domains `techtoday.click` and
-`www.techtoday.click`, and an ACM certificate **in `us-east-1`** (required for
-CloudFront).
-
-#### 6.5.3. Create Route 53 A Alias Records
-
-Point both names at the CloudFront domain.
-
-Steps 2–3 are far simpler in the **AWS Console** (**CloudFront** → **Create
-distribution**; **Route 53** → **Create record** → toggle **Alias** → CloudFront
-distribution). CloudShell can run the S3 commands, but `aws s3 sync` needs the
-cloned repo, so clone it in CloudShell first or upload via the S3 Console.
-
-#### 6.5.4. Deploying Updates
-
-Re-run the `aws s3 sync` / `aws s3 cp` commands above, then
-invalidate the cache so visitors see the new version immediately:
-
-```bash
-# Run on: local machine
-DISTRIBUTION_ID=<your-cloudfront-distribution-id>
-aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-```
+3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`. Day-to-day work then follows [Container App Local Development](#4-container-app-local-development) and [Container App Daily Usage](#5-container-app-daily-usage) above.

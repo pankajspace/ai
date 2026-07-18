@@ -24,16 +24,6 @@ Sends the exact same prompt to both **GPT-4o mini** (OpenAI) and **Llama 3.3 70B
 
 ---
 
-## Local Development
-
-Prerequisites: Docker (daemon + CLI + Compose plugin — install per [SETUP.md § 1.1](../SETUP.md#11-docker-cli--daemon--compose-plugin)), an [OpenAI API key](https://platform.openai.com/api-keys) (used by `travel`, `summarize`, `arena`), and a [Groq API key](https://console.groq.com/keys) (used by `joke`, `arena`; free tier available).
-
-One-time setup, the day-to-day loop, and deployment are documented once in
-[PROJECTS.md](../PROJECTS.md#ai-playground-basic) (see **Local Development** and
-**Container App Specs**).
-
----
-
 ## Environment Variables
 
 1. `OPENAI_API_KEY` — used by `travel`, `summarize`, and `arena` (Model A).  Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
@@ -147,5 +137,5 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 4. **Extract** — `soup.get_text(separator="\n", strip=True)` collapses what remains into a block of plain text.
 5. **Format** — The title and body text are combined into a single string and embedded in the GPT-4o mini prompt by `summarizer.py`.
 
-> Where this project runs in production (URL, ports, ECR repo, path-prefix routing, secrets) and how to deploy it are documented in [PROJECTS.md](../PROJECTS.md#ai-playground-basic).
+> Where this project runs in production (URL, ports, ECR repo, path-prefix routing, secrets) and how to deploy it are documented in [PROJECTS.md](../PROJECTS.md#321-ai-playground-basic).
 

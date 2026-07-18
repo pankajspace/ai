@@ -78,4 +78,4 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 
-> Local development, deployment, secrets, and day-to-day usage are documented in [PROJECTS.md § LangChain Lab](../PROJECTS.md#langchain-lab-langchain).
+
