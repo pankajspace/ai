@@ -16,6 +16,7 @@
 ## Study AI : Shivank Agarwal
 1. [AI Infused Learning - 1](study/01-AI-Infused-Learning-1/ai-infused-learning-1.md) : 27-06-2026
 2. [AI Infused Learning - 2](study/02-AI-Infused-Learning-2/ai-infused-learning-2.md) : 04-07-2026
+3. [AI Infused Learning - 3](study/03-AI-Infused-Learning-3/ai-infused-learning-3.md) : 18-07-2026
 
 ---
 
