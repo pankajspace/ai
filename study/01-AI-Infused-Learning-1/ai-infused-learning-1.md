@@ -2,6 +2,9 @@
 
 # AI Infused Learning - 1
 
+# Links
+1. [Class 1 Notes](https://22f1001418.github.io/AI-engg-scripts-SL/)
+
 # My Notes
 
 ## Temperature
