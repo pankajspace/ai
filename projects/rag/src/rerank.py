@@ -14,8 +14,16 @@ from langchain_chroma import Chroma
 
 from config import get_embedder
 
-# Free, fast cross-encoder tuned on MS MARCO passage ranking.
-reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
+# Lazy-loaded cross-encoder — only downloaded when /rerank is first called,
+# not at import time (which would block Flask startup).
+_reranker = None
+
+
+def _get_reranker():
+    global _reranker
+    if _reranker is None:
+        _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
+    return _reranker
 
 
 def retrieve_with_rerank(
@@ -40,6 +48,7 @@ def retrieve_with_rerank(
     candidates = db.similarity_search(question, k=initial_k)
     if not candidates:
         return []
+    reranker = _get_reranker()
     pairs = [(question, c.page_content) for c in candidates]
     scores = reranker.predict(pairs)
     ranked = sorted(zip(scores, candidates), reverse=True)
