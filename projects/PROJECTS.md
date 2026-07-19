@@ -320,18 +320,27 @@ Instances → techtoday-server). For us it is `44.193.134.238`.
 
 ## 6. Adding a new Container App
 
-`basic` (local 8080 / prod 5000) and `langchain` (local 8081 / prod 5001) are
-already deployed. A third container project uses the next free ports (local 8082
-/ prod 5002). **No new DNS record, no new EC2, and no new SSL cert are ever
-needed** — the app subdomain, instance, and cert are all shared.
+`basic` (local 8080 / prod 5000), `langchain` (local 8081 / prod 5001), and
+`rag` (local 8082 / prod 5002) are already allocated. The next container app uses
+the next free ports: local `8083`, EC2 host `5003`, and container port `5000`.
+**No new DNS record, no new EC2, and no new SSL cert are ever needed** — the app
+subdomain, instance, and cert are all shared.
 
-The walkthrough below provisions a container project named `ai-03` end to end,
-starting from the `template` project. Substitute your own name and the next free
-ports throughout. It assumes the
+The walkthrough below provisions a new container project named `<project-name>`
+end to end, starting from the `template` project. In the examples, replace
+`<project-name>` with your folder/service name, replace `<local-port>` with the
+next free local `808x` port, and replace `<host-port>` with the matching next
+free EC2 host `500x` port. It assumes the
 [one-time AWS infrastructure](SETUP.md#2-one-time-aws-infrastructure-setup) (EC2,
 ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place, and
 follows the [Container App Shared Conventions](#31-container-app-shared-conventions)
 for ports and naming.
+
+For the first new app after `rag`, use these substitutions:
+
+1. `<project-name>` → `ai-04` or your real project name.
+2. `<local-port>` → `8083`.
+3. `<host-port>` → `5003`.
 
 ### 6.1. Scaffold the Project Folder
 
@@ -341,18 +350,20 @@ runs out of the box.
 
 ```bash
 # Run on: local machine
+PROJECT_NAME=ai-04   # replace with your project folder name
 cd projects
-cp -r template ai-03
-cd ai-03
+cp -r template "$PROJECT_NAME"
+cd "$PROJECT_NAME"
 ```
 
 Then adjust the copied files for the new project:
 
-1. `docker-compose.yml` — change the `web` service's published port from the template's `8090` to the next free local port (`8082`); see the snippet below.
+1. `docker-compose.yml` — change the `web` service's published port from the template's `8090` to the next free local port (`<local-port>`); see the snippet below.
 2. `src/` — replace the starter `echo` feature (`src/echo.py`, its route in `src/app.py`, and its card in `src/index.html` / `src/js/main.js`) with your project's code. Keep `src/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
 3. `requirements.txt` — add any libraries your features need (e.g. `openai`, `langchain`).
 4. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
-5. Project README — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
+5. `linkedin.txt` — add the LinkedIn post/update copy for the new project, or leave it empty until the project is ready to announce.
+6. Project README — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
 
 The `docker-compose.yml` port change (step 1) looks like this:
 
@@ -363,13 +374,13 @@ services:
     env_file: .env
     command: python src/app.py
     ports:
-      - "8082:5000"     # was 8090:5000
+      - "<local-port>:5000"     # first app after rag: 8083:5000
     volumes:
       - ./src:/app/src
 ```
 
 Test it locally before touching production using the [Container App Local Development](#4-container-app-local-development)
-loop (with the new port `8082`).
+loop (with the new local port).
 
 ### 6.2. Create the ECR Repository
 
@@ -378,11 +389,12 @@ loop (with the new port `8082`).
 ```bash
 # Run on: local machine
 REGION=us-east-1
-aws ecr create-repository --repository-name techtoday/ai-03 --region $REGION
+PROJECT_NAME=ai-04   # replace with your project folder name
+aws ecr create-repository --repository-name techtoday/$PROJECT_NAME --region $REGION
 ```
 
 **AWS Console alternative:** **ECR** → **Repositories** → **Create repository** →
-name `techtoday/ai-03` → keep defaults (private, mutable tags) → **Create
+name `techtoday/<project-name>` → keep defaults (private, mutable tags) → **Create
 repository**. The same `aws ecr` command also runs unchanged in **AWS CloudShell**.
 Pushing images in step 3 still needs local
 Docker and the cloned repo, so it cannot run in CloudShell.
@@ -397,13 +409,14 @@ Requires Docker running locally and the cloned repo.
 # Run on: local machine
 REGION=us-east-1
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REPO_NAME=techtoday/ai-03
+PROJECT_NAME=ai-04   # replace with your project folder name
+REPO_NAME=techtoday/$PROJECT_NAME
 
 # Authenticate the local Docker CLI to the private ECR registry
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
-cd projects/ai-03
+cd projects/$PROJECT_NAME
 docker build --platform linux/amd64 -t $REPO_NAME .
 docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
@@ -419,12 +432,12 @@ and the repo on your local machine, so CloudShell cannot run them.
 
 ### 6.4. Verify the Push
 
-**ECR** → **Repositories** → `techtoday/ai-03` should show an
+**ECR** → **Repositories** → `techtoday/<project-name>` should show an
 image tagged `latest`, or from the CLI:
 
 ```bash
 # Run on: local machine
-aws ecr list-images --repository-name techtoday/ai-03 --region $REGION
+aws ecr list-images --repository-name techtoday/$PROJECT_NAME --region $REGION
 ```
 
 ### 6.5. Store Any New Secrets
@@ -469,16 +482,16 @@ sudo nano /etc/nginx/conf.d/app.conf
 
 Inside the existing `server { listen 443 ssl ... server_name app.techtoday.click; }`
 block (the one Certbot created — **not** the `listen 80` redirect block), add a new
-`location` block next to the existing `/basic/` and `/langchain/` blocks:
+`location` block next to the existing `/basic/`, `/langchain/`, and `/rag/` blocks:
 
 ```nginx
 server {
     listen 443 ssl;
     server_name app.techtoday.click;
-    # ...existing ssl_certificate lines and /basic/, /langchain/ blocks...
+    # ...existing ssl_certificate lines and /basic/, /langchain/, /rag/ blocks...
 
-    location /ai-03/ {
-        proxy_pass         http://localhost:5002;
+    location /<project-name>/ {
+        proxy_pass         http://localhost:<host-port>;
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -507,13 +520,14 @@ startup:
 
 ```bash
 # Run on: EC2 host (via SSH)
+PROJECT_NAME=ai-04   # replace with your project folder name
 mkdir -p ~/secrets
 aws secretsmanager get-secret-value \
   --secret-id techtoday/secrets \
   --query SecretString --output text | \
   python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/ai-03.env
-chmod 600 ~/secrets/ai-03.env
+  > ~/secrets/$PROJECT_NAME.env
+chmod 600 ~/secrets/$PROJECT_NAME.env
 ```
 
 #### 6.6.3. Add the Service to Docker Compose
@@ -525,33 +539,34 @@ key in `~/docker-compose.yml`:
 # Run on: EC2 host (via SSH)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGION=us-east-1
-echo "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-03:latest"   # copy this for the image: line below
+PROJECT_NAME=ai-04   # replace with your project folder name
+echo "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/$PROJECT_NAME:latest"   # copy this for the image: line below
 nano ~/docker-compose.yml
 ```
 
-Under the existing top-level `services:` key (at the same indentation as the `basic`
-and `langchain` services, two spaces in), add:
+Under the existing top-level `services:` key (at the same indentation as the
+`basic`, `langchain`, and `rag` services, two spaces in), add:
 
 ```yaml
 services:
-  # ...existing basic and langchain services...
+  # ...existing basic, langchain, and rag services...
 
-  ai-03:
-    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/ai-03:latest
+  <project-name>:
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/<project-name>:latest
     restart: unless-stopped
     command: python src/app.py
     ports:
-      - "5002:5000"          # unique host port; container still listens on 5000
+      - "<host-port>:5000"          # first app after rag: 5003:5000
     environment:
-      - PATH_PREFIX=/ai-03
+      - PATH_PREFIX=/<project-name>
     env_file:
-      - ~/secrets/ai-03.env
+      - ~/secrets/<project-name>.env
 ```
 
 Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo` command above
 (or paste the whole resolved URL). Save and exit nano.
 
-**YAML is indentation-sensitive:** the service name (`ai-03:`) must be indented
+**YAML is indentation-sensitive:** the service name (`<project-name>:`) must be indented
 exactly two spaces, and its keys (`image:`, `ports:`, …) four spaces. Use spaces,
 never tabs.
 
@@ -562,40 +577,42 @@ Verify the file parses before starting:
 docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
 ```
 
-Authenticate, pull, and start only the new container (leaving `basic` and
-`langchain` untouched):
+Authenticate, pull, and start only the new container (leaving `basic`,
+`langchain`, and `rag` untouched):
 
 ```bash
 # Run on: EC2 host (via SSH)
+PROJECT_NAME=ai-04   # replace with your project folder name
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
-docker compose -f ~/docker-compose.yml pull ai-03
-docker compose -f ~/docker-compose.yml up -d --no-deps ai-03
+docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
+docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
 ```
 
 ### 6.7. Add the CI/CD Workflow
 
-Automate future deploys so every push to `main` under `projects/ai-03/` rebuilds
+Automate future deploys so every push to `main` under `projects/<project-name>/` rebuilds
 and redeploys just this project. The template ships a ready-made workflow
 (`deploy.yml.template`) that uses a single `PROJECT_NAME` token — copy it into
 `.github/workflows/` and replace the token:
 
 ```bash
 # Run on: local machine
-cp projects/ai-03/deploy.yml.template .github/workflows/deploy-ai-03.yml
+PROJECT_NAME=ai-04   # replace with your project folder name
+cp projects/$PROJECT_NAME/deploy.yml.template .github/workflows/deploy-$PROJECT_NAME.yml
 
 # macOS (BSD sed)
-sed -i '' 's/PROJECT_NAME/ai-03/g' .github/workflows/deploy-ai-03.yml
+sed -i '' "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
 # Linux (GNU sed)
-sed -i 's/PROJECT_NAME/ai-03/g' .github/workflows/deploy-ai-03.yml
+sed -i "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
 
-grep -n PROJECT_NAME .github/workflows/deploy-ai-03.yml   # should print nothing
+grep -n PROJECT_NAME .github/workflows/deploy-$PROJECT_NAME.yml   # should print nothing
 ```
 
 **Console / no-terminal alternative:** create the file directly on GitHub — open
 your repo → **Add file** → **Create new file** → name it
-`.github/workflows/deploy-ai-03.yml`, paste the edited contents, then **Commit
+`.github/workflows/deploy-<project-name>.yml`, paste the edited contents, then **Commit
 changes**.
 
 The workflow reuses the same shared GitHub secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`,
@@ -606,16 +623,18 @@ secrets to configure.
 
 ```bash
 # Run on: local machine
-curl -I https://app.techtoday.click/ai-03/
+PROJECT_NAME=ai-04   # replace with your project folder name
+curl -I "https://app.techtoday.click/$PROJECT_NAME/"
 ```
 
 #### 6.8.1. Browser Verification
 
-Open https://app.techtoday.click/ai-03/
+Open `https://app.techtoday.click/<project-name>/`
 and confirm the page loads over HTTPS.
 
 ### 6.9. Update the Shared Docs
 
 1. Add the project to [Container App Specs](#32-container-app-specs).
 2. If the project introduced new secrets, document them in the shared setup notes.
-3. Commit and push. From now on, changes under `projects/ai-03/` deploy automatically via `deploy-ai-03.yml`. Day-to-day work then follows [Container App Local Development](#4-container-app-local-development) and [Container App Daily Usage](#5-container-app-daily-usage) above.
+3. If the project should appear on the public home page, add a card under `projects/techtoday/src/`.
+4. Commit and push. From now on, changes under `projects/<project-name>/` deploy automatically via `deploy-<project-name>.yml`. Day-to-day work then follows [Container App Local Development](#4-container-app-local-development) and [Container App Daily Usage](#5-container-app-daily-usage) above.
