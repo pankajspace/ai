@@ -10,6 +10,9 @@
 2. [Pinecone](https://www.pinecone.io/)
 3. [Chroma](https://www.trychroma.com/)
 
+# Homework
+Anki Notes Project
+
 # My Notes
 
 ## Big Idea
