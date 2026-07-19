@@ -1,46 +1,52 @@
-"""Shared configuration: load .env so feature modules can read API keys.
+"""Shared configuration: load .env and create model clients.
 
-This module is the single place that knows about secrets and model names.
-Every other module imports from here instead of reading ``os.environ`` or
-constructing API clients itself, so key and model management stays in one
-place.
+This module is the single place that knows about API keys and model names.
+Every other module calls get_chat_model() or get_embedder() instead of
+constructing a client itself, so key and model management stays in one place.
 
-The starter ``echo`` feature needs no keys, so nothing below is required to
-run the template. When you add an AI feature, uncomment the client helper (or
-add your own) and list the key in ``.env.example``.
+Two kinds of client are exposed because the features need different tools:
+  - get_chat_model()  → a LangChain ``ChatOpenAI`` for the RAG chain and
+                         PDF chat, which are built as LangChain chains
+                         (prompt | model).
+  - get_embedder()    → a ``HuggingFaceEmbeddings`` instance used by the
+                         vector store to embed documents and queries.
 """
 
 import os
 
 from dotenv import load_dotenv
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
 
 # Read key=value pairs from the .env file and inject them into os.environ.
 # Safe to call at import time — if no .env exists (e.g. in production where
 # env vars are set directly), python-dotenv simply does nothing.
 load_dotenv()
 
+# Every LLM feature in this project uses the cheap, fast gpt-4o-mini model.
+CHAT_MODEL = "gpt-4o-mini"
 
-def get_env(name: str, default: str = "") -> str:
-    """Return an environment variable, falling back to ``default``.
+# Free, fast, 384-dimension sentence embedding model — runs locally, no API key.
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
-    Use this for optional configuration values. For required secrets, raise
-    a clear error at the boundary instead of silently defaulting.
+
+def get_chat_model(temperature: float = 0) -> ChatOpenAI:
+    """Return a LangChain ChatOpenAI model.
+
+    Args:
+        temperature: Sampling temperature (0 = deterministic, 2 = very random).
+                     Defaults to 0 for factual RAG answers.
+
+    Returns:
+        A ``ChatOpenAI`` instance ready to be composed into a LangChain chain.
     """
-    return os.environ.get(name, default)
+    return ChatOpenAI(model=CHAT_MODEL, temperature=temperature)
 
 
-# ---------------------------------------------------------------------------
-# Example: wiring up an OpenAI client (uncomment and add ``openai`` to
-# requirements.txt + OPENAI_API_KEY to .env.example when you need it).
-# ---------------------------------------------------------------------------
-#
-# from openai import OpenAI
-#
-# CHAT_MODEL = "gpt-4o-mini"
-#
-# def get_openai_client() -> OpenAI:
-#     """Return an OpenAI client built from OPENAI_API_KEY in the environment."""
-#     api_key = os.environ.get("OPENAI_API_KEY")
-#     if not api_key:
-#         raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
-#     return OpenAI(api_key=api_key)
+def get_embedder() -> HuggingFaceEmbeddings:
+    """Return a HuggingFace sentence embedding model.
+
+    Uses ``all-MiniLM-L6-v2`` — a free, fast model that produces 384-dimension
+    vectors. Runs entirely on the local CPU; no API key required.
+    """
+    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)

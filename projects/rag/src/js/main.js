@@ -1,8 +1,8 @@
-// Project Template — front-end behavior (no frameworks)
+// RAG Lab — front-end behavior (no frameworks)
 //
 // The API base path is injected by the Flask server into the <body
 // data-api-base="..."> attribute. Locally it is empty (relative URLs);
-// in production it is the path prefix (e.g. "/<project-name>").
+// in production it is the path prefix (e.g. "/rag").
 
 const API = document.body.dataset.apiBase || "";
 
@@ -93,16 +93,146 @@ const renderText = (data, result) => {
     result.textContent = data.result;
 };
 
+/**
+ * Wire up the Embeddings card — two inputs, compare similarity.
+ */
+function setupEmbeddings() {
+    const inputA = document.getElementById("embTextA");
+    const inputB = document.getElementById("embTextB");
+    const btn = document.getElementById("embBtn");
+    const result = document.getElementById("embResult");
+    const validation = document.getElementById("embValidation");
+
+    const bothFilled = () => inputA.value.trim() && inputB.value.trim();
+
+    [inputA, inputB].forEach((input) => {
+        input.addEventListener("input", () => {
+            btn.disabled = !bothFilled();
+            validation.textContent = "";
+        });
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && bothFilled()) btn.click();
+        });
+    });
+
+    btn.addEventListener("click", () => {
+        const a = inputA.value.trim();
+        const b = inputB.value.trim();
+        if (!a || !b) {
+            validation.textContent = "Both sentences are required.";
+            return;
+        }
+        callApi({
+            btn,
+            result,
+            endpoint: "/embeddings",
+            body: { text_a: a, text_b: b },
+            render: (data, el) => {
+                const score = data.result.similarity;
+                el.textContent = `Cosine similarity: ${score}`;
+            },
+        });
+    });
+}
+
+/**
+ * Wire up the PDF Chat card — file upload, then question input.
+ */
+function setupPdfChat() {
+    const fileInput = document.getElementById("pdfFile");
+    const fileLabel = document.getElementById("pdfFileLabel");
+    const uploadBtn = document.getElementById("pdfUploadBtn");
+    const uploadResult = document.getElementById("pdfUploadResult");
+    const questionInput = document.getElementById("pdfQuestion");
+    const chatBtn = document.getElementById("pdfChatBtn");
+    const chatResult = document.getElementById("pdfChatResult");
+    const validation = document.getElementById("pdfValidation");
+
+    let pdfUploaded = false;
+
+    // Show selected file name.
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+            fileLabel.textContent = fileInput.files[0].name;
+            fileLabel.classList.add("has-file");
+            uploadBtn.disabled = false;
+        } else {
+            fileLabel.textContent = "Choose PDF…";
+            fileLabel.classList.remove("has-file");
+            uploadBtn.disabled = true;
+        }
+    });
+
+    // Upload the PDF.
+    uploadBtn.addEventListener("click", async () => {
+        if (!fileInput.files.length) return;
+        setLoading(uploadBtn, true);
+        uploadResult.className = "result visible";
+        uploadResult.textContent = "";
+        try {
+            const form = new FormData();
+            form.append("pdf", fileInput.files[0]);
+            const res = await fetch(`${API}/pdf-upload`, {
+                method: "POST",
+                body: form,
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            uploadResult.textContent = data.result;
+            pdfUploaded = true;
+        } catch (e) {
+            uploadResult.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+        } finally {
+            setLoading(uploadBtn, false);
+        }
+    });
+
+    // Enable chat button when question has text and PDF is uploaded.
+    questionInput.addEventListener("input", () => {
+        chatBtn.disabled = !questionInput.value.trim() || !pdfUploaded;
+        validation.textContent = "";
+    });
+
+    questionInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && questionInput.value.trim() && pdfUploaded) {
+            chatBtn.click();
+        }
+    });
+
+    chatBtn.addEventListener("click", () => {
+        const question = questionInput.value.trim();
+        if (!question) {
+            validation.textContent = "Please enter a question.";
+            questionInput.focus();
+            return;
+        }
+        if (!pdfUploaded) {
+            validation.textContent = "Please upload a PDF first.";
+            return;
+        }
+        callApi({
+            btn: chatBtn,
+            result: chatResult,
+            endpoint: "/pdf-chat",
+            body: { question },
+            render: renderText,
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-    // TODO: add a setupCard(...) call for each feature card in index.html.
+    setupEmbeddings();
+
     setupCard({
-        inputId: "echoInput",
-        buttonId: "echoBtn",
-        resultId: "echoResult",
-        validationId: "echoValidation",
-        requiredMessage: "Please enter a message.",
-        endpoint: "/echo",
-        field: "message",
+        inputId: "ragInput",
+        buttonId: "ragBtn",
+        resultId: "ragResult",
+        validationId: "ragValidation",
+        requiredMessage: "Please enter a question.",
+        endpoint: "/rag",
+        field: "question",
         render: renderText,
     });
+
+    setupPdfChat();
 });

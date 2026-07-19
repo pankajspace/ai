@@ -32,4 +32,5 @@
 1. [techtoday](projects/techtoday/README.md)
 2. [basic](projects/basic/README.md)
 3. [langchain](projects/langchain/README.md)
+4. [rag](projects/rag/README.md)
 

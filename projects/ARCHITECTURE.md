@@ -27,11 +27,13 @@ Route 53 (techtoday.click hosted zone)
                               │  techtoday.click/   → /var/www/techtoday      │
                               │  /basic/*           → localhost:5000          │
                               │  /langchain/*       → localhost:5001          │
+                              │  /rag/*             → localhost:5002          │
                               └───────────────────────────────────────────────┘
                                          │
                               Docker Compose (app subdomain only)
                               ├── basic      (port 5000, from ECR)
-                              └── langchain  (port 5001, from ECR)
+                              ├── langchain  (port 5001, from ECR)
+                              └── rag        (port 5002, from ECR)
 
               ECR             → per-project image repositories (techtoday/ai-*)
               Secrets Manager → API keys injected as env vars at container start
@@ -100,6 +102,7 @@ Each project has its own GitHub Actions workflow under `.github/workflows/`:
 | techtoday | [deploy-techtoday.yml](../.github/workflows/deploy-techtoday.yml) | `projects/techtoday/**` | rsync `src/` to `/var/www/techtoday` on EC2 |
 | basic | [deploy-basic.yml](../.github/workflows/deploy-basic.yml) | `projects/basic/**` | Build → ECR push → SSH pull + restart container |
 | langchain | [deploy-langchain.yml](../.github/workflows/deploy-langchain.yml) | `projects/langchain/**` | Build → ECR push → SSH pull + restart container |
+| rag | [deploy-rag.yml](../.github/workflows/deploy-rag.yml) | `projects/rag/**` | Build → ECR push → SSH pull + restart container |
 
 Prerequisites: GitHub repo secrets + the one-time AWS infrastructure setup.
 
@@ -129,6 +132,7 @@ Each project has its own local dev loop and deployment target:
 1. **techtoday** — static preview; deploys to the root domain
 2. **basic** — web UI on port 8080; deploys to `/basic/`
 3. **langchain** — web UI on port 8081; deploys to `/langchain/`
+4. **rag** — web UI on port 8082; deploys to `/rag/`
 
 Each project scopes its commits to its own folder (e.g. `git add projects/basic/`), then opens a PR and **squash-merges** into `main`.
 
@@ -142,6 +146,7 @@ Merging to `main` triggers CI/CD automatically — no manual steps needed. Each 
 curl -I https://techtoday.click/
 curl -I https://app.techtoday.click/basic/
 curl -I https://app.techtoday.click/langchain/
+curl -I https://app.techtoday.click/rag/
 ```
 
 Or just open the URLs in a browser.
@@ -322,5 +327,38 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 - **Locally:** `PATH_PREFIX` unset → routes are `/`, `/summarize`, `/chat`, `/agent`
 - **On EC2:** `PATH_PREFIX=/langchain` → routes are `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`
+
+The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
+
+---
+
+# RAG Lab (rag)
+
+This project demonstrates the core building blocks of Retrieval-Augmented Generation — **embeddings** (cosine similarity with sentence-transformers), **vector stores** (Chroma), **RAG Q&A** (retrieve + generate with LangChain), **reranking** (cross-encoder refinement), and **PDF chat** (full pipeline with page citations). It follows the exact same architecture as the AI Playground (basic) and LangChain Lab (langchain): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
+
+---
+
+## Deployment Target (rag)
+
+- **URL:** `https://app.techtoday.click/rag/`
+- **Container port:** `5000` (mapped to EC2 port `5002`)
+- **ECR repository:** `techtoday/rag`
+- **Path prefix env var:** `PATH_PREFIX=/rag`
+- **Secret:** only `OPENAI_API_KEY` (for GPT-4o mini in RAG Q&A and PDF Chat; embeddings run locally with no key)
+
+---
+
+## Flask Path Prefix Configuration (rag)
+
+Identical to the basic and langchain projects: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
+
+```python
+# src/app.py (abbreviated)
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in production, empty locally
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+```
+
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/rag`, `/pdf-upload`, `/pdf-chat`
+- **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/rag`, `/rag/pdf-upload`, `/rag/pdf-chat`
 
 The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.

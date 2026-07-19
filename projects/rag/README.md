@@ -1,78 +1,100 @@
 [← README](../../README.md)
 
-# Project Template
+# RAG Lab
 
-A copy-me starter for a new **container project** on `app.techtoday.click`. It
-is a minimal Flask + Docker app, already wired for the shared Nginx
-path-prefix routing, so a new project is deploy-ready after a folder copy and a
-few find-and-replace edits.
+A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG — **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
+
+This project mirrors the architecture of the AI Playground (basic) and LangChain Lab (langchain) projects: each feature lives in its own module (`embeddings.py`, `chunk.py`, `index.py`, `rag.py`, `rerank.py`, `pdf_chat.py`) and is exposed through a thin Flask endpoint. This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
 ---
 
-## What's Inside
+## Features
+
+### 🧠 Embeddings
+Encodes two sentences into 384-dimensional vectors using the `all-MiniLM-L6-v2` sentence-transformer model, then computes their cosine similarity. Runs entirely locally — no API key needed. This is the foundation of semantic search: similar meanings → similar vectors → high cosine score.
+
+### 📄 Chunking
+Splits a long document into overlapping chunks using LangChain's `RecursiveCharacterTextSplitter`. Adjacent chunks share a configurable overlap ("context glue") so meaning at chunk boundaries is never lost. This is the preprocessing step that makes large documents searchable.
+
+### 🗂️ Vector Indexing
+Takes raw text documents, chunks them, embeds the chunks with a local sentence-transformer, and persists the vectors into a Chroma database on disk. This is step 1 of the RAG pipeline — building the knowledge base that retrieval will search.
+
+### 🔍 RAG Q&A
+Answers questions using the pre-built demo knowledge base. Given a question, retrieves the top 3 most relevant chunks from the Chroma vector store, injects them into a prompt, and asks GPT-4o mini to answer using only that context — so the answer is grounded in your data, not a guess.
+
+### 🔀 Reranking
+Refines retrieval results with a cross-encoder (`cross-encoder/ms-marco-MiniLM-L6-v2`). The bi-encoder used for indexing is fast but approximate; the cross-encoder scores each (question, candidate) pair more accurately. The trick: retrieve many cheap candidates, then rerank the top ones.
+
+### 📄 PDF Chat
+Upload a PDF, and the system loads its pages, chunks them, builds an in-memory vector index, and answers questions with page-number citations. The full RAG pipeline applied to a real document.
+
+---
+
+## Architecture
 
 ```
-projects/template/
+projects/rag/
 ├── Dockerfile              # Python 3.12 image; installs deps, copies src/
-├── docker-compose.yml      # web service + one-off CLI service per feature
-├── requirements.txt        # flask, flask-cors, python-dotenv, requests
-├── .env.example            # copy to .env for local secrets (gitignored)
-├── .gitignore              # ignores .env, caches, venvs
-├── deploy.yml.template     # CI/CD workflow to copy into .github/workflows/
+├── docker-compose.yml      # web service + one-off CLI services per feature
+├── requirements.txt        # langchain, chroma, sentence-transformers, flask, ...
+├── .env.example            # OPENAI_API_KEY placeholder
 └── src/
     ├── app.py              # Flask server: Blueprint + PATH_PREFIX routing
-    ├── config.py           # loads .env; place to build API clients
-    ├── echo.py             # starter feature (no API key needed)
+    ├── config.py           # loads .env; builds LangChain + embedding clients
+    ├── embeddings.py       # cosine similarity between two texts
+    ├── chunk.py            # text splitting with overlap
+    ├── index.py            # build Chroma vector store from documents
+    ├── rag.py              # retrieve + generate answer from vector store
+    ├── rerank.py           # cross-encoder reranking of retrieval results
+    ├── pdf_chat.py         # PDF loading, indexing, and Q&A with citations
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
 ```
 
----
+### Backend layout
 
-## Why a Template
+1. `config.py` is the single place that knows about API keys and model names. Every other module calls `get_chat_model()` (LangChain `ChatOpenAI`) or `get_embedder()` (HuggingFace embeddings) instead of constructing a client itself.
+2. `embeddings.py` demonstrates the embedding + cosine similarity foundation — no LLM or API key required.
+3. `index.py` and `rag.py` form the two-step RAG pipeline: build the vector store, then query it with an LLM.
+4. `rerank.py` shows how to improve retrieval accuracy with a cross-encoder as a second-stage ranker.
+5. `pdf_chat.py` applies the full pipeline to PDF documents, with page-number citations.
+6. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/rag/` in production.
 
-Every container project on this server shares the same shape:
+### Path prefix routing
 
-1. A Flask app whose routes hang off a Blueprint registered under a runtime
-   `PATH_PREFIX`, so the exact same code serves `/` locally and
-   `/<project-name>/` in production behind Nginx.
-2. A `Dockerfile` + `docker-compose.yml` that build a Python 3.12 image and run
-   `python src/app.py` on container port `5000`.
-3. A per-project GitHub Actions workflow that builds, pushes to ECR, and
-   restarts only this project's container on the shared EC2 host.
-
-The template captures all of that so you never re-derive it. Keep the
-`PATH_PREFIX` wiring intact — it is what lets a new project slot in behind the
-shared Nginx config with only a new `location` block.
-
----
-
-## Path Prefix Routing
-
-Because Nginx forwards the full path (e.g. `/<project-name>/echo`) to the
-container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
+Because Nginx forwards the full path (e.g. `/rag/embeddings`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
 # src/app.py (abbreviated)
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # "/<project-name>" in prod, empty locally
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
-1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/echo`.
-2. **On EC2:** `PATH_PREFIX=/<project-name>` → routes are `/<project-name>/`,
-   `/<project-name>/echo`.
+1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/rag`, `/pdf-upload`, `/pdf-chat`.
+2. **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/rag`, `/rag/pdf-upload`, `/rag/pdf-chat`.
 
-The served `index.html` also needs the prefix so its `fetch()` calls hit the
-right endpoint. The `index` route injects it by rewriting the page's
-`data-api-base=""` attribute with the current `PATH_PREFIX` value before
-returning the HTML.
+The served `index.html` also needs the prefix so its `fetch()` calls hit the right endpoint. The `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
 
 ---
 
-## Try It Locally & Create a New Project
+## API Endpoints
 
-The starter `echo` feature needs no keys, so a fresh copy runs immediately with
-`docker compose up web` (→ http://localhost:8090). The local-dev loop, the
-copy-and-rename checklist, and the full deployment walkthrough are documented
-once in [PROJECTS.md § Adding a New Project](../PROJECTS.md#6-adding-a-new-container-app).
+1. `POST /embeddings` — body `{ "text_a": "<text>", "text_b": "<text>" }` → `{ "result": { "similarity": 0.87 } }`
+2. `POST /rag` — body `{ "question": "<text>" }` → `{ "result": "<answer>" }`
+3. `POST /pdf-upload` — multipart/form-data with a `pdf` file field → `{ "result": "✅ PDF indexed!..." }`
+4. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer with page citations>" }`
+
+All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
+
+---
+
+## Environment Variables
+
+1. `OPENAI_API_KEY` — used by RAG Q&A and PDF Chat (GPT-4o mini). Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+2. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/rag"`). Controls the URL prefix the Flask Blueprint is mounted under. Leave it unset for local development.
+
+Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
+
+> Where this project runs in production (URL, ports, ECR repo, path-prefix routing, secrets) and how to deploy it are documented in [PROJECTS.md](../PROJECTS.md#323-rag-lab-rag).
+

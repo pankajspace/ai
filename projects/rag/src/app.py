@@ -1,49 +1,64 @@
-"""Flask server exposing the starter ``/echo`` endpoint.
+"""Flask server exposing embeddings, RAG Q&A, and PDF chat endpoints.
 
 Architecture notes
 ------------------
 - All routes are attached to a Blueprint (``bp``) instead of directly to
-  ``app``. This lets us register the entire Blueprint under a runtime URL
-  prefix (``PATH_PREFIX``) without touching individual route strings.
-- In local development PATH_PREFIX is empty, so routes are at "/", "/echo",
-  etc. In production Nginx forwards ``/<project-name>/...`` traffic to the
-  container and PATH_PREFIX is set to "/<project-name>", keeping every URL
-  consistent.
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/embeddings",
+  etc.  In production Nginx forwards ``/rag/...`` traffic to the container
+  and PATH_PREFIX is set to "/rag", keeping every URL consistent.
 - flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
   page can call the API even if it is served from a different origin during
   development.
-
-To add a feature: create a module under ``src/`` (see ``echo.py``), import
-its function here, and add a matching ``@bp.route(...)`` handler.
 """
 
 import os
+import tempfile
 
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
-from echo import echo
+from embeddings import compare_similarity
+from index import build_index, DEMO_DOCS
+from rag import rag_answer
+from pdf_chat import build_pdf_index, ask_pdf
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-# PATH_PREFIX is set by the deployment environment (e.g. "/<project-name>") so
-# the app works correctly behind an Nginx location block. Locally it is an
-# empty string, which mounts all routes at the root.
+# PATH_PREFIX is set by the deployment environment (e.g. "/rag") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 
 # static_folder="." means Flask looks for static files in the same directory
 # as this script — i.e. src/ — so index.html can be served directly.
 app = Flask(__name__, static_folder=".")
 
-# Allow cross-origin requests from any origin. In production you would
+# Allow cross-origin requests from any origin.  In production you would
 # restrict this to the specific front-end domain.
 CORS(app)
 
-# A Blueprint groups related routes. We register it once at the bottom with
+# A Blueprint groups related routes.  We register it once at the bottom with
 # the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
 bp = Blueprint("main", __name__)
+
+# Server-side state for PDF chat — stores the in-memory Chroma index per
+# session.  In a production multi-user app this would use a session store;
+# for this learning project a single shared state is fine.
+_pdf_state = {"db": None}
+
+
+# ---------------------------------------------------------------------------
+# Startup: pre-build the demo knowledge base
+# ---------------------------------------------------------------------------
+
+# Build the demo vector store on import so the /rag endpoint is ready
+# immediately.  The chroma_db directory is created under src/ at runtime.
+_chroma_dir = os.path.join(os.path.dirname(__file__), "chroma_db")
+build_index(DEMO_DOCS, persist_directory=_chroma_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +72,7 @@ def index():
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
-    # locally). For production we replace it with the actual path prefix so
+    # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
     return app.response_class(html, mimetype="text/html")
@@ -75,35 +90,103 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
-@bp.route("/echo", methods=["POST"])
-def echo_route():
-    """Echo back the posted message — the starter feature.
+@bp.route("/embeddings", methods=["POST"])
+def embeddings_route():
+    """Compare two texts and return their cosine similarity.
 
-    Request body (JSON): ``{ "message": "<text>" }``
-    Response (JSON):     ``{ "result": "<echoed text>" }``
-    Error response:      ``{ "error": "<message>" }`` with HTTP 400 (missing
-                         message).
+    Request body (JSON): ``{ "text_a": "<text>", "text_b": "<text>" }``
+    Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
     data = request.get_json(force=True)
-    message = (data.get("message") or "").strip()
-    # Validate at the boundary — return 400 immediately rather than processing
-    # an empty message.
-    if not message:
-        return jsonify({"error": "A message is required."}), 400
-    return jsonify({"result": echo(message)})
+    text_a = (data.get("text_a") or "").strip()
+    text_b = (data.get("text_b") or "").strip()
+    if not text_a or not text_b:
+        return jsonify({"error": "Both text_a and text_b are required."}), 400
+    try:
+        score = compare_similarity(text_a, text_b)
+        return jsonify({"result": {"similarity": round(score, 4)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rag", methods=["POST"])
+def rag_route():
+    """Answer a question using the pre-built demo knowledge base.
+
+    Request body (JSON): ``{ "question": "<text>" }``
+    Response (JSON):     ``{ "result": "<answer>" }``
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        answer = rag_answer(question, persist_directory=_chroma_dir)
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-upload", methods=["POST"])
+def pdf_upload():
+    """Upload a PDF and build an in-memory vector index from its pages.
+
+    Request: multipart/form-data with a ``pdf`` file field.
+    Response (JSON): ``{ "result": "✅ PDF indexed! Ask me anything about it." }``
+    Error response:  ``{ "error": "<message>" }`` with HTTP 400 or 500
+    """
+    if "pdf" not in request.files:
+        return jsonify({"error": "A PDF file is required."}), 400
+    pdf_file = request.files["pdf"]
+    if not pdf_file.filename or not pdf_file.filename.lower().endswith(".pdf"):
+        return jsonify({"error": "Please upload a .pdf file."}), 400
+    try:
+        # Save to a temp file so PyPDFLoader can read it by path.
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            pdf_file.save(tmp.name)
+            tmp_path = tmp.name
+        _pdf_state["db"] = build_pdf_index(tmp_path)
+        os.unlink(tmp_path)
+        return jsonify({"result": "✅ PDF indexed! Ask me anything about it."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-chat", methods=["POST"])
+def pdf_chat():
+    """Answer a question about the previously uploaded PDF.
+
+    Request body (JSON): ``{ "question": "<text>" }``
+    Response (JSON):     ``{ "result": "<answer with page citations>" }``
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    if _pdf_state["db"] is None:
+        return jsonify({"error": "Please upload a PDF first."}), 400
+    try:
+        answer = ask_pdf(_pdf_state["db"], question)
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------------------------------------------------------------------
 # Blueprint registration + server entry point
 # ---------------------------------------------------------------------------
 
-# Register all Blueprint routes under the optional path prefix. This single
+# Register all Blueprint routes under the optional path prefix.  This single
 # line is the only place where PATH_PREFIX is applied — every route above is
-# written as a relative path (e.g. "/echo") and the prefix is prepended here.
+# written as a relative path (e.g. "/rag") and the prefix is prepended here.
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
 if __name__ == "__main__":
-    # Run the development server. 0.0.0.0 makes the app reachable from outside
-    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8082 by
+    # docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)

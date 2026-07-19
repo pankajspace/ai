@@ -4,16 +4,28 @@ services:
     env_file: .env
     command: python src/app.py
     ports:
-      # TODO: change 8090 to your project's local port (basic=8080,
-      # langchain=8081, next free port=8082, ...). The container always
-      # listens on 5000 internally.
-      - "8090:5000"
+      - "8082:5000"
     volumes:
       - ./src:/app/src
 
-  # One-off CLI service to run the starter feature directly, without the web
-  # UI. Add a similar block per feature module you create under src/.
-  echo:
+  # One-off CLI services to run individual features directly, without the
+  # web UI. Each maps to a module under src/.
+  embeddings:
     build: .
     env_file: .env
-    command: python src/echo.py
+    command: python src/embeddings.py
+
+  index:
+    build: .
+    env_file: .env
+    command: python src/index.py
+
+  rag:
+    build: .
+    env_file: .env
+    command: python src/rag.py
+
+  pdf-chat:
+    build: .
+    env_file: .env
+    command: python src/pdf_chat.py
