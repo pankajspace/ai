@@ -71,8 +71,8 @@ PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
-1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/rag`, `/pdf-upload`, `/pdf-chat`.
-2. **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/rag`, `/rag/pdf-upload`, `/rag/pdf-chat`.
+1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/chunk`, `/rag`, `/rerank`, `/pdf-upload`, `/pdf-chat`.
+2. **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`.
 
 The served `index.html` also needs the prefix so its `fetch()` calls hit the right endpoint. The `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
 
@@ -81,9 +81,11 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 ## API Endpoints
 
 1. `POST /embeddings` — body `{ "text_a": "<text>", "text_b": "<text>" }` → `{ "result": { "similarity": 0.87 } }`
-2. `POST /rag` — body `{ "question": "<text>" }` → `{ "result": "<answer>" }`
-3. `POST /pdf-upload` — multipart/form-data with a `pdf` file field → `{ "result": "✅ PDF indexed!..." }`
-4. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer with page citations>" }`
+2. `POST /chunk` — body `{ "text": "<long text>" }` → `{ "result": { "chunks": [...], "count": 3 } }`
+3. `POST /rag` — body `{ "question": "<text>" }` → `{ "result": "<answer>" }`
+4. `POST /rerank` — body `{ "question": "<text>" }` → `{ "result": { "results": ["...", ...] } }`
+5. `POST /pdf-upload` — multipart/form-data with a `pdf` file field → `{ "result": "✅ PDF indexed!..." }`
+6. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer with page citations>" }`
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 

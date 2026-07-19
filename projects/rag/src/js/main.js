@@ -220,8 +220,50 @@ function setupPdfChat() {
     });
 }
 
+/**
+ * Wire up the Chunking card — textarea input, show split chunks.
+ */
+function setupChunking() {
+    const input = document.getElementById("chunkInput");
+    const btn = document.getElementById("chunkBtn");
+    const result = document.getElementById("chunkResult");
+    const validation = document.getElementById("chunkValidation");
+
+    input.addEventListener("input", () => {
+        btn.disabled = !input.value.trim();
+        validation.textContent = "";
+    });
+
+    btn.addEventListener("click", () => {
+        const text = input.value.trim();
+        if (!text) {
+            validation.textContent = "Please enter some text.";
+            input.focus();
+            return;
+        }
+        callApi({
+            btn,
+            result,
+            endpoint: "/chunk",
+            body: { text },
+            render: (data, el) => {
+                const { chunks, count } = data.result;
+                const lines = [`${count} chunk(s):\n`];
+                chunks.forEach((c, i) => {
+                    lines.push(`--- Chunk ${i + 1} (${c.length} chars) ---`);
+                    lines.push(c);
+                    lines.push("");
+                });
+                el.textContent = lines.join("\n");
+            },
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     setupEmbeddings();
+
+    setupChunking();
 
     setupCard({
         inputId: "ragInput",
@@ -232,6 +274,24 @@ document.addEventListener("DOMContentLoaded", () => {
         endpoint: "/rag",
         field: "question",
         render: renderText,
+    });
+
+    setupCard({
+        inputId: "rerankInput",
+        buttonId: "rerankBtn",
+        resultId: "rerankResult",
+        validationId: "rerankValidation",
+        requiredMessage: "Please enter a question.",
+        endpoint: "/rerank",
+        field: "question",
+        render: (data, el) => {
+            const results = data.result.results;
+            const lines = [`Top ${results.length} reranked result(s):\n`];
+            results.forEach((r, i) => {
+                lines.push(`${i + 1}. ${r}`);
+            });
+            el.textContent = lines.join("\n");
+        },
     });
 
     setupPdfChat();

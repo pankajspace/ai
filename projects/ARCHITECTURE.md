@@ -358,7 +358,7 @@ PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in production, empty loc
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
-- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/rag`, `/pdf-upload`, `/pdf-chat`
-- **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/rag`, `/rag/pdf-upload`, `/rag/pdf-chat`
+- **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/chunk`, `/rag`, `/rerank`, `/pdf-upload`, `/pdf-chat`
+- **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`
 
 The served `index.html` also needs the prefix; the `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.

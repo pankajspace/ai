@@ -1,4 +1,4 @@
-"""Flask server exposing embeddings, RAG Q&A, and PDF chat endpoints.
+"""Flask server exposing embeddings, chunking, RAG Q&A, reranking, and PDF chat endpoints.
 
 Architecture notes
 ------------------
@@ -19,9 +19,11 @@ import tempfile
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
+from chunk import chunk_text
 from embeddings import compare_similarity
 from index import build_index, DEMO_DOCS
 from rag import rag_answer
+from rerank import retrieve_with_rerank
 from pdf_chat import build_pdf_index, ask_pdf
 
 # ---------------------------------------------------------------------------
@@ -110,6 +112,25 @@ def embeddings_route():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route("/chunk", methods=["POST"])
+def chunk_route():
+    """Split text into overlapping chunks.
+
+    Request body (JSON): ``{ "text": "<long text>" }``
+    Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    text = (data.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Text is required."}), 400
+    try:
+        chunks = chunk_text(text)
+        return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @bp.route("/rag", methods=["POST"])
 def rag_route():
     """Answer a question using the pre-built demo knowledge base.
@@ -125,6 +146,30 @@ def rag_route():
     try:
         answer = rag_answer(question, persist_directory=_chroma_dir)
         return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rerank", methods=["POST"])
+def rerank_route():
+    """Retrieve and rerank results from the demo knowledge base.
+
+    Request body (JSON): ``{ "question": "<text>" }``
+    Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        from langchain_chroma import Chroma
+        from config import get_embedder
+        embedder = get_embedder()
+        db = Chroma(persist_directory=_chroma_dir, embedding_function=embedder)
+        reranked = retrieve_with_rerank(db, question, top_k=3)
+        results = [doc.page_content for doc in reranked]
+        return jsonify({"result": {"results": results}})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

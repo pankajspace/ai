@@ -151,7 +151,7 @@ deployment workflow documented below; only these parameters differ.
 1. **URL:** `https://app.techtoday.click/rag/`
 2. **Ports:** container `5000` → EC2 host `5002`; local dev `8082`
 3. **ECR repository:** `techtoday/rag`
-4. **Path prefix:** `PATH_PREFIX=/rag` → routes `/rag/`, `/rag/embeddings`, `/rag/rag`, `/rag/pdf-upload`, `/rag/pdf-chat`
+4. **Path prefix:** `PATH_PREFIX=/rag` → routes `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`
 5. **Secrets** (in `techtoday/secrets`): `OPENAI_API_KEY` only — used by RAG Q&A and PDF Chat (GPT-4o mini). Embeddings run locally with no API key. Already present if `basic` or `langchain` is deployed.
 
 ## 4. Container App Local Development
