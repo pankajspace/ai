@@ -160,7 +160,25 @@ The worked example below uses the `template` project (local port `8090`, keyless
 `echo` feature). For a real project, substitute its name and local port from the
 [Container App Specs](#32-container-app-specs) section — e.g. `basic` (`8080`) or `langchain` (`8081`).
 
-### 4.1. One-Time Setup
+### 4.1. Start Docker
+
+Every `docker compose` command below needs the Docker daemon running. On macOS
+with Colima:
+
+```bash
+# Run on: local machine
+colima status                     # check if it's already running
+colima start                      # start the VM + Docker daemon (if not running)
+```
+
+If `colima status` prints `colima is not running`, run `colima start` and wait
+for it to finish before proceeding. After a machine restart you will always need
+to start Colima again — it does not auto-start.
+
+> On **Docker Desktop** (instead of Colima), just open the Docker Desktop app —
+> the daemon starts automatically when the app is running.
+
+### 4.2. One-Time Setup
 
 ```bash
 # Run on: local machine
@@ -172,7 +190,7 @@ docker compose build
 Never commit `.env` — it is already listed in `.gitignore`. Two projects can run
 at once because each maps a different local `808x` port.
 
-### 4.2. Day-to-Day Loop
+### 4.3. Day-to-Day Loop
 
 ```bash
 # Run on: local machine
@@ -190,7 +208,7 @@ docker compose build
 docker compose down
 ```
 
-### 4.3. Useful Commands
+### 4.4. Useful Commands
 
 ```bash
 # Run on: local machine
