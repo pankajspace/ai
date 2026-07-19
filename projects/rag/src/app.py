@@ -21,7 +21,7 @@ from flask_cors import CORS
 
 from chunk import chunk_text
 from embeddings import compare_similarity
-from index import build_index, DEMO_DOCS
+from index import build_index
 from rag import rag_answer
 from rerank import retrieve_with_rerank
 from pdf_chat import build_pdf_index, ask_pdf
@@ -51,16 +51,6 @@ bp = Blueprint("main", __name__)
 # session.  In a production multi-user app this would use a session store;
 # for this learning project a single shared state is fine.
 _pdf_state = {"db": None}
-
-
-# ---------------------------------------------------------------------------
-# Startup: pre-build the demo knowledge base
-# ---------------------------------------------------------------------------
-
-# Build the demo vector store on import so the /rag endpoint is ready
-# immediately.  The chroma_db directory is created under src/ at runtime.
-_chroma_dir = os.path.join(os.path.dirname(__file__), "chroma_db")
-build_index(DEMO_DOCS, persist_directory=_chroma_dir)
 
 
 # ---------------------------------------------------------------------------
@@ -133,18 +123,23 @@ def chunk_route():
 
 @bp.route("/rag", methods=["POST"])
 def rag_route():
-    """Answer a question using the pre-built demo knowledge base.
+    """Answer a question using a user-provided knowledge base.
 
-    Request body (JSON): ``{ "question": "<text>" }``
+    Request body (JSON): ``{ "knowledge_base": "<text>", "question": "<text>" }``
     Response (JSON):     ``{ "result": "<answer>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
     data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    if not knowledge:
+        return jsonify({"error": "A knowledge base is required."}), 400
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
-        answer = rag_answer(question, persist_directory=_chroma_dir)
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        db, _ = build_index(docs, persist_directory=None)
+        answer = rag_answer(question, db=db)
         return jsonify({"result": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -152,21 +147,22 @@ def rag_route():
 
 @bp.route("/rerank", methods=["POST"])
 def rerank_route():
-    """Retrieve and rerank results from the demo knowledge base.
+    """Retrieve and rerank results from a user-provided knowledge base.
 
-    Request body (JSON): ``{ "question": "<text>" }``
+    Request body (JSON): ``{ "knowledge_base": "<text>", "question": "<text>" }``
     Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
     data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    if not knowledge:
+        return jsonify({"error": "A knowledge base is required."}), 400
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
-        from langchain_chroma import Chroma
-        from config import get_embedder
-        embedder = get_embedder()
-        db = Chroma(persist_directory=_chroma_dir, embedding_function=embedder)
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        db, _ = build_index(docs, persist_directory=None)
         reranked = retrieve_with_rerank(db, question, top_k=3)
         results = [doc.page_content for doc in reranked]
         return jsonify({"result": {"results": results}})

@@ -260,30 +260,74 @@ function setupChunking() {
     });
 }
 
+/**
+ * Wire up a card with a knowledge base textarea + question input.
+ */
+function setupKbCard({ kbId, inputId, buttonId, resultId, validationId, endpoint, render }) {
+    const kb = document.getElementById(kbId);
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(buttonId);
+    const result = document.getElementById(resultId);
+    const validation = document.getElementById(validationId);
+
+    const bothFilled = () => kb.value.trim() && input.value.trim();
+
+    [kb, input].forEach((el) => {
+        el.addEventListener("input", () => {
+            btn.disabled = !bothFilled();
+            validation.textContent = "";
+        });
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && bothFilled()) btn.click();
+    });
+
+    btn.addEventListener("click", () => {
+        const knowledge = kb.value.trim();
+        const question = input.value.trim();
+        if (!knowledge) {
+            validation.textContent = "Please enter a knowledge base.";
+            kb.focus();
+            return;
+        }
+        if (!question) {
+            validation.textContent = "Please enter a question.";
+            input.focus();
+            return;
+        }
+        callApi({
+            btn,
+            result,
+            endpoint,
+            body: { knowledge_base: knowledge, question },
+            render,
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     setupEmbeddings();
 
     setupChunking();
 
-    setupCard({
+    setupKbCard({
+        kbId: "ragKb",
         inputId: "ragInput",
         buttonId: "ragBtn",
         resultId: "ragResult",
         validationId: "ragValidation",
-        requiredMessage: "Please enter a question.",
         endpoint: "/rag",
-        field: "question",
         render: renderText,
     });
 
-    setupCard({
+    setupKbCard({
+        kbId: "rerankKb",
         inputId: "rerankInput",
         buttonId: "rerankBtn",
         resultId: "rerankResult",
         validationId: "rerankValidation",
-        requiredMessage: "Please enter a question.",
         endpoint: "/rerank",
-        field: "question",
         render: (data, el) => {
             const results = data.result.results;
             const lines = [`Top ${results.length} reranked result(s):\n`];

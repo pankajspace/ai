@@ -24,19 +24,22 @@ Question: {question}
 """)
 
 
-def rag_answer(question: str, persist_directory: str = "./chroma_db") -> str:
+def rag_answer(question: str, persist_directory: str = "./chroma_db", db=None) -> str:
     """Retrieve relevant chunks and generate a grounded answer.
 
     Args:
         question: The user's question.
         persist_directory: Folder containing the Chroma database built by
-            ``index.py``.
+            ``index.py``. Ignored if *db* is provided.
+        db: An already-loaded Chroma vector store. If ``None``, one is loaded
+            from *persist_directory*.
 
     Returns:
         The model's answer, grounded in the retrieved context.
     """
-    embedder = get_embedder()
-    db = Chroma(persist_directory=persist_directory, embedding_function=embedder)
+    if db is None:
+        embedder = get_embedder()
+        db = Chroma(persist_directory=persist_directory, embedding_function=embedder)
     model = get_chat_model()
 
     chunks = db.similarity_search(question, k=3)
