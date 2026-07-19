@@ -2,6 +2,9 @@
 
 # AI Infused Learning - 3
 
+# Contact
+- [Shivank](mailto:[shivank.agrawal_1@scaler.com])
+
 # Links
 1. [Class 3 Notes](https://scaler-content.github.io/class-3-AI-engg/)
 2. [Pinecone](https://www.pinecone.io/)
