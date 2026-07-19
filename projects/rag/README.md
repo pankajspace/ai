@@ -20,10 +20,10 @@ Splits a long document into overlapping chunks using LangChain's `RecursiveChara
 Takes raw text documents, chunks them, embeds the chunks with a local sentence-transformer, and persists the vectors into a Chroma database on disk. This is step 1 of the RAG pipeline — building the knowledge base that retrieval will search.
 
 ### 🔍 RAG Q&A
-Answers questions using the pre-built demo knowledge base. Given a question, retrieves the top 3 most relevant chunks from the Chroma vector store, injects them into a prompt, and asks GPT-4o mini to answer using only that context — so the answer is grounded in your data, not a guess.
+Answers questions from a user-provided knowledge base. Enter your facts (one per line), then ask a question. The text is chunked, embedded into an in-memory Chroma vector store, and the top 3 most relevant chunks are injected into a prompt for GPT-4o mini — so the answer is grounded in your data, not a guess.
 
 ### 🔀 Reranking
-Refines retrieval results with a cross-encoder (`cross-encoder/ms-marco-MiniLM-L6-v2`). The bi-encoder used for indexing is fast but approximate; the cross-encoder scores each (question, candidate) pair more accurately. The trick: retrieve many cheap candidates, then rerank the top ones.
+Refines retrieval results with a cross-encoder (`cross-encoder/ms-marco-MiniLM-L6-v2`). Enter your knowledge base and a question — candidates are first retrieved with the fast bi-encoder, then reranked by the cross-encoder for higher accuracy. The trick: retrieve many cheap candidates, then rerank the top ones.
 
 ### 📄 PDF Chat
 Upload a PDF, and the system loads its pages, chunks them, builds an in-memory vector index, and answers questions with page-number citations. The full RAG pipeline applied to a real document.
@@ -56,7 +56,7 @@ projects/rag/
 
 1. `config.py` is the single place that knows about API keys and model names. Every other module calls `get_chat_model()` (LangChain `ChatOpenAI`) or `get_embedder()` (HuggingFace embeddings) instead of constructing a client itself.
 2. `embeddings.py` demonstrates the embedding + cosine similarity foundation — no LLM or API key required.
-3. `index.py` and `rag.py` form the two-step RAG pipeline: build the vector store, then query it with an LLM.
+3. `index.py` and `rag.py` form the two-step RAG pipeline: build an in-memory vector store from user-provided text, then query it with an LLM.
 4. `rerank.py` shows how to improve retrieval accuracy with a cross-encoder as a second-stage ranker.
 5. `pdf_chat.py` applies the full pipeline to PDF documents, with page-number citations.
 6. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/rag/` in production.
@@ -82,8 +82,8 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 
 1. `POST /embeddings` — body `{ "text_a": "<text>", "text_b": "<text>" }` → `{ "result": { "similarity": 0.87 } }`
 2. `POST /chunk` — body `{ "text": "<long text>" }` → `{ "result": { "chunks": [...], "count": 3 } }`
-3. `POST /rag` — body `{ "question": "<text>" }` → `{ "result": "<answer>" }`
-4. `POST /rerank` — body `{ "question": "<text>" }` → `{ "result": { "results": ["...", ...] } }`
+3. `POST /rag` — body `{ "knowledge_base": "<text>", "question": "<text>" }` → `{ "result": "<answer>" }`
+4. `POST /rerank` — body `{ "knowledge_base": "<text>", "question": "<text>" }` → `{ "result": { "results": ["...", ...] } }`
 5. `POST /pdf-upload` — multipart/form-data with a `pdf` file field → `{ "result": "✅ PDF indexed!..." }`
 6. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer with page citations>" }`
 
