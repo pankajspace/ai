@@ -972,6 +972,11 @@ Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit
 
 1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/basic` — tells Flask which prefix Nginx forwards under
 
+The same production service block must also use `command: python src/python/app.py`
+for every container app. If it still points at the old `python src/app.py` path,
+the container will restart and Nginx will return `502 Bad Gateway` for that
+project URL.
+
 #### 2.12.4. Per-Project Secrets
 
 Which project uses which key (and which need no secret at all) is documented per

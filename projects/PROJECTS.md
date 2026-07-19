@@ -122,6 +122,7 @@ none of them.
 3. **Secrets** — all API keys live in a single shared AWS Secrets Manager secret, `techtoday/secrets`. The EC2 instance role grants read access to everything under `techtoday/*`, so new projects need no IAM changes.
 4. **Routing** — one A record (`app.techtoday.click`), one EC2 instance, and one SSL cert are shared by every container app. A new project is a new Nginx `location` block plus a new Docker Compose service — **never** a new DNS record, instance, or cert.
 5. **Path-prefix routing** — because Nginx forwards the full path (e.g. `/basic/joke`) to the container, each Flask app mounts its routes on a Blueprint registered under `PATH_PREFIX` (`/<name>` in production, empty locally), and its `index` route rewrites the served HTML so the browser calls the prefixed endpoints. Each project's README documents this for its own routes.
+6. **Runtime command** — production `~/docker-compose.yml` on EC2 must start each app with `command: python src/python/app.py`. If an older service still says `python src/app.py`, the container will restart and Nginx will show `502 Bad Gateway` for that project path.
 
 ### 3.2. Container App Specs
 
@@ -261,6 +262,27 @@ curl -I https://app.techtoday.click/template/
 
 Or just open the URL in a browser.
 
+If a project URL returns `502 Bad Gateway`, the container is usually not running
+behind Nginx. Check the production service on EC2:
+
+```bash
+# Run on: EC2 host (via SSH)
+PROJECT_NAME=template   # replace with the affected service, e.g. basic or langchain
+docker compose -f ~/docker-compose.yml ps
+docker compose -f ~/docker-compose.yml logs --tail=50 $PROJECT_NAME
+grep -A12 "^  $PROJECT_NAME:" ~/docker-compose.yml
+```
+
+For projects using the current `src/python/` layout, the service block must use
+`command: python src/python/app.py`. If it still uses `python src/app.py`, update
+`~/docker-compose.yml`, validate it, and restart only that service:
+
+```bash
+# Run on: EC2 host (via SSH)
+docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
+```
+
 ### 5.5. Rollback
 
 Roll back to a previous image when a deploy goes bad:
@@ -340,7 +362,11 @@ for ports and naming.
 Changing the project folder layout, including keeping Python files under
 `src/python/`, does **not** require a manual AWS infrastructure step. It is a
 normal code change: rebuild and redeploy the image through CI/CD, or use the
-manual build/push fallback if CI/CD is unavailable.
+manual build/push fallback if CI/CD is unavailable. Existing EC2 services that
+were created before the `src/python/` layout still need their production
+`~/docker-compose.yml` command updated to `python src/python/app.py`; otherwise
+the image can be correct but the container will restart with `502 Bad Gateway`
+at the Nginx path.
 
 For the first new app after `rag`, use these substitutions:
 

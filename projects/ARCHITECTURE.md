@@ -85,11 +85,12 @@ Route 53 (techtoday.click hosted zone)
 9. **Tag images three ways** — full git SHA, build tag (`YYYYMMDD-HHMMSS-<run>-<sha>`), and `latest`
 10. **ECR image scanning** — configured at registry level via repository filtering (not per-repository `scanOnPush`)
 11. **`restart: unless-stopped`** — containers restart automatically after EC2 reboots
+12. **Production command matches layout** — every EC2 Docker Compose service runs `python src/python/app.py`; a stale `python src/app.py` command makes the container restart and Nginx return `502 Bad Gateway`
 
 ### Cost
 
-12. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
-13. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
+13. **Free Tier** — `t2.micro` is free for 750 hrs/month in the first AWS year (= free 24/7)
+14. **ECR lifecycle policy** — delete untagged images older than 7 days to avoid storage accumulation
 
 ---
 
@@ -278,6 +279,7 @@ aws cloudfront create-invalidation \
 - **URL:** `https://app.techtoday.click/basic/`
 - **Container port:** `5000` (mapped to EC2 port `5000`)
 - **ECR repository:** `techtoday/basic`
+- **Production command:** `python src/python/app.py`
 - **Path prefix env var:** `PATH_PREFIX=/basic`
 
 ---
@@ -310,6 +312,7 @@ This project demonstrates three core LangChain building blocks — **chains** (a
 - **URL:** `https://app.techtoday.click/langchain/`
 - **Container port:** `5000` (mapped to EC2 port `5001`)
 - **ECR repository:** `techtoday/langchain`
+- **Production command:** `python src/python/app.py`
 - **Path prefix env var:** `PATH_PREFIX=/langchain`
 - **Secret:** only `OPENAI_API_KEY` (no Groq key — every feature uses GPT-4o mini)
 
@@ -343,6 +346,7 @@ This project demonstrates the core building blocks of Retrieval-Augmented Genera
 - **URL:** `https://app.techtoday.click/rag/`
 - **Container port:** `5000` (mapped to EC2 port `5002`)
 - **ECR repository:** `techtoday/rag`
+- **Production command:** `python src/python/app.py`
 - **Path prefix env var:** `PATH_PREFIX=/rag`
 - **Secret:** only `OPENAI_API_KEY` (for GPT-4o mini in RAG Q&A and PDF Chat; embeddings run locally with no key)
 
