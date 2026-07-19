@@ -46,13 +46,14 @@ projects/basic/
 ├── .dockerignore
 ├── README.md
 └── src/
-    ├── config.py           # loads .env; exposes get_openai_client() / get_groq_client()
-    ├── joke.py             # Groq → Llama 3.3 70B → random joke
-    ├── travel.py           # OpenAI → GPT-4o mini → city activity suggestion
-    ├── scraper.py          # requests + BeautifulSoup → cleaned page text
-    ├── summarizer.py       # scraper + OpenAI → markdown page summary
-    ├── arena.py            # OpenAI + Groq → side-by-side model comparison
-    ├── app.py              # Flask server — Blueprint routes + index.html serving
+    ├── python/
+    │   ├── config.py       # loads .env; exposes get_openai_client() / get_groq_client()
+    │   ├── joke.py         # Groq → Llama 3.3 70B → random joke
+    │   ├── travel.py       # OpenAI → GPT-4o mini → city activity suggestion
+    │   ├── scraper.py      # requests + BeautifulSoup → cleaned page text
+    │   ├── summarizer.py   # scraper + OpenAI → markdown page summary
+    │   ├── arena.py        # OpenAI + Groq → side-by-side model comparison
+    │   └── app.py          # Flask server — Blueprint routes + index.html serving
     └── index.html          # single-page web UI (vanilla JS, no build step)
 ```
 
@@ -67,11 +68,11 @@ projects/basic/
 
 **`joke.py`**
 - `get_joke(topic)` — sends a user prompt to `llama-3.3-70b-versatile` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
-- Can be run directly: `python joke.py`.
+- Can be run directly from the project root: `python src/python/joke.py`.
 
 **`travel.py`**
 - `get_travel_suggestion(city)` — sends a prompt to `gpt-4o-mini` on OpenAI using a witty travel-guide system prompt.  Defaults to `"Bangalore"` if no city is provided.
-- Can be run directly: `python travel.py`.
+- Can be run directly from the project root: `python src/python/travel.py`.
 
 **`scraper.py`**
 - `fetch_website_contents(url)` — prepends `https://` if missing, downloads the page with a browser-like `User-Agent` header, and uses BeautifulSoup to strip `<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<img>`, and `<input>` tags before extracting plain text.
@@ -80,12 +81,12 @@ projects/basic/
 **`summarizer.py`**
 - `summarize(url)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion with a markdown-summary system prompt.
 - The two steps are deliberately separate so the scraper can be reused by other features independently.
-- Can be run directly: `python summarizer.py`.
+- Can be run directly from the project root: `python src/python/summarizer.py`.
 
 **`arena.py`**
 - `_ask(client, model, prompt)` — private helper that fires one chat completion and returns the reply text.  Kept separate so `battle()` stays readable.
 - `battle(prompt)` — calls `_ask` twice (OpenAI then Groq) and returns a dict `{ "model_a": {model, reply}, "model_b": {model, reply} }`.
-- Can be run directly: `python arena.py`.
+- Can be run directly from the project root: `python src/python/arena.py`.
 
 **`app.py`**
 - All routes are attached to a Flask `Blueprint` so the entire API surface can be mounted under a runtime `PATH_PREFIX` without changing individual route strings.

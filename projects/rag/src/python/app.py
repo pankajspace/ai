@@ -15,6 +15,7 @@ Architecture notes
 
 import os
 import tempfile
+from pathlib import Path
 
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
@@ -35,9 +36,9 @@ from pdf_chat import build_pdf_index, ask_pdf
 # string, which mounts all routes at the root.
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 
-# static_folder="." means Flask looks for static files in the same directory
-# as this script — i.e. src/ — so index.html can be served directly.
-app = Flask(__name__, static_folder=".")
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
 
 # Allow cross-origin requests from any origin.  In production you would
 # restrict this to the specific front-end domain.

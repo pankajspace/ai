@@ -7,6 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
 
-ENV PYTHONPATH=src
+ENV PYTHONPATH=src/python
 
 EXPOSE 5000

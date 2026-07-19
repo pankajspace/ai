@@ -33,12 +33,13 @@ projects/langchain/
 ├── requirements.txt        # openai, langchain, flask, requests, ...
 ├── .env.example            # OPENAI_API_KEY placeholder
 └── src/
-    ├── app.py              # Flask server: Blueprint + PATH_PREFIX routing
-    ├── config.py           # loads .env; builds LangChain + OpenAI clients
-    ├── scraper.py          # URL → cleaned page text (plain web scraping)
-    ├── summarizer.py       # LangChain chain: prompt | model | parser
-    ├── chat.py             # memory chat: MessagesPlaceholder + history
-    ├── agent.py            # tool-using shop agent (function calling)
+    ├── python/
+    │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
+    │   ├── config.py       # loads .env; builds LangChain + OpenAI clients
+    │   ├── scraper.py      # URL → cleaned page text (plain web scraping)
+    │   ├── summarizer.py   # LangChain chain: prompt | model | parser
+    │   ├── chat.py         # memory chat: MessagesPlaceholder + history
+    │   └── agent.py        # tool-using shop agent (function calling)
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
@@ -57,7 +58,7 @@ projects/langchain/
 Because Nginx forwards the full path (e.g. `/langchain/chat`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /langchain in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```

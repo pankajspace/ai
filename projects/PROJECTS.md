@@ -117,7 +117,7 @@ aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/
 These apply to every **container app**. The static `techtoday` home page follows
 none of them.
 
-1. **Ports** — each container listens on `5000` *inside* the container and is published on a unique *host* port: `basic` → `5000`, `langchain` → `5001`, next project → `5002`. Locally, map to the next free `808x` port: `basic` → `8080`, `langchain` → `8081`, `template` → `8090`, next → `8082`, so every project can run side by side.
+1. **Ports** — each container listens on `5000` *inside* the container and is published on a unique *host* port: `basic` → `5000`, `langchain` → `5001`, `rag` → `5002`, next project → `5003`. Locally, map to the next free `808x` port: `basic` → `8080`, `langchain` → `8081`, `rag` → `8082`, `template` → `8090`, next → `8083`, so every project can run side by side.
 2. **Naming** — a project named `<name>` uses ECR repo `techtoday/<name>`, Nginx path `/<name>/`, Docker Compose service `<name>`, and env var `PATH_PREFIX=/<name>`.
 3. **Secrets** — all API keys live in a single shared AWS Secrets Manager secret, `techtoday/secrets`. The EC2 instance role grants read access to everything under `techtoday/*`, so new projects need no IAM changes.
 4. **Routing** — one A record (`app.techtoday.click`), one EC2 instance, and one SSL cert are shared by every container app. A new project is a new Nginx `location` block plus a new Docker Compose service — **never** a new DNS record, instance, or cert.
@@ -194,7 +194,8 @@ at once because each maps a different local `808x` port.
 
 ```bash
 # Run on: local machine
-# Start the web UI (hot-reload via volume mount — edits under src/ apply immediately)
+# Start the web UI (hot-reload via volume mount — edits under src/ apply immediately,
+# including Python modules under src/python/)
 docker compose up web
 # → http://localhost:8090
 
@@ -232,7 +233,7 @@ git checkout -b feat/short-description
 
 ### 5.2. Develop & Commit
 
-Edit files under `src/` (hot-reloaded locally — see [Container App Local Development](#4-container-app-local-development)).
+Edit Python files under `src/python/` and static UI files under `src/` (hot-reloaded locally — see [Container App Local Development](#4-container-app-local-development)).
 Scope each commit to the project folder so its CI/CD workflow triggers on its own:
 
 ```bash
@@ -336,6 +337,11 @@ ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place, a
 follows the [Container App Shared Conventions](#31-container-app-shared-conventions)
 for ports and naming.
 
+Changing the project folder layout, including keeping Python files under
+`src/python/`, does **not** require a manual AWS infrastructure step. It is a
+normal code change: rebuild and redeploy the image through CI/CD, or use the
+manual build/push fallback if CI/CD is unavailable.
+
 For the first new app after `rag`, use these substitutions:
 
 1. `<project-name>` → `ai-04` or your real project name.
@@ -359,11 +365,12 @@ cd "$PROJECT_NAME"
 Then adjust the copied files for the new project:
 
 1. `docker-compose.yml` — change the `web` service's published port from the template's `8090` to the next free local port (`<local-port>`); see the snippet below.
-2. `src/` — replace the starter `echo` feature (`src/echo.py`, its route in `src/app.py`, and its card in `src/index.html` / `src/js/main.js`) with your project's code. Keep `src/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
-3. `requirements.txt` — add any libraries your features need (e.g. `openai`, `langchain`).
-4. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
-5. `linkedin.txt` — add the LinkedIn post/update copy for the new project, or leave it empty until the project is ready to announce.
-6. Project README — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
+2. `src/python/` — replace the starter `echo` feature (`src/python/echo.py`) and its route in `src/python/app.py` with your project's Python code. Keep `src/python/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
+3. `src/index.html`, `src/css/`, and `src/js/` — update the web UI card and browser behavior for your project. Static assets stay under `src/`; Python modules stay under `src/python/`.
+4. `requirements.txt` — add any libraries your features need (e.g. `openai`, `langchain`).
+5. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
+6. `linkedin.txt` — add the LinkedIn post/update copy for the new project, or leave it empty until the project is ready to announce.
+7. Project README — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
 
 The `docker-compose.yml` port change (step 1) looks like this:
 
@@ -372,7 +379,7 @@ services:
   web:
     build: .
     env_file: .env
-    command: python src/app.py
+    command: python src/python/app.py
     ports:
       - "<local-port>:5000"     # first app after rag: 8083:5000
     volumes:
@@ -554,7 +561,7 @@ services:
   <project-name>:
     image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/<project-name>:latest
     restart: unless-stopped
-    command: python src/app.py
+    command: python src/python/app.py
     ports:
       - "<host-port>:5000"          # first app after rag: 5003:5000
     environment:

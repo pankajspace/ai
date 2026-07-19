@@ -20,9 +20,10 @@ projects/template/
 ├── .gitignore              # ignores .env, caches, venvs
 ├── deploy.yml.template     # CI/CD workflow to copy into .github/workflows/
 └── src/
-    ├── app.py              # Flask server: Blueprint + PATH_PREFIX routing
-    ├── config.py           # loads .env; place to build API clients
-    ├── echo.py             # starter feature (no API key needed)
+   ├── python/
+   │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
+   │   ├── config.py       # loads .env; place to build API clients
+   │   └── echo.py         # starter feature (no API key needed)
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
@@ -38,7 +39,7 @@ Every container project on this server shares the same shape:
    `PATH_PREFIX`, so the exact same code serves `/` locally and
    `/<project-name>/` in production behind Nginx.
 2. A `Dockerfile` + `docker-compose.yml` that build a Python 3.12 image and run
-   `python src/app.py` on container port `5000`.
+   `python src/python/app.py` on container port `5000`.
 3. A per-project GitHub Actions workflow that builds, pushes to ECR, and
    restarts only this project's container on the shared EC2 host.
 
@@ -54,7 +55,7 @@ Because Nginx forwards the full path (e.g. `/<project-name>/echo`) to the
 container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # "/<project-name>" in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```

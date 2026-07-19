@@ -287,7 +287,7 @@ aws cloudfront create-invalidation \
 Because Nginx forwards the full path (e.g., `/basic/joke`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /basic in production, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
@@ -301,7 +301,7 @@ The served `index.html` also needs to know the prefix so its `fetch()` calls hit
 
 # LangChain Lab (langchain)
 
-This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
+This project demonstrates three core LangChain building blocks — **chains** (a `prompt | model | parser` website summarizer), **memory** (a chatbot that re-sends conversation history each turn), and **agents** (a tool-using shop assistant with OpenAI function calling). It follows the exact same architecture as the AI Playground (basic): per-feature modules under `src/python/` behind a thin Flask API, served from a Docker container.
 
 ---
 
@@ -320,7 +320,7 @@ This project demonstrates three core LangChain building blocks — **chains** (a
 Identical to the basic project: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /langchain in production, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
@@ -334,7 +334,7 @@ The served `index.html` also needs the prefix; the `index` route injects it by r
 
 # RAG Lab (rag)
 
-This project demonstrates the core building blocks of Retrieval-Augmented Generation — **embeddings** (cosine similarity with sentence-transformers), **vector stores** (Chroma), **RAG Q&A** (retrieve + generate with LangChain), **reranking** (cross-encoder refinement), and **PDF chat** (full pipeline with page citations). It follows the exact same architecture as the AI Playground (basic) and LangChain Lab (langchain): per-feature modules under `src/` behind a thin Flask API, served from a Docker container.
+This project demonstrates the core building blocks of Retrieval-Augmented Generation — **embeddings** (cosine similarity with sentence-transformers), **vector stores** (Chroma), **RAG Q&A** (retrieve + generate with LangChain), **reranking** (cross-encoder refinement), and **PDF chat** (full pipeline with page citations). It follows the exact same architecture as the AI Playground (basic) and LangChain Lab (langchain): per-feature modules under `src/python/` behind a thin Flask API, served from a Docker container.
 
 ---
 
@@ -353,7 +353,7 @@ This project demonstrates the core building blocks of Retrieval-Augmented Genera
 Identical to the basic and langchain projects: routes are attached to a Blueprint and registered once under the runtime `PATH_PREFIX`.
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in production, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```

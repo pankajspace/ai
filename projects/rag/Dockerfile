@@ -14,7 +14,7 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 
 COPY src/ ./src/
 
-ENV PYTHONPATH=src
+ENV PYTHONPATH=src/python
 # Model is baked in — tell HuggingFace to never contact the Hub at runtime.
 # This eliminates the "unauthenticated requests" warning and prevents hangs.
 ENV HF_HUB_OFFLINE=1

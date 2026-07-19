@@ -39,14 +39,15 @@ projects/rag/
 ├── requirements.txt        # langchain, chroma, sentence-transformers, flask, ...
 ├── .env.example            # OPENAI_API_KEY placeholder
 └── src/
-    ├── app.py              # Flask server: Blueprint + PATH_PREFIX routing
-    ├── config.py           # loads .env; builds LangChain + embedding clients
-    ├── embeddings.py       # cosine similarity between two texts
-    ├── chunk.py            # text splitting with overlap
-    ├── index.py            # build Chroma vector store from documents
-    ├── rag.py              # retrieve + generate answer from vector store
-    ├── rerank.py           # cross-encoder reranking of retrieval results
-    ├── pdf_chat.py         # PDF loading, indexing, and Q&A with citations
+    ├── python/
+    │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
+    │   ├── config.py       # loads .env; builds LangChain + embedding clients
+    │   ├── embeddings.py   # cosine similarity between two texts
+    │   ├── chunk.py        # text splitting with overlap
+    │   ├── index.py        # build Chroma vector store from documents
+    │   ├── rag.py          # retrieve + generate answer from vector store
+    │   ├── rerank.py       # cross-encoder reranking of retrieval results
+    │   └── pdf_chat.py     # PDF loading, indexing, and Q&A with citations
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
@@ -66,7 +67,7 @@ projects/rag/
 Because Nginx forwards the full path (e.g. `/rag/embeddings`) to the container, Flask mounts routes under a `PATH_PREFIX` env var via a Blueprint:
 
 ```python
-# src/app.py (abbreviated)
+# src/python/app.py (abbreviated)
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```

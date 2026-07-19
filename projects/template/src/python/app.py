@@ -13,11 +13,12 @@ Architecture notes
   page can call the API even if it is served from a different origin during
   development.
 
-To add a feature: create a module under ``src/`` (see ``echo.py``), import
+To add a feature: create a module under ``src/python/`` (see ``echo.py``), import
 its function here, and add a matching ``@bp.route(...)`` handler.
 """
 
 import os
+from pathlib import Path
 
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
@@ -33,9 +34,9 @@ from echo import echo
 # empty string, which mounts all routes at the root.
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 
-# static_folder="." means Flask looks for static files in the same directory
-# as this script — i.e. src/ — so index.html can be served directly.
-app = Flask(__name__, static_folder=".")
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
 
 # Allow cross-origin requests from any origin. In production you would
 # restrict this to the specific front-end domain.
