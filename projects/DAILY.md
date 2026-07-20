@@ -16,16 +16,17 @@ git checkout -b feat/short-description
 
 ## 2. Static Site Daily Loop
 
-Use this for static projects such as the TechToday home page.
+Use this for static projects. Replace `<project-name>` and production paths with
+values from [PROJECTS.md](PROJECTS.md).
 
 ### 2.1. Preview Locally
 
 ```bash
 # Run on: local machine
-open projects/techtoday/src/index.html
+open projects/<project-name>/src/index.html
 
 # Or serve it locally, useful for relative asset paths:
-cd projects/techtoday/src
+cd projects/<project-name>/src
 python3 -m http.server 8000
 # → http://localhost:8000
 ```
@@ -34,8 +35,9 @@ python3 -m http.server 8000
 
 ```bash
 # Run on: local machine, from the repo root
-git add projects/techtoday/
-git commit -m "feat(techtoday): short description"
+PROJECT_NAME=<project-name>
+git add projects/$PROJECT_NAME/
+git commit -m "feat($PROJECT_NAME): short description"
 git push -u origin feat/short-description
 ```
 
@@ -48,7 +50,9 @@ Use this only if CI/CD is broken:
 
 ```bash
 # Run on: local machine, from the repo root
-rsync -avz --delete projects/techtoday/src/ ec2-user@$ELASTIC_IP:/var/www/techtoday/
+PROJECT_NAME=<project-name>
+STATIC_TARGET=<production-static-path>
+rsync -avz --delete projects/$PROJECT_NAME/src/ ec2-user@$ELASTIC_IP:$STATIC_TARGET/
 ```
 
 No Nginx reload is needed because static files are served directly. On Windows,
@@ -58,7 +62,7 @@ If `rsync` fails with `Permission denied (13)`, fix ownership on EC2 and re-run:
 
 ```bash
 # Run on: EC2 host
-sudo chown -R ec2-user:ec2-user /var/www/techtoday
+sudo chown -R ec2-user:ec2-user <production-static-path>
 ```
 
 ## 3. Container App Local Development
@@ -242,9 +246,11 @@ CloudFront:
 
 ```bash
 # Run on: local machine
-aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
+PROJECT_NAME=<project-name>
+S3_BUCKET=<bucket-name>
+aws s3 sync projects/$PROJECT_NAME/src/ s3://$S3_BUCKET/ \
   --delete --cache-control "public, max-age=86400"
-aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
+aws s3 cp projects/$PROJECT_NAME/src/index.html s3://$S3_BUCKET/index.html \
   --cache-control "public, max-age=60"
 
 DISTRIBUTION_ID=<your-cloudfront-distribution-id>

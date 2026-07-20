@@ -690,33 +690,16 @@ server {
 }
 EOF
 
-# App subdomain — Docker container projects
+# App subdomain — Docker container projects. Project location blocks are added
+# later with ADD_PROJECT.md.
 sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
 server {
     listen 80;
     server_name app.techtoday.click;
 
-    location /basic/ {
-        proxy_pass         http://localhost:5000;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-
-    location /langchain/ {
-        proxy_pass         http://localhost:5001;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-
-    # Add new projects here:
-    # location /ai-03/ {
-    #     proxy_pass http://localhost:5002;
-    #     ...
-    # }
+  location / {
+    return 404;
+  }
 }
 EOF
 
@@ -942,7 +925,8 @@ Set at: repo → **Settings** → **Secrets and variables** → **Actions** → 
 
 ### 2.12. Secrets & Environment Variables Reference
 
-A complete list of every secret and environment variable used across all projects, and where each one lives.
+The shared locations for deployment secrets and runtime environment variables.
+Project-specific secret keys are maintained in [PROJECTS.md](PROJECTS.md).
 
 #### 2.12.1. GitHub Actions Secrets
 
@@ -960,17 +944,17 @@ Shared by all project workflows. Current workflow names are listed in [PROJECTS.
 
 Set at: **AWS Console → Secrets Manager → Store a new secret → Other type of secret**
 
-Accessed by the EC2 instance at container startup (never stored in the repo or Docker image):
+Accessed by the EC2 instance at container startup and never stored in the repo or
+Docker image:
 
 1. Secret name: `techtoday/secrets`
-   - `OPENAI_API_KEY` — OpenAI API key (`sk-...`)
-   - `GROQ_API_KEY` — Groq API key (`gsk_...`)
+2. Contents: JSON key/value pairs for the API keys listed per project in [PROJECTS.md](PROJECTS.md).
 
 #### 2.12.3. Docker Compose Environment Variables
 
 Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
 
-1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/basic` — tells Flask which prefix Nginx forwards under
+1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/<project-name>` — tells Flask which prefix Nginx forwards under
 
 The same production service block must also use `command: python src/python/app.py`
 for every container app. If it still points at the old `python src/app.py` path,
@@ -979,12 +963,10 @@ project URL.
 
 #### 2.12.4. Per-Project Secrets
 
-Which project uses which key (and which need no secret at all) is documented per
-project in [PROJECTS.md](PROJECTS.md).
+Which project uses which key, and which projects need no secret at all, is
+documented per project in [PROJECTS.md](PROJECTS.md).
 When a new project needs a new key, add it to the shared `techtoday/secrets`
 secret in § 2.12.2 above.
-
-> TechToday has no project-specific secrets or environment variables — it's a static site.
 
 > **Adding a new project?** The full end-to-end walkthrough lives in
 > [ADD_PROJECT.md](ADD_PROJECT.md).

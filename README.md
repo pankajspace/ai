@@ -30,9 +30,8 @@
 5. [Project Registry](projects/PROJECTS.md)
 6. [Nano Cheat Sheet](projects/NANO.md)
 
-## List of Projects (Increasing Complexity)
-1. [techtoday](projects/techtoday/README.md)
-2. [basic](projects/basic/README.md)
-3. [langchain](projects/langchain/README.md)
-4. [rag](projects/rag/README.md)
+## Projects
+
+The current project list, production URLs, ports, workflows, and secrets are
+maintained in [Project Registry](projects/PROJECTS.md).
 
