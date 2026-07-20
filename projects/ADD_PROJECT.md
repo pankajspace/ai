@@ -62,10 +62,11 @@ services:
 
 Start Docker before running any `docker compose` command:
 
-1. **macOS with Colima:** run `colima status`; if it is not running, run
+1. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
+  is running. If this Mac previously used Colima, switch back with
+  `docker context use desktop-linux`, then verify with `docker info`.
+2. **macOS with Colima:** run `colima status`; if it is not running, run
   `colima start`, then verify with `docker info`.
-2. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
-  is running, then verify with `docker info`.
 3. **Linux:** run `sudo systemctl start docker`, then verify with `docker info`.
 4. **Windows with Docker Desktop:** open **Docker Desktop** and verify with
   `docker info` in PowerShell.
@@ -108,10 +109,11 @@ This step must run on your local machine with Docker already started. It cannot
 run in AWS CloudShell because CloudShell cannot access your local Docker daemon
 or cloned repo.
 
-1. **macOS with Colima:** run `colima status`; if it is not running, run
+1. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
+  is running. If this Mac previously used Colima, switch back with
+  `docker context use desktop-linux`, then verify with `docker info`.
+2. **macOS with Colima:** run `colima status`; if it is not running, run
   `colima start`, then verify with `docker info`.
-2. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
-  is running, then verify with `docker info`.
 3. **Linux:** run `sudo systemctl start docker`, then verify with `docker info`.
 4. **Windows with Docker Desktop:** open **Docker Desktop** and verify with
   `docker info` in PowerShell.

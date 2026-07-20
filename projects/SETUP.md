@@ -21,10 +21,14 @@ Docker is required for building container images locally, running the local dev 
 1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
 2. Open **Docker Desktop** from Applications. The first launch takes 15–30 seconds to start the VM.
 3. Wait until the whale icon in the menu bar shows **"Docker Desktop is running"**.
-4. Verify:
+4. If you previously used Colima, switch the Docker CLI back to Docker Desktop:
+  ```bash
+  docker context use desktop-linux
+  ```
+5. Verify:
    ```bash
    docker info             # prints server details — not an error
-   docker compose version  # prints: Docker Compose version v2.x.x
+  docker compose version  # prints Docker Compose version
    ```
 
 #### 1.1.2. macOS — Option B: Homebrew + Colima (no GUI, no license)
@@ -46,7 +50,7 @@ docker --version          # verify: Docker version 29.x.x
 
 # Step 2 — Compose plugin
 brew install docker-compose
-docker compose version    # verify: Docker Compose version v2.x.x
+docker compose version    # verify: prints Docker Compose version
 
 # Step 3 — Daemon runtime (Colima)
 brew install colima
@@ -95,7 +99,7 @@ docker compose version
 
 1. Error: `Cannot connect to the Docker daemon`
   Cause: Daemon not running
-  Fix: macOS: open Docker Desktop or run `colima start`; Linux: `sudo systemctl start docker`
+  Fix: macOS Docker Desktop: open Docker Desktop and run `docker context use desktop-linux`; macOS Colima: run `colima start`; Linux: `sudo systemctl start docker`
 2. Error: `docker compose: unknown command`
   Cause: Compose plugin missing
   Fix: `brew install docker-compose` (macOS) or `sudo apt install docker-compose-plugin` (Linux)
@@ -268,17 +272,22 @@ Deploys the `techtoday` static site to EC2.
 
 ### 1.6. Verification Checklist
 
-Before running the Docker checks, start the daemon for your OS: on macOS with
-Colima, run `colima status` and `colima start` if needed; on macOS or Windows
-with Docker Desktop, open Docker Desktop and wait until Docker is running; on
-Linux, run `sudo systemctl start docker`.
+Before running the Docker checks, start the daemon for your OS:
+
+1. **macOS or Windows with Docker Desktop:** open Docker Desktop and wait until
+  Docker is running. If this Mac previously used Colima, switch back with:
+  ```bash
+  docker context use desktop-linux
+  ```
+2. **macOS with Colima:** run `colima status` and `colima start` if needed.
+3. **Linux:** run `sudo systemctl start docker`.
 
 Run all five commands. All must succeed before continuing to § 2:
 
 ```bash
 aws --version          # ✓ aws-cli/2.x.x
 docker info            # ✓ Server version printed
-docker compose version # ✓ Docker Compose version v2.x.x
+docker compose version # ✓ Docker Compose version printed
 ssh -V                 # ✓ OpenSSH_10.x
 git --version          # ✓ git version 2.x.x
 rsync --version        # ✓ openrsync: protocol version 29
