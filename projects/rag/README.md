@@ -99,5 +99,5 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
 
-> Where this project runs in production (URL, ports, ECR repo, path-prefix routing, secrets) and how to deploy it are documented in [PROJECTS.md](../PROJECTS.md#323-rag-lab-rag).
+> Where this project runs in production is documented in [PROJECTS.md](../PROJECTS.md). Daily development and deployment live in [DAILY.md](../DAILY.md).
 

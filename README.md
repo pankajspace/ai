@@ -25,8 +25,10 @@
 ## Documentation
 1. [Architecture Guide](projects/ARCHITECTURE.md)
 2. [Setup Guide](projects/SETUP.md)
-3. [Projects Reference](projects/PROJECTS.md)
-4. [Nano Cheat Sheet](projects/NANO.md)
+3. [Add Project Guide](projects/ADD_PROJECT.md)
+4. [Daily Development and Deployment](projects/DAILY.md)
+5. [Project Registry](projects/PROJECTS.md)
+6. [Nano Cheat Sheet](projects/NANO.md)
 
 ## List of Projects (Increasing Complexity)
 1. [techtoday](projects/techtoday/README.md)

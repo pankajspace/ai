@@ -74,6 +74,6 @@ returning the HTML.
 ## Try It Locally & Create a New Project
 
 The starter `echo` feature needs no keys, so a fresh copy runs immediately with
-`docker compose up web` (→ http://localhost:8090). The local-dev loop, the
-copy-and-rename checklist, and the full deployment walkthrough are documented
-once in [PROJECTS.md § Adding a New Project](../PROJECTS.md#6-adding-a-new-container-app).
+`docker compose up web` (→ http://localhost:8090). The copy-and-rename checklist
+and full initial deployment walkthrough live in [ADD_PROJECT.md](../ADD_PROJECT.md).
+Daily development and deployment live in [DAILY.md](../DAILY.md).

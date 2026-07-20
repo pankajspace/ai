@@ -138,5 +138,5 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 4. **Extract** — `soup.get_text(separator="\n", strip=True)` collapses what remains into a block of plain text.
 5. **Format** — The title and body text are combined into a single string and embedded in the GPT-4o mini prompt by `summarizer.py`.
 
-> Where this project runs in production (URL, ports, ECR repo, path-prefix routing, secrets) and how to deploy it are documented in [PROJECTS.md](../PROJECTS.md#321-ai-playground-basic).
+> Where this project runs in production is documented in [PROJECTS.md](../PROJECTS.md). Daily development and deployment live in [DAILY.md](../DAILY.md).
 

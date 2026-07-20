@@ -1,673 +1,123 @@
 [← README](../README.md)
 
-# Projects
+# Project Registry
+
+This is the single source of truth for the list of projects in this repository.
+When a new project is added, update this file with its project-specific values.
+The shared setup, daily development, deployment, and architecture guides should
+not need edits just because another project exists.
+
+Related guides:
+
+1. [SETUP.md](SETUP.md) — one-time local machine and AWS infrastructure setup.
+2. [ADD_PROJECT.md](ADD_PROJECT.md) — end-to-end checklist for adding a new container app.
+3. [DAILY.md](DAILY.md) — daily local development, deployment, rollback, and troubleshooting.
+4. [ARCHITECTURE.md](ARCHITECTURE.md) — shared architecture and design decisions.
+
+## Shared Conventions
+
+### Static Site
+
+1. Static sites live under `projects/<name>/src/`.
+2. Static sites do not use Docker, ECR, `PATH_PREFIX`, or Secrets Manager.
+3. The production deployment target and workflow are listed in the project entry below.
+
+### Container Apps
+
+1. Each container listens on port `5000` inside the container.
+2. Each container app gets a unique EC2 host port in the `500x` range.
+3. Each container app gets a unique local development port in the `808x` range, except the reusable `template` starter, which uses `8090`.
+4. A project named `<project-name>` uses ECR repository `techtoday/<project-name>`, Nginx path `/<project-name>/`, Docker Compose service `<project-name>`, and production environment variable `PATH_PREFIX=/<project-name>`.
+5. All API keys live in the shared AWS Secrets Manager secret `techtoday/secrets`.
+6. All container apps share `https://app.techtoday.click`, the EC2 instance, the Nginx reverse proxy, and the SSL certificate.
+7. Production services on EC2 must start with `command: python src/python/app.py`.
+
+## Project List
+
+### TechToday Home Page (`techtoday`)
+
+1. **Type:** Static site.
+2. **Folder:** `projects/techtoday/`.
+3. **Production URL:** `https://techtoday.click/`.
+4. **Redirect URL:** `https://www.techtoday.click/` redirects to `https://techtoday.click/`.
+5. **Production path:** `/var/www/techtoday` on EC2.
+6. **CI/CD workflow:** `.github/workflows/deploy-techtoday.yml`.
+7. **Trigger path:** `projects/techtoday/**`.
+8. **Deploy behavior:** `rsync`s `src/` to `/var/www/techtoday` on EC2.
+9. **Secrets:** none.
+10. **Notes:** no container, no application server, no `PATH_PREFIX`.
+
+### AI Playground (`basic`)
+
+1. **Type:** Container app.
+2. **Folder:** `projects/basic/`.
+3. **Production URL:** `https://app.techtoday.click/basic/`.
+4. **Local dev URL:** `http://localhost:8080`.
+5. **Container port:** `5000`.
+6. **EC2 host port:** `5000`.
+7. **ECR repository:** `techtoday/basic`.
+8. **Path prefix:** `PATH_PREFIX=/basic`.
+9. **Routes:** `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`.
+10. **CI/CD workflow:** `.github/workflows/deploy-basic.yml`.
+11. **Trigger path:** `projects/basic/**`.
+12. **Secrets:** `OPENAI_API_KEY` for travel, summarize, and arena; `GROQ_API_KEY` for joke and arena.
+
+### LangChain Lab (`langchain`)
+
+1. **Type:** Container app.
+2. **Folder:** `projects/langchain/`.
+3. **Production URL:** `https://app.techtoday.click/langchain/`.
+4. **Local dev URL:** `http://localhost:8081`.
+5. **Container port:** `5000`.
+6. **EC2 host port:** `5001`.
+7. **ECR repository:** `techtoday/langchain`.
+8. **Path prefix:** `PATH_PREFIX=/langchain`.
+9. **Routes:** `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`.
+10. **CI/CD workflow:** `.github/workflows/deploy-langchain.yml`.
+11. **Trigger path:** `projects/langchain/**`.
+12. **Secrets:** `OPENAI_API_KEY` only.
+
+### RAG Lab (`rag`)
+
+1. **Type:** Container app.
+2. **Folder:** `projects/rag/`.
+3. **Production URL:** `https://app.techtoday.click/rag/`.
+4. **Local dev URL:** `http://localhost:8082`.
+5. **Container port:** `5000`.
+6. **EC2 host port:** `5002`.
+7. **ECR repository:** `techtoday/rag`.
+8. **Path prefix:** `PATH_PREFIX=/rag`.
+9. **Routes:** `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`.
+10. **CI/CD workflow:** `.github/workflows/deploy-rag.yml`.
+11. **Trigger path:** `projects/rag/**`.
+12. **Secrets:** `OPENAI_API_KEY` only. Embeddings run locally with no API key.
+
+### Container App Template (`template`)
+
+1. **Type:** Starter template, not a production project.
+2. **Folder:** `projects/template/`.
+3. **Local dev URL:** `http://localhost:8090`.
+4. **Container port:** `5000`.
+5. **Local host port:** `8090`.
+6. **Starter feature:** keyless `echo` route.
+7. **Use:** copy this folder when creating a new container app with [ADD_PROJECT.md](ADD_PROJECT.md).
 
-## 1. Overview
+## Next Available Container App Values
 
-The single source of truth for working on any project in this repo: the shared
-**local development**, **daily usage**, and **production deployment** workflow —
-documented once using the `template` project as the worked example — plus the
-handful of parameters that differ per project. This page stays focused on project
-workflow; each project's own README describes what it does and how its code works.
+Use these values for the next new container app, then update this section after the
+project is added.
 
-**Before you start:** complete [local machine prerequisites](SETUP.md#1-local-machine-prerequisites) before any local work,
-and complete [one-time AWS infrastructure setup](SETUP.md#2-one-time-aws-infrastructure-setup) before any production deployment.
-Both are done once and shared by every project.
+1. **Local dev port:** `8083`.
+2. **EC2 host port:** `5003`.
+3. **Container port:** `5000`.
+4. **Production base URL:** `https://app.techtoday.click/<project-name>/`.
+5. **ECR repository:** `techtoday/<project-name>`.
+6. **Path prefix:** `PATH_PREFIX=/<project-name>`.
 
-## 2. Static Site
+## When Adding a Project
 
-The `techtoday` home page is plain HTML/CSS/JS served directly from the root domain
-— no Docker container, no application server, and no secrets. It follows none of the
-container-app conventions below, so its full workflow lives here before the
-container-app sections begin.
+After following [ADD_PROJECT.md](ADD_PROJECT.md), update this registry only:
 
-### 2.1. TechToday Deployment Target
-
-1. `techtoday.click` — path `/` — static files served by Nginx from `/var/www/techtoday`.
-2. `www.techtoday.click` — path `/` — redirect → `techtoday.click`.
-
-### 2.2. TechToday Static Site Local Development
-
-No tools required beyond a browser and `git`:
-
-```bash
-# Run on: local machine
-open projects/techtoday/src/index.html          # fastest
-# or serve it (useful for relative asset paths):
-cd projects/techtoday/src && python3 -m http.server 8000   # → http://localhost:8000
-```
-
-### 2.3. TechToday Static Site Daily Usage
-
-Same git flow as the [container apps](#5-container-app-daily-usage),
-scoping commits to `projects/techtoday/`. Merging to `main` triggers
-`deploy-techtoday.yml`, which `rsync`s `src/` to `/var/www/techtoday` on EC2 — no
-build and no container. **Manual deploy** (fallback, only if CI/CD is broken):
-
-```bash
-# Run on: local machine, from the repo root
-rsync -avz --delete projects/techtoday/src/ ec2-user@$ELASTIC_IP:/var/www/techtoday/
-```
-
-No Nginx reload is needed — static files are served directly.
-
-On Windows, run the same command inside **WSL** or **Git Bash**.
-
-**Troubleshooting:** if `rsync` fails with `Permission denied (13)`, the directory
-is root-owned — fix it on EC2 with `sudo chown -R ec2-user:ec2-user /var/www/techtoday`,
-then re-run.
-
-### 2.4. TechToday First-Time Server Setup
-
-The root domain's Nginx server block, SSL certificate, and Route 53 records are
-part of the **one-time server infrastructure**, created once in
-the [shared infrastructure setup](SETUP.md#2-one-time-aws-infrastructure-setup) (Route 53 A records,
-the Nginx config with the `/var/www/techtoday` root, and the Let's Encrypt cert).
-You only touch those when standing up a brand-new server — routine updates are just
-the `rsync` deploy in [TechToday Static Site Daily Usage](#23-techtoday-static-site-daily-usage) above.
-
-### 2.5. Static Site Alternative Hosting
-
-Best for pure static hosting with a global CDN and no EC2 involvement.
-
-#### 2.5.1. Create the Bucket and Upload the Site
-
-```bash
-# Run on: local machine
-aws s3api create-bucket --bucket techtoday-site --region us-east-1
-
-# Upload the site (short cache on HTML so updates propagate quickly)
-aws s3 sync projects/techtoday/src/ s3://techtoday-site/ \
-  --delete --cache-control "public, max-age=86400"
-aws s3 cp projects/techtoday/src/index.html s3://techtoday-site/index.html \
-  --cache-control "public, max-age=60"
-```
-
-#### 2.5.2. Create a CloudFront Distribution
-
-Point it to the bucket, with default root
-object `index.html`, HTTPS redirect enforced, custom domains `techtoday.click` and
-`www.techtoday.click`, and an ACM certificate **in `us-east-1`** (required for
-CloudFront).
-
-#### 2.5.3. Create Route 53 A Alias Records
-
-Point both names at the CloudFront domain.
-
-Steps 2–3 are far simpler in the **AWS Console** (**CloudFront** → **Create
-distribution**; **Route 53** → **Create record** → toggle **Alias** → CloudFront
-distribution). CloudShell can run the S3 commands, but `aws s3 sync` needs the
-cloned repo, so clone it in CloudShell first or upload via the S3 Console.
-
-#### 2.5.4. Deploying Updates
-
-Re-run the `aws s3 sync` / `aws s3 cp` commands above, then
-invalidate the cache so visitors see the new version immediately:
-
-```bash
-# Run on: local machine
-DISTRIBUTION_ID=<your-cloudfront-distribution-id>
-aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-```
-
-## 3. Container App Reference
-
-### 3.1. Container App Shared Conventions
-
-These apply to every **container app**. The static `techtoday` home page follows
-none of them.
-
-1. **Ports** — each container listens on `5000` *inside* the container and is published on a unique *host* port: `basic` → `5000`, `langchain` → `5001`, `rag` → `5002`, next project → `5003`. Locally, map to the next free `808x` port: `basic` → `8080`, `langchain` → `8081`, `rag` → `8082`, `template` → `8090`, next → `8083`, so every project can run side by side.
-2. **Naming** — a project named `<name>` uses ECR repo `techtoday/<name>`, Nginx path `/<name>/`, Docker Compose service `<name>`, and env var `PATH_PREFIX=/<name>`.
-3. **Secrets** — all API keys live in a single shared AWS Secrets Manager secret, `techtoday/secrets`. The EC2 instance role grants read access to everything under `techtoday/*`, so new projects need no IAM changes.
-4. **Routing** — one A record (`app.techtoday.click`), one EC2 instance, and one SSL cert are shared by every container app. A new project is a new Nginx `location` block plus a new Docker Compose service — **never** a new DNS record, instance, or cert.
-5. **Path-prefix routing** — because Nginx forwards the full path (e.g. `/basic/joke`) to the container, each Flask app mounts its routes on a Blueprint registered under `PATH_PREFIX` (`/<name>` in production, empty locally), and its `index` route rewrites the served HTML so the browser calls the prefixed endpoints. Each project's README documents this for its own routes.
-6. **Runtime command** — production `~/docker-compose.yml` on EC2 must start each app with `command: python src/python/app.py`. If an older service still says `python src/app.py`, the container will restart and Nginx will show `502 Bad Gateway` for that project path.
-
-### 3.2. Container App Specs
-
-Every container app follows the same local-development, daily-usage, and
-deployment workflow documented below; only these parameters differ.
-
-#### 3.2.1. AI Playground (`basic`)
-
-1. **URL:** `https://app.techtoday.click/basic/`
-2. **Ports:** container `5000` → EC2 host `5000`; local dev `8080`
-3. **ECR repository:** `techtoday/basic`
-4. **Path prefix:** `PATH_PREFIX=/basic` → routes `/basic/`, `/basic/joke`, `/basic/travel`, `/basic/summarize`, `/basic/arena`
-5. **Secrets** (in `techtoday/secrets`): `OPENAI_API_KEY` (travel, summarize, arena) and `GROQ_API_KEY` (joke, arena)
-
-#### 3.2.2. LangChain Lab (`langchain`)
-
-1. **URL:** `https://app.techtoday.click/langchain/`
-2. **Ports:** container `5000` → EC2 host `5001`; local dev `8081`
-3. **ECR repository:** `techtoday/langchain`
-4. **Path prefix:** `PATH_PREFIX=/langchain` → routes `/langchain/`, `/langchain/summarize`, `/langchain/chat`, `/langchain/agent`
-5. **Secrets** (in `techtoday/secrets`): `OPENAI_API_KEY` only — every feature uses GPT-4o mini, so no Groq key is needed. Already present if `basic` is deployed.
-
-`PATH_PREFIX` is set directly in `~/docker-compose.yml` on EC2 (not a secret).
-
-#### 3.2.3. RAG Lab (`rag`)
-
-1. **URL:** `https://app.techtoday.click/rag/`
-2. **Ports:** container `5000` → EC2 host `5002`; local dev `8082`
-3. **ECR repository:** `techtoday/rag`
-4. **Path prefix:** `PATH_PREFIX=/rag` → routes `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`
-5. **Secrets** (in `techtoday/secrets`): `OPENAI_API_KEY` only — used by RAG Q&A and PDF Chat (GPT-4o mini). Embeddings run locally with no API key. Already present if `basic` or `langchain` is deployed.
-
-## 4. Container App Local Development
-
-The worked example below uses the `template` project (local port `8090`, keyless
-`echo` feature). For a real project, substitute its name and local port from the
-[Container App Specs](#32-container-app-specs) section — e.g. `basic` (`8080`) or `langchain` (`8081`).
-
-### 4.1. Start Docker
-
-Every `docker compose` command below needs the Docker daemon running. On macOS
-with Colima:
-
-```bash
-# Run on: local machine
-colima status                     # check if it's already running
-colima start                      # start the VM + Docker daemon (if not running)
-```
-
-If `colima status` prints `colima is not running`, run `colima start` and wait
-for it to finish before proceeding. After a machine restart you will always need
-to start Colima again — it does not auto-start.
-
-> On **Docker Desktop** (instead of Colima), just open the Docker Desktop app —
-> the daemon starts automatically when the app is running.
-
-### 4.2. One-Time Setup
-
-```bash
-# Run on: local machine
-cd projects/template
-cp .env.example .env      # fill in the keys listed in the project's Container App Specs
-docker compose build
-```
-
-Never commit `.env` — it is already listed in `.gitignore`. Two projects can run
-at once because each maps a different local `808x` port.
-
-### 4.3. Day-to-Day Loop
-
-```bash
-# Run on: local machine
-# Start the web UI (hot-reload via volume mount — edits under src/ apply immediately,
-# including Python modules under src/python/)
-docker compose up web
-# → http://localhost:8090
-
-# Run an individual feature from the CLI (one service per feature in docker-compose.yml)
-docker compose run --rm echo
-
-# Rebuild only when requirements.txt or Dockerfile changes
-docker compose build
-
-# Tear down when done
-docker compose down
-```
-
-### 4.4. Useful Commands
-
-```bash
-# Run on: local machine
-docker compose logs -f web       # tail logs
-docker compose run --rm web bash # shell into the container
-docker compose ps                # container status
-```
-
-## 5. Container App Daily Usage
-
-The shared git flow for every project, with the `template` project as the example.
-Substitute your project's name throughout.
-
-### 5.1. Start a Feature
-
-```bash
-# Run on: local machine
-git checkout main && git pull origin main
-git checkout -b feat/short-description
-```
-
-### 5.2. Develop & Commit
-
-Edit Python files under `src/python/` and static UI files under `src/` (hot-reloaded locally — see [Container App Local Development](#4-container-app-local-development)).
-Scope each commit to the project folder so its CI/CD workflow triggers on its own:
-
-```bash
-# Run on: local machine
-git add projects/template/
-git commit -m "feat(template): short description"
-git push -u origin feat/short-description
-```
-
-Open a Pull Request → get it reviewed → **Squash and merge** into `main`.
-
-### 5.3. Deploy (Automatic)
-
-Merging to `main` triggers CI/CD automatically — no manual steps needed. Each
-project has its own workflow (e.g. `deploy-template.yml`, trigger path
-`projects/template/**`), so only the changed project redeploys. Watch the run under
-**GitHub → Actions** to confirm it succeeds.
-
-### 5.4. Verify Production
-
-```bash
-# Run on: local machine
-curl -I https://app.techtoday.click/template/
-```
-
-Or just open the URL in a browser.
-
-If a project URL returns `502 Bad Gateway`, the container is usually not running
-behind Nginx. Check the production service on EC2:
-
-```bash
-# Run on: EC2 host (via SSH)
-PROJECT_NAME=template   # replace with the affected service, e.g. basic or langchain
-docker compose -f ~/docker-compose.yml ps
-docker compose -f ~/docker-compose.yml logs --tail=50 $PROJECT_NAME
-grep -A12 "^  $PROJECT_NAME:" ~/docker-compose.yml
-```
-
-For projects using the current `src/python/` layout, the service block must use
-`command: python src/python/app.py`. If it still uses `python src/app.py`, update
-`~/docker-compose.yml`, validate it, and restart only that service:
-
-```bash
-# Run on: EC2 host (via SSH)
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
-```
-
-### 5.5. Rollback
-
-Roll back to a previous image when a deploy goes bad:
-
-```bash
-# Step 1 runs on your local machine; after the ssh line, the rest runs on the EC2 host
-# 1. Find the last good build tag
-aws ecr describe-images --repository-name techtoday/template --region us-east-1 \
-  --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
-
-# 2. SSH in and roll back
-ssh -i techtoday.pem ec2-user@$ELASTIC_IP
-
-REGION=us-east-1
-ACCOUNT_ID=<your-aws-account-id>
-ROLLBACK_TAG=<build-tag>   # e.g. 20260701-153045-42-a1b2c3d
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-docker pull $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/template:$ROLLBACK_TAG
-docker tag  $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/template:$ROLLBACK_TAG \
-            $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/template:latest
-docker compose -f ~/docker-compose.yml up -d --no-deps template
-
-# 3. Verify
-curl -I https://app.techtoday.click/template/
-```
-
-Fix the bug and merge promptly — the next push to `main` overwrites `:latest`.
-
-### 5.6. Manual Deploy (Fallback)
-
-Use only if CI/CD is broken:
-
-```bash
-# Build/push run on your local machine; after the ssh line, the rest runs on the EC2 host
-REGION=us-east-1
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-cd projects/template
-docker build --platform linux/amd64 -t techtoday/template .
-docker tag techtoday/template:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/template:latest
-docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/template:latest
-
-ssh -i techtoday.pem ec2-user@$ELASTIC_IP
-  aws ecr get-login-password --region us-east-1 | \
-    docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-  docker compose -f ~/docker-compose.yml pull template
-  docker compose -f ~/docker-compose.yml up -d --no-deps template
-```
-
-Reminder: `$ELASTIC_IP` is the public IP of the EC2 instance (AWS console → EC2 →
-Instances → techtoday-server). For us it is `44.193.134.238`.
-
-## 6. Adding a new Container App
-
-`basic` (local 8080 / prod 5000), `langchain` (local 8081 / prod 5001), and
-`rag` (local 8082 / prod 5002) are already allocated. The next container app uses
-the next free ports: local `8083`, EC2 host `5003`, and container port `5000`.
-**No new DNS record, no new EC2, and no new SSL cert are ever needed** — the app
-subdomain, instance, and cert are all shared.
-
-The walkthrough below provisions a new container project named `<project-name>`
-end to end, starting from the `template` project. In the examples, replace
-`<project-name>` with your folder/service name, replace `<local-port>` with the
-next free local `808x` port, and replace `<host-port>` with the matching next
-free EC2 host `500x` port. It assumes the
-[one-time AWS infrastructure](SETUP.md#2-one-time-aws-infrastructure-setup) (EC2,
-ECR access, Secrets Manager, Nginx, SSL, IAM roles, OIDC) is already in place, and
-follows the [Container App Shared Conventions](#31-container-app-shared-conventions)
-for ports and naming.
-
-Changing the project folder layout, including keeping Python files under
-`src/python/`, does **not** require a manual AWS infrastructure step. It is a
-normal code change: rebuild and redeploy the image through CI/CD, or use the
-manual build/push fallback if CI/CD is unavailable. Existing EC2 services that
-were created before the `src/python/` layout still need their production
-`~/docker-compose.yml` command updated to `python src/python/app.py`; otherwise
-the image can be correct but the container will restart with `502 Bad Gateway`
-at the Nginx path.
-
-For the first new app after `rag`, use these substitutions:
-
-1. `<project-name>` → `ai-04` or your real project name.
-2. `<local-port>` → `8083`.
-3. `<host-port>` → `5003`.
-
-### 6.1. Scaffold the Project Folder
-
-Copy the `template` project — a minimal Flask + Docker
-starter already wired for path-prefix routing, with a keyless `echo` feature so it
-runs out of the box.
-
-```bash
-# Run on: local machine
-PROJECT_NAME=ai-04   # replace with your project folder name
-cd projects
-cp -r template "$PROJECT_NAME"
-cd "$PROJECT_NAME"
-```
-
-Then adjust the copied files for the new project:
-
-1. `docker-compose.yml` — change the `web` service's published port from the template's `8090` to the next free local port (`<local-port>`); see the snippet below.
-2. `src/python/` — replace the starter `echo` feature (`src/python/echo.py`) and its route in `src/python/app.py` with your project's Python code. Keep `src/python/app.py`'s use of `PATH_PREFIX` so Nginx path routing keeps working.
-3. `src/index.html`, `src/css/`, and `src/js/` — update the web UI card and browser behavior for your project. Static assets stay under `src/`; Python modules stay under `src/python/`.
-4. `requirements.txt` — add any libraries your features need (e.g. `openai`, `langchain`).
-5. `.env.example` — list the environment variables your project needs; copy it to `.env` and fill in real values for local runs.
-6. `linkedin.txt` — add the LinkedIn post/update copy for the new project, or leave it empty until the project is ready to announce.
-7. Project README — replace the `<project-name>` / `<local-port>` / `<host-port>` placeholders and update the feature descriptions to match the new project.
-
-The `docker-compose.yml` port change (step 1) looks like this:
-
-```yaml
-services:
-  web:
-    build: .
-    env_file: .env
-    command: python src/python/app.py
-    ports:
-      - "<local-port>:5000"     # first app after rag: 8083:5000
-    volumes:
-      - ./src:/app/src
-```
-
-Test it locally before touching production using the [Container App Local Development](#4-container-app-local-development)
-loop (with the new local port).
-
-### 6.2. Create the ECR Repository
-
-**One-time.** Holds the project's container images.
-
-```bash
-# Run on: local machine
-REGION=us-east-1
-PROJECT_NAME=ai-04   # replace with your project folder name
-aws ecr create-repository --repository-name techtoday/$PROJECT_NAME --region $REGION
-```
-
-**AWS Console alternative:** **ECR** → **Repositories** → **Create repository** →
-name `techtoday/<project-name>` → keep defaults (private, mutable tags) → **Create
-repository**. The same `aws ecr` command also runs unchanged in **AWS CloudShell**.
-Pushing images in step 3 still needs local
-Docker and the cloned repo, so it cannot run in CloudShell.
-
-### 6.3. Build and Push the Initial Image
-
-**One-time.** After this first manual push, every later push is handled
-automatically by the CI/CD workflow added later in this walkthrough.
-Requires Docker running locally and the cloned repo.
-
-```bash
-# Run on: local machine
-REGION=us-east-1
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-PROJECT_NAME=ai-04   # replace with your project folder name
-REPO_NAME=techtoday/$PROJECT_NAME
-
-# Authenticate the local Docker CLI to the private ECR registry
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-cd projects/$PROJECT_NAME
-docker build --platform linux/amd64 -t $REPO_NAME .
-docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
-docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
-```
-
-`--platform linux/amd64` is required on Apple Silicon Macs (M1/M2/M3) so the
-image runs on the `x86_64` EC2 instance — without it, Docker builds a native
-`arm64` image and the push produces `no matching manifest for linux/amd64`. On
-macOS with Colima, make sure the VM is running first (`colima status` / `colima start`).
-
-**This step has no Console equivalent** — `docker build`/`docker push` need Docker
-and the repo on your local machine, so CloudShell cannot run them.
-
-### 6.4. Verify the Push
-
-**ECR** → **Repositories** → `techtoday/<project-name>` should show an
-image tagged `latest`, or from the CLI:
-
-```bash
-# Run on: local machine
-aws ecr list-images --repository-name techtoday/$PROJECT_NAME --region $REGION
-```
-
-### 6.5. Store Any New Secrets
-
-If your project needs API keys, add them to the shared `techtoday/secrets` secret
-(**Secrets Manager** → `techtoday/secrets` → **Retrieve secret value** → **Edit** →
-add key/value → **Save**). The EC2 instance role already grants read access to
-everything under `techtoday/*`, so no IAM changes are needed.
-
-From the CLI, `put-secret-value` replaces the entire secret string, so fetch the
-current value, add your key, and write it back:
-
-```bash
-# Run on: local machine
-CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
-UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['NEW_KEY']='new-value'; print(json.dumps(d))")
-aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
-```
-
-If your project reuses only keys that already exist (e.g. `OPENAI_API_KEY`), skip
-this step. The first project to need secrets creates the secret instead:
-`aws secretsmanager create-secret --name techtoday/secrets --secret-string '{"OPENAI_API_KEY":"sk-..."}'`.
-
-### 6.6. Wire Up the EC2 Host
-
-The Nginx and Docker Compose config live **on the EC2 host**, so these steps need a
-shell on the server. Connect either by **SSH** from your local machine:
-
-```bash
-# Run on: local machine (connects you to the EC2 host)
-ssh -i techtoday.pem ec2-user@$ELASTIC_IP
-```
-
-…or, with no key file, via **EC2 Instance Connect**: open **EC2** → **Instances** → select `techtoday-server` → **Connect** → **EC2 Instance Connect** tab → **Connect**.
-
-#### 6.6.1. Add the Nginx Location Block
-
-```bash
-# Run on: EC2 host (via SSH)
-sudo nano /etc/nginx/conf.d/app.conf
-```
-
-Inside the existing `server { listen 443 ssl ... server_name app.techtoday.click; }`
-block (the one Certbot created — **not** the `listen 80` redirect block), add a new
-`location` block next to the existing `/basic/`, `/langchain/`, and `/rag/` blocks:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name app.techtoday.click;
-    # ...existing ssl_certificate lines and /basic/, /langchain/, /rag/ blocks...
-
-    location /<project-name>/ {
-        proxy_pass         http://localhost:<host-port>;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Save and exit, then validate and reload (zero-downtime — it does not drop existing
-connections):
-
-```bash
-# Run on: EC2 host (via SSH)
-sudo nginx -t              # must print "syntax is ok" and "test is successful"
-sudo systemctl reload nginx
-```
-
-**If `nginx -t` fails**, it prints the offending file and line number. Fix the
-reported line (usually a missing `;` or unbalanced `}`) and re-run `nginx -t`
-before reloading — Nginx keeps serving the old config until a reload succeeds.
-
-#### 6.6.2. Create the Secrets Env File
-
-Fetch the shared secret into a per-project env file that the container reads at
-startup:
-
-```bash
-# Run on: EC2 host (via SSH)
-PROJECT_NAME=ai-04   # replace with your project folder name
-mkdir -p ~/secrets
-aws secretsmanager get-secret-value \
-  --secret-id techtoday/secrets \
-  --query SecretString --output text | \
-  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/$PROJECT_NAME.env
-chmod 600 ~/secrets/$PROJECT_NAME.env
-```
-
-#### 6.6.3. Add the Service to Docker Compose
-
-Resolve the image URL, then append a service block under the existing `services:`
-key in `~/docker-compose.yml`:
-
-```bash
-# Run on: EC2 host (via SSH)
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REGION=us-east-1
-PROJECT_NAME=ai-04   # replace with your project folder name
-echo "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/$PROJECT_NAME:latest"   # copy this for the image: line below
-nano ~/docker-compose.yml
-```
-
-Under the existing top-level `services:` key (at the same indentation as the
-`basic`, `langchain`, and `rag` services, two spaces in), add:
-
-```yaml
-services:
-  # ...existing basic, langchain, and rag services...
-
-  <project-name>:
-    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/<project-name>:latest
-    restart: unless-stopped
-    command: python src/python/app.py
-    ports:
-      - "<host-port>:5000"          # first app after rag: 5003:5000
-    environment:
-      - PATH_PREFIX=/<project-name>
-    env_file:
-      - ~/secrets/<project-name>.env
-```
-
-Replace `<ACCOUNT_ID>` and `<REGION>` with the values from the `echo` command above
-(or paste the whole resolved URL). Save and exit nano.
-
-**YAML is indentation-sensitive:** the service name (`<project-name>:`) must be indented
-exactly two spaces, and its keys (`image:`, `ports:`, …) four spaces. Use spaces,
-never tabs.
-
-Verify the file parses before starting:
-
-```bash
-# Run on: EC2 host (via SSH)
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-```
-
-Authenticate, pull, and start only the new container (leaving `basic`,
-`langchain`, and `rag` untouched):
-
-```bash
-# Run on: EC2 host (via SSH)
-PROJECT_NAME=ai-04   # replace with your project folder name
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
-docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
-```
-
-### 6.7. Add the CI/CD Workflow
-
-Automate future deploys so every push to `main` under `projects/<project-name>/` rebuilds
-and redeploys just this project. The template ships a ready-made workflow
-(`deploy.yml.template`) that uses a single `PROJECT_NAME` token — copy it into
-`.github/workflows/` and replace the token:
-
-```bash
-# Run on: local machine
-PROJECT_NAME=ai-04   # replace with your project folder name
-cp projects/$PROJECT_NAME/deploy.yml.template .github/workflows/deploy-$PROJECT_NAME.yml
-
-# macOS (BSD sed)
-sed -i '' "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
-# Linux (GNU sed)
-sed -i "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
-
-grep -n PROJECT_NAME .github/workflows/deploy-$PROJECT_NAME.yml   # should print nothing
-```
-
-**Console / no-terminal alternative:** create the file directly on GitHub — open
-your repo → **Add file** → **Create new file** → name it
-`.github/workflows/deploy-<project-name>.yml`, paste the edited contents, then **Commit
-changes**.
-
-The workflow reuses the same shared GitHub secrets (`AWS_REGION`, `AWS_ACCOUNT_ID`,
-`AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, `EC2_SSH_KEY`) already configured for the repo — no new
-secrets to configure.
-
-### 6.8. Verify
-
-```bash
-# Run on: local machine
-PROJECT_NAME=ai-04   # replace with your project folder name
-curl -I "https://app.techtoday.click/$PROJECT_NAME/"
-```
-
-#### 6.8.1. Browser Verification
-
-Open `https://app.techtoday.click/<project-name>/`
-and confirm the page loads over HTTPS.
-
-### 6.9. Update the Shared Docs
-
-1. Add the project to [Container App Specs](#32-container-app-specs).
-2. If the project introduced new secrets, document them in the shared setup notes.
-3. If the project should appear on the public home page, add a card under `projects/techtoday/src/`.
-4. Commit and push. From now on, changes under `projects/<project-name>/` deploy automatically via `deploy-<project-name>.yml`. Day-to-day work then follows [Container App Local Development](#4-container-app-local-development) and [Container App Daily Usage](#5-container-app-daily-usage) above.
+1. Add the new project entry under [Project List](#project-list).
+2. Advance [Next Available Container App Values](#next-available-container-app-values).
+3. If the project should appear on the public home page, update `projects/techtoday/src/` as part of the project change.

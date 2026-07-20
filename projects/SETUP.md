@@ -2,7 +2,7 @@
 
 # Project Setup Guide — techtoday.click
 
-The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. Per-project local dev, deployment, and daily usage — plus the "add a new project" walkthrough — live in [PROJECTS.md](PROJECTS.md); architecture and design decisions in [ARCHITECTURE.md](ARCHITECTURE.md). Follow the sections below in order — each one builds on the previous.
+The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use [DAILY.md](DAILY.md) for routine development and deployment, [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project, [PROJECTS.md](PROJECTS.md) for the project registry, and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
 
 ---
 
@@ -948,7 +948,7 @@ A complete list of every secret and environment variable used across all project
 
 Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
 
-Shared by all project workflows (`deploy-basic.yml`, `deploy-langchain.yml`, `deploy-techtoday.yml`):
+Shared by all project workflows. Current workflow names are listed in [PROJECTS.md](PROJECTS.md).
 
 1. `AWS_REGION` — AWS region, e.g. `us-east-1`
 2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
@@ -980,14 +980,14 @@ project URL.
 #### 2.12.4. Per-Project Secrets
 
 Which project uses which key (and which need no secret at all) is documented per
-project in [PROJECTS.md § Container App Specs](PROJECTS.md#32-container-app-specs).
+project in [PROJECTS.md](PROJECTS.md).
 When a new project needs a new key, add it to the shared `techtoday/secrets`
 secret in § 2.12.2 above.
 
 > TechToday has no project-specific secrets or environment variables — it's a static site.
 
-> **Adding a new project?** The full end-to-end walkthrough now lives in
-> [PROJECTS.md § Adding a New Project](PROJECTS.md#6-adding-a-new-container-app).
+> **Adding a new project?** The full end-to-end walkthrough lives in
+> [ADD_PROJECT.md](ADD_PROJECT.md).
 
 
 
