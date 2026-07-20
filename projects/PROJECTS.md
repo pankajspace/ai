@@ -2,8 +2,9 @@
 
 This is the single source of truth for the list of projects in this repository.
 When a new project is added, update this file with its project-specific values.
-The shared setup, daily development, deployment, and architecture guides should
-not need edits just because another project exists.
+Keep this file complete enough to answer: what projects exist, where they run,
+which ports and workflows they use, which secrets they need, and what values are
+available for the next project.
 
 ## Shared Conventions
 
@@ -91,7 +92,7 @@ not need edits just because another project exists.
 4. **Container port:** `5000`.
 5. **Local host port:** `8090`.
 6. **Starter feature:** keyless `echo` route.
-7. **Use:** copy this folder when creating a new container app with `ADD_PROJECT.md`.
+7. **Use:** copy this folder when creating a new container app.
 
 ## Next Available Container App Values
 
@@ -107,8 +108,8 @@ project is added.
 
 ## When Adding a Project
 
-After following `ADD_PROJECT.md`, update this registry only:
+When adding a project, update this registry:
 
-1. Add the new project entry under [Project List](#project-list).
-2. Advance [Next Available Container App Values](#next-available-container-app-values).
+1. Add the new project entry under Project List.
+2. Advance Next Available Container App Values.
 3. If the project should appear on the public home page, update `projects/techtoday/src/` as part of the project change.

@@ -1,8 +1,8 @@
 # Daily Development and Deployment
 
 Use this guide after the one-time local machine and AWS infrastructure setup in
-`SETUP.md` is complete. Project-specific names, ports, routes, workflows, and
-secrets live in `PROJECTS.md`.
+[SETUP.md](SETUP.md) is complete. Project-specific names, ports, routes,
+workflows, and secrets live in [PROJECTS.md](PROJECTS.md).
 
 ## 1. Start a Feature
 
@@ -15,7 +15,7 @@ git checkout -b feat/short-description
 ## 2. Static Site Daily Loop
 
 Use this for static projects. Replace `<project-name>` and production paths with
-values from `PROJECTS.md`.
+values from [PROJECTS.md](PROJECTS.md).
 
 ### 2.1. Preview Locally
 
@@ -66,7 +66,7 @@ sudo chown -R ec2-user:ec2-user <production-static-path>
 ## 3. Container App Local Development
 
 Use this for any container app. Replace `<project-name>`, `<local-port>`, and any
-feature service names with values from `PROJECTS.md`.
+feature service names with values from [PROJECTS.md](PROJECTS.md).
 
 ### 3.1. Start Docker
 
@@ -94,7 +94,7 @@ cp .env.example .env
 docker compose build
 ```
 
-Fill `.env` with the keys listed for that project in `PROJECTS.md`.
+Fill `.env` with the keys listed for that project in [PROJECTS.md](PROJECTS.md).
 Never commit `.env`.
 
 ### 3.3. Day-to-Day Container Loop

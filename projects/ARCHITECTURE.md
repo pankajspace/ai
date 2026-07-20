@@ -1,7 +1,7 @@
 # Projects Architecture — techtoday.click
 
 Architecture, shared configuration, and design decisions for the projects in this
-repository. The current project inventory lives in `PROJECTS.md`, so
+repository. The current project inventory lives in [PROJECTS.md](PROJECTS.md), so
 this file should not need edits when a new project is added.
 
 ## Architecture Overview
@@ -58,7 +58,7 @@ Use a `t3.small` when running several memory-intensive projects at the same time
 4. Each container app mounts routes under `PATH_PREFIX=/<project-name>` in production.
 5. Nginx forwards the full path, so Flask apps register routes under the runtime `PATH_PREFIX`.
 6. Production compose services run `command: python src/python/app.py`.
-7. Project-specific ports, paths, workflows, and secrets are listed in `PROJECTS.md`.
+7. Project-specific ports, paths, workflows, and secrets are listed in [PROJECTS.md](PROJECTS.md).
 
 ## CI/CD Model
 
@@ -73,7 +73,7 @@ Shared prerequisites:
 3. One ECR repository per container app.
 4. EC2 instance role with ECR pull and Secrets Manager read permissions.
 
-The workflow names and trigger paths for current projects live in `PROJECTS.md`.
+The workflow names and trigger paths for current projects live in [PROJECTS.md](PROJECTS.md).
 
 ## Best Practices
 
@@ -98,9 +98,9 @@ The workflow names and trigger paths for current projects live in `PROJECTS.md`.
 
 ### Operations
 
-1. Keep routine work in `DAILY.md`.
-2. Keep new-project setup in `ADD_PROJECT.md`.
-3. Keep the project inventory in `PROJECTS.md`.
+1. Keep routine work in [DAILY.md](DAILY.md).
+2. Keep new-project setup in [ADD_PROJECT.md](ADD_PROJECT.md).
+3. Keep the project inventory in [PROJECTS.md](PROJECTS.md).
 4. Avoid adding per-project lists to architecture or setup docs.
 
 ## When to Upgrade to ECS Fargate and ALB

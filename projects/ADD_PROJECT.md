@@ -1,13 +1,15 @@
 # Add a New Container Project
 
 Use this checklist when adding a new container app after the shared setup in
-`SETUP.md` is complete. Daily development and deployment after this initial setup
-live in `DAILY.md`. The project registry in `PROJECTS.md` is the only shared doc
-that should change when a new project is added.
+[SETUP.md](SETUP.md) is complete. Daily development and deployment after this
+initial setup live in [DAILY.md](DAILY.md). The project registry in
+[PROJECTS.md](PROJECTS.md) is the only shared doc that should change when a new
+project is added.
 
 ## 1. Pick Project Values
 
-Open `PROJECTS.md` and use the next available values from the registry.
+Open [PROJECTS.md](PROJECTS.md) and use the next available values from the
+registry.
 
 For a new container app, choose:
 
@@ -279,10 +281,18 @@ loads over HTTPS.
 
 ## 10. Update the Project Registry
 
-Update `PROJECTS.md` after the project works:
+Update [PROJECTS.md](PROJECTS.md) after the project works:
 
 1. Add the project entry with its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets.
 2. Advance the next available local and EC2 host ports.
-3. If the project should appear on the public home page, add a card under `projects/techtoday/src/` as part of the project change.
+3. If the project should appear on the public home page, update `projects/techtoday/src/index.html`.
 
-After this, routine work follows `DAILY.md`.
+Public home page card update:
+
+1. Locate the project grid inside the projects section.
+2. Copy an existing project card.
+3. Update the title, description, link, icon or visual marker, and status badge.
+4. Use a live status only after the production URL works.
+5. Preview `projects/techtoday/src/index.html` locally before committing.
+
+After this, routine work follows [DAILY.md](DAILY.md).
