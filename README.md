@@ -24,11 +24,17 @@
 
 ## Documentation
 1. [Architecture Guide](projects/ARCHITECTURE.md)
+	Shared hosting design, AWS components, routing model, CI/CD shape, cost notes, and operating principles. Use this to understand why the projects are deployed the way they are.
 2. [Setup Guide](projects/SETUP.md)
+	One-time local machine setup and shared AWS infrastructure setup. Use this before running or deploying any project for the first time.
 3. [Add Project Guide](projects/ADD_PROJECT.md)
+	Step-by-step checklist for creating a new container app from the template, wiring ECR, Nginx, Docker Compose, secrets, and CI/CD.
 4. [Daily Development and Deployment](projects/DAILY.md)
+	Day-to-day workflow after setup is complete: local dev loops, commits, automatic deploys, production verification, manual deploy fallback, and rollback.
 5. [Project Registry](projects/PROJECTS.md)
+	Single source of truth for current projects, URLs, ports, paths, workflows, secrets, and next available values. When adding a project, update this file.
 6. [Nano Cheat Sheet](projects/NANO.md)
+	Quick reference for editing config files on EC2 with `nano`, including save, quit, search, paste, and macOS Option-key notes.
 
 ## Projects
 
