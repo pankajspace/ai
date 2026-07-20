@@ -35,9 +35,6 @@
 	Day-to-day workflow after setup is complete: local dev loops, commits, automatic deploys, production verification, manual deploy fallback, and rollback.
 6. [Nano Cheat Sheet](projects/NANO.md)
 	Quick reference for editing config files on EC2 with `nano`, including save, quit, search, paste, and macOS Option-key notes.
-
-## Projects
-
-The current project list, production URLs, ports, workflows, and secrets are
-maintained in [Project Registry](projects/PROJECTS.md).
+7. [Projects](projects/PROJECTS.md)
+	List of all projects
 
