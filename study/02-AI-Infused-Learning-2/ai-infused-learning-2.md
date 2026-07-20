@@ -4,3 +4,8 @@
 
 # Links
 1. [Class 2 Notes](https://scaler-content.github.io/class-2-AI-engg/)
+
+# My Notes
+
+# Quick Review of Concepts
+

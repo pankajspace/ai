@@ -314,3 +314,6 @@ Key observations:
 3. Replace the hardcoded weather tool with a real weather API.
 4. Add a `get_company_info(company: str)` tool so the `scaler company` question can use a tool.
 5. Ask one question that requires three tools and check whether the printed trace shows all three calls.
+
+# Quick Review of Concepts
+
