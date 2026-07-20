@@ -8,18 +8,46 @@
 # My Notes
 
 # Quick Review of Concepts
-1. **Three Ways to Steer a Model** — Prompting (telling the model clearly what you want), RAG (feeding it your own documents at question-time), and Fine-tuning (retraining on examples). Prompting covers ~90% of real work; RAG and fine-tuning are for when prompting isn't enough.
-2. **LangChain** — A Python library that provides pre-built "plumbing" (reusable prompts, multi-step pipelines, memory) so you don't rebuild the same wiring around raw OpenAI calls every time.
-3. **ChatPromptTemplate** — A reusable prompt with `{blanks}` you fill in later, like a mail-merge template. Created with `ChatPromptTemplate.from_template(...)` or `.from_messages(...)`.
-4. **ChatOpenAI** — The same GPT model from a raw OpenAI call, wrapped in a LangChain-compatible interface so it can snap onto other LangChain pieces. Same `model=` and `temperature=` params.
-5. **StrOutputParser** — Unwraps the model's `AIMessage` package (which contains text + metadata like token counts) and returns just the plain-text string you actually want.
-6. **Chains (the Pipe Operator `|`)** — Joining prompt, model, and parser with `|` (read as "then") creates a chain: `prompt | model | parser`. Data flows left-to-right; `chain.invoke({...})` runs it.
-7. **Memory / MessagesPlaceholder** — LLMs are stateless; they forget between calls. "Memory" is simply re-sending past messages each time. `MessagesPlaceholder("history")` reserves a slot in the prompt for that conversation history list.
-8. **HumanMessage / AIMessage** — LangChain's Python objects for labelling chat turns ("the human said X", "the AI replied Y"), equivalent to the `user` / `assistant` roles from the raw API.
-9. **Agents (LLM + Tool + Loop)** — An agent is a model given one or more tools and the freedom to decide on its own when to call them. The key difference from a chatbot: nobody hard-codes when the tool fires — the model chooses.
-10. **Tools** — Any Python function can become a tool. You describe it to the model via a JSON "menu card" (name, description, parameters) so the model knows the tool exists and when to invoke it.
-11. **Tool Description as Prompt Engineering** — The `description` field in the tool spec is read by the model to decide whether to call the tool. A vague description leads to misuse; a clear one guides correct behavior.
-12. **The Agent Loop** — Send user message + tools menu → model replies (possibly requesting a tool call via `msg.tool_calls`) → your code runs the function → append the result with `role: "tool"` → send everything back → model writes a final answer using real data.
-13. **The `tool` Role** — A third message role (alongside `system`, `user`, `assistant`) used to feed tool results back into the conversation so the model can incorporate real data into its answer.
-14. **Gradio ChatInterface** — A ready-made chat UI (bubbles, input box, send button) that wraps any Python function. `share=True` generates a public URL, turning a local agent into a shareable app.
+
+## Three Ways to Steer a Model
+The entire field of AI engineering boils down to three ways of steering a pre-trained model: **prompting** (just tell it clearly — free, instant, no training), **RAG** (hand it your own documents at question-time so it answers from real data), and **fine-tuning** (actually re-train on examples — powerful, costly, reach for it last). Prompting handles roughly 90% of real work; chains, tools, and agents are all still "option 1, organised cleverly."
+
+## LangChain
+LangChain is a Python library that provides pre-built "plumbing" — reusable prompts, multi-step pipelines, and memory — so you don't rebuild the same wiring around raw OpenAI calls every time. The one-line intuition: a raw OpenAI call is a single Lego brick, and LangChain is the box of connectors that snaps bricks into machines. Install it with `pip install langchain langchain-openai`.
+
+## ChatPromptTemplate
+A `ChatPromptTemplate` is a reusable prompt with `{blanks}` you fill in later, much like a wedding-invite template ("Dear `{name}`, join us on `{date}`") — write once, reuse for every guest. It's called "Chat"PromptTemplate because it builds prompts in the same system/user/assistant chat format from Class 1. Create one with `.from_template(...)` for a single string or `.from_messages(...)` for multi-role conversations, then supply the values at run time.
+
+## ChatOpenAI
+`ChatOpenAI` is the exact same GPT model you called in Class 1, just wrapped so it can snap onto other LangChain pieces. It takes the familiar `model=` and `temperature=` parameters (e.g. `temperature=0.3` for mostly-focused summaries), so nothing about the model changes — only how it connects. Say it simply as "the model."
+
+## StrOutputParser
+The model doesn't return plain text — it returns a *package* called an `AIMessage` that bundles the text with bookkeeping metadata (token counts, model name, finish reason). `StrOutputParser` opens that package and hands back just the string ("Str" = string). Without it you'd write `response.content` by hand every time (in Class 1 it was the mouthful `response.choices[0].message.content`); the parser does it for you, forever. Say it as "give me just the text."
+
+## Chains (the Pipe Operator `|`)
+Joining a prompt, model, and parser with the pipe operator `|` (read aloud as "then") creates a **chain**: `prompt | model | parser` = "the prompt, then the model, then the parser." Data flows left-to-right through each stage, and `chain.invoke({...})` runs the whole pipeline in one step, with the dict keys matching the template's `{blanks}` by name. The payoff is composability: new task? swap the template; different model? swap one line; Hindi output? add a word to the prompt.
+
+## Memory / MessagesPlaceholder
+LLMs are stateless — they forget everything between calls — so "memory" is simply re-sending the past messages each time you make a new request; the model never magically remembers. `MessagesPlaceholder("history")` reserves a parking spot inside the prompt that holds a *list* of past messages (not just one word), and every chatbot's "memory" everywhere is exactly this trick.
+
+## HumanMessage / AIMessage
+`HumanMessage` and `AIMessage` are LangChain's Python objects for labelling chat turns — "the human said X", "the AI replied Y" — like labelled chat bubbles. They are the LangChain equivalents of the `user` and `assistant` roles from the raw API, giving conversation history a clear, typed structure to feed into a `MessagesPlaceholder`.
+
+## Agents (LLM + Tool + Loop)
+An agent is a model given a tool and the freedom to decide *when* to use it: it thinks "do I need a tool here?" → if yes, calls it → reads the result → answers. Nobody hard-codes when the tool fires, and that decision is the entire difference between a chatbot and an agent. Tools matter because LLMs are great with language but terrible with facts they don't have (today's price, live stock, exact math) — a tool lets the model *fetch truth* instead of guessing, curing "confident but wrong."
+
+## Tools
+Any Python function you can write can become a tool — even a one-liner that looks up a price in a dict. The model can't see your Python, so you hand it a "menu card" describing the tool as a dict with four facts: `type` (a function), `name` (must match your Python function), `description` (when to use it), and `parameters` (the inputs it needs and their types). The function stays ordinary Python; the menu card is what the model reads.
+
+## Tool Description as Prompt Engineering
+The `description` field is written for the *model* to read and is literally how it decides whether to call your tool — so it's prompt engineering in disguise. A vague description ("does stuff with items") leads the model to misuse the tool, while a clear one ("Get the price of a shop item the user asks about") makes it behave. Your words steer the machine, even inside JSON.
+
+## The Agent Loop
+The agent loop: send the user message plus the tools menu → the model replies, possibly requesting a tool via `msg.tool_calls` (which holds *which* tool and *what* arguments, e.g. `get_price(item="shoes")`) → you `json.loads` its request and run the real Python function → append the result with `role: "tool"` → send everything back → the model writes a friendly final answer using the real data. Crucially, the model never runs code itself — it *asks*, and your Python *does*. The whole agent is really just a list of messages getting longer, and `if msg.tool_calls` is the entire secret.
+
+## The `tool` Role
+The `tool` role is a third role joining `system`, `user`, and `assistant`, used to feed a tool's result back into the conversation (paired with the `tool_call_id` so the model knows which call it answers). Tagging results this way lets the model clearly distinguish real data returned by a function from its own text and incorporate it into the final answer.
+
+## Gradio ChatInterface
+`gr.ChatInterface(fn=chat)` is a ready-made chat UI — bubbles, input box, send button — that wraps any function into a working chatbot in about four lines. Gradio hands your function the new `message` and the `history` list automatically (passing `history` into your agent is how it gains memory), and `launch(share=True)` generates a public link, instantly turning a local agent into a shareable app.
 

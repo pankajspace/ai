@@ -19,9 +19,9 @@ Create or update a `# Quick Review of Concepts` section that summarizes the main
 ## Output
 - Write the review into the target Markdown file (the active file unless another is specified).
 - Place the content under the existing `# Quick Review of Concepts` heading. If that heading does not exist, add it at the end of the file.
-- Summarize each concept as a numbered list item in the format: `**Concept Name** — one-to-two sentence plain-language recap.`
-- Keep it concise and skimmable — this is a fast refresher, not a re-teach.
-- Use numbered lists, not tables (per workspace convention).
+- Summarize each concept as its own `##` subsection: use the concept name as the `##` heading, followed by a short paragraph (two to four sentences) that recaps the idea in plain language.
+- Give enough detail to genuinely refresh the concept — explain what it is and why it matters — but stay skimmable; this is a fast refresher, not a full re-teach.
+- Do not use numbered lists or tables for the concept entries (per workspace convention). Ordinary prose within a subsection is fine; if a subsection needs to enumerate items, use bullet points rather than a table.
 - Preserve all existing content and the file's existing links/structure.
 
 
