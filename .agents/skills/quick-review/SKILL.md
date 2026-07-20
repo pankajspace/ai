@@ -1,10 +1,10 @@
 ---
 description: "Generate a '# Quick Review of Concepts' section summarizing the main ideas from study notes files"
+name: "Quick Review of Concepts"
 argument-hint: "File(s) to summarize (defaults to the active file)"
+agent: "gemini"
 ---
-Create or update a `# Quick Review of Concepts` section that summarizes the main ideas covered in the provided file(s).
-
-`$ARGUMENTS` is optional. Treat any arguments as the path(s) to the file(s) to summarize. If `$ARGUMENTS` is empty, use the active file.
+Create or update a `# Quick Review of Concepts` section that summarizes the main ideas covered in the provided file(s). If no files are given, use the active file.
 
 ## Source
 - Read the target file(s) fully before writing.
@@ -17,4 +17,5 @@ Create or update a `# Quick Review of Concepts` section that summarizes the main
 - Keep it concise and skimmable — this is a fast refresher, not a re-teach.
 - Use numbered lists, not tables (per workspace convention).
 - Preserve all existing content and the file's existing links/structure.
+
 

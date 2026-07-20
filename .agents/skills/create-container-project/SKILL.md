@@ -1,30 +1,30 @@
-Create or adapt a new container project folder in this repository using `projects/template` as the reference implementation.
+---
+description: "Use when: creating or reshaping a new local container project folder from projects/template in this repo"
+name: "Create Container Project"
+argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist"
+agent: "gemini"
+---
 
-`$ARGUMENTS` is required. Treat the first argument as the project name, for example:
+Create or adapt a new container project folder named `${input:projectName}` in this repository using `projects/template` as the reference implementation.
 
-```text
-/create-container-project ai-04
-/create-container-project ai-04 feature idea: PDF notes assistant; Python files already exist under /path/to/files
-```
+Use this prompt when the user wants to add a new project under `projects/`, copy the template locally, add or integrate Python files, and then make the resulting folder follow the same structure and deployment conventions as the existing container projects.
 
-If `$ARGUMENTS` is empty, ask for the project name before editing. Parse the remaining arguments as optional feature notes, local/prod port overrides, Python file locations, secret names, whether the project is production-documented, and whether to create the GitHub Actions deploy workflow.
-
-Use this command when the user wants to add a new project under `projects/`, copy the template locally, add or integrate Python files, and then make the resulting folder follow the same structure and deployment conventions as the existing container projects.
+Project name parameter: `${input:projectName}`. Treat this as the required project folder name, Docker Compose service name, ECR repository suffix, production path prefix, and deploy workflow suffix unless the user explicitly overrides one of those names.
 
 ## Required Context
 
 Read these files before editing:
 
-1. `projects/PROJECTS.md`, especially `Container App Shared Conventions` and `Adding a new Container App`.
-2. `projects/template/README.md`.
-3. `projects/template/src/python/app.py`.
-4. Neighboring project files from `projects/basic`, `projects/langchain`, or `projects/rag` when their structure helps decide how the new project should look.
+1. [projects/PROJECTS.md](../../projects/PROJECTS.md), especially `Container App Shared Conventions` and `Adding a new Container App`.
+2. [projects/template/README.md](../../projects/template/README.md).
+3. [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
+4. Neighboring project files from [projects/basic](../../projects/basic), [projects/langchain](../../projects/langchain), or [projects/rag](../../projects/rag) when their structure helps decide how the new project should look.
 
 ## Inputs To Resolve
 
 Before making changes, identify or ask for:
 
-1. Project folder/service name from the first `$ARGUMENTS` token, for example `ai-04`.
+1. Project folder/service name from `${input:projectName}`, for example `ai-04`.
 2. Next free local development port, usually the next `808x` after existing container apps.
 3. Next free EC2 host port, usually the matching next `500x` after existing container apps.
 4. Whether Python feature files already exist, and where they should be copied from.
@@ -37,7 +37,7 @@ If the user gives enough information, proceed without asking extra questions. If
 
 1. Inspect existing project allocations in `projects/PROJECTS.md` and confirm the next local and EC2 host ports.
 2. Create `projects/<project-name>/` by copying `projects/template/` if the folder does not already exist.
-3. Update `docker-compose.yml` so the `web` service publishes `<local-port>:5000` and service names follow the new project where applicable.
+3. Update `docker-compose.yml` so the `web` service publishes `<local-port>:5000` and the service names follow the new project where applicable.
 4. Keep this structure unless the user explicitly asks otherwise:
    1. `Dockerfile`
    2. `docker-compose.yml`
