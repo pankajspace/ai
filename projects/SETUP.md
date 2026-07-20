@@ -237,14 +237,131 @@ Deploys the `techtoday` static site to EC2.
 
 ---
 
-### 1.6. Verification Checklist
+### 1.6. Terraform or OpenTofu
+
+Manages the AWS infrastructure as code (EC2, Elastic IP, Route 53, IAM, ECR, Secrets Manager) from [../infra/terraform/](../infra/terraform/README.md). Needed for the disaster-recovery rebuild and for onboarding new container apps with `make new-project`.
+
+> **Terraform or OpenTofu?** [OpenTofu](https://opentofu.org/) is an open-source, drop-in replacement for Terraform. The configuration in this repo works with either — the `Makefile` auto-detects whichever is installed (`tofu` preferred, else `terraform`). Pick one. OpenTofu is recommended.
+
+#### 1.6.1. macOS
+
+```bash
+# Option A — OpenTofu (recommended, open source)
+brew install opentofu
+
+# Option B — Terraform (HashiCorp)
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+#### 1.6.2. Linux (Debian/Ubuntu)
+
+```bash
+# Option A — OpenTofu (recommended)
+curl -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh
+chmod +x install-opentofu.sh
+./install-opentofu.sh --install-method deb
+rm install-opentofu.sh
+
+# Option B — Terraform (HashiCorp apt repo)
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+  https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+  sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install -y terraform
+```
+
+#### 1.6.3. Linux (Fedora/RHEL)
+
+```bash
+# Option A — OpenTofu (recommended)
+curl -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh
+chmod +x install-opentofu.sh
+./install-opentofu.sh --install-method rpm
+rm install-opentofu.sh
+
+# Option B — Terraform (HashiCorp dnf repo)
+sudo dnf install -y dnf-plugins-core
+sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
+sudo dnf install -y terraform
+```
+
+#### 1.6.4. Windows
+
+```powershell
+# Option A — OpenTofu (recommended)
+winget install --id=OpenTofu.Tofu -e
+
+# Option B — Terraform
+winget install --id=HashiCorp.Terraform -e
+```
+
+#### 1.6.5. Verify Installation
+
+```bash
+tofu version       # ✓ OpenTofu v1.6+   (if you installed OpenTofu)
+# or
+terraform version  # ✓ Terraform v1.6+  (if you installed Terraform)
+```
+
+---
+
+### 1.7. jq
+
+Parses and edits JSON on the command line. Required by `scripts/new-project.sh` (run via `make new-project`) to register a new container app in `infra/terraform/projects.auto.tfvars.json`, and used by several `aws` helper snippets in this guide.
+
+#### 1.7.1. macOS
+
+```bash
+brew install jq
+```
+
+#### 1.7.2. Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update && sudo apt install -y jq
+```
+
+#### 1.7.3. Linux (Fedora/RHEL)
+
+```bash
+sudo dnf install -y jq
+```
+
+#### 1.7.4. Windows
+
+```powershell
+winget install --id=jqlang.jq -e
+```
+
+#### 1.7.5. Verify Installation
+
+```bash
+jq --version   # ✓ jq-1.6 or newer
+```
+
+---
+
+### 1.8. GNU Make
+
+Runs the convenience targets in [../infra/terraform/Makefile](../infra/terraform/Makefile) (`make bootstrap`, `make plan`, `make apply`, `make new-project`). Optional — you can run the underlying `tofu`/`terraform` and script commands directly — but the targets are the documented shortcut.
+
+1. **macOS** — preinstalled with the Xcode Command Line Tools. If missing, run `xcode-select --install`. Verify: `make --version`.
+2. **Linux (Debian/Ubuntu)** — `sudo apt install -y make`.
+3. **Linux (Fedora/RHEL)** — `sudo dnf install -y make`.
+4. **Windows** — use WSL, or install via `winget install --id=GnuWin32.Make -e` (then use Git Bash/WSL to run the targets).
+
+---
+
+### 1.9. Verification Checklist
 
 Before running the Docker checks, start the daemon for your OS:
 
 1. **macOS or Windows:** open Docker Desktop and wait until Docker is running.
 2. **Linux:** run `sudo systemctl start docker`.
 
-Run all five commands. All must succeed before continuing to § 2:
+Run all commands. All must succeed before continuing to § 2:
 
 ```bash
 aws --version          # ✓ aws-cli/2.x.x
@@ -253,6 +370,9 @@ docker compose version # ✓ Docker Compose version printed
 ssh -V                 # ✓ OpenSSH_10.x
 git --version          # ✓ git version 2.x.x
 rsync --version        # ✓ openrsync: protocol version 29
+tofu version           # ✓ OpenTofu v1.6+  (or: terraform version)
+jq --version           # ✓ jq-1.6 or newer
+make --version         # ✓ GNU Make 3.8+
 ```
 
 ---

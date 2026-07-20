@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# =============================================================================
+# EC2 bootstrap — runs ONCE at first boot (SETUP.md § 2.6, § 2.8).
+# Only executes on a fresh instance (disaster-recovery rebuild). The live
+# imported instance ignores user_data changes, so editing this file does not
+# disturb production.
+# =============================================================================
+set -euxo pipefail
+
+# --- Base packages -----------------------------------------------------------
+dnf update -y
+dnf install -y docker nginx certbot python3-certbot-nginx aws-cli
+
+systemctl enable --now docker
+usermod -aG docker ec2-user
+
+# --- Docker Compose plugin ---------------------------------------------------
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# --- Directories owned by the app user --------------------------------------
+mkdir -p /var/www/techtoday
+mkdir -p /etc/nginx/app-locations       # Terraform pushes per-project blocks here
+install -d -o ec2-user -g ec2-user /home/ec2-user/secrets
+touch /home/ec2-user/docker-compose.yml
+chown ec2-user:ec2-user /home/ec2-user/docker-compose.yml
+
+# --- Nginx: root static site -------------------------------------------------
+cat > /etc/nginx/conf.d/techtoday.conf <<'EOF'
+server {
+    listen 80;
+    server_name ${domain_name} ${www_fqdn};
+
+    root  /var/www/techtoday;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+# --- Nginx: app subdomain (container apps) -----------------------------------
+# The `include` pulls in the per-project location blocks that Terraform's
+# config module renders into /etc/nginx/app-locations/. Certbot rewrites this
+# server block in place to add TLS while preserving the include line.
+cat > /etc/nginx/conf.d/app.conf <<'EOF'
+server {
+    listen 80;
+    server_name ${app_fqdn};
+
+    include /etc/nginx/app-locations/*.conf;
+
+    location / {
+        return 404;
+    }
+}
+EOF
+
+nginx -t
+systemctl enable --now nginx
+systemctl reload nginx
+
+# --- TLS certificates --------------------------------------------------------
+# Requires DNS to already point at this instance's Elastic IP. On a fresh
+# rebuild that may not be true yet, so this is best-effort; re-run manually
+# once DNS has propagated (SETUP.md § 2.9):
+#   sudo certbot --nginx -d ${domain_name} -d ${www_fqdn}
+#   sudo certbot --nginx -d ${app_fqdn}
+certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email \
+  -d ${domain_name} -d ${www_fqdn} || echo "certbot root/www deferred - run manually after DNS propagates"
+certbot --nginx --non-interactive --agree-tos --register-unsafely-without-email \
+  -d ${app_fqdn} || echo "certbot app deferred - run manually after DNS propagates"
+
+systemctl reload nginx || true

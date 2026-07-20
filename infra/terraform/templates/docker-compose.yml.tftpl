@@ -1,0 +1,20 @@
+# Managed by Terraform (modules/config). Do not edit by hand — changes are
+# overwritten on the next `terraform apply`. Add container apps via the
+# container_projects map in infra/terraform/variables.tf.
+#
+# Terraform writes this file only. Images are built and containers are started
+# by the per-project GitHub Actions workflow (projects/DAILY.md), which runs
+# `docker compose pull <name>` + `up -d --no-deps <name>` after pushing to ECR.
+services:
+%{ for name, cfg in projects ~}
+  ${name}:
+    image: ${account_id}.dkr.ecr.${region}.amazonaws.com/techtoday/${name}:latest
+    restart: unless-stopped
+    command: python src/python/app.py
+    ports:
+      - "${cfg.host_port}:5000"
+    environment:
+      - PATH_PREFIX=/${name}
+    env_file:
+      - /home/ec2-user/secrets/${name}.env
+%{ endfor ~}
