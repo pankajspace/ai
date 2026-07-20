@@ -26,7 +26,8 @@
         <section class="hero">
             <div class="container">
                 <h1>RAG Lab</h1>
-                <p class="subtitle">Embeddings, vector search, and PDF chat with LangChain + Chroma + GPT-4o mini</p>
+                <p class="subtitle">Embeddings, vector search, and pasted PDF text chat with LangChain + Chroma + GPT-4o
+                    mini</p>
             </div>
         </section>
 
@@ -53,8 +54,9 @@
                         <p>Paste a block of text and see it split into overlapping chunks using
                             <code>RecursiveCharacterTextSplitter</code>. No API key needed.
                         </p>
-                        <textarea id="chunkInput" rows="4"
+                        <textarea id="chunkInput" rows="4" maxlength="1000"
                             placeholder="Paste a long text here…"></textarea>
+                        <span class="char-count" id="chunkInputCount"></span>
                         <span class="validation" id="chunkValidation"></span>
                         <button id="chunkBtn" disabled>Chunk</button>
                         <div class="result" id="chunkResult"></div>
@@ -66,13 +68,12 @@
                         <p>Enter your knowledge base (one fact per line), then ask a question.
                             The text is chunked, embedded, and queried with retrieval-augmented generation.
                         </p>
-                        <textarea id="ragKb" rows="4"
-                            placeholder="Enter knowledge base facts…">Our return policy allows refunds within 30 days of purchase.
+                        <textarea id="ragKb" rows="4" maxlength="1000" placeholder="Enter knowledge base facts…">Our return policy allows refunds within 30 days of purchase.
 Shipping is free for orders above ₹999 across India.
 For corporate orders above 50 units, contact sales@example.com.
 Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.</textarea>
-                        <input type="text" id="ragInput"
-                            placeholder="e.g. How long do I have to return something?" />
+                        <span class="char-count" id="ragKbCount"></span>
+                        <input type="text" id="ragInput" placeholder="e.g. How long do I have to return something?" />
                         <span class="validation" id="ragValidation"></span>
                         <button id="ragBtn" disabled>Ask</button>
                         <div class="result" id="ragResult"></div>
@@ -84,13 +85,12 @@ Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.</textarea>
                         <p>Enter your knowledge base, then ask a question. Results are reranked by a
                             <code>cross-encoder</code> for higher accuracy than plain vector search.
                         </p>
-                        <textarea id="rerankKb" rows="4"
-                            placeholder="Enter knowledge base facts…">Our return policy allows refunds within 30 days of purchase.
+                        <textarea id="rerankKb" rows="4" maxlength="1000" placeholder="Enter knowledge base facts…">Our return policy allows refunds within 30 days of purchase.
 Shipping is free for orders above ₹999 across India.
 For corporate orders above 50 units, contact sales@example.com.
 Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.</textarea>
-                        <input type="text" id="rerankInput"
-                            placeholder="e.g. What is the return policy?" />
+                        <span class="char-count" id="rerankKbCount"></span>
+                        <input type="text" id="rerankInput" placeholder="e.g. What is the return policy?" />
                         <span class="validation" id="rerankValidation"></span>
                         <button id="rerankBtn" disabled>Rerank</button>
                         <div class="result" id="rerankResult"></div>
@@ -99,14 +99,12 @@ Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.</textarea>
                     <!-- PDF Chat Card -->
                     <div class="card card-wide">
                         <h2>&#x1F4C4; PDF Chat</h2>
-                        <p>Upload a PDF, then ask questions about it. The document is chunked, embedded, and
-                            queried with RAG — answers include page-number citations.</p>
-                        <div class="file-upload-row">
-                            <label class="file-label" for="pdfFile" id="pdfFileLabel">Choose PDF…</label>
-                            <input type="file" id="pdfFile" accept=".pdf" hidden />
-                            <button id="pdfUploadBtn" disabled>Upload &amp; Index</button>
-                        </div>
-                        <div class="result" id="pdfUploadResult"></div>
+                        <p>Paste PDF content up to 1000 characters, index it in memory, then ask questions about it.</p>
+                        <textarea id="pdfText" rows="5" maxlength="1000"
+                            placeholder="Paste PDF content here…"></textarea>
+                        <span class="char-count" id="pdfTextCount"></span>
+                        <button id="pdfIndexBtn" disabled>Index Text</button>
+                        <div class="result" id="pdfIndexResult"></div>
                         <input type="text" id="pdfQuestion" placeholder="Ask a question about the PDF…" />
                         <span class="validation" id="pdfValidation"></span>
                         <button id="pdfChatBtn" disabled>Ask</button>

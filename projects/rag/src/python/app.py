@@ -14,7 +14,6 @@ Architecture notes
 """
 
 import os
-import tempfile
 from pathlib import Path
 
 from flask import Blueprint, Flask, jsonify, request
@@ -25,7 +24,7 @@ from embeddings import compare_similarity
 from index import build_index
 from rag import rag_answer
 from rerank import retrieve_with_rerank
-from pdf_chat import build_pdf_index, ask_pdf
+from pdf_chat import build_pdf_text_index, ask_pdf
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -35,6 +34,7 @@ from pdf_chat import build_pdf_index, ask_pdf
 # app works correctly behind an Nginx location block.  Locally it is empty
 # string, which mounts all routes at the root.
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+MAX_TEXTAREA_CHARS = 1000
 
 # app.py lives in src/python, while index.html, css/, and js/ live in src/.
 STATIC_DIR = Path(__file__).resolve().parents[1]
@@ -52,6 +52,15 @@ bp = Blueprint("main", __name__)
 # session.  In a production multi-user app this would use a session store;
 # for this learning project a single shared state is fine.
 _pdf_state = {"db": None}
+
+
+def validate_textarea(value: str, label: str):
+    """Validate required textarea content and enforce the shared size cap."""
+    if not value:
+        return jsonify({"error": f"{label} is required."}), 400
+    if len(value) > MAX_TEXTAREA_CHARS:
+        return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -113,8 +122,9 @@ def chunk_route():
     """
     data = request.get_json(force=True)
     text = (data.get("text") or "").strip()
-    if not text:
-        return jsonify({"error": "Text is required."}), 400
+    validation = validate_textarea(text, "Text")
+    if validation:
+        return validation
     try:
         chunks = chunk_text(text)
         return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
@@ -133,8 +143,9 @@ def rag_route():
     data = request.get_json(force=True)
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
-    if not knowledge:
-        return jsonify({"error": "A knowledge base is required."}), 400
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
@@ -157,8 +168,9 @@ def rerank_route():
     data = request.get_json(force=True)
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
-    if not knowledge:
-        return jsonify({"error": "A knowledge base is required."}), 400
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
@@ -171,37 +183,32 @@ def rerank_route():
         return jsonify({"error": str(e)}), 500
 
 
-@bp.route("/pdf-upload", methods=["POST"])
-def pdf_upload():
-    """Upload a PDF and build an in-memory vector index from its pages.
+@bp.route("/pdf-index", methods=["POST"])
+def pdf_index():
+    """Index pasted PDF text in an in-memory vector store.
 
-    Request: multipart/form-data with a ``pdf`` file field.
-    Response (JSON): ``{ "result": "✅ PDF indexed! Ask me anything about it." }``
+    Request body (JSON): ``{ "pdf_text": "<text copied from a PDF>" }``
+    Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
     Error response:  ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
-    if "pdf" not in request.files:
-        return jsonify({"error": "A PDF file is required."}), 400
-    pdf_file = request.files["pdf"]
-    if not pdf_file.filename or not pdf_file.filename.lower().endswith(".pdf"):
-        return jsonify({"error": "Please upload a .pdf file."}), 400
+    data = request.get_json(force=True)
+    pdf_text = (data.get("pdf_text") or "").strip()
+    validation = validate_textarea(pdf_text, "PDF text")
+    if validation:
+        return validation
     try:
-        # Save to a temp file so PyPDFLoader can read it by path.
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            pdf_file.save(tmp.name)
-            tmp_path = tmp.name
-        _pdf_state["db"] = build_pdf_index(tmp_path)
-        os.unlink(tmp_path)
-        return jsonify({"result": "✅ PDF indexed! Ask me anything about it."})
+        _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        return jsonify({"result": "PDF text indexed. Ask me anything about it."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @bp.route("/pdf-chat", methods=["POST"])
 def pdf_chat():
-    """Answer a question about the previously uploaded PDF.
+    """Answer a question about the previously indexed PDF text.
 
     Request body (JSON): ``{ "question": "<text>" }``
-    Response (JSON):     ``{ "result": "<answer with page citations>" }``
+    Response (JSON):     ``{ "result": "<answer>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
     data = request.get_json(force=True)
@@ -209,7 +216,7 @@ def pdf_chat():
     if not question:
         return jsonify({"error": "A question is required."}), 400
     if _pdf_state["db"] is None:
-        return jsonify({"error": "Please upload a PDF first."}), 400
+        return jsonify({"error": "Please add PDF text first."}), 400
     try:
         answer = ask_pdf(_pdf_state["db"], question)
         return jsonify({"result": answer})

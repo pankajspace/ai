@@ -1,6 +1,6 @@
 # RAG Lab
 
-A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG — **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
+A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG — **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF text chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
 
 This project mirrors the architecture of the AI Playground (basic) and LangChain Lab (langchain) projects: each feature lives in its own module (`embeddings.py`, `chunk.py`, `index.py`, `rag.py`, `rerank.py`, `pdf_chat.py`) and is exposed through a thin Flask endpoint. This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
@@ -23,8 +23,8 @@ Answers questions from a user-provided knowledge base. Enter your facts (one per
 ### 🔀 Reranking
 Refines retrieval results with a cross-encoder (`cross-encoder/ms-marco-MiniLM-L6-v2`). Enter your knowledge base and a question — candidates are first retrieved with the fast bi-encoder, then reranked by the cross-encoder for higher accuracy. The trick: retrieve many cheap candidates, then rerank the top ones.
 
-### 📄 PDF Chat
-Upload a PDF, and the system loads its pages, chunks them, builds an in-memory vector index, and answers questions with page-number citations. The full RAG pipeline applied to a real document.
+### 📄 PDF Text Chat
+Paste up to 1000 characters copied from a PDF, and the system chunks the text, builds an in-memory vector index, and answers questions from that pasted content. This keeps the server from storing uploaded files while still showing the full RAG pipeline on real document text.
 
 ---
 
@@ -45,7 +45,7 @@ projects/rag/
     │   ├── index.py        # build Chroma vector store from documents
     │   ├── rag.py          # retrieve + generate answer from vector store
     │   ├── rerank.py       # cross-encoder reranking of retrieval results
-    │   └── pdf_chat.py     # PDF loading, indexing, and Q&A with citations
+    │   └── pdf_chat.py     # pasted PDF text indexing and Q&A
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
@@ -57,8 +57,10 @@ projects/rag/
 2. `embeddings.py` demonstrates the embedding + cosine similarity foundation — no LLM or API key required.
 3. `index.py` and `rag.py` form the two-step RAG pipeline: build an in-memory vector store from user-provided text, then query it with an LLM.
 4. `rerank.py` shows how to improve retrieval accuracy with a cross-encoder as a second-stage ranker.
-5. `pdf_chat.py` applies the full pipeline to PDF documents, with page-number citations.
+5. `pdf_chat.py` applies the full pipeline to pasted PDF text without storing uploaded files.
 6. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/rag/` in production.
+
+All textarea-backed demos accept at most 1000 characters. The browser prevents longer input with `maxlength`, and Flask enforces the same limit for `/chunk`, `/rag`, `/rerank`, and `/pdf-index`.
 
 ### Path prefix routing
 
@@ -70,8 +72,8 @@ PATH_PREFIX = os.environ.get("PATH_PREFIX", "")  # /rag in prod, empty locally
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
-1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/chunk`, `/rag`, `/rerank`, `/pdf-upload`, `/pdf-chat`.
-2. **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`.
+1. **Locally:** `PATH_PREFIX` unset → routes are `/`, `/embeddings`, `/chunk`, `/rag`, `/rerank`, `/pdf-index`, `/pdf-chat`.
+2. **On EC2:** `PATH_PREFIX=/rag` → routes are `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-index`, `/rag/pdf-chat`.
 
 The served `index.html` also needs the prefix so its `fetch()` calls hit the right endpoint. The `index` route injects it by rewriting the page's `data-api-base=""` attribute with the current `PATH_PREFIX` value before returning the HTML.
 
@@ -83,8 +85,8 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 2. `POST /chunk` — body `{ "text": "<long text>" }` → `{ "result": { "chunks": [...], "count": 3 } }`
 3. `POST /rag` — body `{ "knowledge_base": "<text>", "question": "<text>" }` → `{ "result": "<answer>" }`
 4. `POST /rerank` — body `{ "knowledge_base": "<text>", "question": "<text>" }` → `{ "result": { "results": ["...", ...] } }`
-5. `POST /pdf-upload` — multipart/form-data with a `pdf` file field → `{ "result": "✅ PDF indexed!..." }`
-6. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer with page citations>" }`
+5. `POST /pdf-index` — body `{ "pdf_text": "<text copied from a PDF>" }` → `{ "result": "PDF text indexed..." }`
+6. `POST /pdf-chat` — body `{ "question": "<text>" }` → `{ "result": "<answer>" }`
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 
@@ -92,7 +94,7 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 
 ## Environment Variables
 
-1. `OPENAI_API_KEY` — used by RAG Q&A and PDF Chat (GPT-4o mini). Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+1. `OPENAI_API_KEY` — used by RAG Q&A and PDF Text Chat (GPT-4o mini). Get it from [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/rag"`). Controls the URL prefix the Flask Blueprint is mounted under. Leave it unset for local development.
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.

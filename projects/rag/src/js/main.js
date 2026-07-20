@@ -5,6 +5,29 @@
 // in production it is the path prefix (e.g. "/rag").
 
 const API = document.body.dataset.apiBase || "";
+const TEXTAREA_MAX_CHARS = 1000;
+
+function setupTextareaCounter(textarea) {
+    const maxChars = textarea.maxLength > 0 ? textarea.maxLength : TEXTAREA_MAX_CHARS;
+    const counter = document.getElementById(`${textarea.id}Count`);
+    const updateCounter = () => {
+        if (textarea.value.length > maxChars) {
+            textarea.value = textarea.value.slice(0, maxChars);
+        }
+        if (counter) counter.textContent = `${textarea.value.length}/${maxChars}`;
+    };
+
+    textarea.addEventListener("input", updateCounter);
+    updateCounter();
+}
+
+function isOverTextareaLimit(value) {
+    return value.length > TEXTAREA_MAX_CHARS;
+}
+
+function showLimitError(validation, label) {
+    validation.textContent = `${label} must be ${TEXTAREA_MAX_CHARS} characters or fewer.`;
+}
 
 /**
  * Toggle a button between its idle label and a loading spinner.
@@ -41,8 +64,10 @@ async function callApi({ btn, result, endpoint, body, render }) {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         render(data, result);
+        return true;
     } catch (e) {
         result.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+        return false;
     } finally {
         setLoading(btn, false);
     }
@@ -63,6 +88,8 @@ function setupCard(config) {
 
     const currentValue = () => input.value.trim();
 
+    if (input.tagName === "TEXTAREA") setupTextareaCounter(input);
+
     input.addEventListener("input", () => {
         btn.disabled = !currentValue();
         if (validation) validation.textContent = "";
@@ -76,6 +103,11 @@ function setupCard(config) {
         const value = currentValue();
         if (!value) {
             if (validation) validation.textContent = config.requiredMessage;
+            input.focus();
+            return;
+        }
+        if (validation && isOverTextareaLimit(input.value)) {
+            showLimitError(validation, config.label || "Text");
             input.focus();
             return;
         }
@@ -136,65 +168,59 @@ function setupEmbeddings() {
 }
 
 /**
- * Wire up the PDF Chat card — file upload, then question input.
+ * Wire up the PDF Chat card — pasted PDF text, then question input.
  */
 function setupPdfChat() {
-    const fileInput = document.getElementById("pdfFile");
-    const fileLabel = document.getElementById("pdfFileLabel");
-    const uploadBtn = document.getElementById("pdfUploadBtn");
-    const uploadResult = document.getElementById("pdfUploadResult");
+    const pdfText = document.getElementById("pdfText");
+    const indexBtn = document.getElementById("pdfIndexBtn");
+    const indexResult = document.getElementById("pdfIndexResult");
     const questionInput = document.getElementById("pdfQuestion");
     const chatBtn = document.getElementById("pdfChatBtn");
     const chatResult = document.getElementById("pdfChatResult");
     const validation = document.getElementById("pdfValidation");
 
-    let pdfUploaded = false;
+    let pdfIndexed = false;
 
-    // Show selected file name.
-    fileInput.addEventListener("change", () => {
-        if (fileInput.files.length > 0) {
-            fileLabel.textContent = fileInput.files[0].name;
-            fileLabel.classList.add("has-file");
-            uploadBtn.disabled = false;
-        } else {
-            fileLabel.textContent = "Choose PDF…";
-            fileLabel.classList.remove("has-file");
-            uploadBtn.disabled = true;
-        }
+    setupTextareaCounter(pdfText);
+
+    pdfText.addEventListener("input", () => {
+        pdfIndexed = false;
+        indexBtn.disabled = !pdfText.value.trim();
+        chatBtn.disabled = true;
+        validation.textContent = "";
+        indexResult.className = "result";
+        indexResult.textContent = "";
     });
 
-    // Upload the PDF.
-    uploadBtn.addEventListener("click", async () => {
-        if (!fileInput.files.length) return;
-        setLoading(uploadBtn, true);
-        uploadResult.className = "result visible";
-        uploadResult.textContent = "";
-        try {
-            const form = new FormData();
-            form.append("pdf", fileInput.files[0]);
-            const res = await fetch(`${API}/pdf-upload`, {
-                method: "POST",
-                body: form,
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-            uploadResult.textContent = data.result;
-            pdfUploaded = true;
-        } catch (e) {
-            uploadResult.innerHTML = `<span class="error">Error: ${e.message}</span>`;
-        } finally {
-            setLoading(uploadBtn, false);
+    indexBtn.addEventListener("click", async () => {
+        const text = pdfText.value.trim();
+        if (!text) {
+            validation.textContent = "Please paste PDF content.";
+            pdfText.focus();
+            return;
         }
+        if (isOverTextareaLimit(pdfText.value)) {
+            showLimitError(validation, "PDF text");
+            pdfText.focus();
+            return;
+        }
+        pdfIndexed = await callApi({
+            btn: indexBtn,
+            result: indexResult,
+            endpoint: "/pdf-index",
+            body: { pdf_text: text },
+            render: renderText,
+        });
+        chatBtn.disabled = !pdfIndexed || !questionInput.value.trim();
     });
 
-    // Enable chat button when question has text and PDF is uploaded.
     questionInput.addEventListener("input", () => {
-        chatBtn.disabled = !questionInput.value.trim() || !pdfUploaded;
+        chatBtn.disabled = !questionInput.value.trim() || !pdfIndexed;
         validation.textContent = "";
     });
 
     questionInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && questionInput.value.trim() && pdfUploaded) {
+        if (e.key === "Enter" && questionInput.value.trim() && pdfIndexed) {
             chatBtn.click();
         }
     });
@@ -206,8 +232,8 @@ function setupPdfChat() {
             questionInput.focus();
             return;
         }
-        if (!pdfUploaded) {
-            validation.textContent = "Please upload a PDF first.";
+        if (!pdfIndexed) {
+            validation.textContent = "Please index PDF text first.";
             return;
         }
         callApi({
@@ -229,6 +255,8 @@ function setupChunking() {
     const result = document.getElementById("chunkResult");
     const validation = document.getElementById("chunkValidation");
 
+    setupTextareaCounter(input);
+
     input.addEventListener("input", () => {
         btn.disabled = !input.value.trim();
         validation.textContent = "";
@@ -238,6 +266,11 @@ function setupChunking() {
         const text = input.value.trim();
         if (!text) {
             validation.textContent = "Please enter some text.";
+            input.focus();
+            return;
+        }
+        if (isOverTextareaLimit(input.value)) {
+            showLimitError(validation, "Text");
             input.focus();
             return;
         }
@@ -272,6 +305,8 @@ function setupKbCard({ kbId, inputId, buttonId, resultId, validationId, endpoint
 
     const bothFilled = () => kb.value.trim() && input.value.trim();
 
+    setupTextareaCounter(kb);
+
     [kb, input].forEach((el) => {
         el.addEventListener("input", () => {
             btn.disabled = !bothFilled();
@@ -288,6 +323,11 @@ function setupKbCard({ kbId, inputId, buttonId, resultId, validationId, endpoint
         const question = input.value.trim();
         if (!knowledge) {
             validation.textContent = "Please enter a knowledge base.";
+            kb.focus();
+            return;
+        }
+        if (isOverTextareaLimit(kb.value)) {
+            showLimitError(validation, "Knowledge base");
             kb.focus();
             return;
         }

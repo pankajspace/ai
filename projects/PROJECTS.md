@@ -79,7 +79,7 @@ available for the next project.
 6. **EC2 host port:** `5002`.
 7. **ECR repository:** `techtoday/rag`.
 8. **Path prefix:** `PATH_PREFIX=/rag`.
-9. **Routes:** `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-upload`, `/rag/pdf-chat`.
+9. **Routes:** `/rag/`, `/rag/embeddings`, `/rag/chunk`, `/rag/rag`, `/rag/rerank`, `/rag/pdf-index`, `/rag/pdf-chat`.
 10. **CI/CD workflow:** `.github/workflows/deploy-rag.yml`.
 11. **Trigger path:** `projects/rag/**`.
 12. **Secrets:** `OPENAI_API_KEY` only. Embeddings run locally with no API key.
