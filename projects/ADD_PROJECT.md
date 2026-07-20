@@ -261,9 +261,12 @@ sed -i '' "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAM
 sed -i "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
 
 grep -n PROJECT_NAME .github/workflows/deploy-$PROJECT_NAME.yml
+test -f .github/workflows/deploy-$PROJECT_NAME.yml && echo "workflow file OK"
 ```
 
-The final `grep` should print nothing.
+The final `grep` should print nothing, and the `test -f` command should print
+`workflow file OK`. If the workflow file is missing, do not list it in
+[PROJECTS.md](PROJECTS.md) as the project's CI/CD workflow yet.
 
 The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
@@ -285,7 +288,8 @@ Update [PROJECTS.md](PROJECTS.md) after the project works:
 
 1. Add the project entry with its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets.
 2. Advance the next available local and EC2 host ports.
-3. If the project should appear on the public home page, update `projects/techtoday/src/index.html`.
+3. Verify every workflow path listed in the project entry exists under `.github/workflows/`.
+4. If the project should appear on the public home page, update `projects/techtoday/src/index.html`.
 
 Public home page card update:
 

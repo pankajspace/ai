@@ -7,7 +7,7 @@ Create or adapt a new container project folder in this repository using `project
 /create-container-project ai-04 feature idea: PDF notes assistant; Python files already exist under /path/to/files
 ```
 
-If `$ARGUMENTS` is empty, ask for the project name before editing. Parse the remaining arguments as optional feature notes, local/prod port overrides, Python file locations, secret names, and whether to create the GitHub Actions deploy workflow.
+If `$ARGUMENTS` is empty, ask for the project name before editing. Parse the remaining arguments as optional feature notes, local/prod port overrides, Python file locations, secret names, whether the project is production-documented, and whether to create the GitHub Actions deploy workflow.
 
 Use this command when the user wants to add a new project under `projects/`, copy the template locally, add or integrate Python files, and then make the resulting folder follow the same structure and deployment conventions as the existing container projects.
 
@@ -29,7 +29,7 @@ Before making changes, identify or ask for:
 3. Next free EC2 host port, usually the matching next `500x` after existing container apps.
 4. Whether Python feature files already exist, and where they should be copied from.
 5. Required environment variables and whether they are new secrets or already present in `techtoday/secrets`.
-6. Whether to create the matching GitHub Actions workflow from `deploy.yml.template` now.
+6. Whether the project is production-documented. If yes, create the matching GitHub Actions workflow from `deploy.yml.template` in the same change.
 
 If the user gives enough information, proceed without asking extra questions. If ports are not provided, infer them from `projects/PROJECTS.md` and existing project specs.
 
@@ -62,7 +62,7 @@ If the user gives enough information, proceed without asking extra questions. If
 7. Update `src/index.html`, `src/css/style.css`, and `src/js/main.js` so the browser calls the new API routes through the injected API base.
 8. Update `requirements.txt` and `.env.example` for the Python files and secrets the project needs.
 9. Update `README.md` with the project purpose, local URL, production URL, ports, path prefix, routes, environment variables, local run commands, and deployment notes.
-10. If requested, copy `projects/<project-name>/deploy.yml.template` to `.github/workflows/deploy-<project-name>.yml` and replace every `PROJECT_NAME` token with the project name.
+10. If the project is production-documented or the user asks for deployment support, copy `projects/<project-name>/deploy.yml.template` to `.github/workflows/deploy-<project-name>.yml` and replace every `PROJECT_NAME` token with the project name.
 11. Update shared docs only when the user asks or when the project is ready to be documented:
     1. Add a new spec in `projects/PROJECTS.md` under `Container App Specs`.
     2. Add any new secrets to the shared setup notes.
@@ -75,7 +75,8 @@ After edits, run the cheapest relevant checks:
 1. `python -m py_compile src/python/*.py` from the new project folder.
 2. `docker compose config` from the new project folder.
 3. If Docker is running and the user wants a runtime check, run `docker compose up web` and verify the local URL.
-4. If a GitHub Actions workflow was generated, confirm no `PROJECT_NAME` placeholders remain in `.github/workflows/deploy-<project-name>.yml`.
+4. If `projects/PROJECTS.md` lists `.github/workflows/deploy-<project-name>.yml`, confirm that file exists.
+5. If a GitHub Actions workflow was generated, confirm no `PROJECT_NAME` placeholders remain in `.github/workflows/deploy-<project-name>.yml`.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production deploy step unless the user explicitly asks for it. For this workflow, local repo changes come first; production wiring can be handled as a separate step.
 
