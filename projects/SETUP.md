@@ -33,9 +33,9 @@ This is the path you will end up on if you installed Docker via `brew install do
 
 ##### Why Three Steps Are Needed
 
-1. `brew install docker` — installs only the CLI client. There is no daemon, so `/var/run/docker.sock` does not exist and every `docker` command fails with `dial unix /var/run/docker.sock: no such file or directory`.
+1. `brew install docker` — installs only the CLI client. There is no daemon, so every `docker` command fails with a missing Docker socket error such as `dial unix /var/run/docker.sock: no such file or directory` or `dial unix ~/.colima/default/docker.sock: no such file or directory`.
 2. `brew install docker-compose` — installs the Compose plugin. Without it, `docker compose` is an unknown command.
-3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and creates the socket file.
+3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and configures the Docker socket/context.
 
 ##### Full Setup
 
@@ -50,7 +50,7 @@ docker compose version    # verify: Docker Compose version v2.x.x
 
 # Step 3 — Daemon runtime (Colima)
 brew install colima
-colima start              # starts the VM; creates /var/run/docker.sock
+colima start              # starts the VM; configures the Docker socket/context
 docker info               # verify: prints server version and container info
 ```
 

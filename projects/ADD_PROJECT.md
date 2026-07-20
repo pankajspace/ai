@@ -74,10 +74,14 @@ Start Docker before running any `docker compose` command:
 # Run on: local machine
 cd projects/<project-name>
 cp .env.example .env
-docker compose build
+docker compose build web
 docker compose up web
 # → http://localhost:<local-port>
 ```
+
+Use `docker compose build web` for the normal browser app. A plain
+`docker compose build` rebuilds every service in `docker-compose.yml`, including
+one-off CLI services, and can take longer even when most layers are cached.
 
 Fill `.env` with real local values before running features that need API keys.
 Never commit `.env`.

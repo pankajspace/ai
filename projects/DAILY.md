@@ -104,8 +104,11 @@ Run once per cloned project folder:
 # Run on: local machine
 cd projects/<project-name>
 cp .env.example .env
-docker compose build
+docker compose build web
 ```
+
+This builds only the web UI service used for local browser testing. A plain
+`docker compose build` builds every service in `docker-compose.yml`.
 
 Fill `.env` with the keys listed for that project in [PROJECTS.md](PROJECTS.md).
 Never commit `.env`.
@@ -121,9 +124,12 @@ docker compose up web
 # → http://localhost:<local-port>
 
 # Run an individual feature from the CLI, when docker-compose.yml defines one.
-docker compose run --rm <feature-service>
+docker compose run --build --rm <feature-service>
 
 # Rebuild only when requirements.txt or Dockerfile changes.
+docker compose build web
+
+# Rebuild every service image only when you need all CLI service images updated.
 docker compose build
 
 # Tear down when done.
