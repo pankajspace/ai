@@ -70,18 +70,31 @@ feature service names with values from [PROJECTS.md](PROJECTS.md).
 
 ### 3.1. Start Docker
 
-Every `docker compose` command needs the Docker daemon running. On macOS with
-Colima:
+Every `docker compose`, `docker build`, `docker tag`, and `docker push` command
+needs the Docker daemon running on the machine where you run the command.
 
-```bash
-# Run on: local machine
-colima status
-colima start
-```
-
-If `colima status` prints `colima is not running`, run `colima start` and wait
-for it to finish. On Docker Desktop, open the Docker Desktop app and wait until
-the daemon is running.
+1. **macOS with Colima:**
+  ```bash
+  # Run on: local Mac
+  colima status
+  colima start
+  docker info
+  ```
+  If `colima status` says `colima is not running`, run `colima start` and wait
+  until `docker info` prints server details. Run `colima start` again after a
+  reboot.
+2. **macOS with Docker Desktop:** open **Docker Desktop** from Applications and
+  wait until it says Docker is running, then verify with `docker info`.
+3. **Linux:**
+  ```bash
+  # Run on: Linux machine
+  sudo systemctl start docker
+  docker info
+  ```
+  If `docker info` reports a permission error, add your user to the Docker
+  group as shown in [SETUP.md](SETUP.md).
+4. **Windows with Docker Desktop:** open **Docker Desktop** and wait until it
+  says Docker is running, then verify with `docker info` in PowerShell.
 
 ### 3.2. First Local Run for an Existing Project
 

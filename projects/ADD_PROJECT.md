@@ -60,6 +60,16 @@ services:
 
 ## 3. Test Locally
 
+Start Docker before running any `docker compose` command:
+
+1. **macOS with Colima:** run `colima status`; if it is not running, run
+  `colima start`, then verify with `docker info`.
+2. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
+  is running, then verify with `docker info`.
+3. **Linux:** run `sudo systemctl start docker`, then verify with `docker info`.
+4. **Windows with Docker Desktop:** open **Docker Desktop** and verify with
+  `docker info` in PowerShell.
+
 ```bash
 # Run on: local machine
 cd projects/<project-name>
@@ -90,6 +100,18 @@ name it `techtoday/<project-name>`, keep defaults, then create it.
 
 This first manual push seeds ECR. Later deploys are handled by CI/CD.
 
+This step must run on your local machine with Docker already started. It cannot
+run in AWS CloudShell because CloudShell cannot access your local Docker daemon
+or cloned repo.
+
+1. **macOS with Colima:** run `colima status`; if it is not running, run
+  `colima start`, then verify with `docker info`.
+2. **macOS with Docker Desktop:** open **Docker Desktop** and wait until Docker
+  is running, then verify with `docker info`.
+3. **Linux:** run `sudo systemctl start docker`, then verify with `docker info`.
+4. **Windows with Docker Desktop:** open **Docker Desktop** and verify with
+  `docker info` in PowerShell.
+
 ```bash
 # Run on: local machine
 REGION=us-east-1
@@ -107,8 +129,7 @@ docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
 ```
 
 `--platform linux/amd64` is required on Apple Silicon Macs so the image runs on
-the `x86_64` EC2 instance. CloudShell cannot run this step because it needs local
-Docker and the cloned repo.
+the `x86_64` EC2 instance.
 
 Verify the push:
 

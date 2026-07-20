@@ -268,6 +268,11 @@ Deploys the `techtoday` static site to EC2.
 
 ### 1.6. Verification Checklist
 
+Before running the Docker checks, start the daemon for your OS: on macOS with
+Colima, run `colima status` and `colima start` if needed; on macOS or Windows
+with Docker Desktop, open Docker Desktop and wait until Docker is running; on
+Linux, run `sudo systemctl start docker`.
+
 Run all five commands. All must succeed before continuing to § 2:
 
 ```bash
