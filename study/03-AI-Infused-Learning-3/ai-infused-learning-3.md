@@ -316,4 +316,33 @@ Key observations:
 5. Ask one question that requires three tools and check whether the printed trace shows all three calls.
 
 # Quick Review of Concepts
+1. **LangChain Agents (recap)** — An agent is an LLM paired with tools and a loop; the model decides on its own when to call a tool, reads the result, and writes a final answer. The model never runs code itself — it asks, your Python does.
+2. **Tools as Python Functions** — Any Python function can become an agent tool. Clear type hints tell the model what arguments to pass, a descriptive docstring tells it *when* to use the tool, and a predictable return value lets it incorporate the result.
+3. **Multi-Tool Agents** — When given several tools the agent classifies the user's intent and picks the right one(s). A single question can trigger multiple tool calls; the model can also answer without any tools if none are relevant.
+4. **Three Ways to Steer a Model** — Prompting (90 % of real work), RAG (feed it your own documents at question-time), and fine-tuning (retrain on examples — powerful but rarely needed). Everything in this class is prompting + RAG.
+5. **RAG (Retrieval-Augmented Generation)** — Before the model answers, you retrieve the most relevant snippets from your own data and stuff them into the prompt. The model answers *from* those snippets — no retraining needed. An open-book exam instead of a closed-book one.
+6. **Why RAG Exists** — It solves four LLM weaknesses: knowledge cutoff (stale training data), private/internal data the model has never seen, hallucinations (confident but wrong answers), and lack of citations.
+7. **RAG Is Fancy Prompt Engineering** — The model itself doesn't change; only what goes into the prompt changes. You automate finding the right context to paste in.
+8. **Two Phases of RAG** — *Indexing (offline, once):* load docs → chunk → embed → store in a vector DB. *Querying (online, every question):* embed the question → find nearest chunks → paste into prompt → LLM answers.
+9. **The 5-Box Pipeline** — Question → Search (find relevant chunks) → Stuff (add chunks to prompt) → LLM (answer using them) → Answer (+ source citation).
+10. **Embeddings** — A list of numbers (a vector) that captures the meaning of text. Similar meanings → nearby points in vector space, different meanings → far apart. Obtained with a single call like `model.encode("text")`.
+11. **Vector Arithmetic** — Trained on enough text, embedding vectors carry real relationships: `king − man + woman ≈ queen`. This is what makes "search by meaning" possible — it's just finding the nearest point in vector space.
+12. **Cosine Similarity** — The similarity score between two vectors, based on the angle between them. Ranges from −1 (opposite) to +1 (identical); above 0.7 means "very similar." Text length doesn't break the score because only the direction matters.
+13. **Embedding Models** — Pre-trained models that produce vectors. Examples: `all-MiniLM-L6-v2` (free, local, 384 dims), `BAAI/bge-large-en-v1.5` (best open-source English), OpenAI `text-embedding-3-small` (paid, good multilingual).
+14. **Chunking** — Splitting documents into smaller snippets before embedding. Too-big chunks lose precision (relevant bit is buried); too-small chunks lose context (each crumb is meaningless). Chunk size is the first RAG tuning knob.
+15. **Four Chunking Strategies** — *Fixed size:* every N characters (simple, chops mid-sentence). *Recursive:* try paragraphs, then sentences, then words (LangChain default). *Semantic:* group consecutive sentences by topic similarity. *Structure-aware:* follow the document's own headings/sections.
+16. **Chunk Overlap** — Adjacent chunks share some characters (e.g. 50–100) so an answer sitting at a boundary isn't missed. Cheap insurance against splitting a relevant sentence across two chunks.
+17. **RecursiveCharacterTextSplitter** — LangChain's default chunking tool. You set `chunk_size` (target length) and `chunk_overlap` (shared border). It tries paragraph breaks first, then sentence breaks, then word breaks.
+18. **Vector Databases** — A search engine where the query is "find vectors closest to *this* vector." Three core operations: add, query (top-k nearest), delete. Examples: Chroma (open-source, in-process, prototypes), Pinecone (managed SaaS, production-scale), Qdrant (open-source + production-grade).
+19. **HNSW** — Hierarchical Navigable Small World, the algorithm behind vector DB speed. Builds a graph so each query takes ~log(N) hops, enabling sub-10 ms lookups on 100 M+ vectors.
+20. **The RAG Prompt Pattern** — Instruct the model to answer "ONLY from the context below" and say "I don't know" when the context doesn't contain the answer. This is the most important hallucination-fighter in RAG.
+21. **Bi-Encoder vs Cross-Encoder (Reranking)** — *Bi-encoder:* encodes query and document separately, fast but shallow (like scanning résumés). *Cross-encoder:* feeds query + document together, slow but far more accurate (like a real interview). Two-stage retrieval: bi-encoder grabs top 50 candidates, cross-encoder reranks to the best 3.
+22. **BM25 (Keyword Search) vs Vector (Semantic Search)** — BM25 excels at exact words, codes, IDs, and proper nouns. Vector search excels at synonyms, paraphrase, and meaning. Neither alone is perfect for real-world queries.
+23. **Hybrid Search** — Run both BM25 and vector search on the same query, then merge the two ranked lists with Reciprocal Rank Fusion (RRF). Docs ranked highly by both librarians bubble to the top, covering both keyword precision and semantic understanding.
+24. **Reciprocal Rank Fusion (RRF)** — A simple merge formula: `score = 1/(60 + rank_BM25) + 1/(60 + rank_Vector)`. No tuning needed; used by almost every production RAG system.
+25. **PyPDFLoader** — LangChain's loader for PDFs. Reads all pages into `Document` objects, preserving page-number metadata so you can cite sources in the final answer.
+26. **Gradio ChatInterface (for RAG)** — Same Gradio wrapper from Class 2, now wrapping the `rag_answer()` function so users can upload a PDF and chat with it via a public link.
+27. **Agentic RAG (preview)** — Combining the agent loop (Class 2) with the retrieval library (Class 3). The agent decides whether to retrieve, whether the chunks are good enough, and whether to rewrite the query and try again.
+28. **Advanced RAG Techniques (preview)** — HyDE (search using an imagined answer), step-back prompting (generalise the question before searching), Graph RAG (knowledge-graph traversal), and RAG evaluation (relevance, faithfulness, correctness metrics).
+
 
