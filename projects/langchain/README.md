@@ -1,5 +1,3 @@
-[← README](../../README.md)
-
 # LangChain Lab
 
 A collection of LangChain-powered demos that show three core building blocks of AI engineering — **chains**, **memory**, and **agents** — using **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.

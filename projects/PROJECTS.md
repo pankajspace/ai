@@ -1,18 +1,9 @@
-[← README](../README.md)
-
 # Project Registry
 
 This is the single source of truth for the list of projects in this repository.
 When a new project is added, update this file with its project-specific values.
 The shared setup, daily development, deployment, and architecture guides should
 not need edits just because another project exists.
-
-Related guides:
-
-1. [SETUP.md](SETUP.md) — one-time local machine and AWS infrastructure setup.
-2. [ADD_PROJECT.md](ADD_PROJECT.md) — end-to-end checklist for adding a new container app.
-3. [DAILY.md](DAILY.md) — daily local development, deployment, rollback, and troubleshooting.
-4. [ARCHITECTURE.md](ARCHITECTURE.md) — shared architecture and design decisions.
 
 ## Shared Conventions
 
@@ -100,7 +91,7 @@ Related guides:
 4. **Container port:** `5000`.
 5. **Local host port:** `8090`.
 6. **Starter feature:** keyless `echo` route.
-7. **Use:** copy this folder when creating a new container app with [ADD_PROJECT.md](ADD_PROJECT.md).
+7. **Use:** copy this folder when creating a new container app with `ADD_PROJECT.md`.
 
 ## Next Available Container App Values
 
@@ -116,7 +107,7 @@ project is added.
 
 ## When Adding a Project
 
-After following [ADD_PROJECT.md](ADD_PROJECT.md), update this registry only:
+After following `ADD_PROJECT.md`, update this registry only:
 
 1. Add the new project entry under [Project List](#project-list).
 2. Advance [Next Available Container App Values](#next-available-container-app-values).

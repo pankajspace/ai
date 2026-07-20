@@ -1,5 +1,3 @@
-[← README](../../README.md)
-
 # TechToday — Home Page
 
 Static home page for [techtoday.click](https://techtoday.click), served directly from the main domain. No build step, no framework, no dependencies — plain HTML, CSS, and a small JavaScript file.

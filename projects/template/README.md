@@ -1,5 +1,3 @@
-[← README](../../README.md)
-
 # Project Template
 
 A copy-me starter for a new **container project** on `app.techtoday.click`. It
@@ -74,6 +72,4 @@ returning the HTML.
 ## Try It Locally & Create a New Project
 
 The starter `echo` feature needs no keys, so a fresh copy runs immediately with
-`docker compose up web` (→ http://localhost:8090). The copy-and-rename checklist
-and full initial deployment walkthrough live in [ADD_PROJECT.md](../ADD_PROJECT.md).
-Daily development and deployment live in [DAILY.md](../DAILY.md).
+`docker compose up web` (→ http://localhost:8090).

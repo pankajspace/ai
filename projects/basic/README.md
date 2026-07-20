@@ -1,5 +1,3 @@
-[← README](../../README.md)
-
 # AI Infused Learning
 
 A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
@@ -137,6 +135,3 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 3. **Clean** — Tags that carry no useful text content (`<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<img>`, `<input>`) are removed from the tree.
 4. **Extract** — `soup.get_text(separator="\n", strip=True)` collapses what remains into a block of plain text.
 5. **Format** — The title and body text are combined into a single string and embedded in the GPT-4o mini prompt by `summarizer.py`.
-
-> Where this project runs in production is documented in [PROJECTS.md](../PROJECTS.md). Daily development and deployment live in [DAILY.md](../DAILY.md).
-

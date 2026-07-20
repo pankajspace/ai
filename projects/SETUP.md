@@ -1,8 +1,6 @@
-[← README](../README.md)
-
 # Project Setup Guide — techtoday.click
 
-The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use [DAILY.md](DAILY.md) for routine development and deployment, [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project, [PROJECTS.md](PROJECTS.md) for the project registry, and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
+The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use `DAILY.md` for routine development and deployment, `ADD_PROJECT.md` for adding a new container project, `PROJECTS.md` for the project registry, and `ARCHITECTURE.md` for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
 
 ---
 
@@ -926,13 +924,13 @@ Set at: repo → **Settings** → **Secrets and variables** → **Actions** → 
 ### 2.12. Secrets & Environment Variables Reference
 
 The shared locations for deployment secrets and runtime environment variables.
-Project-specific secret keys are maintained in [PROJECTS.md](PROJECTS.md).
+Project-specific secret keys are maintained in `PROJECTS.md`.
 
 #### 2.12.1. GitHub Actions Secrets
 
 Set at: **GitHub repo → Settings → Secrets and variables → Actions → New repository secret**
 
-Shared by all project workflows. Current workflow names are listed in [PROJECTS.md](PROJECTS.md).
+Shared by all project workflows. Current workflow names are listed in `PROJECTS.md`.
 
 1. `AWS_REGION` — AWS region, e.g. `us-east-1`
 2. `AWS_ACCOUNT_ID` — your 12-digit AWS account ID
@@ -948,7 +946,7 @@ Accessed by the EC2 instance at container startup and never stored in the repo o
 Docker image:
 
 1. Secret name: `techtoday/secrets`
-2. Contents: JSON key/value pairs for the API keys listed per project in [PROJECTS.md](PROJECTS.md).
+2. Contents: JSON key/value pairs for the API keys listed per project in `PROJECTS.md`.
 
 #### 2.12.3. Docker Compose Environment Variables
 
@@ -964,12 +962,11 @@ project URL.
 #### 2.12.4. Per-Project Secrets
 
 Which project uses which key, and which projects need no secret at all, is
-documented per project in [PROJECTS.md](PROJECTS.md).
+documented per project in `PROJECTS.md`.
 When a new project needs a new key, add it to the shared `techtoday/secrets`
 secret in § 2.12.2 above.
 
-> **Adding a new project?** The full end-to-end walkthrough lives in
-> [ADD_PROJECT.md](ADD_PROJECT.md).
+> **Adding a new project?** The full end-to-end walkthrough lives in `ADD_PROJECT.md`.
 
 
 

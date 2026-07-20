@@ -1,5 +1,3 @@
-[← README](../../README.md)
-
 # RAG Lab
 
 A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG — **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
@@ -98,6 +96,3 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 2. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/rag"`). Controls the URL prefix the Flask Blueprint is mounted under. Leave it unset for local development.
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
-
-> Where this project runs in production is documented in [PROJECTS.md](../PROJECTS.md). Daily development and deployment live in [DAILY.md](../DAILY.md).
-
