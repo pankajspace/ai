@@ -78,5 +78,10 @@ jobs:
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
+            # Remove unused images to free disk space before pulling the
+            # new build.  Prevents "no space left on device" failures on
+            # small EBS volumes.
+            docker image prune -af
+
             docker compose -f ~/docker-compose.yml pull rag
             docker compose -f ~/docker-compose.yml up -d --no-deps rag
