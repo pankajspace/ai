@@ -105,11 +105,3 @@ project is added.
 4. **Production base URL:** `https://app.techtoday.click/<project-name>/`.
 5. **ECR repository:** `techtoday/<project-name>`.
 6. **Path prefix:** `PATH_PREFIX=/<project-name>`.
-
-## When Adding a Project
-
-When adding a project, update this registry:
-
-1. Add the new project entry under Project List.
-2. Advance Next Available Container App Values.
-3. If the project should appear on the public home page, update `projects/techtoday/src/` as part of the project change.
