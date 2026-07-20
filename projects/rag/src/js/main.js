@@ -183,6 +183,9 @@ function setupPdfChat() {
 
     setupTextareaCounter(pdfText);
 
+    // Enable button on load if textarea already has prefilled content
+    indexBtn.disabled = !pdfText.value.trim();
+
     pdfText.addEventListener("input", () => {
         pdfIndexed = false;
         indexBtn.disabled = !pdfText.value.trim();
