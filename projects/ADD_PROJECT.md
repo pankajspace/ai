@@ -271,6 +271,30 @@ docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
 docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
 ```
 
+If `docker compose pull` fails with **`no space left on device`**, first check
+what is consuming space on the EC2 host:
+
+```bash
+# Run on: EC2 host
+df -h
+docker system df
+docker info --format '{{.DockerRootDir}}'
+sudo du -xh --max-depth=1 /var/lib/docker 2>/dev/null | sort -h
+```
+
+Then free up disk space and retry:
+
+```bash
+# Run on: EC2 host
+docker container prune -f
+docker builder prune -af
+docker image prune -af
+
+# Then retry
+docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
+docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
+```
+
 ## 8. Add the CI/CD Workflow
 
 The template ships a ready-made workflow at `projects/<project-name>/deploy.yml.template`.
