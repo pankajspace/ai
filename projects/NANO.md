@@ -8,7 +8,7 @@ Most commonly used `nano` shortcuts for editing config files on the EC2 host.
 1. **Tap `Esc`, release, then the key** — e.g. `Esc` then `6` instead of `Alt+6`. Works everywhere with no config.
 
 ## Copy & paste
-1. `Ctrl+V` (terminal paste) — paste from your **system** clipboard; nano does not auto-indent, so pasted blocks keep their formatting
+1. `Ctrl+V` OR `Ctrl+Shift+V` (terminal paste) — paste from your **system** clipboard; nano does not auto-indent, so pasted blocks keep their formatting
 
 ## Save & quit
 1. `Ctrl+O` then `Enter` — save (write **O**ut) to the current file
