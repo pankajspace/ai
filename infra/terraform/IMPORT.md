@@ -13,9 +13,14 @@ into Terraform state **without recreating or interrupting anything**. Run these
 ## 1. Prerequisites
 
 1. Complete the bootstrap module so remote state exists (see [README.md](README.md) § 2).
-2. `cd infra/terraform && terraform init`.
-3. Set your real values in `terraform.tfvars` (copy from `terraform.tfvars.example`).
-4. Have these IDs handy from the AWS Console or CLI:
+2. Load credentials for the provider in this shell (needed if you use
+   `aws login`, otherwise you get `No valid credential sources found`):
+   ```bash
+   eval "$(aws configure export-credentials --format env)"
+   ```
+3. `cd infra/terraform && terraform init`.
+4. Set your real values in `terraform.tfvars` (copy from `terraform.tfvars.example`).
+5. Have these IDs handy from the AWS Console or CLI:
    - EC2 instance ID (`i-0123...`)
    - Elastic IP allocation ID (`eipalloc-0123...`)
    - Security group ID (`sg-0123...`)

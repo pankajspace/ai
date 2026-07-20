@@ -78,6 +78,22 @@ scripts/new-project.sh      # scaffolds a new app folder + workflow + tfvars ent
 4. `jq` and `make` for the `new-project` scaffolding helper
    (`brew install jq`; `make` ships with the Xcode command line tools).
 
+## Load credentials before every session
+
+If you use `aws login` (session credentials cached under `~/.aws/login`), the
+AWS CLI sees them but the Terraform/OpenTofu provider does not — you get
+`Error: No valid credential sources found`. Bridge them into standard
+environment variables in **every new terminal** before any `tofu`/`terraform`/
+`make` command:
+
+```bash
+eval "$(aws configure export-credentials --format env)"
+```
+
+These are temporary and expire; re-run the `eval` when you open a new shell or
+hit a credentials error (run `aws login` first if the session itself expired).
+`make` targets do not load these automatically.
+
 ## 1. First-time setup
 
 ### 1a. Bootstrap remote state

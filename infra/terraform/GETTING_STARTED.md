@@ -35,6 +35,30 @@ runs. Replace every `<PLACEHOLDER>` below.
 3. `jq` and `make` installed (see [../../projects/SETUP.md](../../projects/SETUP.md) § 1.6–§ 1.8).
 4. The EC2 `.pem` key at `~/.ssh/techtoday.pem` with `chmod 400` (only needed later for `apply`, not for this import-only setup).
 
+## Credentials: Load Before Every Session
+
+If you authenticate with `aws login` (session credentials cached under
+`~/.aws/login`), the AWS CLI can see them but the **Terraform/OpenTofu provider
+cannot** — you get `Error: No valid credential sources found`. Bridge them into
+standard environment variables the provider understands, in **every new
+terminal** before running any `tofu`/`make` command:
+
+```bash
+eval "$(aws configure export-credentials --format env)"
+```
+
+Notes:
+
+1. These are **temporary session credentials** and expire (they include an
+   `AWS_CREDENTIAL_EXPIRATION`). Re-run the `eval` when you open a new shell or
+   hit a credentials error. If the session itself expired, run `aws login`
+   first, then the `eval`.
+2. `make` targets do not load these automatically, so always run the `eval`
+   line first in the same shell. Verify with:
+   ```bash
+   env | grep AWS_ACCESS_KEY_ID   # should print a value
+   ```
+
 > **Which CLI command do I type?** In the import step below, use whichever you
 > installed — `tofu` or `terraform`. They are interchangeable here. The `make`
 > targets (`make bootstrap`, `make init`, `make plan`) auto-detect the CLI, so
@@ -54,11 +78,12 @@ These are safe because you will NOT run `apply`, but you must know them:
 
 ---
 
-## Step 1 — Confirm the AWS Account
+## Step 1 — Confirm the AWS Account and Load Credentials
 
 ```bash
 cd infra/terraform
-aws sts get-caller-identity   # Account should be <ACCOUNT_ID>
+aws sts get-caller-identity                          # Account should be <ACCOUNT_ID>
+eval "$(aws configure export-credentials --format env)"   # load creds for the provider
 ```
 
 ## Step 2 — Create Remote State (once, ever)
@@ -69,6 +94,13 @@ isolated resources — they do not touch prod.
 ```bash
 make bootstrap    # type "yes" when prompted
 ```
+
+> **Already done.** If `techtoday-terraform-state` (S3) and
+> `techtoday-terraform-locks` (DynamoDB) already exist, this step is complete —
+> skip to Step 3.
+>
+> **`No valid credential sources found`?** You skipped the `eval` line in
+> Step 1. Run it in this shell, then retry.
 
 ## Step 3 — Configure and Initialize
 
