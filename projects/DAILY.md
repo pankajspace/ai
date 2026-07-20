@@ -73,24 +73,13 @@ feature service names with values from [PROJECTS.md](PROJECTS.md).
 Every `docker compose`, `docker build`, `docker tag`, and `docker push` command
 needs the Docker daemon running on the machine where you run the command.
 
-1. **macOS with Docker Desktop:** open **Docker Desktop** from Applications and
-  wait until it says Docker is running. If this Mac previously used Colima, run:
+1. **macOS or Windows:** open **Docker Desktop** from Applications and
+  wait until it says Docker is running.
   ```bash
   # Run on: local Mac
-  docker context use desktop-linux
   docker info
   ```
-2. **macOS with Colima:**
-  ```bash
-  # Run on: local Mac
-  colima status
-  colima start
-  docker info
-  ```
-  If `colima status` says `colima is not running`, run `colima start` and wait
-  until `docker info` prints server details. Run `colima start` again after a
-  reboot.
-3. **Linux:**
+2. **Linux:**
   ```bash
   # Run on: Linux machine
   sudo systemctl start docker

@@ -73,8 +73,6 @@ returning the HTML.
 
 The starter `echo` feature needs no keys, so a fresh copy runs immediately with
 `docker compose up web` (→ http://localhost:8090). Before running it, start
-Docker for your OS: on macOS or Windows with Docker Desktop, open Docker Desktop
-and wait until Docker is running; if this Mac previously used Colima, run
-`docker context use desktop-linux`; on macOS with Colima, run `colima status`
-and `colima start` if needed; on Linux, run `sudo systemctl start docker`.
+Docker for your OS: on macOS or Windows, open Docker Desktop
+and wait until Docker is running; on Linux, run `sudo systemctl start docker`.
 Verify with `docker info`.

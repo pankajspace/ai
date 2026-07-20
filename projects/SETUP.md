@@ -14,53 +14,20 @@ Docker is required for building container images locally, running the local dev 
 
 > **Important:** On macOS, `brew install docker` installs **only** the CLI — the daemon and Compose plugin are separate packages. This is the most common source of "Cannot connect to the Docker daemon" errors.
 
-#### 1.1.1. macOS — Option A: Docker Desktop (recommended)
+#### 1.1.1. macOS — Docker Desktop
 
 [Docker Desktop](https://www.docker.com/products/docker-desktop/) bundles all three components (daemon, CLI, Compose plugin) in one installer — nothing else needed.
 
 1. Download and run the [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/) installer.
 2. Open **Docker Desktop** from Applications. The first launch takes 15–30 seconds to start the VM.
 3. Wait until the whale icon in the menu bar shows **"Docker Desktop is running"**.
-4. If you previously used Colima, switch the Docker CLI back to Docker Desktop:
-  ```bash
-  docker context use desktop-linux
-  ```
-5. Verify:
+4. Verify:
    ```bash
    docker info             # prints server details — not an error
-  docker compose version  # prints Docker Compose version
+   docker compose version  # prints Docker Compose version
    ```
 
-#### 1.1.2. macOS — Option B: Homebrew + Colima (no GUI, no license)
-
-This is the path you will end up on if you installed Docker via `brew install docker`. It requires three separate install steps because Homebrew splits the components across separate packages.
-
-##### Why Three Steps Are Needed
-
-1. `brew install docker` — installs only the CLI client. There is no daemon, so every `docker` command fails with a missing Docker socket error such as `dial unix /var/run/docker.sock: no such file or directory` or `dial unix ~/.colima/default/docker.sock: no such file or directory`.
-2. `brew install docker-compose` — installs the Compose plugin. Without it, `docker compose` is an unknown command.
-3. `brew install colima` + `colima start` — installs and starts the lightweight Linux VM that runs the Docker daemon and configures the Docker socket/context.
-
-##### Full Setup
-
-```bash
-# Step 1 — Docker CLI
-brew install docker
-docker --version          # verify: Docker version 29.x.x
-
-# Step 2 — Compose plugin
-brew install docker-compose
-docker compose version    # verify: prints Docker Compose version
-
-# Step 3 — Daemon runtime (Colima)
-brew install colima
-colima start              # starts the VM; configures the Docker socket/context
-docker info               # verify: prints server version and container info
-```
-
-> **After every reboot** you must run `colima start` again before using Docker. Check if it is already running with `colima status`. Stop it with `colima stop`.
-
-#### 1.1.3. Linux (Debian/Ubuntu)
+#### 1.1.2. Linux (Debian/Ubuntu)
 
 ```bash
 sudo apt update
@@ -73,7 +40,7 @@ docker info
 docker compose version
 ```
 
-#### 1.1.4. Linux (Fedora/RHEL)
+#### 1.1.3. Linux (Fedora/RHEL)
 
 ```bash
 sudo dnf install -y docker docker-compose-plugin
@@ -85,7 +52,7 @@ docker info
 docker compose version
 ```
 
-#### 1.1.5. Windows
+#### 1.1.4. Windows
 
 1. Download and install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) — bundles WSL 2, the daemon, CLI, and Compose plugin.
 2. Launch Docker Desktop and wait for **"Docker Desktop is running"** in the system tray.
@@ -95,11 +62,11 @@ docker compose version
    docker compose version
    ```
 
-#### 1.1.6. Common Errors and Fixes
+#### 1.1.5. Common Errors and Fixes
 
 1. Error: `Cannot connect to the Docker daemon`
   Cause: Daemon not running
-  Fix: macOS Docker Desktop: open Docker Desktop and run `docker context use desktop-linux`; macOS Colima: run `colima start`; Linux: `sudo systemctl start docker`
+  Fix: macOS/Windows: open Docker Desktop; Linux: `sudo systemctl start docker`
 2. Error: `docker compose: unknown command`
   Cause: Compose plugin missing
   Fix: `brew install docker-compose` (macOS) or `sudo apt install docker-compose-plugin` (Linux)
@@ -274,13 +241,8 @@ Deploys the `techtoday` static site to EC2.
 
 Before running the Docker checks, start the daemon for your OS:
 
-1. **macOS or Windows with Docker Desktop:** open Docker Desktop and wait until
-  Docker is running. If this Mac previously used Colima, switch back with:
-  ```bash
-  docker context use desktop-linux
-  ```
-2. **macOS with Colima:** run `colima status` and `colima start` if needed.
-3. **Linux:** run `sudo systemctl start docker`.
+1. **macOS or Windows:** open Docker Desktop and wait until Docker is running.
+2. **Linux:** run `sudo systemctl start docker`.
 
 Run all five commands. All must succeed before continuing to § 2:
 
