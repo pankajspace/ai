@@ -7,6 +7,7 @@
 
 # My Notes
 
+
 # Quick Review of Concepts
 
 ## Why AI Exploded Now
