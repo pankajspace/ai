@@ -10,8 +10,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download the embedding + reranker models so they're baked into the image
 # and don't need to be fetched at container startup (which can be slow or hang).
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
-RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cross-encoder/ms-marco-MiniLM-L6-v2')"
+# Both downloads share one layer so they're cached (and restored) as a unit.
+RUN python -c "\
+    from sentence_transformers import SentenceTransformer, CrossEncoder; \
+    SentenceTransformer('all-MiniLM-L6-v2'); \
+    CrossEncoder('cross-encoder/ms-marco-MiniLM-L6-v2')"
 
 COPY src/ ./src/
 
