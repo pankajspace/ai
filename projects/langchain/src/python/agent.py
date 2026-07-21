@@ -150,7 +150,10 @@ def ask(user_message: str) -> str:
 
     # 2. Did it request one or more tool calls?
     if msg.tool_calls:
+
+        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
+
         for call in msg.tool_calls:
             fn_name = call.function.name
 

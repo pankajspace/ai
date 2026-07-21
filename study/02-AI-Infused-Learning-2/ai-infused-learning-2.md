@@ -162,24 +162,30 @@ The menu card's four facts:
 def agent(user_message):
     messages = [{"role": "user", "content": user_message}]
 
-    response = client.chat.completions.create(          # ① send message + tools menu
-        model="gpt-4o-mini", messages=messages, tools=tools)
+    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools) # ① send message + tools menu
+
     msg = response.choices[0].message
 
-    if msg.tool_calls:                                  # ② did it ask for a tool?
+    if msg.tool_calls: # ② did it ask for a tool?
+
+        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
+
         for call in msg.tool_calls:
             args = json.loads(call.function.arguments)  # ③ read its request, run it
-            result = get_price(args["item"])
-            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
-        response = client.chat.completions.create(      # ④ send it all back → nice answer
-            model="gpt-4o-mini", messages=messages)
-        msg = response.choices[0].message
+
+            result = get_price(args["item"]) # run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result}) # add the tool's result to the conversation
+
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages) # ④ send it all back → nice answer
+
+        msg = response.choices[0].message # get the final answer
 
     return msg.content
 
-print(agent("How much are the shoes?"))       # → tool fires → "₹799"
-print(agent("Hi! What can you help with?"))    # → no tool → just chats
+print(agent("How much are the shoes?")) # → tool fires → "₹799"
+print(agent("Hi! What can you help with?")) # → no tool → just chats
 ```
 
 The loop, step by step:
