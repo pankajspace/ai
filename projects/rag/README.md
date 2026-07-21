@@ -98,3 +98,4 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 2. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/rag"`). Controls the URL prefix the Flask Blueprint is mounted under. Leave it unset for local development.
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
+
