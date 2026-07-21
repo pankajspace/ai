@@ -172,7 +172,7 @@ def agent(user_message):
         messages.append(msg)
 
         for call in msg.tool_calls:
-            args = json.loads(call.function.arguments)  # ③ read its request, run it
+            args = json.loads(call.function.arguments)  # ③ the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
 
             result = get_price(args["item"]) # run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
 

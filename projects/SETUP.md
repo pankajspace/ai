@@ -834,11 +834,21 @@ aws iam put-role-policy \
     "Version":"2012-10-17",
     "Statement":[
       {"Effect":"Allow","Action":["ecr:GetAuthorizationToken"],"Resource":"*"},
-      {"Effect":"Allow","Action":["ecr:BatchCheckLayerAvailability","ecr:PutImage",
-        "ecr:InitiateLayerUpload","ecr:UploadLayerPart","ecr:CompleteLayerUpload"],
+      {"Effect":"Allow","Action":["ecr:BatchCheckLayerAvailability","ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer","ecr:PutImage","ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart","ecr:CompleteLayerUpload"],
         "Resource":"arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"}
     ]}'
 ```
+
+> **Why the read actions (`ecr:BatchGetImage`, `ecr:GetDownloadUrlForLayer`)?**
+> The deploy workflows build with `docker/build-push-action` (Buildx/BuildKit)
+> and a GitHub Actions layer cache. Before pushing, BuildKit sends a `HEAD`
+> request to the image manifest to see which layers already exist and can be
+> skipped — a **read** operation. A push-only role gets `403 Forbidden` on
+> that HEAD (`unexpected status from HEAD request to .../manifests/sha256:... 403`),
+> so these two read actions must accompany the push actions. (`ecr:BatchCheckLayerAvailability`
+> above is already a read action and stays in the same statement.)
 
 #### 2.11.2. AWS Console
 1. **Create the OIDC provider:** Open **IAM** → **Identity providers** → **Add provider**
@@ -867,7 +877,7 @@ aws iam put-role-policy \
        { "Effect": "Allow", "Action": ["ecr:GetAuthorizationToken"], "Resource": "*" },
        {
          "Effect": "Allow",
-         "Action": ["ecr:BatchCheckLayerAvailability", "ecr:PutImage", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload"],
+         "Action": ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:PutImage", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload"],
          "Resource": "arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"
        }
      ]

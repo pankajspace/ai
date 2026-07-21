@@ -161,6 +161,7 @@ def ask(user_message: str) -> str:
             # args = json.loads(call.function.arguments)  # read the request...
             # result = get_price(args["item"])            # ...and run the tool
 
+            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
             args = json.loads(call.function.arguments)
             # Look up the tool function from the registry and call it.
             fn = TOOL_FUNCTIONS.get(fn_name)
