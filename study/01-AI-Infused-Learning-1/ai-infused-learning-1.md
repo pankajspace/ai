@@ -31,7 +31,7 @@ An LLM is stateless — it forgets everything between calls. To hold a conversat
 Models learn by playing fill-in-the-blank on massive amounts of internet text: take any sentence, hide a word, and have the model guess it — the correct answer is already in the text, so the internet becomes its own teacher with trillions of free practice questions and no human labeling. To reliably guess a word like "coffee" after "the barista handed me a hot cup of ___", the model must quietly learn grammar, context, and how the world works, so language understanding emerges as a side-effect of getting good at prediction.
 
 ## Hallucinations
-Because the model learned by predicting *plausible* text rather than looking up facts, it can produce confident-sounding but wrong answers. Designing around this — for example by feeding the model real documents — is a big part of the AI engineer's job: trust, but verify.
+Because the model learned by predicting **plausible** text rather than looking up facts, it can produce confident-sounding but wrong answers. Designing around this — for example by feeding the model real documents — is a big part of the AI engineer's job: trust, but verify.
 
 ## Foundation Models
 Foundation models are large, broadly pre-trained, general-purpose models trained on diverse data — one giant general-purpose brain you adapt to many jobs. They learn reusable patterns that can be adapted to many downstream tasks through prompting or fine-tuning, rather than being built for one narrow task like old "spam-or-not" classifiers.
