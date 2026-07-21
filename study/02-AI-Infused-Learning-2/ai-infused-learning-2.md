@@ -13,7 +13,12 @@
 In Class 1 you called an LLM using the OpenAI library with three message roles — `system`, `user`, `assistant` — kept your API key safe in a `.env` file, and shipped a Website Summarizer plus an LLM Arena. Everything in Class 2 is the *same* OpenAI call, just organised more cleverly.
 
 ## Three Ways to Steer a Model
-The entire field of AI engineering boils down to three ways of steering a pre-trained model: **prompting** (just tell it clearly — free, instant, no training), **RAG** (hand it your own documents at question-time so it answers from real data), and **fine-tuning** (actually re-train on examples — powerful, costly, reach for it last). Prompting handles roughly 90% of real work; chains, tools, and agents are all still "option 1, organised cleverly."
+The entire field of AI engineering boils down to three ways of steering a pre-trained model: 
+1. **prompting** (just tell it clearly — free, instant, no training), 
+2. **RAG** (hand it your own documents at question-time so it answers from real data), 
+3. **fine-tuning** (actually re-train on examples — powerful, costly, reach for it last).
+
+Prompting handles roughly 90% of real work; chains, tools, and agents are all still "option 1, organised cleverly."
 
 ## LangChain
 LangChain is a Python library that provides pre-built "plumbing" — reusable prompts, multi-step pipelines, and memory — so you don't rebuild the same wiring around raw OpenAI calls every time. The one-line intuition: a raw OpenAI call is a single Lego brick, and LangChain is the box of connectors that snaps bricks into machines. Install it with `pip install langchain langchain-openai`.
