@@ -99,3 +99,4 @@ All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input)
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
 
+
