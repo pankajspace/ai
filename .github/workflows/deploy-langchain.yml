@@ -54,6 +54,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        # Enables BuildKit, which is required for the GitHub Actions layer
+        # cache used by the build step below.
+        uses: docker/setup-buildx-action@v3
+
       - name: Configure AWS credentials via OIDC
         # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
         # role is scoped to ECR push permissions only (see SETUP.md
@@ -88,29 +93,24 @@ jobs:
           echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build, tag, and push image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
-        run: |
-          cd projects/langchain
-
-          # Build the image once...
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-
-          # ...then apply two more tags to that same image, so all three
-          # tags point at identical image layers:
-          #   - $BUILD_TAG : human-readable, use this one for rollback.
-          #   - latest     : what production's docker-compose.yml always
-          #                  pulls; moving this tag forward is what actually
-          #                  ships the change to the running container.
-          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                      $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
-          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        # Builds the image once and pushes all three tags (git SHA, human-
+        # readable build tag, and latest) so they point at identical layers.
+        #
+        # cache-from/cache-to persist the build layers in the GitHub Actions
+        # cache between runs. Because runners are ephemeral, without this every
+        # run would rebuild from scratch (re-installing dependencies, etc.).
+        # With it, unchanged layers are restored from cache and only the diff
+        # is rebuilt.
+        uses: docker/build-push-action@v6
+        with:
+          context: projects/langchain
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.build_tag }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Record build tag in job summary
         # Writes the build tag to this run's summary page (visible in the

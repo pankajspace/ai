@@ -25,6 +25,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        # Enables BuildKit, which is required for the GitHub Actions layer
+        # cache used by the build step below.
+        uses: docker/setup-buildx-action@v3
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v5
         with:
@@ -45,21 +50,25 @@ jobs:
           echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build, tag, and push image to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
-        run: |
-          cd projects/rag
-
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                      $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
-          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        # Builds the image once and pushes all three tags (git SHA, human-
+        # readable build tag, and latest) so they point at identical layers.
+        #
+        # cache-from/cache-to persist the build layers in the GitHub Actions
+        # cache between runs. Because runners are ephemeral, without this every
+        # run would rebuild from scratch — re-installing torch, the langchain
+        # stack, and re-downloading the embedding/reranker models every time.
+        # With it, those heavy layers are restored from cache and only the
+        # diff is rebuilt.
+        uses: docker/build-push-action@v6
+        with:
+          context: projects/rag
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.build_tag }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Record build tag in job summary
         run: |

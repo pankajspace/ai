@@ -86,10 +86,16 @@ prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder("history"),              # ② past turns park here
     ("human", "{question}"),                     # ③ the new question
 ])
+
+model = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+
 chain = prompt | model
 
 history = [HumanMessage("My name is Aarav."), AIMessage("Hi Aarav!")]
-print(chain.invoke({"history": history, "question": "What's my name?"}).content)
+
+response = chain.invoke({"history": history, "question": "What's my name?"}).content
+
+print(response)
 # → "Your name is Aarav."  ✅ it "remembered" — because WE re-sent the history
 ```
 
