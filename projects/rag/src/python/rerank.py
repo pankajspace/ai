@@ -51,7 +51,10 @@ def retrieve_with_rerank(
     reranker = _get_reranker()
     pairs = [(question, c.page_content) for c in candidates]
     scores = reranker.predict(pairs)
-    ranked = sorted(zip(scores, candidates), reverse=True)
+    # Sort by score only. Sorting whole (score, Document) tuples breaks when
+    # two scores tie, because Python then compares the Document objects, which
+    # don't support "<" ("'<' not supported between instances of 'Document'").
+    ranked = sorted(zip(scores, candidates), key=lambda pair: pair[0], reverse=True)
     return [c for _, c in ranked[:top_k]]
 
 
