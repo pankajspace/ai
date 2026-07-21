@@ -320,10 +320,10 @@ Key observations:
 ## LangChain Agents (recap)
 An agent is an LLM paired with tools and a loop: the model decides on its own when to call a tool, reads the result, and writes a final answer. Crucially, the model never runs code itself — it *asks* for a tool to be run, and your Python does the actual execution.
 
-## Tools as Python Functions
+## Tools as Python Functions (recap)
 Any Python function can become an agent tool. Clear type hints tell the model what arguments to pass, a descriptive docstring tells it *when* to use the tool, and a predictable return value lets it fold the result into its answer. Good naming and docs matter because the model reads them to make its decision.
 
-## Multi-Tool Agents
+## Multi-Tool Agents (recap)
 When given several tools, the agent must classify the user's intent and pick the right one(s). A single question can trigger multiple tool calls that are then combined into one answer, and the model can also skip tools entirely and answer from its own knowledge if none are relevant.
 
 ## Three Ways to Steer a Model
@@ -400,5 +400,3 @@ Today's RAG always retrieves, but sometimes you shouldn't (small talk) and somet
 
 ## Advanced RAG Techniques (preview)
 The tricks senior engineers reach for: *HyDE* (Hypothetical Document Embeddings — have the LLM imagine what the answer looks like, then search for chunks matching that imagined answer), *step-back prompting* (generalize the question before searching, e.g. "compound interest in this case?" → "what is compound interest?" for broader retrieval), *Graph RAG* (build a knowledge graph of entities and relationships so you can answer "who reports to X" by walking the graph), and *RAG evaluation* (measure quality via relevance, faithfulness, and correctness). The recurring lesson across three classes: every AI product is a recombination of four pieces — model, prompt, tool, retrieval.
-
-

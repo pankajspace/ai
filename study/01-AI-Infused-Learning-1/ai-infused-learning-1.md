@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Notes](ai_engineering_class1.html)
+[<- README](../../README.md) | [Notes](ai-infused-learning-1.html)
 
 # AI Infused Learning - 1
 
@@ -56,13 +56,11 @@ Under the hood they all follow the same pattern — connect to a model, give it 
 AI Engineering is building real products on top of pre-trained models (GPT, Claude, Gemini) without training those models yourself — "you build the car around an engine someone else already built." It sits between the ML engineer/data scientist (who builds the engine, caring about datasets, GPUs, accuracy) and the software engineer (who builds the road — the app, buttons, database). The hardest, most expensive part — training the model — is already done, so Python plus an API key is genuinely enough to begin.
 
 ## API Call & Roles
-Calling an LLM uses four message roles, the entire grammar of chat models: 
+Calling an LLM uses three message roles, the entire grammar of chat models: 
 1. `system` (sets personality and rules, written once and applied throughout) 
 2. `user` (the human's actual request)
-3. `assistant` (the model's reply). Assistant role is also known as `model` role in some places like Gemini.
-4. `tool` - carries the result returned by an external function/tool back to the model during function-calling workflows (e.g., the output of a weather API or database query that the model requested).
+3. `assistant` (the model's reply). To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory.
 
-To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory.
 
 ## API Keys & `.env`
 API keys are secret passwords to your wallet, tied to your billing account. Store them in a `.env` file, add that file to `.gitignore`, and load them at runtime — never hard-code them in shared code. Leaked keys get found by bots within minutes and can run up real bills, so this is the one habit that saves careers.
@@ -82,14 +80,14 @@ Gradio is a Python library that wraps any function in a shareable web UI in just
 ## LLM Arena & Voting
 An LLM arena sends one prompt to two models and lets you vote on the better answer, often as a blind side-by-side "taste test" with model identities hidden. These millions of human votes on anonymous model pairs are how the AI world ranks which model is actually best beyond marketing claims — and companies use the same technique internally to decide which model to ship. The Class 1 mini-project builds a tiny version using both an OpenAI and a Groq/Llama model.
 
-## LangChain
+## LangChain (preview)
 LangChain is a framework for bigger apps that adds reusable prompt templates, multi-step pipelines (chains joined with the `|` operator), memory, and connectors on top of raw API calls, so you don't reinvent the same plumbing. A taste: `prompt | model` sends the prompt into the model, and the chain can be reused for any input — the same idea as a raw call, just with handy connectors.
 
-## RAG (Retrieval-Augmented Generation)
+## RAG (preview)
 RAG is "chat with your own PDFs/data": you retrieve the relevant snippets from your documents and paste them into the prompt so the AI answers *from* your data, not just its training memory. It's the most common real-world pattern and it tames hallucinations by grounding answers in real text.
 
-## Agents (ReAct)
+## Agents (preview)
 An agent is an LLM given tools (a calculator, web search, your database) plus a loop: it thinks, acts, looks at the result, and repeats until done. The leap is autonomy — nobody hard-codes "check the weather"; the agent *decides* to, because you gave it the tool and the goal. That decision is the jump from "chatbot" to "agent."
 
-## Multi-Agent Systems
+## Multi-Agent Systems (preview)
 For bigger jobs, multi-agent systems do what companies do: split work across specialist agents (e.g., a content team of manager, researcher, writer, editor) that hand off to one another. Dividing responsibilities lets the group tackle larger, more complex problems than a single agent could handle alone.
