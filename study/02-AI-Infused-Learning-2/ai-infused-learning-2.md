@@ -9,6 +9,9 @@
 
 # Quick Review of Concepts
 
+## LLM API Calls (recap)
+In Class 1 you called an LLM using the OpenAI library with three message roles — `system`, `user`, `assistant` — kept your API key safe in a `.env` file, and shipped a Website Summarizer plus an LLM Arena. Everything in Class 2 is the *same* OpenAI call, just organised more cleverly.
+
 ## Three Ways to Steer a Model
 The entire field of AI engineering boils down to three ways of steering a pre-trained model: **prompting** (just tell it clearly — free, instant, no training), **RAG** (hand it your own documents at question-time so it answers from real data), and **fine-tuning** (actually re-train on examples — powerful, costly, reach for it last). Prompting handles roughly 90% of real work; chains, tools, and agents are all still "option 1, organised cleverly."
 
@@ -51,3 +54,8 @@ The `tool` role is a third role joining `system`, `user`, and `assistant`, used 
 ## Gradio ChatInterface
 `gr.ChatInterface(fn=chat)` is a ready-made chat UI — bubbles, input box, send button — that wraps any function into a working chatbot in about four lines. Gradio hands your function the new `message` and the `history` list automatically (passing `history` into your agent is how it gains memory), and `launch(share=True)` generates a public link, instantly turning a local agent into a shareable app.
 
+## RAG (preview)
+The next big build: a model that answers from *your* documents. You retrieve the relevant snippets from your PDFs/data and paste them into the prompt so the AI answers grounded in real text instead of guessing.
+
+## Multi-Agent Systems (preview)
+Several agents handing work to each other — once one agent feels easy, you split bigger tasks across specialist agents that collaborate, the same way a company divides roles.
