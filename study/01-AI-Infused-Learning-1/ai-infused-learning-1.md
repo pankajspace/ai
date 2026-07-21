@@ -57,10 +57,12 @@ AI Engineering is building real products on top of pre-trained models (GPT, Clau
 
 ## API Call & Roles
 Calling an LLM uses three message roles, the entire grammar of chat models: 
-1. `system` (sets personality and rules, written once and applied throughout) 
-2. `user` (the human's actual request)
-3. `assistant` (the model's reply). To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory.
+1. `system` (sets personality and rules, written once and applied throughout).
+2. `user` (the human's actual request).
+3. `assistant` (the model's reply). Its also called as a `model` in case of some LLM's like Gemini.
+4. `tool` (the tool's reply). 
 
+To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory. 
 
 ## API Keys & `.env`
 API keys are secret passwords to your wallet, tied to your billing account. Store them in a `.env` file, add that file to `.gitignore`, and load them at runtime — never hard-code them in shared code. Leaked keys get found by bots within minutes and can run up real bills, so this is the one habit that saves careers.
