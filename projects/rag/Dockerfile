@@ -8,9 +8,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the embedding model so it's baked into the image and doesn't
-# need to be fetched at container startup (which can be slow or hang).
+# Pre-download the embedding + reranker models so they're baked into the image
+# and don't need to be fetched at container startup (which can be slow or hang).
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "from sentence_transformers import CrossEncoder; CrossEncoder('cross-encoder/ms-marco-MiniLM-L6-v2')"
 
 COPY src/ ./src/
 

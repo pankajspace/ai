@@ -1,6 +1,6 @@
 # RAG Lab
 
-A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG — **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF text chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
+A collection of Retrieval-Augmented Generation demos that show the core building blocks of RAG : **embeddings**, **chunking**, **vector stores**, **retrieval-augmented generation**, **reranking**, and **PDF text chat** — using **LangChain**, **Chroma**, **HuggingFace** sentence-transformers, and **OpenAI** (GPT-4o mini), served through a Flask web UI running in a Docker container.
 
 This project mirrors the architecture of the AI Playground (basic) and LangChain Lab (langchain) projects: each feature lives in its own module (`embeddings.py`, `chunk.py`, `index.py`, `rag.py`, `rerank.py`, `pdf_chat.py`) and is exposed through a thin Flask endpoint. This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
