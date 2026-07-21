@@ -40,13 +40,29 @@ Foundation models are large, broadly pre-trained, general-purpose models trained
 Multimodal models understand, combine, and sometimes generate more than one type of data — text, images, audio, or video — reasoning across formats within a single system. Practically, that means showing it a photo of your fridge to get a recipe, or speaking to it and having it talk back: same idea as text, just more senses.
 
 ## 8 AI Use Cases
-Almost every AI product falls into one of eight buckets: coding (the #1 use case — Copilot, Cursor), writing (Jasper, Notion AI), image/video generation (Midjourney), education (Khanmigo), chatbots (Intercom Fin), information aggregation (summarizers/search), data organization (tagging, classification), and workflow/agents (the frontier). Under the hood they all follow the same pattern — connect to a model, give it the right context, get a useful answer, wrap it in a UI.
+Almost every AI product falls into one of eight buckets: 
+1. **coding** (the #1 use case — Copilot, Cursor), 
+2. **writing** (Jasper, Notion AI), 
+3. **image/video generation** (Midjourney), 
+4. **education** (Khanmigo), 
+5. **chatbots** (Intercom Fin), 
+6. **information aggregation** (summarizers/search), 
+7. **data organization** (tagging, classification), 
+8. **workflow/agents** (the frontier). 
+
+Under the hood they all follow the same pattern — connect to a model, give it the right context, get a useful answer, wrap it in a UI.
 
 ## AI Engineering
 AI Engineering is building real products on top of pre-trained models (GPT, Claude, Gemini) without training those models yourself — "you build the car around an engine someone else already built." It sits between the ML engineer/data scientist (who builds the engine, caring about datasets, GPUs, accuracy) and the software engineer (who builds the road — the app, buttons, database). The hardest, most expensive part — training the model — is already done, so Python plus an API key is genuinely enough to begin.
 
 ## API Call & Roles
-Calling an LLM uses three message roles, the entire grammar of chat models: `system` (sets personality and rules, written once and applied throughout), `user` (the human's actual request), and `assistant` (the model's reply). To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory.
+Calling an LLM uses four message roles, the entire grammar of chat models: 
+1. `system` (sets personality and rules, written once and applied throughout) 
+2. `user` (the human's actual request)
+3. `assistant` (the model's reply). Assistant role is also known as `model` role in some places like Gemini.
+4. `tool` - carries the result returned by an external function/tool back to the model during function-calling workflows (e.g., the output of a weather API or database query that the model requested).
+
+To continue a chat you append the assistant's reply back and resend the whole list, since the model has no memory.
 
 ## API Keys & `.env`
 API keys are secret passwords to your wallet, tied to your billing account. Store them in a `.env` file, add that file to `.gitignore`, and load them at runtime — never hard-code them in shared code. Leaked keys get found by bots within minutes and can run up real bills, so this is the one habit that saves careers.
@@ -64,7 +80,7 @@ Prompt engineering reshapes an app's behavior by changing the prompt (especially
 Gradio is a Python library that wraps any function in a shareable web UI in just a few lines — no HTML, CSS, or JavaScript needed. `launch(share=True)` generates a public `*.gradio.live` link (good for ~72 hours) so you can send a friend or screen-record for LinkedIn, turning a local script into a demo people can try instantly.
 
 ## LLM Arena & Voting
-An LLM arena sends one prompt to two models and lets you vote on the better answer, often as a blind side-by-side "taste test" with model identities hidden. These millions of human votes on anonymous model pairs are how the AI world ranks which model is actually best beyond marketing claims — and companies use the same technique internally to decide which model to ship. The Class 1 mini-project builds a tiny version using both an OpenAI and a Groq/Llama model with 👍/👎 voting.
+An LLM arena sends one prompt to two models and lets you vote on the better answer, often as a blind side-by-side "taste test" with model identities hidden. These millions of human votes on anonymous model pairs are how the AI world ranks which model is actually best beyond marketing claims — and companies use the same technique internally to decide which model to ship. The Class 1 mini-project builds a tiny version using both an OpenAI and a Groq/Llama model.
 
 ## LangChain
 LangChain is a framework for bigger apps that adds reusable prompt templates, multi-step pipelines (chains joined with the `|` operator), memory, and connectors on top of raw API calls, so you don't reinvent the same plumbing. A taste: `prompt | model` sends the prompt into the model, and the chain can be reused for any input — the same idea as a raw call, just with handy connectors.
