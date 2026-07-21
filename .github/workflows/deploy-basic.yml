@@ -61,8 +61,10 @@ jobs:
 
       - name: Configure AWS credentials via OIDC
         # Assumes the IAM role named in the AWS_DEPLOY_ROLE_ARN secret. That
-        # role is scoped to ECR push permissions only (see SETUP.md
-        # § 2.11 "Set Up GitHub OIDC and Deploy Role") — this job cannot touch any other AWS resource.
+        # role is scoped to ECR push and read permissions on techtoday/* repos
+        # (see SETUP.md § 2.11 "Set Up GitHub OIDC and Deploy Role") — the read
+        # actions let BuildKit's manifest HEAD check succeed; this job cannot
+        # touch any other AWS resource.
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
