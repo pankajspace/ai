@@ -24,7 +24,7 @@ Prompting handles roughly 90% of real work; chains, tools, and agents are all st
 LangChain is a Python library that provides pre-built "plumbing" — reusable prompts, multi-step pipelines, and memory — so you don't rebuild the same wiring around raw OpenAI calls every time. The one-line intuition: a raw OpenAI call is a single Lego brick, and LangChain is the box of connectors that snaps bricks into machines. Install it with `pip install langchain langchain-openai`.
 
 ## ChatPromptTemplate
-A `ChatPromptTemplate` is a reusable prompt with `{blanks}` you fill in later, much like a wedding-invite template ("Dear `{name}`, join us on `{date}`") — write once, reuse for every guest. It's called "Chat"PromptTemplate because it builds prompts in the same system/user/assistant chat format from Class 1. Create one with `.from_template(...)` for a single string or `.from_messages(...)` for multi-role conversations, then supply the values at run time.
+A `ChatPromptTemplate` is a reusable prompt with `{blanks}` you fill in later, much like a wedding-invite template ("Dear `{name}`, join us on `{date}`") — write once, reuse for every guest. It's called **ChatPromptTemplate** because it builds prompts in the same system/user/assistant chat format from Class 1. Create one with `.from_template(...)` for a single string or `.from_messages(...)` for multi-role conversations, then supply the values at run time.
 
 ## ChatOpenAI
 `ChatOpenAI` is the exact same GPT model you called in Class 1, just wrapped so it can snap onto other LangChain pieces. It takes the familiar `model=` and `temperature=` parameters (e.g. `temperature=0.3` for mostly-focused summaries), so nothing about the model changes — only how it connects. Say it simply as "the model."
