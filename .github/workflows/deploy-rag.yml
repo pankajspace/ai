@@ -79,10 +79,11 @@ jobs:
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
-            # Remove unused images to free disk space before pulling the
-            # new build.  Prevents "no space left on device" failures on
-            # small EBS volumes.
-            docker image prune -af
+            # Light cleanup: remove only dangling (untagged) images.
+            # We keep tagged images cached so that 'docker compose pull'
+            # can reuse unchanged layers and only download the diff —
+            # much faster than re-pulling from scratch every time.
+            docker image prune -f
 
             docker compose -f ~/docker-compose.yml pull rag
             docker compose -f ~/docker-compose.yml up -d --no-deps rag
