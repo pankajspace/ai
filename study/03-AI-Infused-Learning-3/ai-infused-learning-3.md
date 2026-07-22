@@ -37,6 +37,7 @@ Ask a friend a question about an 800-page book they've never read and they'll gu
 
 ```
 ❓ Question → 🔎 Search (find chunks) → 📋 Stuff (add to prompt) → 🧠 LLM (answer) → 💬 Answer (+ citation)
+       1                2                         3                       4                    5
 ```
 
 Boxes 1, 4, and 5 you already knew from Class 1. Boxes 2 and 3 (the "librarian") are the entire job of RAG.
