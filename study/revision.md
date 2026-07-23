@@ -3,6 +3,9 @@
 # Revision AI Infused Learning
 
 ## Basic chat with model
+1. Initialize the OpenAI client
+2. Call the chat completions endpoint
+3. Extract and print the response
 
 ```python
 from openai import OpenAI
@@ -30,6 +33,12 @@ print(response.choices[0].message.content)
 ```
 
 ## Langchain + Memory
+1. Prompt with placeholders
+2. Model - using the same model from Class 1, wrapped for LangChain
+3. Chain - using the pipe (|) operator
+4. Adding Memory / History - list of messages
+5. Invoke the chain with history and the new question
+6. Prints the final response.
 
 ```python
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -61,9 +70,19 @@ print(response)
 ```
 
 ## Agent with one tool
+1. Initialize the OpenAI client
+2. Define single tool
+3. Define tools menu for the model
+4. Create agent function
+5. Check if it asked for a tool
+6. Loop over tools
+7. Run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+8. Prints the final answer.
 
 ```python
+# This is for parsing JSON from strings
 import json
+# This is the OpenAI API
 from openai import OpenAI
 
 # STEP 1: Initialize the OpenAI client
@@ -130,9 +149,19 @@ print(agent("Hi! What can you help with?")) # → no tool → just chats
 ```
 
 ## Agent with multiple tools
+1. Initialize the OpenAI client
+2. Define two tools
+3. Define tools menu for the model
+4. Create agent function
+5. Check if it asked for a tool
+6. Loop over tools for each function call
+7. Run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+8. Prints the final answer.
 
 ```python
+# This is for parsing JSON from strings
 import json
+# This is the OpenAI API
 from openai import OpenAI
 
 # STEP 1: Initialize the OpenAI client
@@ -197,7 +226,7 @@ def agent(user_message):
         # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
 
-        # STEP 6: Loop over tools
+        # STEP 6: Loop over tools for each function call
         for call in msg.tool_calls:
             fn_name = call.function.name
 
@@ -225,4 +254,76 @@ def agent(user_message):
 # STEP 8: Print the final answer.
 print(agent("How much are the shoes?")) # → tool fires → "₹799"
 print(agent("Hi! What can you help with?")) # → no tool → just chats
+```
+
+## RAG + LangChain
+1. Load documents
+2. Split documents into chunks
+3. Pick an embedding model (free, runs locally, no API key)
+4. Build the vector store from chunks + embeddings (saves to disk)
+5. Initialize the LLM model
+6. Define the RAG prompt template
+7. Define the RAG function 
+    - search chunks from vector store
+    - join the chunks
+    - create RAG chain
+    - invoke chain for the answer
+8. Print the final answer.
+
+```python
+# This is a splitter used to split the text into chunks
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+# This is a model used to generate embeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+# This is a vector database used to store embeddings
+from langchain_chroma import Chroma
+# This is an LLM model from OpenAI used for RAG 
+from langchain_openai import ChatOpenAI
+# This is a chat template for RAG
+from langchain_core.prompts import ChatPromptTemplate
+
+# STEP 1: Load the documents (any text — for now, hardcoded)
+docs = [
+    "Our return policy allows refunds within 30 days of purchase.",
+    "Shipping is free for orders above ₹999 across India.",
+    "For corporate orders above 50 units, contact sales@example.com.",
+    "Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.",
+]
+
+# STEP 2: Split the documents into chunks
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+chunks = splitter.create_documents(docs)
+
+# STEP 3: Pick an embedding model (free, runs locally, no API key)
+embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+# STEP 4: Build the vector store from chunks + embeddings (saves to disk)
+db = Chroma.from_documents(chunks, embedder, persist_directory="./chroma_db")
+
+# Print the number of chunks indexed
+print(f"Indexed {len(chunks)} chunks 🎉")
+
+# STEP 5: Initialize the LLM model
+model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+# STEP 6: Define the RAG prompt: instructions + chunks + question
+prompt = ChatPromptTemplate.from_template("""
+Answer the question using ONLY the context below. If the context doesn't contain
+the answer, say "I don't know." Be concise and quote facts directly.
+
+Context: {context}
+
+Question: {question}
+""")
+
+# STEP 7: Define the RAG function
+def rag_answer(question):
+    chunks = db.similarity_search(question, k=3) # Retrieve top 3 chunks
+    context = "\n\n".join(c.page_content for c in chunks) # Join the chunks
+    chain = prompt | model # Build the RAG chain
+    return chain.invoke({"context": context, "question": question}).content # Invoke the chain
+
+# STEP 8: Print the final answer.
+print(rag_answer("How long do I have to return something?"))
+# → "30 days from the purchase date."  ✅ from your data, not a guess
 ```
