@@ -123,11 +123,13 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
+
+# STEP 1: Initialize the OpenAI client
 client = OpenAI()
 
-PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
-
+# STEP 2: Define single tool
 def get_price(item):
+    PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
     print(f"🔧 tool called: get_price({item})")     # so you SEE it happen
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 ```
@@ -139,6 +141,7 @@ The model can't see your Python. You hand it a **menu card** describing the tool
 
 ```python
 # agent.py · part 2
+# STEP 3: Define tools menu for the model
 tools = [{
     "type": "function", # ①
     "function": {
@@ -168,28 +171,36 @@ The menu card's four facts:
 def agent(user_message):
     messages = [{"role": "user", "content": user_message}]
 
-    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools) # ① send message + tools menu
-
+    # STEP 4: Send message + tools menu
+    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
     msg = response.choices[0].message
 
-    if msg.tool_calls: # ② did it ask for a tool?
+    # STEP 5: Check if it asked for a tool
+    if msg.tool_calls: # did it ask for a tool?
 
         # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
 
         for call in msg.tool_calls:
-            args = json.loads(call.function.arguments)  # ③ the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            # The model’s arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            args = json.loads(call.function.arguments)
 
-            result = get_price(args["item"]) # run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+            # STEP 5.1: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+            result = get_price(args["item"])
 
-            messages.append({"role": "tool", "tool_call_id": call.id, "content": result}) # add the tool's result to the conversation
+            # STEP 5.2: add the tool's result to the conversation
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
-        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages) # ④ send it all back → nice answer
+        # STEP 5.3: Create response for the agent with tool's result.
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
 
-        msg = response.choices[0].message # get the final answer
+        # STEP 5.4: Get the final answer.
+        msg = response.choices[0].message
 
+    # STEP 5.5: Return the final answer.
     return msg.content
 
+# STEP 6: Test the agent.
 print(agent("How much are the shoes?")) # → tool fires → "₹799"
 print(agent("Hi! What can you help with?")) # → no tool → just chats
 ```
