@@ -128,6 +128,7 @@ response = client.chat.completions.create(
         {"role": "user",   "content": "Suggest one thing to do in Bangalore."},
     ],
 )
+
 print(response.choices[0].message.content)
 ```
 
