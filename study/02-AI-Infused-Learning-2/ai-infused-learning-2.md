@@ -80,18 +80,23 @@ Class 1 truth: models forget everything between calls. The fix is simply to **re
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 
+# STEP 1: Prompt with placeholders
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a friendly tutor."),     # ① personality, like Class 1
     MessagesPlaceholder("history"),              # ② past turns park here
     ("human", "{question}"),                     # ③ the new question
 ])
 
+# STEP 2: Model - using the same model from Class 1, wrapped for LangChain
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
 
+# STEP 3: Chain - using the pipe (|) operator
 chain = prompt | model
 
+# STEP 4: Adding Memory / History - list of messages
 history = [HumanMessage("My name is Aarav."), AIMessage("Hi Aarav!")]
 
+# STEP 5: Invoke the chain with history and the new question
 response = chain.invoke({"history": history, "question": "What's my name?"}).content
 
 print(response)
