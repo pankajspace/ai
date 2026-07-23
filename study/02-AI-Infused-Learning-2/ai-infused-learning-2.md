@@ -79,6 +79,7 @@ Class 1 truth: models forget everything between calls. The fix is simply to **re
 # memory_demo.py
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI
 
 # STEP 1: Prompt with placeholders
 prompt = ChatPromptTemplate.from_messages([
@@ -99,6 +100,7 @@ history = [HumanMessage("My name is Aarav."), AIMessage("Hi Aarav!")]
 # STEP 5: Invoke the chain with history and the new question
 response = chain.invoke({"history": history, "question": "What's my name?"}).content
 
+# STEP 6: Prints the final response.
 print(response)
 # → "Your name is Aarav."  ✅ it "remembered" — because WE re-sent the history
 ```
