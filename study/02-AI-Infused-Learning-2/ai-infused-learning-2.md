@@ -42,19 +42,19 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
-from scraper import fetch_website_contents   # reuse Class 1's scraper
+from scraper import fetch_website_contents # reuse Class 1's scraper
 load_dotenv()
 
 prompt = ChatPromptTemplate.from_template("Give a short, friendly summary of this website:\n\n{website}") # ①
 
-model  = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)   # ②
+model  = ChatOpenAI(model="gpt-4o-mini", temperature=0.3) # ②
 
-parser = StrOutputParser()                             # ③
+parser = StrOutputParser() # ③
 
-chain = prompt | model | parser                        # ④
+chain = prompt | model | parser # ④
 
 def summarize(url):
-    return chain.invoke({"website": fetch_website_contents(url)})   # ⑤
+    return chain.invoke({"website": fetch_website_contents(url)}) # ⑤
 
 print(summarize("https://anthropic.com"))
 ```
@@ -133,11 +133,11 @@ The model can't see your Python. You hand it a **menu card** describing the tool
 ```python
 # agent.py · part 2
 tools = [{
-    "type": "function",                                      # ①
+    "type": "function", # ①
     "function": {
-        "name": "get_price",                                 # ②
-        "description": "Get the price of a shop item the user asks about.",  # ③
-        "parameters": {                                       # ④
+        "name": "get_price", # ②
+        "description": "Get the price of a shop item the user asks about.", # ③
+        "parameters": {
             "type": "object",
             "properties": {"item": {"type": "string", "description": "the item name"}},
             "required": ["item"],
@@ -218,9 +218,9 @@ Take the same `agent()` and give it a face. Gradio has a ready-made **chat inter
 ```python
 # app.py
 import gradio as gr
-from agent import agent              # the function you just wrote
+from agent import agent # the function you just wrote
 
-def chat(message, history):          # ① Gradio fills these two in for you
+def chat(message, history): # ① Gradio fills these two in for you
     return agent(message)
 
 gr.ChatInterface(fn=chat, title="🛍️ Smart Shop Assistant").launch(share=True)  # ②
@@ -234,7 +234,7 @@ $ pip install openai gradio python-dotenv
 $ python app.py
 
 Running on local URL:  http://127.0.0.1:7860
-Running on public URL: https://shop-xyz.gradio.live   # ← your shareable agent!
+Running on public URL: https://shop-xyz.gradio.live # ← your shareable agent!
 ```
 
 Ask a price question ("How much are the pants?") and watch the terminal print `🔧 tool called: get_price(pants)` — your agent used its tool. Then ask small talk ("What's your return policy?") and no tool fires. It's *deciding*, not following a script. That 15-second contrast is your LinkedIn clip.
