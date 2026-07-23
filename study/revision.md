@@ -77,10 +77,10 @@ def get_price(item):
 
 # STEP 3: Define tools menu for the model
 tools = [{
-    "type": "function", # ①
+    "type": "function",
     "function": {
-        "name": "get_price", # ②
-        "description": "Get the price of a shop item the user asks about.", # ③
+        "name": "get_price",
+        "description": "Get the price of a shop item the user asks about.",
         "parameters": {
             "type": "object",
             "properties": {"item": {"type": "string", "description": "the item name"}},
@@ -89,10 +89,12 @@ tools = [{
     },
 }]
 
+# STEP 4: Create agent function
 def agent(user_message):
+    # Initialize messages
     messages = [{"role": "user", "content": user_message}]
 
-    # STEP 4: Send message + tools menu
+    # Send message + tools menu
     response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
     msg = response.choices[0].message
 
@@ -102,26 +104,125 @@ def agent(user_message):
         # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
 
+        # STEP 6: Loop over tools
         for call in msg.tool_calls:
             # The model’s arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
             args = json.loads(call.function.arguments)
 
-            # STEP 5.1: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+            # STEP 7: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
             result = get_price(args["item"])
 
-            # STEP 5.2: add the tool's result to the conversation
+            # Add the tool's result to the conversation
             messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
-        # STEP 5.3: Create response for the agent with tool's result.
+        # Create response for the agent with tool's result.
         response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
 
-        # STEP 5.4: Get the final answer.
+        # Get the final answer.
         msg = response.choices[0].message
 
-    # STEP 5.5: Return the final answer.
+    # Return the final answer.
     return msg.content
 
-# STEP 6: Test the agent.
+# STEP 8: Print the final answer.
+print(agent("How much are the shoes?")) # → tool fires → "₹799"
+print(agent("Hi! What can you help with?")) # → no tool → just chats
+```
+
+## Agent with multiple tools
+
+```python
+import json
+from openai import OpenAI
+
+# STEP 1: Initialize the OpenAI client
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# STEP 2: Define two tools
+def get_price(item):
+    PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
+    print(f"🔧 tool called: get_price({item})")     # so you SEE it happen
+    return f"₹{PRICES.get(item.lower(), 'unknown')}"
+
+def get_category(item):
+    """Classifies an item into one of three categories."""
+    item_lower = item.lower()
+    if item_lower in ["shoes", "hat", "bag"]:
+        return f"The category of {item} is Accessories."
+    elif item_lower in ["shorts", "pants"]:
+        return f"The category of {item} is Clothing."
+    else:
+        return "This item does not belong to any of the three categories."
+
+# STEP 3: Define tools menu for the model
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_price",
+        "description": "Get the price of a shop item the user asks about.",
+        "parameters": {
+            "type": "object",
+            "properties": {"item": {"type": "string", "description": "the item name"}},
+            "required": ["item"],
+        },
+    },
+}, {
+    "type": "function",
+    "function": {
+        "name": "get_category",
+        "description": "Classifies an item into one of three categories.",
+        "parameters": {
+            "type": "object",
+            "properties": {"item": {"type": "string", "description": "the item name"}},
+            "required": ["item"],
+        },
+    },
+}]
+
+# STEP 3.1: Create a dictionary of tool functions
+TOOL_NAMES = {"get_price", "get_category"}
+
+# STEP 4: Create agent function
+def agent(user_message):
+    # Initialize messages
+    messages = [{"role": "user", "content": user_message}]
+
+    # Send message + tools menu
+    response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
+    msg = response.choices[0].message
+
+    # STEP 5: Check if it asked for a tool
+    if msg.tool_calls: # did it ask for a tool?
+
+        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
+        messages.append(msg)
+
+        # STEP 6: Loop over tools
+        for call in msg.tool_calls:
+            fn_name = call.function.name
+
+            # The model’s arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            args = json.loads(call.function.arguments)
+
+            # get tool function
+            fn = TOOL_NAMES.get(fn_name)
+
+            # STEP 7: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+            result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
+
+            # Add the tool's result to the conversation
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
+
+        # Create response for the agent with tool's result.
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
+
+        # Get the final answer.
+        msg = response.choices[0].message
+
+    # Return the final answer.
+    return msg.content
+
+# STEP 8: Print the final answer.
 print(agent("How much are the shoes?")) # → tool fires → "₹799"
 print(agent("Hi! What can you help with?")) # → no tool → just chats
 ```

@@ -143,10 +143,10 @@ The model can't see your Python. You hand it a **menu card** describing the tool
 # agent.py · part 2
 # STEP 3: Define tools menu for the model
 tools = [{
-    "type": "function", # ①
+    "type": "function",
     "function": {
-        "name": "get_price", # ②
-        "description": "Get the price of a shop item the user asks about.", # ③
+        "name": "get_price",
+        "description": "Get the price of a shop item the user asks about.",
         "parameters": {
             "type": "object",
             "properties": {"item": {"type": "string", "description": "the item name"}},
@@ -168,10 +168,12 @@ The menu card's four facts:
 ### Step 3 — the loop: think → maybe call tool → answer
 ```python
 # agent.py · part 3
+# STEP 4: Create agent function
 def agent(user_message):
+    # Initialize messages
     messages = [{"role": "user", "content": user_message}]
 
-    # STEP 4: Send message + tools menu
+    # Send message + tools menu
     response = client.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
     msg = response.choices[0].message
 
@@ -181,26 +183,27 @@ def agent(user_message):
         # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
 
+        # STEP 6: Loop over tools
         for call in msg.tool_calls:
             # The model’s arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
             args = json.loads(call.function.arguments)
 
-            # STEP 5.1: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
+            # STEP 7: run the real Python function — the model never runs code itself, it *asks*, and your Python *does*
             result = get_price(args["item"])
 
-            # STEP 5.2: add the tool's result to the conversation
+            # Add the tool's result to the conversation
             messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 
-        # STEP 5.3: Create response for the agent with tool's result.
+        # Create response for the agent with tool's result.
         response = client.chat.completions.create(model="gpt-4o-mini", messages=messages)
 
-        # STEP 5.4: Get the final answer.
+        # Get the final answer.
         msg = response.choices[0].message
 
-    # STEP 5.5: Return the final answer.
+    # Return the final answer.
     return msg.content
 
-# STEP 6: Test the agent.
+# STEP 8: Print the final answer.
 print(agent("How much are the shoes?")) # → tool fires → "₹799"
 print(agent("Hi! What can you help with?")) # → no tool → just chats
 ```
