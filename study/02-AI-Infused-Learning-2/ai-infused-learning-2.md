@@ -45,8 +45,7 @@ from dotenv import load_dotenv
 from scraper import fetch_website_contents   # reuse Class 1's scraper
 load_dotenv()
 
-prompt = ChatPromptTemplate.from_template(            # ①
-    "Give a short, friendly summary of this website:\n\n{website}")
+prompt = ChatPromptTemplate.from_template("Give a short, friendly summary of this website:\n\n{website}") # ①
 
 model  = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)   # ②
 
