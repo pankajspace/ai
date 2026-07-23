@@ -32,7 +32,6 @@ print(response.choices[0].message.content)
 ## Langchain + Memory
 
 ```python
-# memory_demo.py
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_openai import ChatOpenAI
