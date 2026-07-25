@@ -66,17 +66,17 @@ projects/docker/
     │   ├── app.py               # Flask server (Blueprint + PATH_PREFIX)
     │   ├── config.py            # .env loader
     │   └── quiz.py              # Question bank + get/check functions
-    ├── quick-bite-eta/          # Example 1: single-container ML project
+    ├── quick-bite-eta/          # Level 1 — 1 container (ML)
     │   ├── Dockerfile
     │   ├── app.py, train.py
     │   └── README.md
-    ├── scaler-gpt/              # Example 2: two-container RAG project
+    ├── scaler-gpt/              # Level 2 — 2 containers (LLM + RAG)
     │   ├── Dockerfile
     │   ├── docker-compose.yml
     │   ├── app.py, ingest.py
     │   ├── docs/
     │   └── README.md
-    └── desk-buddy/              # Example 3: three-container agentic project
+    └── desk-buddy/              # Level 3 — 3 containers (Agents)
         ├── docker-compose.yml
         ├── agent/ (Dockerfile + app.py)
         ├── tools/ (Dockerfile + app.py)
@@ -99,17 +99,19 @@ projects/docker/
 
 ---
 
-## Example Projects (standalone)
+## Example Projects (standalone, simpler → complex)
 
-These three directories under `src/` are self-contained Docker demo projects
-from the masterclass. Each has its own Dockerfile(s), requirements, and README
-with step-by-step run instructions. They are **not** part of the main Flask
-app — they run independently.
+Three self-contained Docker demo projects from the masterclass, ordered by
+complexity. Each has its own Dockerfile(s), requirements, and README with
+step-by-step run instructions. They are **not** part of the main Flask app —
+they run independently.
 
-### 1. QuickBite ETA (`src/quick-bite-eta/`)
+### Level 1 — QuickBite ETA (`src/quick-bite-eta/`) · 1 container
 
-ML model (sklearn + FastAPI) served in a single container. Demonstrates
-Dockerfile anatomy, layer caching, port mapping, and `.dockerignore`.
+ML model (sklearn + FastAPI) served in a **single container** via
+`docker build` + `docker run`. Covers the Docker fundamentals: Dockerfile
+anatomy, layer caching, port mapping, `.dockerignore`, and the photograph rule.
+No API keys required.
 
 ```bash
 cd src/quick-bite-eta
@@ -117,11 +119,12 @@ docker build -t quickbite-eta:v1 .
 docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1
 ```
 
-### 2. ScalerGPT (`src/scaler-gpt/`)
+### Level 2 — ScalerGPT (`src/scaler-gpt/`) · 2 containers
 
-RAG chatbot (FastAPI + OpenAI + ChromaDB) as a two-container Compose app.
-Demonstrates secrets via `.env`, multi-container orchestration, service-name
-networking, volumes, and the "started ≠ ready" lesson.
+RAG chatbot (FastAPI + OpenAI + ChromaDB) as a **two-container** Compose app.
+Builds on Level 1 by adding secrets via `.env`, multi-container orchestration
+with `docker compose`, service-name networking, volumes for persistent data,
+and the "started ≠ ready" lesson with retry loops. Requires `OPENAI_API_KEY`.
 
 ```bash
 cd src/scaler-gpt
@@ -129,11 +132,13 @@ cp .env.example .env    # add your OPENAI_API_KEY
 docker compose up -d --build
 ```
 
-### 3. DeskBuddy (`src/desk-buddy/`)
+### Level 3 — DeskBuddy (`src/desk-buddy/`) · 3 containers
 
-Agentic system with three containers (agent + tools + Redis). Demonstrates
-microservice separation, private networking (no published port), the agent
-loop, and stateful memory.
+Agentic AI system with **three containers** (agent + tools + Redis), each
+with its own Dockerfile and code. Builds on Level 2 by adding microservice
+separation, private networking (tools has no published port), the agent
+think→act→observe loop, and stateful conversation memory. Requires
+`OPENAI_API_KEY`.
 
 ```bash
 cd src/desk-buddy
