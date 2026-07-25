@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    command: python src/python/app.py
+    ports:
+      - "8083:5000"
+    volumes:
+      - ./src:/app/src
+
+  # One-off CLI service to run the quiz feature directly, without the web UI.
+  quiz:
+    build: .
+    env_file: .env
+    command: python src/python/quiz.py

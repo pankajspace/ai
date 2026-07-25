@@ -84,6 +84,22 @@ available for the next project.
 11. **Trigger path:** `projects/rag/**`.
 12. **Secrets:** `OPENAI_API_KEY` only. Embeddings run locally with no API key.
 
+### Docker Quiz Lab (`docker`)
+
+1. **Type:** Container app.
+2. **Folder:** `projects/docker/`.
+3. **Production URL:** `https://app.techtoday.click/docker/`.
+4. **Local dev URL:** `http://localhost:8083`.
+5. **Container port:** `5000`.
+6. **EC2 host port:** `5003`.
+7. **ECR repository:** `techtoday/docker`.
+8. **Path prefix:** `PATH_PREFIX=/docker`.
+9. **Routes:** `/docker/`, `/docker/quiz`, `/docker/quiz/check`.
+10. **CI/CD workflow:** `.github/workflows/deploy-docker.yml`.
+11. **Trigger path:** `projects/docker/**`.
+12. **Secrets:** none (quiz is keyless).
+13. **Notes:** also contains three standalone example projects under `src/` (QuickBite ETA, ScalerGPT, DeskBuddy) — each with their own Dockerfiles and compose files.
+
 ### Container App Template (`template`)
 
 1. **Type:** Starter template, not a production project.
@@ -99,8 +115,8 @@ available for the next project.
 Use these values for the next new container app, then update this section after the
 project is added.
 
-1. **Local dev port:** `8083`.
-2. **EC2 host port:** `5003`.
+1. **Local dev port:** `8084`.
+2. **EC2 host port:** `5004`.
 3. **Container port:** `5000`.
 4. **Production base URL:** `https://app.techtoday.click/<project-name>/`.
 5. **ECR repository:** `techtoday/<project-name>`.

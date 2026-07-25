@@ -1,0 +1,113 @@
+# CI/CD workflow TEMPLATE for a container project.
+#
+# This file is NOT active where it sits. To enable automatic deploys for your
+# new project:
+#   1. Copy it to .github/workflows/deploy-<project-name>.yml
+#   2. Replace every PROJECT_NAME token with your project's folder name, e.g.:
+#        # Linux (GNU sed)
+#        sed -i 's/PROJECT_NAME/my-project/g' .github/workflows/deploy-my-project.yml
+#        # macOS (BSD sed)
+#        sed -i '' 's/PROJECT_NAME/my-project/g' .github/workflows/deploy-my-project.yml
+#   3. Commit — every later push under projects/<project-name>/ redeploys it.
+#
+# It reuses the same shared GitHub secrets (AWS_REGION, AWS_ACCOUNT_ID,
+# AWS_DEPLOY_ROLE_ARN, EC2_HOST, EC2_SSH_KEY) as the other projects — no new
+# secrets to configure. See projects/SETUP.md § 2.11 / § 2.12.
+name: Deploy PROJECT_NAME
+
+on:
+  push:
+    branches: [main]
+    # Only run when this project's own files change, so unrelated commits
+    # don't trigger an unnecessary redeploy.
+    paths:
+      - 'projects/PROJECT_NAME/**'
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: techtoday/PROJECT_NAME
+  # Full 40-character git commit SHA for this run, pushed as one of the three
+  # image tags below.
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      # id-token: write lets this job request a short-lived OIDC token from
+      # GitHub, exchanged for temporary AWS credentials — no static AWS keys
+      # stored as GitHub Secrets.
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          source-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute a human-readable build tag
+        # Sortable, human-friendly tag: YYYYMMDD-HHMMSS-<run-number>-<short-sha>
+        # e.g. 20260701-153045-42-a1b2c3d — used by the Rollback steps in
+        # PROJECTS.md § Daily Usage.
+        id: vars
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BUILD_TAG=$(date -u +'%Y%m%d-%H%M%S')-${GITHUB_RUN_NUMBER}-${SHORT_SHA}
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build, tag, and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
+        run: |
+          cd projects/PROJECT_NAME
+
+          # Build once, then apply all three tags to the same image layers.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Record build tag in job summary
+        run: |
+          echo "### Deployed image tags" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Deploy to EC2 via SSH
+        # Pulls the ":latest" image just pushed above and restarts only this
+        # project's container. --no-deps leaves every other service untouched.
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 15m
+          script: |
+            aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+              docker login --username AWS --password-stdin \
+              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+            # Remove unused images to free disk space before pulling the
+            # new build.  Prevents "no space left on device" failures on
+            # small EBS volumes.
+            docker image prune -af
+
+            docker compose -f ~/docker-compose.yml pull PROJECT_NAME
+            docker compose -f ~/docker-compose.yml up -d --no-deps PROJECT_NAME
