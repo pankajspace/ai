@@ -11,6 +11,21 @@ let answered = 0;
 let currentQuestion = null;
 
 /**
+ * Toggle an example card's details panel open/closed.
+ * Stops propagation so clicking inside the details doesn't re-toggle.
+ * @param {HTMLElement} card
+ */
+function toggleDetails(card) {
+    card.classList.toggle("open");
+    const btn = card.querySelector(".toggle-btn");
+    if (btn) {
+        btn.textContent = card.classList.contains("open")
+            ? "Hide Run Instructions ▴"
+            : "Show Run Instructions ▾";
+    }
+}
+
+/**
  * Fetch a random quiz question from the API and render it.
  */
 async function loadQuestion() {

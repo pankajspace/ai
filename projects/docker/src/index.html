@@ -59,31 +59,123 @@
                     </div>
 
                     <!-- Example projects — ordered simpler → complex -->
-                    <div class="card">
+                    <div class="card example-card" onclick="toggleDetails(this)">
                         <h2>&#x1F6F5; QuickBite ETA</h2>
                         <p>ML model (sklearn + FastAPI) in a single container.
                             Covers Dockerfile anatomy, layer caching, port mapping,
                             and <code>.dockerignore</code>. No API keys needed.
                         </p>
                         <span class="badge">Level 1 · 1 container</span>
+                        <button class="toggle-btn">Show Run Instructions ▾</button>
+                        <div class="example-details">
+                            <div class="detail-section">
+                                <h3>📁 Files</h3>
+                                <p><code>Dockerfile</code> · <code>app.py</code> · <code>train.py</code> · <code>requirements.txt</code></p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🚀 Run it</h3>
+                                <pre><code>cd src/quick-bite-eta
+docker build -t quickbite-eta:v1 .
+docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1
+
+# Test it
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"distance_km": 4.5, "prep_time_min": 15, "rider_available": 1, "is_raining": 1}'
+
+# Swagger UI: http://localhost:8000/docs</code></pre>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🔑 Concepts</h3>
+                                <p>FROM · WORKDIR · COPY · RUN · CMD · EXPOSE · layer caching trick · port mapping · .dockerignore · the photograph rule</p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🧹 Clean up</h3>
+                                <pre><code>docker stop eta-service && docker rm eta-service</code></pre>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card example-card" onclick="toggleDetails(this)">
                         <h2>&#x1F4DA; ScalerGPT</h2>
                         <p>RAG chatbot (FastAPI + OpenAI + ChromaDB) as a two-container
                             Compose app. Adds secrets, volumes, service networking,
                             and the "started ≠ ready" lesson.
                         </p>
                         <span class="badge">Level 2 · 2 containers</span>
+                        <button class="toggle-btn">Show Run Instructions ▾</button>
+                        <div class="example-details">
+                            <div class="detail-section">
+                                <h3>📁 Files</h3>
+                                <p><code>Dockerfile</code> · <code>docker-compose.yml</code> · <code>app.py</code> · <code>ingest.py</code> · <code>docs/</code></p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🚀 Run it</h3>
+                                <pre><code>cd src/scaler-gpt
+cp .env.example .env          # add your OPENAI_API_KEY
+docker compose up -d --build
+
+# Wait for both containers, then ingest docs
+docker compose exec app python ingest.py
+
+# Ask a question
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What is Docker?"}'
+
+# Swagger UI: http://localhost:8000/docs</code></pre>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🔑 Concepts</h3>
+                                <p>secrets via .env · docker compose · service-name networking · volumes · published vs internal ports · started ≠ ready · retry loops · docker compose exec</p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🧹 Clean up</h3>
+                                <pre><code>docker compose down        # keep data
+docker compose down -v     # wipe vector DB</code></pre>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="card card-wide">
+                    <div class="card card-wide example-card" onclick="toggleDetails(this)">
                         <h2>&#x1F916; DeskBuddy</h2>
                         <p>Agentic AI system with three containers (agent + tools + Redis).
                             Adds microservice separation, private networking, the agent
                             loop, and stateful memory.
                         </p>
                         <span class="badge">Level 3 · 3 containers</span>
+                        <button class="toggle-btn">Show Run Instructions ▾</button>
+                        <div class="example-details">
+                            <div class="detail-section">
+                                <h3>📁 Files</h3>
+                                <p><code>docker-compose.yml</code> · <code>agent/</code> (Dockerfile + app.py) · <code>tools/</code> (Dockerfile + app.py)</p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🚀 Run it</h3>
+                                <pre><code>cd src/desk-buddy
+cp .env.example .env          # add your OPENAI_API_KEY
+docker compose up -d --build
+
+# Two-tool task: calculator + clock
+curl -X POST http://localhost:9000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "demo", "message": "What is 23*47, and what time is it?"}'
+
+# Memory test: follow-up with same session_id
+curl -X POST http://localhost:9000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "demo", "message": "Now double that multiplication result"}'</code></pre>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🔑 Concepts</h3>
+                                <p>microservice separation · private ports (no ports: = no public entrance) · the agent loop (think → act → observe) · Redis memory · lazy vs eager connections</p>
+                            </div>
+                            <div class="detail-section">
+                                <h3>🧹 Clean up</h3>
+                                <pre><code>docker compose down        # keep memory
+docker compose down -v     # wipe Redis</code></pre>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
