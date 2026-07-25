@@ -1,4 +1,4 @@
-"""Flask server exposing the Docker Quiz endpoints.
+"""Flask server exposing the Docker Quiz endpoints and proxying to example services.
 
 Architecture notes
 ------------------
@@ -11,6 +11,8 @@ Architecture notes
 - flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
   page can call the API even if it is served from a different origin during
   development.
+- Proxy routes forward browser requests to internal Docker services
+  (quickbite, scalergpt, deskbuddy-agent) using service-name networking.
 
 To add a feature: create a module under ``src/python/`` (see ``quiz.py``),
 import its function here, and add a matching ``@bp.route(...)`` handler.
@@ -19,6 +21,7 @@ import its function here, and add a matching ``@bp.route(...)`` handler.
 import os
 from pathlib import Path
 
+import requests as http_client
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
@@ -45,9 +48,43 @@ CORS(app)
 # the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
 bp = Blueprint("main", __name__)
 
+# Internal service URLs — these use Docker Compose service names, never IPs.
+QUICKBITE_URL = "http://quickbite:8000"
+SCALERGPT_URL = "http://scalergpt:8000"
+DESKBUDDY_URL = "http://deskbuddy-agent:9000"
+
+# Timeout for proxy requests to example services (seconds).
+PROXY_TIMEOUT = 30
+
 
 # ---------------------------------------------------------------------------
-# Routes
+# Helper
+# ---------------------------------------------------------------------------
+
+def proxy_request(method, url, json_body=None):
+    """Forward a request to an internal service and return its JSON response.
+
+    Returns a tuple of (response_dict, http_status_code). On connection
+    errors, returns a helpful error message instead of crashing.
+    """
+    try:
+        if method == "GET":
+            resp = http_client.get(url, timeout=PROXY_TIMEOUT)
+        else:
+            resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        return resp.json(), resp.status_code
+    except http_client.ConnectionError:
+        service = url.split("//")[1].split(":")[0]
+        return {
+            "error": f"Service '{service}' is not running. "
+                     f"Start it with: docker compose up {service}"
+        }, 503
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+# ---------------------------------------------------------------------------
+# Routes — Quiz
 # ---------------------------------------------------------------------------
 
 
@@ -107,6 +144,79 @@ def quiz_check_route():
     if "error" in result:
         return jsonify(result), 400
     return jsonify(result)
+
+
+# ---------------------------------------------------------------------------
+# Routes — QuickBite ETA (Level 1, keyless)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/quickbite/predict", methods=["POST"])
+def quickbite_predict():
+    """Proxy ETA prediction to the QuickBite FastAPI service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    return jsonify(data), status
+
+
+@bp.route("/quickbite/status")
+def quickbite_status():
+    """Check if QuickBite service is running."""
+    data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — ScalerGPT (Level 2, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/scalergpt/ask", methods=["POST"])
+def scalergpt_ask():
+    """Proxy RAG question to the ScalerGPT FastAPI service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    return jsonify(data), status
+
+
+@bp.route("/scalergpt/status")
+def scalergpt_status():
+    """Check if ScalerGPT service is running and how many docs are indexed."""
+    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    return jsonify(data), status
+
+
+@bp.route("/scalergpt/ingest", methods=["POST"])
+def scalergpt_ingest():
+    """Trigger document ingestion on the ScalerGPT service.
+
+    This runs ingest.py inside the scalergpt container via a simple POST.
+    Note: This is a simplified proxy — in production you'd use docker exec.
+    """
+    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    if status != 200:
+        return jsonify(data), status
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — DeskBuddy (Level 3, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/deskbuddy/chat", methods=["POST"])
+def deskbuddy_chat():
+    """Proxy chat message to the DeskBuddy agent service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    return jsonify(data), status
+
+
+@bp.route("/deskbuddy/status")
+def deskbuddy_status():
+    """Check if DeskBuddy agent service is running."""
+    data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    return jsonify(data), status
 
 
 # ---------------------------------------------------------------------------

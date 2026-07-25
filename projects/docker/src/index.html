@@ -34,7 +34,7 @@
             <div class="container">
                 <div class="grid">
 
-                    <!-- Quiz feature card -->
+                    <!-- ── Card 1: Docker Quiz ── -->
                     <div class="card card-wide">
                         <h2>&#x1F433; Docker Quiz</h2>
                         <p>Answer multiple-choice questions about Docker concepts from the study notes.
@@ -58,124 +58,87 @@
                         </div>
                     </div>
 
-                    <!-- Example projects — ordered simpler → complex -->
-                    <div class="card example-card" onclick="toggleDetails(this)">
+                    <!-- ── Card 2: QuickBite ETA (Level 1 · 1 container · keyless) ── -->
+                    <div class="card card-wide">
                         <h2>&#x1F6F5; QuickBite ETA</h2>
-                        <p>ML model (sklearn + FastAPI) in a single container.
-                            Covers Dockerfile anatomy, layer caching, port mapping,
-                            and <code>.dockerignore</code>. No API keys needed.
-                        </p>
-                        <span class="badge">Level 1 · 1 container</span>
-                        <button class="toggle-btn">Show Run Instructions ▾</button>
-                        <div class="example-details">
-                            <div class="detail-section">
-                                <h3>📁 Files</h3>
-                                <p><code>Dockerfile</code> · <code>app.py</code> · <code>train.py</code> · <code>requirements.txt</code></p>
-                            </div>
-                            <div class="detail-section">
-                                <h3>🚀 Run it</h3>
-                                <pre><code>cd src/quick-bite-eta
-docker build -t quickbite-eta:v1 .
-docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1
+                        <p>Predict food delivery ETA using a trained ML model. Single container, no API keys.</p>
+                        <span class="badge">Level 1 · 1 container · keyless</span>
 
-# Test it
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"distance_km": 4.5, "prep_time_min": 15, "rider_available": 1, "is_raining": 1}'
-
-# Swagger UI: http://localhost:8000/docs</code></pre>
+                        <div class="demo-form" id="quickbiteForm">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="qb-distance">Distance (km)</label>
+                                    <input type="range" id="qb-distance" min="0.5" max="12" step="0.5" value="4.5" />
+                                    <span class="range-value" id="qb-distance-val">4.5</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="qb-prep">Prep time (min)</label>
+                                    <input type="range" id="qb-prep" min="5" max="30" step="1" value="15" />
+                                    <span class="range-value" id="qb-prep-val">15</span>
+                                </div>
                             </div>
-                            <div class="detail-section">
-                                <h3>🔑 Concepts</h3>
-                                <p>FROM · WORKDIR · COPY · RUN · CMD · EXPOSE · layer caching trick · port mapping · .dockerignore · the photograph rule</p>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label>Rider available?</label>
+                                    <div class="toggle-group">
+                                        <button class="toggle-opt active" data-field="qb-rider" data-val="1">Yes</button>
+                                        <button class="toggle-opt" data-field="qb-rider" data-val="0">No</button>
+                                    </div>
+                                    <input type="hidden" id="qb-rider" value="1" />
+                                </div>
+                                <div class="input-group">
+                                    <label>Is it raining?</label>
+                                    <div class="toggle-group">
+                                        <button class="toggle-opt" data-field="qb-rain" data-val="1">Yes 🌧</button>
+                                        <button class="toggle-opt active" data-field="qb-rain" data-val="0">No ☀️</button>
+                                    </div>
+                                    <input type="hidden" id="qb-rain" value="0" />
+                                </div>
                             </div>
-                            <div class="detail-section">
-                                <h3>🧹 Clean up</h3>
-                                <pre><code>docker stop eta-service && docker rm eta-service</code></pre>
-                            </div>
+                            <button id="qb-predict-btn" onclick="predictETA()">Predict ETA 🛵</button>
                         </div>
+
+                        <div class="result" id="quickbiteResult"></div>
                     </div>
 
-                    <div class="card example-card" onclick="toggleDetails(this)">
+                    <!-- ── Card 3: ScalerGPT (Level 2 · 2 containers · needs key) ── -->
+                    <div class="card card-wide">
                         <h2>&#x1F4DA; ScalerGPT</h2>
-                        <p>RAG chatbot (FastAPI + OpenAI + ChromaDB) as a two-container
-                            Compose app. Adds secrets, volumes, service networking,
-                            and the "started ≠ ready" lesson.
-                        </p>
-                        <span class="badge">Level 2 · 2 containers</span>
-                        <button class="toggle-btn">Show Run Instructions ▾</button>
-                        <div class="example-details">
-                            <div class="detail-section">
-                                <h3>📁 Files</h3>
-                                <p><code>Dockerfile</code> · <code>docker-compose.yml</code> · <code>app.py</code> · <code>ingest.py</code> · <code>docs/</code></p>
-                            </div>
-                            <div class="detail-section">
-                                <h3>🚀 Run it</h3>
-                                <pre><code>cd src/scaler-gpt
-cp .env.example .env          # add your OPENAI_API_KEY
-docker compose up -d --build
+                        <p>Ask questions about Docker — answers are grounded in your notes using RAG (Retrieval-Augmented Generation).</p>
+                        <span class="badge">Level 2 · 2 containers · needs API key</span>
 
-# Wait for both containers, then ingest docs
-docker compose exec app python ingest.py
-
-# Ask a question
-curl -X POST http://localhost:8000/ask \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is Docker?"}'
-
-# Swagger UI: http://localhost:8000/docs</code></pre>
+                        <div class="demo-form" id="scalergptForm">
+                            <div class="input-group">
+                                <label for="sg-query">Ask a question about Docker</label>
+                                <input type="text" id="sg-query" placeholder="e.g. Why should I copy requirements.txt before the rest of my code?" />
                             </div>
-                            <div class="detail-section">
-                                <h3>🔑 Concepts</h3>
-                                <p>secrets via .env · docker compose · service-name networking · volumes · published vs internal ports · started ≠ ready · retry loops · docker compose exec</p>
-                            </div>
-                            <div class="detail-section">
-                                <h3>🧹 Clean up</h3>
-                                <pre><code>docker compose down        # keep data
-docker compose down -v     # wipe vector DB</code></pre>
-                            </div>
+                            <button id="sg-ask-btn" onclick="askScalerGPT()">Ask ScalerGPT 📚</button>
                         </div>
+
+                        <div class="result" id="scalergptResult"></div>
                     </div>
 
-                    <div class="card card-wide example-card" onclick="toggleDetails(this)">
+                    <!-- ── Card 4: DeskBuddy (Level 3 · 3 containers · needs key) ── -->
+                    <div class="card card-wide">
                         <h2>&#x1F916; DeskBuddy</h2>
-                        <p>Agentic AI system with three containers (agent + tools + Redis).
-                            Adds microservice separation, private networking, the agent
-                            loop, and stateful memory.
-                        </p>
-                        <span class="badge">Level 3 · 3 containers</span>
-                        <button class="toggle-btn">Show Run Instructions ▾</button>
-                        <div class="example-details">
-                            <div class="detail-section">
-                                <h3>📁 Files</h3>
-                                <p><code>docker-compose.yml</code> · <code>agent/</code> (Dockerfile + app.py) · <code>tools/</code> (Dockerfile + app.py)</p>
-                            </div>
-                            <div class="detail-section">
-                                <h3>🚀 Run it</h3>
-                                <pre><code>cd src/desk-buddy
-cp .env.example .env          # add your OPENAI_API_KEY
-docker compose up -d --build
+                        <p>An AI agent that can use tools (calculator, clock) and remembers your conversation across requests.</p>
+                        <span class="badge">Level 3 · 3 containers · needs API key</span>
 
-# Two-tool task: calculator + clock
-curl -X POST http://localhost:9000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "demo", "message": "What is 23*47, and what time is it?"}'
-
-# Memory test: follow-up with same session_id
-curl -X POST http://localhost:9000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"session_id": "demo", "message": "Now double that multiplication result"}'</code></pre>
+                        <div class="demo-form" id="deskbuddyForm">
+                            <div class="input-row">
+                                <div class="input-group" style="flex:1">
+                                    <label for="db-message">Message the agent</label>
+                                    <input type="text" id="db-message" placeholder="e.g. What is 23*47, and what time is it right now?" />
+                                </div>
+                                <div class="input-group" style="flex:0 0 120px">
+                                    <label for="db-session">Session ID</label>
+                                    <input type="text" id="db-session" value="demo" />
+                                </div>
                             </div>
-                            <div class="detail-section">
-                                <h3>🔑 Concepts</h3>
-                                <p>microservice separation · private ports (no ports: = no public entrance) · the agent loop (think → act → observe) · Redis memory · lazy vs eager connections</p>
-                            </div>
-                            <div class="detail-section">
-                                <h3>🧹 Clean up</h3>
-                                <pre><code>docker compose down        # keep memory
-docker compose down -v     # wipe Redis</code></pre>
-                            </div>
+                            <button id="db-chat-btn" onclick="chatDeskBuddy()">Send to Agent 🤖</button>
                         </div>
+
+                        <div class="result" id="deskbuddyResult"></div>
                     </div>
 
                 </div>

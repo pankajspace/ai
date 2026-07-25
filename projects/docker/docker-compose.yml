@@ -1,4 +1,5 @@
 services:
+  # ── Main Quiz Web App ──────────────────────────────────────────────
   web:
     build: .
     env_file: .env
@@ -7,9 +8,65 @@ services:
       - "8083:5000"
     volumes:
       - ./src:/app/src
+    depends_on:
+      - quickbite
 
-  # One-off CLI service to run the quiz feature directly, without the web UI.
+  # One-off CLI service to run the quiz feature directly.
   quiz:
     build: .
     env_file: .env
     command: python src/python/quiz.py
+
+  # ── Level 1: QuickBite ETA (1 container, keyless) ──────────────────
+  quickbite:
+    build: ./src/quick-bite-eta
+    container_name: docker-quickbite
+    restart: unless-stopped
+
+  # ── Level 2: ScalerGPT (2 containers, needs OPENAI_API_KEY) ───────
+  scalergpt:
+    build: ./src/scaler-gpt
+    container_name: docker-scalergpt
+    env_file: .env
+    environment:
+      - CHROMA_HOST=scalergpt-chroma
+      - CHROMA_PORT=8000
+    depends_on:
+      - scalergpt-chroma
+    restart: unless-stopped
+
+  scalergpt-chroma:
+    image: chromadb/chroma:0.6.3
+    container_name: docker-scalergpt-chroma
+    volumes:
+      - scalergpt_chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+  # ── Level 3: DeskBuddy (3 containers, needs OPENAI_API_KEY) ───────
+  deskbuddy-agent:
+    build: ./src/desk-buddy/agent
+    container_name: docker-deskbuddy-agent
+    env_file: .env
+    environment:
+      - TOOLS_URL=http://deskbuddy-tools:7000
+      - REDIS_HOST=deskbuddy-redis
+    depends_on:
+      - deskbuddy-tools
+      - deskbuddy-redis
+    restart: unless-stopped
+
+  deskbuddy-tools:
+    build: ./src/desk-buddy/tools
+    container_name: docker-deskbuddy-tools
+    restart: unless-stopped
+
+  deskbuddy-redis:
+    image: redis:7-alpine
+    container_name: docker-deskbuddy-redis
+    volumes:
+      - deskbuddy_memory:/data
+    restart: unless-stopped
+
+volumes:
+  scalergpt_chroma_data:
+  deskbuddy_memory:
