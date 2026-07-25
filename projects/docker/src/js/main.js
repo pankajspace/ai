@@ -131,22 +131,8 @@ function setupToggles() {
     });
 }
 
-// ── Range slider labels ──────────────────────────────────────────────
-
-function setupRangeLabels() {
-    document.querySelectorAll('input[type="range"]').forEach((range) => {
-        const valSpan = document.getElementById(range.id + "-val");
-        if (valSpan) {
-            range.addEventListener("input", () => {
-                valSpan.textContent = range.value;
-            });
-        }
-    });
-}
-
 // ── Init ─────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
     setupToggles();
-    setupRangeLabels();
 });
