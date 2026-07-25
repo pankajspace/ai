@@ -1,5 +1,5 @@
 services:
-  # ── Main Quiz Web App ──────────────────────────────────────────────
+  # ── Main Demo Web App ──────────────────────────────────────────────
   web:
     build: .
     env_file: .env
@@ -9,13 +9,20 @@ services:
     volumes:
       - ./src:/app/src
     depends_on:
-      - quickbite
+      quickbite:
+        condition: service_healthy
 
   # ── Level 1: QuickBite ETA (1 container, keyless) ──────────────────
   quickbite:
     build: ./src/quick-bite-eta
     container_name: docker-quickbite
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   # ── Level 2: ScalerGPT (2 containers, needs OPENAI_API_KEY) ───────
   scalergpt:
@@ -26,8 +33,15 @@ services:
       - CHROMA_HOST=scalergpt-chroma
       - CHROMA_PORT=8000
     depends_on:
-      - scalergpt-chroma
+      scalergpt-chroma:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   scalergpt-chroma:
     image: chromadb/chroma:0.6.3
@@ -35,6 +49,12 @@ services:
     volumes:
       - scalergpt_chroma_data:/chroma/chroma
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v2/heartbeat')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
   # ── Level 3: DeskBuddy (3 containers, needs OPENAI_API_KEY) ───────
   deskbuddy-agent:
@@ -45,14 +65,28 @@ services:
       - TOOLS_URL=http://deskbuddy-tools:7000
       - REDIS_HOST=deskbuddy-redis
     depends_on:
-      - deskbuddy-tools
-      - deskbuddy-redis
+      deskbuddy-tools:
+        condition: service_healthy
+      deskbuddy-redis:
+        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   deskbuddy-tools:
     build: ./src/desk-buddy/tools
     container_name: docker-deskbuddy-tools
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7000/')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   deskbuddy-redis:
     image: redis:7-alpine
@@ -60,6 +94,12 @@ services:
     volumes:
       - deskbuddy_memory:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   scalergpt_chroma_data:

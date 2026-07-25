@@ -82,6 +82,8 @@ Use standalone example sub-projects when:
 - The examples run independently from the main Flask web app and are not Flask Blueprint features.
 - Each example may have its own multiple containers (e.g. app + database, or agent + tools + Redis).
 
+When example sub-projects are standalone services, add them to the main `docker-compose.yml` and proxy requests through the Flask app so users can run them directly from the browser UI. The Flask app acts as a gateway — the front-end never calls internal services directly.
+
 ### Structure for complex projects
 
 Place standalone example sub-projects as sibling directories under `src/`, NOT inside `src/python/`:
@@ -128,7 +130,32 @@ The README should include:
 
 ### index.html for complex projects
 
-Add info cards for each example with a badge showing the level and container count (e.g. `<span class="badge">Level 1 · 1 container</span>`). Order the cards from simplest to most complex.
+Create **interactive demo forms** (not static info cards) for each example, with inputs and buttons that call the Flask proxy routes. Include a badge showing the level and container count (e.g. `<span class="badge">Level 1 · 1 container</span>`). Order the cards from simplest to most complex.
+
+### Healthchecks and dependency ordering
+
+For multi-service projects, **always add healthchecks** to every service and use `depends_on` with `condition: service_healthy`. This ensures dependencies are truly ready to accept connections before dependents start ("started ≠ ready").
+
+Pattern:
+
+```yaml
+services:
+  my-app:
+    depends_on:
+      my-db:
+        condition: service_healthy   # wait for healthy, not just started
+
+  my-db:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+```
+
+For Python/FastAPI services, use `python -c "import urllib.request; urllib.request.urlopen('http://localhost:<port>/')"` as the healthcheck test. For Redis, use `redis-cli ping`. For ChromaDB, use the heartbeat endpoint.
 
 ## Validation
 
