@@ -152,3 +152,4 @@ Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production deploy step
 6. Keep edits scoped to the new project folder and directly related shared files.
 7. Always remove leaked secrets (`.env` files with real keys) immediately upon discovery.
 8. Always clean up local artifacts (`.venv/`, `.DS_Store`, `__pycache__/`) from user-provided files.
+9. **Only create demos and features that are covered in the study HTML/PDF file.** Do NOT invent extra features (e.g. a quiz, a flashcard tool, a summary generator) that are not part of the study material. Every UI tile and route must correspond to a project or exercise from the HTML source. If in doubt, check the HTML headings and section structure to determine what the study covers.

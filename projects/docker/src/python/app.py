@@ -1,21 +1,18 @@
-"""Flask server exposing the Docker Quiz endpoints and proxying to example services.
+"""Flask server proxying browser requests to internal Docker demo services.
 
 Architecture notes
 ------------------
 - All routes are attached to a Blueprint (``bp``) instead of directly to
   ``app``. This lets us register the entire Blueprint under a runtime URL
   prefix (``PATH_PREFIX``) without touching individual route strings.
-- In local development PATH_PREFIX is empty, so routes are at "/", "/quiz",
-  etc. In production Nginx forwards ``/docker/...`` traffic to the container
-  and PATH_PREFIX is set to "/docker", keeping every URL consistent.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/quickbite/predict", etc. In production Nginx forwards ``/docker/...``
+  traffic to the container and PATH_PREFIX is set to "/docker".
 - flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
   page can call the API even if it is served from a different origin during
   development.
 - Proxy routes forward browser requests to internal Docker services
   (quickbite, scalergpt, deskbuddy-agent) using service-name networking.
-
-To add a feature: create a module under ``src/python/`` (see ``quiz.py``),
-import its function here, and add a matching ``@bp.route(...)`` handler.
 """
 
 import os
@@ -24,8 +21,6 @@ from pathlib import Path
 import requests as http_client
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
-
-from quiz import get_question, check_answer
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -84,7 +79,7 @@ def proxy_request(method, url, json_body=None):
 
 
 # ---------------------------------------------------------------------------
-# Routes — Quiz
+# Routes — Static files
 # ---------------------------------------------------------------------------
 
 
@@ -93,9 +88,6 @@ def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
-    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
-    # locally). For production we replace it with the actual path prefix so
-    # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
     return app.response_class(html, mimetype="text/html")
 
@@ -110,40 +102,6 @@ def css(filename):
 def js(filename):
     """Serve scripts from the src/js directory."""
     return app.send_static_file(os.path.join("js", filename))
-
-
-@bp.route("/quiz", methods=["POST"])
-def quiz_route():
-    """Return a random Docker quiz question.
-
-    Request body (JSON): ``{}`` or ``{ "id": <int> }``
-    Response (JSON):     ``{ "id": <int>, "question": "...", "choices": [...], "total": <int> }``
-    """
-    data = request.get_json(force=True) if request.data else {}
-    question_id = data.get("id")
-    return jsonify(get_question(question_id))
-
-
-@bp.route("/quiz/check", methods=["POST"])
-def quiz_check_route():
-    """Validate the user's answer for a quiz question.
-
-    Request body (JSON): ``{ "id": <int>, "answer": <int> }``
-    Response (JSON):     ``{ "correct": <bool>, "correct_index": <int>,
-                             "explanation": "...", "answer_index": <int> }``
-    Error response:      ``{ "error": "<message>" }`` with HTTP 400.
-    """
-    data = request.get_json(force=True)
-    question_id = data.get("id")
-    answer_index = data.get("answer")
-
-    if question_id is None or answer_index is None:
-        return jsonify({"error": "Both 'id' and 'answer' are required."}), 400
-
-    result = check_answer(question_id, answer_index)
-    if "error" in result:
-        return jsonify(result), 400
-    return jsonify(result)
 
 
 # ---------------------------------------------------------------------------
@@ -186,19 +144,6 @@ def scalergpt_status():
     return jsonify(data), status
 
 
-@bp.route("/scalergpt/ingest", methods=["POST"])
-def scalergpt_ingest():
-    """Trigger document ingestion on the ScalerGPT service.
-
-    This runs ingest.py inside the scalergpt container via a simple POST.
-    Note: This is a simplified proxy — in production you'd use docker exec.
-    """
-    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
-    if status != 200:
-        return jsonify(data), status
-    return jsonify(data), status
-
-
 # ---------------------------------------------------------------------------
 # Routes — DeskBuddy (Level 3, needs OPENAI_API_KEY)
 # ---------------------------------------------------------------------------
@@ -223,13 +168,8 @@ def deskbuddy_status():
 # Blueprint registration + server entry point
 # ---------------------------------------------------------------------------
 
-# Register all Blueprint routes under the optional path prefix. This single
-# line is the only place where PATH_PREFIX is applied — every route above is
-# written as a relative path (e.g. "/quiz") and the prefix is prepended here.
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
 if __name__ == "__main__":
-    # Run the development server. 0.0.0.0 makes the app reachable from outside
-    # the container; port 5000 is mapped to the host port in docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)
