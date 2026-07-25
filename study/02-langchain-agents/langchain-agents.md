@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Notes](ai-infused-learning-2.html)
+[<- README](../../README.md) | [Notes](langchain-agents.html)
 
 # AI Infused Learning - 2
 

@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Notes](ai-infused-learning-3.html)
+[<- README](../../README.md) | [Notes](rag-embeddings.html)
 
 # AI Infused Learning - 3
 

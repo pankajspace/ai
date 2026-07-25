@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Notes](ai-infused-learning-1.html)
+[<- README](../../README.md) | [Notes](llms-prompting.html)
 
 # AI Infused Learning - 1
 

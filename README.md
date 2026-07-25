@@ -14,10 +14,10 @@
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 ## Study AI : Shivank Agarwal
-1. [AI Infused Learning - 1](study/01-AI-Infused-Learning-1/ai-infused-learning-1.md) : 27-06-2026
-2. [AI Infused Learning - 2](study/02-AI-Infused-Learning-2/ai-infused-learning-2.md) : 04-07-2026
-3. [AI Infused Learning - 3](study/03-AI-Infused-Learning-3/ai-infused-learning-3.md) : 18-07-2026
-4. [AI Infused Learning - 4](study/04-AI-Infused-Learning-4/ai-infused-learning-4.md) : 25-07-2026
+1. [LLMs - Prompting](study/01-llms-prompting/llms-prompting.md) : 27-06-2026
+2. [LangChain - Agents](study/02-langchain-agents/langchain-agents.md) : 04-07-2026
+3. [RAG - Embeddings](study/03-rag-embeddings/rag-embeddings.md) : 18-07-2026
+4. [Docker](study/04-docker/docker.md) : 25-07-2026
 
 ## Revision
 1. [Revision](study/revision.md)
