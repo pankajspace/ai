@@ -2,7 +2,6 @@ services:
   # ── Main Demo Web App ──────────────────────────────────────────────
   web:
     build: .
-    env_file: .env
     command: python src/python/app.py
     ports:
       - "8083:5000"
@@ -32,10 +31,11 @@ services:
 
   # ── Level 2: ScalerGPT (2 containers, needs OPENAI_API_KEY) ───────
   scalergpt:
+    profiles: [ "level2" ]
     build: ./src/scaler-gpt
     container_name: docker-scalergpt
-    env_file: .env
     environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - CHROMA_HOST=scalergpt-chroma
       - CHROMA_PORT=8000
     depends_on:
@@ -50,6 +50,7 @@ services:
       start_period: 10s
 
   scalergpt-chroma:
+    profiles: [ "level2" ]
     image: chromadb/chroma:0.6.3
     container_name: docker-scalergpt-chroma
     volumes:
@@ -64,10 +65,11 @@ services:
 
   # ── Level 3: DeskBuddy (3 containers, needs OPENAI_API_KEY) ───────
   deskbuddy-agent:
+    profiles: [ "level3" ]
     build: ./src/desk-buddy/agent
     container_name: docker-deskbuddy-agent
-    env_file: .env
     environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - TOOLS_URL=http://deskbuddy-tools:7000
       - REDIS_HOST=deskbuddy-redis
     depends_on:
@@ -84,6 +86,7 @@ services:
       start_period: 10s
 
   deskbuddy-tools:
+    profiles: [ "level3" ]
     build: ./src/desk-buddy/tools
     container_name: docker-deskbuddy-tools
     restart: unless-stopped
@@ -95,6 +98,7 @@ services:
       start_period: 5s
 
   deskbuddy-redis:
+    profiles: [ "level3" ]
     image: redis:7-alpine
     container_name: docker-deskbuddy-redis
     volumes:

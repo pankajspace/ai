@@ -30,21 +30,21 @@ that Docker is running.
 
 ### Environment Setup
 
-Start at the repository root, then enter the project directory. Run the local
+Start at the repository root, then enter the project directory. Run all local
 Docker commands in the rest of this guide from `projects/docker/`:
 
 ```bash
 cd projects/docker
-cp .env.example .env
 ```
 
 ### First Run: Level 1 (No API Key)
 
-Build and start the gateway plus QuickBite in detached mode. `--wait` prevents
-the command from returning until both healthchecks pass:
+One command builds and starts the default gateway plus QuickBite example in
+detached mode. No `.env` file or API key is needed. `--wait` prevents the
+command from returning until both healthchecks pass:
 
 ```bash
-docker compose up -d --build --wait web quickbite
+docker compose up -d --build --wait
 ```
 
 Open <http://localhost:8083>. Verify the gateway and prediction route from the
@@ -63,11 +63,13 @@ temporary fallback, omit `--wait` and run `docker compose ps` until `web` and
 
 ### Run Level 2: ScalerGPT
 
-Add a real `OPENAI_API_KEY` to `.env`, then start the gateway and ScalerGPT.
-Compose automatically starts their QuickBite and Chroma dependencies:
+Create `.env`, add a real `OPENAI_API_KEY`, then enable the Level 2 profile.
+Compose automatically starts the gateway plus the QuickBite and Chroma
+dependencies:
 
 ```bash
-docker compose up -d --build --wait web scalergpt
+cp .env.example .env
+docker compose --profile level2 up -d --build --wait
 ```
 
 ScalerGPT cannot answer until its sample notes have been embedded into Chroma.
@@ -84,11 +86,12 @@ and questions make paid OpenAI API calls.
 
 ### Run Level 3: DeskBuddy
 
-With a real `OPENAI_API_KEY` in `.env`, start the gateway and agent. Compose
-automatically starts QuickBite, the private tools service, and Redis:
+With a real `OPENAI_API_KEY` in `.env`, enable the Level 3 profile. Compose
+automatically starts the gateway, QuickBite, the agent, the private tools
+service, and Redis:
 
 ```bash
-docker compose up -d --build --wait web deskbuddy-agent
+docker compose --profile level3 up -d --build --wait
 curl http://localhost:8083/deskbuddy/status
 ```
 
@@ -101,7 +104,7 @@ A real `OPENAI_API_KEY` is required. Start all seven services, then ingest the
 ScalerGPT documents:
 
 ```bash
-docker compose up -d --build --wait
+docker compose --profile level2 --profile level3 up -d --build --wait
 docker compose exec scalergpt python ingest.py
 docker compose ps
 ```
@@ -184,7 +187,8 @@ docker compose logs --tail=100 deskbuddy-agent deskbuddy-tools deskbuddy-redis
 
 Common failures:
 
-1. **`.env` does not exist:** run `cp .env.example .env`.
+1. **`.env` does not exist:** Level 1 does not need it. For Level 2 or 3, run
+    `cp .env.example .env` and add a real API key.
 2. **`OPENAI_API_KEY is missing`:** put a real key in `.env`, then recreate the
     key-dependent services with
     `docker compose up -d --force-recreate --wait scalergpt deskbuddy-agent`.
@@ -210,7 +214,7 @@ rebuild:
 
 ```bash
 docker compose down --remove-orphans
-docker compose up -d --build --wait web quickbite
+docker compose up -d --build --wait
 ```
 
 ### Commit
@@ -391,9 +395,9 @@ Locally, routes have no prefix. In production, prepend `/docker`:
 
 ```bash
 cd projects/docker
-cp .env.example .env
-docker compose up -d --build --wait web quickbite
+docker compose up -d --build --wait
 ```
 
-Open <http://localhost:8083>. Follow the level-specific sections above before
+The Docker command builds and runs the keyless QuickBite example. Open
+<http://localhost:8083>. Follow the level-specific sections above before
 starting ScalerGPT or DeskBuddy.
