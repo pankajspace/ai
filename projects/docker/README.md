@@ -260,8 +260,12 @@ done once before the first automatic deploy succeeds.
 
 ### One-Time Production Setup
 
-Run these once. Local commands need Docker running and the AWS CLI configured;
-EC2 commands run over SSH on the app host.
+Run these once. **Steps 1–3 run on your local machine** (Docker running, AWS CLI
+configured as the `techtoday` IAM user); **steps 4–7 run on the EC2 host** over
+SSH. Do not run the ECR/secret steps on EC2 — the instance role
+(`ec2-techtoday-server-role`) can only *pull* images and *read* secrets, so
+`ecr:CreateRepository` and `secretsmanager:PutSecretValue` there fail with
+`AccessDeniedException` by design.
 
 1. **Create the five ECR repositories** (local):
 
@@ -302,6 +306,10 @@ EC2 commands run over SSH on the app host.
 4. **Add the Nginx location block** (EC2). Inside the
    `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
    `/etc/nginx/conf.d/app.conf`:
+
+   ```bash
+   sudo nano /etc/nginx/conf.d/app.conf
+   ```
 
    ```nginx
    location /docker/ {
@@ -629,17 +637,17 @@ think→act→observe loop, and stateful conversation memory. Requires
 
 ## Project Details
 
-1. **Type:** Container app.
+1. **Type:** Multi-service container app (Flask gateway + example services).
 2. **Folder:** `projects/docker/`.
 3. **Production URL:** `https://app.techtoday.click/docker/`.
 4. **Local dev URL:** `http://localhost:8083`.
-5. **Container port:** `5000`.
-6. **EC2 host port:** `5003`.
-7. **ECR repository:** `techtoday/docker`.
+5. **Container port:** `5000` (gateway).
+6. **EC2 host port:** `5004`.
+7. **ECR repositories:** `techtoday/docker-{web,quickbite,scalergpt,deskbuddy-agent,deskbuddy-tools}` (one per buildable service; Chroma and Redis use public images).
 8. **Path prefix:** `PATH_PREFIX=/docker`.
-9. **Production service name:** `docker`.
-10. **Workflow:** `.github/workflows/deploy-docker.yml` (not yet created).
-11. **Intended workflow trigger:** changes under `projects/docker/**`.
+9. **Production gateway service name:** `web`.
+10. **Workflow:** `.github/workflows/deploy-docker.yml`.
+11. **Workflow trigger:** changes under `projects/docker/**`.
 
 ## Routes
 

@@ -62,8 +62,13 @@ docker compose down
 ### One-Time Production Setup
 
 Run these once before the first automatic deploy. They wire the project into the
-shared EC2 host. Do them again only when rebuilding the server. Local commands
-need the AWS CLI configured; EC2 commands run over SSH on the app host.
+shared EC2 host. Do them again only when rebuilding the server. **Steps marked
+(local) must run on your local machine** with the AWS CLI configured as the
+`techtoday` IAM user; **steps marked (EC2) run over SSH** on the app host. Do not
+run the ECR or Secrets Manager steps on EC2 — the instance role
+(`ec2-techtoday-server-role`) can only *pull* images and *read* secrets, so
+`ecr:CreateRepository` and `secretsmanager:PutSecretValue` there fail with
+`AccessDeniedException` by design.
 
 1. **Create the ECR repository** (local):
 
