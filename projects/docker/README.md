@@ -356,12 +356,11 @@ SSH. Do not run the ECR/secret steps on EC2 — the instance role
          quickbite:
            condition: service_healthy
        restart: unless-stopped
+       # The gateway serves all routes under PATH_PREFIX in production, so the
+       # healthcheck must hit /docker/ — plain / returns 404 and would mark the
+       # container unhealthy. (Locally PATH_PREFIX is empty and / is valid.)
        healthcheck:
-         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
-         interval: 5s
-         timeout: 3s
-         retries: 5
-         start_period: 5s
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/docker/')"]
 
      quickbite:
        image: <ECR>/techtoday/docker-quickbite:latest
