@@ -5,182 +5,107 @@ argument-hint: "projectName, feature idea, optional local/prod ports, and whethe
 agent: "gemini"
 ---
 
-Create or adapt a new container project folder named `${input:projectName}` in this repository using `projects/template` as the reference implementation.
+Create or adapt a container project named `${input:projectName}` under `projects/`, using `projects/template` as the reference implementation and matching the structure and deployment conventions of the existing projects.
 
-Use this prompt when the user wants to add a new project under `projects/`, copy the template locally, add or integrate Python files, and then make the resulting folder follow the same structure and deployment conventions as the existing container projects.
-
-Project name parameter: `${input:projectName}`. Treat this as the required project folder name, Docker Compose service name, ECR repository suffix, production path prefix, and deploy workflow suffix unless the user explicitly overrides one of those names.
+`${input:projectName}` is the project folder name, Docker Compose service name, ECR repository suffix, production `PATH_PREFIX`, and deploy-workflow suffix, unless the user overrides one explicitly.
 
 ## Required Context
 
-Read these files before editing:
+Read before editing:
 
-1. [projects/ADD_PROJECT.md](../../projects/ADD_PROJECT.md), especially `Pick Project Values` and the final documentation steps.
-2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md), especially `Shared Runtime Conventions`.
-3. [projects/template/README.md](../../projects/template/README.md).
-4. [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
-5. Neighboring project files from [projects/basic](../../projects/basic), [projects/langchain](../../projects/langchain), or [projects/rag](../../projects/rag) when their structure helps decide how the new project should look.
-6. The matching study file under `study/` (if one exists) to understand the project's feature context and source material.
+1. [projects/ADD_PROJECT.md](../../projects/ADD_PROJECT.md) — `Pick Project Values` and the final documentation steps.
+2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md) — `Shared Runtime Conventions`.
+3. [projects/template/README.md](../../projects/template/README.md) and [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
+4. A neighboring project ([basic](../../projects/basic), [langchain](../../projects/langchain), or [rag](../../projects/rag)) when its structure helps.
+5. The matching `study/` file, if one exists, for feature context and source material.
 
 ## Inputs To Resolve
 
-Before making changes, identify or ask for:
+Identify or ask for: project name; next free local port (`808x`) and EC2 host port (`500x`) from `ADD_PROJECT.md`, confirmed against existing READMEs/Compose files; whether Python feature files already exist and where from; required env vars (new secrets vs. already in `techtoday/secrets`); whether the project is production-documented; and whether it includes standalone example sub-projects (see **Complex Projects**).
 
-1. Project folder/service name from `${input:projectName}`, for example `ai-04`.
-2. Next free local development port, usually the next `808x` after existing container apps.
-3. Next free EC2 host port, usually the matching next `500x` after existing container apps.
-4. Whether Python feature files already exist, and where they should be copied from.
-5. Required environment variables and whether they are new secrets or already present in `techtoday/secrets`.
-6. Whether the project is production-documented. If yes, always create the matching GitHub Actions workflow at `.github/workflows/deploy-<project-name>.yml` in the same change — never leave a production-documented project without its deploy workflow. A project that lacks its workflow will 404 in production even after its tile is added to the home page.
-7. Whether the project includes standalone example sub-projects (each with their own Dockerfiles, compose files, or multiple containers). See the **Complex Projects** section below. For these, the single-image `deploy.yml.template` is not sufficient on its own — see **CI/CD Workflow for Complex Projects**.
-
-If the user gives enough information, proceed without asking extra questions. If ports are not provided, use the allocation in `projects/ADD_PROJECT.md` and confirm it against existing project READMEs and Compose files.
+Proceed without extra questions if you have enough information.
 
 ## Workflow
 
-1. Read the next-port allocation in `projects/ADD_PROJECT.md` and confirm it against existing project READMEs and Compose files.
-2. Create `projects/<project-name>/` by copying `projects/template/` if the folder does not already exist.
-3. Update `docker-compose.yml` so the `web` service publishes `<local-port>:5000` and the service names follow the new project where applicable.
-4. Keep this structure unless the user explicitly asks otherwise:
-   1. `Dockerfile`
-   2. `docker-compose.yml`
-   3. `requirements.txt`
-   4. `.env.example`
-   5. `.gitignore`
-   6. `deploy.yml.template`
-   7. `linkedin.txt`
-   8. `README.md`
-   9. `src/index.html`
-   10. `src/css/style.css`
-   11. `src/js/main.js`
-   12. `src/python/app.py`
-   13. `src/python/config.py`
-   14. feature modules under `src/python/`
-   15. standalone example sub-projects under `src/<example-name>/` (see **Complex Projects**)
+1. Confirm the next-port allocation from `ADD_PROJECT.md`.
+2. Create `projects/<project-name>/` by copying `projects/template/` if it does not exist.
+3. Set the `web` service to publish `<local-port>:5000` in `docker-compose.yml`.
+4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
 5. Integrate user-provided Python files under `src/python/`.
-6. Modify `src/python/app.py` to expose the new feature routes through the Blueprint while preserving:
-   1. `PATH_PREFIX = os.environ.get("PATH_PREFIX", "")`
-   2. `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
-   3. the `index()` route that injects `data-api-base="<PATH_PREFIX>"`
-   4. static routes for `/css/<path:filename>` and `/js/<path:filename>`
-7. Update `src/index.html`, `src/css/style.css`, and `src/js/main.js` so the browser calls the new API routes through the injected API base.
-8. Update `requirements.txt` and `.env.example` for the Python files and secrets the project needs.
-9. Replace the template `README.md` with a self-contained project runbook. Follow the **README Requirements** section below; do not leave routine commands in shared docs.
-10. If the project is production-documented or the user asks for deployment support, create the deploy workflow in the same change. This step is mandatory for any project you describe as deploy-ready — do not skip it, and do not rely on a later manual step:
-   1. Copy and substitute from the repo root:
-      ```bash
-      cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
-      sed -i "s/PROJECT_NAME/<project-name>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
-      grep -n PROJECT_NAME .github/workflows/deploy-<project-name>.yml   # must print nothing
-      ```
-   2. For a **single-service** project the substituted template is complete.
-   3. For a **complex multi-container** project the template is a starting point only — it builds one root image and restarts one service. Extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready.
-11. Update directly related docs when the project is ready to be documented:
-  1. Keep all project-specific values and operations in the new project's `README.md`.
-  2. Advance the next-port allocation in `projects/ADD_PROJECT.md`.
-  3. Add new shared secret guidance to the setup notes only when the shared process changes.
-  4. Add a public home-page card under `projects/techtoday/src/` if the project should be visible from the main site.
+6. Expose new feature routes through the Blueprint in `app.py`, preserving:
+   - `PATH_PREFIX = os.environ.get("PATH_PREFIX", "")`
+   - `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
+   - the `index()` route injecting `data-api-base="<PATH_PREFIX>"`
+   - static routes for `/css/<path:filename>` and `/js/<path:filename>`
+7. Update `index.html`, `style.css`, and `main.js` to call the new routes through the injected API base.
+8. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
+9. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
+10. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready — a missing workflow causes a production 404 even after the home-page tile is added. From the repo root:
+    ```bash
+    cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
+    sed -i "s/PROJECT_NAME/<project-name>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
+    grep -n PROJECT_NAME .github/workflows/deploy-<project-name>.yml   # must print nothing
+    ```
+    The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready.
+11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add a home-page card under `projects/techtoday/src/` if the project should be public.
 
 ## README Requirements
 
-Treat `projects/<project-name>/README.md` as the source of truth for developing,
-operating, and deploying that project. A developer who has completed the
-one-time prerequisites in `projects/SETUP.md` must not need another shared guide
-for routine work.
+`projects/<project-name>/README.md` is the source of truth for developing, operating, and deploying the project. Someone who has finished the one-time prerequisites in `projects/SETUP.md` must not need any other shared guide for routine work. Use concrete values, not placeholders. Link to `SETUP.md` only for one-time local/AWS setup; never store missing project instructions in shared index docs.
 
-Include all applicable sections with concrete values, not generic placeholders:
+Include all applicable sections:
 
-1. **Overview and features** — purpose, user-facing behavior, architecture, and project structure.
-2. **Project details** — project type and folder, local and production URLs, local/container/EC2 ports, ECR repository, production service name, `PATH_PREFIX`, routes, workflow filename, and trigger path.
-3. **Environment variables** — every required and optional variable, which features use it, where to obtain it, and confirmation that `.env` is never committed.
-4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, exact build/start commands, and the URL to open.
-5. **Daily local development** — volume-mount or reload behavior, when to rebuild, exact one-off feature service commands, logs, shell access, status, shutdown, and persistent-data reset when applicable.
-6. **Commit and automatic deployment** — exact branch, `git add`, commit, and push commands; pull-request expectations; workflow path; trigger path; ECR repository; and affected EC2 service.
-7. **Production verification and troubleshooting** — exact `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, and a scoped restart.
-8. **Rollback** — exact ECR repository, AWS region, production service, image-tag procedure, and verification URL.
-9. **Manual deployment** — exact build context, image name, architecture, ECR path, production service, disk-space recovery, and retry commands.
-10. **Deployment status** — state clearly when automation is not active or incomplete. Never claim a project auto-deploys unless the referenced workflow exists and covers all required services.
-
-Link to `projects/SETUP.md` only for one-time local-machine and AWS
-infrastructure setup. Shared index documents are not a place to store missing
-project instructions.
+1. **Overview and features** — purpose, behavior, architecture, project structure.
+2. **Project details** — type/folder, local and production URLs, local/container/EC2 ports, ECR repository, production service name, `PATH_PREFIX`, routes, workflow filename, trigger path.
+3. **Environment variables** — each required/optional variable, which feature uses it, where to obtain it, and that `.env` is never committed.
+4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
+5. **Daily local development** — reload/volume behavior, when to rebuild, one-off feature commands, logs, shell access, status, shutdown, persistent-data reset.
+6. **Commit and automatic deployment** — branch, `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
+7. **Production verification and troubleshooting** — verification `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, scoped restart.
+8. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
+9. **Manual deployment** — build context, image name, architecture, ECR path, production service, disk-space recovery, retry commands.
+10. **Deployment status** — state clearly when automation is incomplete. Never claim auto-deploy unless the workflow exists and covers all required services.
 
 ## Complex Projects — Standalone Example Sub-Projects
 
-Some projects contain multiple standalone example sub-projects (each with their own Dockerfiles, docker-compose files, and independent containers) alongside the main Flask app. This is common for study-related projects where the examples from the study material are included as reference implementations.
+Some projects bundle standalone example sub-projects (each a complete Docker project with its own Dockerfile, compose file, and possibly multiple containers) alongside the main Flask app. This is common for study projects that ship the study material's examples as reference implementations.
 
-### When to use this pattern
+Use this pattern when the examples are complete Docker projects that run independently from the Flask app rather than as Flask Blueprint features, and each may have its own containers (e.g. app + database, or agent + tools + Redis). Add them to the main `docker-compose.yml` and proxy browser requests through the Flask gateway — the front-end never calls internal services directly.
 
-Use standalone example sub-projects when:
-- The user provides pre-existing project folders that are complete Docker projects (have their own Dockerfile, docker-compose.yml, requirements.txt).
-- The examples run independently from the main Flask web app and are not Flask Blueprint features.
-- Each example may have its own multiple containers (e.g. app + database, or agent + tools + Redis).
-
-When example sub-projects are standalone services, add them to the main `docker-compose.yml` and proxy requests through the Flask app so users can run them directly from the browser UI. The Flask app acts as a gateway — the front-end never calls internal services directly.
-
-### Structure for complex projects
-
-Place standalone example sub-projects as sibling directories under `src/`, NOT inside `src/python/`:
+**Structure** — place example sub-projects as siblings under `src/`, never inside `src/python/` (they are full projects, not importable modules):
 
 ```
 src/
-├── python/              # Main Flask app source (app.py, config.py, features)
-├── css/, js/            # Main app front-end
-├── index.html
+├── python/              # Main Flask app (app.py, config.py, features)
+├── css/, js/, index.html
 ├── example-one/         # Standalone example (own Dockerfile)
-├── example-two/         # Standalone example (own Dockerfile + compose)
+├── example-two/         # Standalone example (Dockerfile + compose)
 └── example-three/       # Standalone example (multiple Dockerfiles + compose)
 ```
 
-The rationale: these are complete Docker projects, not Python modules of the main app. Placing them under `src/python/` wrongly implies they are importable modules.
+**Ordering** — arrange examples simplest → most complex in both README and UI, with explicit labels ("Level 1 · 1 container", "Level 2 · 2 containers", …). Use the study material to determine the pedagogical order.
 
-### Ordering
+**Integrating user-provided files** — when the user says files already exist:
 
-Always arrange example sub-projects from **simpler to more complex**, both in the README and the UI cards. Use explicit labels like "Level 1 · 1 container", "Level 2 · 2 containers", etc. Reference the study material (HTML/MD files under `study/`) to determine the correct pedagogical order.
+1. List the project directory to discover all provided files.
+2. Classify each as a Flask feature (`src/python/`) or a standalone example (`src/<name>/`).
+3. Move standalone projects to their correct location.
+4. Remove secrets and artifacts: `.env` files with real keys, `.venv/`/`venv/`, `.DS_Store`, `__pycache__/`, `*.pkl`/`*.h5` and similar.
+5. Update README and `index.html` to reference each example with its path, level, and container count.
+6. Ensure the project `.gitignore` catches those artifacts in subdirectories too.
 
-### Integrating user-provided example files
+**README additions** — a Project Structure tree; an Example Projects section with Level ordering; per-example container count, Docker concepts covered, keys needed, and quick-start block; a note that examples are standalone; full-stack and per-level Compose/logs/health/reset commands and rebuild rules; and production image/dependency coverage for every service.
 
-When the user says they have already added Python/project files:
+**index.html** — interactive demo forms (not static cards) for each example, with inputs and buttons calling the Flask proxy routes, a level/container-count badge (e.g. `<span class="badge">Level 1 · 1 container</span>`), ordered simplest → most complex.
 
-1. **Discover** — list the project directory to find all user-provided files before making changes.
-2. **Assess** — determine whether each file/folder is a Flask-integrated feature (belongs in `src/python/`) or a standalone example project (belongs in `src/<name>/`).
-3. **Restructure** — move standalone projects to their correct location under `src/`.
-4. **Clean up** — always check for and remove:
-   - `.env` files containing real API keys or secrets (these must never be committed).
-   - `.venv/` or `venv/` directories (local virtual environments).
-   - `.DS_Store` files.
-   - `__pycache__/` directories.
-   - Any `*.pkl`, `*.h5`, or other model artifacts.
-5. **Document** — update README and index.html to reference each example with its correct path, complexity level, and container count.
-6. **Update .gitignore** — ensure the project-level `.gitignore` catches `.env`, `.venv/`, `*.pkl`, `.DS_Store`, and similar artifacts in subdirectories too.
-
-### README for complex projects
-
-The README should include:
-- A **Project Structure** tree showing where everything lives.
-- An **Example Projects** section with explicit complexity ordering (Level 1/2/3).
-- Each example's container count, what Docker concepts it covers, what keys it needs, and a quick-start command block.
-- A note clarifying that examples are standalone and not part of the main Flask app.
-- Exact full-stack and level-specific Compose commands, logs, health checks, persistent-volume reset behavior, and rebuild rules.
-- Production image/dependency coverage for every service. Do not reuse a single-image gateway workflow and describe the project as deploy-ready.
-
-### index.html for complex projects
-
-Create **interactive demo forms** (not static info cards) for each example, with inputs and buttons that call the Flask proxy routes. Include a badge showing the level and container count (e.g. `<span class="badge">Level 1 · 1 container</span>`). Order the cards from simplest to most complex.
-
-### Healthchecks and dependency ordering
-
-For multi-service projects, **always add healthchecks** to every service and use `depends_on` with `condition: service_healthy`. This ensures dependencies are truly ready to accept connections before dependents start ("started ≠ ready").
-
-Pattern:
+**Healthchecks and dependency ordering** — add a healthcheck to every service and use `depends_on` with `condition: service_healthy` (started ≠ ready):
 
 ```yaml
 services:
   my-app:
     depends_on:
       my-db:
-        condition: service_healthy   # wait for healthy, not just started
-
+        condition: service_healthy
   my-db:
     image: redis:7-alpine
     healthcheck:
@@ -191,44 +116,37 @@ services:
       start_period: 5s
 ```
 
-For Python/FastAPI services, use `python -c "import urllib.request; urllib.request.urlopen('http://localhost:<port>/')"` as the healthcheck test. For Redis, use `redis-cli ping`. For ChromaDB, use the heartbeat endpoint.
+Healthcheck tests: Python/FastAPI → `python -c "import urllib.request; urllib.request.urlopen('http://localhost:<port>/')"`; Redis → `redis-cli ping`; ChromaDB → the heartbeat endpoint.
 
 ### CI/CD Workflow for Complex Projects
 
-The stock `deploy.yml.template` builds a single image at the project root (`docker build ... .`) and pulls/restarts exactly one Compose service (the `PROJECT_NAME` service). A complex project builds several images from different build contexts (for example `web`, plus example sub-projects like `quickbite`, `scalergpt`, `deskbuddy-*`) and runs them as multiple services. The unmodified template will therefore deploy only the gateway and leave every other service stale or missing.
+The stock `deploy.yml.template` builds one image at the project root and pulls/restarts one service (the `PROJECT_NAME` service). A complex project builds several images from different contexts (e.g. `web` plus example sub-projects) and runs multiple services, so the unmodified template deploys only the gateway and leaves the rest stale. When adding the workflow:
 
-When adding the workflow for a complex project:
-
-1. Still create `.github/workflows/deploy-<project-name>.yml` from the template — never skip it.
-2. Build and push an ECR image for **every** service that has a build context, not just the root gateway. Give each its own tag/repository as agreed with the user, or build them together via `docker compose build` against the production Compose file.
-3. On the EC2 host, pull and restart **all** of the project's services (for example `docker compose ... up -d --no-deps web quickbite ...`), not a single `PROJECT_NAME` service.
-4. If the examples are keyless and rarely change, it is acceptable to build them once and only automate the gateway — but if you do this, say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
-5. Never describe a complex project as deploy-ready while the workflow only covers the single gateway image.
+1. Still create `.github/workflows/deploy-<project-name>.yml` — never skip it.
+2. Build and push an ECR image for **every** build context, or build them together via `docker compose build` against the production Compose file.
+3. On EC2, pull and restart **all** of the project's services, not a single `PROJECT_NAME` service.
+4. If examples are keyless and rarely change, automating only the gateway is acceptable — but say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
+5. Never call a complex project deploy-ready while the workflow covers only the gateway image.
 
 ## Validation
 
-After edits, run the cheapest relevant checks:
+Run the cheapest relevant checks after editing:
 
-1. `python3 -m py_compile src/python/*.py` from the new project folder. Use `python3` (not `python`) on macOS.
-2. `docker compose config` from the new project folder (requires `.env` to exist — copy from `.env.example` first if needed).
-3. If Docker is running and the user wants a runtime check, run `docker compose up web` and verify the local URL.
-4. If the project README lists `.github/workflows/deploy-<project-name>.yml` as active, confirm that file exists.
-5. If a GitHub Actions workflow was generated, confirm no `PROJECT_NAME` placeholders remain in `.github/workflows/deploy-<project-name>.yml`.
-6. Confirm the README contains concrete local start, deploy, verification, rollback, manual fallback, and troubleshooting commands for the project.
-7. Confirm every workflow and file named by the README exists. If deployment is intentionally incomplete, verify the README says so and identifies the missing coverage.
-8. Search the README for unresolved placeholders such as `<project-name>`, `<local-port>`, `PROJECT_NAME`, and generic feature service names; remove them unless they are part of an explicitly labeled template example.
+1. `python3 -m py_compile src/python/*.py` from the project folder.
+2. `docker compose config` from the project folder (copy `.env` from `.env.example` first if needed).
+3. Optional runtime check if Docker is running and the user wants it: `docker compose up web`, then open the local URL.
+4. If a workflow was generated, confirm no `PROJECT_NAME` placeholders remain and that every workflow/file named by the README exists.
+5. Confirm the README has concrete start, deploy, verification, rollback, manual-fallback, and troubleshooting commands, and that intentionally incomplete deployment is stated as such.
+6. Search the README for stray placeholders (`<project-name>`, `<local-port>`, `PROJECT_NAME`, generic feature-service names) and remove them unless part of a labeled template example.
 
-Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production deploy step unless the user explicitly asks for it. For this workflow, local repo changes come first; production wiring can be handled as a separate step.
+Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless the user explicitly asks. Local repo changes come first; production wiring is a separate step.
 
 ## Constraints
 
 1. Do not create a new DNS record, EC2 instance, SSL certificate, or separate Secrets Manager secret for a normal container project.
 2. Do not remove path-prefix routing from Flask.
-3. Do not put main app Python modules outside `src/python/` unless the user explicitly changes the project architecture.
-4. Standalone example sub-projects go under `src/<name>/`, never inside `src/python/`.
-5. Do not commit changes or create branches unless the user asks.
-6. Keep edits scoped to the new project folder and directly related shared files.
-7. Always remove leaked secrets (`.env` files with real keys) immediately upon discovery.
-8. Always clean up local artifacts (`.venv/`, `.DS_Store`, `__pycache__/`) from user-provided files.
-9. **Only create demos and features that are covered in the study HTML/PDF file.** Do NOT invent extra features (e.g. a quiz, a flashcard tool, a summary generator) that are not part of the study material. Every UI tile and route must correspond to a project or exercise from the HTML source. If in doubt, check the HTML headings and section structure to determine what the study covers.
-10. Keep routine local development, deployment, rollback, and troubleshooting instructions in the individual project README, not in a shared daily guide.
+3. Keep main app Python modules in `src/python/`; standalone example sub-projects go under `src/<name>/`, never inside `src/python/`.
+4. Do not commit changes or create branches unless asked; keep edits scoped to the new project folder and directly related shared files.
+5. Always remove leaked secrets and local artifacts (`.venv/`, `.DS_Store`, `__pycache__/`) from user-provided files on discovery.
+6. Only build demos and features covered by the study HTML/PDF source. Do not invent extras (quiz, flashcards, summary generator, etc.); every UI tile and route must map to a project or exercise in the source.
+7. Keep routine development, deployment, rollback, and troubleshooting instructions in the project README, not in shared guides.
