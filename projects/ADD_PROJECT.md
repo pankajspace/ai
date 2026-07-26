@@ -2,14 +2,19 @@
 
 Use this checklist when adding a new container app after the shared setup in
 [SETUP.md](SETUP.md) is complete. Put all routine development, deployment,
-rollback, and troubleshooting commands in the new project's `README.md`. The project registry in
-[PROJECTS.md](PROJECTS.md) is the only shared doc that should change when a new
-project is added.
+rollback, troubleshooting, and project-specific configuration in the new
+project's `README.md`. Keep the current next-port allocation in this guide.
 
 ## 1. Pick Project Values
 
-Open [PROJECTS.md](PROJECTS.md) and use the next available values from the
-registry.
+The current next available values are:
+
+1. Local development port: `8084`.
+2. EC2 host port: `5004`.
+3. Container port: `5000`.
+
+After adding a project, advance the local and EC2 values in this section so the
+next project does not reuse them.
 
 For a new container app, choose:
 
@@ -307,7 +312,7 @@ test -f .github/workflows/deploy-$PROJECT_NAME.yml && echo "workflow file OK"
 
 The final `grep` should print nothing, and the `test -f` command should print
 `workflow file OK`. If the workflow file is missing, do not list it in
-[PROJECTS.md](PROJECTS.md) as the project's CI/CD workflow yet.
+the project's `README.md` as an active CI/CD workflow yet.
 
 The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
@@ -323,13 +328,13 @@ curl -I https://app.techtoday.click/<project-name>/
 Open `https://app.techtoday.click/<project-name>/` in a browser and confirm it
 loads over HTTPS.
 
-## 10. Update the Project Registry
+## 10. Finalize Project Documentation
 
-Update [PROJECTS.md](PROJECTS.md) after the project works:
+After the project works:
 
-1. Add the project entry with its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets.
-2. Advance the next available local and EC2 host ports.
-3. Verify every workflow path listed in the project entry exists under `.github/workflows/`.
+1. Document its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets in its `README.md`.
+2. Advance the next available local and EC2 host ports in § 1 of this guide.
+3. Verify every workflow path listed in the project README exists under `.github/workflows/`.
 4. If the project should appear on the public home page, update `projects/techtoday/src/index.html`.
 
 Public home page card update:

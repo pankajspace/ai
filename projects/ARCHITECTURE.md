@@ -1,8 +1,8 @@
 # Projects Architecture — techtoday.click
 
 Architecture, shared configuration, and design decisions for the projects in this
-repository. The current project inventory lives in [PROJECTS.md](PROJECTS.md), so
-this file should not need edits when a new project is added.
+repository. Project-specific development and deployment details live in each
+project's `README.md`.
 
 ## Architecture Overview
 
@@ -52,13 +52,13 @@ Use a `t3.small` when running several memory-intensive projects at the same time
 
 ## Shared Runtime Conventions
 
-1. Static files for the root site are served from `/var/www/techtoday`.
-2. Container apps listen on port `5000` inside the container.
-3. Each container app maps to a unique EC2 host port.
-4. Each container app mounts routes under `PATH_PREFIX=/<project-name>` in production.
-5. Nginx forwards the full path, so Flask apps register routes under the runtime `PATH_PREFIX`.
-6. Production compose services run `command: python src/python/app.py`.
-7. Project-specific ports, paths, workflows, and secrets are listed in [PROJECTS.md](PROJECTS.md).
+1. Static sites live under `projects/<name>/src/`; the root site's files are served from `/var/www/techtoday`.
+2. Static sites do not use Docker, ECR, `PATH_PREFIX`, or Secrets Manager.
+3. Container apps listen on port `5000` inside the container and use unique EC2 host ports in the `500x` range.
+4. Container apps use unique local development ports in the `808x` range; the reusable `template` starter uses `8090`.
+5. A container project's Docker Compose service name matches `<project-name>`.
+6. Nginx forwards the full path, so Flask apps register routes under the runtime `PATH_PREFIX`.
+7. Production compose services run `command: python src/python/app.py`.
 
 ## CI/CD Model
 
@@ -73,7 +73,7 @@ Shared prerequisites:
 3. One ECR repository per container app.
 4. EC2 instance role with ECR pull and Secrets Manager read permissions.
 
-The workflow names and trigger paths for current projects live in [PROJECTS.md](PROJECTS.md).
+Workflow names and trigger paths are documented in each project's `README.md`.
 
 ## Best Practices
 
@@ -100,7 +100,7 @@ The workflow names and trigger paths for current projects live in [PROJECTS.md](
 
 1. Keep routine development, deployment, rollback, and troubleshooting in each project's `README.md`.
 2. Keep new-project setup in [ADD_PROJECT.md](ADD_PROJECT.md).
-3. Keep the project inventory in [PROJECTS.md](PROJECTS.md).
+3. Keep project-specific ports, routes, workflows, and secrets in each project's `README.md`.
 4. Avoid adding per-project lists to architecture or setup docs.
 
 ## When to Upgrade to ECS Fargate and ALB

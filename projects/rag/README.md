@@ -64,7 +64,8 @@ git push -u origin feat/rag-short-description
 
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/rag/**` trigger `.github/workflows/deploy-rag.yml`, which pushes the
-image to `techtoday/rag` in ECR and restarts only the `rag` service on EC2.
+image to `techtoday/rag` in ECR and restarts only the `rag` service on EC2. The
+production Compose service maps EC2 host port `5002` to container port `5000`.
 
 ```bash
 curl -I https://app.techtoday.click/rag/

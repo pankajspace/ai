@@ -76,7 +76,7 @@ git push -u origin feat/basic-short-description
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/basic/**` trigger `.github/workflows/deploy-basic.yml`, which builds
 the image, pushes it to `techtoday/basic` in ECR, and restarts only the `basic`
-service on EC2.
+service on EC2. The production Compose service publishes EC2 host port `5000`.
 
 Verify production after the workflow succeeds:
 

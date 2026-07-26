@@ -29,8 +29,14 @@
 ## Documentation
 1. [Architecture Guide](projects/ARCHITECTURE.md)
 2. [Setup Guide](projects/SETUP.md)
-3. [Project Registry](projects/PROJECTS.md)
-4. [Add Project Guide](projects/ADD_PROJECT.md)
-5. [Nano Cheat Sheet](projects/NANO.md)
-6. [Projects](projects/PROJECTS.md)
+3. [Add Project Guide](projects/ADD_PROJECT.md)
+4. [Nano Cheat Sheet](projects/NANO.md)
+
+## Project Runbooks
+1. [TechToday Home Page](projects/techtoday/README.md)
+2. [AI Playground](projects/basic/README.md)
+3. [LangChain Lab](projects/langchain/README.md)
+4. [RAG Lab](projects/rag/README.md)
+5. [Docker Demo Lab](projects/docker/README.md)
+6. [Container App Template](projects/template/README.md)
 

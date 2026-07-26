@@ -15,11 +15,12 @@ Project name parameter: `${input:projectName}`. Treat this as the required proje
 
 Read these files before editing:
 
-1. [projects/PROJECTS.md](../../projects/PROJECTS.md), especially `Container App Shared Conventions` and `Adding a new Container App`.
-2. [projects/template/README.md](../../projects/template/README.md).
-3. [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
-4. Neighboring project files from [projects/basic](../../projects/basic), [projects/langchain](../../projects/langchain), or [projects/rag](../../projects/rag) when their structure helps decide how the new project should look.
-5. The matching study file under `study/` (if one exists) to understand the project's feature context and source material.
+1. [projects/ADD_PROJECT.md](../../projects/ADD_PROJECT.md), especially `Pick Project Values` and the final documentation steps.
+2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md), especially `Shared Runtime Conventions`.
+3. [projects/template/README.md](../../projects/template/README.md).
+4. [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
+5. Neighboring project files from [projects/basic](../../projects/basic), [projects/langchain](../../projects/langchain), or [projects/rag](../../projects/rag) when their structure helps decide how the new project should look.
+6. The matching study file under `study/` (if one exists) to understand the project's feature context and source material.
 
 ## Inputs To Resolve
 
@@ -33,11 +34,11 @@ Before making changes, identify or ask for:
 6. Whether the project is production-documented. If yes, create the matching GitHub Actions workflow from `deploy.yml.template` in the same change.
 7. Whether the project includes standalone example sub-projects (each with their own Dockerfiles, compose files, or multiple containers). See the **Complex Projects** section below.
 
-If the user gives enough information, proceed without asking extra questions. If ports are not provided, infer them from `projects/PROJECTS.md` and existing project specs.
+If the user gives enough information, proceed without asking extra questions. If ports are not provided, use the allocation in `projects/ADD_PROJECT.md` and confirm it against existing project READMEs and Compose files.
 
 ## Workflow
 
-1. Inspect existing project allocations in `projects/PROJECTS.md` and confirm the next local and EC2 host ports.
+1. Read the next-port allocation in `projects/ADD_PROJECT.md` and confirm it against existing project READMEs and Compose files.
 2. Create `projects/<project-name>/` by copying `projects/template/` if the folder does not already exist.
 3. Update `docker-compose.yml` so the `web` service publishes `<local-port>:5000` and the service names follow the new project where applicable.
 4. Keep this structure unless the user explicitly asks otherwise:
@@ -66,10 +67,11 @@ If the user gives enough information, proceed without asking extra questions. If
 8. Update `requirements.txt` and `.env.example` for the Python files and secrets the project needs.
 9. Replace the template `README.md` with a self-contained project runbook. Follow the **README Requirements** section below; do not leave routine commands in shared docs.
 10. If the project is production-documented or the user asks for deployment support, copy `projects/<project-name>/deploy.yml.template` to `.github/workflows/deploy-<project-name>.yml` and replace every `PROJECT_NAME` token with the project name.
-11. Update shared docs only when the user asks or when the project is ready to be documented:
-    1. Add a new spec in `projects/PROJECTS.md` under `Container App Specs`.
-    2. Add any new secrets to the shared setup notes.
-    3. Add a public home-page card under `projects/techtoday/src/` if the project should be visible from the main site.
+11. Update directly related docs when the project is ready to be documented:
+  1. Keep all project-specific values and operations in the new project's `README.md`.
+  2. Advance the next-port allocation in `projects/ADD_PROJECT.md`.
+  3. Add new shared secret guidance to the setup notes only when the shared process changes.
+  4. Add a public home-page card under `projects/techtoday/src/` if the project should be visible from the main site.
 
 ## README Requirements
 
@@ -190,7 +192,7 @@ After edits, run the cheapest relevant checks:
 1. `python3 -m py_compile src/python/*.py` from the new project folder. Use `python3` (not `python`) on macOS.
 2. `docker compose config` from the new project folder (requires `.env` to exist — copy from `.env.example` first if needed).
 3. If Docker is running and the user wants a runtime check, run `docker compose up web` and verify the local URL.
-4. If `projects/PROJECTS.md` lists `.github/workflows/deploy-<project-name>.yml`, confirm that file exists.
+4. If the project README lists `.github/workflows/deploy-<project-name>.yml` as active, confirm that file exists.
 5. If a GitHub Actions workflow was generated, confirm no `PROJECT_NAME` placeholders remain in `.github/workflows/deploy-<project-name>.yml`.
 6. Confirm the README contains concrete local start, deploy, verification, rollback, manual fallback, and troubleshooting commands for the project.
 7. Confirm every workflow and file named by the README exists. If deployment is intentionally incomplete, verify the README says so and identifies the missing coverage.

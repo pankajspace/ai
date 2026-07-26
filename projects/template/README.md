@@ -42,9 +42,9 @@ The `template` project is a local starter and is never deployed to production.
 ### Create a Project From This Template
 
 Use the `Create Container Project` skill or copy this folder to
-`projects/<project-name>/`. Allocate ports and production values from
-[../PROJECTS.md](../PROJECTS.md), integrate the feature, and replace this README
-with project-specific documentation.
+`projects/<project-name>/`. Allocate ports and production values using
+[../ADD_PROJECT.md](../ADD_PROJECT.md), integrate the feature, and replace this
+README with project-specific documentation.
 
 The resulting README must be the complete runbook for that project. Include:
 

@@ -63,7 +63,8 @@ git push -u origin feat/langchain-short-description
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/langchain/**` trigger `.github/workflows/deploy-langchain.yml`, which
 pushes the image to `techtoday/langchain` in ECR and restarts only the
-`langchain` service on EC2.
+`langchain` service on EC2. The production Compose service maps EC2 host port
+`5001` to container port `5000`.
 
 ```bash
 curl -I https://app.techtoday.click/langchain/
