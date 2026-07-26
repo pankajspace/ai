@@ -313,7 +313,7 @@ SSH. Do not run the ECR/secret steps on EC2 — the instance role
 
    ```nginx
    location /docker/ {
-       proxy_pass         http://localhost:5004;
+       proxy_pass         http://localhost:5003;
        proxy_set_header   Host $host;
        proxy_set_header   X-Real-IP $remote_addr;
        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -338,7 +338,7 @@ SSH. Do not run the ECR/secret steps on EC2 — the instance role
 
 6. **Add the production services to `~/docker-compose.yml`** (EC2). Use the
    image URLs (not `build:`), set `PATH_PREFIX=/docker`, publish host port
-   `5004`, and keep the healthchecks, `depends_on`, and volumes. Under the
+   `5003`, and keep the healthchecks, `depends_on`, and volumes. Under the
    top-level `services:` key add (replace `<ECR>` with
    `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
 
@@ -351,7 +351,7 @@ SSH. Do not run the ECR/secret steps on EC2 — the instance role
        env_file:
          - ~/secrets/docker.env
        ports:
-         - "5004:5000"
+         - "5003:5000"
        depends_on:
          quickbite:
            condition: service_healthy
@@ -642,7 +642,7 @@ think→act→observe loop, and stateful conversation memory. Requires
 3. **Production URL:** `https://app.techtoday.click/docker/`.
 4. **Local dev URL:** `http://localhost:8083`.
 5. **Container port:** `5000` (gateway).
-6. **EC2 host port:** `5004`.
+6. **EC2 host port:** `5003`.
 7. **ECR repositories:** `techtoday/docker-{web,quickbite,scalergpt,deskbuddy-agent,deskbuddy-tools}` (one per buildable service; Chroma and Redis use public images).
 8. **Path prefix:** `PATH_PREFIX=/docker`.
 9. **Production gateway service name:** `web`.
