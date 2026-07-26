@@ -38,24 +38,6 @@ cd projects/docker
 cp .env.example .env
 ```
 
-The copied placeholder is enough for Level 1. For Levels 2 and 3, create an
-OpenAI API key at <https://platform.openai.com/api-keys> and replace the entire
-placeholder value in `.env`:
-
-```dotenv
-OPENAI_API_KEY=sk-your-real-key
-```
-
-Do not add quotes or spaces around the value. `.env` is ignored by Git and must
-never be committed. Confirm that before adding a real key:
-
-```bash
-git check-ignore .env
-```
-
-The command must print `.env`. If a key is ever printed in logs, chat, a commit,
-or a pull request, revoke it in the OpenAI dashboard and create a replacement.
-
 ### First Run: Level 1 (No API Key)
 
 Build and start the gateway plus QuickBite in detached mode. `--wait` prevents
