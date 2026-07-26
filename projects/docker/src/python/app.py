@@ -78,12 +78,6 @@ def proxy_request(method, url, json_body=None):
         return {"error": str(e)}, 500
 
 
-def service_status(url):
-    """Report downstream availability without failing the browser status probe."""
-    data, status = proxy_request("GET", url)
-    return {"available": status == 200, **data}
-
-
 # ---------------------------------------------------------------------------
 # Routes — Static files
 # ---------------------------------------------------------------------------
@@ -126,7 +120,8 @@ def quickbite_predict():
 @bp.route("/quickbite/status")
 def quickbite_status():
     """Check if QuickBite service is running."""
-    return jsonify(service_status(f"{QUICKBITE_URL}/"))
+    data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    return jsonify(data), status
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +140,8 @@ def scalergpt_ask():
 @bp.route("/scalergpt/status")
 def scalergpt_status():
     """Check if ScalerGPT service is running and how many docs are indexed."""
-    return jsonify(service_status(f"{SCALERGPT_URL}/"))
+    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    return jsonify(data), status
 
 
 # ---------------------------------------------------------------------------
@@ -164,7 +160,8 @@ def deskbuddy_chat():
 @bp.route("/deskbuddy/status")
 def deskbuddy_status():
     """Check if DeskBuddy agent service is running."""
-    return jsonify(service_status(f"{DESKBUDDY_URL}/"))
+    data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    return jsonify(data), status
 
 
 # ---------------------------------------------------------------------------

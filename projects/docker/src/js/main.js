@@ -6,65 +6,6 @@
 
 const API = document.body.dataset.apiBase || "";
 
-const SERVICES = {
-    quickbite: {
-        statusPath: "/quickbite/status",
-        statusId: "quickbite-status",
-        buttonId: "qb-predict-btn",
-    },
-    scalergpt: {
-        statusPath: "/scalergpt/status",
-        statusId: "scalergpt-status",
-        buttonId: "sg-ask-btn",
-    },
-    deskbuddy: {
-        statusPath: "/deskbuddy/status",
-        statusId: "deskbuddy-status",
-        buttonId: "db-chat-btn",
-    },
-};
-
-function setServiceState(name, state, label) {
-    const service = SERVICES[name];
-    const statusEl = document.getElementById(service.statusId);
-    const button = document.getElementById(service.buttonId);
-    const available = state === "ready";
-
-    statusEl.className = `service-status ${state}`;
-    statusEl.textContent = label;
-    button.dataset.available = String(available);
-    button.disabled = !available;
-}
-
-async function checkService(name) {
-    const service = SERVICES[name];
-
-    try {
-        const response = await fetch(`${API}${service.statusPath}`);
-        const data = await response.json();
-        if (!response.ok || !data.available) {
-            throw new Error(data.error || "Service unavailable");
-        }
-
-        if (name === "scalergpt" && data.docs_indexed === 0) {
-            setServiceState(name, "setup", "No documents");
-            return;
-        }
-
-        const label = name === "scalergpt"
-            ? `Ready · ${data.docs_indexed} docs`
-            : "Ready";
-        setServiceState(name, "ready", label);
-    } catch {
-        setServiceState(name, "offline", "Not running");
-    }
-}
-
-function restoreButton(button, label) {
-    button.textContent = label;
-    button.disabled = button.dataset.available !== "true";
-}
-
 // ── QuickBite ETA (Level 1) ──────────────────────────────────────────
 
 async function predictETA() {
@@ -96,7 +37,8 @@ async function predictETA() {
         resultEl.className = "result visible wrong-result";
         resultEl.textContent = `Error: ${e.message}`;
     } finally {
-        restoreButton(btn, "Predict ETA 🛵");
+        btn.disabled = false;
+        btn.textContent = "Predict ETA 🛵";
     }
 }
 
@@ -128,7 +70,8 @@ async function askScalerGPT() {
         resultEl.className = "result visible wrong-result";
         resultEl.textContent = `Error: ${e.message}`;
     } finally {
-        restoreButton(btn, "Ask ScalerGPT 📚");
+        btn.disabled = false;
+        btn.textContent = "Ask ScalerGPT 📚";
     }
 }
 
@@ -165,7 +108,8 @@ async function chatDeskBuddy() {
         resultEl.className = "result visible wrong-result";
         resultEl.textContent = prevContent + `Error: ${e.message}`;
     } finally {
-        restoreButton(btn, "Send to Agent 🤖");
+        btn.disabled = false;
+        btn.textContent = "Send to Agent 🤖";
     }
 }
 
@@ -191,5 +135,4 @@ function setupToggles() {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupToggles();
-    Object.keys(SERVICES).forEach(checkService);
 });

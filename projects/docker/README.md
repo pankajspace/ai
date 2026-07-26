@@ -46,24 +46,6 @@ placeholder value in `.env`:
 OPENAI_API_KEY=sk-your-real-key
 ```
 
-The value in `.env.example` deliberately starts with `sk-paste` and is rejected
-by both AI services. Replace it in `.env`; do not edit `.env.example`. Before
-starting Level 2 or 3, run this non-printing preflight check:
-
-```bash
-if [[ ! -f .env ]] || \
-    ! grep -Eq '^OPENAI_API_KEY=[^[:space:]]+$' .env || \
-    grep -q '^OPENAI_API_KEY=sk-paste' .env; then
-    echo "Replace the OPENAI_API_KEY placeholder in .env first"
-    false
-else
-    echo "API key preflight passed"
-fi
-```
-
-Do not use `cat .env` or paste its contents into logs or chat. The preflight
-prints only an error message, never the key.
-
 Do not add quotes or spaces around the value. `.env` is ignored by Git and must
 never be committed. Confirm that before adding a real key:
 
@@ -97,31 +79,14 @@ If Compose does not recognize `--wait`, update the Compose v2 plugin. As a
 temporary fallback, omit `--wait` and run `docker compose ps` until `web` and
 `quickbite` both show `healthy` before opening the URL.
 
-With only Level 1 running, the page shows QuickBite as **Ready**. ScalerGPT and
-DeskBuddy show **Not running**, and their buttons are disabled. These are
-expected availability states, not application errors.
-
 ### Run Level 2: ScalerGPT
 
-Add a real `OPENAI_API_KEY` to `.env` and make sure the Environment Setup
-preflight passes. Then start the gateway and ScalerGPT. Compose automatically
-starts their QuickBite and Chroma dependencies:
+Add a real `OPENAI_API_KEY` to `.env`, then start the gateway and ScalerGPT.
+Compose automatically starts their QuickBite and Chroma dependencies:
 
 ```bash
 docker compose up -d --build --wait web scalergpt
 ```
-
-The command above must exit successfully before ingestion. Confirm both Level 2
-containers are running and healthy:
-
-```bash
-docker compose ps scalergpt scalergpt-chroma
-```
-
-Do not continue if ScalerGPT is `restarting`, `exited`, or `unhealthy`. Check
-`docker compose logs --tail=100 scalergpt` and fix startup first.
-`docker compose exec` can only run a command inside an already running
-container.
 
 ScalerGPT cannot answer until its sample notes have been embedded into Chroma.
 Run this once on first startup and again after changing files under
@@ -133,29 +98,25 @@ curl http://localhost:8083/scalergpt/status
 ```
 
 The status response should report `docs_indexed` greater than zero. Ingestion
-and questions make paid OpenAI API calls. Refresh <http://localhost:8083> after
-ingestion; the ScalerGPT card changes from **No documents** to
-**Ready · N docs** and enables its button.
+and questions make paid OpenAI API calls.
 
 ### Run Level 3: DeskBuddy
 
-With a real `OPENAI_API_KEY` in `.env` and a passing preflight, start the gateway
-and agent. Compose automatically starts QuickBite, the private tools service,
-and Redis:
+With a real `OPENAI_API_KEY` in `.env`, start the gateway and agent. Compose
+automatically starts QuickBite, the private tools service, and Redis:
 
 ```bash
 docker compose up -d --build --wait web deskbuddy-agent
 curl http://localhost:8083/deskbuddy/status
 ```
 
-Refresh <http://localhost:8083> after startup; DeskBuddy changes to **Ready** and
-its button becomes available. Redis stores conversation history by `session_id`
-in the `deskbuddy_memory` volume.
+Use the DeskBuddy form at <http://localhost:8083>. Redis stores conversation
+history by `session_id` in the `deskbuddy_memory` volume.
 
 ### Run All Levels
 
-A real `OPENAI_API_KEY` and a passing Environment Setup preflight are required.
-Start all seven services, then ingest the ScalerGPT documents:
+A real `OPENAI_API_KEY` is required. Start all seven services, then ingest the
+ScalerGPT documents:
 
 ```bash
 docker compose up -d --build --wait
@@ -165,18 +126,6 @@ docker compose ps
 
 Use `-d` for normal development. Running `docker compose up --build` without
 `-d` attaches the terminal to all logs; pressing `Ctrl+C` then stops the stack.
-
-### UI Service States
-
-The page probes the gateway status routes when it loads. Refresh the browser
-after starting a service or ingesting ScalerGPT documents.
-
-| State | Meaning | Action |
-|---|---|---|
-| **Checking** | The browser is checking the internal service. | Wait briefly. |
-| **Ready** | The service is healthy and its form is enabled. | Use the demo. |
-| **Not running** | The optional service is stopped or failed startup. | Check `docker compose ps -a` and its logs. |
-| **No documents** | ScalerGPT is healthy but Chroma has no indexed notes. | Run `docker compose exec scalergpt python ingest.py`, then refresh. |
 
 ### Daily Development
 
@@ -205,8 +154,8 @@ docker compose up -d --build --wait deskbuddy-agent
 docker compose up -d --build --wait deskbuddy-tools
 ```
 
-After changing `.env`, rerun the preflight and recreate the key-dependent
-containers so they receive the new value:
+After changing `.env`, recreate the key-dependent containers so they receive
+the new value:
 
 ```bash
 docker compose up -d --force-recreate --wait scalergpt deskbuddy-agent
@@ -254,43 +203,19 @@ docker compose logs --tail=100 deskbuddy-agent deskbuddy-tools deskbuddy-redis
 Common failures:
 
 1. **`.env` does not exist:** run `cp .env.example .env`.
-2. **`OPENAI_API_KEY is missing` or `docker compose up --wait` exits with code
-    1:** the placeholder is still in `.env`. Stop the restart loops, keep Level
-    1 running, replace the key, rerun the preflight, and then retry:
-
-```bash
-docker compose stop scalergpt scalergpt-chroma \
-  deskbuddy-agent deskbuddy-tools deskbuddy-redis
-docker compose up -d --wait web quickbite
-
-# After replacing the placeholder and passing the preflight:
-docker compose up -d --build --force-recreate --wait \
-  web scalergpt deskbuddy-agent
-```
-
-The daemon message `Container ... is restarting, wait until the container is
-running` during `docker compose exec scalergpt python ingest.py` is the same
-startup problem. Do not retry ingestion yet. Fix `.env`, recreate ScalerGPT,
-and wait for it to become healthy first.
-
-3. **A service is `restarting`, `unhealthy`, or Compose reports `dependency
-    failed to start`:** inspect the exact startup failure:
-
-```bash
-docker compose ps -a
-docker compose logs --tail=100 scalergpt deskbuddy-agent
-```
-
-4. **OpenAI `401`, `AuthenticationError`, or `insufficient_quota`:** replace the
+2. **`OPENAI_API_KEY is missing`:** put a real key in `.env`, then recreate the
+    key-dependent services with
+    `docker compose up -d --force-recreate --wait scalergpt deskbuddy-agent`.
+3. **OpenAI `401`, `AuthenticationError`, or `insufficient_quota`:** replace the
     key or add API credit; a ChatGPT subscription does not include API credit.
-5. **ScalerGPT says no documents are indexed:** run
+4. **ScalerGPT says no documents are indexed:** run
     `docker compose exec scalergpt python ingest.py`.
-6. **A first request resets or refuses the connection:** use the documented
+5. **A first request resets or refuses the connection:** use the documented
     `--wait` startup command and confirm the gateway is `healthy`.
-7. **`port 8083 is already allocated`:** stop this stack with
+6. **`port 8083 is already allocated`:** stop this stack with
     `docker compose down`, or identify the other listener with
     `sudo lsof -i :8083`.
-8. **A dependency fails its healthcheck:** inspect its logs and health details:
+7. **A dependency fails its healthcheck:** inspect its logs and health details:
 
 ```bash
 docker inspect --format '{{.Name}} {{json .State.Health}}' \
@@ -462,16 +387,11 @@ Locally, routes have no prefix. In production, prepend `/docker`:
 
 1. `GET /` — Demo Lab UI.
 2. `POST /quickbite/predict` — Proxy to QuickBite ETA.
-3. `GET /quickbite/status` — QuickBite availability through the gateway.
+3. `GET /quickbite/status` — QuickBite health through the gateway.
 4. `POST /scalergpt/ask` — Proxy to ScalerGPT.
-5. `GET /scalergpt/status` — ScalerGPT availability and document count.
+5. `GET /scalergpt/status` — ScalerGPT health and document count.
 6. `POST /deskbuddy/chat` — Proxy to DeskBuddy.
-7. `GET /deskbuddy/status` — DeskBuddy availability through the gateway.
-
-Status routes always return HTTP 200 from the gateway. Read the JSON
-`available` field to distinguish a healthy downstream service from an optional
-service that is not running. Demo action routes still return HTTP 503 when their
-downstream service is unavailable.
+7. `GET /deskbuddy/status` — DeskBuddy health through the gateway.
 
 ## Environment Variables
 
