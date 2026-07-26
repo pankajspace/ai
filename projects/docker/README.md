@@ -231,59 +231,333 @@ git push -u origin feat/docker-short-description
 
 Open a pull request and squash-merge it into `main` after review.
 
-### Production Deployment Status
+### Automatic Deployment
 
-Automatic deployment is not currently enabled: the repository does not contain
-`.github/workflows/deploy-docker.yml`. The supplied `deploy.yml.template` builds
-and publishes only the main Flask gateway image. It does not publish the
-QuickBite, ScalerGPT, or DeskBuddy images, and its `--no-deps` deployment cannot
-start those required services on EC2.
+This project is a multi-service stack, so it does **not** use the single-image
+`deploy.yml.template`. The active workflow is
+[.github/workflows/deploy-docker.yml](../../.github/workflows/deploy-docker.yml).
+On every push to `main` that changes a file under `projects/docker/**`, it:
 
-Before enabling production deployment, extend the deployment design so the
-production Compose file has deployable images for all five application services
-plus the Chroma and Redis dependencies. Then create the workflow from the
-repository root and replace all placeholders:
+1. Builds one `linux/amd64` image per buildable service and pushes each to its
+   own ECR repository with three tags (git SHA, build tag, `latest`):
 
-```bash
-cp projects/docker/deploy.yml.template .github/workflows/deploy-docker.yml
-sed -i 's/PROJECT_NAME/docker/g' .github/workflows/deploy-docker.yml  # Linux
-grep -n PROJECT_NAME .github/workflows/deploy-docker.yml             # No output expected
-```
+   | Service | Build context | ECR repository |
+   | --- | --- | --- |
+   | `web` | `projects/docker` | `techtoday/docker-web` |
+   | `quickbite` | `src/quick-bite-eta` | `techtoday/docker-quickbite` |
+   | `scalergpt` | `src/scaler-gpt` | `techtoday/docker-scalergpt` |
+   | `deskbuddy-agent` | `src/desk-buddy/agent` | `techtoday/docker-deskbuddy-agent` |
+   | `deskbuddy-tools` | `src/desk-buddy/tools` | `techtoday/docker-deskbuddy-tools` |
 
-On macOS, use `sed -i '' 's/PROJECT_NAME/docker/g'` instead. Do not treat the
-template-only workflow as a complete deployment for this multi-service project.
+   Chroma (`chromadb/chroma`) and Redis (`redis`) are public images pulled
+   directly on EC2 and are not built here.
+2. On EC2, pulls the five images and starts the full stack with the `level2`
+   and `level3` profiles (`docker compose ... up -d --wait`), then runs
+   `ingest.py` inside `scalergpt` to index its documents.
 
-Once the workflow and production services are complete, changes under
-`projects/docker/**` should publish to `techtoday/docker`, restart the `docker`
-gateway and its required services, and be verified with:
+Trigger path: `projects/docker/**`. The one-time server wiring below must be
+done once before the first automatic deploy succeeds.
 
-```bash
-curl -I https://app.techtoday.click/docker/
-```
+### One-Time Production Setup
+
+Run these once. Local commands need Docker running and the AWS CLI configured;
+EC2 commands run over SSH on the app host.
+
+1. **Create the five ECR repositories** (local):
+
+   ```bash
+   REGION=us-east-1
+   for svc in web quickbite scalergpt deskbuddy-agent deskbuddy-tools; do
+     aws ecr create-repository --repository-name techtoday/docker-$svc --region $REGION
+   done
+   ```
+
+2. **Seed the initial images** (local, from `projects/docker/`). Later pushes
+   are automated by the workflow:
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ECR
+
+   cd projects/docker
+   docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-web:latest --push .
+   docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-quickbite:latest --push ./src/quick-bite-eta
+   docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-scalergpt:latest --push ./src/scaler-gpt
+   docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-deskbuddy-agent:latest --push ./src/desk-buddy/agent
+   docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-deskbuddy-tools:latest --push ./src/desk-buddy/tools
+   ```
+
+3. **Ensure `OPENAI_API_KEY` is in the shared secret** (local). ScalerGPT and
+   DeskBuddy need it; skip if it already exists in `techtoday/secrets`:
+
+   ```bash
+   CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
+   UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d.setdefault('OPENAI_API_KEY','REPLACE_ME'); print(json.dumps(d))")
+   aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
+   ```
+
+4. **Add the Nginx location block** (EC2). Inside the
+   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
+   `/etc/nginx/conf.d/app.conf`:
+
+   ```nginx
+   location /docker/ {
+       proxy_pass         http://localhost:5004;
+       proxy_set_header   Host $host;
+       proxy_set_header   X-Real-IP $remote_addr;
+       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header   X-Forwarded-Proto $scheme;
+   }
+   ```
+
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+5. **Create the secrets env file** (EC2):
+
+   ```bash
+   mkdir -p ~/secrets
+   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
+     --query SecretString --output text | \
+     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+     > ~/secrets/docker.env
+   chmod 600 ~/secrets/docker.env
+   ```
+
+6. **Add the production services to `~/docker-compose.yml`** (EC2). Use the
+   image URLs (not `build:`), set `PATH_PREFIX=/docker`, publish host port
+   `5004`, and keep the healthchecks, `depends_on`, and volumes. Under the
+   top-level `services:` key add (replace `<ECR>` with
+   `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
+
+   ```yaml
+     web:
+       image: <ECR>/techtoday/docker-web:latest
+       command: python src/python/app.py
+       environment:
+         - PATH_PREFIX=/docker
+       env_file:
+         - ~/secrets/docker.env
+       ports:
+         - "5004:5000"
+       depends_on:
+         quickbite:
+           condition: service_healthy
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 5s
+
+     quickbite:
+       image: <ECR>/techtoday/docker-quickbite:latest
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 5s
+
+     scalergpt:
+       profiles: ["level2"]
+       image: <ECR>/techtoday/docker-scalergpt:latest
+       env_file:
+         - ~/secrets/docker.env
+       environment:
+         - CHROMA_HOST=scalergpt-chroma
+         - CHROMA_PORT=8000
+       depends_on:
+         scalergpt-chroma:
+           condition: service_healthy
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 10s
+
+     scalergpt-chroma:
+       profiles: ["level2"]
+       image: chromadb/chroma:0.6.3
+       volumes:
+         - scalergpt_chroma_data:/chroma/chroma
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v2/heartbeat')"]
+         interval: 5s
+         timeout: 3s
+         retries: 10
+         start_period: 10s
+
+     deskbuddy-agent:
+       profiles: ["level3"]
+       image: <ECR>/techtoday/docker-deskbuddy-agent:latest
+       env_file:
+         - ~/secrets/docker.env
+       environment:
+         - TOOLS_URL=http://deskbuddy-tools:7000
+         - REDIS_HOST=deskbuddy-redis
+       depends_on:
+         deskbuddy-tools:
+           condition: service_healthy
+         deskbuddy-redis:
+           condition: service_healthy
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/')"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 10s
+
+     deskbuddy-tools:
+       profiles: ["level3"]
+       image: <ECR>/techtoday/docker-deskbuddy-tools:latest
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7000/')"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 5s
+
+     deskbuddy-redis:
+       profiles: ["level3"]
+       image: redis:7-alpine
+       volumes:
+         - deskbuddy_memory:/data
+       restart: unless-stopped
+       healthcheck:
+         test: ["CMD", "redis-cli", "ping"]
+         interval: 5s
+         timeout: 3s
+         retries: 5
+         start_period: 5s
+   ```
+
+   Add the two named volumes to the top-level `volumes:` key if not already
+   present:
+
+   ```yaml
+   volumes:
+     scalergpt_chroma_data:
+     deskbuddy_memory:
+   ```
+
+7. **Start the stack the first time** (EC2):
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+   docker compose -f ~/docker-compose.yml --profile level2 --profile level3 pull \
+     web quickbite scalergpt deskbuddy-agent deskbuddy-tools
+   docker compose -f ~/docker-compose.yml --profile level2 --profile level3 up -d --wait
+   docker compose -f ~/docker-compose.yml exec -T scalergpt python ingest.py
+   ```
+
+8. **Verify** (local):
+
+   ```bash
+   curl -I https://app.techtoday.click/docker/
+   ```
+
+After this one-time setup, every push under `projects/docker/**` redeploys the
+whole stack automatically.
 
 ### Production Troubleshooting
 
 For a `502 Bad Gateway`, run on EC2:
 
 ```bash
-docker compose -f ~/docker-compose.yml ps
-docker compose -f ~/docker-compose.yml logs --tail=50 docker
-grep -A20 "^  docker:" ~/docker-compose.yml
+docker compose -f ~/docker-compose.yml ps -a
+docker compose -f ~/docker-compose.yml logs --tail=50 web
+grep -A20 "^  web:" ~/docker-compose.yml
 ```
 
 The gateway must use `command: python src/python/app.py`,
 `PATH_PREFIX=/docker`, and resolvable service names matching `quickbite`,
 `scalergpt`, and `deskbuddy-agent`. Validate Compose before restarting the
-affected services:
+stack:
 
 ```bash
 docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-docker compose -f ~/docker-compose.yml up -d docker
+docker compose -f ~/docker-compose.yml --profile level2 --profile level3 up -d --wait
 ```
 
-Rollback and manual deployment commands should be added here together with the
-completed multi-image production workflow; the single-image procedure used by
-the other container apps is not sufficient for this project.
+If ScalerGPT reports no indexed documents, re-run the ingest step:
+
+```bash
+docker compose -f ~/docker-compose.yml exec -T scalergpt python ingest.py
+```
+
+### Rollback
+
+Each service has its own ECR repository (`techtoday/docker-<service>` in
+`us-east-1`) and every deploy tags images with a sortable build tag. To roll a
+service back, retag the desired build as `latest` and restart it on EC2. For
+the gateway:
+
+```bash
+# Run on: EC2 host
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+REPO=techtoday/docker-web
+TARGET=20260701-153045-42-a1b2c3d   # a known-good build tag
+
+aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR
+docker pull $ECR/$REPO:$TARGET
+docker tag  $ECR/$REPO:$TARGET $ECR/$REPO:latest
+docker push $ECR/$REPO:latest
+
+docker compose -f ~/docker-compose.yml pull web
+docker compose -f ~/docker-compose.yml up -d --wait web
+```
+
+Repeat with the matching `techtoday/docker-<service>` repository to roll back
+any other service. Verify with `curl -I https://app.techtoday.click/docker/`.
+
+### Manual Deployment
+
+If CI/CD is unavailable, build and push the images from `projects/docker/` on
+your local machine (Docker running), then deploy on EC2 as in step 7 above:
+
+```bash
+# Run on: local machine, from projects/docker/
+REGION=us-east-1
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR
+
+docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-web:latest --push .
+docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-quickbite:latest --push ./src/quick-bite-eta
+docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-scalergpt:latest --push ./src/scaler-gpt
+docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-deskbuddy-agent:latest --push ./src/desk-buddy/agent
+docker buildx build --platform linux/amd64 -t $ECR/techtoday/docker-deskbuddy-tools:latest --push ./src/desk-buddy/tools
+```
+
+If a pull on EC2 fails with `no space left on device`, reclaim space and retry:
+
+```bash
+# Run on: EC2 host
+docker container prune -f
+docker builder prune -af
+docker image prune -af
+docker compose -f ~/docker-compose.yml --profile level2 --profile level3 pull \
+  web quickbite scalergpt deskbuddy-agent deskbuddy-tools
+```
 
 ---
 

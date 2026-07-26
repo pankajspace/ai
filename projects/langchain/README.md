@@ -48,6 +48,98 @@ docker compose down
 On Linux, start Docker with `sudo systemctl start docker`. On macOS or Windows,
 start Docker Desktop and wait until Docker reports that it is running.
 
+### One-Time Production Setup
+
+Run these once before the first automatic deploy. They wire the project into the
+shared EC2 host. Do them again only when rebuilding the server. Local commands
+need the AWS CLI configured; EC2 commands run over SSH on the app host.
+
+1. **Create the ECR repository** (local):
+
+   ```bash
+   aws ecr create-repository --repository-name techtoday/langchain --region us-east-1
+   ```
+
+2. **Seed the initial image** (local, from `projects/langchain/`). Later pushes
+   are automated by the workflow:
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ECR
+   cd projects/langchain
+   docker build --platform linux/amd64 -t $ECR/techtoday/langchain:latest .
+   docker push $ECR/techtoday/langchain:latest
+   ```
+
+3. **Ensure `OPENAI_API_KEY` is in the shared secret** (local). Skip if it
+   already exists in `techtoday/secrets`. Set the real value in the AWS console
+   or CLI — never commit it.
+
+4. **Add the Nginx location block** (EC2). Inside the
+   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
+   `/etc/nginx/conf.d/app.conf`:
+
+   ```nginx
+   location /langchain/ {
+       proxy_pass         http://localhost:5001;
+       proxy_set_header   Host $host;
+       proxy_set_header   X-Real-IP $remote_addr;
+       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header   X-Forwarded-Proto $scheme;
+   }
+   ```
+
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+5. **Create the secrets env file** (EC2):
+
+   ```bash
+   mkdir -p ~/secrets
+   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
+     --query SecretString --output text | \
+     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+     > ~/secrets/langchain.env
+   chmod 600 ~/secrets/langchain.env
+   ```
+
+6. **Add the production service to `~/docker-compose.yml`** (EC2). Use the image
+   URL (not `build:`), set `PATH_PREFIX=/langchain`, and map host port `5001`
+   (replace `<ECR>` with `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
+
+   ```yaml
+     langchain:
+       image: <ECR>/techtoday/langchain:latest
+       command: python src/python/app.py
+       restart: unless-stopped
+       environment:
+         - PATH_PREFIX=/langchain
+       env_file:
+         - ~/secrets/langchain.env
+       ports:
+         - "5001:5000"
+   ```
+
+7. **Start the service the first time** (EC2):
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+   docker compose -f ~/docker-compose.yml pull langchain
+   docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+   curl -I https://app.techtoday.click/langchain/
+   ```
+
+After this one-time setup, every push under `projects/langchain/**` redeploys
+automatically.
+
 ### Commit and Automatic Deployment
 
 Create a feature branch and commit only this project from the repository root:

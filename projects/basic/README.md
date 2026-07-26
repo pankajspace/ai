@@ -59,6 +59,99 @@ docker compose ps
 docker compose down
 ```
 
+### One-Time Production Setup
+
+Run these once before the first automatic deploy. They wire the project into the
+shared EC2 host. Do them again only when rebuilding the server. Local commands
+need the AWS CLI configured; EC2 commands run over SSH on the app host.
+
+1. **Create the ECR repository** (local):
+
+   ```bash
+   aws ecr create-repository --repository-name techtoday/basic --region us-east-1
+   ```
+
+2. **Seed the initial image** (local, from `projects/basic/`). Later pushes are
+   automated by the workflow:
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ECR
+   cd projects/basic
+   docker build --platform linux/amd64 -t $ECR/techtoday/basic:latest .
+   docker push $ECR/techtoday/basic:latest
+   ```
+
+3. **Ensure the API keys are in the shared secret** (local). This project needs
+   `OPENAI_API_KEY` and `GROQ_API_KEY`; skip any that already exist in
+   `techtoday/secrets`. Set the real values in the AWS console or CLI — never
+   commit them.
+
+4. **Add the Nginx location block** (EC2). Inside the
+   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
+   `/etc/nginx/conf.d/app.conf`:
+
+   ```nginx
+   location /basic/ {
+       proxy_pass         http://localhost:5000;
+       proxy_set_header   Host $host;
+       proxy_set_header   X-Real-IP $remote_addr;
+       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header   X-Forwarded-Proto $scheme;
+   }
+   ```
+
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+5. **Create the secrets env file** (EC2):
+
+   ```bash
+   mkdir -p ~/secrets
+   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
+     --query SecretString --output text | \
+     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+     > ~/secrets/basic.env
+   chmod 600 ~/secrets/basic.env
+   ```
+
+6. **Add the production service to `~/docker-compose.yml`** (EC2). Use the image
+   URL (not `build:`), set `PATH_PREFIX=/basic`, and publish host port `5000`
+   (replace `<ECR>` with `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
+
+   ```yaml
+     basic:
+       image: <ECR>/techtoday/basic:latest
+       command: python src/python/app.py
+       restart: unless-stopped
+       environment:
+         - PATH_PREFIX=/basic
+       env_file:
+         - ~/secrets/basic.env
+       ports:
+         - "5000:5000"
+   ```
+
+7. **Start the service the first time** (EC2):
+
+   ```bash
+   REGION=us-east-1
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   aws ecr get-login-password --region $REGION | \
+     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+   docker compose -f ~/docker-compose.yml pull basic
+   docker compose -f ~/docker-compose.yml up -d --no-deps basic
+   curl -I https://app.techtoday.click/basic/
+   ```
+
+After this one-time setup, every push under `projects/basic/**` redeploys
+automatically.
+
 ### Commit and Automatic Deployment
 
 Create a feature branch from the repository root, then commit only this
