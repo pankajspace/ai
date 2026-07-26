@@ -31,8 +31,8 @@ Before making changes, identify or ask for:
 3. Next free EC2 host port, usually the matching next `500x` after existing container apps.
 4. Whether Python feature files already exist, and where they should be copied from.
 5. Required environment variables and whether they are new secrets or already present in `techtoday/secrets`.
-6. Whether the project is production-documented. If yes, create the matching GitHub Actions workflow from `deploy.yml.template` in the same change.
-7. Whether the project includes standalone example sub-projects (each with their own Dockerfiles, compose files, or multiple containers). See the **Complex Projects** section below.
+6. Whether the project is production-documented. If yes, always create the matching GitHub Actions workflow at `.github/workflows/deploy-<project-name>.yml` in the same change — never leave a production-documented project without its deploy workflow. A project that lacks its workflow will 404 in production even after its tile is added to the home page.
+7. Whether the project includes standalone example sub-projects (each with their own Dockerfiles, compose files, or multiple containers). See the **Complex Projects** section below. For these, the single-image `deploy.yml.template` is not sufficient on its own — see **CI/CD Workflow for Complex Projects**.
 
 If the user gives enough information, proceed without asking extra questions. If ports are not provided, use the allocation in `projects/ADD_PROJECT.md` and confirm it against existing project READMEs and Compose files.
 
@@ -66,7 +66,15 @@ If the user gives enough information, proceed without asking extra questions. If
 7. Update `src/index.html`, `src/css/style.css`, and `src/js/main.js` so the browser calls the new API routes through the injected API base.
 8. Update `requirements.txt` and `.env.example` for the Python files and secrets the project needs.
 9. Replace the template `README.md` with a self-contained project runbook. Follow the **README Requirements** section below; do not leave routine commands in shared docs.
-10. If the project is production-documented or the user asks for deployment support, copy `projects/<project-name>/deploy.yml.template` to `.github/workflows/deploy-<project-name>.yml` and replace every `PROJECT_NAME` token with the project name.
+10. If the project is production-documented or the user asks for deployment support, create the deploy workflow in the same change. This step is mandatory for any project you describe as deploy-ready — do not skip it, and do not rely on a later manual step:
+   1. Copy and substitute from the repo root:
+      ```bash
+      cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
+      sed -i "s/PROJECT_NAME/<project-name>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
+      grep -n PROJECT_NAME .github/workflows/deploy-<project-name>.yml   # must print nothing
+      ```
+   2. For a **single-service** project the substituted template is complete.
+   3. For a **complex multi-container** project the template is a starting point only — it builds one root image and restarts one service. Extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready.
 11. Update directly related docs when the project is ready to be documented:
   1. Keep all project-specific values and operations in the new project's `README.md`.
   2. Advance the next-port allocation in `projects/ADD_PROJECT.md`.
@@ -184,6 +192,18 @@ services:
 ```
 
 For Python/FastAPI services, use `python -c "import urllib.request; urllib.request.urlopen('http://localhost:<port>/')"` as the healthcheck test. For Redis, use `redis-cli ping`. For ChromaDB, use the heartbeat endpoint.
+
+### CI/CD Workflow for Complex Projects
+
+The stock `deploy.yml.template` builds a single image at the project root (`docker build ... .`) and pulls/restarts exactly one Compose service (the `PROJECT_NAME` service). A complex project builds several images from different build contexts (for example `web`, plus example sub-projects like `quickbite`, `scalergpt`, `deskbuddy-*`) and runs them as multiple services. The unmodified template will therefore deploy only the gateway and leave every other service stale or missing.
+
+When adding the workflow for a complex project:
+
+1. Still create `.github/workflows/deploy-<project-name>.yml` from the template — never skip it.
+2. Build and push an ECR image for **every** service that has a build context, not just the root gateway. Give each its own tag/repository as agreed with the user, or build them together via `docker compose build` against the production Compose file.
+3. On the EC2 host, pull and restart **all** of the project's services (for example `docker compose ... up -d --no-deps web quickbite ...`), not a single `PROJECT_NAME` service.
+4. If the examples are keyless and rarely change, it is acceptable to build them once and only automate the gateway — but if you do this, say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
+5. Never describe a complex project as deploy-ready while the workflow only covers the single gateway image.
 
 ## Validation
 
