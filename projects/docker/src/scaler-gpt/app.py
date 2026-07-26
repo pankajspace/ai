@@ -83,7 +83,7 @@ def ask(q: Question):
     if collection.count() == 0:
         raise HTTPException(
             status_code=400,
-            detail="No documents indexed yet. Run: docker compose exec app python ingest.py",
+            detail="No documents indexed yet. Run: docker compose exec scalergpt python ingest.py",
         )
 
     # 1. RETRIEVE - find the most relevant chunks from the vector DB

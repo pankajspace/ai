@@ -12,41 +12,224 @@ app proxies browser requests to each internal service.
 
 ## Development and Deployment
 
-### Prerequisites and First Run
+### Prerequisites
 
-Complete the one-time setup in [../SETUP.md](../SETUP.md), start Docker, and
-verify the daemon with `docker info`. Then run from the repository root:
+Complete the one-time Docker setup in [../SETUP.md](../SETUP.md). This project
+needs Docker Engine and the Docker Compose v2 plugin; Python and Node.js are not
+required on the host. Verify both Docker components before continuing:
+
+```bash
+docker info
+docker compose version
+```
+
+On Linux, start the daemon with `sudo systemctl start docker`. If Docker reports
+a socket permission error after adding yourself to the `docker` group, log out
+and back in. On macOS or Windows, start Docker Desktop and wait until it reports
+that Docker is running.
+
+### Environment Setup
+
+Start at the repository root, then enter the project directory. Run the local
+Docker commands in the rest of this guide from `projects/docker/`:
 
 ```bash
 cd projects/docker
 cp .env.example .env
-docker compose build web quickbite
-docker compose up web quickbite
 ```
 
-Open http://localhost:8083. This starts the keyless Level 1 demo. Source edits
-to the gateway UI and Flask app under `src/` are mounted into `web`; rebuild a
-standalone example service after changing its files.
+The copied placeholder is enough for Level 1. For Levels 2 and 3, create an
+OpenAI API key at <https://platform.openai.com/api-keys> and replace the entire
+placeholder value in `.env`:
 
-To run all levels, add `OPENAI_API_KEY` to `.env`, then start the full stack:
-
-```bash
-docker compose up --build
+```dotenv
+OPENAI_API_KEY=sk-your-real-key
 ```
 
-Useful local commands:
+Do not add quotes or spaces around the value. `.env` is ignored by Git and must
+never be committed. Confirm that before adding a real key:
 
 ```bash
+git check-ignore .env
+```
+
+The command must print `.env`. If a key is ever printed in logs, chat, a commit,
+or a pull request, revoke it in the OpenAI dashboard and create a replacement.
+
+### First Run: Level 1 (No API Key)
+
+Build and start the gateway plus QuickBite in detached mode. `--wait` prevents
+the command from returning until both healthchecks pass:
+
+```bash
+docker compose up -d --build --wait web quickbite
+```
+
+Open <http://localhost:8083>. Verify the gateway and prediction route from the
+terminal if needed:
+
+```bash
+curl -I http://localhost:8083/
+curl -X POST http://localhost:8083/quickbite/predict \
+  -H "Content-Type: application/json" \
+  -d '{"distance_km":3.2,"prep_time_min":12,"rider_available":1,"is_raining":0}'
+```
+
+If Compose does not recognize `--wait`, update the Compose v2 plugin. As a
+temporary fallback, omit `--wait` and run `docker compose ps` until `web` and
+`quickbite` both show `healthy` before opening the URL.
+
+### Run Level 2: ScalerGPT
+
+Add a real `OPENAI_API_KEY` to `.env`, then start the gateway and ScalerGPT.
+Compose automatically starts their QuickBite and Chroma dependencies:
+
+```bash
+docker compose up -d --build --wait web scalergpt
+```
+
+ScalerGPT cannot answer until its sample notes have been embedded into Chroma.
+Run this once on first startup and again after changing files under
+`src/scaler-gpt/docs/`:
+
+```bash
+docker compose exec scalergpt python ingest.py
+curl http://localhost:8083/scalergpt/status
+```
+
+The status response should report `docs_indexed` greater than zero. Ingestion
+and questions make paid OpenAI API calls.
+
+### Run Level 3: DeskBuddy
+
+With a real `OPENAI_API_KEY` in `.env`, start the gateway and agent. Compose
+automatically starts QuickBite, the private tools service, and Redis:
+
+```bash
+docker compose up -d --build --wait web deskbuddy-agent
+curl http://localhost:8083/deskbuddy/status
+```
+
+Use the DeskBuddy form at <http://localhost:8083>. Redis stores conversation
+history by `session_id` in the `deskbuddy_memory` volume.
+
+### Run All Levels
+
+A real `OPENAI_API_KEY` is required. Start all seven services, then ingest the
+ScalerGPT documents:
+
+```bash
+docker compose up -d --build --wait
+docker compose exec scalergpt python ingest.py
 docker compose ps
-docker compose logs -f web quickbite
-docker compose logs -f scalergpt scalergpt-chroma
-docker compose logs -f deskbuddy-agent deskbuddy-tools deskbuddy-redis
-docker compose down
-docker compose down -v  # Also deletes Chroma and Redis demo data
 ```
 
-On Linux, start Docker with `sudo systemctl start docker`. On macOS or Windows,
-start Docker Desktop and wait until Docker reports that it is running.
+Use `-d` for normal development. Running `docker compose up --build` without
+`-d` attaches the terminal to all logs; pressing `Ctrl+C` then stops the stack.
+
+### Daily Development
+
+The gateway mounts `src/` into the `web` container. HTML, CSS, and JavaScript
+changes are visible after a browser refresh. After changing
+`src/python/app.py`, restart the Python process and wait for it to become ready:
+
+```bash
+docker compose restart web
+docker compose up -d --wait web
+```
+
+Rebuild `web` after changing its `Dockerfile` or root `requirements.txt`:
+
+```bash
+docker compose up -d --build --wait web
+```
+
+The three example projects are copied into their images, not mounted. Rebuild
+the service whose source or dependencies changed:
+
+```bash
+docker compose up -d --build --wait quickbite
+docker compose up -d --build --wait scalergpt
+docker compose up -d --build --wait deskbuddy-agent
+docker compose up -d --build --wait deskbuddy-tools
+```
+
+After changing `.env`, recreate the key-dependent containers so they receive
+the new value:
+
+```bash
+docker compose up -d --force-recreate --wait scalergpt deskbuddy-agent
+```
+
+Inspect status, logs, or a container shell with:
+
+```bash
+docker compose ps -a
+docker compose logs --tail=100 web quickbite
+docker compose logs --tail=100 scalergpt scalergpt-chroma
+docker compose logs --tail=100 deskbuddy-agent deskbuddy-tools deskbuddy-redis
+docker compose logs -f web
+docker compose exec web sh
+docker compose exec scalergpt sh
+```
+
+`Ctrl+C` stops log following without stopping detached containers.
+
+Stop containers while preserving Chroma and Redis data:
+
+```bash
+docker compose down
+```
+
+Delete containers and both persistent data volumes only when a clean reset is
+intended:
+
+```bash
+docker compose down -v
+```
+
+### Local Troubleshooting
+
+Start with container state and the logs for any service that is `unhealthy`,
+`restarting`, `exited`, or missing from the normal `docker compose ps` output:
+
+```bash
+docker compose ps -a
+docker compose logs --tail=100 web quickbite
+docker compose logs --tail=100 scalergpt scalergpt-chroma
+docker compose logs --tail=100 deskbuddy-agent deskbuddy-tools deskbuddy-redis
+```
+
+Common failures:
+
+1. **`.env` does not exist:** run `cp .env.example .env`.
+2. **`OPENAI_API_KEY is missing`:** put a real key in `.env`, then recreate the
+    key-dependent services with
+    `docker compose up -d --force-recreate --wait scalergpt deskbuddy-agent`.
+3. **OpenAI `401`, `AuthenticationError`, or `insufficient_quota`:** replace the
+    key or add API credit; a ChatGPT subscription does not include API credit.
+4. **ScalerGPT says no documents are indexed:** run
+    `docker compose exec scalergpt python ingest.py`.
+5. **A first request resets or refuses the connection:** use the documented
+    `--wait` startup command and confirm the gateway is `healthy`.
+6. **`port 8083 is already allocated`:** stop this stack with
+    `docker compose down`, or identify the other listener with
+    `sudo lsof -i :8083`.
+7. **A dependency fails its healthcheck:** inspect its logs and health details:
+
+```bash
+docker inspect --format '{{.Name}} {{json .State.Health}}' \
+    docker-quickbite docker-scalergpt docker-scalergpt-chroma \
+    docker-deskbuddy-agent docker-deskbuddy-tools docker-deskbuddy-redis
+```
+
+For a clean local recovery that preserves data, remove stale containers and
+rebuild:
+
+```bash
+docker compose down --remove-orphans
+docker compose up -d --build --wait web quickbite
+```
 
 ### Commit
 
@@ -194,28 +377,41 @@ think→act→observe loop, and stateful conversation memory. Requires
 6. **EC2 host port:** `5003`.
 7. **ECR repository:** `techtoday/docker`.
 8. **Path prefix:** `PATH_PREFIX=/docker`.
+9. **Production service name:** `docker`.
+10. **Workflow:** `.github/workflows/deploy-docker.yml` (not yet created).
+11. **Intended workflow trigger:** changes under `projects/docker/**`.
 
 ## Routes
 
-1. `/docker/` — Demo Lab UI.
-2. `POST /docker/quickbite/predict` — Proxy to QuickBite ETA service.
-3. `POST /docker/scalergpt/ask` — Proxy to ScalerGPT service.
-4. `POST /docker/deskbuddy/chat` — Proxy to DeskBuddy agent service.
+Locally, routes have no prefix. In production, prepend `/docker`:
+
+1. `GET /` — Demo Lab UI.
+2. `POST /quickbite/predict` — Proxy to QuickBite ETA.
+3. `GET /quickbite/status` — QuickBite health through the gateway.
+4. `POST /scalergpt/ask` — Proxy to ScalerGPT.
+5. `GET /scalergpt/status` — ScalerGPT health and document count.
+6. `POST /deskbuddy/chat` — Proxy to DeskBuddy.
+7. `GET /deskbuddy/status` — DeskBuddy health through the gateway.
 
 ## Environment Variables
 
-1. `PATH_PREFIX` — Set to `/docker` in production; empty locally.
-2. `OPENAI_API_KEY` — Required for ScalerGPT and DeskBuddy demos.
+1. `OPENAI_API_KEY` — Required by ScalerGPT for embeddings and chat, and by
+    DeskBuddy for agent chat. Obtain it from the OpenAI API dashboard. The
+    placeholder is sufficient only for Level 1.
+2. `PATH_PREFIX` — Optional gateway setting. Leave it unset locally; production
+    must set it to `/docker`.
+3. `CHROMA_HOST` and `CHROMA_PORT` — Set by Compose for ScalerGPT; do not add
+    them to local `.env`.
+4. `TOOLS_URL` and `REDIS_HOST` — Set by Compose for DeskBuddy; do not add them
+    to local `.env`.
 
 ## Quick Start
 
 ```bash
-# 1. Copy .env
-cp .env.example .env    # add OPENAI_API_KEY for Level 2 & 3
-
-# 2. Start Docker Desktop, then:
-docker compose up web quickbite -d        # Level 1 (keyless)
-docker compose up -d                      # all 3 levels (needs API key for 2 & 3)
-
-# 3. Open http://localhost:8083
+cd projects/docker
+cp .env.example .env
+docker compose up -d --build --wait web quickbite
 ```
+
+Open <http://localhost:8083>. Follow the level-specific sections above before
+starting ScalerGPT or DeskBuddy.

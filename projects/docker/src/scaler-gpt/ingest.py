@@ -2,7 +2,7 @@
 Loads every .txt and .md file from docs/ into the Chroma vector database.
 
 Run this AFTER the containers are up:
-    docker compose exec app python ingest.py
+    docker compose exec scalergpt python ingest.py
 """
 import glob
 import os
