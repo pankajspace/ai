@@ -31,7 +31,6 @@
 2. [Setup Guide](projects/SETUP.md)
 3. [Project Registry](projects/PROJECTS.md)
 4. [Add Project Guide](projects/ADD_PROJECT.md)
-5. Project runbooks: [TechToday](projects/techtoday/README.md), [Basic](projects/basic/README.md), [LangChain](projects/langchain/README.md), [RAG](projects/rag/README.md), [Docker](projects/docker/README.md)
-6. [Nano Cheat Sheet](projects/NANO.md)
-7. [Projects](projects/PROJECTS.md)
+5. [Nano Cheat Sheet](projects/NANO.md)
+6. [Projects](projects/PROJECTS.md)
 
