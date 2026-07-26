@@ -167,6 +167,10 @@ Connect by SSH:
 
 ```bash
 # Run on: local machine
+ELASTIC_IP=$(aws ec2 describe-addresses \
+  --allocation-ids $ALLOC_ID \
+  --query "Addresses[0].PublicIp" --output text)
+
 ssh -i techtoday.pem ec2-user@$ELASTIC_IP
 ```
 

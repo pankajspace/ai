@@ -140,7 +140,6 @@ If the pull reports `no space left on device`, run `docker system df`, then
 remove unused data with `docker container prune -f`, `docker builder prune -af`,
 and `docker image prune -af` before retrying the two commands above.
 
-
 ---
 
 ## Features
