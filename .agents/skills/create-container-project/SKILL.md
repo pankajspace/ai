@@ -60,11 +60,12 @@ Include all applicable sections:
 3. **Environment variables** — each required/optional variable, which feature uses it, where to obtain it, and that `.env` is never committed.
 4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
 5. **Daily local development** — reload/volume behavior, when to rebuild, one-off feature commands, logs, shell access, status, shutdown, persistent-data reset.
-6. **Commit and automatic deployment** — branch, `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
-7. **Production verification and troubleshooting** — verification `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, scoped restart.
-8. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
-9. **Manual deployment** — build context, image name, architecture, ECR path, production service, disk-space recovery, retry commands.
-10. **Deployment status** — state clearly when automation is incomplete. Never claim auto-deploy unless the workflow exists and covers all required services.
+6. **One-time production setup** — the server wiring needed before the first deploy and to recover a rebuilt host: create the ECR repository (one per buildable service for a complex project), seed the initial image(s), add required keys to `techtoday/secrets`, add the Nginx `/<project-name>/` location block for the host port, write the `~/secrets/<project-name>.env` file, add the production Compose service(s) (image URL not `build:`, `PATH_PREFIX=/<project-name>`, host-port mapping), first start, and verify. Automatic deploys do not create this wiring — a project is unreachable (production 404) until it exists, even with a valid workflow and home-page tile.
+7. **Commit and automatic deployment** — branch, `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
+8. **Production verification and troubleshooting** — verification `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, scoped restart.
+9. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
+10. **Manual deployment** — build context, image name, architecture, ECR path, production service, disk-space recovery, retry commands.
+11. **Deployment status** — state clearly when automation is incomplete. Never claim auto-deploy unless the workflow exists and covers all required services.
 
 ## Complex Projects — Standalone Example Sub-Projects
 
