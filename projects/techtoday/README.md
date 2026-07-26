@@ -41,4 +41,87 @@ projects/techtoday/
 3. Update the icon, heading, description, link `href`, and status badge (`live` or `soon`).
 4. Set the status badge: `<span class="status live">Live</span>` for a running project, or `<span class="status soon">Coming soon</span>` for one that is not yet live.
 
+---
+
+## Development and Deployment
+
+### Preview Locally
+
+No installation or build step is required. From the repository root:
+
+```bash
+cd projects/techtoday/src
+python3 -m http.server 8000
+```
+
+Open http://localhost:8000. You can also open `src/index.html` directly, but a
+local server is more reliable for relative asset paths.
+
+### Commit and Automatic Deployment
+
+Create a feature branch and commit only this project from the repository root:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/techtoday-short-description
+git add projects/techtoday/
+git commit -m "feat(techtoday): short description"
+git push -u origin feat/techtoday-short-description
+```
+
+Open a pull request and squash-merge it into `main`. Changes under
+`projects/techtoday/**` trigger `.github/workflows/deploy-techtoday.yml`. The
+workflow synchronizes `src/` to `/var/www/techtoday/` on EC2; Nginx serves the
+files directly, so there is no container or service to restart.
+
+Verify production after the workflow succeeds:
+
+```bash
+curl -I https://techtoday.click/
+```
+
+### Rollback
+
+Revert the faulty commit on a new branch and merge the resulting pull request.
+That keeps source control and production in sync:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b fix/techtoday-rollback
+git revert <bad-commit-sha>
+git push -u origin fix/techtoday-rollback
+```
+
+### Manual Deployment
+
+Use this only if GitHub Actions is unavailable. From the repository root:
+
+```bash
+rsync -avz --delete projects/techtoday/src/ \
+    ec2-user@44.193.134.238:/var/www/techtoday/
+```
+
+No Nginx reload is required. If `rsync` reports `Permission denied (13)`, run
+this on EC2 and retry:
+
+```bash
+sudo chown -R ec2-user:ec2-user /var/www/techtoday
+```
+
+### S3 and CloudFront Deployment
+
+Use this only if the site has been moved from EC2 to S3 and CloudFront:
+
+```bash
+S3_BUCKET=<bucket-name>
+aws s3 sync projects/techtoday/src/ s3://$S3_BUCKET/ \
+    --delete --cache-control "public, max-age=86400"
+aws s3 cp projects/techtoday/src/index.html s3://$S3_BUCKET/index.html \
+    --cache-control "public, max-age=60"
+
+DISTRIBUTION_ID=<cloudfront-distribution-id>
+aws cloudfront create-invalidation \
+    --distribution-id $DISTRIBUTION_ID --paths "/*"
+```
+
 

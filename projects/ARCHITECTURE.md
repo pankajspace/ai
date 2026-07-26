@@ -98,7 +98,7 @@ The workflow names and trigger paths for current projects live in [PROJECTS.md](
 
 ### Operations
 
-1. Keep routine work in [DAILY.md](DAILY.md).
+1. Keep routine development, deployment, rollback, and troubleshooting in each project's `README.md`.
 2. Keep new-project setup in [ADD_PROJECT.md](ADD_PROJECT.md).
 3. Keep the project inventory in [PROJECTS.md](PROJECTS.md).
 4. Avoid adding per-project lists to architecture or setup docs.

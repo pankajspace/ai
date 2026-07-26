@@ -1,6 +1,6 @@
 # Project Setup Guide — techtoday.click
 
-The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use [DAILY.md](DAILY.md) for routine development and deployment, [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project, [PROJECTS.md](PROJECTS.md) for the project registry, and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
+The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use each project's `README.md` for routine development, deployment, rollback, and troubleshooting; [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project; [PROJECTS.md](PROJECTS.md) for the project registry; and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
 
 ---
 

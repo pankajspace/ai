@@ -1,5 +1,5 @@
 ---
-description: "Use when: creating or reshaping a new local container project folder from projects/template in this repo"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting"
 name: "Create Container Project"
 argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist"
 agent: "gemini"
@@ -64,12 +64,36 @@ If the user gives enough information, proceed without asking extra questions. If
    4. static routes for `/css/<path:filename>` and `/js/<path:filename>`
 7. Update `src/index.html`, `src/css/style.css`, and `src/js/main.js` so the browser calls the new API routes through the injected API base.
 8. Update `requirements.txt` and `.env.example` for the Python files and secrets the project needs.
-9. Update `README.md` with the project purpose, local URL, production URL, ports, path prefix, routes, environment variables, local run commands, and deployment notes.
+9. Replace the template `README.md` with a self-contained project runbook. Follow the **README Requirements** section below; do not leave routine commands in shared docs.
 10. If the project is production-documented or the user asks for deployment support, copy `projects/<project-name>/deploy.yml.template` to `.github/workflows/deploy-<project-name>.yml` and replace every `PROJECT_NAME` token with the project name.
 11. Update shared docs only when the user asks or when the project is ready to be documented:
     1. Add a new spec in `projects/PROJECTS.md` under `Container App Specs`.
     2. Add any new secrets to the shared setup notes.
     3. Add a public home-page card under `projects/techtoday/src/` if the project should be visible from the main site.
+
+## README Requirements
+
+Treat `projects/<project-name>/README.md` as the source of truth for developing,
+operating, and deploying that project. A developer who has completed the
+one-time prerequisites in `projects/SETUP.md` must not need another shared guide
+for routine work.
+
+Include all applicable sections with concrete values, not generic placeholders:
+
+1. **Overview and features** — purpose, user-facing behavior, architecture, and project structure.
+2. **Project details** — project type and folder, local and production URLs, local/container/EC2 ports, ECR repository, production service name, `PATH_PREFIX`, routes, workflow filename, and trigger path.
+3. **Environment variables** — every required and optional variable, which features use it, where to obtain it, and confirmation that `.env` is never committed.
+4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, exact build/start commands, and the URL to open.
+5. **Daily local development** — volume-mount or reload behavior, when to rebuild, exact one-off feature service commands, logs, shell access, status, shutdown, and persistent-data reset when applicable.
+6. **Commit and automatic deployment** — exact branch, `git add`, commit, and push commands; pull-request expectations; workflow path; trigger path; ECR repository; and affected EC2 service.
+7. **Production verification and troubleshooting** — exact `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, and a scoped restart.
+8. **Rollback** — exact ECR repository, AWS region, production service, image-tag procedure, and verification URL.
+9. **Manual deployment** — exact build context, image name, architecture, ECR path, production service, disk-space recovery, and retry commands.
+10. **Deployment status** — state clearly when automation is not active or incomplete. Never claim a project auto-deploys unless the referenced workflow exists and covers all required services.
+
+Link to `projects/SETUP.md` only for one-time local-machine and AWS
+infrastructure setup. Shared index documents are not a place to store missing
+project instructions.
 
 ## Complex Projects — Standalone Example Sub-Projects
 
@@ -127,6 +151,8 @@ The README should include:
 - An **Example Projects** section with explicit complexity ordering (Level 1/2/3).
 - Each example's container count, what Docker concepts it covers, what keys it needs, and a quick-start command block.
 - A note clarifying that examples are standalone and not part of the main Flask app.
+- Exact full-stack and level-specific Compose commands, logs, health checks, persistent-volume reset behavior, and rebuild rules.
+- Production image/dependency coverage for every service. Do not reuse a single-image gateway workflow and describe the project as deploy-ready.
 
 ### index.html for complex projects
 
@@ -166,6 +192,9 @@ After edits, run the cheapest relevant checks:
 3. If Docker is running and the user wants a runtime check, run `docker compose up web` and verify the local URL.
 4. If `projects/PROJECTS.md` lists `.github/workflows/deploy-<project-name>.yml`, confirm that file exists.
 5. If a GitHub Actions workflow was generated, confirm no `PROJECT_NAME` placeholders remain in `.github/workflows/deploy-<project-name>.yml`.
+6. Confirm the README contains concrete local start, deploy, verification, rollback, manual fallback, and troubleshooting commands for the project.
+7. Confirm every workflow and file named by the README exists. If deployment is intentionally incomplete, verify the README says so and identifies the missing coverage.
+8. Search the README for unresolved placeholders such as `<project-name>`, `<local-port>`, `PROJECT_NAME`, and generic feature service names; remove them unless they are part of an explicitly labeled template example.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production deploy step unless the user explicitly asks for it. For this workflow, local repo changes come first; production wiring can be handled as a separate step.
 
@@ -180,3 +209,4 @@ Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production deploy step
 7. Always remove leaked secrets (`.env` files with real keys) immediately upon discovery.
 8. Always clean up local artifacts (`.venv/`, `.DS_Store`, `__pycache__/`) from user-provided files.
 9. **Only create demos and features that are covered in the study HTML/PDF file.** Do NOT invent extra features (e.g. a quiz, a flashcard tool, a summary generator) that are not part of the study material. Every UI tile and route must correspond to a project or exercise from the HTML source. If in doubt, check the HTML headings and section structure to determine what the study covers.
+10. Keep routine local development, deployment, rollback, and troubleshooting instructions in the individual project README, not in a shared daily guide.

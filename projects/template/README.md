@@ -69,10 +69,59 @@ returning the HTML.
 
 ---
 
-## Try It Locally & Create a New Project
+## Development
 
-The starter `echo` feature needs no keys, so a fresh copy runs immediately with
-`docker compose up web` (→ http://localhost:8090). Before running it, start
-Docker for your OS: on macOS or Windows, open Docker Desktop
-and wait until Docker is running; on Linux, run `sudo systemctl start docker`.
-Verify with `docker info`.
+### Run the Starter Locally
+
+The starter `echo` feature needs no keys. Complete the one-time prerequisites
+in [../SETUP.md](../SETUP.md), then start Docker and verify it with
+`docker info`. On Linux, use `sudo systemctl start docker`; on macOS or Windows,
+start Docker Desktop.
+
+From the repository root:
+
+```bash
+cd projects/template
+cp .env.example .env
+docker compose build web
+docker compose up web
+```
+
+Open http://localhost:8090. Source files under `src/` are mounted into the
+container, so normal edits do not need a rebuild. Rebuild after changing
+`Dockerfile` or `requirements.txt`.
+
+```bash
+docker compose run --build --rm echo
+docker compose logs -f web
+docker compose run --rm web bash
+docker compose ps
+docker compose down
+```
+
+The `template` project is a local starter and is never deployed to production.
+
+### Create a Project From This Template
+
+Use the `Create Container Project` skill or copy this folder to
+`projects/<project-name>/`. Allocate ports and production values from
+[../PROJECTS.md](../PROJECTS.md), integrate the feature, and replace this README
+with project-specific documentation.
+
+The resulting README must be the complete runbook for that project. Include:
+
+1. Purpose, features, architecture, and project structure.
+2. Local and production URLs, container/local/EC2 ports, ECR repository,
+   `PATH_PREFIX`, routes, and every environment variable.
+3. Docker prerequisites, first-run setup, exact start commands, feature-service
+   commands, rebuild conditions, logs, shell access, shutdown, and data reset.
+4. Exact branch, commit, and automatic deployment workflow, including the
+   workflow filename and trigger path.
+5. Production verification, `502` troubleshooting, rollback, disk cleanup, and
+   manual deployment commands with the real project and service names.
+6. An honest deployment status. Multi-service projects must document and deploy
+   every required image and dependency; a gateway-only workflow is incomplete.
+
+Link to [../SETUP.md](../SETUP.md) only for one-time machine and AWS
+infrastructure setup, and keep all routine project work in the project's own
+README.

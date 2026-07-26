@@ -84,7 +84,7 @@ available for the next project.
 11. **Trigger path:** `projects/rag/**`.
 12. **Secrets:** `OPENAI_API_KEY` only. Embeddings run locally with no API key.
 
-### Docker Quiz Lab (`docker`)
+### Docker Demo Lab (`docker`)
 
 1. **Type:** Container app.
 2. **Folder:** `projects/docker/`.
@@ -94,11 +94,11 @@ available for the next project.
 6. **EC2 host port:** `5003`.
 7. **ECR repository:** `techtoday/docker`.
 8. **Path prefix:** `PATH_PREFIX=/docker`.
-9. **Routes:** `/docker/`, `/docker/quiz`, `/docker/quiz/check`.
-10. **CI/CD workflow:** `.github/workflows/deploy-docker.yml`.
-11. **Trigger path:** `projects/docker/**`.
-12. **Secrets:** none (quiz is keyless).
-13. **Notes:** also contains three standalone example projects under `src/` (QuickBite ETA, ScalerGPT, DeskBuddy) — each with their own Dockerfiles and compose files.
+9. **Routes:** `/docker/`, `/docker/quickbite/predict`, `/docker/scalergpt/ask`, `/docker/deskbuddy/chat`, plus status routes for each example service.
+10. **CI/CD workflow:** not enabled; `projects/docker/deploy.yml.template` covers only the gateway image and must be extended for the example services before activation.
+11. **Trigger path:** none until a complete `.github/workflows/deploy-docker.yml` is added.
+12. **Secrets:** `OPENAI_API_KEY` for ScalerGPT and DeskBuddy; QuickBite is keyless.
+13. **Notes:** contains three standalone example projects under `src/` (QuickBite ETA, ScalerGPT, DeskBuddy) and seven total Compose services including the gateway, Chroma, and Redis.
 
 ### Container App Template (`template`)
 

@@ -1,8 +1,8 @@
 # Add a New Container Project
 
 Use this checklist when adding a new container app after the shared setup in
-[SETUP.md](SETUP.md) is complete. Daily development and deployment after this
-initial setup live in [DAILY.md](DAILY.md). The project registry in
+[SETUP.md](SETUP.md) is complete. Put all routine development, deployment,
+rollback, and troubleshooting commands in the new project's `README.md`. The project registry in
 [PROJECTS.md](PROJECTS.md) is the only shared doc that should change when a new
 project is added.
 
@@ -340,4 +340,6 @@ Public home page card update:
 4. Use a live status only after the production URL works.
 5. Preview `projects/techtoday/src/index.html` locally before committing.
 
-After this, routine work follows [DAILY.md](DAILY.md).
+After this, routine work follows the new project's `README.md`. Verify that it
+contains concrete local setup, daily development, deployment, production
+verification, rollback, manual fallback, and troubleshooting commands.

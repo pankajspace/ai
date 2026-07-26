@@ -135,3 +135,166 @@ The Website Summarizer feature cannot just give a raw URL to the model — LLMs 
 3. **Clean** — Tags that carry no useful text content (`<script>`, `<style>`, `<nav>`, `<footer>`, `<header>`, `<img>`, `<input>`) are removed from the tree.
 4. **Extract** — `soup.get_text(separator="\n", strip=True)` collapses what remains into a block of plain text.
 5. **Format** — The title and body text are combined into a single string and embedded in the GPT-4o mini prompt by `summarizer.py`.
+
+---
+
+## Development and Deployment
+
+### Prerequisites
+
+Complete the one-time machine and AWS setup in [../SETUP.md](../SETUP.md). Every
+Docker command requires a running Docker daemon:
+
+```bash
+# Linux
+sudo systemctl start docker
+
+# macOS or Windows: start Docker Desktop, then verify on any OS
+docker info
+```
+
+### First Local Run
+
+From the repository root:
+
+```bash
+cd projects/basic
+cp .env.example .env
+# Add OPENAI_API_KEY and GROQ_API_KEY to .env. Never commit this file.
+docker compose build web
+docker compose up web
+```
+
+Open http://localhost:8080. Source files under `src/` are mounted into the
+container, so normal source edits do not require an image rebuild. Rebuild
+after changing `Dockerfile` or `requirements.txt`:
+
+```bash
+docker compose build web
+```
+
+Run an individual feature from the command line when needed:
+
+```bash
+docker compose run --build --rm joke
+docker compose run --build --rm travel
+docker compose run --build --rm summarize
+docker compose run --build --rm arena
+```
+
+Useful local commands:
+
+```bash
+docker compose logs -f web
+docker compose run --rm web bash
+docker compose ps
+docker compose down
+```
+
+### Commit and Automatic Deployment
+
+Create a feature branch from the repository root, then commit only this
+project's files:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/basic-short-description
+
+git add projects/basic/
+git commit -m "feat(basic): short description"
+git push -u origin feat/basic-short-description
+```
+
+Open a pull request and squash-merge it into `main`. Changes under
+`projects/basic/**` trigger `.github/workflows/deploy-basic.yml`, which builds
+the image, pushes it to `techtoday/basic` in ECR, and restarts only the `basic`
+service on EC2.
+
+Verify production after the workflow succeeds:
+
+```bash
+curl -I https://app.techtoday.click/basic/
+```
+
+### Production Troubleshooting
+
+A `502 Bad Gateway` usually means the container is not running behind Nginx.
+On the EC2 host:
+
+```bash
+docker compose -f ~/docker-compose.yml ps
+docker compose -f ~/docker-compose.yml logs --tail=50 basic
+grep -A12 "^  basic:" ~/docker-compose.yml
+```
+
+The production service must use `command: python src/python/app.py`. After
+correcting `~/docker-compose.yml`, validate it and restart only this service:
+
+```bash
+docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
+```
+
+### Rollback
+
+Find a previous image tag locally, then connect to EC2 and repoint `latest` to
+that image:
+
+```bash
+aws ecr describe-images --repository-name techtoday/basic --region us-east-1 \
+    --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
+
+ssh -i techtoday.pem ec2-user@44.193.134.238
+
+ACCOUNT_ID=<your-aws-account-id>
+ROLLBACK_TAG=<build-tag>
+aws ecr get-login-password --region us-east-1 | \
+    docker login --username AWS --password-stdin \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+docker pull $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:$ROLLBACK_TAG
+docker tag $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:$ROLLBACK_TAG \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:latest
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
+curl -I https://app.techtoday.click/basic/
+```
+
+Fix the underlying issue and merge it promptly because the next deployment to
+`main` overwrites the `latest` tag.
+
+### Manual Deployment
+
+Use this only when GitHub Actions is unavailable. Build and push locally:
+
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+aws ecr get-login-password --region us-east-1 | \
+    docker login --username AWS --password-stdin \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+cd projects/basic
+docker build --platform linux/amd64 -t techtoday/basic .
+docker tag techtoday/basic:latest \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:latest
+docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:latest
+ssh -i techtoday.pem ec2-user@44.193.134.238
+```
+
+Then run on EC2:
+
+```bash
+docker compose -f ~/docker-compose.yml pull basic
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
+```
+
+If the pull fails with `no space left on device`, inspect and prune unused
+Docker data before retrying:
+
+```bash
+df -h
+docker system df
+docker container prune -f
+docker builder prune -af
+docker image prune -af
+docker compose -f ~/docker-compose.yml pull basic
+docker compose -f ~/docker-compose.yml up -d --no-deps basic
+```

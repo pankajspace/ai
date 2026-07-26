@@ -77,4 +77,138 @@ The served `index.html` also needs the prefix so its `fetch()` calls hit the rig
 
 All endpoints return `{ "error": "<message>" }` with an HTTP 400 (missing input) or 500 (API error) on failure.
 
+---
+
+## Development and Deployment
+
+### Prerequisites and First Run
+
+Complete the one-time setup in [../SETUP.md](../SETUP.md), start Docker, and
+verify the daemon with `docker info`. Then run from the repository root:
+
+```bash
+cd projects/langchain
+cp .env.example .env
+# Add OPENAI_API_KEY to .env. Never commit this file.
+docker compose build web
+docker compose up web
+```
+
+Open http://localhost:8081. Source files under `src/` are mounted into the
+container. Rebuild only after changing `Dockerfile` or `requirements.txt`:
+
+```bash
+docker compose build web
+```
+
+Run individual features from the command line when needed:
+
+```bash
+docker compose run --build --rm summarize
+docker compose run --build --rm chat
+docker compose run --build --rm agent
+```
+
+Useful local commands:
+
+```bash
+docker compose logs -f web
+docker compose run --rm web bash
+docker compose ps
+docker compose down
+```
+
+On Linux, start Docker with `sudo systemctl start docker`. On macOS or Windows,
+start Docker Desktop and wait until Docker reports that it is running.
+
+### Commit and Automatic Deployment
+
+Create a feature branch and commit only this project from the repository root:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b feat/langchain-short-description
+git add projects/langchain/
+git commit -m "feat(langchain): short description"
+git push -u origin feat/langchain-short-description
+```
+
+Open a pull request and squash-merge it into `main`. Changes under
+`projects/langchain/**` trigger `.github/workflows/deploy-langchain.yml`, which
+pushes the image to `techtoday/langchain` in ECR and restarts only the
+`langchain` service on EC2.
+
+```bash
+curl -I https://app.techtoday.click/langchain/
+```
+
+### Production Troubleshooting
+
+For a `502 Bad Gateway`, run on EC2:
+
+```bash
+docker compose -f ~/docker-compose.yml ps
+docker compose -f ~/docker-compose.yml logs --tail=50 langchain
+grep -A12 "^  langchain:" ~/docker-compose.yml
+```
+
+The service must use `command: python src/python/app.py`. After correcting the
+production Compose file, validate and restart only this project:
+
+```bash
+docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
+docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+```
+
+### Rollback
+
+List previous tags locally, then connect to EC2 and promote the chosen tag:
+
+```bash
+aws ecr describe-images --repository-name techtoday/langchain --region us-east-1 \
+    --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
+ssh -i techtoday.pem ec2-user@44.193.134.238
+
+ACCOUNT_ID=<your-aws-account-id>
+ROLLBACK_TAG=<build-tag>
+aws ecr get-login-password --region us-east-1 | \
+    docker login --username AWS --password-stdin \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+docker pull $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:$ROLLBACK_TAG
+docker tag $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:$ROLLBACK_TAG \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:latest
+docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+curl -I https://app.techtoday.click/langchain/
+```
+
+The next successful deployment to `main` replaces the `latest` tag.
+
+### Manual Deployment
+
+Use this only when GitHub Actions is unavailable. Build and push locally:
+
+```bash
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+aws ecr get-login-password --region us-east-1 | \
+    docker login --username AWS --password-stdin \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+cd projects/langchain
+docker build --platform linux/amd64 -t techtoday/langchain .
+docker tag techtoday/langchain:latest \
+    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:latest
+docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:latest
+ssh -i techtoday.pem ec2-user@44.193.134.238
+```
+
+Then run on EC2:
+
+```bash
+docker compose -f ~/docker-compose.yml pull langchain
+docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+```
+
+If the pull reports `no space left on device`, run `docker system df`, then
+remove unused data with `docker container prune -f`, `docker builder prune -af`,
+and `docker image prune -af` before retrying the two commands above.
+
 
