@@ -10,6 +10,7 @@ up automatically, so no key handling is needed in application code.
 """
 
 import os
+import re
 
 from dotenv import load_dotenv
 
@@ -37,4 +38,9 @@ def agent_text(response) -> str:
     Strands returns a rich result object; ``str(response)`` yields the final
     assistant text, which is what the browser needs.
     """
-    return str(response).strip()
+    text = str(response)
+    # Some models (e.g. Amazon Nova) wrap their reasoning in <thinking>...</thinking>
+    # tags — strip those blocks (and any stray tags) so only the answer is shown.
+    text = re.sub(r"<thinking>.*?</thinking>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r"</?thinking>", "", text, flags=re.IGNORECASE)
+    return text.strip()
