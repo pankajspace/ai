@@ -1,23 +1,15 @@
-"""Module 2 · Lesson 8 — Class-based tools (the shared-resource pattern).
+"""Module 2 demo — class-based tools (the shared-resource pattern).
 
-THE PROBLEM:
-Your DBA messages you: "Why is your agent opening 50 database connections
-per minute?" Each @tool function opened its own connection. Five tools =
-five connections per request. Multiply by concurrent users -> the DB drowns.
-
-THE FIX:
-Group related tools in a class. They share ONE connection (here, one dict)
-via self, created once in __init__.
-
-    python shivank2/08_class_based_tools.py
+Grouping related tools in a class lets them share ONE resource (here, a single
+``self.products`` store) instead of each tool opening its own. A module-level
+instance keeps the state alive across requests, so an update made in one call
+is visible to the next — check, update, then re-check and watch it persist.
 """
-
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+from config import MODEL_ID, agent_text
 
 
 class InventoryTools:
@@ -56,15 +48,15 @@ class InventoryTools:
         return f"Product {product_id} not found"
 
 
-# One instance, shared state, multiple tools
-inventory = InventoryTools()
-agent = Agent(
-    model=BedrockModel(model_id=MODEL_ID),
-    tools=[inventory.check_stock, inventory.update_stock],
-)
+# One shared instance — state persists across web requests.
+_inventory = InventoryTools()
 
-agent("Check stock for PROD-123")
-agent("Update PROD-456 stock to 25 units, then confirm the new level")
 
-# Note the second request: the agent UPDATES then RE-CHECKS, and the change
-# persists because both tools share the same self.products.
+def manage(question: str) -> str:
+    """Answer a stock request with the class-based, stateful inventory tools."""
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        tools=[_inventory.check_stock, _inventory.update_stock],
+        callback_handler=None,
+    )
+    return agent_text(agent(question))

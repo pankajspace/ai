@@ -1,7 +1,12 @@
-"""Shared configuration: load .env so feature modules can read API keys.
+"""Shared configuration: load .env and expose Bedrock model settings.
 
-This project is a study reference app — it serves example source code and
-study material, so no API keys are required for basic operation.
+Every feature module imports MODEL_ID from here, so if a model is retired you
+change it ONCE in this file instead of editing each demo.
+
+Credentials are read from the standard AWS environment variables
+(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION) or, in
+production, the EC2 instance role — boto3 (used by the Strands SDK) picks them
+up automatically, so no key handling is needed in application code.
 """
 
 import os
@@ -13,7 +18,22 @@ from dotenv import load_dotenv
 # env vars are set directly), python-dotenv simply does nothing.
 load_dotenv()
 
+# Current, non-retired models (verified working).
+# The "us." prefix is a cross-region inference profile — required for Claude on Bedrock.
+HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # fast + cheap  → default
+SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # stronger reasoning
+NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # cheapest, Amazon's own
 
-def get_env(name: str, default: str = "") -> str:
-    """Return an environment variable, falling back to ``default``."""
-    return os.environ.get(name, default)
+# Default used across the demos. Override with:  export MODEL_ID="..."
+MODEL_ID = os.environ.get("MODEL_ID", HAIKU)
+
+REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+
+def agent_text(response) -> str:
+    """Extract the plain-text reply from a Strands agent response.
+
+    Strands returns a rich result object; ``str(response)`` yields the final
+    assistant text, which is what the browser needs.
+    """
+    return str(response).strip()

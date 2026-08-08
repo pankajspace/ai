@@ -6,13 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Agents on AWS — Strands SDK</title>
     <meta name="description"
-        content="Interactive code reference for the AI Agents on AWS masterclass. Browse 14 example scripts covering the Strands SDK, Bedrock tools, and agentic patterns." />
+        content="Interactive demos for the AI Agents on AWS masterclass — a plain agent, a tool-enabled tip calculator, and a multi-tool travel assistant built with the Strands SDK on Amazon Bedrock." />
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet" />
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="css/style.css" />
 </head>
 
@@ -23,43 +19,119 @@
                 <span class="logo">⚡</span>
                 <span>TechToday</span>
             </a>
-            <div class="nav-links">
-                <a href="#modules" class="nav-link">Modules</a>
-                <a href="#utilities" class="nav-link">Utilities</a>
-            </div>
         </nav>
     </header>
 
     <main>
         <section class="hero">
             <div class="container">
-                <div class="hero-badge">AWS Strands SDK Masterclass</div>
                 <h1>AI Agents on AWS</h1>
-                <p class="subtitle">Browse 14 example scripts covering agents, tools, and agentic patterns —
-                    built with the Strands SDK on Amazon Bedrock</p>
-                <div class="hero-stats" id="heroStats"></div>
+                <p class="subtitle">Strands SDK agents on Amazon Bedrock</p>
             </div>
         </section>
 
-        <section id="modules">
+        <section id="tools">
             <div class="container">
-                <div id="modulesContainer">
-                    <div class="loading-state">
-                        <div class="spinner-lg"></div>
-                        <p>Loading modules…</p>
+                <div class="grid">
+
+                    <!-- Hello World Agent -->
+                    <div class="card">
+                        <h2>&#x1F916; Hello World Agent</h2>
+                        <p>The simplest agent — no tools, so the agentic loop runs once. Ask
+                            anything and Bedrock answers directly via <code>POST /ask</code>.</p>
+                        <input type="text" id="askInput" placeholder="Ask the agent anything…" />
+                        <span class="validation" id="askValidation"></span>
+                        <button id="askBtn" disabled>Ask</button>
+                        <div class="result" id="askResult"></div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <section id="utilities">
-            <div class="container">
-                <h2 class="section-title">
-                    <span class="section-icon">🔧</span>
-                    Utility Scripts
-                </h2>
-                <p class="section-desc">Root-level helper scripts for environment setup and model management.</p>
-                <div id="utilitiesContainer" class="grid"></div>
+                    <!-- Math Assistant (pre-built tool) -->
+                    <div class="card">
+                        <h2>&#x1F9EE; Math Assistant</h2>
+                        <p>Uses the pre-built <code>calculator</code> tool from
+                            <code>strands_tools</code> plus a system prompt. Try powers,
+                            equations, or derivatives.
+                        </p>
+                        <input type="text" id="mathInput" placeholder="e.g. What's 42 to the power of 9?" />
+                        <span class="validation" id="mathValidation"></span>
+                        <button id="mathBtn" disabled>Solve</button>
+                        <div class="result" id="mathResult"></div>
+                    </div>
+
+                    <!-- Tip Calculator Agent -->
+                    <div class="card">
+                        <h2>&#x1F4B0; Tip Calculator</h2>
+                        <p>A tool-enabled agent. Phrase a tip question any way you like — it
+                            routes to the same <code>calculate_tip</code> tool.</p>
+                        <input type="text" id="tipInput" placeholder="e.g. Bill is $85, 20% tip, split 4 ways" />
+                        <span class="validation" id="tipValidation"></span>
+                        <button id="tipBtn" disabled>Calculate</button>
+                        <div class="result" id="tipResult"></div>
+                    </div>
+
+                    <!-- Inventory Checker (custom tool) -->
+                    <div class="card">
+                        <h2>&#x1F4E6; Inventory Checker</h2>
+                        <p>A custom tool backed by a mock database. Check stock for
+                            <code>PROD-123</code>, <code>PROD-456</code>, or
+                            <code>PROD-789</code>.
+                        </p>
+                        <input type="text" id="inventoryInput" placeholder="e.g. Is PROD-123 in stock?" />
+                        <span class="validation" id="inventoryValidation"></span>
+                        <button id="inventoryBtn" disabled>Check</button>
+                        <div class="result" id="inventoryResult"></div>
+                    </div>
+
+                    <!-- Sales Report Agent (multi-tool planning) -->
+                    <div class="card">
+                        <h2>&#x1F4CA; Sales Report Agent</h2>
+                        <p>Three single-purpose tools — query, analyse, email. You never tell
+                            it the order; the agent plans query → analyse → send itself.</p>
+                        <input type="text" id="salesInput"
+                            placeholder="e.g. Pull Q3 sales data and email a summary to the team" />
+                        <span class="validation" id="salesValidation"></span>
+                        <button id="salesBtn" disabled>Run</button>
+                        <div class="result" id="salesResult"></div>
+                    </div>
+
+                    <!-- Inventory Manager (class-based, stateful) -->
+                    <div class="card">
+                        <h2>&#x1F5C4;&#xFE0F; Inventory Manager</h2>
+                        <p>Class-based tools sharing one data store. Updates persist across
+                            requests — update stock, then re-check and watch it stick.</p>
+                        <input type="text" id="stockInput"
+                            placeholder="e.g. Update PROD-456 to 25 units, then confirm" />
+                        <span class="validation" id="stockValidation"></span>
+                        <button id="stockBtn" disabled>Manage</button>
+                        <div class="result" id="stockResult"></div>
+                    </div>
+
+                    <!-- Warehouse Check (async parallel) -->
+                    <div class="card">
+                        <h2>&#x26A1; Warehouse Check</h2>
+                        <p>Async tools run lookups in parallel — three 2-second checks finish
+                            in ~2s, not 6s. Ask across east, west, and central.</p>
+                        <input type="text" id="warehouseInput"
+                            placeholder="e.g. Can we ship 100 of PROD-123? Check all warehouses" />
+                        <span class="validation" id="warehouseValidation"></span>
+                        <button id="warehouseBtn" disabled>Look up</button>
+                        <div class="result" id="warehouseResult"></div>
+                    </div>
+
+                    <!-- Travel Assistant (capstone) -->
+                    <div class="card">
+                        <h2>&#x2708;&#xFE0F; Travel Assistant</h2>
+                        <p>The capstone: a multi-tool agent that checks the weather, suggests a
+                            packing list, prices the trip, and tells you if it fits your budget.
+                            Try Goa, Bangalore, Jaipur, or Manali.</p>
+                        <input type="text" id="travelInput"
+                            placeholder="e.g. I'm going to Goa for 3 days with 2 friends, budget 20000" />
+                        <span class="validation" id="travelValidation"></span>
+                        <button id="travelBtn" disabled>Plan my trip</button>
+                        <div class="result" id="travelResult"></div>
+                    </div>
+
+                </div>
             </div>
         </section>
     </main>

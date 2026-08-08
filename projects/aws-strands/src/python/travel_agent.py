@@ -1,30 +1,16 @@
-"""CAPSTONE PROJECT — Travel Assistant Agent.
+"""Module 3 (capstone) demo — a multi-tool Travel Assistant.
 
-This deliberately mirrors the travel-planner example from Module 1, so
-you END where Module 1 BEGAN — but now you build it yourself.
-
-It exercises every skill from both chapters:
-  * custom tools (@tool + type hints + docstrings)
-  * multiple tools that feed into each other
-  * a pre-built community tool (calculator)
-  * a system prompt
-  * the agentic loop doing multi-step planning
-
-WHAT TO WATCH: the agent calls get_weather_forecast FIRST, feeds those numbers
-into suggest_packing_list, then prices the trip and compares to the budget.
-Nobody wrote that sequence — the loop worked it out.
-
-    python shivank3/travel_assistant.py
-    python shivank3/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+The agent chains three custom tools plus a pre-built calculator: it checks the
+weather first, feeds those numbers into a packing list, then prices the trip
+and compares it to the budget. Nobody wrote that sequence — the agentic loop
+works it out.
 """
-
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
-from config import MODEL_ID
+
+from config import MODEL_ID, agent_text
 
 
 @tool
@@ -57,7 +43,6 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) ->
         conditions: Short description of expected weather
     """
     items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
-
     if high_c >= 30:
         items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
     if low_c <= 15:
@@ -68,7 +53,6 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) ->
         items += ["compact umbrella", "quick-dry footwear"]
     if "snow" in conditions.lower():
         items += ["gloves", "woollen cap", "waterproof boots"]
-
     return items
 
 
@@ -86,7 +70,6 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     food = 1200 * days * travellers
     local_travel = 800 * days
     total = stay + food + local_travel
-
     return {
         "city": city,
         "days": days,
@@ -98,42 +81,17 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     }
 
 
-agent = Agent(
-    model=BedrockModel(model_id=MODEL_ID),
-    tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
-    system_prompt=(
-        "You are a practical travel assistant. "
-        "When asked about a trip: check the weather first, then suggest what to pack "
-        "based on that weather, then estimate the cost. "
-        "Always say whether the trip fits the user's budget, and keep advice concise."
-    ),
-)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        question = " ".join(sys.argv[1:])
-    else:
-        question = (
-            "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
-            "What should I pack, and does it fit my budget?"
-        )
-
-    print(f"\nQuestion: {question}\n" + "-" * 60)
-    response = agent(question)
-    print(response)
-
-
-# ---------------------------------------------------------------------------
-# EXTENSION CHALLENGES
-#
-# EASY    Add a get_visa_requirements(country) tool, ask about an intl. trip.
-# MEDIUM  Replace the mock weather with a real API call using `requests`
-#         (same pattern as shivank2/01_function_to_tool.py).
-# MEDIUM  Regroup the three tools into a TravelTools class with shared state
-#         (see shivank2/08_class_based_tools.py).
-# HARDER  Make the weather + cost lookups async so a multi-city comparison
-#         runs in parallel (see shivank2/09_async_tools.py).
-# HARDER  Add file_write from strands_tools and have the agent save an
-#         itinerary to disk.
-# ---------------------------------------------------------------------------
+def plan(question: str) -> str:
+    """Plan a trip end-to-end, letting the agent chain its tools as needed."""
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
+        system_prompt=(
+            "You are a practical travel assistant. "
+            "When asked about a trip: check the weather first, then suggest what to pack "
+            "based on that weather, then estimate the cost. "
+            "Always say whether the trip fits the user's budget, and keep advice concise."
+        ),
+        callback_handler=None,
+    )
+    return agent_text(agent(question))

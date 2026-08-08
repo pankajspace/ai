@@ -1,8 +1,17 @@
 # AI Agents on AWS — Strands SDK
 
-An interactive code reference for the **AI Agents on AWS** masterclass. Browse 14 example scripts covering the Strands SDK, Bedrock tools, and agentic patterns — served through a Flask web UI running in a Docker container.
+Interactive agent demos from the **AI Agents on AWS** masterclass, served through a Flask web UI running in a Docker container. Each tile runs a real [Strands SDK](https://github.com/strands-agents) agent on Amazon Bedrock, covering the masterclass's core patterns:
 
-The project displays annotated source code for three modules (First Agents, Tools, Capstone). No AI/ML dependencies run at runtime — the app reads and serves the example Python files as a study reference.
+- **Hello World Agent** — the simplest possible agent, no tools.
+- **Math Assistant** — a pre-built `calculator` tool plus a system prompt.
+- **Tip Calculator** — a single custom tool that understands intent.
+- **Inventory Checker** — a custom tool backed by a mock database.
+- **Sales Report Agent** — multi-tool planning (query → analyse → email).
+- **Inventory Manager** — class-based, stateful tools sharing one store.
+- **Warehouse Check** — async tools running lookups in parallel.
+- **Travel Assistant** — the multi-tool capstone (weather, packing, budget).
+
+The demos call Amazon Bedrock at runtime, so AWS credentials with Bedrock model access are required (supplied locally via `.env`, and by the EC2 instance role in production).
 
 ---
 
@@ -80,9 +89,10 @@ run the ECR or Secrets Manager steps on EC2 — the instance role
    docker push $ECR/techtoday/aws-strands:latest
    ```
 
-3. **Ensure any needed keys are in the shared secret** (local). This project needs
-   no API keys for basic operation. Skip this step unless you add features later
-   that require secrets.
+3. **Ensure any needed keys are in the shared secret** (local). The demos call
+   Amazon Bedrock, but in production the EC2 instance role supplies AWS
+   credentials automatically — no keys need to be stored in the shared secret
+   unless you add a feature that requires one.
 
 4. **Add the Nginx location block** (EC2). Inside the
    `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
@@ -259,16 +269,29 @@ docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
 
 ## Features
 
-### 📖 Interactive Code Reference
-Serves the 14 example Python scripts from the "AI Agents on AWS" masterclass as an interactive, browsable catalog. Each lesson shows its title, description (parsed from the script's docstring), filename, and full source code with copy-to-clipboard.
+### 🤖 Hello World Agent (Module 1)
+The simplest possible agent — no tools, so the agentic loop runs exactly once. Ask anything and Bedrock answers directly.
 
-### 🧩 Three Module Sections
-- **Module 1 — First Agents** (2 lessons): Simplest agents with Strands and LangGraph. See the agentic loop for the first time.
-- **Module 2 — Tools** (9 lessons): Custom tools, pre-built tools, multi-tool agents, class-based tools, and async parallel execution.
-- **Module 3 — Capstone** (1 lesson): Travel Assistant that chains weather, packing, and budget tools.
+### 🧮 Math Assistant (Module 2)
+Uses the pre-built `calculator` tool from `strands_tools` plus a system prompt. Handles powers, equations, and derivatives.
 
-### 🔧 Utility Scripts
-Root-level helper scripts for environment setup (`00_check_setup.py`), model listing (`01_list_models.py`), and shared config (`config.py`).
+### 💰 Tip Calculator (Module 2)
+A tool-enabled agent. Any phrasing of a tip question routes to the same `calculate_tip` tool — the agent understands intent, not keywords.
+
+### 📦 Inventory Checker (Module 2)
+A custom tool backed by a mock database. Check stock for `PROD-123`, `PROD-456`, or `PROD-789`.
+
+### 📊 Sales Report Agent (Module 2)
+Three single-purpose tools — query, analyse, email. You never specify the order; the agent plans the sequence itself.
+
+### 🗄️ Inventory Manager (Module 2)
+Class-based tools sharing one data store. Updates persist across requests, so an update in one call is visible to the next.
+
+### ⚡ Warehouse Check (Module 2)
+Async tools run warehouse lookups in parallel — three ~2-second checks finish in ~2s instead of ~6s.
+
+### ✈️ Travel Assistant (Module 3 capstone)
+A multi-tool agent that checks the weather, suggests a packing list, prices the trip, and tells you whether it fits your budget. The agentic loop works out the tool sequence itself.
 
 
 ---
@@ -290,11 +313,17 @@ Root-level helper scripts for environment setup (`00_check_setup.py`), model lis
 
 ### Routes
 
-1. `GET /` — main page (interactive code reference UI)
-2. `GET /api/modules` — JSON catalog of all modules, lessons, and source code
-3. `GET /api/lesson/<module_id>/<filename>` — single lesson metadata + source
-4. `GET /css/<path>` — stylesheets
-5. `GET /js/<path>` — scripts
+1. `GET /` — main page (agent demo UI)
+2. `POST /ask` — plain, tool-less agent (Module 1)
+3. `POST /math` — pre-built calculator tool (Module 2)
+4. `POST /tip` — tool-enabled tip calculator (Module 2)
+5. `POST /inventory` — custom inventory tool (Module 2)
+6. `POST /sales` — multi-tool sales planning (Module 2)
+7. `POST /stock` — class-based, stateful inventory tools (Module 2)
+8. `POST /warehouse` — async parallel warehouse lookups (Module 2)
+9. `POST /travel` — multi-tool travel assistant (Module 3 capstone)
+10. `GET /css/<path>` — stylesheets
+11. `GET /js/<path>` — scripts
 
 ---
 
@@ -304,25 +333,24 @@ Root-level helper scripts for environment setup (`00_check_setup.py`), model lis
 projects/aws-strands/
 ├── Dockerfile              # Python 3.12 image; installs deps, copies src/
 ├── docker-compose.yml      # web service on port 8084
-├── requirements.txt        # flask, flask-cors, python-dotenv, requests
-├── .env.example            # copy to .env (no keys required)
+├── requirements.txt        # flask, flask-cors, python-dotenv, boto3, strands-agents
+├── .env.example            # copy to .env (AWS credentials for Bedrock)
 ├── .gitignore
 ├── deploy.yml.template     # CI/CD workflow to copy into .github/workflows/
 ├── linkedin.txt
 ├── README.md
 └── src/
     ├── python/
-    │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
-    │   ├── config.py       # loads .env; no keys needed for this project
-    │   ├── examples.py     # reads example scripts, parses docstrings
-    │   └── examples/       # the 14 masterclass scripts (read-only reference)
-    │       ├── config.py           # shared model IDs for Bedrock
-    │       ├── 00_check_setup.py   # environment readiness check
-    │       ├── 01_list_models.py   # list live Bedrock models
-    │       ├── 01/                 # Module 1 — First Agents (2 scripts)
-    │       ├── 02/                 # Module 2 — Tools (9 scripts)
-    │       └── 03/                 # Module 3 — Capstone (1 script)
-
+    │   ├── app.py             # Flask server: Blueprint + PATH_PREFIX routing
+    │   ├── config.py          # loads .env; Bedrock model IDs + helpers
+    │   ├── hello_agent.py     # Module 1 — plain, tool-less agent (/ask)
+    │   ├── math_agent.py      # Module 2 — pre-built calculator tool (/math)
+    │   ├── tip_agent.py       # Module 2 — tool-enabled tip calculator (/tip)
+    │   ├── inventory_agent.py # Module 2 — custom inventory tool (/inventory)
+    │   ├── sales_agent.py     # Module 2 — multi-tool sales planning (/sales)
+    │   ├── stock_agent.py     # Module 2 — class-based, stateful tools (/stock)
+    │   ├── warehouse_agent.py # Module 2 — async parallel lookups (/warehouse)
+    │   └── travel_agent.py    # Module 3 — multi-tool travel assistant (/travel)
     ├── index.html          # single-page web UI
     ├── css/style.css       # dark theme (TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
@@ -333,8 +361,10 @@ projects/aws-strands/
 ## Environment Variables
 
 1. `PATH_PREFIX` — optional, set by the deployment environment (e.g. `"/aws-strands"`). Controls the URL prefix the Flask Blueprint is mounted under. Leave it unset for local development.
+2. `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_DEFAULT_REGION` — AWS credentials with Bedrock model access, used locally. In production the EC2 instance role supplies these automatically.
+3. `MODEL_ID` — optional, overrides the default Bedrock model (see `src/python/config.py`).
 
-No API keys are required. The app serves example source code as a study reference and does not call any external AI services at runtime.
+The demos call Amazon Bedrock at runtime, so valid AWS credentials with Bedrock access are required to run them.
 
 Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.example` for the expected format.
 
