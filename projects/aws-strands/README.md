@@ -58,6 +58,32 @@ docker compose ps
 docker compose down
 ```
 
+### Refresh Local AWS Credentials
+
+The demos call Amazon Bedrock, so `.env` needs valid AWS credentials. Locally
+these come from `aws login` (short-lived session credentials) — when they
+expire you'll see errors like `ExpiredTokenException` or "Unable to locate
+credentials" in the tiles. To refresh:
+
+```bash
+# 1. Re-authenticate (opens a browser; sign in as the techtoday IAM user)
+aws login
+aws sts get-caller-identity          # confirm it prints the techtoday ARN
+
+# 2. Export the fresh credentials into this project's .env
+cd projects/aws-strands
+{ aws configure export-credentials --format env-no-export; echo "AWS_DEFAULT_REGION=us-east-1"; } > .env
+
+# 3. Recreate the container so it picks up the new .env
+docker compose up -d --force-recreate web
+```
+
+> Session credentials expire after a few hours — just repeat these steps. For a
+> non-expiring alternative, configure a long-term IAM access key with
+> `aws configure` (see [SETUP.md § 2.1](../SETUP.md)); the `export-credentials`
+> and recreate steps are identical. Production is unaffected either way — EC2
+> uses the instance role, not `.env`.
+
 ### Production Setup (Automated)
 
 No manual server wiring is required. The self-provisioning workflow
