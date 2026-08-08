@@ -19,13 +19,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Current, non-retired models (verified working).
-# The "us." prefix is a cross-region inference profile — required for Claude on Bedrock.
-HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # fast + cheap  → default
-SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # stronger reasoning
-NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # cheapest, Amazon's own
+# The "us." prefix is a cross-region inference profile — required on Bedrock.
+NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # default — Amazon's own, no use-case form, cheapest
+HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # Claude, fast + cheap (needs Anthropic use-case form)
+SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # Claude, stronger reasoning (needs Anthropic use-case form)
 
 # Default used across the demos. Override with:  export MODEL_ID="..."
-MODEL_ID = os.environ.get("MODEL_ID", HAIKU)
+# Amazon Nova avoids the Anthropic "use case details" gating and is the cheapest option.
+MODEL_ID = os.environ.get("MODEL_ID", NOVA_LITE)
 
 REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
