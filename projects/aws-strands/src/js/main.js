@@ -201,25 +201,11 @@ function setupInteractions() {
 }
 
 // ---------------------------------------------------------------------------
-// Guide link
-// ---------------------------------------------------------------------------
-
-function setupGuideLink() {
-    const link = document.getElementById("guideLink");
-    if (link) {
-        link.addEventListener("click", () => {
-            window.open(`${API}/guide`, "_blank");
-        });
-    }
-}
-
-// ---------------------------------------------------------------------------
 // Init
 // ---------------------------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", async () => {
     setupInteractions();
-    setupGuideLink();
 
     try {
         const res = await fetch(`${API}/api/modules`);

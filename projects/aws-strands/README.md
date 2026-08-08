@@ -2,7 +2,7 @@
 
 An interactive code reference for the **AI Agents on AWS** masterclass. Browse 14 example scripts covering the Strands SDK, Bedrock tools, and agentic patterns — served through a Flask web UI running in a Docker container.
 
-The project displays annotated source code for three modules (First Agents, Tools, Capstone) and includes the full GUIDE.html study companion. No AI/ML dependencies run at runtime — the app reads and serves the example Python files as a study reference.
+The project displays annotated source code for three modules (First Agents, Tools, Capstone). No AI/ML dependencies run at runtime — the app reads and serves the example Python files as a study reference.
 
 ---
 
@@ -270,8 +270,6 @@ Serves the 14 example Python scripts from the "AI Agents on AWS" masterclass as 
 ### 🔧 Utility Scripts
 Root-level helper scripts for environment setup (`00_check_setup.py`), model listing (`01_list_models.py`), and shared config (`config.py`).
 
-### 📘 Study Guide
-The full GUIDE.html study companion is served at `/guide`, containing diagrams, explanations, and run commands for every concept.
 
 ---
 
@@ -293,11 +291,10 @@ The full GUIDE.html study companion is served at `/guide`, containing diagrams, 
 ### Routes
 
 1. `GET /` — main page (interactive code reference UI)
-2. `GET /guide` — GUIDE.html study companion
-3. `GET /api/modules` — JSON catalog of all modules, lessons, and source code
-4. `GET /api/lesson/<module_id>/<filename>` — single lesson metadata + source
-5. `GET /css/<path>` — stylesheets
-6. `GET /js/<path>` — scripts
+2. `GET /api/modules` — JSON catalog of all modules, lessons, and source code
+3. `GET /api/lesson/<module_id>/<filename>` — single lesson metadata + source
+4. `GET /css/<path>` — stylesheets
+5. `GET /js/<path>` — scripts
 
 ---
 
@@ -325,7 +322,7 @@ projects/aws-strands/
     │       ├── 01/                 # Module 1 — First Agents (2 scripts)
     │       ├── 02/                 # Module 2 — Tools (9 scripts)
     │       └── 03/                 # Module 3 — Capstone (1 script)
-    ├── guide.html          # full study companion (diagrams + explanations)
+
     ├── index.html          # single-page web UI
     ├── css/style.css       # dark theme (TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
