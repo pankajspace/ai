@@ -37,7 +37,8 @@ Proceed without extra questions if you have enough information.
    - `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
    - the `index()` route injecting `data-api-base="<PATH_PREFIX>"`
    - static routes for `/css/<path:filename>` and `/js/<path:filename>`
-7. Update `index.html`, `style.css`, and `main.js` to call the new routes through the injected API base.
+   - one `POST` route per feature that validates a non-empty input (→ `400`), wraps the feature call in `try/except` (→ `500`), and returns `{"result": ...}`.
+7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card.
 8. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
 9. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
 10. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready — a missing workflow causes a production 404 even after the home-page tile is added. From the repo root:
@@ -66,6 +67,62 @@ Include all applicable sections:
 9. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
 10. **Manual deployment** — build context, image name, architecture, ECR path, production service, disk-space recovery, retry commands.
 11. **Deployment status** — state clearly when automation is incomplete. Never claim auto-deploy unless the workflow exists and covers all required services.
+
+## Consistent UI and Working Demo Tiles
+
+Every project must share one look and feel and present each feature as an interactive demo tile. The template (`projects/template/src/`) is the single source of truth for the UI; copy its structure verbatim and change only the project-specific content below. Sibling projects (`basic`, `langchain`, `rag`) show the pattern applied. Never let a project diverge into a different layout, a static code-reference browser, or read-only "view source" cards.
+
+### CSS — copy verbatim, never restyle
+
+Copy `projects/template/src/css/style.css` unchanged into the new project. The only permitted edit is the top-of-file header comment naming the project. Do not fork colors, fonts, spacing, the CSS variables (`--bg`, `--bg-elevated`, `--accent`, `--text`, `--border`), the `.grid`, `.card`, `.card-wide`, `.spinner`, `.validation`, `.result`, or `.error` rules. If a design change is genuinely needed, change the template and re-copy so all projects stay in sync — do not patch one project.
+
+### index.html — keep the shell, swap the cards
+
+Keep the template's `<head>`, `<header>`/`nav`, `.hero`, and `<footer>` structure and the `<body data-api-base="">` attribute exactly. Change only: `<title>`, `<meta name="description">`, the favicon emoji, the hero `<h1>` and `<p class="subtitle">`, and the feature cards inside `<div class="grid">`.
+
+Each feature is one interactive card with this exact shape (no extra widgets, no source-code toggles):
+
+```html
+<div class="card">
+    <h2>🧩 Feature Name</h2>
+    <p>One or two sentences on what it does and what to try.</p>
+    <input type="text" id="fooInput" placeholder="e.g. a concrete example…" />
+    <span class="validation" id="fooValidation"></span>
+    <button id="fooBtn" disabled>Action label</button>
+    <div class="result" id="fooResult"></div>
+</div>
+```
+
+Rules for cards:
+
+1. Use consistent ID naming per card: `<name>Input`, `<name>Validation`, `<name>Btn`, `<name>Result`.
+2. Start every button `disabled`; `main.js` enables it once the input has a value.
+3. Order cards simplest → most complex, matching the study source and the README.
+4. Use the two-column `.grid` by default. Apply `card-wide` (full width via `grid-column: 1 / -1`) only for a genuine capstone that needs more room, and place it last; never make a lone tile `card-wide` just to fill a row.
+5. Give a textarea (`<textarea id="fooInput">`) instead of `<input>` only when the feature needs multi-line input; the ID/wiring rules are unchanged.
+
+### main.js — reuse the shared helpers
+
+Copy the template `main.js` and keep the shared helpers **unchanged**: `const API = document.body.dataset.apiBase || ""`, `setLoading`, `callApi`, `setupCard`, and `renderText`. Do not introduce a framework, a bundler, or a different fetch/render approach. For each card, add exactly one `setupCard({...})` call inside the `DOMContentLoaded` handler:
+
+```js
+setupCard({
+    inputId: "fooInput",
+    buttonId: "fooBtn",
+    resultId: "fooResult",
+    validationId: "fooValidation",
+    requiredMessage: "Please enter …",
+    endpoint: "/foo",
+    field: "message",
+    render: renderText,
+});
+```
+
+Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body.
+
+### Working-demo requirement
+
+A tile is only "done" when clicking its button calls a live backend route and renders a real response. Do not ship placeholder tiles, cards that only display static text or source code, or buttons wired to nothing. Only build tiles the study HTML/PDF source supports (see Constraints); each tile maps to one backend route and one exercise or capability in the source. If a capability is unsafe to expose to public input (e.g. arbitrary cloud API calls, file writes), omit the tile rather than shipping a fake or unsafe one, and note the omission.
 
 ## Complex Projects — Standalone Example Sub-Projects
 
@@ -139,6 +196,7 @@ Run the cheapest relevant checks after editing:
 4. If a workflow was generated, confirm no `PROJECT_NAME` placeholders remain and that every workflow/file named by the README exists.
 5. Confirm the README has concrete start, deploy, verification, rollback, manual-fallback, and troubleshooting commands, and that intentionally incomplete deployment is stated as such.
 6. Search the README for stray placeholders (`<project-name>`, `<local-port>`, `PROJECT_NAME`, generic feature-service names) and remove them unless part of a labeled template example.
+7. Verify UI consistency against the template: `style.css` differs from `projects/template/src/css/style.css` only in the header comment; `index.html` keeps the template head/nav/hero/footer shell and `data-api-base=""`; `main.js` keeps the shared `setLoading`/`callApi`/`setupCard`/`renderText` helpers unchanged. Confirm every feature card has the full `<name>Input`/`<name>Validation`/`<name>Btn`/`<name>Result` set, each `setupCard` `endpoint` maps to a real `POST` route in `app.py`, and no card is static, read-only, or a source-code viewer.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless the user explicitly asks. Local repo changes come first; production wiring is a separate step.
 
@@ -150,4 +208,5 @@ Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless
 4. Do not commit changes or create branches unless asked; keep edits scoped to the new project folder and directly related shared files.
 5. Always remove leaked secrets and local artifacts (`.venv/`, `.DS_Store`, `__pycache__/`) from user-provided files on discovery.
 6. Only build demos and features covered by the study HTML/PDF source. Do not invent extras (quiz, flashcards, summary generator, etc.); every UI tile and route must map to a project or exercise in the source.
-7. Keep routine development, deployment, rollback, and troubleshooting instructions in the project README, not in shared guides.
+7. Keep the UI consistent with `projects/template/src/`: copy `style.css` verbatim, reuse the template `index.html` shell and the shared `main.js` helpers, and make every feature an interactive working demo tile. Never ship a divergent layout, a static code-reference browser, or read-only "view source" cards.
+8. Keep routine development, deployment, rollback, and troubleshooting instructions in the project README, not in shared guides.
