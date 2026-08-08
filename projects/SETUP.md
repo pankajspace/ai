@@ -861,6 +861,8 @@ aws iam put-role-policy \
       {"Effect":"Allow","Action":["ecr:BatchCheckLayerAvailability","ecr:BatchGetImage",
         "ecr:GetDownloadUrlForLayer","ecr:PutImage","ecr:InitiateLayerUpload",
         "ecr:UploadLayerPart","ecr:CompleteLayerUpload"],
+        "Resource":"arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"},
+      {"Effect":"Allow","Action":["ecr:CreateRepository","ecr:DescribeRepositories"],
         "Resource":"arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"}
     ]}'
 ```
@@ -873,6 +875,13 @@ aws iam put-role-policy \
 > that HEAD (`unexpected status from HEAD request to .../manifests/sha256:... 403`),
 > so these two read actions must accompany the push actions. (`ecr:BatchCheckLayerAvailability`
 > above is already a read action and stays in the same statement.)
+
+> **Why `ecr:CreateRepository` / `ecr:DescribeRepositories`?** The
+> self-provisioning deploy workflow's "Ensure ECR repository exists" step
+> creates a project's `techtoday/<project>` repository on its first run, so the
+> deploy role must be able to describe and create repos under `techtoday/*`.
+> Without these, the first deploy fails with
+> `AccessDeniedException ... not authorized to perform: ecr:CreateRepository`.
 
 #### 2.11.2. AWS Console
 1. **Create the OIDC provider:** Open **IAM** → **Identity providers** → **Add provider**
@@ -902,6 +911,11 @@ aws iam put-role-policy \
        {
          "Effect": "Allow",
          "Action": ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:PutImage", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload"],
+         "Resource": "arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"
+       },
+       {
+         "Effect": "Allow",
+         "Action": ["ecr:CreateRepository", "ecr:DescribeRepositories"],
          "Resource": "arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*"
        }
      ]
