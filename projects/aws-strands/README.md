@@ -58,103 +58,34 @@ docker compose ps
 docker compose down
 ```
 
-### One-Time Production Setup
+### Production Setup (Automated)
 
-Run these once before the first automatic deploy. They wire the project into the
-shared EC2 host. Do them again only when rebuilding the server. **Steps marked
-(local) must run on your local machine** with the AWS CLI configured as the
-`techtoday` IAM user; **steps marked (EC2) run over SSH** on the app host. Do not
-run the ECR or Secrets Manager steps on EC2 — the instance role
-(`ec2-techtoday-server-role`) can only *pull* images and *read* secrets, so
-`ecr:CreateRepository` and `secretsmanager:PutSecretValue` there fail with
-`AccessDeniedException` by design.
+No manual server wiring is required. The self-provisioning workflow
+(`.github/workflows/deploy-aws-strands.yml`) creates everything on its first run
+and keeps it current on every later push:
 
-1. **Create the ECR repository** (local):
+- creates the ECR repository `techtoday/aws-strands` if missing;
+- builds and pushes the image;
+- ensures the `app-locations/*.conf` include in the `app.techtoday.click` SSL
+  server block, then drops the `/aws-strands/` Nginx location (host port `5004`);
+- regenerates `~/secrets/aws-strands.env` from the shared `techtoday/secrets`;
+- writes the per-project Compose file `~/apps/aws-strands/docker-compose.yml`
+  (`PATH_PREFIX=/aws-strands`, published port `5004:5000`), then pulls and
+  restarts the container.
 
-   ```bash
-   aws ecr create-repository --repository-name techtoday/aws-strands --region us-east-1
-   ```
+Two things are **not** automated and must be in place for the demos to work in
+production:
 
-2. **Seed the initial image** (local, from `projects/aws-strands/`). Later pushes are
-   automated by the workflow:
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ECR
-   cd projects/aws-strands
-   docker build --platform linux/amd64 -t $ECR/techtoday/aws-strands:latest .
-   docker push $ECR/techtoday/aws-strands:latest
-   ```
-
-3. **Ensure any needed keys are in the shared secret** (local). The demos call
-   Amazon Bedrock, but in production the EC2 instance role supplies AWS
-   credentials automatically — no keys need to be stored in the shared secret
-   unless you add a feature that requires one.
-
-4. **Add the Nginx location block** (EC2). Inside the
-   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
-   `/etc/nginx/conf.d/app.conf`:
-
-   ```nginx
-   location /aws-strands/ {
-       proxy_pass         http://localhost:5004;
-       proxy_set_header   Host $host;
-       proxy_set_header   X-Real-IP $remote_addr;
-       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header   X-Forwarded-Proto $scheme;
-   }
-   ```
-
-   ```bash
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-
-5. **Create the secrets env file** (EC2):
-
-   ```bash
-   mkdir -p ~/secrets
-   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
-     --query SecretString --output text | \
-     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-     > ~/secrets/aws-strands.env
-   chmod 600 ~/secrets/aws-strands.env
-   ```
-
-6. **Add the production service to `~/docker-compose.yml`** (EC2). Use the image
-   URL (not `build:`), set `PATH_PREFIX=/aws-strands`, and publish host port `5004`
-   (replace `<ECR>` with `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
-
-   ```yaml
-     aws-strands:
-       image: <ECR>/techtoday/aws-strands:latest
-       command: python src/python/app.py
-       restart: unless-stopped
-       environment:
-         - PATH_PREFIX=/aws-strands
-       env_file:
-         - ~/secrets/aws-strands.env
-       ports:
-         - "5004:5000"
-   ```
-
-7. **Start the service the first time** (EC2):
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-   docker compose -f ~/docker-compose.yml pull aws-strands
-   docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
-   curl -I https://app.techtoday.click/aws-strands/
-   ```
-
-After this one-time setup, every push under `projects/aws-strands/**` redeploys
-automatically.
+1. **Bedrock access via the instance role.** Production containers hold no AWS
+   keys — `boto3` uses the EC2 instance role (`ec2-techtoday-server-role`)
+   through IMDS. That role must grant `bedrock:InvokeModel` (and any related
+   Bedrock actions) for the models these agents call, or every tile returns an
+   AccessDenied / "Unable to locate credentials" error. `~/secrets/aws-strands.env`
+   only carries app keys from `techtoday/secrets`, not AWS credentials.
+2. **Brand-new API keys**, if a future feature needs one: add it once to
+   `techtoday/secrets` locally as the `techtoday` IAM user
+   (`secretsmanager:PutSecretValue` on EC2 fails by design). The workflow picks
+   it up on the next deploy.
 
 ### Commit and Automatic Deployment
 
@@ -172,9 +103,9 @@ git push -u origin feat/aws-strands-short-description
 
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/aws-strands/**` trigger `.github/workflows/deploy-aws-strands.yml`, which
-builds the image, pushes it to `techtoday/aws-strands` in ECR, and restarts only
-the `aws-strands` service on EC2. The production Compose service publishes EC2
-host port `5004`.
+builds the image, pushes it to `techtoday/aws-strands` in ECR, provisions any
+missing EC2 wiring, and restarts the container from
+`~/apps/aws-strands/docker-compose.yml` (published EC2 host port `5004`).
 
 Verify production after the workflow succeeds:
 
@@ -188,17 +119,19 @@ A `502 Bad Gateway` usually means the container is not running behind Nginx.
 On the EC2 host:
 
 ```bash
-docker compose -f ~/docker-compose.yml ps
-docker compose -f ~/docker-compose.yml logs --tail=50 aws-strands
-grep -A12 "^  aws-strands:" ~/docker-compose.yml
+docker compose -f ~/apps/aws-strands/docker-compose.yml ps
+docker compose -f ~/apps/aws-strands/docker-compose.yml logs --tail=50 aws-strands
+grep -A12 "^  aws-strands:" ~/apps/aws-strands/docker-compose.yml
 ```
 
-The production service must use `command: python src/python/app.py`. After
-correcting `~/docker-compose.yml`, validate it and restart only this service:
+The production service must use `command: python src/python/app.py`. The Compose
+file is regenerated on every deploy, so make lasting fixes in the workflow /
+template rather than by hand — local edits are overwritten on the next push. To
+validate and restart the current file:
 
 ```bash
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml config >/dev/null && echo "compose file OK"
+docker compose -f ~/apps/aws-strands/docker-compose.yml up -d aws-strands
 ```
 
 ### Rollback
@@ -220,7 +153,7 @@ aws ecr get-login-password --region us-east-1 | \
 docker pull $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/aws-strands:$ROLLBACK_TAG
 docker tag $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/aws-strands:$ROLLBACK_TAG \
     $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/aws-strands:latest
-docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml up -d aws-strands
 curl -I https://app.techtoday.click/aws-strands/
 ```
 
@@ -248,8 +181,8 @@ ssh -i techtoday.pem ec2-user@<EC2_HOST>
 Then run on EC2:
 
 ```bash
-docker compose -f ~/docker-compose.yml pull aws-strands
-docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml pull aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml up -d aws-strands
 ```
 
 If the pull fails with `no space left on device`, inspect and prune unused
@@ -261,8 +194,8 @@ docker system df
 docker container prune -f
 docker builder prune -af
 docker image prune -af
-docker compose -f ~/docker-compose.yml pull aws-strands
-docker compose -f ~/docker-compose.yml up -d --no-deps aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml pull aws-strands
+docker compose -f ~/apps/aws-strands/docker-compose.yml up -d aws-strands
 ```
 
 ---
@@ -372,7 +305,9 @@ Variables are loaded from `.env` at runtime via `python-dotenv`. See `.env.examp
 
 ## Deployment Status
 
-Automatic deployment is fully configured. The workflow file
-`.github/workflows/deploy-aws-strands.yml` exists, builds one image from the
-project root, pushes it to `techtoday/aws-strands` in ECR, and restarts the
-`aws-strands` service on EC2.
+Automatic, self-provisioning deployment is fully configured. On every push under
+`projects/aws-strands/**`, `.github/workflows/deploy-aws-strands.yml` builds and
+pushes the image to `techtoday/aws-strands` in ECR, provisions any missing EC2
+wiring (ECR repo, Nginx `/aws-strands/` block, secrets env file, per-project
+Compose file), and restarts the container from
+`~/apps/aws-strands/docker-compose.yml`.

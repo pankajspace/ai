@@ -87,63 +87,14 @@ one-off CLI services, and can take longer even when most layers are cached.
 Fill `.env` with real local values before running features that need API keys.
 Never commit `.env`.
 
-## 4. Create the ECR Repository
-
-Create one private ECR repository for the project:
-
-```bash
-# Run on: local machine
-REGION=us-east-1
-PROJECT_NAME=<project-name>
-aws ecr create-repository --repository-name techtoday/$PROJECT_NAME --region $REGION
-```
-
-AWS Console alternative: open **ECR** → **Repositories** → **Create repository**,
-name it `techtoday/<project-name>`, keep defaults, then create it.
-
-## 5. Build and Push the Initial Image
-
-This first manual push seeds ECR. Later deploys are handled by CI/CD.
-
-This step must run on your local machine with Docker already started. It cannot
-run in AWS CloudShell because CloudShell cannot access your local Docker daemon
-or cloned repo.
-
-1. **macOS or Windows:** open **Docker Desktop** and wait until Docker
-  is running, then verify with `docker info`.
-2. **Linux:** run `sudo systemctl start docker`, then verify with `docker info`.
-
-```bash
-# Run on: local machine
-REGION=us-east-1
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-PROJECT_NAME=<project-name>
-REPO_NAME=techtoday/$PROJECT_NAME
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-cd projects/$PROJECT_NAME
-docker build --platform linux/amd64 -t $REPO_NAME .
-docker tag "${REPO_NAME}:latest" "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
-docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/${REPO_NAME}:latest"
-```
-
-`--platform linux/amd64` is required on Apple Silicon Macs so the image runs on
-the `x86_64` EC2 instance.
-
-Verify the push:
-
-```bash
-# Run on: local machine
-aws ecr list-images --repository-name techtoday/$PROJECT_NAME --region $REGION
-```
-
-## 6. Store Any New Secrets
+## 4. Store Any New Secrets
 
 If the project needs new API keys, add them to the shared `techtoday/secrets`
 Secrets Manager secret. The EC2 instance role already grants read access to
-`techtoday/*`, so no IAM change is needed.
+`techtoday/*`, so no IAM change is needed, and the deploy workflow regenerates
+the project's env file from this secret on every run — so no server-side change
+is needed either. This is the only manual AWS step for a new project, and only
+when it introduces brand-new keys.
 
 AWS Console path: **Secrets Manager** → `techtoday/secrets` → **Retrieve secret
 value** → **Edit** → add key/value → **Save**.
@@ -159,170 +110,64 @@ aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-strin
 
 If the project only uses existing keys, skip this step.
 
-## 7. Wire Up the EC2 Host
+## 5. Add the Self-Provisioning Deploy Workflow
 
-The production Nginx and Docker Compose config live on EC2.
-
-Connect by SSH:
-
-```bash
-# Run on: local machine
-ELASTIC_IP=$(aws ec2 describe-addresses \
-  --allocation-ids $ALLOC_ID \
-  --query "Addresses[0].PublicIp" --output text)
-
-ssh -i techtoday.pem ec2-user@$ELASTIC_IP
-```
-
-Or use **EC2 Instance Connect** in the AWS Console.
-
-### 7.1. Add the Nginx Location Block
-
-```bash
-# Run on: EC2 host
-sudo nano /etc/nginx/conf.d/app.conf
-```
-
-Inside the existing `server { listen 443 ssl ... server_name app.techtoday.click; }`
-block, add a location block for the new project:
-
-```nginx
-location /<project-name>/ {
-    proxy_pass         http://localhost:<host-port>;
-    proxy_set_header   Host $host;
-    proxy_set_header   X-Real-IP $remote_addr;
-    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header   X-Forwarded-Proto $scheme;
-}
-```
-
-Validate and reload:
-
-```bash
-# Run on: EC2 host
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-If `nginx -t` fails, fix the reported file and line before reloading.
-
-### 7.2. Create the Secrets Env File
-
-```bash
-# Run on: EC2 host
-PROJECT_NAME=<project-name>
-mkdir -p ~/secrets
-aws secretsmanager get-secret-value \
-  --secret-id techtoday/secrets \
-  --query SecretString --output text | \
-  python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-  > ~/secrets/$PROJECT_NAME.env
-chmod 600 ~/secrets/$PROJECT_NAME.env
-```
-
-### 7.3. Add the Docker Compose Service
-
-Resolve the image URL:
-
-```bash
-# Run on: EC2 host
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-REGION=us-east-1
-PROJECT_NAME=<project-name>
-echo "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/techtoday/$PROJECT_NAME:latest"
-```
-
-Edit the production compose file:
-
-```bash
-# Run on: EC2 host
-nano ~/docker-compose.yml
-```
-
-Under the existing top-level `services:` key, add:
-
-```yaml
-  <project-name>:
-    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/techtoday/<project-name>:latest
-    restart: unless-stopped
-    command: python src/python/app.py
-    ports:
-      - "<host-port>:5000"
-    environment:
-      - PATH_PREFIX=/<project-name>
-    env_file:
-      - ~/secrets/<project-name>.env
-```
-
-YAML is indentation-sensitive. The service name must be indented two spaces, and
-its keys must be indented four spaces.
-
-Validate, authenticate, pull, and start only the new service:
-
-```bash
-# Run on: EC2 host
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-
-aws ecr get-login-password --region $REGION | \
-  docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
-docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
-```
-
-If `docker compose pull` fails with **`no space left on device`**, first check
-what is consuming space on the EC2 host:
-
-```bash
-# Run on: EC2 host
-df -h
-docker system df
-docker info --format '{{.DockerRootDir}}'
-sudo du -xh --max-depth=1 /var/lib/docker 2>/dev/null | sort -h
-```
-
-Then free up disk space and retry:
-
-```bash
-# Run on: EC2 host
-docker container prune -f
-docker builder prune -af
-docker image prune -af
-
-# Then retry
-docker compose -f ~/docker-compose.yml pull $PROJECT_NAME
-docker compose -f ~/docker-compose.yml up -d --no-deps $PROJECT_NAME
-```
-
-## 8. Add the CI/CD Workflow
-
-The template ships a ready-made workflow at `projects/<project-name>/deploy.yml.template`.
-Copy it into `.github/workflows/` and replace `PROJECT_NAME`:
+The template ships a self-provisioning workflow at
+`projects/<project-name>/deploy.yml.template`. On the first push it creates the
+ECR repository, seeds the image, writes the project's secrets env file, drops
+the Nginx `location /<project-name>/` block into
+`/etc/nginx/conf.d/app-locations/`, and creates a per-project Docker Compose
+file on EC2 — so there is no manual ECR creation, image seed, or SSH wiring.
+Copy it into `.github/workflows/` and replace both placeholders: the project
+name and its EC2 host port.
 
 ```bash
 # Run on: local machine, from the repo root
 PROJECT_NAME=<project-name>
+HOST_PORT=<host-port>
 cp projects/$PROJECT_NAME/deploy.yml.template .github/workflows/deploy-$PROJECT_NAME.yml
 
 # macOS
-sed -i '' "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
+sed -i '' -e "s/PROJECT_NAME/$PROJECT_NAME/g" -e "s/HOSTPORT/$HOST_PORT/g" .github/workflows/deploy-$PROJECT_NAME.yml
 
 # Linux
-sed -i "s/PROJECT_NAME/$PROJECT_NAME/g" .github/workflows/deploy-$PROJECT_NAME.yml
+sed -i -e "s/PROJECT_NAME/$PROJECT_NAME/g" -e "s/HOSTPORT/$HOST_PORT/g" .github/workflows/deploy-$PROJECT_NAME.yml
 
-grep -n PROJECT_NAME .github/workflows/deploy-$PROJECT_NAME.yml
+grep -nE 'PROJECT_NAME|HOSTPORT' .github/workflows/deploy-$PROJECT_NAME.yml
 test -f .github/workflows/deploy-$PROJECT_NAME.yml && echo "workflow file OK"
 ```
 
 The final `grep` should print nothing, and the `test -f` command should print
-`workflow file OK`. If the workflow file is missing, do not list it in
-the project's `README.md` as an active CI/CD workflow yet.
+`workflow file OK`.
 
 The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
 `EC2_SSH_KEY`.
 
-## 9. Verify Production
+> **Nginx include (handled automatically):** per-project location files only
+> take effect once the `app.techtoday.click` server block includes
+> `/etc/nginx/conf.d/app-locations/*.conf`. Fresh hosts get this from
+> [SETUP.md](SETUP.md) § 2.8, and the deploy workflow auto-inserts it into the
+> SSL server block on its first run if it is missing — so there is no manual
+> per-host step.
+
+## 6. Deploy
+
+Commit and push to `main`. The push under `projects/<project-name>/` triggers
+the workflow, which provisions and deploys everything automatically:
+
+```bash
+# Run on: local machine
+git add projects/<project-name> .github/workflows/deploy-<project-name>.yml
+git commit -m "Add <project-name> project"
+git push origin main
+```
+
+Watch the run under the repository's **Actions** tab. The first run creates all
+AWS and EC2 resources for the project; later pushes rebuild and restart only
+this project.
+
+## 7. Verify Production
 
 ```bash
 # Run on: local machine
@@ -332,7 +177,7 @@ curl -I https://app.techtoday.click/<project-name>/
 Open `https://app.techtoday.click/<project-name>/` in a browser and confirm it
 loads over HTTPS.
 
-## 10. Finalize Project Documentation
+## 8. Finalize Project Documentation
 
 After the project works:
 

@@ -665,11 +665,17 @@ server {
 EOF
 
 # App subdomain — Docker container projects. The base config starts empty;
-# project location blocks are added when each container app is created.
+# project location blocks are added automatically by each project's deploy
+# workflow, which drops a file into /etc/nginx/conf.d/app-locations/. The
+# include directive below is what makes those per-project files take effect,
+# so it must be present before the first container project deploys.
+sudo mkdir -p /etc/nginx/conf.d/app-locations
 sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
 server {
     listen 80;
     server_name app.techtoday.click;
+
+  include /etc/nginx/conf.d/app-locations/*.conf;
 
   location / {
     return 404;
@@ -679,6 +685,24 @@ EOF
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+> **Existing host missing the include?** You normally don't need to do anything:
+> each project's self-provisioning deploy workflow auto-inserts
+> `include /etc/nginx/conf.d/app-locations/*.conf;` into the
+> `app.techtoday.click` SSL server block on its first run (validated with
+> `nginx -t`, rolled back on failure). To add it by hand anyway:
+>
+> ```bash
+> sudo mkdir -p /etc/nginx/conf.d/app-locations
+> # Add this line inside the app.techtoday.click server block (the 443 block
+> # after Certbot has run), above the `location / { return 404; }` line:
+> #   include /etc/nginx/conf.d/app-locations/*.conf;
+> sudo nano /etc/nginx/conf.d/app.conf
+> sudo nginx -t && sudo systemctl reload nginx
+> ```
+>
+> Any location blocks previously added by hand keep working; new projects then
+> manage their own file under `app-locations/` and need no manual editing.
 
 > **What happens next:** These are HTTP-only configs. In the next step ([§ 2.9](#29-request-ssl-certificates)), Certbot will automatically modify these files to add `listen 443 ssl`, SSL certificate paths, and HTTP→HTTPS redirects.
 

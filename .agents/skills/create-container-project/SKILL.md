@@ -41,13 +41,13 @@ Proceed without extra questions if you have enough information.
 7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card.
 8. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
 9. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
-10. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready — a missing workflow causes a production 404 even after the home-page tile is added. From the repo root:
+10. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/`, and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
     ```bash
     cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
-    sed -i "s/PROJECT_NAME/<project-name>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
-    grep -n PROJECT_NAME .github/workflows/deploy-<project-name>.yml   # must print nothing
+    sed -i -e "s/PROJECT_NAME/<project-name>/g" -e "s/HOSTPORT/<host-port>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
+    grep -nE 'PROJECT_NAME|HOSTPORT' .github/workflows/deploy-<project-name>.yml   # must print nothing
     ```
-    The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready.
+    The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
 11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add a home-page card under `projects/techtoday/src/` if the project should be public.
 
 ## README Requirements
@@ -61,7 +61,7 @@ Include all applicable sections:
 3. **Environment variables** — each required/optional variable, which feature uses it, where to obtain it, and that `.env` is never committed.
 4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
 5. **Daily local development** — reload/volume behavior, when to rebuild, one-off feature commands, logs, shell access, status, shutdown, persistent-data reset.
-6. **One-time production setup** — the server wiring needed before the first deploy and to recover a rebuilt host: create the ECR repository (one per buildable service for a complex project), seed the initial image(s), add required keys to `techtoday/secrets`, add the Nginx `/<project-name>/` location block for the host port, write the `~/secrets/<project-name>.env` file, add the production Compose service(s) (image URL not `build:`, `PATH_PREFIX=/<project-name>`, host-port mapping), first start, and verify. Label every step **(local)** or **(EC2)**: repo creation, image seeding, and Secrets Manager writes must run locally as the `techtoday` IAM user — the EC2 instance role (`ec2-techtoday-server-role`) can only pull images and read secrets, so running `ecr:CreateRepository` or `secretsmanager:PutSecretValue` on EC2 fails with `AccessDeniedException` by design. Automatic deploys do not create this wiring — a project is unreachable (production 404) until it exists, even with a valid workflow and home-page tile.
+6. **Production setup** — the self-provisioning deploy workflow creates the ECR repository, seeds the image, writes `~/secrets/<project-name>.env`, adds the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/`, auto-ensures the `app-locations/*.conf` include in the `app.techtoday.click` SSL server block, and creates the per-project Compose service (image URL not `build:`, `PATH_PREFIX=/<project-name>`, host-port mapping) automatically on every push. Document only the one manual item that remains: if the project introduces brand-new keys, add them to `techtoday/secrets` locally as the `techtoday` IAM user before the first deploy (the EC2 instance role can only read secrets and pull images — `secretsmanager:PutSecretValue` on EC2 fails with `AccessDeniedException` by design). No manual ECR, image seed, Nginx, env-file, or Compose wiring is needed.
 7. **Commit and automatic deployment** — branch, `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
 8. **Production verification and troubleshooting** — verification `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, scoped restart.
 9. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
@@ -178,11 +178,11 @@ Healthcheck tests: Python/FastAPI → `python -c "import urllib.request; urllib.
 
 ### CI/CD Workflow for Complex Projects
 
-The stock `deploy.yml.template` builds one image at the project root and pulls/restarts one service (the `PROJECT_NAME` service). A complex project builds several images from different contexts (e.g. `web` plus example sub-projects) and runs multiple services, so the unmodified template deploys only the gateway and leaves the rest stale. When adding the workflow:
+The stock `deploy.yml.template` is self-provisioning but single-service: it builds one image at the project root, creates one ECR repository, and provisions/pulls/restarts one service (the `PROJECT_NAME` service, mapped to the `HOSTPORT` host port). A complex project builds several images from different contexts (e.g. `web` plus example sub-projects) and runs multiple services, so the unmodified template deploys only the gateway and leaves the rest stale. When adding the workflow:
 
 1. Still create `.github/workflows/deploy-<project-name>.yml` — never skip it.
-2. Build and push an ECR image for **every** build context, or build them together via `docker compose build` against the production Compose file.
-3. On EC2, pull and restart **all** of the project's services, not a single `PROJECT_NAME` service.
+2. Ensure an ECR repository exists and build/push an image for **every** build context, or build them together via `docker compose build` against the production Compose file.
+3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service.
 4. If examples are keyless and rarely change, automating only the gateway is acceptable — but say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
 5. Never call a complex project deploy-ready while the workflow covers only the gateway image.
 
@@ -193,9 +193,9 @@ Run the cheapest relevant checks after editing:
 1. `python3 -m py_compile src/python/*.py` from the project folder.
 2. `docker compose config` from the project folder (copy `.env` from `.env.example` first if needed).
 3. Optional runtime check if Docker is running and the user wants it: `docker compose up web`, then open the local URL.
-4. If a workflow was generated, confirm no `PROJECT_NAME` placeholders remain and that every workflow/file named by the README exists.
+4. If a workflow was generated, confirm no `PROJECT_NAME` or `HOSTPORT` placeholders remain and that every workflow/file named by the README exists.
 5. Confirm the README has concrete start, deploy, verification, rollback, manual-fallback, and troubleshooting commands, and that intentionally incomplete deployment is stated as such.
-6. Search the README for stray placeholders (`<project-name>`, `<local-port>`, `PROJECT_NAME`, generic feature-service names) and remove them unless part of a labeled template example.
+6. Search the README for stray placeholders (`<project-name>`, `<local-port>`, `PROJECT_NAME`, `HOSTPORT`, generic feature-service names) and remove them unless part of a labeled template example.
 7. Verify UI consistency against the template: `style.css` differs from `projects/template/src/css/style.css` only in the header comment; `index.html` keeps the template head/nav/hero/footer shell and `data-api-base=""`; `main.js` keeps the shared `setLoading`/`callApi`/`setupCard`/`renderText` helpers unchanged. Confirm every feature card has the full `<name>Input`/`<name>Validation`/`<name>Btn`/`<name>Result` set, each `setupCard` `endpoint` maps to a real `POST` route in `app.py`, and no card is static, read-only, or a source-code viewer.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless the user explicitly asks. Local repo changes come first; production wiring is a separate step.
