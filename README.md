@@ -18,6 +18,7 @@
 2. [LangChain - Agents](study/02-langchain-agents/langchain-agents.md) : 04-07-2026
 3. [RAG - Embeddings](study/03-rag-embeddings/rag-embeddings.md) : 18-07-2026
 4. [Docker](study/04-docker/docker.md) : 25-07-2026
+5. [AWS Strands](study/05-aws-strands/aws-strands.md) : 08-08-2026
 
 ## Revision
 1. [Revision](study/revision.md)
