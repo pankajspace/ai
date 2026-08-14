@@ -2,13 +2,13 @@
 
 # Learn
 
+## Links
+1. [Claude Code Full Course YT FCC](https://youtu.be/7l6bXLAKyEI?si=ZmzRWDW1drlCaeHX)
+2. [Agentic AI – Complete Course for Beginners](https://www.youtube.com/watch?v=Zy7EXDONlTY)
+
 ## Python
 1. [Python Crash Course](python/python-crash-course.md)
 2. [Python Course](python/python-course.md)
-
-## AI
-1. [AI Career](ai/ai-career.md)
-2. [AI Roadmap](ai/ai-roadmap.md)
 
 ## Claude Code
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
@@ -20,7 +20,7 @@
 4. [Docker](study/04-docker/docker.md) : 25-07-2026
 5. [AWS Strands](study/05-aws-strands/aws-strands.md) : 08-08-2026
 
-## Revision
+## Revision AI Quick
 1. [Revision](study/revision.md)
 
 ---
@@ -41,3 +41,8 @@
 5. [Docker Demo Lab](projects/docker/README.md)
 6. [Container App Template](projects/template/README.md)
 
+---
+
+# AI Career Path
+1. [AI Career](ai/ai-career.md)
+2. [AI Roadmap](ai/ai-roadmap.md)
