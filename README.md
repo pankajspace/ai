@@ -4,14 +4,11 @@
 
 ## Links
 1. [Claude Code Full Course YT FCC](https://youtu.be/7l6bXLAKyEI?si=ZmzRWDW1drlCaeHX)
-2. [Agentic AI – Complete Course for Beginners](https://www.youtube.com/watch?v=Zy7EXDONlTY)
+2. [Agentic AI – Complete Course for Beginners YT FCC](https://www.youtube.com/watch?v=Zy7EXDONlTY)
 
 ## Python
 1. [Python Crash Course](python/python-crash-course.md)
 2. [Python Course](python/python-course.md)
-
-## Claude Code
-1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 ## Study AI : Shivank Agarwal
 1. [LLMs - Prompting](study/01-llms-prompting/llms-prompting.md) : 27-06-2026
@@ -43,6 +40,11 @@
 
 ---
 
-# AI Career Path
+# Extra Learning
+
+## Claude Code
+1. [Claude Code Guide](claude-code/claude-code-guide.md)
+
+## AI Career Path
 1. [AI Career](ai/ai-career.md)
 2. [AI Roadmap](ai/ai-roadmap.md)
