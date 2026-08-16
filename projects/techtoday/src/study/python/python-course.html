@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Python Course | TechToday</title>
+    <link rel="stylesheet" href="python-study.css" />
+</head>
+<body>
+    <div class="progress" aria-hidden="true"></div>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="../../index.html">TechToday <span>Python</span></a>
+            <nav class="guide-nav" aria-label="Python study guides">
+                <a href="python-crash-course.html">Crash course</a><a href="python-course.html" aria-current="page">Full course</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <article class="study">
+            <h1 id="python-course">Python Course<a class="headerlink" href="#python-course" title="Permanent link">#</a></h1>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">#</a></h2>
+<ol>
+<li><a href="#1-getting-started">Getting Started</a></li>
+<li><a href="#2-variables--data-types">Variables &amp; Data Types</a></li>
+<li><a href="#3-operators">Operators</a></li>
+<li><a href="#4-strings-in-depth">Strings In Depth</a></li>
+<li><a href="#5-data-structures">Data Structures</a></li>
+<li><a href="#6-control-flow">Control Flow</a></li>
+<li><a href="#7-loops">Loops</a></li>
+<li><a href="#8-functions">Functions</a></li>
+<li><a href="#9-scope--closures">Scope &amp; Closures</a></li>
+<li><a href="#10-list-comprehensions--generator-expressions">List Comprehensions &amp; Generator Expressions</a></li>
+<li><a href="#11-object-oriented-programming-oop">Object-Oriented Programming (OOP)</a></li>
+<li><a href="#12-magic--dunder-methods">Magic / Dunder Methods</a></li>
+<li><a href="#13-modules--packages">Modules &amp; Packages</a></li>
+<li><a href="#14-error-handling">Error Handling</a></li>
+<li><a href="#15-file-io">File I/O</a></li>
+<li><a href="#16-iterators--generators">Iterators &amp; Generators</a></li>
+<li><a href="#17-decorators">Decorators</a></li>
+<li><a href="#18-context-managers">Context Managers</a></li>
+<li><a href="#19-type-hints">Type Hints</a></li>
+<li><a href="#20-lambda-map-filter-reduce">Lambda, Map, Filter, Reduce</a></li>
+<li><a href="#21-args--kwargs">args &amp; kwargs</a></li>
+<li><a href="#22-unpacking--destructuring">Unpacking &amp; Destructuring</a></li>
+<li><a href="#23-string-formatting">String Formatting</a></li>
+<li><a href="#24-regular-expressions">Regular Expressions</a></li>
+<li><a href="#25-date--time">Date &amp; Time</a></li>
+<li><a href="#26-collections-module">Collections Module</a></li>
+<li><a href="#27-dataclasses">Dataclasses</a></li>
+<li><a href="#28-enums">Enums</a></li>
+<li><a href="#29-async--await-asyncio">Async / Await (Asyncio)</a></li>
+<li><a href="#30-concurrency-threading--multiprocessing">Concurrency: Threading &amp; Multiprocessing</a></li>
+<li><a href="#31-virtual-environments--dependency-management">Virtual Environments &amp; Dependency Management</a></li>
+<li><a href="#32-testing">Testing</a></li>
+<li><a href="#33-useful-standard-library-modules">Useful Standard Library Modules</a></li>
+<li><a href="#34-pythonic-idioms--best-practices">Pythonic Idioms &amp; Best Practices</a></li>
+<li><a href="#35-whats-next">What's Next?</a></li>
+</ol>
+<h2 id="1-getting-started">1. Getting Started<a class="headerlink" href="#1-getting-started" title="Permanent link">#</a></h2>
+<h3 id="installing-python">Installing Python<a class="headerlink" href="#installing-python" title="Permanent link">#</a></h3>
+<p><strong>Windows</strong>
+1. Download the installer from <a href="https://www.python.org/downloads/">python.org</a>.
+2. Run it and <strong>check "Add Python to PATH"</strong> before clicking Install.
+3. Verify:
+   <code>powershell
+   python --version
+   pip --version</code></p>
+<p><strong>macOS</strong></p>
+<pre><code class="language-bash">brew install python
+python3 --version
+pip3 --version
+</code></pre>
+<p><strong>Linux (Debian/Ubuntu)</strong></p>
+<pre><code class="language-bash">sudo apt update &amp;&amp; sudo apt install python3 python3-pip
+python3 --version
+pip3 --version
+</code></pre>
+<blockquote>
+<p>On macOS/Linux the commands are <code>python3</code>/<code>pip3</code> unless you've aliased <code>python</code>/<code>pip</code> to point at Python 3.</p>
+</blockquote>
+<h3 id="running-python-code">Running Python Code<a class="headerlink" href="#running-python-code" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># Interactive REPL
+python
+
+# Run a script
+python my_script.py
+</code></pre>
+<h3 id="your-first-program">Your First Program<a class="headerlink" href="#your-first-program" title="Permanent link">#</a></h3>
+<pre><code class="language-python">print(&quot;Hello, World!&quot;)
+</code></pre>
+<h3 id="comments">Comments<a class="headerlink" href="#comments" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># This is a single-line comment
+
+&quot;&quot;&quot;
+This is a multi-line string,
+often used as a docstring or block comment.
+&quot;&quot;&quot;
+</code></pre>
+<h2 id="2-variables--data-types">2. Variables &amp; Data Types<a class="headerlink" href="#2-variables--data-types" title="Permanent link">#</a></h2>
+<p>Python is <strong>dynamically typed</strong> — you don't declare types, the interpreter figures it out.</p>
+<pre><code class="language-python"># Variable assignment (no keyword needed)
+name = &quot;Alice&quot;          # str
+age = 30                # int
+height = 5.7            # float
+is_student = True       # bool
+nothing = None          # NoneType
+
+# Multiple assignment
+x, y, z = 1, 2, 3
+a = b = c = 0           # all point to 0
+</code></pre>
+<h3 id="core-data-types">Core Data Types<a class="headerlink" href="#core-data-types" title="Permanent link">#</a></h3>
+<ol>
+<li><code>int</code> — <code>42</code>, <code>-7</code>, <code>0b1010</code> — immutable</li>
+<li><code>float</code> — <code>3.14</code>, <code>-0.001</code>, <code>1e10</code> — immutable</li>
+<li><code>complex</code> — <code>3 + 4j</code> — immutable</li>
+<li><code>bool</code> — <code>True</code>, <code>False</code> — immutable</li>
+<li><code>str</code> — <code>"hello"</code>, <code>'world'</code> — immutable</li>
+<li><code>list</code> — <code>[1, 2, 3]</code> — <strong>mutable</strong></li>
+<li><code>tuple</code> — <code>(1, 2, 3)</code> — immutable</li>
+<li><code>set</code> — <code>{1, 2, 3}</code> — <strong>mutable</strong></li>
+<li><code>dict</code> — <code>{"a": 1, "b": 2}</code> — <strong>mutable</strong></li>
+<li><code>None</code> — <code>None</code> — immutable</li>
+</ol>
+<h3 id="type-checking--conversion">Type Checking &amp; Conversion<a class="headerlink" href="#type-checking--conversion" title="Permanent link">#</a></h3>
+<pre><code class="language-python">type(42)            # &lt;class 'int'&gt;
+isinstance(42, int) # True
+
+# Casting
+int(&quot;42&quot;)           # 42
+float(&quot;3.14&quot;)       # 3.14
+str(100)            # &quot;100&quot;
+bool(0)             # False  (0, &quot;&quot;, [], None are falsy)
+bool(1)             # True   (everything else is truthy)
+list(&quot;abc&quot;)         # ['a', 'b', 'c']
+</code></pre>
+<h2 id="3-operators">3. Operators<a class="headerlink" href="#3-operators" title="Permanent link">#</a></h2>
+<h3 id="arithmetic">Arithmetic<a class="headerlink" href="#arithmetic" title="Permanent link">#</a></h3>
+<pre><code class="language-python">5 + 3     # 8    Addition
+5 - 3     # 2    Subtraction
+5 * 3     # 15   Multiplication
+5 / 3     # 1.66 True division (always float)
+5 // 3    # 1    Floor division (integer)
+5 % 3     # 2    Modulo (remainder)
+5 ** 3    # 125  Exponentiation
+</code></pre>
+<h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">#</a></h3>
+<pre><code class="language-python">5 == 5    # True    Equal
+5 != 3    # True    Not equal
+5 &gt; 3     # True    Greater than
+5 &lt; 3     # False   Less than
+5 &gt;= 5    # True    Greater than or equal
+5 &lt;= 3    # False   Less than or equal
+</code></pre>
+<h3 id="logical">Logical<a class="headerlink" href="#logical" title="Permanent link">#</a></h3>
+<pre><code class="language-python">True and False   # False
+True or False    # True
+not True         # False
+
+# Short-circuit evaluation
+0 and &quot;hello&quot;    # 0      (stops at first falsy)
+0 or &quot;hello&quot;     # &quot;hello&quot; (returns first truthy)
+</code></pre>
+<h3 id="identity--membership">Identity &amp; Membership<a class="headerlink" href="#identity--membership" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Identity — checks if same object in memory
+a = [1, 2]
+b = a
+a is b           # True  (same object)
+a is not b       # False
+
+c = [1, 2]
+a is c           # False (equal value, different object)
+a == c           # True  (equal value)
+
+# Membership
+3 in [1, 2, 3]       # True
+&quot;x&quot; not in &quot;hello&quot;   # True
+</code></pre>
+<h3 id="assignment-shortcuts">Assignment Shortcuts<a class="headerlink" href="#assignment-shortcuts" title="Permanent link">#</a></h3>
+<pre><code class="language-python">x = 10
+x += 5    # x = 15
+x -= 3    # x = 12
+x *= 2    # x = 24
+x /= 4    # x = 6.0
+x //= 2   # x = 3.0
+x **= 2   # x = 9.0
+x %= 4    # x = 1.0
+</code></pre>
+<h3 id="walrus-operator--python-38">Walrus Operator <code>:=</code> (Python 3.8+)<a class="headerlink" href="#walrus-operator--python-38" title="Permanent link">#</a></h3>
+<p>Assigns and returns a value in one expression.</p>
+<pre><code class="language-python"># Without walrus
+data = input(&quot;Enter: &quot;)
+if len(data) &gt; 5:
+    print(f&quot;Too long: {len(data)} chars&quot;)
+
+# With walrus
+if (n := len(input(&quot;Enter: &quot;))) &gt; 5:
+    print(f&quot;Too long: {n} chars&quot;)
+
+# Useful in while loops
+while (line := input(&quot;&gt;&gt;&gt; &quot;)) != &quot;quit&quot;:
+    print(f&quot;You said: {line}&quot;)
+</code></pre>
+<h3 id="ternary-conditional-expression">Ternary (Conditional Expression)<a class="headerlink" href="#ternary-conditional-expression" title="Permanent link">#</a></h3>
+<pre><code class="language-python">age = 20
+status = &quot;adult&quot; if age &gt;= 18 else &quot;minor&quot;
+</code></pre>
+<h2 id="4-strings-in-depth">4. Strings In Depth<a class="headerlink" href="#4-strings-in-depth" title="Permanent link">#</a></h2>
+<p>Strings are <strong>immutable sequences</strong> of Unicode characters.</p>
+<pre><code class="language-python">s = &quot;Hello, World!&quot;
+s = 'Hello, World!'        # single or double quotes
+s = &quot;&quot;&quot;Multi
+line string&quot;&quot;&quot;
+</code></pre>
+<h3 id="indexing--slicing">Indexing &amp; Slicing<a class="headerlink" href="#indexing--slicing" title="Permanent link">#</a></h3>
+<pre><code class="language-python">s = &quot;Python&quot;
+s[0]       # 'P'     first character
+s[-1]      # 'n'     last character
+s[1:4]     # 'yth'   index 1 up to (not including) 4
+s[:3]      # 'Pyt'   first 3
+s[3:]      # 'hon'   from index 3 to end
+s[::2]     # 'Pto'   every 2nd character
+s[::-1]    # 'nohtyP' reversed
+</code></pre>
+<h3 id="common-string-methods">Common String Methods<a class="headerlink" href="#common-string-methods" title="Permanent link">#</a></h3>
+<pre><code class="language-python">s = &quot;  Hello, World!  &quot;
+
+s.strip()               # &quot;Hello, World!&quot;     remove whitespace
+s.lstrip()              # &quot;Hello, World!  &quot;
+s.rstrip()              # &quot;  Hello, World!&quot;
+s.lower()               # &quot;  hello, world!  &quot;
+s.upper()               # &quot;  HELLO, WORLD!  &quot;
+s.title()               # &quot;  Hello, World!  &quot;
+s.capitalize()          # &quot;  hello, world!  &quot;
+
+s.replace(&quot;World&quot;, &quot;Python&quot;)  # &quot;  Hello, Python!  &quot;
+s.split(&quot;,&quot;)            # ['  Hello', ' World!  ']
+&quot;,&quot;.join([&quot;a&quot;, &quot;b&quot;])    # &quot;a,b&quot;
+
+s.find(&quot;World&quot;)         # 9   (index, or -1 if not found)
+s.index(&quot;World&quot;)        # 9   (raises ValueError if not found)
+s.count(&quot;l&quot;)            # 3
+
+s.startswith(&quot;  He&quot;)    # True
+s.endswith(&quot;!  &quot;)       # True
+
+&quot;hello123&quot;.isalnum()    # True
+&quot;hello&quot;.isalpha()       # True
+&quot;123&quot;.isdigit()         # True
+&quot;  &quot;.isspace()          # True
+</code></pre>
+<h3 id="string-immutability">String Immutability<a class="headerlink" href="#string-immutability" title="Permanent link">#</a></h3>
+<pre><code class="language-python">s = &quot;hello&quot;
+# s[0] = &quot;H&quot;   # ❌ TypeError — strings can't be modified in place
+s = &quot;H&quot; + s[1:]  # ✅ creates a new string: &quot;Hello&quot;
+</code></pre>
+<h2 id="5-data-structures">5. Data Structures<a class="headerlink" href="#5-data-structures" title="Permanent link">#</a></h2>
+<h3 id="lists--ordered-mutable">Lists — Ordered, Mutable<a class="headerlink" href="#lists--ordered-mutable" title="Permanent link">#</a></h3>
+<pre><code class="language-python">nums = [1, 2, 3, 4, 5]
+mixed = [1, &quot;two&quot;, 3.0, True, [5, 6]]  # can mix types
+
+# Access
+nums[0]          # 1
+nums[-1]         # 5
+nums[1:3]        # [2, 3]
+
+# Modify
+nums[0] = 10                # [10, 2, 3, 4, 5]
+nums.append(6)              # [10, 2, 3, 4, 5, 6]
+nums.insert(1, 99)          # [10, 99, 2, 3, 4, 5, 6]
+nums.extend([7, 8])         # [10, 99, 2, 3, 4, 5, 6, 7, 8]
+nums += [9]                 # same as extend for single list
+
+# Remove
+nums.remove(99)             # removes first occurrence
+popped = nums.pop()         # removes &amp; returns last item
+popped = nums.pop(0)        # removes &amp; returns item at index 0
+del nums[0]                 # delete by index
+nums.clear()                # empty the list
+
+# Other operations
+nums = [3, 1, 4, 1, 5]
+nums.sort()                 # [1, 1, 3, 4, 5]  in-place
+nums.sort(reverse=True)     # [5, 4, 3, 1, 1]
+sorted_copy = sorted(nums)  # returns new sorted list
+nums.reverse()              # in-place reverse
+nums.index(4)               # index of first occurrence
+nums.count(1)               # 2
+len(nums)                   # 5
+</code></pre>
+<h3 id="tuples--ordered-immutable">Tuples — Ordered, Immutable<a class="headerlink" href="#tuples--ordered-immutable" title="Permanent link">#</a></h3>
+<pre><code class="language-python">point = (3, 4)
+single = (42,)            # trailing comma needed for single-element tuple
+empty = ()
+
+x, y = point              # unpacking: x=3, y=4
+
+point[0]                   # 3
+# point[0] = 5            # ❌ TypeError — tuples are immutable
+
+# Tuples are great for:
+# - Returning multiple values from functions
+# - Dictionary keys (lists can't be keys)
+# - Data that shouldn't change
+</code></pre>
+<h3 id="sets--unordered-unique-elements">Sets — Unordered, Unique Elements<a class="headerlink" href="#sets--unordered-unique-elements" title="Permanent link">#</a></h3>
+<pre><code class="language-python">fruits = {&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;}
+empty_set = set()          # NOT {} — that's an empty dict!
+
+fruits.add(&quot;date&quot;)
+fruits.discard(&quot;banana&quot;)   # no error if missing
+fruits.remove(&quot;apple&quot;)     # KeyError if missing
+
+# Set operations
+a = {1, 2, 3, 4}
+b = {3, 4, 5, 6}
+
+a | b          # {1, 2, 3, 4, 5, 6}   union
+a &amp; b          # {3, 4}               intersection
+a - b          # {1, 2}               difference
+a ^ b          # {1, 2, 5, 6}         symmetric difference
+
+a.issubset(b)      # False
+a.issuperset(b)    # False
+
+# Deduplicate a list
+nums = [1, 2, 2, 3, 3, 3]
+unique = list(set(nums))   # [1, 2, 3] (order not guaranteed)
+</code></pre>
+<h3 id="frozensets--immutable-sets">Frozensets — Immutable Sets<a class="headerlink" href="#frozensets--immutable-sets" title="Permanent link">#</a></h3>
+<pre><code class="language-python">fs = frozenset([1, 2, 3])
+# fs.add(4)   # ❌ AttributeError — frozensets are immutable
+# Can be used as dict keys or set members (hashable)
+</code></pre>
+<h3 id="dictionaries--key-value-pairs">Dictionaries — Key-Value Pairs<a class="headerlink" href="#dictionaries--key-value-pairs" title="Permanent link">#</a></h3>
+<pre><code class="language-python">person = {
+    &quot;name&quot;: &quot;Alice&quot;,
+    &quot;age&quot;: 30,
+    &quot;hobbies&quot;: [&quot;reading&quot;, &quot;chess&quot;]
+}
+
+# Access
+person[&quot;name&quot;]                 # &quot;Alice&quot;
+person.get(&quot;email&quot;, &quot;N/A&quot;)    # &quot;N/A&quot;  (default if key missing)
+
+# Modify
+person[&quot;age&quot;] = 31             # update existing
+person[&quot;email&quot;] = &quot;a@b.com&quot;   # add new key
+
+# Remove
+del person[&quot;email&quot;]
+popped = person.pop(&quot;age&quot;)    # removes &amp; returns value
+person.popitem()               # removes &amp; returns last pair
+
+# Iteration
+for key in person:                     # iterates over keys
+    print(key, person[key])
+
+for key, value in person.items():      # key-value pairs
+    print(f&quot;{key}: {value}&quot;)
+
+for value in person.values():          # just values
+    print(value)
+
+# Useful methods
+person.keys()              # dict_keys([...])
+person.values()            # dict_values([...])
+person.items()             # dict_items([(k,v), ...])
+person.update({&quot;age&quot;: 32, &quot;city&quot;: &quot;NYC&quot;})
+
+# Check membership
+&quot;name&quot; in person           # True (checks keys)
+
+# Merge dicts (Python 3.9+)
+merged = {&quot;a&quot;: 1} | {&quot;b&quot;: 2}   # {&quot;a&quot;: 1, &quot;b&quot;: 2}
+</code></pre>
+<h3 id="nested-data-structures">Nested Data Structures<a class="headerlink" href="#nested-data-structures" title="Permanent link">#</a></h3>
+<pre><code class="language-python">students = [
+    {&quot;name&quot;: &quot;Alice&quot;, &quot;grades&quot;: [90, 85, 92]},
+    {&quot;name&quot;: &quot;Bob&quot;, &quot;grades&quot;: [78, 88, 95]},
+]
+
+students[0][&quot;grades&quot;][2]   # 92
+</code></pre>
+<h2 id="6-control-flow">6. Control Flow<a class="headerlink" href="#6-control-flow" title="Permanent link">#</a></h2>
+<h3 id="if--elif--else">if / elif / else<a class="headerlink" href="#if--elif--else" title="Permanent link">#</a></h3>
+<pre><code class="language-python">score = 85
+
+if score &gt;= 90:
+    grade = &quot;A&quot;
+elif score &gt;= 80:
+    grade = &quot;B&quot;
+elif score &gt;= 70:
+    grade = &quot;C&quot;
+else:
+    grade = &quot;F&quot;
+
+print(grade)   # B
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Python uses <strong>indentation</strong> (4 spaces by convention) instead of braces <code>{}</code> to define blocks.</p>
+</blockquote>
+<h3 id="match--case-python-310--structural-pattern-matching">match / case (Python 3.10+) — Structural Pattern Matching<a class="headerlink" href="#match--case-python-310--structural-pattern-matching" title="Permanent link">#</a></h3>
+<pre><code class="language-python">command = &quot;quit&quot;
+
+match command:
+    case &quot;quit&quot; | &quot;exit&quot;:
+        print(&quot;Goodbye!&quot;)
+    case &quot;help&quot;:
+        print(&quot;Available commands: quit, help, status&quot;)
+    case str(cmd) if cmd.startswith(&quot;open&quot;):
+        print(f&quot;Opening: {cmd[5:]}&quot;)
+    case _:
+        print(f&quot;Unknown command: {command}&quot;)
+
+# Pattern matching with data structures
+point = (0, 5)
+
+match point:
+    case (0, 0):
+        print(&quot;Origin&quot;)
+    case (0, y):
+        print(f&quot;On Y-axis at y={y}&quot;)
+    case (x, 0):
+        print(f&quot;On X-axis at x={x}&quot;)
+    case (x, y):
+        print(f&quot;Point at ({x}, {y})&quot;)
+</code></pre>
+<h2 id="7-loops">7. Loops<a class="headerlink" href="#7-loops" title="Permanent link">#</a></h2>
+<h3 id="for-loop">for Loop<a class="headerlink" href="#for-loop" title="Permanent link">#</a></h3>
+<p>Python's <code>for</code> iterates over <strong>any iterable</strong> (lists, strings, ranges, etc.).</p>
+<pre><code class="language-python"># Iterate over a list
+for fruit in [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]:
+    print(fruit)
+
+# range(start, stop, step)
+for i in range(5):            # 0, 1, 2, 3, 4
+    print(i)
+
+for i in range(2, 10, 3):    # 2, 5, 8
+    print(i)
+
+# enumerate — get index + value
+fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]
+for i, fruit in enumerate(fruits):
+    print(f&quot;{i}: {fruit}&quot;)
+
+for i, fruit in enumerate(fruits, start=1):  # start index at 1
+    print(f&quot;{i}: {fruit}&quot;)
+
+# zip — iterate over multiple sequences in parallel
+names = [&quot;Alice&quot;, &quot;Bob&quot;]
+scores = [90, 85]
+for name, score in zip(names, scores):
+    print(f&quot;{name}: {score}&quot;)
+
+# Iterate over dict
+person = {&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30}
+for key, value in person.items():
+    print(f&quot;{key}: {value}&quot;)
+
+# Nested loops
+for i in range(3):
+    for j in range(3):
+        print(f&quot;({i},{j})&quot;, end=&quot; &quot;)
+    print()  # newline
+</code></pre>
+<h3 id="while-loop">while Loop<a class="headerlink" href="#while-loop" title="Permanent link">#</a></h3>
+<pre><code class="language-python">count = 0
+while count &lt; 5:
+    print(count)
+    count += 1
+</code></pre>
+<h3 id="loop-control">Loop Control<a class="headerlink" href="#loop-control" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># break — exit the loop entirely
+for i in range(10):
+    if i == 5:
+        break        # stops at 5
+    print(i)
+
+# continue — skip to next iteration
+for i in range(10):
+    if i % 2 == 0:
+        continue     # skip even numbers
+    print(i)         # 1, 3, 5, 7, 9
+
+# else on loops — runs if loop completes WITHOUT break
+for i in range(5):
+    if i == 10:
+        break
+else:
+    print(&quot;Loop completed normally&quot;)  # this prints
+
+for i in range(5):
+    if i == 3:
+        break
+else:
+    print(&quot;Won't print&quot;)  # skipped because of break
+
+# pass — placeholder for empty blocks
+for i in range(5):
+    pass   # do nothing (useful during development)
+</code></pre>
+<h2 id="8-functions">8. Functions<a class="headerlink" href="#8-functions" title="Permanent link">#</a></h2>
+<h3 id="basic-functions">Basic Functions<a class="headerlink" href="#basic-functions" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def greet(name):
+    &quot;&quot;&quot;Greet a person by name.&quot;&quot;&quot;   # docstring
+    return f&quot;Hello, {name}!&quot;
+
+message = greet(&quot;Alice&quot;)
+print(message)   # Hello, Alice!
+</code></pre>
+<h3 id="parameters--arguments">Parameters &amp; Arguments<a class="headerlink" href="#parameters--arguments" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Positional arguments
+def add(a, b):
+    return a + b
+
+add(3, 5)    # 8
+
+# Default values
+def greet(name, greeting=&quot;Hello&quot;):
+    return f&quot;{greeting}, {name}!&quot;
+
+greet(&quot;Alice&quot;)            # &quot;Hello, Alice!&quot;
+greet(&quot;Alice&quot;, &quot;Hey&quot;)     # &quot;Hey, Alice!&quot;
+
+# Keyword arguments
+greet(greeting=&quot;Hi&quot;, name=&quot;Bob&quot;)   # &quot;Hi, Bob!&quot;
+
+# ⚠️ GOTCHA: Mutable default arguments
+def append_to(value, lst=[]):   # ❌ BAD — shared across calls!
+    lst.append(value)
+    return lst
+
+# ✅ FIX: Use None as default
+def append_to(value, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(value)
+    return lst
+</code></pre>
+<h3 id="return-values">Return Values<a class="headerlink" href="#return-values" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Return multiple values (as a tuple)
+def divide(a, b):
+    quotient = a // b
+    remainder = a % b
+    return quotient, remainder
+
+q, r = divide(17, 5)   # q=3, r=2
+
+# Return None implicitly if no return statement
+def do_nothing():
+    pass
+
+result = do_nothing()   # None
+</code></pre>
+<h3 id="docstrings">Docstrings<a class="headerlink" href="#docstrings" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def calculate_bmi(weight_kg, height_m):
+    &quot;&quot;&quot;
+    Calculate Body Mass Index (BMI).
+
+    Args:
+        weight_kg: Weight in kilograms.
+        height_m: Height in meters.
+
+    Returns:
+        BMI as a float.
+
+    Raises:
+        ValueError: If height is zero or negative.
+    &quot;&quot;&quot;
+    if height_m &lt;= 0:
+        raise ValueError(&quot;Height must be positive&quot;)
+    return weight_kg / (height_m ** 2)
+
+# Access docstring
+print(calculate_bmi.__doc__)
+help(calculate_bmi)
+</code></pre>
+<h2 id="9-scope--closures">9. Scope &amp; Closures<a class="headerlink" href="#9-scope--closures" title="Permanent link">#</a></h2>
+<h3 id="legb-rule">LEGB Rule<a class="headerlink" href="#legb-rule" title="Permanent link">#</a></h3>
+<p>Python resolves names in this order: <strong>L</strong>ocal → <strong>E</strong>nclosing → <strong>G</strong>lobal → <strong>B</strong>uilt-in.</p>
+<pre><code class="language-python">x = &quot;global&quot;            # Global scope
+
+def outer():
+    x = &quot;enclosing&quot;     # Enclosing scope
+
+    def inner():
+        x = &quot;local&quot;     # Local scope
+        print(x)        # &quot;local&quot;
+
+    inner()
+    print(x)            # &quot;enclosing&quot;
+
+outer()
+print(x)                # &quot;global&quot;
+</code></pre>
+<h3 id="global--nonlocal">global &amp; nonlocal<a class="headerlink" href="#global--nonlocal" title="Permanent link">#</a></h3>
+<pre><code class="language-python">count = 0
+
+def increment():
+    global count          # modify the global variable
+    count += 1
+
+increment()
+print(count)              # 1
+
+def outer():
+    x = 10
+    def inner():
+        nonlocal x        # modify the enclosing variable
+        x += 1
+    inner()
+    print(x)              # 11
+
+outer()
+</code></pre>
+<h3 id="closures">Closures<a class="headerlink" href="#closures" title="Permanent link">#</a></h3>
+<p>A closure is a function that remembers values from its enclosing scope.</p>
+<pre><code class="language-python">def make_multiplier(factor):
+    def multiply(x):
+        return x * factor   # 'factor' is captured from enclosing scope
+    return multiply
+
+double = make_multiplier(2)
+triple = make_multiplier(3)
+
+double(5)    # 10
+triple(5)    # 15
+</code></pre>
+<h2 id="10-list-comprehensions--generator-expressions">10. List Comprehensions &amp; Generator Expressions<a class="headerlink" href="#10-list-comprehensions--generator-expressions" title="Permanent link">#</a></h2>
+<h3 id="list-comprehensions">List Comprehensions<a class="headerlink" href="#list-comprehensions" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Basic: [expression for item in iterable]
+squares = [x ** 2 for x in range(10)]
+# [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+# With condition: [expression for item in iterable if condition]
+evens = [x for x in range(20) if x % 2 == 0]
+# [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+# With if/else (note: the if/else goes BEFORE for)
+labels = [&quot;even&quot; if x % 2 == 0 else &quot;odd&quot; for x in range(5)]
+# ['even', 'odd', 'even', 'odd', 'even']
+
+# Nested
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+flat = [num for row in matrix for num in row]
+# [1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+<h3 id="dict--set-comprehensions">Dict &amp; Set Comprehensions<a class="headerlink" href="#dict--set-comprehensions" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Dict comprehension
+squares = {x: x**2 for x in range(6)}
+# {0: 0, 1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# Set comprehension
+unique_lengths = {len(word) for word in [&quot;hello&quot;, &quot;hi&quot;, &quot;hey&quot;, &quot;world&quot;]}
+# {2, 3, 5}
+</code></pre>
+<h3 id="generator-expressions">Generator Expressions<a class="headerlink" href="#generator-expressions" title="Permanent link">#</a></h3>
+<p>Like list comprehensions but <strong>lazy</strong> — values are produced one at a time, saving memory.</p>
+<pre><code class="language-python"># Use () instead of []
+gen = (x ** 2 for x in range(1_000_000))  # no list in memory!
+
+# Consume one at a time
+next(gen)    # 0
+next(gen)    # 1
+
+# Often used directly in functions
+total = sum(x ** 2 for x in range(1000))
+</code></pre>
+<h2 id="11-object-oriented-programming-oop">11. Object-Oriented Programming (OOP)<a class="headerlink" href="#11-object-oriented-programming-oop" title="Permanent link">#</a></h2>
+<h3 id="classes--objects">Classes &amp; Objects<a class="headerlink" href="#classes--objects" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Dog:
+    # Class attribute (shared by all instances)
+    species = &quot;Canis familiaris&quot;
+
+    def __init__(self, name, age):
+        &quot;&quot;&quot;Constructor — called when creating an instance.&quot;&quot;&quot;
+        # Instance attributes (unique per instance)
+        self.name = name
+        self.age = age
+
+    def bark(self):
+        &quot;&quot;&quot;Instance method.&quot;&quot;&quot;
+        return f&quot;{self.name} says Woof!&quot;
+
+    def __str__(self):
+        &quot;&quot;&quot;Human-readable string representation.&quot;&quot;&quot;
+        return f&quot;{self.name}, {self.age} years old&quot;
+
+    def __repr__(self):
+        &quot;&quot;&quot;Developer-friendly representation.&quot;&quot;&quot;
+        return f&quot;Dog(name='{self.name}', age={self.age})&quot;
+
+# Create instances
+buddy = Dog(&quot;Buddy&quot;, 5)
+print(buddy.name)      # Buddy
+print(buddy.bark())    # Buddy says Woof!
+print(buddy)           # Buddy, 5 years old  (calls __str__)
+</code></pre>
+<h3 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        raise NotImplementedError(&quot;Subclasses must implement speak()&quot;)
+
+class Dog(Animal):
+    def speak(self):
+        return f&quot;{self.name} says Woof!&quot;
+
+class Cat(Animal):
+    def speak(self):
+        return f&quot;{self.name} says Meow!&quot;
+
+dog = Dog(&quot;Buddy&quot;)
+cat = Cat(&quot;Whiskers&quot;)
+print(dog.speak())     # Buddy says Woof!
+print(cat.speak())     # Whiskers says Meow!
+
+# Check inheritance
+isinstance(dog, Animal)    # True
+issubclass(Dog, Animal)    # True
+</code></pre>
+<h3 id="super">super()<a class="headerlink" href="#super" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Animal:
+    def __init__(self, name, sound):
+        self.name = name
+        self.sound = sound
+
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name, sound=&quot;Woof&quot;)   # call parent __init__
+        self.breed = breed
+
+dog = Dog(&quot;Buddy&quot;, &quot;Golden Retriever&quot;)
+print(dog.name, dog.sound, dog.breed)
+</code></pre>
+<h3 id="multiple-inheritance--mro">Multiple Inheritance &amp; MRO<a class="headerlink" href="#multiple-inheritance--mro" title="Permanent link">#</a></h3>
+<p>Python supports <strong>multiple inheritance</strong> — a class can inherit from more than one parent.</p>
+<pre><code class="language-python">class Flyer:
+    def move(self):
+        return &quot;Flying&quot;
+
+class Swimmer:
+    def move(self):
+        return &quot;Swimming&quot;
+
+class Duck(Flyer, Swimmer):    # inherits from both
+    pass
+
+Duck().move()   # &quot;Flying&quot; — Flyer is listed first, so it wins
+</code></pre>
+<h3 id="the-diamond-problem">The Diamond Problem<a class="headerlink" href="#the-diamond-problem" title="Permanent link">#</a></h3>
+<p>Occurs when a class inherits from two classes that share a common ancestor.</p>
+<pre><code class="language-python">class A:
+    def greet(self):
+        return &quot;Hello from A&quot;
+
+class B(A):
+    def greet(self):
+        return &quot;Hello from B&quot;
+
+class C(A):
+    def greet(self):
+        return &quot;Hello from C&quot;
+
+class D(B, C):   # 💎 Diamond: both parents share A
+    pass
+
+#       A
+#      / \
+#     B   C
+#      \ /
+#       D
+</code></pre>
+<p><strong>Python's fix: MRO (Method Resolution Order)</strong> — uses <strong>C3 linearization</strong> to create a deterministic, left-to-right, depth-first order that respects the hierarchy.</p>
+<pre><code class="language-python">d = D()
+print(d.greet())   # &quot;Hello from B&quot; — B comes before C in MRO
+print(D.__mro__)   # (D, B, C, A, object)
+</code></pre>
+<h3 id="cooperative-super-with-kwargs">Cooperative super() with **kwargs<a class="headerlink" href="#cooperative-super-with-kwargs" title="Permanent link">#</a></h3>
+<p>When using multiple inheritance, use <code>super()</code> with <code>**kwargs</code> so every class in the MRO chain gets its arguments correctly — no class is called twice.</p>
+<pre><code class="language-python">class Animal:
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)      # pass remaining args up
+        self.name = name
+
+class Dog(Animal):
+    def __init__(self, breed, **kwargs):
+        super().__init__(**kwargs)
+        self.breed = breed
+
+class Pet(Animal):
+    def __init__(self, owner, **kwargs):
+        super().__init__(**kwargs)
+        self.owner = owner
+
+class DomesticDog(Dog, Pet):
+    pass
+
+d = DomesticDog(name=&quot;Rex&quot;, breed=&quot;Lab&quot;, owner=&quot;Alice&quot;)
+# super().__init__() follows MRO: DomesticDog → Dog → Pet → Animal
+# ✅ All __init__ methods run exactly once, no duplicates
+
+print(d.name, d.breed, d.owner)   # Rex Lab Alice
+print(DomesticDog.__mro__)
+# (DomesticDog, Dog, Pet, Animal, object)
+</code></pre>
+<blockquote>
+<p><strong>Key rules:</strong>
+- MRO goes <strong>left-to-right</strong>, then <strong>up</strong> — inspect with <code>ClassName.__mro__</code> or <code>ClassName.mro()</code>
+- Always use <code>super()</code> (not parent class name) to cooperate with MRO
+- Pass <code>**kwargs</code> through <code>__init__</code> chains to handle varying constructor signatures
+- Python raises <code>TypeError</code> if it can't compute a consistent MRO (e.g., conflicting orderings)</p>
+</blockquote>
+<h3 id="properties-getters--setters">Properties (Getters &amp; Setters)<a class="headerlink" href="#properties-getters--setters" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Circle:
+    def __init__(self, radius):
+        self._radius = radius    # convention: _ prefix = &quot;private&quot;
+
+    @property
+    def radius(self):
+        &quot;&quot;&quot;Getter.&quot;&quot;&quot;
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        &quot;&quot;&quot;Setter with validation.&quot;&quot;&quot;
+        if value &lt; 0:
+            raise ValueError(&quot;Radius cannot be negative&quot;)
+        self._radius = value
+
+    @property
+    def area(self):
+        &quot;&quot;&quot;Computed property (read-only).&quot;&quot;&quot;
+        return 3.14159 * self._radius ** 2
+
+c = Circle(5)
+print(c.radius)       # 5        (uses getter)
+print(c.area)         # 78.539   (computed)
+c.radius = 10         # uses setter
+# c.radius = -1       # ❌ ValueError
+</code></pre>
+<h3 id="class-methods--static-methods">Class Methods &amp; Static Methods<a class="headerlink" href="#class-methods--static-methods" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+    @classmethod
+    def from_string(cls, date_string):
+        &quot;&quot;&quot;Alternative constructor — receives the class, not instance.&quot;&quot;&quot;
+        year, month, day = map(int, date_string.split(&quot;-&quot;))
+        return cls(year, month, day)
+
+    @staticmethod
+    def is_valid(date_string):
+        &quot;&quot;&quot;Utility — no access to class or instance.&quot;&quot;&quot;
+        parts = date_string.split(&quot;-&quot;)
+        return len(parts) == 3 and all(p.isdigit() for p in parts)
+
+d = Date.from_string(&quot;2024-01-15&quot;)
+print(d.year)                       # 2024
+print(Date.is_valid(&quot;2024-01-15&quot;))  # True
+</code></pre>
+<h3 id="abstract-base-classes">Abstract Base Classes<a class="headerlink" href="#abstract-base-classes" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from abc import ABC, abstractmethod
+
+class Shape(ABC):
+    @abstractmethod
+    def area(self):
+        &quot;&quot;&quot;Subclasses MUST implement this.&quot;&quot;&quot;
+        pass
+
+    @abstractmethod
+    def perimeter(self):
+        pass
+
+class Rectangle(Shape):
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+
+    def area(self):
+        return self.width * self.height
+
+    def perimeter(self):
+        return 2 * (self.width + self.height)
+
+# shape = Shape()        # ❌ TypeError — can't instantiate abstract class
+rect = Rectangle(4, 5)   # ✅
+print(rect.area())       # 20
+</code></pre>
+<h2 id="12-magic--dunder-methods">12. Magic / Dunder Methods<a class="headerlink" href="#12-magic--dunder-methods" title="Permanent link">#</a></h2>
+<p>These special methods let you customize how your objects behave with built-in operations.</p>
+<pre><code class="language-python">class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    # String representations
+    def __str__(self):         return f&quot;({self.x}, {self.y})&quot;
+    def __repr__(self):        return f&quot;Vector({self.x}, {self.y})&quot;
+
+    # Arithmetic
+    def __add__(self, other):  return Vector(self.x + other.x, self.y + other.y)
+    def __sub__(self, other):  return Vector(self.x - other.x, self.y - other.y)
+    def __mul__(self, scalar): return Vector(self.x * scalar, self.y * scalar)
+
+    # Comparison
+    def __eq__(self, other):   return self.x == other.x and self.y == other.y
+    def __lt__(self, other):   return (self.x**2 + self.y**2) &lt; (other.x**2 + other.y**2)
+
+    # Container behavior
+    def __len__(self):         return 2
+    def __getitem__(self, i):  return [self.x, self.y][i]
+
+    # Make it hashable (needed for sets/dict keys)
+    def __hash__(self):        return hash((self.x, self.y))
+
+    # Boolean
+    def __bool__(self):        return self.x != 0 or self.y != 0
+
+v1 = Vector(1, 2)
+v2 = Vector(3, 4)
+
+print(v1 + v2)       # (4, 6)
+print(v1 * 3)         # (3, 6)
+print(v1 == v2)       # False
+print(len(v1))        # 2
+print(v1[0])          # 1
+</code></pre>
+<h3 id="common-dunder-methods-reference">Common Dunder Methods Reference<a class="headerlink" href="#common-dunder-methods-reference" title="Permanent link">#</a></h3>
+<ol>
+<li><code>__init__</code> — triggered by <code>ClassName()</code> — Constructor</li>
+<li><code>__str__</code> — triggered by <code>str(obj)</code>, <code>print()</code> — Human-readable string</li>
+<li><code>__repr__</code> — triggered by <code>repr(obj)</code>, REPL — Developer string</li>
+<li><code>__len__</code> — triggered by <code>len(obj)</code> — Length</li>
+<li><code>__getitem__</code> — triggered by <code>obj[key]</code> — Index/key access</li>
+<li><code>__setitem__</code> — triggered by <code>obj[key] = val</code> — Index/key assignment</li>
+<li><code>__contains__</code> — triggered by <code>x in obj</code> — Membership test</li>
+<li><code>__iter__</code> — triggered by <code>for x in obj</code> — Iteration</li>
+<li><code>__next__</code> — triggered by <code>next(obj)</code> — Next value in iteration</li>
+<li><code>__call__</code> — triggered by <code>obj()</code> — Make instance callable</li>
+<li><code>__enter__</code> / <code>__exit__</code> — triggered by <code>with obj:</code> — Context manager</li>
+<li><code>__eq__</code>, <code>__lt__</code>, etc. — triggered by <code>==</code>, <code>&lt;</code>, etc. — Comparisons</li>
+<li><code>__add__</code>, <code>__mul__</code>, etc. — triggered by <code>+</code>, <code>*</code>, etc. — Arithmetic</li>
+<li><code>__hash__</code> — triggered by <code>hash(obj)</code> — Hashing (for sets/dicts)</li>
+</ol>
+<h2 id="13-modules--packages">13. Modules &amp; Packages<a class="headerlink" href="#13-modules--packages" title="Permanent link">#</a></h2>
+<h3 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Import entire module
+import math
+print(math.sqrt(16))     # 4.0
+
+# Import specific items
+from math import sqrt, pi
+print(sqrt(16))           # 4.0
+print(pi)                 # 3.14159...
+
+# Import with alias
+import numpy as np
+from collections import defaultdict as dd
+
+# Import everything (avoid in production code)
+from math import *
+</code></pre>
+<h3 id="creating-your-own-module">Creating Your Own Module<a class="headerlink" href="#creating-your-own-module" title="Permanent link">#</a></h3>
+<pre><code>my_project/
+├── main.py
+├── utils.py            ← module (any .py file)
+└── helpers/
+    ├── __init__.py     ← makes this directory a package
+    ├── math_ops.py
+    └── string_ops.py
+</code></pre>
+<pre><code class="language-python"># utils.py
+def add(a, b):
+    return a + b
+
+PI = 3.14159
+
+# main.py
+from utils import add, PI
+from helpers.math_ops import multiply
+</code></pre>
+<h3 id="__name__-guard"><code>__name__</code> Guard<a class="headerlink" href="#__name__-guard" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># utils.py
+def main():
+    print(&quot;Running utils directly&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    # Only runs when this file is executed directly,
+    # NOT when imported as a module
+    main()
+</code></pre>
+<h3 id="__init__py"><code>__init__.py</code><a class="headerlink" href="#__init__py" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># helpers/__init__.py
+# Controls what's available when you &quot;import helpers&quot;
+from .math_ops import multiply
+from .string_ops import clean
+
+# Now you can do: from helpers import multiply, clean
+</code></pre>
+<h2 id="14-error-handling">14. Error Handling<a class="headerlink" href="#14-error-handling" title="Permanent link">#</a></h2>
+<h3 id="try--except--else--finally">try / except / else / finally<a class="headerlink" href="#try--except--else--finally" title="Permanent link">#</a></h3>
+<pre><code class="language-python">try:
+    result = 10 / 0
+except ZeroDivisionError:
+    print(&quot;Can't divide by zero!&quot;)
+except (TypeError, ValueError) as e:
+    print(f&quot;Error: {e}&quot;)
+except Exception as e:
+    print(f&quot;Unexpected error: {e}&quot;)  # catch-all (use sparingly)
+else:
+    print(f&quot;Result: {result}&quot;)       # runs only if NO exception
+finally:
+    print(&quot;This always runs&quot;)        # cleanup code
+</code></pre>
+<h3 id="common-built-in-exceptions">Common Built-in Exceptions<a class="headerlink" href="#common-built-in-exceptions" title="Permanent link">#</a></h3>
+<ol>
+<li><code>ValueError</code> — Wrong value (e.g., <code>int("abc")</code>)</li>
+<li><code>TypeError</code> — Wrong type (e.g., <code>"a" + 1</code>)</li>
+<li><code>KeyError</code> — Missing dict key</li>
+<li><code>IndexError</code> — List index out of range</li>
+<li><code>AttributeError</code> — Missing attribute/method</li>
+<li><code>FileNotFoundError</code> — File doesn't exist</li>
+<li><code>ZeroDivisionError</code> — Division by zero</li>
+<li><code>ImportError</code> — Failed import</li>
+<li><code>StopIteration</code> — Iterator exhausted</li>
+<li><code>RuntimeError</code> — Generic runtime error</li>
+<li><code>NameError</code> — Undefined variable</li>
+</ol>
+<h3 id="raising-exceptions">Raising Exceptions<a class="headerlink" href="#raising-exceptions" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def set_age(age):
+    if not isinstance(age, int):
+        raise TypeError(&quot;Age must be an integer&quot;)
+    if age &lt; 0:
+        raise ValueError(&quot;Age cannot be negative&quot;)
+    return age
+
+# Re-raise an exception
+try:
+    risky_operation()
+except Exception:
+    logging.error(&quot;Something went wrong&quot;)
+    raise   # re-raises the original exception
+</code></pre>
+<h3 id="custom-exceptions">Custom Exceptions<a class="headerlink" href="#custom-exceptions" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class InsufficientFundsError(Exception):
+    &quot;&quot;&quot;Raised when a withdrawal exceeds the balance.&quot;&quot;&quot;
+    def __init__(self, balance, amount):
+        self.balance = balance
+        self.amount = amount
+        super().__init__(
+            f&quot;Cannot withdraw ${amount}. Balance: ${balance}&quot;
+        )
+
+class BankAccount:
+    def __init__(self, balance):
+        self.balance = balance
+
+    def withdraw(self, amount):
+        if amount &gt; self.balance:
+            raise InsufficientFundsError(self.balance, amount)
+        self.balance -= amount
+
+try:
+    account = BankAccount(100)
+    account.withdraw(150)
+except InsufficientFundsError as e:
+    print(e)           # Cannot withdraw $150. Balance: $100
+    print(e.balance)   # 100
+</code></pre>
+<h2 id="15-file-io">15. File I/O<a class="headerlink" href="#15-file-io" title="Permanent link">#</a></h2>
+<h3 id="reading-files">Reading Files<a class="headerlink" href="#reading-files" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Best practice: use 'with' (auto-closes file)
+with open(&quot;data.txt&quot;, &quot;r&quot;) as f:
+    content = f.read()           # entire file as string
+
+with open(&quot;data.txt&quot;, &quot;r&quot;) as f:
+    lines = f.readlines()        # list of lines (includes \n)
+
+with open(&quot;data.txt&quot;, &quot;r&quot;) as f:
+    for line in f:               # memory-efficient line-by-line
+        print(line.strip())
+</code></pre>
+<h3 id="writing-files">Writing Files<a class="headerlink" href="#writing-files" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Write (overwrites file)
+with open(&quot;output.txt&quot;, &quot;w&quot;) as f:
+    f.write(&quot;Hello, World!\n&quot;)
+    f.write(&quot;Second line\n&quot;)
+
+# Append
+with open(&quot;output.txt&quot;, &quot;a&quot;) as f:
+    f.write(&quot;Appended line\n&quot;)
+
+# Write multiple lines
+lines = [&quot;line 1\n&quot;, &quot;line 2\n&quot;, &quot;line 3\n&quot;]
+with open(&quot;output.txt&quot;, &quot;w&quot;) as f:
+    f.writelines(lines)
+</code></pre>
+<h3 id="file-modes">File Modes<a class="headerlink" href="#file-modes" title="Permanent link">#</a></h3>
+<ol>
+<li><code>r</code> — Read (default)</li>
+<li><code>w</code> — Write (creates/overwrites)</li>
+<li><code>a</code> — Append</li>
+<li><code>x</code> — Exclusive creation (fails if exists)</li>
+<li><code>b</code> — Binary mode (e.g., <code>rb</code>, <code>wb</code>)</li>
+<li><code>+</code> — Read and write (e.g., <code>r+</code>)</li>
+</ol>
+<h3 id="working-with-json">Working with JSON<a class="headerlink" href="#working-with-json" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import json
+
+# Write JSON
+data = {&quot;name&quot;: &quot;Alice&quot;, &quot;scores&quot;: [90, 85, 92]}
+with open(&quot;data.json&quot;, &quot;w&quot;) as f:
+    json.dump(data, f, indent=2)
+
+# Read JSON
+with open(&quot;data.json&quot;, &quot;r&quot;) as f:
+    loaded = json.load(f)
+
+# String conversion
+json_str = json.dumps(data, indent=2)   # dict → JSON string
+parsed = json.loads(json_str)           # JSON string → dict
+</code></pre>
+<h3 id="working-with-csv">Working with CSV<a class="headerlink" href="#working-with-csv" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import csv
+
+# Write CSV
+with open(&quot;data.csv&quot;, &quot;w&quot;, newline=&quot;&quot;) as f:
+    writer = csv.writer(f)
+    writer.writerow([&quot;Name&quot;, &quot;Age&quot;, &quot;City&quot;])
+    writer.writerow([&quot;Alice&quot;, 30, &quot;NYC&quot;])
+    writer.writerow([&quot;Bob&quot;, 25, &quot;LA&quot;])
+
+# Read CSV
+with open(&quot;data.csv&quot;, &quot;r&quot;) as f:
+    reader = csv.reader(f)
+    header = next(reader)            # skip header
+    for row in reader:
+        print(row)                   # ['Alice', '30', 'NYC']
+
+# DictReader / DictWriter — uses column names
+with open(&quot;data.csv&quot;, &quot;r&quot;) as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        print(row[&quot;Name&quot;], row[&quot;Age&quot;])
+</code></pre>
+<h3 id="pathlib--modern-path-handling">pathlib — Modern Path Handling<a class="headerlink" href="#pathlib--modern-path-handling" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from pathlib import Path
+
+# Create path objects
+p = Path(&quot;data&quot;) / &quot;subfolder&quot; / &quot;file.txt&quot;   # cross-platform
+p = Path.home() / &quot;Documents&quot;
+p = Path.cwd()                                 # current directory
+
+# Check existence
+p.exists()
+p.is_file()
+p.is_dir()
+
+# Read/write shortcuts
+content = Path(&quot;data.txt&quot;).read_text()
+Path(&quot;output.txt&quot;).write_text(&quot;Hello!&quot;)
+
+# File info
+p.name          # &quot;file.txt&quot;
+p.stem          # &quot;file&quot;
+p.suffix        # &quot;.txt&quot;
+p.parent        # Path(&quot;data/subfolder&quot;)
+
+# List directory
+for item in Path(&quot;.&quot;).iterdir():
+    print(item)
+
+# Glob patterns
+for py_file in Path(&quot;.&quot;).glob(&quot;**/*.py&quot;):   # recursive
+    print(py_file)
+
+# Create directories
+Path(&quot;new/nested/dir&quot;).mkdir(parents=True, exist_ok=True)
+</code></pre>
+<h2 id="16-iterators--generators">16. Iterators &amp; Generators<a class="headerlink" href="#16-iterators--generators" title="Permanent link">#</a></h2>
+<h3 id="iterators">Iterators<a class="headerlink" href="#iterators" title="Permanent link">#</a></h3>
+<p>Any object with <code>__iter__()</code> and <code>__next__()</code> methods.</p>
+<pre><code class="language-python"># Lists, strings, etc. are iterable — they produce iterators
+nums = [1, 2, 3]
+it = iter(nums)        # get an iterator
+next(it)               # 1
+next(it)               # 2
+next(it)               # 3
+# next(it)             # ❌ StopIteration
+
+# Custom iterator
+class Countdown:
+    def __init__(self, start):
+        self.current = start
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current &lt;= 0:
+            raise StopIteration
+        val = self.current
+        self.current -= 1
+        return val
+
+for num in Countdown(5):
+    print(num)   # 5, 4, 3, 2, 1
+</code></pre>
+<h3 id="generators--easy-iterators">Generators — Easy Iterators<a class="headerlink" href="#generators--easy-iterators" title="Permanent link">#</a></h3>
+<p>Use <code>yield</code> instead of <code>return</code>. The function's state is saved between calls.</p>
+<pre><code class="language-python">def countdown(n):
+    while n &gt; 0:
+        yield n       # pause here, return value, resume on next call
+        n -= 1
+
+for num in countdown(5):
+    print(num)         # 5, 4, 3, 2, 1
+
+# Generator to produce infinite sequence
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+fib = fibonacci()
+[next(fib) for _ in range(10)]   # [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+</code></pre>
+<h3 id="yield-from">yield from<a class="headerlink" href="#yield-from" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def flatten(nested):
+    for item in nested:
+        if isinstance(item, list):
+            yield from flatten(item)   # delegate to sub-generator
+        else:
+            yield item
+
+list(flatten([1, [2, [3, 4], 5], 6]))   # [1, 2, 3, 4, 5, 6]
+</code></pre>
+<h3 id="why-generators">Why Generators?<a class="headerlink" href="#why-generators" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Memory efficient</strong> — values are produced one at a time, not stored in memory</li>
+<li><strong>Lazy evaluation</strong> — only compute when needed</li>
+<li><strong>Composable</strong> — chain generators together for pipelines</li>
+</ul>
+<pre><code class="language-python"># Processing a huge file line by line
+def read_large_file(path):
+    with open(path) as f:
+        for line in f:
+            yield line.strip()
+
+def filter_errors(lines):
+    for line in lines:
+        if &quot;ERROR&quot; in line:
+            yield line
+
+# Pipeline — processes one line at a time, constant memory
+lines = read_large_file(&quot;huge.log&quot;)
+errors = filter_errors(lines)
+for error in errors:
+    print(error)
+</code></pre>
+<h2 id="17-decorators">17. Decorators<a class="headerlink" href="#17-decorators" title="Permanent link">#</a></h2>
+<p>A decorator wraps a function to add behavior before/after it runs.</p>
+<h3 id="function-decorators">Function Decorators<a class="headerlink" href="#function-decorators" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import functools
+import time
+
+def timer(func):
+    &quot;&quot;&quot;Measure execution time of a function.&quot;&quot;&quot;
+    @functools.wraps(func)    # preserves original function's metadata
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        elapsed = time.perf_counter() - start
+        print(f&quot;{func.__name__} took {elapsed:.4f}s&quot;)
+        return result
+    return wrapper
+
+@timer
+def slow_function():
+    time.sleep(1)
+    return &quot;done&quot;
+
+slow_function()   # slow_function took 1.0012s
+</code></pre>
+<h3 id="decorators-with-arguments">Decorators with Arguments<a class="headerlink" href="#decorators-with-arguments" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def repeat(n):
+    &quot;&quot;&quot;Decorator that calls the function n times.&quot;&quot;&quot;
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for _ in range(n):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def say_hello():
+    print(&quot;Hello!&quot;)
+
+say_hello()
+# Hello!
+# Hello!
+# Hello!
+</code></pre>
+<h3 id="stacking-decorators">Stacking Decorators<a class="headerlink" href="#stacking-decorators" title="Permanent link">#</a></h3>
+<pre><code class="language-python">@decorator_a
+@decorator_b
+def func():
+    pass
+
+# Equivalent to: func = decorator_a(decorator_b(func))
+# decorator_b is applied first, then decorator_a wraps the result
+</code></pre>
+<h3 id="class-decorators">Class Decorators<a class="headerlink" href="#class-decorators" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def singleton(cls):
+    &quot;&quot;&quot;Ensure only one instance of a class exists.&quot;&quot;&quot;
+    instances = {}
+    @functools.wraps(cls)
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance
+
+@singleton
+class Database:
+    def __init__(self):
+        print(&quot;Connecting to database...&quot;)
+
+db1 = Database()   # &quot;Connecting to database...&quot;
+db2 = Database()   # (no print — same instance returned)
+print(db1 is db2)  # True
+</code></pre>
+<h2 id="18-context-managers">18. Context Managers<a class="headerlink" href="#18-context-managers" title="Permanent link">#</a></h2>
+<p>Ensure setup/teardown code always runs (like <code>try/finally</code> but cleaner).</p>
+<h3 id="using-with">Using <code>with</code><a class="headerlink" href="#using-with" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># File handling — file is always closed, even on error
+with open(&quot;file.txt&quot;) as f:
+    data = f.read()
+# f is automatically closed here
+</code></pre>
+<h3 id="custom-context-manager-class">Custom Context Manager (Class)<a class="headerlink" href="#custom-context-manager-class" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Timer:
+    def __enter__(self):
+        self.start = time.perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.elapsed = time.perf_counter() - self.start
+        print(f&quot;Elapsed: {self.elapsed:.4f}s&quot;)
+        return False   # don't suppress exceptions
+
+with Timer() as t:
+    time.sleep(1)
+# Elapsed: 1.0010s
+</code></pre>
+<h3 id="custom-context-manager-generator--easier">Custom Context Manager (Generator — easier)<a class="headerlink" href="#custom-context-manager-generator--easier" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from contextlib import contextmanager
+
+@contextmanager
+def timer():
+    start = time.perf_counter()
+    yield                            # code in the 'with' block runs here
+    elapsed = time.perf_counter() - start
+    print(f&quot;Elapsed: {elapsed:.4f}s&quot;)
+
+with timer():
+    time.sleep(1)
+
+# Handle exceptions in generator-based context managers
+@contextmanager
+def managed_resource(name):
+    print(f&quot;Acquiring {name}&quot;)
+    try:
+        yield name
+    finally:
+        print(f&quot;Releasing {name}&quot;)
+</code></pre>
+<h2 id="19-type-hints">19. Type Hints<a class="headerlink" href="#19-type-hints" title="Permanent link">#</a></h2>
+<p>Python is dynamically typed, but type hints add <strong>optional static typing</strong> for documentation and IDE support.</p>
+<pre><code class="language-python"># Variable annotations
+name: str = &quot;Alice&quot;
+age: int = 30
+scores: list[int] = [90, 85, 92]
+
+# Function annotations
+def greet(name: str, times: int = 1) -&gt; str:
+    return (f&quot;Hello, {name}! &quot; * times).strip()
+
+# Common types
+from typing import Optional, Union
+
+def find_user(user_id: int) -&gt; Optional[str]:
+    &quot;&quot;&quot;Returns username or None.&quot;&quot;&quot;
+    ...
+
+def process(value: Union[str, int]) -&gt; None:
+    &quot;&quot;&quot;Accepts str or int.&quot;&quot;&quot;    # Python 3.10+: str | int
+    ...
+
+# Collections (Python 3.9+, use typing module for older versions)
+names: list[str] = [&quot;Alice&quot;, &quot;Bob&quot;]
+scores: dict[str, int] = {&quot;Alice&quot;: 90}
+coordinates: tuple[float, float] = (1.0, 2.0)
+unique_ids: set[int] = {1, 2, 3}
+
+# Callable
+from typing import Callable
+
+def apply(func: Callable[[int, int], int], a: int, b: int) -&gt; int:
+    return func(a, b)
+
+# TypeAlias (Python 3.10+)
+type Vector = list[float]   # Python 3.12+ syntax
+# or
+from typing import TypeAlias
+Vector: TypeAlias = list[float]
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Type hints are <strong>not enforced</strong> at runtime. Use tools like <code>mypy</code> for static checking: <code>pip install mypy &amp;&amp; mypy your_script.py</code></p>
+</blockquote>
+<h2 id="20-lambda-map-filter-reduce">20. Lambda, Map, Filter, Reduce<a class="headerlink" href="#20-lambda-map-filter-reduce" title="Permanent link">#</a></h2>
+<h3 id="lambda--anonymous-functions">Lambda — Anonymous Functions<a class="headerlink" href="#lambda--anonymous-functions" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># lambda arguments: expression
+square = lambda x: x ** 2
+square(5)    # 25
+
+add = lambda x, y: x + y
+add(3, 5)    # 8
+
+# Useful for short callbacks
+points = [(1, 2), (3, 1), (5, 0)]
+points.sort(key=lambda p: p[1])   # sort by y coordinate
+# [(5, 0), (3, 1), (1, 2)]
+</code></pre>
+<h3 id="map--apply-function-to-every-item">map() — Apply Function to Every Item<a class="headerlink" href="#map--apply-function-to-every-item" title="Permanent link">#</a></h3>
+<pre><code class="language-python">nums = [1, 2, 3, 4, 5]
+
+squared = list(map(lambda x: x ** 2, nums))
+# [1, 4, 9, 16, 25]
+
+# Equivalent list comprehension (preferred in most cases)
+squared = [x ** 2 for x in nums]
+</code></pre>
+<h3 id="filter--keep-items-that-match">filter() — Keep Items That Match<a class="headerlink" href="#filter--keep-items-that-match" title="Permanent link">#</a></h3>
+<pre><code class="language-python">nums = [1, 2, 3, 4, 5, 6, 7, 8]
+
+evens = list(filter(lambda x: x % 2 == 0, nums))
+# [2, 4, 6, 8]
+
+# Equivalent list comprehension
+evens = [x for x in nums if x % 2 == 0]
+</code></pre>
+<h3 id="reduce--accumulate-values">reduce() — Accumulate Values<a class="headerlink" href="#reduce--accumulate-values" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from functools import reduce
+
+nums = [1, 2, 3, 4, 5]
+
+total = reduce(lambda acc, x: acc + x, nums)      # 15
+product = reduce(lambda acc, x: acc * x, nums)     # 120
+maximum = reduce(lambda a, b: a if a &gt; b else b, nums)  # 5
+
+# With initial value
+total = reduce(lambda acc, x: acc + x, nums, 100)  # 115
+</code></pre>
+<h2 id="21-args--kwargs">21. <em>args &amp; </em>*kwargs<a class="headerlink" href="#21-args--kwargs" title="Permanent link">#</a></h2>
+<h3 id="args--variable-positional-arguments">*args — Variable Positional Arguments<a class="headerlink" href="#args--variable-positional-arguments" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def add(*args):
+    &quot;&quot;&quot;Accept any number of positional arguments.&quot;&quot;&quot;
+    print(type(args))   # &lt;class 'tuple'&gt;
+    return sum(args)
+
+add(1, 2, 3)        # 6
+add(1, 2, 3, 4, 5)  # 15
+</code></pre>
+<h3 id="kwargs--variable-keyword-arguments">**kwargs — Variable Keyword Arguments<a class="headerlink" href="#kwargs--variable-keyword-arguments" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def print_info(**kwargs):
+    &quot;&quot;&quot;Accept any number of keyword arguments.&quot;&quot;&quot;
+    print(type(kwargs))   # &lt;class 'dict'&gt;
+    for key, value in kwargs.items():
+        print(f&quot;{key}: {value}&quot;)
+
+print_info(name=&quot;Alice&quot;, age=30, city=&quot;NYC&quot;)
+# name: Alice
+# age: 30
+# city: NYC
+</code></pre>
+<h3 id="combining-all-parameter-types">Combining All Parameter Types<a class="headerlink" href="#combining-all-parameter-types" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def func(a, b, *args, key=&quot;default&quot;, **kwargs):
+    print(f&quot;a={a}, b={b}&quot;)
+    print(f&quot;args={args}&quot;)
+    print(f&quot;key={key}&quot;)
+    print(f&quot;kwargs={kwargs}&quot;)
+
+func(1, 2, 3, 4, key=&quot;custom&quot;, x=10, y=20)
+# a=1, b=2
+# args=(3, 4)
+# key=custom
+# kwargs={'x': 10, 'y': 20}
+</code></pre>
+<h3 id="spreading--unpacking-into-function-calls">Spreading / Unpacking into Function Calls<a class="headerlink" href="#spreading--unpacking-into-function-calls" title="Permanent link">#</a></h3>
+<pre><code class="language-python">def add(a, b, c):
+    return a + b + c
+
+args = [1, 2, 3]
+add(*args)           # 6  (unpacks list into positional args)
+
+kwargs = {&quot;a&quot;: 1, &quot;b&quot;: 2, &quot;c&quot;: 3}
+add(**kwargs)        # 6  (unpacks dict into keyword args)
+</code></pre>
+<h2 id="22-unpacking--destructuring">22. Unpacking &amp; Destructuring<a class="headerlink" href="#22-unpacking--destructuring" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Tuple/list unpacking
+a, b, c = [1, 2, 3]
+
+# Star unpacking
+first, *rest = [1, 2, 3, 4, 5]       # first=1, rest=[2,3,4,5]
+first, *middle, last = [1, 2, 3, 4]   # first=1, middle=[2,3], last=4
+*head, tail = [1, 2, 3]               # head=[1,2], tail=3
+
+# Swap variables
+a, b = b, a
+
+# Ignore values
+_, b, _ = (1, 2, 3)     # only care about b
+
+# Nested unpacking
+(a, b), (c, d) = [1, 2], [3, 4]
+
+# Dict unpacking / merging
+defaults = {&quot;color&quot;: &quot;blue&quot;, &quot;size&quot;: 10}
+custom = {&quot;size&quot;: 20, &quot;weight&quot;: 5}
+merged = {**defaults, **custom}
+# {&quot;color&quot;: &quot;blue&quot;, &quot;size&quot;: 20, &quot;weight&quot;: 5}
+</code></pre>
+<h2 id="23-string-formatting">23. String Formatting<a class="headerlink" href="#23-string-formatting" title="Permanent link">#</a></h2>
+<pre><code class="language-python">name = &quot;Alice&quot;
+age = 30
+pi = 3.14159
+
+# f-strings (Python 3.6+ — preferred)
+f&quot;Hello, {name}! You're {age} years old.&quot;
+f&quot;Pi is approximately {pi:.2f}&quot;             # &quot;3.14&quot;
+f&quot;{'hello':&gt;20}&quot;                            # right-align in 20 chars
+f&quot;{'hello':^20}&quot;                            # center in 20 chars
+f&quot;{1000000:,}&quot;                              # &quot;1,000,000&quot;
+f&quot;{0.85:.1%}&quot;                               # &quot;85.0%&quot;
+f&quot;{255:#x}&quot;                                 # &quot;0xff&quot;
+f&quot;{'yes' if age &gt;= 18 else 'no'}&quot;           # expressions in f-strings
+f&quot;{name!r}&quot;                                 # repr: &quot;'Alice'&quot;
+
+# .format() method
+&quot;Hello, {}! Age: {}&quot;.format(name, age)
+&quot;Hello, {n}! Age: {a}&quot;.format(n=name, a=age)
+
+# % formatting (old style — avoid in new code)
+&quot;Hello, %s! Age: %d&quot; % (name, age)
+</code></pre>
+<h3 id="multi-line-f-strings">Multi-line f-strings<a class="headerlink" href="#multi-line-f-strings" title="Permanent link">#</a></h3>
+<pre><code class="language-python">message = (
+    f&quot;Name: {name}\n&quot;
+    f&quot;Age:  {age}\n&quot;
+    f&quot;Pi:   {pi:.4f}&quot;
+)
+</code></pre>
+<h2 id="24-regular-expressions">24. Regular Expressions<a class="headerlink" href="#24-regular-expressions" title="Permanent link">#</a></h2>
+<pre><code class="language-python">import re
+
+text = &quot;My email is alice@example.com and phone is 555-123-4567&quot;
+
+# Search — find first match
+match = re.search(r&quot;\d{3}-\d{3}-\d{4}&quot;, text)
+if match:
+    print(match.group())    # &quot;555-123-4567&quot;
+    print(match.start())    # start index
+    print(match.span())     # (start, end) tuple
+
+# Find all matches
+emails = re.findall(r&quot;[\w.]+@[\w.]+&quot;, text)
+# ['alice@example.com']
+
+# Match — only matches at the START of the string
+match = re.match(r&quot;My&quot;, text)   # matches
+match = re.match(r&quot;email&quot;, text)  # None (not at start)
+
+# Sub — find and replace
+cleaned = re.sub(r&quot;\d{3}-\d{3}-\d{4}&quot;, &quot;[REDACTED]&quot;, text)
+# &quot;My email is alice@example.com and phone is [REDACTED]&quot;
+
+# Split
+parts = re.split(r&quot;[,;]\s*&quot;, &quot;a, b; c,  d&quot;)
+# ['a', 'b', 'c', 'd']
+
+# Compile for reuse (performance optimization)
+pattern = re.compile(r&quot;\b[A-Z][a-z]+\b&quot;)
+names = pattern.findall(&quot;Alice met Bob at the Park&quot;)
+# ['Alice', 'Bob', 'Park']
+
+# Groups — capture parts of a match
+match = re.search(r&quot;(\w+)@(\w+)\.(\w+)&quot;, &quot;alice@example.com&quot;)
+match.group(0)     # &quot;alice@example.com&quot;   (full match)
+match.group(1)     # &quot;alice&quot;
+match.group(2)     # &quot;example&quot;
+match.group(3)     # &quot;com&quot;
+match.groups()     # (&quot;alice&quot;, &quot;example&quot;, &quot;com&quot;)
+
+# Named groups
+match = re.search(r&quot;(?P&lt;user&gt;\w+)@(?P&lt;domain&gt;\w+\.\w+)&quot;, &quot;alice@example.com&quot;)
+match.group(&quot;user&quot;)     # &quot;alice&quot;
+match.group(&quot;domain&quot;)   # &quot;example.com&quot;
+</code></pre>
+<h3 id="common-regex-patterns">Common Regex Patterns<a class="headerlink" href="#common-regex-patterns" title="Permanent link">#</a></h3>
+<ol>
+<li><code>.</code> — Any character (except newline)</li>
+<li><code>\d</code> — Digit <code>[0-9]</code></li>
+<li><code>\w</code> — Word character <code>[a-zA-Z0-9_]</code></li>
+<li><code>\s</code> — Whitespace</li>
+<li><code>\b</code> — Word boundary</li>
+<li><code>^</code> / <code>$</code> — Start / end of string</li>
+<li><code>*</code> — 0 or more</li>
+<li><code>+</code> — 1 or more</li>
+<li><code>?</code> — 0 or 1</li>
+<li><code>{n,m}</code> — Between n and m times</li>
+<li><code>[abc]</code> — Character class</li>
+<li><code>[^abc]</code> — Negated character class</li>
+<li><code>(...)</code> — Capture group</li>
+<li><code>(?:...)</code> — Non-capturing group</li>
+<li><code>a|b</code> — Alternation (a or b)</li>
+</ol>
+<h2 id="25-date--time">25. Date &amp; Time<a class="headerlink" href="#25-date--time" title="Permanent link">#</a></h2>
+<pre><code class="language-python">from datetime import datetime, date, time, timedelta
+import time as time_module
+
+# Current date/time
+now = datetime.now()              # local time
+utc_now = datetime.utcnow()      # UTC time
+today = date.today()
+
+# Create specific dates
+d = date(2024, 6, 15)
+dt = datetime(2024, 6, 15, 14, 30, 0)
+
+# Access components
+dt.year       # 2024
+dt.month      # 6
+dt.day        # 15
+dt.hour       # 14
+dt.minute     # 30
+
+# Formatting (datetime → string)
+dt.strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)   # &quot;2024-06-15 14:30:00&quot;
+dt.strftime(&quot;%B %d, %Y&quot;)           # &quot;June 15, 2024&quot;
+dt.strftime(&quot;%I:%M %p&quot;)            # &quot;02:30 PM&quot;
+
+# Parsing (string → datetime)
+dt = datetime.strptime(&quot;2024-06-15&quot;, &quot;%Y-%m-%d&quot;)
+
+# ISO format
+dt.isoformat()                     # &quot;2024-06-15T14:30:00&quot;
+datetime.fromisoformat(&quot;2024-06-15T14:30:00&quot;)
+
+# Time deltas (arithmetic)
+tomorrow = today + timedelta(days=1)
+next_week = today + timedelta(weeks=1)
+diff = datetime(2024, 12, 31) - datetime(2024, 1, 1)
+print(diff.days)                    # 365
+
+# Timestamps
+timestamp = time_module.time()           # seconds since epoch
+dt = datetime.fromtimestamp(timestamp)
+
+# Sleep
+time_module.sleep(2)                     # pause for 2 seconds
+</code></pre>
+<h3 id="common-format-codes">Common Format Codes<a class="headerlink" href="#common-format-codes" title="Permanent link">#</a></h3>
+<ol>
+<li><code>%Y</code> — 4-digit year — e.g. <code>2024</code></li>
+<li><code>%m</code> — Month (01-12) — e.g. <code>06</code></li>
+<li><code>%d</code> — Day (01-31) — e.g. <code>15</code></li>
+<li><code>%H</code> — Hour (00-23) — e.g. <code>14</code></li>
+<li><code>%M</code> — Minute (00-59) — e.g. <code>30</code></li>
+<li><code>%S</code> — Second (00-59) — e.g. <code>00</code></li>
+<li><code>%B</code> — Full month — e.g. <code>June</code></li>
+<li><code>%A</code> — Full weekday — e.g. <code>Saturday</code></li>
+<li><code>%I</code> — Hour (01-12) — e.g. <code>02</code></li>
+<li><code>%p</code> — AM/PM — e.g. <code>PM</code></li>
+</ol>
+<h2 id="26-collections-module">26. Collections Module<a class="headerlink" href="#26-collections-module" title="Permanent link">#</a></h2>
+<p>Advanced container types beyond the built-in ones.</p>
+<pre><code class="language-python">from collections import (
+    Counter, defaultdict, OrderedDict, namedtuple, deque, ChainMap
+)
+
+# Counter — count occurrences
+words = [&quot;apple&quot;, &quot;banana&quot;, &quot;apple&quot;, &quot;cherry&quot;, &quot;banana&quot;, &quot;apple&quot;]
+counter = Counter(words)
+counter                     # Counter({'apple': 3, 'banana': 2, 'cherry': 1})
+counter.most_common(2)      # [('apple', 3), ('banana', 2)]
+counter[&quot;apple&quot;]            # 3
+counter[&quot;grape&quot;]            # 0  (no KeyError!)
+
+# Can also count characters
+Counter(&quot;mississippi&quot;)      # Counter({'s': 4, 'i': 4, 'p': 2, 'm': 1})
+
+# defaultdict — dict with default values for missing keys
+dd = defaultdict(list)
+dd[&quot;fruits&quot;].append(&quot;apple&quot;)
+dd[&quot;fruits&quot;].append(&quot;banana&quot;)
+dd[&quot;veggies&quot;].append(&quot;carrot&quot;)
+# {'fruits': ['apple', 'banana'], 'veggies': ['carrot']}
+
+dd_int = defaultdict(int)    # default 0
+dd_int[&quot;count&quot;] += 1
+
+# namedtuple — tuple with named fields
+Point = namedtuple(&quot;Point&quot;, [&quot;x&quot;, &quot;y&quot;])
+p = Point(3, 4)
+p.x          # 3
+p.y          # 4
+p[0]         # 3  (still works like a tuple)
+x, y = p     # unpacking works
+
+# deque — double-ended queue (fast append/pop from both ends)
+d = deque([1, 2, 3])
+d.appendleft(0)      # deque([0, 1, 2, 3])
+d.append(4)           # deque([0, 1, 2, 3, 4])
+d.popleft()           # 0
+d.pop()               # 4
+d.rotate(1)           # rotate right by 1
+
+# ChainMap — search multiple dicts as one
+defaults = {&quot;color&quot;: &quot;blue&quot;, &quot;size&quot;: 10}
+user_prefs = {&quot;color&quot;: &quot;red&quot;}
+config = ChainMap(user_prefs, defaults)
+config[&quot;color&quot;]       # &quot;red&quot;   (first dict wins)
+config[&quot;size&quot;]        # 10      (falls through to defaults)
+</code></pre>
+<h2 id="27-dataclasses">27. Dataclasses<a class="headerlink" href="#27-dataclasses" title="Permanent link">#</a></h2>
+<p>Reduce boilerplate for data-holding classes. Available since <strong>Python 3.7</strong>.</p>
+<pre><code class="language-python">from dataclasses import dataclass, field, asdict, astuple
+
+@dataclass
+class Point:
+    x: float
+    y: float
+
+# Auto-generates __init__, __repr__, __eq__
+p1 = Point(1.0, 2.0)
+p2 = Point(1.0, 2.0)
+print(p1)            # Point(x=1.0, y=2.0)
+print(p1 == p2)      # True
+
+# Default values &amp; mutable defaults
+@dataclass
+class Student:
+    name: str
+    age: int = 18
+    grades: list[int] = field(default_factory=list)  # ✅ for mutable defaults
+
+# Frozen (immutable)
+@dataclass(frozen=True)
+class Color:
+    r: int
+    g: int
+    b: int
+
+c = Color(255, 0, 0)
+# c.r = 128          # ❌ FrozenInstanceError
+
+# Ordering
+@dataclass(order=True)
+class Version:
+    major: int
+    minor: int
+    patch: int
+
+v1 = Version(1, 2, 3)
+v2 = Version(2, 0, 0)
+v1 &lt; v2              # True
+
+# Convert to dict/tuple
+asdict(p1)           # {'x': 1.0, 'y': 2.0}
+astuple(p1)          # (1.0, 2.0)
+
+# Post-init processing
+@dataclass
+class Rectangle:
+    width: float
+    height: float
+    area: float = field(init=False)   # not in __init__
+
+    def __post_init__(self):
+        self.area = self.width * self.height
+
+r = Rectangle(4, 5)
+r.area               # 20.0
+</code></pre>
+<h2 id="28-enums">28. Enums<a class="headerlink" href="#28-enums" title="Permanent link">#</a></h2>
+<p>Define named constants with <code>enum</code>.</p>
+<pre><code class="language-python">from enum import Enum, auto, IntEnum
+
+class Color(Enum):
+    RED = 1
+    GREEN = 2
+    BLUE = 3
+
+# Usage
+c = Color.RED
+c.name           # &quot;RED&quot;
+c.value          # 1
+Color(1)         # Color.RED  (lookup by value)
+Color[&quot;RED&quot;]     # Color.RED  (lookup by name)
+
+# Iteration
+for color in Color:
+    print(color)   # Color.RED, Color.GREEN, Color.BLUE
+
+# Comparison
+Color.RED == Color.RED      # True
+Color.RED is Color.RED      # True
+Color.RED == 1              # False  (Enum != int)
+
+# auto() — auto-assign values
+class Direction(Enum):
+    NORTH = auto()    # 1
+    SOUTH = auto()    # 2
+    EAST = auto()     # 3
+    WEST = auto()     # 4
+
+# IntEnum — allows comparison with integers
+class Status(IntEnum):
+    OK = 200
+    NOT_FOUND = 404
+    ERROR = 500
+
+Status.OK == 200      # True
+Status.OK &lt; Status.NOT_FOUND  # True
+
+# Use in match/case
+match direction:
+    case Direction.NORTH:
+        print(&quot;Going north!&quot;)
+</code></pre>
+<h2 id="29-async--await-asyncio">29. Async / Await (Asyncio)<a class="headerlink" href="#29-async--await-asyncio" title="Permanent link">#</a></h2>
+<p>For <strong>I/O-bound</strong> concurrency (network requests, file I/O, databases).</p>
+<pre><code class="language-python">import asyncio
+
+# Define a coroutine
+async def fetch_data(url: str, delay: float) -&gt; str:
+    print(f&quot;Fetching {url}...&quot;)
+    await asyncio.sleep(delay)        # simulate network request
+    return f&quot;Data from {url}&quot;
+
+# Run a single coroutine
+async def main():
+    result = await fetch_data(&quot;https://api.example.com&quot;, 2)
+    print(result)
+
+asyncio.run(main())
+
+# Run multiple coroutines concurrently
+async def main():
+    # gather — run all concurrently, collect results
+    results = await asyncio.gather(
+        fetch_data(&quot;url1&quot;, 2),
+        fetch_data(&quot;url2&quot;, 1),
+        fetch_data(&quot;url3&quot;, 3),
+    )
+    # Takes ~3s total (not 6s), because they run concurrently
+    for r in results:
+        print(r)
+
+asyncio.run(main())
+
+# TaskGroup (Python 3.11+ — preferred over gather)
+async def main():
+    async with asyncio.TaskGroup() as tg:
+        task1 = tg.create_task(fetch_data(&quot;url1&quot;, 2))
+        task2 = tg.create_task(fetch_data(&quot;url2&quot;, 1))
+
+    print(task1.result(), task2.result())
+
+asyncio.run(main())
+</code></pre>
+<h3 id="async-iterators--context-managers">Async Iterators &amp; Context Managers<a class="headerlink" href="#async-iterators--context-managers" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># Async for
+async def fetch_pages():
+    for i in range(5):
+        await asyncio.sleep(0.5)
+        yield f&quot;Page {i}&quot;
+
+async def main():
+    async for page in fetch_pages():
+        print(page)
+
+# Async context manager
+class AsyncDB:
+    async def __aenter__(self):
+        print(&quot;Connecting...&quot;)
+        await asyncio.sleep(1)
+        return self
+
+    async def __aexit__(self, *args):
+        print(&quot;Disconnecting...&quot;)
+        await asyncio.sleep(0.5)
+
+async def main():
+    async with AsyncDB() as db:
+        print(&quot;Using database&quot;)
+</code></pre>
+<h2 id="30-concurrency-threading--multiprocessing">30. Concurrency: Threading &amp; Multiprocessing<a class="headerlink" href="#30-concurrency-threading--multiprocessing" title="Permanent link">#</a></h2>
+<h3 id="threading--for-io-bound-tasks">Threading — For I/O-bound Tasks<a class="headerlink" href="#threading--for-io-bound-tasks" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import threading
+import time
+
+def download(url):
+    print(f&quot;Downloading {url}...&quot;)
+    time.sleep(2)    # simulate I/O
+    print(f&quot;Done: {url}&quot;)
+
+# Create and start threads
+threads = []
+for url in [&quot;url1&quot;, &quot;url2&quot;, &quot;url3&quot;]:
+    t = threading.Thread(target=download, args=(url,))
+    threads.append(t)
+    t.start()
+
+# Wait for all threads to finish
+for t in threads:
+    t.join()
+
+print(&quot;All downloads complete!&quot;)
+
+# Thread-safe access with Lock
+counter = 0
+lock = threading.Lock()
+
+def increment():
+    global counter
+    for _ in range(100_000):
+        with lock:
+            counter += 1
+</code></pre>
+<h3 id="threadpoolexecutor--higher-level-api">ThreadPoolExecutor — Higher-level API<a class="headerlink" href="#threadpoolexecutor--higher-level-api" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def fetch(url):
+    time.sleep(1)
+    return f&quot;Data from {url}&quot;
+
+with ThreadPoolExecutor(max_workers=4) as executor:
+    futures = {executor.submit(fetch, url): url for url in urls}
+
+    for future in as_completed(futures):
+        url = futures[future]
+        result = future.result()
+        print(f&quot;{url}: {result}&quot;)
+</code></pre>
+<h3 id="multiprocessing--for-cpu-bound-tasks">Multiprocessing — For CPU-bound Tasks<a class="headerlink" href="#multiprocessing--for-cpu-bound-tasks" title="Permanent link">#</a></h3>
+<pre><code class="language-python">from multiprocessing import Pool
+
+def square(n):
+    return n ** 2
+
+# Process pool
+with Pool(processes=4) as pool:
+    results = pool.map(square, range(10))
+    print(results)   # [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+</code></pre>
+<h3 id="when-to-use-what">When to Use What<a class="headerlink" href="#when-to-use-what" title="Permanent link">#</a></h3>
+<ol>
+<li>Network I/O — use <code>asyncio</code> or <code>threading</code> — Waiting, not computing</li>
+<li>File I/O — use <code>threading</code> — Blocked on disk</li>
+<li>CPU-heavy — use <code>multiprocessing</code> — Bypass GIL, use multiple cores</li>
+<li>Simple scripts — use <code>asyncio</code> — Clean, modern, no race conditions</li>
+</ol>
+<blockquote>
+<p><strong>The GIL (Global Interpreter Lock):</strong> Python threads can't run Python code truly in parallel (only one thread executes Python bytecode at a time). For CPU-bound work, use <code>multiprocessing</code> to spin up separate processes.</p>
+</blockquote>
+<h2 id="31-virtual-environments--dependency-management">31. Virtual Environments &amp; Dependency Management<a class="headerlink" href="#31-virtual-environments--dependency-management" title="Permanent link">#</a></h2>
+<h3 id="why-virtual-environments">Why Virtual Environments?<a class="headerlink" href="#why-virtual-environments" title="Permanent link">#</a></h3>
+<p>Each project gets its own isolated set of dependencies — no conflicts between projects.</p>
+<h3 id="venv-built-in">venv (Built-in)<a class="headerlink" href="#venv-built-in" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># Create virtual environment
+python -m venv .venv
+
+# Activate
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Install packages
+pip install requests flask
+
+# Save dependencies
+pip freeze &gt; requirements.txt
+
+# Install from requirements
+pip install -r requirements.txt
+
+# Deactivate
+deactivate
+</code></pre>
+<h3 id="pip--package-manager">pip — Package Manager<a class="headerlink" href="#pip--package-manager" title="Permanent link">#</a></h3>
+<pre><code class="language-bash">pip install package_name           # latest version
+pip install package_name==1.2.3    # specific version
+pip install package_name&gt;=1.2      # minimum version
+pip install -U package_name        # upgrade
+pip uninstall package_name
+pip list                            # installed packages
+pip show package_name              # package info
+</code></pre>
+<h3 id="pyprojecttoml-modern-standard">pyproject.toml (Modern Standard)<a class="headerlink" href="#pyprojecttoml-modern-standard" title="Permanent link">#</a></h3>
+<p>The modern way to define project metadata and dependencies:</p>
+<pre><code class="language-toml">[project]
+name = &quot;my-project&quot;
+version = &quot;1.0.0&quot;
+requires-python = &quot;&gt;=3.10&quot;
+dependencies = [
+    &quot;requests&gt;=2.28&quot;,
+    &quot;flask&gt;=3.0&quot;,
+]
+
+[project.optional-dependencies]
+dev = [&quot;pytest&quot;, &quot;mypy&quot;, &quot;ruff&quot;]
+
+[build-system]
+requires = [&quot;setuptools&gt;=70.0&quot;]
+build-backend = &quot;setuptools.backends._legacy:_Backend&quot;
+</code></pre>
+<h3 id="other-tools-worth-knowing">Other Tools Worth Knowing<a class="headerlink" href="#other-tools-worth-knowing" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>uv</code></strong> — Extremely fast package manager and virtualenv tool (Rust-based)</li>
+<li><strong><code>poetry</code></strong> — Dependency management + packaging</li>
+<li><strong><code>conda</code></strong> — Popular in data science (manages Python versions too)</li>
+</ul>
+<h2 id="32-testing">32. Testing<a class="headerlink" href="#32-testing" title="Permanent link">#</a></h2>
+<h3 id="unittest-built-in">unittest (Built-in)<a class="headerlink" href="#unittest-built-in" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import unittest
+
+def add(a, b):
+    return a + b
+
+class TestAdd(unittest.TestCase):
+    def test_positive(self):
+        self.assertEqual(add(2, 3), 5)
+
+    def test_negative(self):
+        self.assertEqual(add(-1, -1), -2)
+
+    def test_zero(self):
+        self.assertEqual(add(0, 0), 0)
+
+    def test_type_error(self):
+        with self.assertRaises(TypeError):
+            add(&quot;a&quot;, 1)
+
+if __name__ == &quot;__main__&quot;:
+    unittest.main()
+</code></pre>
+<h3 id="pytest-recommended--install-with-pip-install-pytest">pytest (Recommended — install with <code>pip install pytest</code>)<a class="headerlink" href="#pytest-recommended--install-with-pip-install-pytest" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># test_math.py
+import pytest
+
+def add(a, b):
+    return a + b
+
+def test_add_positive():
+    assert add(2, 3) == 5
+
+def test_add_negative():
+    assert add(-1, -1) == -2
+
+def test_add_type_error():
+    with pytest.raises(TypeError):
+        add(&quot;a&quot;, 1)
+
+# Parameterized tests
+@pytest.mark.parametrize(&quot;a, b, expected&quot;, [
+    (1, 2, 3),
+    (-1, 1, 0),
+    (0, 0, 0),
+    (100, 200, 300),
+])
+def test_add_parametrized(a, b, expected):
+    assert add(a, b) == expected
+
+# Fixtures — setup/teardown
+@pytest.fixture
+def sample_list():
+    return [1, 2, 3, 4, 5]
+
+def test_sum(sample_list):
+    assert sum(sample_list) == 15
+
+def test_length(sample_list):
+    assert len(sample_list) == 5
+</code></pre>
+<pre><code class="language-bash"># Run tests
+pytest                     # discover and run all tests
+pytest -v                  # verbose output
+pytest test_math.py        # specific file
+pytest -k &quot;test_add&quot;       # run tests matching pattern
+pytest --tb=short          # shorter tracebacks
+</code></pre>
+<h2 id="33-useful-standard-library-modules">33. Useful Standard Library Modules<a class="headerlink" href="#33-useful-standard-library-modules" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># os — operating system interface
+import os
+os.getcwd()                        # current working directory
+os.listdir(&quot;.&quot;)                    # list directory contents
+os.environ.get(&quot;HOME&quot;)            # environment variables
+os.path.join(&quot;dir&quot;, &quot;file.txt&quot;)   # path joining
+
+# sys — system-specific parameters
+import sys
+sys.argv                           # command-line arguments
+sys.path                           # module search paths
+sys.exit(1)                        # exit with error code
+
+# math — mathematical functions
+import math
+math.sqrt(16)        # 4.0
+math.ceil(4.2)       # 5
+math.floor(4.7)      # 4
+math.log(100, 10)    # 2.0
+math.pi              # 3.14159...
+math.inf             # infinity
+math.gcd(12, 8)      # 4
+
+# random — random number generation
+import random
+random.random()              # float in [0, 1)
+random.randint(1, 10)        # int in [1, 10]
+random.choice([&quot;a&quot;, &quot;b&quot;])    # random element
+random.shuffle(my_list)      # shuffle in place
+random.sample(range(100), 5) # 5 unique random items
+
+# itertools — iterator building blocks
+import itertools
+itertools.chain([1,2], [3,4])             # 1, 2, 3, 4
+itertools.product(&quot;AB&quot;, &quot;12&quot;)             # A1, A2, B1, B2
+itertools.permutations(&quot;ABC&quot;, 2)          # AB, AC, BA, BC, CA, CB
+itertools.combinations(&quot;ABCD&quot;, 2)         # AB, AC, AD, BC, BD, CD
+itertools.islice(range(100), 5, 10)       # 5, 6, 7, 8, 9
+list(itertools.accumulate([1,2,3,4]))     # [1, 3, 6, 10]
+
+# functools — higher-order functions
+from functools import lru_cache, partial, reduce
+
+@lru_cache(maxsize=128)
+def fibonacci(n):
+    if n &lt; 2: return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+double = partial(multiply, 2)   # pre-fill first argument
+
+# hashlib — hashing
+import hashlib
+hashlib.sha256(b&quot;hello&quot;).hexdigest()
+
+# logging — proper logging (use instead of print)
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.info(&quot;Application started&quot;)
+logger.warning(&quot;Low disk space&quot;)
+logger.error(&quot;Connection failed&quot;, exc_info=True)
+
+# subprocess — run external commands
+import subprocess
+result = subprocess.run(
+    [&quot;ls&quot;, &quot;-la&quot;],
+    capture_output=True,
+    text=True,
+    check=True
+)
+print(result.stdout)
+
+# typing — type hint utilities (covered in section 19)
+# dataclasses — covered in section 27
+# enum — covered in section 28
+# collections — covered in section 26
+</code></pre>
+<h2 id="34-pythonic-idioms--best-practices">34. Pythonic Idioms &amp; Best Practices<a class="headerlink" href="#34-pythonic-idioms--best-practices" title="Permanent link">#</a></h2>
+<h3 id="the-zen-of-python">The Zen of Python<a class="headerlink" href="#the-zen-of-python" title="Permanent link">#</a></h3>
+<pre><code class="language-python">import this    # prints the Zen of Python
+</code></pre>
+<p>Key principles: <em>Beautiful is better than ugly. Simple is better than complex. Readability counts.</em></p>
+<h3 id="common-idioms">Common Idioms<a class="headerlink" href="#common-idioms" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># ✅ Check for empty collections
+if not my_list:         # instead of: if len(my_list) == 0
+    print(&quot;Empty!&quot;)
+
+# ✅ Check for None specifically
+if x is None:           # instead of: if x == None
+    pass
+
+# ✅ Use 'in' for membership
+if key in my_dict:      # instead of: if my_dict.has_key(key)
+    pass
+
+# ✅ EAFP over LBYL (Easier to Ask Forgiveness than Permission)
+# ❌ LBYL (Look Before You Leap)
+if key in my_dict:
+    value = my_dict[key]
+
+# ✅ EAFP
+try:
+    value = my_dict[key]
+except KeyError:
+    value = default
+
+# Even simpler:
+value = my_dict.get(key, default)
+
+# ✅ Use enumerate instead of range(len(...))
+for i, item in enumerate(items):
+    print(i, item)
+
+# ✅ Use zip for parallel iteration
+for name, score in zip(names, scores):
+    print(name, score)
+
+# ✅ Use with for resource management
+with open(&quot;file.txt&quot;) as f:
+    data = f.read()
+
+# ✅ Chained comparisons
+if 0 &lt; x &lt; 10:         # instead of: if x &gt; 0 and x &lt; 10
+    pass
+
+# ✅ Conditional assignment
+result = value if condition else default
+
+# ✅ Use any() and all()
+if any(score &gt; 90 for score in scores):
+    print(&quot;At least one A!&quot;)
+
+if all(score &gt;= 60 for score in scores):
+    print(&quot;Everyone passed!&quot;)
+
+# ✅ Dictionary setdefault
+graph = {}
+graph.setdefault(&quot;A&quot;, []).append(&quot;B&quot;)
+
+# ✅ Underscore for unused variables
+for _ in range(5):
+    do_something()
+
+# ✅ String joining (not concatenation in loops)
+# ❌ Slow
+result = &quot;&quot;
+for word in words:
+    result += word + &quot; &quot;
+
+# ✅ Fast
+result = &quot; &quot;.join(words)
+</code></pre>
+<h3 id="pep-8--style-guide-highlights">PEP 8 — Style Guide Highlights<a class="headerlink" href="#pep-8--style-guide-highlights" title="Permanent link">#</a></h3>
+<ol>
+<li>Snake_case functions — <code>my_function()</code></li>
+<li>PascalCase classes — <code>MyClass</code></li>
+<li>UPPER_CASE constants — <code>MAX_RETRIES = 3</code></li>
+<li>4-space indentation — always (never tabs)</li>
+<li>Max line length — 79–120 characters</li>
+<li><code>_private</code> attributes — <code>self._internal_state</code></li>
+<li><code>__name_mangling</code> — <code>self.__really_private</code></li>
+</ol>
+<h3 id="common-gotchas">Common Gotchas<a class="headerlink" href="#common-gotchas" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># ⚠️ Mutable default arguments (covered in section 8)
+def bad(lst=[]):    # ❌ shared across calls
+    lst.append(1)
+    return lst
+
+# ⚠️ Late binding closures
+funcs = [lambda: i for i in range(5)]
+[f() for f in funcs]   # [4, 4, 4, 4, 4] — all reference same 'i'
+
+# ✅ Fix with default argument
+funcs = [lambda i=i: i for i in range(5)]
+[f() for f in funcs]   # [0, 1, 2, 3, 4]
+
+# ⚠️ Modifying a list while iterating
+# ❌
+for item in my_list:
+    if condition(item):
+        my_list.remove(item)   # skips elements!
+
+# ✅
+my_list = [item for item in my_list if not condition(item)]
+
+# ⚠️ Integer caching
+a = 256
+b = 256
+a is b    # True  (Python caches -5 to 256)
+
+a = 257
+b = 257
+a is b    # May be False! Always use == for value comparison
+
+# ⚠️ Shallow vs deep copy
+import copy
+original = [[1, 2], [3, 4]]
+shallow = original.copy()          # nested lists are shared!
+deep = copy.deepcopy(original)     # fully independent copy
+</code></pre>
+<h2 id="35-whats-next">35. What's Next?<a class="headerlink" href="#35-whats-next" title="Permanent link">#</a></h2>
+<p>You now have a solid foundation in Python. Here are recommended paths depending on your interests:</p>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Libraries / Frameworks to Learn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Web Development</strong></td>
+<td>Flask, Django, FastAPI</td>
+</tr>
+<tr>
+<td><strong>Data Science</strong></td>
+<td>NumPy, Pandas, Matplotlib, Jupyter</td>
+</tr>
+<tr>
+<td><strong>Machine Learning</strong></td>
+<td>scikit-learn, TensorFlow, PyTorch</td>
+</tr>
+<tr>
+<td><strong>Automation</strong></td>
+<td>Selenium, Beautiful Soup, Scrapy</td>
+</tr>
+<tr>
+<td><strong>CLI Tools</strong></td>
+<td>Click, Typer, argparse</td>
+</tr>
+<tr>
+<td><strong>Desktop Apps</strong></td>
+<td>Tkinter, PyQt, Kivy</td>
+</tr>
+<tr>
+<td><strong>Game Development</strong></td>
+<td>Pygame</td>
+</tr>
+<tr>
+<td><strong>DevOps / Scripting</strong></td>
+<td>Fabric, Invoke, subprocess</td>
+</tr>
+<tr>
+<td><strong>API Development</strong></td>
+<td>FastAPI, Flask-RESTful</td>
+</tr>
+</tbody>
+</table>
+<h3 id="resources">Resources<a class="headerlink" href="#resources" title="Permanent link">#</a></h3>
+<ul>
+<li>📖 <a href="https://docs.python.org/3/">Official Python Docs</a></li>
+<li>📖 <a href="https://realpython.com/">Real Python</a></li>
+<li>📖 <a href="https://www.oreilly.com/library/view/python-cookbook-3rd/9781449357337/">Python Cookbook (O'Reilly)</a></li>
+<li>🧠 <a href="https://leetcode.com/">LeetCode</a> — practice problem solving</li>
+<li>🧠 <a href="https://projecteuler.net/">Project Euler</a> — math + programming challenges</li>
+</ul>
+<blockquote>
+<p><em>"Python is a language that lets you work quickly and integrate systems more effectively."</em> — python.org</p>
+</blockquote>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Python Study Library</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="python-study.js"></script>
+</body>
+</html>

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Python Crash Course | TechToday</title>
+    <link rel="stylesheet" href="python-study.css" />
+</head>
+<body>
+    <div class="progress" aria-hidden="true"></div>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="../../index.html">TechToday <span>Python</span></a>
+            <nav class="guide-nav" aria-label="Python study guides">
+                <a href="python-crash-course.html" aria-current="page">Crash course</a><a href="python-course.html">Full course</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <article class="study">
+            <h1 id="python-crash-course">Python Crash Course<a class="headerlink" href="#python-crash-course" title="Permanent link">#</a></h1>
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">#</a></h2>
+<ol>
+<li><a href="#1-hello-python">1. Hello Python</a></li>
+<li><a href="#2-variables--types">2. Variables &amp; Types</a></li>
+<li><a href="#3-operators">3. Operators</a></li>
+<li><a href="#4-strings">4. Strings</a></li>
+<li><a href="#5-data-structures">5. Data Structures</a></li>
+<li><a href="#6-control-flow">6. Control Flow</a></li>
+<li><a href="#7-loops">7. Loops</a></li>
+<li><a href="#8-functions">8. Functions</a></li>
+<li><a href="#9-list-comprehensions">9. List Comprehensions</a></li>
+<li><a href="#10-classes-oop">10. Classes (OOP)</a></li>
+<li><a href="#11-error-handling">11. Error Handling</a></li>
+<li><a href="#12-modules--imports">12. Modules &amp; Imports</a></li>
+<li><a href="#13-file-io">13. File I/O</a></li>
+<li><a href="#14-iterators--generators">14. Iterators &amp; Generators</a></li>
+<li><a href="#15-decorators">15. Decorators</a></li>
+<li><a href="#16-context-managers">16. Context Managers</a></li>
+<li><a href="#17-type-hints">17. Type Hints</a></li>
+<li><a href="#18-unpacking--useful-patterns">18. Unpacking &amp; Useful Patterns</a></li>
+<li><a href="#19-common-standard-library">19. Common Standard Library</a></li>
+<li><a href="#20-virtual-environments--packages">20. Virtual Environments &amp; Packages</a></li>
+<li><a href="#21-asyncawait-quick-intro">21. Async/Await (Quick Intro)</a></li>
+<li><a href="#22-pythonic-tips">22. Pythonic Tips</a></li>
+<li><a href="#quick-reference-card">Quick Reference Card</a></li>
+</ol>
+<h2 id="1-hello-python">1. Hello Python<a class="headerlink" href="#1-hello-python" title="Permanent link">#</a></h2>
+<blockquote>
+<p>Don't have Python installed yet? See <a href="python-course.html#installing-python">Installing Python</a> for Windows/macOS/Linux setup steps.</p>
+</blockquote>
+<pre><code class="language-bash">python --version          # check installation (macOS/Linux: python3 --version)
+python script.py          # run a file (macOS/Linux: python3 script.py)
+python                    # interactive REPL (macOS/Linux: python3)
+</code></pre>
+<pre><code class="language-python">print(&quot;Hello, World!&quot;)    # your first program
+
+# Single-line comment
+&quot;&quot;&quot;Multi-line comment / docstring&quot;&quot;&quot;
+</code></pre>
+<h2 id="2-variables--types">2. Variables &amp; Types<a class="headerlink" href="#2-variables--types" title="Permanent link">#</a></h2>
+<p>No <code>let</code>, <code>const</code>, or <code>var</code> — just assign directly.</p>
+<pre><code class="language-python">name = &quot;Alice&quot;        # str
+age = 30              # int
+height = 5.7          # float
+active = True         # bool  (capital T/F)
+nothing = None        # NoneType
+
+x, y, z = 1, 2, 3    # multiple assignment
+</code></pre>
+<h3 id="type-checking--casting">Type Checking &amp; Casting<a class="headerlink" href="#type-checking--casting" title="Permanent link">#</a></h3>
+<pre><code class="language-python">type(age)             # &lt;class 'int'&gt;
+isinstance(age, int)  # True
+
+int(&quot;42&quot;)             # 42
+str(100)              # &quot;100&quot;
+float(&quot;3.14&quot;)         # 3.14
+bool(0)               # False  (0, &quot;&quot;, [], None → falsy)
+</code></pre>
+<h2 id="3-operators">3. Operators<a class="headerlink" href="#3-operators" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Arithmetic
+5 + 3    # 8       5 - 3    # 2
+5 * 3    # 15
+5 / 3    # 1.66  (always float)
+5 // 3   # 1       (floor div)
+5 % 3    # 2       (modulo)
+5 ** 3   # 125     (power)
+
+# Comparison → returns bool
+==  !=  &gt;  &lt;  &gt;=  &lt;=
+
+# Logical
+True and False   # False
+True or False    # True
+not True         # False
+
+# Identity vs Equality
+a == b           # same value?
+a is b           # same object in memory?
+
+# Membership
+&quot;x&quot; in &quot;hello&quot;       # False
+3 in [1, 2, 3]       # True
+
+# Ternary
+status = &quot;adult&quot; if age &gt;= 18 else &quot;minor&quot;
+</code></pre>
+<h2 id="4-strings">4. Strings<a class="headerlink" href="#4-strings" title="Permanent link">#</a></h2>
+<pre><code class="language-python">s = &quot;Hello, World!&quot;
+s = 'Hello, World!'          # single or double — same thing
+s = &quot;&quot;&quot;multi
+line&quot;&quot;&quot;
+
+# Indexing &amp; Slicing
+s[0]       # 'H'       s[-1]      # '!'
+s[0:5]     # 'Hello'   s[:5]      # 'Hello'
+s[7:]      # 'World!'  s[::-1]    # reverse
+
+# Common methods
+s.lower()                  s.upper()
+s.strip()                  # remove whitespace
+s.split(&quot;, &quot;)              # ['Hello', 'World!']
+&quot;, &quot;.join([&quot;a&quot;, &quot;b&quot;])      # &quot;a, b&quot;
+s.replace(&quot;World&quot;, &quot;Python&quot;)
+s.startswith(&quot;Hello&quot;)      # True
+s.find(&quot;World&quot;)            # 7  (-1 if not found)
+s.count(&quot;l&quot;)               # 3
+
+# f-strings (formatted strings — use these!)
+name, age = &quot;Alice&quot;, 30
+f&quot;Hi {name}, you're {age}&quot;
+f&quot;{3.14159:.2f}&quot;           # &quot;3.14&quot;
+f&quot;{1000000:,}&quot;             # &quot;1,000,000&quot;
+
+# Strings are IMMUTABLE
+# s[0] = &quot;h&quot;   ❌ TypeError
+s = &quot;h&quot; + s[1:]  # ✅ create new string
+</code></pre>
+<h2 id="5-data-structures">5. Data Structures<a class="headerlink" href="#5-data-structures" title="Permanent link">#</a></h2>
+<h3 id="lists--ordered-mutable-">Lists — ordered, mutable <code>[]</code><a class="headerlink" href="#lists--ordered-mutable-" title="Permanent link">#</a></h3>
+<pre><code class="language-python">nums = [1, 2, 3, 4, 5]
+
+# Access
+nums[0]          # 1
+nums[-1]         # 5
+nums[1:3]        # [2, 3]
+
+# Modify
+nums.append(6)           # add to end
+nums.insert(0, 0)        # insert at index
+nums.extend([7, 8])      # add multiple
+nums[0] = 99             # overwrite
+
+# Remove
+nums.remove(99)          # by value (first match)
+nums.pop()               # remove &amp; return last
+nums.pop(0)              # remove &amp; return at index
+del nums[0]              # delete by index
+
+# Other
+nums.sort()              # in-place sort
+sorted(nums)             # returns new sorted list
+nums.reverse()           # in-place reverse
+len(nums)                # length
+3 in nums                # membership check
+nums.index(3)            # find index of value
+nums.count(3)            # count occurrences
+</code></pre>
+<h3 id="tuples--ordered-immutable-">Tuples — ordered, immutable <code>()</code><a class="headerlink" href="#tuples--ordered-immutable-" title="Permanent link">#</a></h3>
+<pre><code class="language-python">point = (3, 4)
+x, y = point            # unpacking
+single = (42,)           # ⚠️ trailing comma needed!
+
+point[0]                 # 3
+# point[0] = 5           ❌ immutable
+</code></pre>
+<h3 id="dicts--key-value-pairs-">Dicts — key-value pairs <code>{}</code><a class="headerlink" href="#dicts--key-value-pairs-" title="Permanent link">#</a></h3>
+<pre><code class="language-python">person = {&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30}
+
+# Access
+person[&quot;name&quot;]                 # &quot;Alice&quot;
+person.get(&quot;email&quot;, &quot;N/A&quot;)    # &quot;N/A&quot; (safe access)
+
+# Modify
+person[&quot;age&quot;] = 31             # update
+person[&quot;email&quot;] = &quot;a@b.com&quot;   # add new key
+
+# Remove
+del person[&quot;email&quot;]
+person.pop(&quot;age&quot;)              # remove &amp; return value
+
+# Iterate
+for key, value in person.items():
+    print(f&quot;{key}: {value}&quot;)
+
+# Check
+&quot;name&quot; in person               # True (checks keys)
+
+# Merge (Python 3.9+)
+merged = {&quot;a&quot;: 1} | {&quot;b&quot;: 2}
+</code></pre>
+<h3 id="sets--unordered-unique-">Sets — unordered, unique <code>{}</code><a class="headerlink" href="#sets--unordered-unique-" title="Permanent link">#</a></h3>
+<pre><code class="language-python">s = {1, 2, 3}
+empty = set()             # NOT {} — that's an empty dict!
+
+s.add(4)
+s.discard(2)              # no error if missing
+
+# Set math
+a | b    # union
+a &amp; b    # intersection
+a - b    # difference
+
+# Deduplicate a list
+unique = list(set([1, 1, 2, 2, 3]))
+</code></pre>
+<h2 id="6-control-flow">6. Control Flow<a class="headerlink" href="#6-control-flow" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># if / elif / else
+if score &gt;= 90:
+    grade = &quot;A&quot;
+elif score &gt;= 80:
+    grade = &quot;B&quot;
+else:
+    grade = &quot;F&quot;
+
+# match / case (Python 3.10+)
+match command:
+    case &quot;quit&quot;:
+        print(&quot;Bye!&quot;)
+    case &quot;help&quot;:
+        print(&quot;Commands: quit, help&quot;)
+    case _:
+        print(&quot;Unknown&quot;)
+</code></pre>
+<blockquote>
+<p>Python uses <strong>indentation</strong> (4 spaces) instead of <code>{}</code> braces!</p>
+</blockquote>
+<h2 id="7-loops">7. Loops<a class="headerlink" href="#7-loops" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># for — iterate over anything
+for item in [1, 2, 3]:
+    print(item)
+
+for i in range(5):            # 0, 1, 2, 3, 4
+    print(i)
+
+for i in range(2, 10, 2):    # 2, 4, 6, 8
+    print(i)
+
+# enumerate — index + value
+for i, val in enumerate([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]):
+    print(i, val)             # 0 a, 1 b, 2 c
+
+# zip — parallel iteration
+for name, score in zip(names, scores):
+    print(name, score)
+
+# while
+count = 0
+while count &lt; 5:
+    count += 1
+
+# break / continue
+for i in range(10):
+    if i == 3: continue       # skip 3
+    if i == 7: break          # stop at 7
+    print(i)
+</code></pre>
+<h2 id="8-functions">8. Functions<a class="headerlink" href="#8-functions" title="Permanent link">#</a></h2>
+<pre><code class="language-python">def greet(name, greeting=&quot;Hello&quot;):
+    &quot;&quot;&quot;Greet someone.&quot;&quot;&quot;
+    return f&quot;{greeting}, {name}!&quot;
+
+greet(&quot;Alice&quot;)                    # &quot;Hello, Alice!&quot;
+greet(&quot;Bob&quot;, greeting=&quot;Hey&quot;)      # &quot;Hey, Bob!&quot;
+
+# Return multiple values
+def divide(a, b):
+    return a // b, a % b          # returns a tuple
+
+q, r = divide(17, 5)             # q=3, r=2
+
+# *args and **kwargs
+def flexible(*args, **kwargs):
+    print(args)        # tuple of positional args
+    print(kwargs)      # dict of keyword args
+
+flexible(1, 2, name=&quot;Alice&quot;)
+# (1, 2)
+# {'name': 'Alice'}
+
+# Lambda (anonymous function)
+square = lambda x: x ** 2
+points.sort(key=lambda p: p[1])   # sort by 2nd element
+</code></pre>
+<h3 id="-mutable-default-gotcha">⚠️ Mutable Default Gotcha<a class="headerlink" href="#-mutable-default-gotcha" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># ❌ BAD — list is shared across calls
+def add(val, lst=[]):
+    lst.append(val)
+    return lst
+
+# ✅ FIX
+def add(val, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(val)
+    return lst
+</code></pre>
+<h2 id="9-list-comprehensions">9. List Comprehensions<a class="headerlink" href="#9-list-comprehensions" title="Permanent link">#</a></h2>
+<p>The Pythonic way to transform/filter data.</p>
+<pre><code class="language-python"># [expression for item in iterable]
+squares = [x**2 for x in range(10)]
+
+# With filter
+evens = [x for x in range(20) if x % 2 == 0]
+
+# With if/else
+labels = [&quot;even&quot; if x % 2 == 0 else &quot;odd&quot; for x in range(5)]
+
+# Dict comprehension
+sq = {x: x**2 for x in range(6)}
+
+# Set comprehension
+lengths = {len(w) for w in [&quot;hi&quot;, &quot;hello&quot;, &quot;hey&quot;]}
+
+# Generator expression (lazy — saves memory)
+total = sum(x**2 for x in range(1_000_000))
+</code></pre>
+<h2 id="10-classes-oop">10. Classes (OOP)<a class="headerlink" href="#10-classes-oop" title="Permanent link">#</a></h2>
+<pre><code class="language-python">class Dog:
+    species = &quot;Canis familiaris&quot;     # class attribute (shared)
+
+    def __init__(self, name, age):   # constructor
+        self.name = name             # instance attribute
+        self.age = age
+
+    def bark(self):                  # method
+        return f&quot;{self.name} says Woof!&quot;
+
+    def __str__(self):               # print(dog) calls this
+        return f&quot;{self.name}, age {self.age}&quot;
+
+buddy = Dog(&quot;Buddy&quot;, 5)
+print(buddy.bark())                 # &quot;Buddy says Woof!&quot;
+</code></pre>
+<h3 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Animal:
+    def __init__(self, name):
+        self.name = name
+    def speak(self):
+        raise NotImplementedError
+
+class Dog(Animal):
+    def speak(self):
+        return f&quot;{self.name}: Woof!&quot;
+
+class Cat(Animal):
+    def speak(self):
+        return f&quot;{self.name}: Meow!&quot;
+
+Dog(&quot;Rex&quot;).speak()    # &quot;Rex: Woof!&quot;
+isinstance(Dog(&quot;Rex&quot;), Animal)  # True
+</code></pre>
+<h3 id="multiple-inheritance--the-diamond-problem">Multiple Inheritance &amp; The Diamond Problem<a class="headerlink" href="#multiple-inheritance--the-diamond-problem" title="Permanent link">#</a></h3>
+<p>Python supports <strong>multiple inheritance</strong> — a class can inherit from more than one parent.</p>
+<pre><code class="language-python">class Flyer:
+    def move(self):
+        return &quot;Flying&quot;
+
+class Swimmer:
+    def move(self):
+        return &quot;Swimming&quot;
+
+class Duck(Flyer, Swimmer):    # inherits from both
+    pass
+
+Duck().move()   # &quot;Flying&quot; — Flyer is listed first, so it wins
+</code></pre>
+<p><strong>The Diamond Problem</strong> occurs when a class inherits from two classes that share a common ancestor:</p>
+<pre><code class="language-python">class Animal:
+    def speak(self):
+        return &quot;...&quot;
+
+class Dog(Animal):
+    def speak(self):
+        return &quot;Woof!&quot;
+
+class Pet(Animal):
+    def speak(self):
+        return &quot;I'm a pet!&quot;
+
+class DomesticDog(Dog, Pet):   # 💎 Diamond: both parents share Animal
+    pass
+
+#       Animal
+#       /    \
+#     Dog    Pet
+#       \    /
+#    DomesticDog
+</code></pre>
+<p><strong>Python's fix: MRO (Method Resolution Order)</strong> — uses <strong>C3 linearization</strong> to create a deterministic, left-to-right, depth-first order that respects the hierarchy.</p>
+<pre><code class="language-python">DomesticDog.__mro__
+# (DomesticDog, Dog, Pet, Animal, object)
+
+DomesticDog().speak()   # &quot;Woof!&quot; — Dog comes before Pet in MRO
+</code></pre>
+<p><strong>Use <code>super()</code> to cooperate across the MRO chain:</strong></p>
+<pre><code class="language-python">class Animal:
+    def __init__(self, name, **kwargs):
+        super().__init__(**kwargs)      # pass remaining args up
+        self.name = name
+
+class Dog(Animal):
+    def __init__(self, breed, **kwargs):
+        super().__init__(**kwargs)
+        self.breed = breed
+
+class Pet(Animal):
+    def __init__(self, owner, **kwargs):
+        super().__init__(**kwargs)
+        self.owner = owner
+
+class DomesticDog(Dog, Pet):
+    pass
+
+d = DomesticDog(name=&quot;Rex&quot;, breed=&quot;Lab&quot;, owner=&quot;Alice&quot;)
+# super().__init__() follows MRO: DomesticDog → Dog → Pet → Animal
+# ✅ All __init__ methods run, no duplicates
+</code></pre>
+<blockquote>
+<p><strong>Key rules:</strong>
+- MRO goes <strong>left-to-right</strong>, then <strong>up</strong> — check with <code>ClassName.__mro__</code>
+- Always use <code>super()</code> (not parent name) to play nice with MRO
+- Pass <code>**kwargs</code> through <code>__init__</code> chains to handle varying signatures</p>
+</blockquote>
+<h3 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Circle:
+    def __init__(self, radius):
+        self._radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        if value &lt; 0:
+            raise ValueError(&quot;Must be positive&quot;)
+        self._radius = value
+
+    @property
+    def area(self):                  # computed, read-only
+        return 3.14159 * self._radius ** 2
+
+c = Circle(5)
+c.radius = 10         # uses setter
+print(c.area)         # 314.159
+</code></pre>
+<h3 id="dataclasses-python-37">Dataclasses (Python 3.7+)<a class="headerlink" href="#dataclasses-python-37" title="Permanent link">#</a></h3>
+<p>Auto-generates <code>__init__</code>, <code>__repr__</code>, <code>__eq__</code> — use for data-holding classes.</p>
+<pre><code class="language-python">from dataclasses import dataclass, field
+
+@dataclass
+class Point:
+    x: float
+    y: float
+    label: str = &quot;origin&quot;
+
+p = Point(1.0, 2.0)
+print(p)              # Point(x=1.0, y=2.0, label='origin')
+</code></pre>
+<h2 id="11-error-handling">11. Error Handling<a class="headerlink" href="#11-error-handling" title="Permanent link">#</a></h2>
+<pre><code class="language-python">try:
+    result = 10 / 0
+except ZeroDivisionError:
+    print(&quot;Can't divide by zero!&quot;)
+except (TypeError, ValueError) as e:
+    print(f&quot;Error: {e}&quot;)
+except Exception as e:
+    print(f&quot;Unexpected: {e}&quot;)       # catch-all (use sparingly)
+else:
+    print(f&quot;Result: {result}&quot;)      # only if NO exception
+finally:
+    print(&quot;Always runs&quot;)            # cleanup
+
+# Raise your own
+if age &lt; 0:
+    raise ValueError(&quot;Age can't be negative&quot;)
+
+# Custom exception
+class AppError(Exception):
+    pass
+</code></pre>
+<h3 id="common-exceptions">Common Exceptions<a class="headerlink" href="#common-exceptions" title="Permanent link">#</a></h3>
+<p><code>ValueError</code> · <code>TypeError</code> · <code>KeyError</code> · <code>IndexError</code> · <code>FileNotFoundError</code> · <code>AttributeError</code> · <code>ZeroDivisionError</code> · <code>ImportError</code> · <code>NameError</code></p>
+<h2 id="12-modules--imports">12. Modules &amp; Imports<a class="headerlink" href="#12-modules--imports" title="Permanent link">#</a></h2>
+<pre><code class="language-python">import math
+from math import sqrt, pi
+import numpy as np                    # alias
+from collections import defaultdict
+
+# Your own modules — any .py file is a module
+# utils.py → from utils import my_func
+
+# Only run when executed directly (not imported)
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+<h2 id="13-file-io">13. File I/O<a class="headerlink" href="#13-file-io" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Read
+with open(&quot;data.txt&quot;, &quot;r&quot;) as f:
+    content = f.read()                # whole file
+    # or: lines = f.readlines()       # list of lines
+    # or: for line in f:              # line by line (memory efficient)
+
+# Write
+with open(&quot;output.txt&quot;, &quot;w&quot;) as f:   # 'w' = overwrite, 'a' = append
+    f.write(&quot;Hello!\n&quot;)
+
+# JSON
+import json
+with open(&quot;data.json&quot;, &quot;w&quot;) as f:
+    json.dump({&quot;key&quot;: &quot;value&quot;}, f, indent=2)
+
+with open(&quot;data.json&quot;, &quot;r&quot;) as f:
+    data = json.load(f)
+
+# pathlib (modern path handling)
+from pathlib import Path
+p = Path(&quot;data&quot;) / &quot;file.txt&quot;        # cross-platform paths
+p.exists()                             # True/False
+p.read_text()                          # read entire file
+p.write_text(&quot;hello&quot;)                  # write
+Path(&quot;new/dir&quot;).mkdir(parents=True, exist_ok=True)
+list(Path(&quot;.&quot;).glob(&quot;**/*.py&quot;))        # find all .py files
+</code></pre>
+<h2 id="14-iterators--generators">14. Iterators &amp; Generators<a class="headerlink" href="#14-iterators--generators" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Generator — uses yield, lazy evaluation, memory efficient
+def countdown(n):
+    while n &gt; 0:
+        yield n
+        n -= 1
+
+for num in countdown(5):
+    print(num)                # 5, 4, 3, 2, 1
+
+# Infinite generator
+def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+fib = fibonacci()
+[next(fib) for _ in range(8)]   # [0, 1, 1, 2, 3, 5, 8, 13]
+</code></pre>
+<h2 id="15-decorators">15. Decorators<a class="headerlink" href="#15-decorators" title="Permanent link">#</a></h2>
+<p>A function that wraps another function to add behavior.</p>
+<pre><code class="language-python">import functools, time
+
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        print(f&quot;{func.__name__}: {time.perf_counter() - start:.4f}s&quot;)
+        return result
+    return wrapper
+
+@timer
+def slow_func():
+    time.sleep(1)
+
+slow_func()   # &quot;slow_func: 1.0012s&quot;
+</code></pre>
+<h2 id="16-context-managers">16. Context Managers<a class="headerlink" href="#16-context-managers" title="Permanent link">#</a></h2>
+<p>Guarantee cleanup code runs (like <code>try/finally</code> but cleaner).</p>
+<pre><code class="language-python"># Built-in — file handling
+with open(&quot;file.txt&quot;) as f:
+    data = f.read()
+# file auto-closed here, even on error
+
+# Custom (easy way)
+from contextlib import contextmanager
+
+@contextmanager
+def timer():
+    start = time.perf_counter()
+    yield
+    print(f&quot;Elapsed: {time.perf_counter() - start:.4f}s&quot;)
+
+with timer():
+    time.sleep(1)
+</code></pre>
+<h2 id="17-type-hints">17. Type Hints<a class="headerlink" href="#17-type-hints" title="Permanent link">#</a></h2>
+<p>Optional static typing — not enforced at runtime, but great for documentation and IDE support.</p>
+<pre><code class="language-python">def greet(name: str, times: int = 1) -&gt; str:
+    return f&quot;Hello, {name}! &quot; * times
+
+names: list[str] = [&quot;Alice&quot;, &quot;Bob&quot;]
+scores: dict[str, int] = {&quot;Alice&quot;: 90}
+
+from typing import Optional
+def find(user_id: int) -&gt; Optional[str]:   # str or None
+    ...
+
+# Check with: pip install mypy &amp;&amp; mypy script.py
+</code></pre>
+<h2 id="18-unpacking--useful-patterns">18. Unpacking &amp; Useful Patterns<a class="headerlink" href="#18-unpacking--useful-patterns" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Unpacking
+a, b, c = [1, 2, 3]
+first, *rest = [1, 2, 3, 4, 5]     # first=1, rest=[2,3,4,5]
+a, b = b, a                         # swap
+
+# Dict merge
+merged = {**dict1, **dict2}
+
+# Spread into function
+args = [1, 2, 3]
+func(*args)                          # func(1, 2, 3)
+
+kwargs = {&quot;a&quot;: 1, &quot;b&quot;: 2}
+func(**kwargs)                       # func(a=1, b=2)
+
+# Useful built-ins
+any(x &gt; 5 for x in nums)            # True if any match
+all(x &gt; 0 for x in nums)            # True if all match
+min(nums)    max(nums)    sum(nums)
+sorted(items, key=lambda x: x.name)
+map(func, iterable)                  # apply func to each
+filter(func, iterable)               # keep matching items
+</code></pre>
+<h2 id="19-common-standard-library">19. Common Standard Library<a class="headerlink" href="#19-common-standard-library" title="Permanent link">#</a></h2>
+<pre><code class="language-python">import os
+os.getcwd()                           # current directory
+os.environ.get(&quot;HOME&quot;)                # env variables
+
+import sys
+sys.argv                              # CLI arguments
+
+import math
+math.sqrt(16)    math.pi    math.ceil(4.2)
+
+import random
+random.randint(1, 10)                 # random int
+random.choice([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;])        # random pick
+random.shuffle(my_list)               # shuffle in-place
+
+import datetime
+datetime.datetime.now()
+datetime.date.today()
+
+import re                              # regular expressions
+re.search(r&quot;\d+&quot;, &quot;abc123&quot;).group()    # &quot;123&quot;
+re.findall(r&quot;\w+&quot;, &quot;hello world&quot;)      # [&quot;hello&quot;, &quot;world&quot;]
+re.sub(r&quot;\d+&quot;, &quot;X&quot;, &quot;abc123&quot;)          # &quot;abcX&quot;
+
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.info(&quot;Started&quot;)
+logging.error(&quot;Failed&quot;)
+
+from collections import Counter, defaultdict, deque
+Counter([&quot;a&quot;, &quot;b&quot;, &quot;a&quot;])               # Counter({'a': 2, 'b': 1})
+dd = defaultdict(list)
+dd[&quot;key&quot;].append(&quot;val&quot;)                # no KeyError for missing keys
+</code></pre>
+<h2 id="20-virtual-environments--packages">20. Virtual Environments &amp; Packages<a class="headerlink" href="#20-virtual-environments--packages" title="Permanent link">#</a></h2>
+<pre><code class="language-bash"># Create &amp; activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate              # Windows
+source .venv/bin/activate           # macOS/Linux
+
+# Install packages
+pip install requests flask
+pip freeze &gt; requirements.txt       # save dependencies
+pip install -r requirements.txt     # restore dependencies
+
+deactivate                          # exit venv
+</code></pre>
+<h2 id="21-asyncawait-quick-intro">21. Async/Await (Quick Intro)<a class="headerlink" href="#21-asyncawait-quick-intro" title="Permanent link">#</a></h2>
+<p>For I/O-bound concurrency (network calls, file I/O).</p>
+<pre><code class="language-python">import asyncio
+
+async def fetch(url, delay):
+    await asyncio.sleep(delay)       # non-blocking wait
+    return f&quot;Data from {url}&quot;
+
+async def main():
+    results = await asyncio.gather(
+        fetch(&quot;url1&quot;, 2),
+        fetch(&quot;url2&quot;, 1),
+    )
+    print(results)                   # runs in ~2s, not 3s
+
+asyncio.run(main())
+</code></pre>
+<h2 id="22-pythonic-tips">22. Pythonic Tips<a class="headerlink" href="#22-pythonic-tips" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># ✅ Check empty
+if not my_list:              # instead of: len(my_list) == 0
+
+# ✅ Check None
+if x is None:                # instead of: x == None
+
+# ✅ Use enumerate, not range(len(...))
+for i, item in enumerate(items):
+    ...
+
+# ✅ Use with for files
+with open(&quot;f.txt&quot;) as f:     # auto-closes
+
+# ✅ Chained comparison
+if 0 &lt; x &lt; 10:              # instead of: x &gt; 0 and x &lt; 10
+
+# ✅ String join (not += in loops)
+result = &quot; &quot;.join(words)
+
+# ✅ dict.get() for safe access
+value = d.get(&quot;key&quot;, &quot;default&quot;)
+
+# ✅ Walrus operator (Python 3.8+)
+if (n := len(data)) &gt; 10:
+    print(f&quot;Too long: {n}&quot;)
+</code></pre>
+<h3 id="naming-conventions-pep-8">Naming Conventions (PEP 8)<a class="headerlink" href="#naming-conventions-pep-8" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Convention</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Variables</td>
+<td><code>snake_case</code></td>
+<td><code>user_name</code></td>
+</tr>
+<tr>
+<td>Functions</td>
+<td><code>snake_case</code></td>
+<td><code>get_user()</code></td>
+</tr>
+<tr>
+<td>Classes</td>
+<td><code>PascalCase</code></td>
+<td><code>UserAccount</code></td>
+</tr>
+<tr>
+<td>Constants</td>
+<td><code>UPPER_CASE</code></td>
+<td><code>MAX_RETRIES = 3</code></td>
+</tr>
+<tr>
+<td>Private</td>
+<td><code>_prefix</code></td>
+<td><code>self._internal</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="quick-reference-card">Quick Reference Card<a class="headerlink" href="#quick-reference-card" title="Permanent link">#</a></h2>
+<pre><code class="language-python"># Variables
+x = 42                           x, y = 1, 2
+
+# Strings
+f&quot;Hi {name}&quot;                     &quot;hello&quot;.upper()
+
+# Lists
+[1, 2, 3]                        .append() .pop() .sort()
+
+# Dicts
+{&quot;k&quot;: &quot;v&quot;}                       .get() .items() .keys()
+
+# Sets
+{1, 2, 3}                        | &amp; - (union, intersect, diff)
+
+# Comprehension
+[x**2 for x in range(10) if x &gt; 3]
+
+# Functions
+def f(a, b=1): return a + b      lambda x: x**2
+
+# Classes
+class C:
+    def __init__(self): ...
+
+# Error handling
+try: ... except E: ... finally: ...
+
+# Files
+with open(&quot;f&quot;) as f: f.read()
+
+# Imports
+from module import thing
+</code></pre>
+<blockquote>
+<p>🐍 <strong>Next steps:</strong> For deeper coverage of OOP, generators, async, testing, and more — see the full <a href="python-course.html">Python Course</a>.</p>
+</blockquote>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Python Study Library</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="python-study.js"></script>
+</body>
+</html>

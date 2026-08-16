@@ -92,7 +92,7 @@ header {
     position: relative;
 }
 
-.study-dropdown summary {
+.study-dropdown>summary {
     color: var(--text-muted);
     cursor: pointer;
     font-size: 0.8125rem;
@@ -101,11 +101,12 @@ header {
     user-select: none;
 }
 
-.study-dropdown summary::-webkit-details-marker {
+.study-dropdown summary::-webkit-details-marker,
+.study-group summary::-webkit-details-marker {
     display: none;
 }
 
-.study-dropdown summary::after {
+.study-dropdown>summary::after {
     content: "\25BE";
     display: inline-block;
     margin-left: 0.4rem;
@@ -113,12 +114,12 @@ header {
     transition: transform 0.15s ease;
 }
 
-.study-dropdown[open] summary::after {
+.study-dropdown[open]>summary::after {
     transform: rotate(180deg);
 }
 
-.study-dropdown summary:hover,
-.study-dropdown summary:focus-visible {
+.study-dropdown>summary:hover,
+.study-dropdown>summary:focus-visible {
     color: var(--text);
 }
 
@@ -150,6 +151,47 @@ header {
     color: var(--text);
     background: #282828;
     text-decoration: none;
+}
+
+.study-group+.study-group {
+    border-top: 1px solid var(--border);
+}
+
+.study-group summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.7rem;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    list-style: none;
+    user-select: none;
+}
+
+.study-group summary::after {
+    content: "\25B8";
+    margin-left: 1rem;
+    color: var(--accent);
+    transition: transform 0.15s ease;
+}
+
+.study-group[open] summary::after {
+    transform: rotate(90deg);
+}
+
+.study-group summary:hover,
+.study-group summary:focus-visible {
+    background: #282828;
+}
+
+.study-group-links {
+    padding: 0 0.25rem 0.4rem;
+}
+
+.study-group-links a {
+    padding-left: 1rem;
 }
 
 /* Hero */
@@ -301,6 +343,10 @@ footer {
 }
 
 @media (max-width: 640px) {
+    .study-dropdown>summary {
+        font-size: 0.75rem;
+    }
+
     .study-dropdown-menu {
         max-width: calc(100vw - 3rem);
     }
