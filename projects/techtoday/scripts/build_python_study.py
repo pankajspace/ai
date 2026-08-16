@@ -37,8 +37,13 @@ def render_guide(slug: str, title: str) -> str:
 
     content = markdown.markdown(
         source,
-        extensions=("fenced_code", "tables", "toc", "sane_lists"),
+        extensions=("fenced_code", "codehilite", "tables", "toc", "sane_lists"),
         extension_configs={
+            "codehilite": {
+                "css_class": "highlight",
+                "guess_lang": False,
+                "use_pygments": True,
+            },
             "toc": {
                 "permalink": "#",
                 "permalink_class": "headerlink",
