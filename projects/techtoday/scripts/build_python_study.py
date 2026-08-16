@@ -22,14 +22,6 @@ def github_slugify(value: str, separator: str) -> str:
     return re.sub(r"\s", separator, value)
 
 
-def render_navigation(current_slug: str) -> str:
-    links = []
-    for slug, title, short_title in GUIDES:
-        current = ' aria-current="page"' if slug == current_slug else ""
-        links.append(f'<a href="{slug}.html"{current}>{html.escape(short_title)}</a>')
-    return "".join(links)
-
-
 def render_site_header(current_slug: str) -> str:
     crash_current = ' aria-current="page"' if current_slug == "python-crash-course" else ""
     course_current = ' aria-current="page"' if current_slug == "python-course" else ""
@@ -117,14 +109,6 @@ def render_guide(slug: str, title: str) -> str:
 <body>
     {render_site_header(slug)}
     <div class="progress" aria-hidden="true"></div>
-    <header class="topbar">
-        <div class="topbar-inner">
-            <a class="brand" href="../../index.html">TechToday <span>Python</span></a>
-            <nav class="guide-nav" aria-label="Python study guides">
-                {render_navigation(slug)}
-            </nav>
-        </div>
-    </header>
     <main>
         <article class="study">
             {content}
