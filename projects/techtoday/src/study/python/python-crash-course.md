@@ -25,7 +25,7 @@
 20. [20. Virtual Environments & Packages](#20-virtual-environments--packages)
 21. [21. Async/Await (Quick Intro)](#21-asyncawait-quick-intro)
 22. [22. Pythonic Tips](#22-pythonic-tips)
-23. [Quick Reference Card](#quick-reference-card)
+23. [23. Quick Reference Card](#quick-reference-card)
 
 ## 1. Hello Python
 

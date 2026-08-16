@@ -46,6 +46,21 @@ def render_guide(slug: str, title: str) -> str:
             }
         },
     )
+    content = re.sub(
+        r'(<h2 id="table-of-contents".*?</h2>\s*)<ol>',
+        r'\1<ol class="table-of-contents">',
+        content,
+        count=1,
+        flags=re.DOTALL,
+    )
+    if not re.search(
+        r'<ol class="table-of-contents">\s*<li><a[^>]*>\d+\.', content
+    ):
+        content = content.replace(
+            'class="table-of-contents"',
+            'class="table-of-contents table-of-contents-numbered"',
+            1,
+        )
     content = content.replace('href="python-course.md', 'href="python-course.html')
     content = content.replace('href="python-crash-course.md', 'href="python-crash-course.html')
 

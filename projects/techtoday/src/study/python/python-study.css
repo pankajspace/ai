@@ -172,6 +172,47 @@ li+li {
     margin-top: 5px;
 }
 
+.table-of-contents {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px 28px;
+    padding-left: 0;
+    list-style: none;
+}
+
+.table-of-contents li,
+.table-of-contents li+li {
+    margin: 0;
+}
+
+.table-of-contents-numbered {
+    counter-reset: toc-item;
+}
+
+.table-of-contents-numbered li {
+    counter-increment: toc-item;
+}
+
+.table-of-contents-numbered a::before {
+    content: counter(toc-item) ". ";
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.table-of-contents a {
+    display: block;
+    padding: 5px 8px;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+}
+
+.table-of-contents a:hover,
+.table-of-contents a:focus-visible {
+    color: var(--accent-bright);
+    background: rgba(115, 201, 145, 0.06);
+    border-left-color: var(--accent);
+}
+
 a {
     color: var(--blue);
     text-underline-offset: 3px;
@@ -340,6 +381,10 @@ hr {
 
     .study>h1:first-child {
         margin-bottom: 36px;
+    }
+
+    .table-of-contents {
+        grid-template-columns: 1fr;
     }
 
     pre {
