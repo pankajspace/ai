@@ -2147,9 +2147,33 @@
     }
   </style>
   <link rel="stylesheet" href="ai-study-theme.css">
+  <link rel="stylesheet" href="../site-header.css">
 </head>
 
 <body class="scaler-guide">
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html"><span class="tt-site-logo"
+          aria-hidden="true">⚡</span><span>TechToday</span></a>
+      <details class="tt-study-menu">
+        <summary>Study</summary>
+        <nav class="tt-study-menu-panel" aria-label="Study guides">
+          <details class="tt-study-group">
+            <summary>Python</summary>
+            <div class="tt-study-links"><a href="../python/python-crash-course.html">Python Crash Course</a><a
+                href="../python/python-course.html">Python Course</a></div>
+          </details>
+          <details class="tt-study-group">
+            <summary>AI</summary>
+            <div class="tt-study-links"><a href="../ai/llms-prompting.html">LLMs &amp; Prompting</a><a
+                href="../ai/langchain-agents.html" aria-current="page">LangChain &amp; Agents</a><a
+                href="../ai/rag-embeddings.html">RAG &amp; Embeddings</a><a href="../ai/docker.html">Docker</a><a
+                href="../ai/aws-strands.html">AWS Strands</a></div>
+          </details>
+        </nav>
+      </details>
+    </nav>
+  </header>
   <div id="progress"></div>
   <div id="topnav">
     <div class="wrap">
@@ -2337,7 +2361,8 @@
       </div>
       <p class="big-p">In Class 1 you called the API by hand — perfect for one call. The moment you want
         <strong>reusable prompts, multi-step pipelines, and memory</strong>, you'd be rebuilding the same plumbing
-        forever. <strong>LangChain is that plumbing, pre-built.</strong></p>
+        forever. <strong>LangChain is that plumbing, pre-built.</strong>
+      </p>
       <div class="analogy teal">
         <div class="ico">🧰</div>
         <div><b>One-line intuition</b>
@@ -2363,7 +2388,8 @@
         </div>
         <div class="nw o"><span class="w">ChatOpenAI</span><b>= the model, in a LangChain wrapper</b>
           <p>The exact same GPT you called in Class 1 — just wrapped so it can snap onto other LangChain pieces. Same
-            <code>model=</code>, same <code>temperature=</code>.</p>
+            <code>model=</code>, same <code>temperature=</code>.
+          </p>
           <div class="say">say it as: "the model"</div>
         </div>
         <div class="nw g"><span class="w">StrOutputParser</span><b>= unwraps the answer</b>
@@ -2427,13 +2453,15 @@
           <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin:12px 0 0">Without the parser you'd
             write <code>response.content</code> by hand every time (in Class 1 it was
             <code>response.choices[0].message.content</code> — remember that mouthful?). The parser does it for you,
-            forever.</p>
+            forever.
+          </p>
         </div>
       </div>
 
       <h3>Now build the chain — literally</h3>
       <p>A chain is the three pieces joined by <code>|</code> (the pipe — read it as <strong>"then"</strong>): prompt
-        <em>then</em> model <em>then</em> parser. Click the pieces in the right order, then run data through:</p>
+        <em>then</em> model <em>then</em> parser. Click the pieces in the right order, then run data through:
+      </p>
 
       <div class="sim builder">
         <div class="sim-head">
@@ -2483,7 +2511,8 @@ chain <span class="op">=</span> prompt <span class="op">|</span> model <span cla
         <div class="drow">
           <div class="dn">①</div>
           <p><code>from_template(...)</code> turns my text into a <strong>reusable prompt</strong>. The
-            <code>{website}</code> part is the blank — it will be filled in later, just like the playground above.</p>
+            <code>{website}</code> part is the blank — it will be filled in later, just like the playground above.
+          </p>
         </div>
         <div class="drow">
           <div class="dn">②</div>
@@ -2498,7 +2527,8 @@ chain <span class="op">=</span> prompt <span class="op">|</span> model <span cla
         <div class="drow">
           <div class="dn">④</div>
           <p>The pipe <code>|</code> means <strong>"then"</strong>. Read aloud: "the prompt, <em>then</em> the model,
-            <em>then</em> the parser." Data flows left → right, exactly like the builder.</p>
+            <em>then</em> the parser." Data flows left → right, exactly like the builder.
+          </p>
         </div>
         <div class="drow">
           <div class="dn">⑤</div>
@@ -2549,7 +2579,8 @@ history <span class="op">=</span> [<span class="fn">HumanMessage</span>(<span cl
           <p>The model didn't magically remember. <strong>We re-sent the old messages</strong>, and the placeholder
             slotted them in. All "chatbot memory" everywhere is exactly this trick. (One thing: this invoke returns the
             <em>package</em> — that's why we wrote <code>.content</code>. Add <code>| parser</code> to the chain and you
-            wouldn't need it. See how the pieces connect?)</p>
+            wouldn't need it. See how the pieces connect?)
+          </p>
         </div>
       </div>
       <div class="note">
@@ -2574,11 +2605,13 @@ history <span class="op">=</span> [<span class="fn">HumanMessage</span>(<span cl
       </div>
       <p class="big-p">Everything so far <em>talks</em>. An <strong>agent</strong> is a model with a
         <strong>tool</strong> and the freedom to <strong>decide when to use it</strong>. We'll build the smallest one
-        possible — a shop assistant with exactly one skill: looking up real prices.</p>
+        possible — a shop assistant with exactly one skill: looking up real prices.
+      </p>
       <div class="def">
         <div class="lab">agent = LLM + tool + loop</div>
         <p>The model thinks "do I need a tool here?" → if yes, calls it → reads the result → answers. Nobody hard-codes
-          <em>when</em>. <strong>That decision is the entire difference between a chatbot and an agent.</strong></p>
+          <em>when</em>. <strong>That decision is the entire difference between a chatbot and an agent.</strong>
+        </p>
       </div>
       <div class="analogy gold">
         <div class="ico">🧮</div>
@@ -2708,7 +2741,8 @@ PRICES <span class="op">=</span> {<span class="st">"shoes"</span>: <span class="
           <div class="dn">3</div>
           <p>The model's request arrives as text, so <code>json.loads(...)</code> converts it into a Python dict we can
             read — then <strong>we</strong> run the real function. (Important: the model never runs code itself. It
-            <em>asks</em>; your Python <em>does</em>.)</p>
+            <em>asks</em>; your Python <em>does</em>.)
+          </p>
         </div>
         <div class="drow">
           <div class="dn">4</div>
@@ -2811,7 +2845,8 @@ gr.<span class="fn">ChatInterface</span>(fn<span class="op">=</span>chat, title<
         <div class="drow">
           <div class="dn">②</div>
           <p><code>ChatInterface</code> = a ready-made chat UI (bubbles, input box, send button) around any function.
-            <code>share=True</code> = also give me a public link.</p>
+            <code>share=True</code> = also give me a public link.
+          </p>
         </div>
       </div>
       <h4>Run it</h4>
@@ -2844,7 +2879,8 @@ gr.<span class="fn">ChatInterface</span>(fn<span class="op">=</span>chat, title<
 
       <h3>Try the working agent 👇</h3>
       <p>A live, in-browser version with the real chat feel — typing dots, tool-call chips, the works. Watch
-        <em>when</em> the 🔧 appears (and when it doesn't):</p>
+        <em>when</em> the 🔧 appears (and when it doesn't):
+      </p>
       <div class="chatui">
         <div class="cbar">🛍️ <b>Smart Shop Assistant</b> <span class="pill">live demo</span></div>
         <div class="clog" id="shopLog">
