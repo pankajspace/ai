@@ -116,9 +116,9 @@ projects/techtoday/
 ├── src/
 │   ├── index.html               ← home page, entry point
 │   └── css/
-│       └── style.css            ← home-page styles
+│       ├── style.css            ← home-page styles
+│       └── site-header.css      ← shared Study nav header
 └── study/
-    ├── site-header.css
     ├── python/                  ← crash course + full course
     └── ai/                      ← LLM, RAG, Docker, Strands guides
 ```

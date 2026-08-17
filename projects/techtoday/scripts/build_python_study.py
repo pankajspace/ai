@@ -104,7 +104,7 @@ def render_guide(slug: str, title: str) -> str:
     <meta name="theme-color" content="#0b0d10" />
     <title>{html.escape(title)} | TechToday</title>
     <link rel="stylesheet" href="python-study.css" />
-    <link rel="stylesheet" href="../site-header.css" />
+    <link rel="stylesheet" href="../../css/site-header.css" />
 </head>
 <body>
     {render_site_header(slug)}
