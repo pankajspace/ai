@@ -3,6 +3,7 @@
 # Python Course
 
 ## Table of Contents
+
 1. [Getting Started](#1-getting-started)
 2. [Variables & Data Types](#2-variables--data-types)
 3. [Operators](#3-operators)
@@ -41,6 +42,8 @@
 
 ## 1. Getting Started
 
+Install Python, run the interpreter, and write your first program. On macOS/Linux the commands are usually `python3` and `pip3`.
+
 ### Installing Python
 
 **Windows**
@@ -70,6 +73,8 @@ pip3 --version
 
 ### Running Python Code
 
+The REPL (`python`) evaluates lines immediately — great for trying snippets. `python my_script.py` runs a saved file from top to bottom.
+
 ```bash
 # Interactive REPL
 python
@@ -80,11 +85,15 @@ python my_script.py
 
 ### Your First Program
 
+`print()` sends text to the console. This is the smallest complete Python program.
+
 ```python
 print("Hello, World!")    # Hello, World!
 ```
 
 ### Comments
+
+`#` comments out the rest of the line. Triple-quoted strings (`"""..."""`) are often used as documentation (docstrings), not as multi-line comments.
 
 ```python
 # This is a single-line comment
@@ -127,6 +136,8 @@ a = b = c = 0           # all point to 0
 
 ### Type Checking & Conversion
 
+`type()` reports the class; `isinstance()` is the preferred check (it respects subclasses). Casting (`int("42")`) fails with `ValueError` if the string isn’t a valid number.
+
 ```python
 type(42)            # <class 'int'>
 isinstance(42, int) # True
@@ -142,7 +153,11 @@ list("abc")         # ['a', 'b', 'c']
 
 ## 3. Operators
 
+Operators combine and compare values. Know the difference between `/` (true division, always float) and `//` (floor division), and between `==` (value) and `is` (identity).
+
 ### Arithmetic
+
+`+ - * /` work as expected; `//` floors, `%` is remainder, `**` is power. Mixing `int` and `float` promotes to `float`.
 
 ```python
 5 + 3     # 8    Addition
@@ -156,6 +171,8 @@ list("abc")         # ['a', 'b', 'c']
 
 ### Comparison
 
+Comparisons return `True` or `False`. You can chain them (`0 < x < 10`) instead of writing `and`.
+
 ```python
 5 == 5    # True    Equal
 5 != 3    # True    Not equal
@@ -166,6 +183,8 @@ list("abc")         # ['a', 'b', 'c']
 ```
 
 ### Logical
+
+`and` / `or` / `not` combine booleans. They short-circuit: `and` stops at the first falsy value, `or` at the first truthy one — so they can return the actual operand, not only `True`/`False`.
 
 ```python
 True and False   # False
@@ -178,6 +197,8 @@ not True         # False
 ```
 
 ### Identity & Membership
+
+`is` asks “same object?”; `==` asks “same value?”. `in` tests membership in strings, lists, dict keys, and sets.
 
 ```python
 # Identity — checks if same object in memory
@@ -196,6 +217,8 @@ a == c           # True  (equal value)
 ```
 
 ### Assignment Shortcuts
+
+`+=`, `*=`, and friends update a name in place. For lists, `+=` is like `extend` — it mutates the existing list.
 
 ```python
 x = 10
@@ -229,6 +252,8 @@ while (line := input(">>> ")) != "quit":
 
 ### Ternary (Conditional Expression)
 
+A one-line if/else that **returns a value**: `a if condition else b`. Use it for simple choices, not for long branches.
+
 ```python
 age = 20
 status = "adult" if age >= 18 else "minor"
@@ -248,6 +273,8 @@ line string"""
 
 ### Indexing & Slicing
 
+Indexes start at `0`; negative indexes count from the end. A slice `[start:stop:step]` never includes `stop`. `[::-1]` reverses a sequence.
+
 ```python
 s = "Python"
 s[0]       # 'P'     first character
@@ -260,6 +287,8 @@ s[::-1]    # 'nohtyP' reversed
 ```
 
 ### Common String Methods
+
+Methods return **new** strings (immutability). `split`/`join` convert between strings and lists; `find` returns `-1` if missing, `index` raises.
 
 ```python
 s = "  Hello, World!  "
@@ -291,6 +320,8 @@ s.endswith("!  ")       # True
 
 ### String Immutability
 
+You cannot assign to `s[0]`. Build a new string instead (`"H" + s[1:]`) or use a list of characters if you need many edits.
+
 ```python
 s = "hello"
 # s[0] = "H"   # ❌ TypeError — strings can't be modified in place
@@ -299,7 +330,11 @@ s = "H" + s[1:]  # ✅ creates a new string: "Hello"
 
 ## 5. Data Structures
 
+Choose the collection by access pattern: list for ordered items, tuple for fixed records, set for uniqueness, dict for lookup by key.
+
 ### Lists — Ordered, Mutable
+
+The default sequence type. Index, slice, and mutate with `append`/`insert`/`pop`. Mixing types is allowed but usually a smell.
 
 ```python
 nums = [1, 2, 3, 4, 5]
@@ -337,6 +372,8 @@ len(nums)                   # 5
 
 ### Tuples — Ordered, Immutable
 
+Fixed-length records. A one-item tuple needs a trailing comma `(42,)`. Tuples can be dict keys because they are hashable (if their contents are too).
+
 ```python
 point = (3, 4)
 single = (42,)            # trailing comma needed for single-element tuple
@@ -354,6 +391,8 @@ point[0]                   # 3
 ```
 
 ### Sets — Unordered, Unique Elements
+
+Fast membership tests and set algebra. Duplicates are dropped; order is not guaranteed. Use `set()` not `{}` for an empty set.
 
 ```python
 fruits = {"apple", "banana", "cherry"}
@@ -382,6 +421,8 @@ unique = list(set(nums))   # [1, 2, 3] (order not guaranteed)
 
 ### Frozensets — Immutable Sets
 
+An immutable set — hashable, so it can be a dict key or nested inside another set.
+
 ```python
 fs = frozenset([1, 2, 3])
 # fs.add(4)   # ❌ AttributeError — frozensets are immutable
@@ -389,6 +430,8 @@ fs = frozenset([1, 2, 3])
 ```
 
 ### Dictionaries — Key-Value Pairs
+
+The core mapping type. Keys must be hashable (strings, numbers, tuples). Prefer `.get(key, default)` when a missing key is normal.
 
 ```python
 person = {
@@ -440,6 +483,8 @@ merged = {"a": 1} | {"b": 2}   # {"a": 1, "b": 2}
 
 ### Nested Data Structures
 
+Lists, dicts, and tuples nest freely (JSON-shaped data). Drill in with chained indexes: `users[0]["name"]`.
+
 ```python
 students = [
     {"name": "Alice", "grades": [90, 85, 92]},
@@ -451,7 +496,11 @@ students[0]["grades"][2]   # 92
 
 ## 6. Control Flow
 
+Decide which code runs. `if`/`elif`/`else` cover most cases; `match`/`case` (3.10+) is cleaner when you branch on structure, not just booleans.
+
 ### if / elif / else
+
+Conditions are any truthy/falsy value. Only the first matching branch runs. Indentation is the block delimiter.
 
 ```python
 score = 85
@@ -471,6 +520,8 @@ print(grade)   # B
 > **Note:** Python uses **indentation** (4 spaces by convention) instead of braces `{}` to define blocks.
 
 ### match / case (Python 3.10+) — Structural Pattern Matching
+
+`match` compares a subject against patterns (literals, sequences, mappings, classes). `_` is the wildcard “anything else” case.
 
 ```python
 command = "quit"
@@ -500,6 +551,8 @@ match point:
 ```
 
 ## 7. Loops
+
+`for` iterates collections; `while` repeats until a condition is false. Combine with `range`, `enumerate`, `zip`, `break`, and `continue`.
 
 ### for Loop
 
@@ -545,6 +598,8 @@ for i in range(3):
 
 ### while Loop
 
+Use `while` when you don’t know how many times you’ll loop (wait until a flag, drain a queue). Guard against infinite loops.
+
 ```python
 count = 0
 while count < 5:
@@ -553,6 +608,8 @@ while count < 5:
 ```
 
 ### Loop Control
+
+`break` exits the nearest loop; `continue` skips to the next iteration; `else` on a loop runs only if it **didn’t** `break` — useful for “search failed” logic.
 
 ```python
 # break — exit the loop entirely
@@ -587,7 +644,11 @@ for i in range(5):
 
 ## 8. Functions
 
+Name a block of code, pass data in, get a result out. Defaults, `*args`/`**kwargs`, and multiple return values are everyday Python.
+
 ### Basic Functions
+
+`def` creates a function object. Call it with `()`; without parentheses you just pass the function around.
 
 ```python
 def greet(name):
@@ -599,6 +660,8 @@ print(message)   # Hello, Alice!
 ```
 
 ### Parameters & Arguments
+
+Positional args follow definition order; keyword args (`name=value`) can be in any order. Defaults must come after required parameters.
 
 ```python
 # Positional arguments
@@ -638,6 +701,8 @@ append_to(2)        # [2]  fresh list each time
 
 ### Return Values
 
+`return` exits immediately. No `return` (or `return` with nothing) yields `None`. Comma-separated returns pack a tuple you can unpack at the call site.
+
 ```python
 # Return multiple values (as a tuple)
 def divide(a, b):
@@ -655,6 +720,8 @@ result = do_nothing()   # None
 ```
 
 ### Docstrings
+
+The first string in a function/class/module is its docstring — `help(fn)` and IDEs read it. Describe **what** the function does, not how.
 
 ```python
 def calculate_bmi(weight_kg, height_m):
@@ -682,6 +749,8 @@ help(calculate_bmi)
 
 ## 9. Scope & Closures
 
+Names resolve inner-to-outer: Local, Enclosing, Global, Built-in (LEGB). Closures remember enclosing variables after the outer function returns.
+
 ### LEGB Rule
 
 Python resolves names in this order: **L**ocal → **E**nclosing → **G**lobal → **B**uilt-in.
@@ -704,6 +773,8 @@ print(x)                # "global"
 ```
 
 ### global & nonlocal
+
+`global` writes to a module-level name; `nonlocal` writes to an enclosing function’s name. Prefer returning values over mutating outer scope.
 
 ```python
 count = 0
@@ -745,7 +816,11 @@ triple(5)    # 15
 
 ## 10. List Comprehensions & Generator Expressions
 
+A compact `for` that builds a list, dict, set, or lazy generator. Prefer them for simple map/filter; keep a loop if the body is complex.
+
 ### List Comprehensions
+
+Syntax: `[expr for item in iterable if condition]`. Put the `if/else` **in the expression** (`a if cond else b`), not after `for`.
 
 ```python
 # Basic: [expression for item in iterable]
@@ -767,6 +842,8 @@ flat = [num for row in matrix for num in row]
 ```
 
 ### Dict & Set Comprehensions
+
+`{k: v for ...}` builds a dict; `{x for ...}` builds a set. Same filter/`if` rules as list comprehensions.
 
 ```python
 # Dict comprehension
@@ -796,7 +873,11 @@ total = sum(x ** 2 for x in range(1000))
 
 ## 11. Object-Oriented Programming (OOP)
 
+Bundle data and behavior. Instances hold state (`self`); classes can inherit, override, and share interfaces (ABC).
+
 ### Classes & Objects
+
+`__init__` constructs; `self` is the instance. Class attributes are shared; instance attributes are per object.
 
 ```python
 class Dog:
@@ -830,6 +911,8 @@ print(buddy)           # Buddy, 5 years old  (calls __str__)
 
 ### Inheritance
 
+Write shared behavior once on a parent. Subclasses override methods; `isinstance` still sees the parent type.
+
 ```python
 class Animal:
     def __init__(self, name):
@@ -857,6 +940,8 @@ issubclass(Dog, Animal)    # True
 ```
 
 ### super()
+
+`super()` calls the next class in the MRO — not “the parent by name”. That keeps multiple inheritance cooperative.
 
 ```python
 class Animal:
@@ -967,6 +1052,8 @@ print(DomesticDog.__mro__)
 
 ### Properties (Getters & Setters)
 
+`@property` exposes a method as an attribute. Add `.setter` to validate writes; omit it for a read-only computed field.
+
 ```python
 class Circle:
     def __init__(self, radius):
@@ -998,6 +1085,8 @@ c.radius = 10         # uses setter
 
 ### Class Methods & Static Methods
 
+`@classmethod` receives the class (`cls`) — use it for alternate constructors. `@staticmethod` is a namespaced function with no `self`/`cls`.
+
 ```python
 class Date:
     def __init__(self, year, month, day):
@@ -1023,6 +1112,8 @@ print(Date.is_valid("2024-01-15"))  # True
 ```
 
 ### Abstract Base Classes
+
+An ABC marks methods that subclasses **must** implement. You cannot instantiate the ABC itself — it is an interface plus shared code.
 
 ```python
 from abc import ABC, abstractmethod
@@ -1115,7 +1206,11 @@ print(v1[0])          # 1
 
 ## 13. Modules & Packages
 
+A module is a `.py` file; a package is a directory of modules. Imports give you namespaces so names don’t collide.
+
 ### Importing
+
+`import pkg` vs `from pkg import name` vs aliases (`as`). Import modules at the top; avoid `from module import *`.
 
 ```python
 # Import entire module
@@ -1136,6 +1231,8 @@ from math import *
 ```
 
 ### Creating Your Own Module
+
+Any `.py` file on `sys.path` (including the current directory) can be imported by its filename without `.py`.
 
 ```
 my_project/
@@ -1161,6 +1258,8 @@ from helpers.math_ops import multiply
 
 ### `__name__` Guard
 
+`__name__` is `"__main__"` only when the file is the entry point. Put script behavior under that `if` so imports stay side-effect free.
+
 ```python
 # utils.py
 def main():
@@ -1174,6 +1273,8 @@ if __name__ == "__main__":
 
 ### `__init__.py`
 
+Makes a directory a package and runs on `import package`. Keep it light — re-export public names, don’t do heavy work.
+
 ```python
 # helpers/__init__.py
 # Controls what's available when you "import helpers"
@@ -1185,7 +1286,11 @@ from .string_ops import clean
 
 ## 14. Error Handling
 
+Exceptions interrupt the stack until an `except` matches. Catch specific types, clean up in `finally`, and raise your own errors for invalid input.
+
 ### try / except / else / finally
+
+`except` handles failure; `else` runs only if nothing was raised; `finally` always runs (close files, release locks).
 
 ```python
 try:
@@ -1218,6 +1323,8 @@ finally:
 
 ### Raising Exceptions
 
+`raise ValueError("...")` signals a problem to the caller. Bare `raise` inside `except` re-raises the original with its traceback.
+
 ```python
 def set_age(age):
     if not isinstance(age, int):
@@ -1240,6 +1347,8 @@ except Exception:
 ```
 
 ### Custom Exceptions
+
+Subclass `Exception` for domain errors (`InsufficientFundsError`) so callers can catch **your** failure without swallowing unrelated bugs.
 
 ```python
 class InsufficientFundsError(Exception):
@@ -1270,7 +1379,11 @@ except InsufficientFundsError as e:
 
 ## 15. File I/O
 
+Always use `with` so files close. Text vs bytes, JSON vs CSV, and `pathlib` cover almost all day-to-day file work.
+
 ### Reading Files
+
+`read()` is the whole file; iterate the file object line by line for large files. Default mode is text (`"r"`).
 
 ```python
 # Best practice: use 'with' (auto-closes file)
@@ -1286,6 +1399,8 @@ with open("data.txt", "r") as f:
 ```
 
 ### Writing Files
+
+`"w"` truncates; `"a"` appends. `write()` does not add a newline unless you include `\n`.
 
 ```python
 # Write (overwrites file)
@@ -1314,6 +1429,8 @@ with open("output.txt", "w") as f:
 
 ### Working with JSON
 
+`json.dump`/`load` talk to files; `dumps`/`loads` talk to strings. JSON keys are strings; Python tuples become lists.
+
 ```python
 import json
 
@@ -1332,6 +1449,8 @@ parsed = json.loads(json_str)           # JSON string → dict
 ```
 
 ### Working with CSV
+
+`csv.reader`/`writer` handle quoting and commas. `DictReader`/`DictWriter` map rows to dicts using the header row.
 
 ```python
 import csv
@@ -1358,6 +1477,8 @@ with open("data.csv", "r") as f:
 ```
 
 ### pathlib — Modern Path Handling
+
+`Path` objects join with `/` and work on Windows and Unix. Prefer `Path.read_text()` / `write_text()` over manual `open` for simple cases.
 
 ```python
 from pathlib import Path
@@ -1397,6 +1518,8 @@ Path("new/nested/dir").mkdir(parents=True, exist_ok=True)
 ```
 
 ## 16. Iterators & Generators
+
+An iterator produces the next value with `next()` until `StopIteration`. Generators are the easy way to write iterators with `yield`.
 
 ### Iterators
 
@@ -1456,6 +1579,8 @@ fib = fibonacci()
 
 ### yield from
 
+`yield from iterable` delegates to another iterable/generator — flattening nested yields without a manual loop.
+
 ```python
 def flatten(nested):
     for item in nested:
@@ -1498,6 +1623,8 @@ A decorator wraps a function to add behavior before/after it runs.
 
 ### Function Decorators
 
+A decorator is `f = deco(f)` written as `@deco` above `def`. The wrapper typically takes `*args, **kwargs`, calls the original, and returns its result. Use `@functools.wraps` to keep the name/docstring.
+
 ```python
 import functools
 import time
@@ -1522,6 +1649,8 @@ slow_function()   # slow_function took 1.0012s
 ```
 
 ### Decorators with Arguments
+
+`@deco(x)` is a decorator **factory**: it returns the actual decorator. Three nested functions: factory → decorator → wrapper.
 
 ```python
 import functools
@@ -1548,6 +1677,8 @@ say_hello()
 ```
 
 ### Stacking Decorators
+
+Closest decorator runs first at definition time; at call time the **top** `@` is the outermost wrapper. Read them bottom-up for “what wraps what”.
 
 ```python
 def decorator_b(func):
@@ -1582,6 +1713,8 @@ func()
 
 ### Class Decorators
 
+Same idea, but they take and return a class. Useful for registering classes or adding methods in one place.
+
 ```python
 import functools
 
@@ -1611,6 +1744,8 @@ Ensure setup/teardown code always runs (like `try/finally` but cleaner).
 
 ### Using `with`
 
+`with` enters a context (`__enter__`) and always exits it (`__exit__`) — files, locks, and timers all use this protocol.
+
 ```python
 # File handling — file is always closed, even on error
 with open("file.txt") as f:
@@ -1619,6 +1754,8 @@ with open("file.txt") as f:
 ```
 
 ### Custom Context Manager (Class)
+
+Implement `__enter__` (setup, return the resource) and `__exit__` (cleanup). `__exit__` receives exception info so it can swallow or re-raise.
 
 ```python
 import time
@@ -1639,6 +1776,8 @@ with Timer() as t:
 ```
 
 ### Custom Context Manager (Generator — easier)
+
+`@contextmanager`: code before `yield` is enter; after `yield` is exit. Wrap the body in `try`/`finally` so cleanup still runs on error.
 
 ```python
 from contextlib import contextmanager
@@ -1719,7 +1858,11 @@ Vector: TypeAlias = list[float]
 
 ## 20. Lambda, Map, Filter, Reduce
 
+Functional tools for one-off transforms. Prefer comprehensions for simple cases; keep `lambda` short — if it needs a name, write `def`.
+
 ### Lambda — Anonymous Functions
+
+`lambda args: expr` is a single-expression function. Common as a `key=` for `sort`/`min`/`max`.
 
 ```python
 # lambda arguments: expression
@@ -1737,6 +1880,8 @@ points.sort(key=lambda p: p[1])   # sort by y coordinate
 
 ### map() — Apply Function to Every Item
 
+`map(fn, iterable)` is lazy — wrap in `list()` to see values. A list comprehension is usually clearer.
+
 ```python
 nums = [1, 2, 3, 4, 5]
 
@@ -1749,6 +1894,8 @@ squared = [x ** 2 for x in nums]
 
 ### filter() — Keep Items That Match
 
+`filter(pred, iterable)` keeps items where `pred` is truthy. Equivalent to `[x for x in xs if pred(x)]`.
+
 ```python
 nums = [1, 2, 3, 4, 5, 6, 7, 8]
 
@@ -1760,6 +1907,8 @@ evens = [x for x in nums if x % 2 == 0]
 ```
 
 ### reduce() — Accumulate Values
+
+`functools.reduce` folds a sequence into one value (sum, product). For sums, just use `sum()`.
 
 ```python
 from functools import reduce
@@ -1776,7 +1925,11 @@ total = reduce(lambda acc, x: acc + x, nums, 100)  # 115
 
 ## 21. *args & **kwargs
 
+`*args` is a tuple of extra positional args; `**kwargs` is a dict of extra keywords. Together they make wrappers and forwarders.
+
 ### *args — Variable Positional Arguments
+
+A `*` parameter slurps leftover positional arguments. Inside the function it is a tuple.
 
 ```python
 def add(*args):
@@ -1789,6 +1942,8 @@ add(1, 2, 3, 4, 5)  # 15
 ```
 
 ### **kwargs — Variable Keyword Arguments
+
+A `**` parameter slurps leftover keyword arguments into a dict. Iterate `.items()` to see names and values.
 
 ```python
 def print_info(**kwargs):
@@ -1804,6 +1959,8 @@ print_info(name="Alice", age=30, city="NYC")
 ```
 
 ### Combining All Parameter Types
+
+Order is: positional, `*args`, keyword-only (after `*`), `**kwargs`. Mixing them lets a function be both strict and flexible.
 
 ```python
 def func(a, b, *args, key="default", **kwargs):
@@ -1821,6 +1978,8 @@ func(1, 2, 3, 4, key="custom", x=10, y=20)
 
 ### Spreading / Unpacking into Function Calls
 
+`fn(*list)` expands a sequence into positional args; `fn(**dict)` expands keys into keywords. The lengths/keys must match the signature.
+
 ```python
 def add(a, b, c):
     return a + b + c
@@ -1833,6 +1992,8 @@ add(**kwargs)        # 6  (unpacks dict into keyword args)
 ```
 
 ## 22. Unpacking & Destructuring
+
+Assign several names from one sequence in one line. `*` captures “the rest”; `_` ignores a slot; `{**a, **b}` merges dicts (later keys win).
 
 ```python
 # Tuple/list unpacking
@@ -1861,6 +2022,8 @@ merged = {**defaults, **custom}
 
 ## 23. String Formatting
 
+Prefer f-strings (`f"{name}: {value:.2f}"`). `.format()` still appears in older code; `%` formatting is legacy — don’t use it in new work.
+
 ```python
 name = "Alice"
 age = 30
@@ -1887,6 +2050,8 @@ f"{name!r}"                                     # "'Alice'"
 
 ### Multi-line f-strings
 
+Adjacent f-string literals concatenate. Split long messages across lines instead of one huge `f"..."`.
+
 ```python
 message = (
     f"Name: {name}\n"
@@ -1896,6 +2061,8 @@ message = (
 ```
 
 ## 24. Regular Expressions
+
+`re` finds, splits, and replaces text with patterns. Raw strings (`r"..."`) stop backslashes from being Python escapes. Compile a pattern if you reuse it in a loop.
 
 ```python
 import re
@@ -1963,6 +2130,8 @@ match.group("domain")   # "example.com"
 15. `a|b` — Alternation (a or b)
 
 ## 25. Date & Time
+
+`datetime` is civil time (date + clock); `timedelta` is a duration; `strftime`/`strptime` convert to/from strings. Prefer timezone-aware values (`timezone.utc`) over naive ones.
 
 ```python
 from datetime import datetime, date, time, timedelta, timezone
@@ -2239,6 +2408,8 @@ asyncio.run(main())
 
 ### Async Iterators & Context Managers
 
+`async for` consumes async iterators (`__aiter__` / `__anext__`); `async with` is the async `with` (`__aenter__` / `__aexit__`). You must be inside an `async def`.
+
 ```python
 # Async for
 async def fetch_pages():
@@ -2268,7 +2439,11 @@ async def main():
 
 ## 30. Concurrency: Threading & Multiprocessing
 
+Threads share memory and help with waiting (I/O). Processes have separate memory and use extra CPU cores. The GIL means threads rarely speed up pure-Python number crunching.
+
 ### Threading — For I/O-bound Tasks
+
+Start a `Thread` for work that spends time waiting (network, disk). Protect shared data with a `Lock`.
 
 ```python
 import threading
@@ -2305,6 +2480,8 @@ def increment():
 
 ### ThreadPoolExecutor — Higher-level API
 
+A pool of worker threads with `submit`/`map`. Prefer this over managing `Thread` objects yourself.
+
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
@@ -2327,6 +2504,8 @@ with ThreadPoolExecutor(max_workers=4) as executor:
 ```
 
 ### Multiprocessing — For CPU-bound Tasks
+
+Separate processes bypass the GIL. Use a `ProcessPoolExecutor` for parallel CPU work; data is copied/pickled between processes.
 
 ```python
 from multiprocessing import Pool
@@ -2351,11 +2530,15 @@ with Pool(processes=4) as pool:
 
 ## 31. Virtual Environments & Dependency Management
 
+Isolate each project’s packages. `venv` + `pip` is built in; `pyproject.toml` is the modern metadata file.
+
 ### Why Virtual Environments?
 
 Each project gets its own isolated set of dependencies — no conflicts between projects.
 
 ### venv (Built-in)
+
+`python -m venv .venv` creates an isolated interpreter. Activate it so `pip` and `python` point at that folder, not the system install.
 
 ```bash
 # Create virtual environment
@@ -2381,6 +2564,8 @@ deactivate
 ```
 
 ### pip — Package Manager
+
+`pip install` fetches from PyPI. Pin versions in `requirements.txt` so teammates and servers install the same stack.
 
 ```bash
 pip install package_name           # latest version
@@ -2422,7 +2607,11 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 ## 32. Testing
 
+Automated tests lock in behavior. `unittest` ships with Python; `pytest` is the usual choice for new projects (less boilerplate, better asserts).
+
 ### unittest (Built-in)
+
+Subclass `TestCase`, name methods `test_*`, assert with `self.assertEqual` and friends. Run with `python -m unittest`.
 
 ```python
 import unittest
@@ -2449,6 +2638,8 @@ if __name__ == "__main__":
 ```
 
 ### pytest (Recommended — install with `pip install pytest`)
+
+Plain `assert` is enough. Name files `test_*.py`. `pytest` discovers tests and gives readable failure diffs.
 
 ```python
 # test_math.py
@@ -2499,6 +2690,8 @@ pytest --tb=short          # shorter tracebacks
 ```
 
 ## 33. Useful Standard Library Modules
+
+Batteries included: paths, JSON, HTTP-adjacent helpers, itertools, functools, and more — check the stdlib before adding a dependency.
 
 ```python
 # os — operating system interface
@@ -2590,7 +2783,11 @@ print(result.stdout)
 
 ## 34. Pythonic Idioms & Best Practices
 
+Write code that looks like Python: EAFP, EAFP vs LBYL, truthiness, unpacking, and the Zen. Avoid cleverness that hides bugs.
+
 ### The Zen of Python
+
+`import this` — 19 aphorisms (readability counts, explicit is better than implicit). Use them as a taste check, not a law.
 
 ```python
 import this    # prints the Zen of Python
@@ -2599,6 +2796,8 @@ import this    # prints the Zen of Python
 Key principles: *Beautiful is better than ugly. Simple is better than complex. Readability counts.*
 
 ### Common Idioms
+
+Patterns you’ll see everywhere: `enumerate`, `zip`, `with`, `dict.get`, comprehensions, and swapping with `a, b = b, a`.
 
 ```python
 my_list = []
@@ -2708,6 +2907,8 @@ result                  # 'hello python'
 7. `__name_mangling` — `self.__really_private`
 
 ### Common Gotchas
+
+Mutable defaults, late-binding closures in loops, `is` vs `==`, and modifying a list while iterating it — learn these once to save hours.
 
 ```python
 # ⚠️ Mutable default arguments (covered in section 8)

@@ -82,6 +82,8 @@
 <li><a href="#35-whats-next">What's Next?</a></li>
 </ol>
 <h2 id="1-getting-started">1. Getting Started<a class="headerlink" href="#1-getting-started" title="Permanent link">#</a></h2>
+
+<p>Install Python, run the interpreter, and write your first program. On macOS/Linux the commands are usually <code>python3</code> and <code>pip3</code>.</p>
 <h3 id="installing-python">Installing Python<a class="headerlink" href="#installing-python" title="Permanent link">#</a></h3>
 <p><strong>Windows</strong>
 1. Download the installer from <a href="https://www.python.org/downloads/">python.org</a>.
@@ -106,6 +108,8 @@ pip3<span class="w"> </span>--version
 <p>On macOS/Linux the commands are <code>python3</code>/<code>pip3</code> unless you've aliased <code>python</code>/<code>pip</code> to point at Python 3.</p>
 </blockquote>
 <h3 id="running-python-code">Running Python Code<a class="headerlink" href="#running-python-code" title="Permanent link">#</a></h3>
+
+<p>The REPL (<code>python</code>) evaluates lines immediately — great for trying snippets. <code>python my_script.py</code> runs a saved file from top to bottom.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Interactive REPL</span>
 python
 
@@ -114,10 +118,14 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="your-first-program">Your First Program<a class="headerlink" href="#your-first-program" title="Permanent link">#</a></h3>
+
+<p><code>print()</code> sends text to the console. This is the smallest complete Python program.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, World!&quot;</span><span class="p">)</span>    <span class="c1"># Hello, World!</span>
 </code></pre></div>
 
 <h3 id="comments">Comments<a class="headerlink" href="#comments" title="Permanent link">#</a></h3>
+
+<p><code>#</code> comments out the rest of the line. Triple-quoted strings (<code>&quot;&quot;&quot;...&quot;&quot;&quot;</code>) are often used as documentation (docstrings), not as multi-line comments.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># This is a single-line comment</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -154,6 +162,8 @@ python<span class="w"> </span>my_script.py
 <li><code>None</code> — <code>None</code> — immutable</li>
 </ol>
 <h3 id="type-checking--conversion">Type Checking &amp; Conversion<a class="headerlink" href="#type-checking--conversion" title="Permanent link">#</a></h3>
+
+<p><code>type()</code> reports the class; <code>isinstance()</code> is the preferred check (it respects subclasses). Casting (<code>int(&quot;42&quot;)</code>) fails with <code>ValueError</code> if the string isn’t a valid number.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">type</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>            <span class="c1"># &lt;class &#39;int&#39;&gt;</span>
 <span class="nb">isinstance</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="c1"># True</span>
 
@@ -167,7 +177,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="3-operators">3. Operators<a class="headerlink" href="#3-operators" title="Permanent link">#</a></h2>
+
+<p>Operators combine and compare values. Know the difference between <code>/</code> (true division, always float) and <code>//</code> (floor division), and between <code>==</code> (value) and <code>is</code> (identity).</p>
 <h3 id="arithmetic">Arithmetic<a class="headerlink" href="#arithmetic" title="Permanent link">#</a></h3>
+
+<p><code>+ - * /</code> work as expected; <code>//</code> floors, <code>%</code> is remainder, <code>**</code> is power. Mixing <code>int</code> and <code>float</code> promotes to <code>float</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="mi">5</span> <span class="o">+</span> <span class="mi">3</span>     <span class="c1"># 8    Addition</span>
 <span class="mi">5</span> <span class="o">-</span> <span class="mi">3</span>     <span class="c1"># 2    Subtraction</span>
 <span class="mi">5</span> <span class="o">*</span> <span class="mi">3</span>     <span class="c1"># 15   Multiplication</span>
@@ -178,6 +192,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">#</a></h3>
+
+<p>Comparisons return <code>True</code> or <code>False</code>. You can chain them (<code>0 &lt; x &lt; 10</code>) instead of writing <code>and</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="mi">5</span> <span class="o">==</span> <span class="mi">5</span>    <span class="c1"># True    Equal</span>
 <span class="mi">5</span> <span class="o">!=</span> <span class="mi">3</span>    <span class="c1"># True    Not equal</span>
 <span class="mi">5</span> <span class="o">&gt;</span> <span class="mi">3</span>     <span class="c1"># True    Greater than</span>
@@ -187,6 +203,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="logical">Logical<a class="headerlink" href="#logical" title="Permanent link">#</a></h3>
+
+<p><code>and</code> / <code>or</code> / <code>not</code> combine booleans. They short-circuit: <code>and</code> stops at the first falsy value, <code>or</code> at the first truthy one — so they can return the actual operand, not only <code>True</code>/<code>False</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kc">True</span> <span class="ow">and</span> <span class="kc">False</span>   <span class="c1"># False</span>
 <span class="kc">True</span> <span class="ow">or</span> <span class="kc">False</span>    <span class="c1"># True</span>
 <span class="ow">not</span> <span class="kc">True</span>         <span class="c1"># False</span>
@@ -197,6 +215,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="identity--membership">Identity &amp; Membership<a class="headerlink" href="#identity--membership" title="Permanent link">#</a></h3>
+
+<p><code>is</code> asks “same object?”; <code>==</code> asks “same value?”. <code>in</code> tests membership in strings, lists, dict keys, and sets.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Identity — checks if same object in memory</span>
 <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">a</span>
@@ -213,6 +233,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="assignment-shortcuts">Assignment Shortcuts<a class="headerlink" href="#assignment-shortcuts" title="Permanent link">#</a></h3>
+
+<p><code>+=</code>, <code>*=</code>, and friends update a name in place. For lists, <code>+=</code> is like <code>extend</code> — it mutates the existing list.</p>
 <div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">x</span> <span class="o">+=</span> <span class="mi">5</span>    <span class="c1"># x = 15</span>
 <span class="n">x</span> <span class="o">-=</span> <span class="mi">3</span>    <span class="c1"># x = 12</span>
@@ -240,6 +262,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="ternary-conditional-expression">Ternary (Conditional Expression)<a class="headerlink" href="#ternary-conditional-expression" title="Permanent link">#</a></h3>
+
+<p>A one-line if/else that <strong>returns a value</strong>: <code>a if condition else b</code>. Use it for simple choices, not for long branches.</p>
 <div class="highlight"><pre><span></span><code><span class="n">age</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;adult&quot;</span> <span class="k">if</span> <span class="n">age</span> <span class="o">&gt;=</span> <span class="mi">18</span> <span class="k">else</span> <span class="s2">&quot;minor&quot;</span>
 <span class="n">status</span>    <span class="c1"># &#39;adult&#39;</span>
@@ -254,6 +278,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="indexing--slicing">Indexing &amp; Slicing<a class="headerlink" href="#indexing--slicing" title="Permanent link">#</a></h3>
+
+<p>Indexes start at <code>0</code>; negative indexes count from the end. A slice <code>[start:stop:step]</code> never includes <code>stop</code>. <code>[::-1]</code> reverses a sequence.</p>
 <div class="highlight"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Python&quot;</span>
 <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="c1"># &#39;P&#39;     first character</span>
 <span class="n">s</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>      <span class="c1"># &#39;n&#39;     last character</span>
@@ -265,6 +291,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="common-string-methods">Common String Methods<a class="headerlink" href="#common-string-methods" title="Permanent link">#</a></h3>
+
+<p>Methods return <strong>new</strong> strings (immutability). <code>split</code>/<code>join</code> convert between strings and lists; <code>find</code> returns <code>-1</code> if missing, <code>index</code> raises.</p>
 <div class="highlight"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;  Hello, World!  &quot;</span>
 
 <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>               <span class="c1"># &quot;Hello, World!&quot;     remove whitespace</span>
@@ -293,13 +321,19 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="string-immutability">String Immutability<a class="headerlink" href="#string-immutability" title="Permanent link">#</a></h3>
+
+<p>You cannot assign to <code>s[0]</code>. Build a new string instead (<code>&quot;H&quot; + s[1:]</code>) or use a list of characters if you need many edits.</p>
 <div class="highlight"><pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;hello&quot;</span>
 <span class="c1"># s[0] = &quot;H&quot;   # ❌ TypeError — strings can&#39;t be modified in place</span>
 <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;H&quot;</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># ✅ creates a new string: &quot;Hello&quot;</span>
 </code></pre></div>
 
 <h2 id="5-data-structures">5. Data Structures<a class="headerlink" href="#5-data-structures" title="Permanent link">#</a></h2>
+
+<p>Choose the collection by access pattern: list for ordered items, tuple for fixed records, set for uniqueness, dict for lookup by key.</p>
 <h3 id="lists--ordered-mutable">Lists — Ordered, Mutable<a class="headerlink" href="#lists--ordered-mutable" title="Permanent link">#</a></h3>
+
+<p>The default sequence type. Index, slice, and mutate with <code>append</code>/<code>insert</code>/<code>pop</code>. Mixing types is allowed but usually a smell.</p>
 <div class="highlight"><pre><span></span><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">mixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>  <span class="c1"># can mix types</span>
 
@@ -334,6 +368,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="tuples--ordered-immutable">Tuples — Ordered, Immutable<a class="headerlink" href="#tuples--ordered-immutable" title="Permanent link">#</a></h3>
+
+<p>Fixed-length records. A one-item tuple needs a trailing comma <code>(42,)</code>. Tuples can be dict keys because they are hashable (if their contents are too).</p>
 <div class="highlight"><pre><span></span><code><span class="n">point</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">single</span> <span class="o">=</span> <span class="p">(</span><span class="mi">42</span><span class="p">,)</span>            <span class="c1"># trailing comma needed for single-element tuple</span>
 <span class="n">empty</span> <span class="o">=</span> <span class="p">()</span>
@@ -350,6 +386,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="sets--unordered-unique-elements">Sets — Unordered, Unique Elements<a class="headerlink" href="#sets--unordered-unique-elements" title="Permanent link">#</a></h3>
+
+<p>Fast membership tests and set algebra. Duplicates are dropped; order is not guaranteed. Use <code>set()</code> not <code>{}</code> for an empty set.</p>
 <div class="highlight"><pre><span></span><code><span class="n">fruits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">,</span> <span class="s2">&quot;cherry&quot;</span><span class="p">}</span>
 <span class="n">empty_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>          <span class="c1"># NOT {} — that&#39;s an empty dict!</span>
 
@@ -375,12 +413,16 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="frozensets--immutable-sets">Frozensets — Immutable Sets<a class="headerlink" href="#frozensets--immutable-sets" title="Permanent link">#</a></h3>
+
+<p>An immutable set — hashable, so it can be a dict key or nested inside another set.</p>
 <div class="highlight"><pre><span></span><code><span class="n">fs</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="c1"># fs.add(4)   # ❌ AttributeError — frozensets are immutable</span>
 <span class="c1"># Can be used as dict keys or set members (hashable)</span>
 </code></pre></div>
 
 <h3 id="dictionaries--key-value-pairs">Dictionaries — Key-Value Pairs<a class="headerlink" href="#dictionaries--key-value-pairs" title="Permanent link">#</a></h3>
+
+<p>The core mapping type. Keys must be hashable (strings, numbers, tuples). Prefer <code>.get(key, default)</code> when a missing key is normal.</p>
 <div class="highlight"><pre><span></span><code><span class="n">person</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Alice&quot;</span><span class="p">,</span>
     <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
@@ -429,6 +471,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="nested-data-structures">Nested Data Structures<a class="headerlink" href="#nested-data-structures" title="Permanent link">#</a></h3>
+
+<p>Lists, dicts, and tuples nest freely (JSON-shaped data). Drill in with chained indexes: <code>users[0][&quot;name&quot;]</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">students</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;grades&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">92</span><span class="p">]},</span>
     <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;grades&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">78</span><span class="p">,</span> <span class="mi">88</span><span class="p">,</span> <span class="mi">95</span><span class="p">]},</span>
@@ -438,7 +482,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="6-control-flow">6. Control Flow<a class="headerlink" href="#6-control-flow" title="Permanent link">#</a></h2>
+
+<p>Decide which code runs. <code>if</code>/<code>elif</code>/<code>else</code> cover most cases; <code>match</code>/<code>case</code> (3.10+) is cleaner when you branch on structure, not just booleans.</p>
 <h3 id="if--elif--else">if / elif / else<a class="headerlink" href="#if--elif--else" title="Permanent link">#</a></h3>
+
+<p>Conditions are any truthy/falsy value. Only the first matching branch runs. Indentation is the block delimiter.</p>
 <div class="highlight"><pre><span></span><code><span class="n">score</span> <span class="o">=</span> <span class="mi">85</span>
 
 <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mi">90</span><span class="p">:</span>
@@ -457,6 +505,8 @@ python<span class="w"> </span>my_script.py
 <p><strong>Note:</strong> Python uses <strong>indentation</strong> (4 spaces by convention) instead of braces <code>{}</code> to define blocks.</p>
 </blockquote>
 <h3 id="match--case-python-310--structural-pattern-matching">match / case (Python 3.10+) — Structural Pattern Matching<a class="headerlink" href="#match--case-python-310--structural-pattern-matching" title="Permanent link">#</a></h3>
+
+<p><code>match</code> compares a subject against patterns (literals, sequences, mappings, classes). <code>_</code> is the wildcard “anything else” case.</p>
 <div class="highlight"><pre><span></span><code><span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;quit&quot;</span>
 
 <span class="k">match</span> <span class="n">command</span><span class="p">:</span>
@@ -484,6 +534,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="7-loops">7. Loops<a class="headerlink" href="#7-loops" title="Permanent link">#</a></h2>
+
+<p><code>for</code> iterates collections; <code>while</code> repeats until a condition is false. Combine with <code>range</code>, <code>enumerate</code>, <code>zip</code>, <code>break</code>, and <code>continue</code>.</p>
 <h3 id="for-loop">for Loop<a class="headerlink" href="#for-loop" title="Permanent link">#</a></h3>
 <p>Python's <code>for</code> iterates over <strong>any iterable</strong> (lists, strings, ranges, etc.).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Iterate over a list</span>
@@ -524,6 +576,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="while-loop">while Loop<a class="headerlink" href="#while-loop" title="Permanent link">#</a></h3>
+
+<p>Use <code>while</code> when you don’t know how many times you’ll loop (wait until a flag, drain a queue). Guard against infinite loops.</p>
 <div class="highlight"><pre><span></span><code><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">while</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
@@ -531,6 +585,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="loop-control">Loop Control<a class="headerlink" href="#loop-control" title="Permanent link">#</a></h3>
+
+<p><code>break</code> exits the nearest loop; <code>continue</code> skips to the next iteration; <code>else</code> on a loop runs only if it <strong>didn’t</strong> <code>break</code> — useful for “search failed” logic.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># break — exit the loop entirely</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
@@ -562,7 +618,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="8-functions">8. Functions<a class="headerlink" href="#8-functions" title="Permanent link">#</a></h2>
+
+<p>Name a block of code, pass data in, get a result out. Defaults, <code>*args</code>/<code>**kwargs</code>, and multiple return values are everyday Python.</p>
 <h3 id="basic-functions">Basic Functions<a class="headerlink" href="#basic-functions" title="Permanent link">#</a></h3>
+
+<p><code>def</code> creates a function object. Call it with <code>()</code>; without parentheses you just pass the function around.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Greet a person by name.&quot;&quot;&quot;</span>   <span class="c1"># docstring</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Hello, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">!&quot;</span>
@@ -572,6 +632,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="parameters--arguments">Parameters &amp; Arguments<a class="headerlink" href="#parameters--arguments" title="Permanent link">#</a></h3>
+
+<p>Positional args follow definition order; keyword args (<code>name=value</code>) can be in any order. Defaults must come after required parameters.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Positional arguments</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
@@ -608,6 +670,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="return-values">Return Values<a class="headerlink" href="#return-values" title="Permanent link">#</a></h3>
+
+<p><code>return</code> exits immediately. No <code>return</code> (or <code>return</code> with nothing) yields <code>None</code>. Comma-separated returns pack a tuple you can unpack at the call site.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Return multiple values (as a tuple)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
     <span class="n">quotient</span> <span class="o">=</span> <span class="n">a</span> <span class="o">//</span> <span class="n">b</span>
@@ -624,6 +688,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="docstrings">Docstrings<a class="headerlink" href="#docstrings" title="Permanent link">#</a></h3>
+
+<p>The first string in a function/class/module is its docstring — <code>help(fn)</code> and IDEs read it. Describe <strong>what</strong> the function does, not how.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">calculate_bmi</span><span class="p">(</span><span class="n">weight_kg</span><span class="p">,</span> <span class="n">height_m</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate Body Mass Index (BMI).</span>
@@ -648,6 +714,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="9-scope--closures">9. Scope &amp; Closures<a class="headerlink" href="#9-scope--closures" title="Permanent link">#</a></h2>
+
+<p>Names resolve inner-to-outer: Local, Enclosing, Global, Built-in (LEGB). Closures remember enclosing variables after the outer function returns.</p>
 <h3 id="legb-rule">LEGB Rule<a class="headerlink" href="#legb-rule" title="Permanent link">#</a></h3>
 <p>Python resolves names in this order: <strong>L</strong>ocal → <strong>E</strong>nclosing → <strong>G</strong>lobal → <strong>B</strong>uilt-in.</p>
 <div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span>            <span class="c1"># Global scope</span>
@@ -667,6 +735,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="global--nonlocal">global &amp; nonlocal<a class="headerlink" href="#global--nonlocal" title="Permanent link">#</a></h3>
+
+<p><code>global</code> writes to a module-level name; <code>nonlocal</code> writes to an enclosing function’s name. Prefer returning values over mutating outer scope.</p>
 <div class="highlight"><pre><span></span><code><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">increment</span><span class="p">():</span>
@@ -702,7 +772,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="10-list-comprehensions--generator-expressions">10. List Comprehensions &amp; Generator Expressions<a class="headerlink" href="#10-list-comprehensions--generator-expressions" title="Permanent link">#</a></h2>
+
+<p>A compact <code>for</code> that builds a list, dict, set, or lazy generator. Prefer them for simple map/filter; keep a loop if the body is complex.</p>
 <h3 id="list-comprehensions">List Comprehensions<a class="headerlink" href="#list-comprehensions" title="Permanent link">#</a></h3>
+
+<p>Syntax: <code>[expr for item in iterable if condition]</code>. Put the <code>if/else</code> <strong>in the expression</strong> (<code>a if cond else b</code>), not after <code>for</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Basic: [expression for item in iterable]</span>
 <span class="n">squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
 <span class="c1"># [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]</span>
@@ -722,6 +796,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="dict--set-comprehensions">Dict &amp; Set Comprehensions<a class="headerlink" href="#dict--set-comprehensions" title="Permanent link">#</a></h3>
+
+<p><code>{k: v for ...}</code> builds a dict; <code>{x for ...}</code> builds a set. Same filter/<code>if</code> rules as list comprehensions.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Dict comprehension</span>
 <span class="n">squares</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)}</span>
 <span class="c1"># {0: 0, 1: 1, 2: 4, 3: 9, 4: 16, 5: 25}</span>
@@ -745,7 +821,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="11-object-oriented-programming-oop">11. Object-Oriented Programming (OOP)<a class="headerlink" href="#11-object-oriented-programming-oop" title="Permanent link">#</a></h2>
+
+<p>Bundle data and behavior. Instances hold state (<code>self</code>); classes can inherit, override, and share interfaces (ABC).</p>
 <h3 id="classes--objects">Classes &amp; Objects<a class="headerlink" href="#classes--objects" title="Permanent link">#</a></h3>
+
+<p><code>__init__</code> constructs; <code>self</code> is the instance. Class attributes are shared; instance attributes are per object.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Dog</span><span class="p">:</span>
     <span class="c1"># Class attribute (shared by all instances)</span>
     <span class="n">species</span> <span class="o">=</span> <span class="s2">&quot;Canis familiaris&quot;</span>
@@ -776,6 +856,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">#</a></h3>
+
+<p>Write shared behavior once on a parent. Subclasses override methods; <code>isinstance</code> still sees the parent type.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Animal</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -802,6 +884,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="super">super()<a class="headerlink" href="#super" title="Permanent link">#</a></h3>
+
+<p><code>super()</code> calls the next class in the MRO — not “the parent by name”. That keeps multiple inheritance cooperative.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Animal</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">sound</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
@@ -899,6 +983,8 @@ python<span class="w"> </span>my_script.py
 - Python raises <code>TypeError</code> if it can't compute a consistent MRO (e.g., conflicting orderings)</p>
 </blockquote>
 <h3 id="properties-getters--setters">Properties (Getters &amp; Setters)<a class="headerlink" href="#properties-getters--setters" title="Permanent link">#</a></h3>
+
+<p><code>@property</code> exposes a method as an attribute. Add <code>.setter</code> to validate writes; omit it for a read-only computed field.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Circle</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span> <span class="o">=</span> <span class="n">radius</span>    <span class="c1"># convention: _ prefix = &quot;private&quot;</span>
@@ -928,6 +1014,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="class-methods--static-methods">Class Methods &amp; Static Methods<a class="headerlink" href="#class-methods--static-methods" title="Permanent link">#</a></h3>
+
+<p><code>@classmethod</code> receives the class (<code>cls</code>) — use it for alternate constructors. <code>@staticmethod</code> is a namespaced function with no <code>self</code>/<code>cls</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Date</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">year</span>
@@ -952,6 +1040,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="abstract-base-classes">Abstract Base Classes<a class="headerlink" href="#abstract-base-classes" title="Permanent link">#</a></h3>
+
+<p>An ABC marks methods that subclasses <strong>must</strong> implement. You cannot instantiate the ABC itself — it is an interface plus shared code.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Shape</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
@@ -1038,7 +1128,11 @@ python<span class="w"> </span>my_script.py
 <li><code>__hash__</code> — triggered by <code>hash(obj)</code> — Hashing (for sets/dicts)</li>
 </ol>
 <h2 id="13-modules--packages">13. Modules &amp; Packages<a class="headerlink" href="#13-modules--packages" title="Permanent link">#</a></h2>
+
+<p>A module is a <code>.py</code> file; a package is a directory of modules. Imports give you namespaces so names don’t collide.</p>
 <h3 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">#</a></h3>
+
+<p><code>import pkg</code> vs <code>from pkg import name</code> vs aliases (<code>as</code>). Import modules at the top; avoid <code>from module import *</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Import entire module</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>     <span class="c1"># 4.0</span>
@@ -1057,6 +1151,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="creating-your-own-module">Creating Your Own Module<a class="headerlink" href="#creating-your-own-module" title="Permanent link">#</a></h3>
+
+<p>Any <code>.py</code> file on <code>sys.path</code> (including the current directory) can be imported by its filename without <code>.py</code>.</p>
 <div class="highlight"><pre><span></span><code>my_project/
 ├── main.py
 ├── utils.py            ← module (any .py file)
@@ -1078,6 +1174,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="__name__-guard"><code>__name__</code> Guard<a class="headerlink" href="#__name__-guard" title="Permanent link">#</a></h3>
+
+<p><code>__name__</code> is <code>&quot;__main__&quot;</code> only when the file is the entry point. Put script behavior under that <code>if</code> so imports stay side-effect free.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># utils.py</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running utils directly&quot;</span><span class="p">)</span>
@@ -1089,6 +1187,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="__init__py"><code>__init__.py</code><a class="headerlink" href="#__init__py" title="Permanent link">#</a></h3>
+
+<p>Makes a directory a package and runs on <code>import package</code>. Keep it light — re-export public names, don’t do heavy work.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># helpers/__init__.py</span>
 <span class="c1"># Controls what&#39;s available when you &quot;import helpers&quot;</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.math_ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">multiply</span>
@@ -1098,7 +1198,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="14-error-handling">14. Error Handling<a class="headerlink" href="#14-error-handling" title="Permanent link">#</a></h2>
+
+<p>Exceptions interrupt the stack until an <code>except</code> matches. Catch specific types, clean up in <code>finally</code>, and raise your own errors for invalid input.</p>
 <h3 id="try--except--else--finally">try / except / else / finally<a class="headerlink" href="#try--except--else--finally" title="Permanent link">#</a></h3>
+
+<p><code>except</code> handles failure; <code>else</code> runs only if nothing was raised; <code>finally</code> always runs (close files, release locks).</p>
 <div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">/</span> <span class="mi">0</span>
 <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
@@ -1128,6 +1232,8 @@ python<span class="w"> </span>my_script.py
 <li><code>NameError</code> — Undefined variable</li>
 </ol>
 <h3 id="raising-exceptions">Raising Exceptions<a class="headerlink" href="#raising-exceptions" title="Permanent link">#</a></h3>
+
+<p><code>raise ValueError(&quot;...&quot;)</code> signals a problem to the caller. Bare <code>raise</code> inside <code>except</code> re-raises the original with its traceback.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_age</span><span class="p">(</span><span class="n">age</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">age</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Age must be an integer&quot;</span><span class="p">)</span>
@@ -1149,6 +1255,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="custom-exceptions">Custom Exceptions<a class="headerlink" href="#custom-exceptions" title="Permanent link">#</a></h3>
+
+<p>Subclass <code>Exception</code> for domain errors (<code>InsufficientFundsError</code>) so callers can catch <strong>your</strong> failure without swallowing unrelated bugs.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">InsufficientFundsError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when a withdrawal exceeds the balance.&quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">balance</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
@@ -1176,7 +1284,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="15-file-io">15. File I/O<a class="headerlink" href="#15-file-io" title="Permanent link">#</a></h2>
+
+<p>Always use <code>with</code> so files close. Text vs bytes, JSON vs CSV, and <code>pathlib</code> cover almost all day-to-day file work.</p>
 <h3 id="reading-files">Reading Files<a class="headerlink" href="#reading-files" title="Permanent link">#</a></h3>
+
+<p><code>read()</code> is the whole file; iterate the file object line by line for large files. Default mode is text (<code>&quot;r&quot;</code>).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Best practice: use &#39;with&#39; (auto-closes file)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>           <span class="c1"># entire file as string</span>
@@ -1190,6 +1302,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="writing-files">Writing Files<a class="headerlink" href="#writing-files" title="Permanent link">#</a></h3>
+
+<p><code>&quot;w&quot;</code> truncates; <code>&quot;a&quot;</code> appends. <code>write()</code> does not add a newline unless you include <code>\n</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Write (overwrites file)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Hello, World!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1215,6 +1329,8 @@ python<span class="w"> </span>my_script.py
 <li><code>+</code> — Read and write (e.g., <code>r+</code>)</li>
 </ol>
 <h3 id="working-with-json">Working with JSON<a class="headerlink" href="#working-with-json" title="Permanent link">#</a></h3>
+
+<p><code>json.dump</code>/<code>load</code> talk to files; <code>dumps</code>/<code>loads</code> talk to strings. JSON keys are strings; Python tuples become lists.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <span class="c1"># Write JSON</span>
@@ -1232,6 +1348,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="working-with-csv">Working with CSV<a class="headerlink" href="#working-with-csv" title="Permanent link">#</a></h3>
+
+<p><code>csv.reader</code>/<code>writer</code> handle quoting and commas. <code>DictReader</code>/<code>DictWriter</code> map rows to dicts using the header row.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 
 <span class="c1"># Write CSV</span>
@@ -1256,6 +1374,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="pathlib--modern-path-handling">pathlib — Modern Path Handling<a class="headerlink" href="#pathlib--modern-path-handling" title="Permanent link">#</a></h3>
+
+<p><code>Path</code> objects join with <code>/</code> and work on Windows and Unix. Prefer <code>Path.read_text()</code> / <code>write_text()</code> over manual <code>open</code> for simple cases.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="c1"># Create path objects</span>
@@ -1293,6 +1413,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="16-iterators--generators">16. Iterators &amp; Generators<a class="headerlink" href="#16-iterators--generators" title="Permanent link">#</a></h2>
+
+<p>An iterator produces the next value with <code>next()</code> until <code>StopIteration</code>. Generators are the easy way to write iterators with <code>yield</code>.</p>
 <h3 id="iterators">Iterators<a class="headerlink" href="#iterators" title="Permanent link">#</a></h3>
 <p>Any object with <code>__iter__()</code> and <code>__next__()</code> methods.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Lists, strings, etc. are iterable — they produce iterators</span>
@@ -1344,6 +1466,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="yield-from">yield from<a class="headerlink" href="#yield-from" title="Permanent link">#</a></h3>
+
+<p><code>yield from iterable</code> delegates to another iterable/generator — flattening nested yields without a manual loop.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">nested</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">nested</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -1381,6 +1505,8 @@ python<span class="w"> </span>my_script.py
 <h2 id="17-decorators">17. Decorators<a class="headerlink" href="#17-decorators" title="Permanent link">#</a></h2>
 <p>A decorator wraps a function to add behavior before/after it runs.</p>
 <h3 id="function-decorators">Function Decorators<a class="headerlink" href="#function-decorators" title="Permanent link">#</a></h3>
+
+<p>A decorator is <code>f = deco(f)</code> written as <code>@deco</code> above <code>def</code>. The wrapper typically takes <code>*args, **kwargs</code>, calls the original, and returns its result. Use <code>@functools.wraps</code> to keep the name/docstring.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -1404,6 +1530,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="decorators-with-arguments">Decorators with Arguments<a class="headerlink" href="#decorators-with-arguments" title="Permanent link">#</a></h3>
+
+<p><code>@deco(x)</code> is a decorator <strong>factory</strong>: it returns the actual decorator. Three nested functions: factory → decorator → wrapper.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -1428,6 +1556,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="stacking-decorators">Stacking Decorators<a class="headerlink" href="#stacking-decorators" title="Permanent link">#</a></h3>
+
+<p>Closest decorator runs first at definition time; at call time the <strong>top</strong> <code>@</code> is the outermost wrapper. Read them bottom-up for “what wraps what”.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">decorator_b</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">():</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;B before&quot;</span><span class="p">)</span>
@@ -1459,6 +1589,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="class-decorators">Class Decorators<a class="headerlink" href="#class-decorators" title="Permanent link">#</a></h3>
+
+<p>Same idea, but they take and return a class. Useful for registering classes or adding methods in one place.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">singleton</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -1484,6 +1616,8 @@ python<span class="w"> </span>my_script.py
 <h2 id="18-context-managers">18. Context Managers<a class="headerlink" href="#18-context-managers" title="Permanent link">#</a></h2>
 <p>Ensure setup/teardown code always runs (like <code>try/finally</code> but cleaner).</p>
 <h3 id="using-with">Using <code>with</code><a class="headerlink" href="#using-with" title="Permanent link">#</a></h3>
+
+<p><code>with</code> enters a context (<code>__enter__</code>) and always exits it (<code>__exit__</code>) — files, locks, and timers all use this protocol.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># File handling — file is always closed, even on error</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -1491,6 +1625,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="custom-context-manager-class">Custom Context Manager (Class)<a class="headerlink" href="#custom-context-manager-class" title="Permanent link">#</a></h3>
+
+<p>Implement <code>__enter__</code> (setup, return the resource) and <code>__exit__</code> (cleanup). <code>__exit__</code> receives exception info so it can swallow or re-raise.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Timer</span><span class="p">:</span>
@@ -1509,6 +1645,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="custom-context-manager-generator--easier">Custom Context Manager (Generator — easier)<a class="headerlink" href="#custom-context-manager-generator--easier" title="Permanent link">#</a></h3>
+
+<p><code>@contextmanager</code>: code before <code>yield</code> is enter; after <code>yield</code> is exit. Wrap the body in <code>try</code>/<code>finally</code> so cleanup still runs on error.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -1584,7 +1722,11 @@ python<span class="w"> </span>my_script.py
 <p><strong>Note:</strong> Type hints are <strong>not enforced</strong> at runtime. Use tools like <code>mypy</code> for static checking: <code>pip install mypy &amp;&amp; mypy your_script.py</code></p>
 </blockquote>
 <h2 id="20-lambda-map-filter-reduce">20. Lambda, Map, Filter, Reduce<a class="headerlink" href="#20-lambda-map-filter-reduce" title="Permanent link">#</a></h2>
+
+<p>Functional tools for one-off transforms. Prefer comprehensions for simple cases; keep <code>lambda</code> short — if it needs a name, write <code>def</code>.</p>
 <h3 id="lambda--anonymous-functions">Lambda — Anonymous Functions<a class="headerlink" href="#lambda--anonymous-functions" title="Permanent link">#</a></h3>
+
+<p><code>lambda args: expr</code> is a single-expression function. Common as a <code>key=</code> for <code>sort</code>/<code>min</code>/<code>max</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># lambda arguments: expression</span>
 <span class="n">square</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">square</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>    <span class="c1"># 25</span>
@@ -1599,6 +1741,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="map--apply-function-to-every-item">map() — Apply Function to Every Item<a class="headerlink" href="#map--apply-function-to-every-item" title="Permanent link">#</a></h3>
+
+<p><code>map(fn, iterable)</code> is lazy — wrap in <code>list()</code> to see values. A list comprehension is usually clearer.</p>
 <div class="highlight"><pre><span></span><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 
 <span class="n">squared</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">nums</span><span class="p">))</span>
@@ -1609,6 +1753,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="filter--keep-items-that-match">filter() — Keep Items That Match<a class="headerlink" href="#filter--keep-items-that-match" title="Permanent link">#</a></h3>
+
+<p><code>filter(pred, iterable)</code> keeps items where <code>pred</code> is truthy. Equivalent to <code>[x for x in xs if pred(x)]</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>
 
 <span class="n">evens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nums</span><span class="p">))</span>
@@ -1619,6 +1765,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="reduce--accumulate-values">reduce() — Accumulate Values<a class="headerlink" href="#reduce--accumulate-values" title="Permanent link">#</a></h3>
+
+<p><code>functools.reduce</code> folds a sequence into one value (sum, product). For sums, just use <code>sum()</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
 
 <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
@@ -1632,7 +1780,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="21-args--kwargs">21. <em>args &amp; </em>*kwargs<a class="headerlink" href="#21-args--kwargs" title="Permanent link">#</a></h2>
+
+<p><code>*args</code> is a tuple of extra positional args; <code>**kwargs</code> is a dict of extra keywords. Together they make wrappers and forwarders.</p>
 <h3 id="args--variable-positional-arguments">*args — Variable Positional Arguments<a class="headerlink" href="#args--variable-positional-arguments" title="Permanent link">#</a></h3>
+
+<p>A <code>*</code> parameter slurps leftover positional arguments. Inside the function it is a tuple.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accept any number of positional arguments.&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>   <span class="c1"># &lt;class &#39;tuple&#39;&gt;</span>
@@ -1643,6 +1795,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="kwargs--variable-keyword-arguments">**kwargs — Variable Keyword Arguments<a class="headerlink" href="#kwargs--variable-keyword-arguments" title="Permanent link">#</a></h3>
+
+<p>A <code>**</code> parameter slurps leftover keyword arguments into a dict. Iterate <code>.items()</code> to see names and values.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accept any number of keyword arguments.&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>   <span class="c1"># &lt;class &#39;dict&#39;&gt;</span>
@@ -1656,6 +1810,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="combining-all-parameter-types">Combining All Parameter Types<a class="headerlink" href="#combining-all-parameter-types" title="Permanent link">#</a></h3>
+
+<p>Order is: positional, <code>*args</code>, keyword-only (after <code>*</code>), <code>**kwargs</code>. Mixing them lets a function be both strict and flexible.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;a=</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">, b=</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;args=</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1670,6 +1826,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="spreading--unpacking-into-function-calls">Spreading / Unpacking into Function Calls<a class="headerlink" href="#spreading--unpacking-into-function-calls" title="Permanent link">#</a></h3>
+
+<p><code>fn(*list)</code> expands a sequence into positional args; <code>fn(**dict)</code> expands keys into keywords. The lengths/keys must match the signature.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c</span>
 
@@ -1681,6 +1839,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="22-unpacking--destructuring">22. Unpacking &amp; Destructuring<a class="headerlink" href="#22-unpacking--destructuring" title="Permanent link">#</a></h2>
+
+<p>Assign several names from one sequence in one line. <code>*</code> captures “the rest”; <code>_</code> ignores a slot; <code>{**a, **b}</code> merges dicts (later keys win).</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Tuple/list unpacking</span>
 <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>                   <span class="c1"># a = 1, b = 2, c = 3</span>
 
@@ -1706,6 +1866,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="23-string-formatting">23. String Formatting<a class="headerlink" href="#23-string-formatting" title="Permanent link">#</a></h2>
+
+<p>Prefer f-strings (<code>f&quot;{name}: {value:.2f}&quot;</code>). <code>.format()</code> still appears in older code; <code>%</code> formatting is legacy — don’t use it in new work.</p>
 <div class="highlight"><pre><span></span><code><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Alice&quot;</span>
 <span class="n">age</span> <span class="o">=</span> <span class="mi">30</span>
 <span class="n">pi</span> <span class="o">=</span> <span class="mf">3.14159</span>
@@ -1730,6 +1892,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="multi-line-f-strings">Multi-line f-strings<a class="headerlink" href="#multi-line-f-strings" title="Permanent link">#</a></h3>
+
+<p>Adjacent f-string literals concatenate. Split long messages across lines instead of one huge <code>f&quot;...&quot;</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
     <span class="sa">f</span><span class="s2">&quot;Name: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="sa">f</span><span class="s2">&quot;Age:  </span><span class="si">{</span><span class="n">age</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -1738,6 +1902,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="24-regular-expressions">24. Regular Expressions<a class="headerlink" href="#24-regular-expressions" title="Permanent link">#</a></h2>
+
+<p><code>re</code> finds, splits, and replaces text with patterns. Raw strings (<code>r&quot;...&quot;</code>) stop backslashes from being Python escapes. Compile a pattern if you reuse it in a loop.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;My email is alice@example.com and phone is 555-123-4567&quot;</span>
@@ -1803,6 +1969,8 @@ python<span class="w"> </span>my_script.py
 <li><code>a|b</code> — Alternation (a or b)</li>
 </ol>
 <h2 id="25-date--time">25. Date &amp; Time<a class="headerlink" href="#25-date--time" title="Permanent link">#</a></h2>
+
+<p><code>datetime</code> is civil time (date + clock); <code>timedelta</code> is a duration; <code>strftime</code>/<code>strptime</code> convert to/from strings. Prefer timezone-aware values (<code>timezone.utc</code>) over naive ones.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">time_module</span>
 
@@ -2064,6 +2232,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="async-iterators--context-managers">Async Iterators &amp; Context Managers<a class="headerlink" href="#async-iterators--context-managers" title="Permanent link">#</a></h3>
+
+<p><code>async for</code> consumes async iterators (<code>__aiter__</code> / <code>__anext__</code>); <code>async with</code> is the async <code>with</code> (<code>__aenter__</code> / <code>__aexit__</code>). You must be inside an <code>async def</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Async for</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_pages</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
@@ -2091,7 +2261,11 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h2 id="30-concurrency-threading--multiprocessing">30. Concurrency: Threading &amp; Multiprocessing<a class="headerlink" href="#30-concurrency-threading--multiprocessing" title="Permanent link">#</a></h2>
+
+<p>Threads share memory and help with waiting (I/O). Processes have separate memory and use extra CPU cores. The GIL means threads rarely speed up pure-Python number crunching.</p>
 <h3 id="threading--for-io-bound-tasks">Threading — For I/O-bound Tasks<a class="headerlink" href="#threading--for-io-bound-tasks" title="Permanent link">#</a></h3>
+
+<p>Start a <code>Thread</code> for work that spends time waiting (network, disk). Protect shared data with a <code>Lock</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -2125,6 +2299,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="threadpoolexecutor--higher-level-api">ThreadPoolExecutor — Higher-level API<a class="headerlink" href="#threadpoolexecutor--higher-level-api" title="Permanent link">#</a></h3>
+
+<p>A pool of worker threads with <code>submit</code>/<code>map</code>. Prefer this over managing <code>Thread</code> objects yourself.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -2146,6 +2322,8 @@ python<span class="w"> </span>my_script.py
 </code></pre></div>
 
 <h3 id="multiprocessing--for-cpu-bound-tasks">Multiprocessing — For CPU-bound Tasks<a class="headerlink" href="#multiprocessing--for-cpu-bound-tasks" title="Permanent link">#</a></h3>
+
+<p>Separate processes bypass the GIL. Use a <code>ProcessPoolExecutor</code> for parallel CPU work; data is copied/pickled between processes.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pool</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">square</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
@@ -2168,9 +2346,13 @@ python<span class="w"> </span>my_script.py
 <p><strong>The GIL (Global Interpreter Lock):</strong> Python threads can't run Python code truly in parallel (only one thread executes Python bytecode at a time). For CPU-bound work, use <code>multiprocessing</code> to spin up separate processes.</p>
 </blockquote>
 <h2 id="31-virtual-environments--dependency-management">31. Virtual Environments &amp; Dependency Management<a class="headerlink" href="#31-virtual-environments--dependency-management" title="Permanent link">#</a></h2>
+
+<p>Isolate each project’s packages. <code>venv</code> + <code>pip</code> is built in; <code>pyproject.toml</code> is the modern metadata file.</p>
 <h3 id="why-virtual-environments">Why Virtual Environments?<a class="headerlink" href="#why-virtual-environments" title="Permanent link">#</a></h3>
 <p>Each project gets its own isolated set of dependencies — no conflicts between projects.</p>
 <h3 id="venv-built-in">venv (Built-in)<a class="headerlink" href="#venv-built-in" title="Permanent link">#</a></h3>
+
+<p><code>python -m venv .venv</code> creates an isolated interpreter. Activate it so <code>pip</code> and <code>python</code> point at that folder, not the system install.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create virtual environment</span>
 python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
 
@@ -2194,6 +2376,8 @@ deactivate
 </code></pre></div>
 
 <h3 id="pip--package-manager">pip — Package Manager<a class="headerlink" href="#pip--package-manager" title="Permanent link">#</a></h3>
+
+<p><code>pip install</code> fetches from PyPI. Pin versions in <code>requirements.txt</code> so teammates and servers install the same stack.</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>package_name<span class="w">           </span><span class="c1"># latest version</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="nv">package_name</span><span class="o">==</span><span class="m">1</span>.2.3<span class="w">    </span><span class="c1"># specific version</span>
 pip<span class="w"> </span>install<span class="w"> </span>package_name&gt;<span class="o">=</span><span class="m">1</span>.2<span class="w">      </span><span class="c1"># minimum version</span>
@@ -2229,7 +2413,11 @@ pip<span class="w"> </span>show<span class="w"> </span>package_name<span class="
 <li><strong><code>conda</code></strong> — Popular in data science (manages Python versions too)</li>
 </ul>
 <h2 id="32-testing">32. Testing<a class="headerlink" href="#32-testing" title="Permanent link">#</a></h2>
+
+<p>Automated tests lock in behavior. <code>unittest</code> ships with Python; <code>pytest</code> is the usual choice for new projects (less boilerplate, better asserts).</p>
 <h3 id="unittest-built-in">unittest (Built-in)<a class="headerlink" href="#unittest-built-in" title="Permanent link">#</a></h3>
+
+<p>Subclass <code>TestCase</code>, name methods <code>test_*</code>, assert with <code>self.assertEqual</code> and friends. Run with <code>python -m unittest</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
@@ -2254,6 +2442,8 @@ pip<span class="w"> </span>show<span class="w"> </span>package_name<span class="
 </code></pre></div>
 
 <h3 id="pytest-recommended--install-with-pip-install-pytest">pytest (Recommended — install with <code>pip install pytest</code>)<a class="headerlink" href="#pytest-recommended--install-with-pip-install-pytest" title="Permanent link">#</a></h3>
+
+<p>Plain <code>assert</code> is enough. Name files <code>test_*.py</code>. <code>pytest</code> discovers tests and gives readable failure diffs.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># test_math.py</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
 
@@ -2301,6 +2491,8 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
 </code></pre></div>
 
 <h2 id="33-useful-standard-library-modules">33. Useful Standard Library Modules<a class="headerlink" href="#33-useful-standard-library-modules" title="Permanent link">#</a></h2>
+
+<p>Batteries included: paths, JSON, HTTP-adjacent helpers, itertools, functools, and more — check the stdlib before adding a dependency.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># os — operating system interface</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>                        <span class="c1"># current working directory</span>
@@ -2389,12 +2581,18 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
 </code></pre></div>
 
 <h2 id="34-pythonic-idioms--best-practices">34. Pythonic Idioms &amp; Best Practices<a class="headerlink" href="#34-pythonic-idioms--best-practices" title="Permanent link">#</a></h2>
+
+<p>Write code that looks like Python: EAFP, EAFP vs LBYL, truthiness, unpacking, and the Zen. Avoid cleverness that hides bugs.</p>
 <h3 id="the-zen-of-python">The Zen of Python<a class="headerlink" href="#the-zen-of-python" title="Permanent link">#</a></h3>
+
+<p><code>import this</code> — 19 aphorisms (readability counts, explicit is better than implicit). Use them as a taste check, not a law.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">this</span>    <span class="c1"># prints the Zen of Python</span>
 </code></pre></div>
 
 <p>Key principles: <em>Beautiful is better than ugly. Simple is better than complex. Readability counts.</em></p>
 <h3 id="common-idioms">Common Idioms<a class="headerlink" href="#common-idioms" title="Permanent link">#</a></h3>
+
+<p>Patterns you’ll see everywhere: <code>enumerate</code>, <code>zip</code>, <code>with</code>, <code>dict.get</code>, comprehensions, and swapping with <code>a, b = b, a</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">my_list</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;age&quot;</span>
@@ -2502,6 +2700,8 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
 <li><code>__name_mangling</code> — <code>self.__really_private</code></li>
 </ol>
 <h3 id="common-gotchas">Common Gotchas<a class="headerlink" href="#common-gotchas" title="Permanent link">#</a></h3>
+
+<p>Mutable defaults, late-binding closures in loops, <code>is</code> vs <code>==</code>, and modifying a list while iterating it — learn these once to save hours.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># ⚠️ Mutable default arguments (covered in section 8)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">bad</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="p">[]):</span>    <span class="c1"># ❌ shared across calls</span>
     <span class="n">lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>

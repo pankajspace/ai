@@ -3,6 +3,7 @@
 # Python Crash Course
 
 ## Table of Contents
+
 1. [1. Hello Python](#1-hello-python)
 2. [2. Variables & Types](#2-variables--types)
 3. [3. Operators](#3-operators)
@@ -28,6 +29,8 @@
 23. [23. Quick Reference Card](#quick-reference-card)
 
 ## 1. Hello Python
+
+Python is a readable, dynamically typed language. These commands check the install, run a file, and open the interactive REPL — `print()` writes output, and `#` / `"""` mark comments.
 
 > Don't have Python installed yet? See [Installing Python](python-course.md#installing-python) for Windows/macOS/Linux setup steps.
 
@@ -61,6 +64,8 @@ print(name, age)      # Alice 30
 
 ### Type Checking & Casting
 
+`type()` and `isinstance()` inspect a value; constructors like `int()`, `str()`, and `bool()` convert between types. Empty values (`0`, `""`, `[]`, `None`) are falsy.
+
 ```python
 age = 30
 type(age)             # <class 'int'>
@@ -74,6 +79,8 @@ bool("hi")            # True
 ```
 
 ## 3. Operators
+
+Operators compute values and compare objects. `/` always returns a float; `//` floors; `==` tests value while `is` tests identity (same object in memory).
 
 ```python
 # Arithmetic
@@ -118,6 +125,8 @@ status               # 'adult'
 
 ## 4. Strings
 
+Strings are immutable sequences of characters. Index from `0` (or `-1` from the end), slice with `[start:stop]`, and prefer f-strings for interpolation.
+
 ```python
 s = "Hello, World!"
 s = 'Hello, World!'          # single or double — same thing
@@ -159,7 +168,11 @@ s = "h" + s[1:]                # 'hello, World!'
 
 ## 5. Data Structures
 
+Python’s four core collections: lists (ordered, changeable), tuples (ordered, fixed), dicts (key → value), and sets (unique, unordered).
+
 ### Lists — ordered, mutable `[]`
+
+Lists keep items in order and you can change them in place — append, insert, pop, sort. Use them whenever you need a growable sequence.
 
 ```python
 nums = [1, 2, 3, 4, 5]
@@ -201,6 +214,8 @@ nums.count(1)            # 2
 
 ### Tuples — ordered, immutable `()`
 
+Tuples are like lists you cannot mutate. Use them for fixed records (coordinates, pairs) and when you need a hashable sequence as a dict key.
+
 ```python
 point = (3, 4)
 x, y = point             # x = 3, y = 4
@@ -211,6 +226,8 @@ point[0]                 # 3
 ```
 
 ### Dicts — key-value pairs `{}`
+
+Dicts map unique keys to values with O(1) lookup. Access with `[]` (raises if missing) or `.get()` (safe default); iterate `.items()` for key and value together.
 
 ```python
 person = {"name": "Alice", "age": 30}
@@ -244,6 +261,8 @@ merged                         # {'a': 1, 'b': 2}
 
 ### Sets — unordered, unique `{}`
 
+Sets store unique items and support union `|`, intersection `&`, and difference `-`. `{}` is an empty dict — use `set()` for an empty set.
+
 ```python
 s = {1, 2, 3}
 empty = set()             # NOT {} — that's an empty dict!
@@ -265,6 +284,8 @@ unique                    # [1, 2, 3]  (order not guaranteed)
 ```
 
 ## 6. Control Flow
+
+Choose a path with `if` / `elif` / `else`. Python 3.10+ `match` / `case` compares a value against patterns. Blocks are defined by indentation, not braces.
 
 ```python
 score = 85
@@ -294,6 +315,8 @@ match command:
 > Python uses **indentation** (4 spaces) instead of `{}` braces!
 
 ## 7. Loops
+
+`for` walks any iterable; `range()` makes integer sequences; `enumerate()` adds an index; `zip()` walks lists in parallel. `while` repeats until a condition fails; `break` stops, `continue` skips.
 
 ```python
 # for — iterate over anything
@@ -356,6 +379,8 @@ for i in range(10):
 
 ## 8. Functions
 
+Functions package reusable logic. Parameters can have defaults; returning multiple values actually returns a tuple. `*args` / `**kwargs` collect extra positional and keyword arguments.
+
 ```python
 def greet(name, greeting="Hello"):
     """Greet someone."""
@@ -389,6 +414,8 @@ points                            # [(5, 0), (3, 1), (1, 2)]
 ```
 
 ### ⚠️ Mutable Default Gotcha
+
+Default argument values are created **once** when the function is defined. Never use a mutable default (`[]`, `{}`) — use `None` and create a new object inside the function.
 
 ```python
 # ❌ BAD — list is shared across calls
@@ -442,6 +469,8 @@ total      # 333332833333500000
 
 ## 10. Classes (OOP)
 
+A class is a blueprint; an instance is one object. `__init__` sets instance data (`self.name`); methods take `self`. `__str__` controls how `print()` displays the object.
+
 ```python
 class Dog:
     species = "Canis familiaris"     # class attribute (shared)
@@ -463,6 +492,8 @@ print(Dog.species)                   # Canis familiaris
 ```
 
 ### Inheritance
+
+A subclass reuses a parent’s behavior and can override methods. `isinstance(obj, Parent)` is True for subclasses — this is how you share an interface across types.
 
 ```python
 class Animal:
@@ -571,6 +602,8 @@ print(d.name, d.breed, d.owner)   # Rex Lab Alice
 
 ### Properties
 
+`@property` lets you access a method like an attribute (`c.area`) while still running validation in a setter. Use it to hide internal fields (`_radius`) behind a clean API.
+
 ```python
 class Circle:
     def __init__(self, radius):
@@ -615,6 +648,8 @@ print(p == Point(1.0, 2.0))  # True
 
 ## 11. Error Handling
 
+`try` / `except` catch failures without crashing. Put cleanup in `finally` (always runs) and success-only work in `else`. Raise `ValueError` (or a custom subclass) when your own checks fail.
+
 ```python
 try:
     result = 10 / 0
@@ -649,6 +684,8 @@ class AppError(Exception):
 
 ## 12. Modules & Imports
 
+Every `.py` file is a module. `import math` keeps a namespace; `from math import sqrt` pulls names in. The `if __name__ == "__main__"` guard runs code only when the file is executed, not when imported.
+
 ```python
 import math
 from math import sqrt, pi
@@ -671,6 +708,8 @@ if __name__ == "__main__":
 ```
 
 ## 13. File I/O
+
+`with open(...)` opens a file and always closes it, even on error. Use `'r'`/`'w'`/`'a'` for read/write/append; `json` and `pathlib.Path` are the usual tools for structured data and paths.
 
 ```python
 # Read
@@ -703,6 +742,8 @@ list(Path(".").glob("**/*.py"))       # [PosixPath('...')]  all .py files
 ```
 
 ## 14. Iterators & Generators
+
+A generator is a function that `yield`s values one at a time instead of building a full list. That saves memory and can even represent infinite sequences (like Fibonacci).
 
 ```python
 # Generator — uses yield, lazy evaluation, memory efficient
@@ -809,6 +850,8 @@ find(99)    # None
 
 ## 18. Unpacking & Useful Patterns
 
+Unpacking splits a sequence into variables (`a, *rest = ...`) and `*` / `**` spread lists/dicts into calls. `any`, `all`, `min`, `max`, and `sum` are the everyday reductions.
+
 ```python
 def greet(a, b, c=0):
     return a + b + c
@@ -846,6 +889,8 @@ list(filter(lambda n: n > 0, nums))    # [1, 7, 3]
 ```
 
 ## 19. Common Standard Library
+
+You can go far without extra packages: `os`/`sys` for the environment, `math`/`random`/`datetime` for numbers and time, `re` for patterns, `logging` for messages, `collections` for counters and default dicts.
 
 ```python
 import os
@@ -889,6 +934,8 @@ dd                                     # defaultdict(<class 'list'>, {'key': ['v
 
 ## 20. Virtual Environments & Packages
 
+A venv isolates project dependencies so they don’t collide with system Python. `pip freeze` snapshots versions; `pip install -r requirements.txt` recreates them.
+
 ```bash
 # Create & activate virtual environment
 python -m venv .venv
@@ -926,6 +973,8 @@ asyncio.run(main())
 ```
 
 ## 22. Pythonic Tips
+
+Idiomatic Python prefers truthiness (`if not lst`), identity checks (`is None`), `enumerate`, `with` for files, chained comparisons, and `" ".join(...)` instead of `+=` in a loop.
 
 ```python
 my_list = []
@@ -982,6 +1031,8 @@ if (n := len(data)) > 10:
 | Private    | `_prefix`         | `self._internal`   |
 
 ## Quick Reference Card
+
+A one-screen cheat sheet of the syntax used above — skim it when you forget a construct, then jump back to the matching section for detail.
 
 ```python
 # Variables
