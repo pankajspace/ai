@@ -38,7 +38,7 @@ python                    # interactive REPL (macOS/Linux: python3)
 ```
 
 ```python
-print("Hello, World!")    # your first program
+print("Hello, World!")    # Hello, World!
 
 # Single-line comment
 """Multi-line comment / docstring"""
@@ -55,34 +55,43 @@ height = 5.7          # float
 active = True         # bool  (capital T/F)
 nothing = None        # NoneType
 
-x, y, z = 1, 2, 3    # multiple assignment
+x, y, z = 1, 2, 3     # x = 1, y = 2, z = 3
+print(name, age)      # Alice 30
 ```
 
 ### Type Checking & Casting
 
 ```python
+age = 30
 type(age)             # <class 'int'>
 isinstance(age, int)  # True
 
 int("42")             # 42
-str(100)              # "100"
+str(100)              # '100'
 float("3.14")         # 3.14
 bool(0)               # False  (0, "", [], None → falsy)
+bool("hi")            # True
 ```
 
 ## 3. Operators
 
 ```python
 # Arithmetic
-5 + 3    # 8       5 - 3    # 2
-5 * 3    # 15
-5 / 3    # 1.66  (always float)
-5 // 3   # 1       (floor div)
-5 % 3    # 2       (modulo)
-5 ** 3   # 125     (power)
+5 + 3     # 8
+5 - 3     # 2
+5 * 3     # 15
+5 / 3     # 1.6666666666666667  (always float)
+5 // 3    # 1                   (floor div)
+5 % 3     # 2                   (modulo)
+5 ** 3    # 125                 (power)
 
 # Comparison → returns bool
-==  !=  >  <  >=  <=
+5 == 5    # True
+5 != 3    # True
+5 > 3     # True
+5 < 3     # False
+5 >= 5    # True
+5 <= 3    # False
 
 # Logical
 True and False   # False
@@ -90,15 +99,21 @@ True or False    # True
 not True         # False
 
 # Identity vs Equality
-a == b           # same value?
-a is b           # same object in memory?
+a = [1, 2]
+b = a
+c = [1, 2]
+a == c           # True   (same value)
+a is b           # True   (same object in memory)
+a is c           # False  (equal value, different object)
 
 # Membership
 "x" in "hello"       # False
 3 in [1, 2, 3]       # True
 
 # Ternary
+age = 30
 status = "adult" if age >= 18 else "minor"
+status               # 'adult'
 ```
 
 ## 4. Strings
@@ -107,32 +122,39 @@ status = "adult" if age >= 18 else "minor"
 s = "Hello, World!"
 s = 'Hello, World!'          # single or double — same thing
 s = """multi
-line"""
+line"""                      # 'multi\nline'
+
+s = "Hello, World!"
 
 # Indexing & Slicing
-s[0]       # 'H'       s[-1]      # '!'
-s[0:5]     # 'Hello'   s[:5]      # 'Hello'
-s[7:]      # 'World!'  s[::-1]    # reverse
+s[0]       # 'H'
+s[-1]      # '!'
+s[0:5]     # 'Hello'
+s[:5]      # 'Hello'
+s[7:]      # 'World!'
+s[::-1]    # '!dlroW ,olleH'
 
 # Common methods
-s.lower()                  s.upper()
-s.strip()                  # remove whitespace
-s.split(", ")              # ['Hello', 'World!']
-", ".join(["a", "b"])      # "a, b"
-s.replace("World", "Python")
-s.startswith("Hello")      # True
-s.find("World")            # 7  (-1 if not found)
-s.count("l")               # 3
+s.lower()                      # 'hello, world!'
+s.upper()                      # 'HELLO, WORLD!'
+s.strip()                      # 'Hello, World!'  (no extra whitespace here)
+"  hi  ".strip()               # 'hi'
+s.split(", ")                  # ['Hello', 'World!']
+", ".join(["a", "b"])          # 'a, b'
+s.replace("World", "Python")   # 'Hello, Python!'
+s.startswith("Hello")          # True
+s.find("World")                # 7  (-1 if not found)
+s.count("l")                   # 3
 
 # f-strings (formatted strings — use these!)
 name, age = "Alice", 30
-f"Hi {name}, you're {age}"
-f"{3.14159:.2f}"           # "3.14"
-f"{1000000:,}"             # "1,000,000"
+f"Hi {name}, you're {age}"     # "Hi Alice, you're 30"
+f"{3.14159:.2f}"               # '3.14'
+f"{1000000:,}"                 # '1,000,000'
 
 # Strings are IMMUTABLE
 # s[0] = "h"   ❌ TypeError
-s = "h" + s[1:]  # ✅ create new string
+s = "h" + s[1:]                # 'hello, World!'
 ```
 
 ## 5. Data Structures
@@ -148,36 +170,44 @@ nums[-1]         # 5
 nums[1:3]        # [2, 3]
 
 # Modify
-nums.append(6)           # add to end
-nums.insert(0, 0)        # insert at index
-nums.extend([7, 8])      # add multiple
-nums[0] = 99             # overwrite
+nums.append(6)
+nums             # [1, 2, 3, 4, 5, 6]
+nums.insert(0, 0)
+nums             # [0, 1, 2, 3, 4, 5, 6]
+nums.extend([7, 8])
+nums             # [0, 1, 2, 3, 4, 5, 6, 7, 8]
+nums[0] = 99
+nums             # [99, 1, 2, 3, 4, 5, 6, 7, 8]
 
 # Remove
 nums.remove(99)          # by value (first match)
-nums.pop()               # remove & return last
-nums.pop(0)              # remove & return at index
+last = nums.pop()        # 8
+at_index = nums.pop(0)   # 1
 del nums[0]              # delete by index
+nums                     # [2, 3, 4, 5, 6, 7]
 
 # Other
-nums.sort()              # in-place sort
-sorted(nums)             # returns new sorted list
-nums.reverse()           # in-place reverse
-len(nums)                # length
-3 in nums                # membership check
-nums.index(3)            # find index of value
-nums.count(3)            # count occurrences
+nums = [3, 1, 4, 1, 5]
+nums.sort()
+nums                     # [1, 1, 3, 4, 5]
+sorted(nums, reverse=True)  # [5, 4, 3, 1, 1]  (new list)
+nums.reverse()
+nums                     # [5, 4, 3, 1, 1]
+len(nums)                # 5
+3 in nums                # True
+nums.index(3)            # 2
+nums.count(1)            # 2
 ```
 
 ### Tuples — ordered, immutable `()`
 
 ```python
 point = (3, 4)
-x, y = point            # unpacking
-single = (42,)           # ⚠️ trailing comma needed!
+x, y = point             # x = 3, y = 4
+single = (42,)           # trailing comma needed for a 1-item tuple!
 
 point[0]                 # 3
-# point[0] = 5           ❌ immutable
+# point[0] = 5           ❌ TypeError — immutable
 ```
 
 ### Dicts — key-value pairs `{}`
@@ -186,26 +216,30 @@ point[0]                 # 3
 person = {"name": "Alice", "age": 30}
 
 # Access
-person["name"]                 # "Alice"
-person.get("email", "N/A")    # "N/A" (safe access)
+person["name"]                 # 'Alice'
+person.get("email", "N/A")     # 'N/A'  (safe access)
 
 # Modify
 person["age"] = 31             # update
-person["email"] = "a@b.com"   # add new key
+person["email"] = "a@b.com"    # add new key
+person                         # {'name': 'Alice', 'age': 31, 'email': 'a@b.com'}
 
 # Remove
 del person["email"]
-person.pop("age")              # remove & return value
+age = person.pop("age")        # 31
+person                         # {'name': 'Alice'}
 
 # Iterate
 for key, value in person.items():
     print(f"{key}: {value}")
+# name: Alice
 
 # Check
-"name" in person               # True (checks keys)
+"name" in person               # True  (checks keys)
 
 # Merge (Python 3.9+)
 merged = {"a": 1} | {"b": 2}
+merged                         # {'a': 1, 'b': 2}
 ```
 
 ### Sets — unordered, unique `{}`
@@ -216,19 +250,25 @@ empty = set()             # NOT {} — that's an empty dict!
 
 s.add(4)
 s.discard(2)              # no error if missing
+s                         # {1, 3, 4}
 
 # Set math
-a | b    # union
-a & b    # intersection
-a - b    # difference
+a = {1, 2, 3}
+b = {3, 4, 5}
+a | b                     # {1, 2, 3, 4, 5}  union
+a & b                     # {3}              intersection
+a - b                     # {1, 2}           difference
 
 # Deduplicate a list
 unique = list(set([1, 1, 2, 2, 3]))
+unique                    # [1, 2, 3]  (order not guaranteed)
 ```
 
 ## 6. Control Flow
 
 ```python
+score = 85
+
 # if / elif / else
 if score >= 90:
     grade = "A"
@@ -237,7 +277,10 @@ elif score >= 80:
 else:
     grade = "F"
 
+grade                     # 'B'
+
 # match / case (Python 3.10+)
+command = "help"
 match command:
     case "quit":
         print("Bye!")
@@ -245,6 +288,7 @@ match command:
         print("Commands: quit, help")
     case _:
         print("Unknown")
+# Commands: quit, help
 ```
 
 > Python uses **indentation** (4 spaces) instead of `{}` braces!
@@ -255,31 +299,59 @@ match command:
 # for — iterate over anything
 for item in [1, 2, 3]:
     print(item)
+# 1
+# 2
+# 3
 
 for i in range(5):            # 0, 1, 2, 3, 4
     print(i)
+# 0
+# 1
+# 2
+# 3
+# 4
 
-for i in range(2, 10, 2):    # 2, 4, 6, 8
+for i in range(2, 10, 2):     # 2, 4, 6, 8
     print(i)
+# 2
+# 4
+# 6
+# 8
 
 # enumerate — index + value
 for i, val in enumerate(["a", "b", "c"]):
-    print(i, val)             # 0 a, 1 b, 2 c
+    print(i, val)
+# 0 a
+# 1 b
+# 2 c
 
 # zip — parallel iteration
+names = ["Alice", "Bob"]
+scores = [90, 85]
 for name, score in zip(names, scores):
     print(name, score)
+# Alice 90
+# Bob 85
 
 # while
 count = 0
 while count < 5:
     count += 1
+count                         # 5
 
 # break / continue
 for i in range(10):
-    if i == 3: continue       # skip 3
-    if i == 7: break          # stop at 7
+    if i == 3:
+        continue              # skip 3
+    if i == 7:
+        break                 # stop at 7
     print(i)
+# 0
+# 1
+# 2
+# 4
+# 5
+# 6
 ```
 
 ## 8. Functions
@@ -289,14 +361,14 @@ def greet(name, greeting="Hello"):
     """Greet someone."""
     return f"{greeting}, {name}!"
 
-greet("Alice")                    # "Hello, Alice!"
-greet("Bob", greeting="Hey")      # "Hey, Bob!"
+greet("Alice")                    # 'Hello, Alice!'
+greet("Bob", greeting="Hey")      # 'Hey, Bob!'
 
 # Return multiple values
 def divide(a, b):
     return a // b, a % b          # returns a tuple
 
-q, r = divide(17, 5)             # q=3, r=2
+q, r = divide(17, 5)              # q = 3, r = 2
 
 # *args and **kwargs
 def flexible(*args, **kwargs):
@@ -309,16 +381,23 @@ flexible(1, 2, name="Alice")
 
 # Lambda (anonymous function)
 square = lambda x: x ** 2
+square(4)                         # 16
+
+points = [(1, 2), (3, 1), (5, 0)]
 points.sort(key=lambda p: p[1])   # sort by 2nd element
+points                            # [(5, 0), (3, 1), (1, 2)]
 ```
 
 ### ⚠️ Mutable Default Gotcha
 
 ```python
 # ❌ BAD — list is shared across calls
-def add(val, lst=[]):
+def add_bad(val, lst=[]):
     lst.append(val)
     return lst
+
+add_bad(1)                        # [1]
+add_bad(2)                        # [1, 2]  leftover from the previous call!
 
 # ✅ FIX
 def add(val, lst=None):
@@ -326,6 +405,9 @@ def add(val, lst=None):
         lst = []
     lst.append(val)
     return lst
+
+add(1)                            # [1]
+add(2)                            # [2]  fresh list each time
 ```
 
 ## 9. List Comprehensions
@@ -335,21 +417,27 @@ The Pythonic way to transform/filter data.
 ```python
 # [expression for item in iterable]
 squares = [x**2 for x in range(10)]
+squares    # [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
 
 # With filter
 evens = [x for x in range(20) if x % 2 == 0]
+evens      # [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
 
 # With if/else
 labels = ["even" if x % 2 == 0 else "odd" for x in range(5)]
+labels     # ['even', 'odd', 'even', 'odd', 'even']
 
 # Dict comprehension
 sq = {x: x**2 for x in range(6)}
+sq         # {0: 0, 1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
 
 # Set comprehension
 lengths = {len(w) for w in ["hi", "hello", "hey"]}
+lengths    # {2, 3, 5}
 
 # Generator expression (lazy — saves memory)
 total = sum(x**2 for x in range(1_000_000))
+total      # 333332833333500000
 ```
 
 ## 10. Classes (OOP)
@@ -369,7 +457,9 @@ class Dog:
         return f"{self.name}, age {self.age}"
 
 buddy = Dog("Buddy", 5)
-print(buddy.bark())                 # "Buddy says Woof!"
+print(buddy.bark())                  # Buddy says Woof!
+print(buddy)                         # Buddy, age 5
+print(Dog.species)                   # Canis familiaris
 ```
 
 ### Inheritance
@@ -378,6 +468,7 @@ print(buddy.bark())                 # "Buddy says Woof!"
 class Animal:
     def __init__(self, name):
         self.name = name
+
     def speak(self):
         raise NotImplementedError
 
@@ -389,8 +480,8 @@ class Cat(Animal):
     def speak(self):
         return f"{self.name}: Meow!"
 
-Dog("Rex").speak()    # "Rex: Woof!"
-isinstance(Dog("Rex"), Animal)  # True
+Dog("Rex").speak()                   # 'Rex: Woof!'
+isinstance(Dog("Rex"), Animal)       # True
 ```
 
 ### Multiple Inheritance & The Diamond Problem
@@ -409,7 +500,7 @@ class Swimmer:
 class Duck(Flyer, Swimmer):    # inherits from both
     pass
 
-Duck().move()   # "Flying" — Flyer is listed first, so it wins
+Duck().move()   # 'Flying' — Flyer is listed first, so it wins
 ```
 
 **The Diamond Problem** occurs when a class inherits from two classes that share a common ancestor:
@@ -417,7 +508,7 @@ Duck().move()   # "Flying" — Flyer is listed first, so it wins
 ```python
 class Animal:
     def speak(self):
-        return "..."
+        return "generic sound"
 
 class Dog(Animal):
     def speak(self):
@@ -443,7 +534,7 @@ class DomesticDog(Dog, Pet):   # 💎 Diamond: both parents share Animal
 DomesticDog.__mro__
 # (DomesticDog, Dog, Pet, Animal, object)
 
-DomesticDog().speak()   # "Woof!" — Dog comes before Pet in MRO
+DomesticDog().speak()   # 'Woof!' — Dog comes before Pet in MRO
 ```
 
 **Use `super()` to cooperate across the MRO chain:**
@@ -470,6 +561,7 @@ class DomesticDog(Dog, Pet):
 d = DomesticDog(name="Rex", breed="Lab", owner="Alice")
 # super().__init__() follows MRO: DomesticDog → Dog → Pet → Animal
 # ✅ All __init__ methods run, no duplicates
+print(d.name, d.breed, d.owner)   # Rex Lab Alice
 ```
 
 > **Key rules:**
@@ -508,7 +600,7 @@ print(c.area)         # 314.159
 Auto-generates `__init__`, `__repr__`, `__eq__` — use for data-holding classes.
 
 ```python
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 @dataclass
 class Point:
@@ -518,6 +610,7 @@ class Point:
 
 p = Point(1.0, 2.0)
 print(p)              # Point(x=1.0, y=2.0, label='origin')
+print(p == Point(1.0, 2.0))  # True
 ```
 
 ## 11. Error Handling
@@ -535,10 +628,15 @@ else:
     print(f"Result: {result}")      # only if NO exception
 finally:
     print("Always runs")            # cleanup
+# Can't divide by zero!
+# Always runs
 
 # Raise your own
+age = -1
 if age < 0:
-    raise ValueError("Age can't be negative")
+    # raise ValueError("Age can't be negative")
+    print("ValueError: Age can't be negative")
+# ValueError: Age can't be negative
 
 # Custom exception
 class AppError(Exception):
@@ -554,15 +652,22 @@ class AppError(Exception):
 ```python
 import math
 from math import sqrt, pi
-import numpy as np                    # alias
+import numpy as np                    # alias (third-party)
 from collections import defaultdict
+
+print(math.sqrt(16))                  # 4.0
+print(sqrt(9), pi)                    # 3.0 3.141592653589793
 
 # Your own modules — any .py file is a module
 # utils.py → from utils import my_func
 
+def main():
+    print("Running as a script")
+
 # Only run when executed directly (not imported)
 if __name__ == "__main__":
     main()
+# Running as a script
 ```
 
 ## 13. File I/O
@@ -570,12 +675,12 @@ if __name__ == "__main__":
 ```python
 # Read
 with open("data.txt", "r") as f:
-    content = f.read()                # whole file
+    content = f.read()                # whole file as a string
     # or: lines = f.readlines()       # list of lines
     # or: for line in f:              # line by line (memory efficient)
 
 # Write
-with open("output.txt", "w") as f:   # 'w' = overwrite, 'a' = append
+with open("output.txt", "w") as f:    # 'w' = overwrite, 'a' = append
     f.write("Hello!\n")
 
 # JSON
@@ -585,15 +690,16 @@ with open("data.json", "w") as f:
 
 with open("data.json", "r") as f:
     data = json.load(f)
+data                                  # {'key': 'value'}
 
 # pathlib (modern path handling)
 from pathlib import Path
-p = Path("data") / "file.txt"        # cross-platform paths
-p.exists()                             # True/False
-p.read_text()                          # read entire file
-p.write_text("hello")                  # write
+p = Path("data") / "file.txt"         # data/file.txt  (cross-platform)
+p.exists()                            # False until the file is created
+p.write_text("hello")
+p.read_text()                         # 'hello'
 Path("new/dir").mkdir(parents=True, exist_ok=True)
-list(Path(".").glob("**/*.py"))        # find all .py files
+list(Path(".").glob("**/*.py"))       # [PosixPath('...')]  all .py files
 ```
 
 ## 14. Iterators & Generators
@@ -606,7 +712,12 @@ def countdown(n):
         n -= 1
 
 for num in countdown(5):
-    print(num)                # 5, 4, 3, 2, 1
+    print(num)
+# 5
+# 4
+# 3
+# 2
+# 1
 
 # Infinite generator
 def fibonacci():
@@ -624,7 +735,8 @@ fib = fibonacci()
 A function that wraps another function to add behavior.
 
 ```python
-import functools, time
+import functools
+import time
 
 def timer(func):
     @functools.wraps(func)
@@ -638,8 +750,11 @@ def timer(func):
 @timer
 def slow_func():
     time.sleep(1)
+    return "done"
 
-slow_func()   # "slow_func: 1.0012s"
+print(slow_func())
+# slow_func: 1.0012s
+# done
 ```
 
 ## 16. Context Managers
@@ -647,14 +762,15 @@ slow_func()   # "slow_func: 1.0012s"
 Guarantee cleanup code runs (like `try/finally` but cleaner).
 
 ```python
+import time
+from contextlib import contextmanager
+
 # Built-in — file handling
 with open("file.txt") as f:
     data = f.read()
 # file auto-closed here, even on error
 
 # Custom (easy way)
-from contextlib import contextmanager
-
 @contextmanager
 def timer():
     start = time.perf_counter()
@@ -663,6 +779,7 @@ def timer():
 
 with timer():
     time.sleep(1)
+# Elapsed: 1.0012s
 ```
 
 ## 17. Type Hints
@@ -670,15 +787,22 @@ with timer():
 Optional static typing — not enforced at runtime, but great for documentation and IDE support.
 
 ```python
+from typing import Optional
+
 def greet(name: str, times: int = 1) -> str:
     return f"Hello, {name}! " * times
+
+print(greet("Ada", 2))                 # Hello, Ada! Hello, Ada!
 
 names: list[str] = ["Alice", "Bob"]
 scores: dict[str, int] = {"Alice": 90}
 
-from typing import Optional
 def find(user_id: int) -> Optional[str]:   # str or None
-    ...
+    users = {1: "Alice", 2: "Bob"}
+    return users.get(user_id)
+
+find(1)     # 'Alice'
+find(99)    # None
 
 # Check with: pip install mypy && mypy script.py
 ```
@@ -686,66 +810,81 @@ def find(user_id: int) -> Optional[str]:   # str or None
 ## 18. Unpacking & Useful Patterns
 
 ```python
+def greet(a, b, c=0):
+    return a + b + c
+
 # Unpacking
-a, b, c = [1, 2, 3]
-first, *rest = [1, 2, 3, 4, 5]     # first=1, rest=[2,3,4,5]
-a, b = b, a                         # swap
+a, b, c = [1, 2, 3]                    # a = 1, b = 2, c = 3
+first, *rest = [1, 2, 3, 4, 5]         # first = 1, rest = [2, 3, 4, 5]
+a, b = b, a                            # swap → a = 2, b = 1
 
 # Dict merge
+dict1 = {"x": 1}
+dict2 = {"y": 2}
 merged = {**dict1, **dict2}
+merged                                 # {'x': 1, 'y': 2}
 
 # Spread into function
 args = [1, 2, 3]
-func(*args)                          # func(1, 2, 3)
+greet(*args)                           # 6  → greet(1, 2, 3)
 
 kwargs = {"a": 1, "b": 2}
-func(**kwargs)                       # func(a=1, b=2)
+greet(**kwargs)                        # 3  → greet(a=1, b=2)
 
 # Useful built-ins
-any(x > 5 for x in nums)            # True if any match
-all(x > 0 for x in nums)            # True if all match
-min(nums)    max(nums)    sum(nums)
-sorted(items, key=lambda x: x.name)
-map(func, iterable)                  # apply func to each
-filter(func, iterable)               # keep matching items
+nums = [1, 7, 3, -2]
+any(x > 5 for x in nums)               # True
+all(x > 0 for x in nums)               # False
+min(nums)                              # -2
+max(nums)                              # 7
+sum(nums)                              # 9
+
+items = [{"name": "b"}, {"name": "a"}]
+sorted(items, key=lambda x: x["name"]) # [{'name': 'a'}, {'name': 'b'}]
+list(map(str.upper, ["a", "b"]))       # ['A', 'B']
+list(filter(lambda n: n > 0, nums))    # [1, 7, 3]
 ```
 
 ## 19. Common Standard Library
 
 ```python
 import os
-os.getcwd()                           # current directory
-os.environ.get("HOME")                # env variables
+print(os.getcwd())                     # current directory, e.g. '/home/you/project'
+print(os.environ.get("HOME"))          # env variable or None
 
 import sys
-sys.argv                              # CLI arguments
+print(sys.argv)                        # CLI arguments, e.g. ['script.py']
 
 import math
-math.sqrt(16)    math.pi    math.ceil(4.2)
+math.sqrt(16)                          # 4.0
+math.pi                                # 3.141592653589793
+math.ceil(4.2)                         # 5
 
 import random
-random.randint(1, 10)                 # random int
-random.choice(["a", "b", "c"])        # random pick
-random.shuffle(my_list)               # shuffle in-place
+random.randint(1, 10)                  # random int from 1 to 10 inclusive
+random.choice(["a", "b", "c"])         # 'a', 'b', or 'c'
+my_list = [1, 2, 3]
+random.shuffle(my_list)                # shuffles my_list in place
 
 import datetime
-datetime.datetime.now()
-datetime.date.today()
+datetime.datetime.now()                # datetime.datetime(2026, 8, 17, ...)
+datetime.date.today()                  # datetime.date(2026, 8, 17)
 
-import re                              # regular expressions
-re.search(r"\d+", "abc123").group()    # "123"
-re.findall(r"\w+", "hello world")      # ["hello", "world"]
-re.sub(r"\d+", "X", "abc123")          # "abcX"
+import re
+re.search(r"\d+", "abc123").group()    # '123'
+re.findall(r"\w+", "hello world")      # ['hello', 'world']
+re.sub(r"\d+", "X", "abc123")          # 'abcX'
 
 import logging
 logging.basicConfig(level=logging.INFO)
-logging.info("Started")
-logging.error("Failed")
+logging.info("Started")                # INFO:root:Started
+logging.error("Failed")                # ERROR:root:Failed
 
-from collections import Counter, defaultdict, deque
+from collections import Counter, defaultdict
 Counter(["a", "b", "a"])               # Counter({'a': 2, 'b': 1})
 dd = defaultdict(list)
-dd["key"].append("val")                # no KeyError for missing keys
+dd["key"].append("val")
+dd                                     # defaultdict(<class 'list'>, {'key': ['val']})
 ```
 
 ## 20. Virtual Environments & Packages
@@ -783,36 +922,53 @@ async def main():
     print(results)                   # runs in ~2s, not 3s
 
 asyncio.run(main())
+# ['Data from url1', 'Data from url2']
 ```
 
 ## 22. Pythonic Tips
 
 ```python
+my_list = []
+x = None
+items = ["a", "b"]
+data = "abcdefghijk"
+d = {"key": 42}
+
 # ✅ Check empty
 if not my_list:              # instead of: len(my_list) == 0
+    print("empty")           # empty
 
 # ✅ Check None
 if x is None:                # instead of: x == None
+    print("missing")         # missing
 
 # ✅ Use enumerate, not range(len(...))
 for i, item in enumerate(items):
-    ...
+    print(i, item)
+# 0 a
+# 1 b
 
 # ✅ Use with for files
-with open("f.txt") as f:     # auto-closes
+with open("f.txt", "w") as f:
+    f.write("ok")            # auto-closes
 
 # ✅ Chained comparison
-if 0 < x < 10:              # instead of: x > 0 and x < 10
+x = 5
+if 0 < x < 10:               # instead of: x > 0 and x < 10
+    print("in range")        # in range
 
 # ✅ String join (not += in loops)
+words = ["hello", "python"]
 result = " ".join(words)
+result                       # 'hello python'
 
 # ✅ dict.get() for safe access
 value = d.get("key", "default")
+value                        # 42
 
 # ✅ Walrus operator (Python 3.8+)
 if (n := len(data)) > 10:
-    print(f"Too long: {n}")
+    print(f"Too long: {n}")  # Too long: 11
 ```
 
 ### Naming Conventions (PEP 8)
@@ -829,38 +985,65 @@ if (n := len(data)) > 10:
 
 ```python
 # Variables
-x = 42                           x, y = 1, 2
+x = 42
+x, y = 1, 2                          # x = 1, y = 2
 
 # Strings
-f"Hi {name}"                     "hello".upper()
+name = "Ada"
+f"Hi {name}"                         # 'Hi Ada'
+"hello".upper()                      # 'HELLO'
 
 # Lists
-[1, 2, 3]                        .append() .pop() .sort()
+nums = [1, 2, 3]
+nums.append(4)                       # [1, 2, 3, 4]
+nums.pop()                           # 4
+nums.sort()                          # [1, 2, 3]
 
 # Dicts
-{"k": "v"}                       .get() .items() .keys()
+d = {"k": "v"}
+d.get("k")                           # 'v'
+list(d.items())                      # [('k', 'v')]
+list(d.keys())                       # ['k']
 
 # Sets
-{1, 2, 3}                        | & - (union, intersect, diff)
+{1, 2, 3} | {3, 4}                   # {1, 2, 3, 4}  union
+{1, 2, 3} & {3, 4}                   # {3}           intersect
+{1, 2, 3} - {3, 4}                   # {1, 2}        difference
 
 # Comprehension
-[x**2 for x in range(10) if x > 3]
+[x**2 for x in range(10) if x > 3]   # [16, 25, 36, 49, 64, 81]
 
 # Functions
-def f(a, b=1): return a + b      lambda x: x**2
+def f(a, b=1):
+    return a + b
+
+f(2)                                 # 3
+(lambda x: x**2)(4)                  # 16
 
 # Classes
 class C:
-    def __init__(self): ...
+    def __init__(self, value):
+        self.value = value
+
+C(1).value                           # 1
 
 # Error handling
-try: ... except E: ... finally: ...
+try:
+    int("x")
+except ValueError as e:
+    print(e)                         # invalid literal for int() with base 10: 'x'
+finally:
+    print("done")                    # done
 
 # Files
-with open("f") as f: f.read()
+with open("f.txt", "w") as f:
+    f.write("hello")
+with open("f.txt") as f:
+    f.read()                         # 'hello'
 
 # Imports
-from module import thing
+from math import sqrt
+sqrt(9)                              # 3.0
 ```
 
 > 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Course](python-course.md).

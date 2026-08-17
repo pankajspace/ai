@@ -81,7 +81,7 @@ python my_script.py
 ### Your First Program
 
 ```python
-print("Hello, World!")
+print("Hello, World!")    # Hello, World!
 ```
 
 ### Comments
@@ -148,7 +148,7 @@ list("abc")         # ['a', 'b', 'c']
 5 + 3     # 8    Addition
 5 - 3     # 2    Subtraction
 5 * 3     # 15   Multiplication
-5 / 3     # 1.66 True division (always float)
+5 / 3     # 1.6666666666666667  True division (always float)
 5 // 3    # 1    Floor division (integer)
 5 % 3     # 2    Modulo (remainder)
 5 ** 3    # 125  Exponentiation
@@ -232,6 +232,7 @@ while (line := input(">>> ")) != "quit":
 ```python
 age = 20
 status = "adult" if age >= 18 else "minor"
+status    # 'adult'
 ```
 
 ## 4. Strings In Depth
@@ -409,21 +410,26 @@ del person["email"]
 popped = person.pop("age")    # removes & returns value
 person.popitem()               # removes & returns last pair
 
-# Iteration
+# Iteration  (after popitem, only 'name' remains)
 for key in person:                     # iterates over keys
     print(key, person[key])
+# name Alice
 
 for key, value in person.items():      # key-value pairs
     print(f"{key}: {value}")
+# name: Alice
 
 for value in person.values():          # just values
     print(value)
+# Alice
 
-# Useful methods
-person.keys()              # dict_keys([...])
-person.values()            # dict_values([...])
-person.items()             # dict_items([(k,v), ...])
+# Useful methods — start from a fresh dict
+person = {"name": "Alice", "age": 30, "hobbies": ["reading", "chess"]}
+person.keys()              # dict_keys(['name', 'age', 'hobbies'])
+person.values()            # dict_values(['Alice', 30, ['reading', 'chess']])
+person.items()             # dict_items([('name', 'Alice'), ('age', 30), ('hobbies', ['reading', 'chess'])])
 person.update({"age": 32, "city": "NYC"})
+person                     # {'name': 'Alice', 'age': 32, 'hobbies': ['reading', 'chess'], 'city': 'NYC'}
 
 # Check membership
 "name" in person           # True (checks keys)
@@ -612,9 +618,12 @@ greet("Alice", "Hey")     # "Hey, Alice!"
 greet(greeting="Hi", name="Bob")   # "Hi, Bob!"
 
 # ⚠️ GOTCHA: Mutable default arguments
-def append_to(value, lst=[]):   # ❌ BAD — shared across calls!
+def append_to_bad(value, lst=[]):   # ❌ BAD — shared across calls!
     lst.append(value)
     return lst
+
+append_to_bad(1)    # [1]
+append_to_bad(2)    # [1, 2]  leftover from the previous call!
 
 # ✅ FIX: Use None as default
 def append_to(value, lst=None):
@@ -622,6 +631,9 @@ def append_to(value, lst=None):
         lst = []
     lst.append(value)
     return lst
+
+append_to(1)        # [1]
+append_to(2)        # [2]  fresh list each time
 ```
 
 ### Return Values
@@ -858,7 +870,7 @@ class Dog(Animal):
         self.breed = breed
 
 dog = Dog("Buddy", "Golden Retriever")
-print(dog.name, dog.sound, dog.breed)
+print(dog.name, dog.sound, dog.breed)   # Buddy Woof Golden Retriever
 ```
 
 ### Multiple Inheritance & MRO
@@ -1113,7 +1125,7 @@ print(math.sqrt(16))     # 4.0
 # Import specific items
 from math import sqrt, pi
 print(sqrt(16))           # 4.0
-print(pi)                 # 3.14159...
+print(pi)                 # 3.141592653589793
 
 # Import with alias
 import numpy as np
@@ -1215,6 +1227,11 @@ def set_age(age):
     return age
 
 # Re-raise an exception
+import logging
+
+def risky_operation():
+    raise RuntimeError("disk full")
+
 try:
     risky_operation()
 except Exception:
@@ -1351,19 +1368,21 @@ p = Path.home() / "Documents"
 p = Path.cwd()                                 # current directory
 
 # Check existence
-p.exists()
-p.is_file()
-p.is_dir()
+p = Path("data") / "subfolder" / "file.txt"
+p.exists()      # False until that path is created
+p.is_file()     # False
+p.is_dir()      # False
 
 # Read/write shortcuts
+Path("data.txt").write_text("Hello!")
 content = Path("data.txt").read_text()
-Path("output.txt").write_text("Hello!")
+content         # 'Hello!'
 
 # File info
-p.name          # "file.txt"
-p.stem          # "file"
-p.suffix        # ".txt"
-p.parent        # Path("data/subfolder")
+p.name          # 'file.txt'
+p.stem          # 'file'
+p.suffix        # '.txt'
+p.parent        # PosixPath('data/subfolder')
 
 # List directory
 for item in Path(".").iterdir():
@@ -1505,6 +1524,8 @@ slow_function()   # slow_function took 1.0012s
 ### Decorators with Arguments
 
 ```python
+import functools
+
 def repeat(n):
     """Decorator that calls the function n times."""
     def decorator(func):
@@ -1529,10 +1550,31 @@ say_hello()
 ### Stacking Decorators
 
 ```python
+def decorator_b(func):
+    def wrapper():
+        print("B before")
+        func()
+        print("B after")
+    return wrapper
+
+def decorator_a(func):
+    def wrapper():
+        print("A before")
+        func()
+        print("A after")
+    return wrapper
+
 @decorator_a
 @decorator_b
 def func():
-    pass
+    print("body")
+
+func()
+# A before
+# B before
+# body
+# B after
+# A after
 
 # Equivalent to: func = decorator_a(decorator_b(func))
 # decorator_b is applied first, then decorator_a wraps the result
@@ -1541,6 +1583,8 @@ def func():
 ### Class Decorators
 
 ```python
+import functools
+
 def singleton(cls):
     """Ensure only one instance of a class exists."""
     instances = {}
@@ -1577,6 +1621,8 @@ with open("file.txt") as f:
 ### Custom Context Manager (Class)
 
 ```python
+import time
+
 class Timer:
     def __enter__(self):
         self.start = time.perf_counter()
@@ -1596,6 +1642,7 @@ with Timer() as t:
 
 ```python
 from contextlib import contextmanager
+import time
 
 @contextmanager
 def timer():
@@ -1636,11 +1683,18 @@ from typing import Optional, Union
 
 def find_user(user_id: int) -> Optional[str]:
     """Returns username or None."""
-    ...
+    users = {1: "Alice", 2: "Bob"}
+    return users.get(user_id)
+
+find_user(1)     # 'Alice'
+find_user(99)    # None
 
 def process(value: Union[str, int]) -> None:
     """Accepts str or int."""    # Python 3.10+: str | int
-    ...
+    print(f"got {value!r}")
+
+process("ok")    # got 'ok'
+process(3)       # got 3
 
 # Collections (Python 3.9+, use typing module for older versions)
 names: list[str] = ["Alice", "Bob"]
@@ -1782,15 +1836,15 @@ add(**kwargs)        # 6  (unpacks dict into keyword args)
 
 ```python
 # Tuple/list unpacking
-a, b, c = [1, 2, 3]
+a, b, c = [1, 2, 3]                   # a = 1, b = 2, c = 3
 
 # Star unpacking
-first, *rest = [1, 2, 3, 4, 5]       # first=1, rest=[2,3,4,5]
-first, *middle, last = [1, 2, 3, 4]   # first=1, middle=[2,3], last=4
-*head, tail = [1, 2, 3]               # head=[1,2], tail=3
+first, *rest = [1, 2, 3, 4, 5]        # first = 1, rest = [2, 3, 4, 5]
+first, *middle, last = [1, 2, 3, 4]   # first = 1, middle = [2, 3], last = 4
+*head, tail = [1, 2, 3]               # head = [1, 2], tail = 3
 
 # Swap variables
-a, b = b, a
+a, b = b, a                           # a = 2, b = 1
 
 # Ignore values
 _, b, _ = (1, 2, 3)     # only care about b
@@ -1813,22 +1867,22 @@ age = 30
 pi = 3.14159
 
 # f-strings (Python 3.6+ — preferred)
-f"Hello, {name}! You're {age} years old."
-f"Pi is approximately {pi:.2f}"             # "3.14"
-f"{'hello':>20}"                            # right-align in 20 chars
-f"{'hello':^20}"                            # center in 20 chars
-f"{1000000:,}"                              # "1,000,000"
-f"{0.85:.1%}"                               # "85.0%"
-f"{255:#x}"                                 # "0xff"
-f"{'yes' if age >= 18 else 'no'}"           # expressions in f-strings
-f"{name!r}"                                 # repr: "'Alice'"
+f"Hello, {name}! You're {age} years old."       # "Hello, Alice! You're 30 years old."
+f"Pi is approximately {pi:.2f}"                 # '3.14'
+f"{'hello':>20}"                                # '               hello'
+f"{'hello':^20}"                                # '       hello        '
+f"{1000000:,}"                                  # '1,000,000'
+f"{0.85:.1%}"                                   # '85.0%'
+f"{255:#x}"                                     # '0xff'
+f"{'yes' if age >= 18 else 'no'}"               # 'yes'
+f"{name!r}"                                     # "'Alice'"
 
 # .format() method
-"Hello, {}! Age: {}".format(name, age)
-"Hello, {n}! Age: {a}".format(n=name, a=age)
+"Hello, {}! Age: {}".format(name, age)          # 'Hello, Alice! Age: 30'
+"Hello, {n}! Age: {a}".format(n=name, a=age)    # 'Hello, Alice! Age: 30'
 
 # % formatting (old style — avoid in new code)
-"Hello, %s! Age: %d" % (name, age)
+"Hello, %s! Age: %d" % (name, age)              # 'Hello, Alice! Age: 30'
 ```
 
 ### Multi-line f-strings
@@ -1851,9 +1905,9 @@ text = "My email is alice@example.com and phone is 555-123-4567"
 # Search — find first match
 match = re.search(r"\d{3}-\d{3}-\d{4}", text)
 if match:
-    print(match.group())    # "555-123-4567"
-    print(match.start())    # start index
-    print(match.span())     # (start, end) tuple
+    print(match.group())    # 555-123-4567
+    print(match.start())    # 43
+    print(match.span())     # (43, 55)
 
 # Find all matches
 emails = re.findall(r"[\w.]+@[\w.]+", text)
@@ -1911,12 +1965,12 @@ match.group("domain")   # "example.com"
 ## 25. Date & Time
 
 ```python
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time, timedelta, timezone
 import time as time_module
 
 # Current date/time
-now = datetime.now()              # local time
-utc_now = datetime.utcnow()      # UTC time
+now = datetime.now()                              # local time
+utc_now = datetime.now(timezone.utc)              # timezone-aware UTC
 today = date.today()
 
 # Create specific dates
@@ -2132,9 +2186,10 @@ Status.OK == 200      # True
 Status.OK < Status.NOT_FOUND  # True
 
 # Use in match/case
+direction = Direction.NORTH
 match direction:
     case Direction.NORTH:
-        print("Going north!")
+        print("Going north!")    # Going north!
 ```
 
 ## 29. Async / Await (Asyncio)
@@ -2252,11 +2307,13 @@ def increment():
 
 ```python
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
 
 def fetch(url):
     time.sleep(1)
     return f"Data from {url}"
 
+urls = ["url1", "url2", "url3"]
 with ThreadPoolExecutor(max_workers=4) as executor:
     futures = {executor.submit(fetch, url): url for url in urls}
 
@@ -2264,6 +2321,9 @@ with ThreadPoolExecutor(max_workers=4) as executor:
         url = futures[future]
         result = future.result()
         print(f"{url}: {result}")
+# url2: Data from url2
+# url1: Data from url1
+# url3: Data from url3
 ```
 
 ### Multiprocessing — For CPU-bound Tasks
@@ -2460,7 +2520,7 @@ math.sqrt(16)        # 4.0
 math.ceil(4.2)       # 5
 math.floor(4.7)      # 4
 math.log(100, 10)    # 2.0
-math.pi              # 3.14159...
+math.pi              # 3.141592653589793
 math.inf             # infinity
 math.gcd(12, 8)      # 4
 
@@ -2468,32 +2528,41 @@ math.gcd(12, 8)      # 4
 import random
 random.random()              # float in [0, 1)
 random.randint(1, 10)        # int in [1, 10]
-random.choice(["a", "b"])    # random element
-random.shuffle(my_list)      # shuffle in place
-random.sample(range(100), 5) # 5 unique random items
+random.choice(["a", "b"])    # 'a' or 'b'
+my_list = [1, 2, 3]
+random.shuffle(my_list)      # e.g. [3, 1, 2]  (in place)
+random.sample(range(100), 5) # 5 unique random items, e.g. [41, 8, 72, 3, 19]
 
 # itertools — iterator building blocks
 import itertools
-itertools.chain([1,2], [3,4])             # 1, 2, 3, 4
-itertools.product("AB", "12")             # A1, A2, B1, B2
-itertools.permutations("ABC", 2)          # AB, AC, BA, BC, CA, CB
-itertools.combinations("ABCD", 2)         # AB, AC, AD, BC, BD, CD
-itertools.islice(range(100), 5, 10)       # 5, 6, 7, 8, 9
-list(itertools.accumulate([1,2,3,4]))     # [1, 3, 6, 10]
+list(itertools.chain([1, 2], [3, 4]))             # [1, 2, 3, 4]
+list(itertools.product("AB", "12"))               # [('A', '1'), ('A', '2'), ('B', '1'), ('B', '2')]
+list(itertools.permutations("ABC", 2))            # [('A', 'B'), ('A', 'C'), ('B', 'A'), ('B', 'C'), ('C', 'A'), ('C', 'B')]
+list(itertools.combinations("ABCD", 2))           # [('A', 'B'), ('A', 'C'), ('A', 'D'), ('B', 'C'), ('B', 'D'), ('C', 'D')]
+list(itertools.islice(range(100), 5, 10))         # [5, 6, 7, 8, 9]
+list(itertools.accumulate([1, 2, 3, 4]))          # [1, 3, 6, 10]
 
 # functools — higher-order functions
 from functools import lru_cache, partial, reduce
 
 @lru_cache(maxsize=128)
 def fibonacci(n):
-    if n < 2: return n
-    return fibonacci(n-1) + fibonacci(n-2)
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+fibonacci(10)            # 55
+
+def multiply(a, b):
+    return a * b
 
 double = partial(multiply, 2)   # pre-fill first argument
+double(5)                # 10
 
 # hashlib — hashing
 import hashlib
 hashlib.sha256(b"hello").hexdigest()
+# '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'
 
 # logging — proper logging (use instead of print)
 import logging
@@ -2532,17 +2601,28 @@ Key principles: *Beautiful is better than ugly. Simple is better than complex. R
 ### Common Idioms
 
 ```python
+my_list = []
+x = None
+key = "age"
+my_dict = {"age": 30}
+default = 0
+items = ["a", "b"]
+names = ["Alice", "Bob"]
+scores = [95, 70]
+condition = True
+words = ["hello", "python"]
+
 # ✅ Check for empty collections
 if not my_list:         # instead of: if len(my_list) == 0
-    print("Empty!")
+    print("Empty!")     # Empty!
 
 # ✅ Check for None specifically
 if x is None:           # instead of: if x == None
-    pass
+    print("missing")    # missing
 
 # ✅ Use 'in' for membership
 if key in my_dict:      # instead of: if my_dict.has_key(key)
-    pass
+    print(my_dict[key]) # 30
 
 # ✅ EAFP over LBYL (Easier to Ask Forgiveness than Permission)
 # ❌ LBYL (Look Before You Leap)
@@ -2557,40 +2637,54 @@ except KeyError:
 
 # Even simpler:
 value = my_dict.get(key, default)
+value                   # 30
 
 # ✅ Use enumerate instead of range(len(...))
 for i, item in enumerate(items):
     print(i, item)
+# 0 a
+# 1 b
 
 # ✅ Use zip for parallel iteration
 for name, score in zip(names, scores):
     print(name, score)
+# Alice 95
+# Bob 70
 
 # ✅ Use with for resource management
+with open("file.txt", "w") as f:
+    f.write("ok")
 with open("file.txt") as f:
     data = f.read()
+data                    # 'ok'
 
 # ✅ Chained comparisons
+x = 5
 if 0 < x < 10:         # instead of: if x > 0 and x < 10
-    pass
+    print("in range")  # in range
 
 # ✅ Conditional assignment
 result = value if condition else default
+result                  # 30
 
 # ✅ Use any() and all()
 if any(score > 90 for score in scores):
-    print("At least one A!")
+    print("At least one A!")     # At least one A!
 
 if all(score >= 60 for score in scores):
-    print("Everyone passed!")
+    print("Everyone passed!")    # Everyone passed!
 
 # ✅ Dictionary setdefault
 graph = {}
 graph.setdefault("A", []).append("B")
+graph                   # {'A': ['B']}
 
 # ✅ Underscore for unused variables
-for _ in range(5):
-    do_something()
+for _ in range(3):
+    print("tick")
+# tick
+# tick
+# tick
 
 # ✅ String joining (not concatenation in loops)
 # ❌ Slow
@@ -2600,6 +2694,7 @@ for word in words:
 
 # ✅ Fast
 result = " ".join(words)
+result                  # 'hello python'
 ```
 
 ### PEP 8 — Style Guide Highlights
@@ -2629,13 +2724,16 @@ funcs = [lambda i=i: i for i in range(5)]
 [f() for f in funcs]   # [0, 1, 2, 3, 4]
 
 # ⚠️ Modifying a list while iterating
+my_list = [1, 2, 3, 4, 5]
+
 # ❌
 for item in my_list:
-    if condition(item):
+    if item % 2 == 0:
         my_list.remove(item)   # skips elements!
 
 # ✅
-my_list = [item for item in my_list if not condition(item)]
+my_list = [item for item in my_list if item % 2 != 0]
+my_list    # [1, 3, 5]
 
 # ⚠️ Integer caching
 a = 256

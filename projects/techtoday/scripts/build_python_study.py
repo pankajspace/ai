@@ -9,7 +9,7 @@ from markdown.util import AtomicString
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-STUDY_DIR = PROJECT_ROOT / "src" / "study" / "python"
+STUDY_DIR = PROJECT_ROOT / "study" / "python"
 GUIDES = (
     ("python-crash-course", "Python Crash Course", "Crash course"),
     ("python-course", "Python Course", "Full course"),
