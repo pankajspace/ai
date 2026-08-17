@@ -52,7 +52,7 @@ Use a `t3.small` when running several memory-intensive projects at the same time
 
 ## Shared Runtime Conventions
 
-1. Static sites live under `projects/<name>/src/`; the root site's files are served from `/var/www/techtoday`.
+1. Static sites live under `projects/<name>/src/` except the root home page, which lives at `projects/techtoday/` (`index.html`, CSS, and `study/`) and is served from `/var/www/techtoday`.
 2. Static sites do not use Docker, ECR, `PATH_PREFIX`, or Secrets Manager.
 3. Container apps listen on port `5000` inside the container and use unique EC2 host ports in the `500x` range.
 4. Container apps use unique local development ports in the `808x` range; the reusable `template` starter uses `8090`.

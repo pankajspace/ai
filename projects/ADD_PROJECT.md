@@ -184,7 +184,7 @@ After the project works:
 1. Document its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets in its `README.md`.
 2. Advance the next available local and EC2 host ports in § 1 of this guide.
 3. Verify every workflow path listed in the project README exists under `.github/workflows/`.
-4. If the project should appear on the public home page, update `projects/techtoday/src/index.html`.
+4. If the project should appear on the public home page, update `projects/techtoday/index.html`.
 
 Public home page card update:
 
@@ -192,7 +192,7 @@ Public home page card update:
 2. Copy an existing project card.
 3. Update the title, description, link, icon or visual marker, and status badge.
 4. Use a live status only after the production URL works.
-5. Preview `projects/techtoday/src/index.html` locally before committing.
+5. Preview `projects/techtoday/index.html` locally before committing.
 
 After this, routine work follows the new project's `README.md`. Verify that it
 contains concrete local setup, daily development, deployment, production

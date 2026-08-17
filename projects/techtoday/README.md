@@ -8,20 +8,19 @@ Static home page for [techtoday.click](https://techtoday.click), served directly
 
 ### Preview Locally
 
-Study guides live next to `src/`, but the live site serves them as `/study/...`
-beside `index.html`. Assemble that same layout before previewing:
+The project folder *is* the web root: `index.html`, CSS, and `study/` sit
+together. From the repository root:
 
 ```bash
 cd projects/techtoday
-./scripts/assemble_site.sh .preview
-python3 -m http.server 8000 --directory .preview
+python3 -m http.server 8000
 ```
 
-Open http://localhost:8000. Home-page Study links and the ⚡ brand on study
-pages both resolve with this combined tree.
+Open http://localhost:8000. You can also open `index.html` directly, but a
+local server is more reliable for relative asset paths.
 
-You can open `src/index.html` directly for the home page alone, but Study
-links will 404 unless you use the preview tree above.
+Deploy still uses `assemble_site.sh` so `scripts/`, `README.md`, and env files
+are not copied to the server.
 
 ### Commit and Automatic Deployment
 
@@ -37,9 +36,9 @@ git push -u origin feat/techtoday-short-description
 
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/techtoday/**` trigger `.github/workflows/deploy-techtoday.yml`. The
-workflow merges `src/` and `study/` into one tree and synchronizes it to
-`/var/www/techtoday/` on EC2; Nginx serves the files directly, so there is no
-container or service to restart.
+workflow copies public files (home page, CSS, and study guides) and
+synchronizes them to `/var/www/techtoday/` on EC2; Nginx serves the files
+directly, so there is no container or service to restart.
 
 Verify production after the workflow succeeds:
 
@@ -110,14 +109,12 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
+├── index.html                   ← home page, entry point
+├── style.css                    ← home-page styles
+├── site-header.css              ← shared Study nav header
 ├── scripts/
-│   ├── assemble_site.sh         ← merge src/ + study/ for preview and deploy
+│   ├── assemble_site.sh         ← copy public files for deploy
 │   └── build_python_study.py    ← regenerate Python study HTML from Markdown
-├── src/
-│   ├── index.html               ← home page, entry point
-│   └── css/
-│       ├── style.css            ← home-page styles
-│       └── site-header.css      ← shared Study nav header
 └── study/
     ├── python/                  ← crash course + full course
     └── ai/                      ← LLM, RAG, Docker, Strands guides
@@ -136,7 +133,7 @@ projects/techtoday/
 
 ## Adding a New Project Card
 
-1. Open `src/index.html`.
+1. Open `index.html`.
 2. Inside the `<div class="grid">` in the `#projects` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and status badge (`live` or `soon`).
 4. Set the status badge: `<span class="status live">Live</span>` for a running project, or `<span class="status soon">Coming soon</span>` for one that is not yet live.

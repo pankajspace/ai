@@ -48,7 +48,7 @@ Proceed without extra questions if you have enough information.
     grep -nE 'PROJECT_NAME|HOSTPORT' .github/workflows/deploy-<project-name>.yml   # must print nothing
     ```
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
-11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add a home-page card under `projects/techtoday/src/` if the project should be public.
+11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add a home-page card under `projects/techtoday/index.html` if the project should be public.
 
 ## README Requirements
 
