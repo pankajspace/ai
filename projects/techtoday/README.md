@@ -8,15 +8,20 @@ Static home page for [techtoday.click](https://techtoday.click), served directly
 
 ### Preview Locally
 
-No installation or build step is required. From the repository root:
+Study guides live next to `src/`, but the live site serves them as `/study/...`
+beside `index.html`. Assemble that same layout before previewing:
 
 ```bash
-cd projects/techtoday/src
-python3 -m http.server 8000
+cd projects/techtoday
+./scripts/assemble_site.sh .preview
+python3 -m http.server 8000 --directory .preview
 ```
 
-Open http://localhost:8000. You can also open `src/index.html` directly, but a
-local server is more reliable for relative asset paths.
+Open http://localhost:8000. Home-page Study links and the ⚡ brand on study
+pages both resolve with this combined tree.
+
+You can open `src/index.html` directly for the home page alone, but Study
+links will 404 unless you use the preview tree above.
 
 ### Commit and Automatic Deployment
 
@@ -32,8 +37,9 @@ git push -u origin feat/techtoday-short-description
 
 Open a pull request and squash-merge it into `main`. Changes under
 `projects/techtoday/**` trigger `.github/workflows/deploy-techtoday.yml`. The
-workflow synchronizes `src/` to `/var/www/techtoday/` on EC2; Nginx serves the
-files directly, so there is no container or service to restart.
+workflow merges `src/` and `study/` into one tree and synchronizes it to
+`/var/www/techtoday/` on EC2; Nginx serves the files directly, so there is no
+container or service to restart.
 
 Verify production after the workflow succeeds:
 
@@ -58,7 +64,9 @@ git push -u origin fix/techtoday-rollback
 Use this only if GitHub Actions is unavailable. From the repository root:
 
 ```bash
-rsync -avz --delete projects/techtoday/src/ \
+cd projects/techtoday
+./scripts/assemble_site.sh /tmp/techtoday-site
+rsync -avz --delete /tmp/techtoday-site/ \
     ec2-user@44.193.134.238:/var/www/techtoday/
 ```
 
@@ -75,9 +83,11 @@ Use this only if the site has been moved from EC2 to S3 and CloudFront:
 
 ```bash
 S3_BUCKET=<bucket-name>
-aws s3 sync projects/techtoday/src/ s3://$S3_BUCKET/ \
+cd projects/techtoday
+./scripts/assemble_site.sh /tmp/techtoday-site
+aws s3 sync /tmp/techtoday-site/ s3://$S3_BUCKET/ \
     --delete --cache-control "public, max-age=86400"
-aws s3 cp projects/techtoday/src/index.html s3://$S3_BUCKET/index.html \
+aws s3 cp /tmp/techtoday-site/index.html s3://$S3_BUCKET/index.html \
     --cache-control "public, max-age=60"
 
 DISTRIBUTION_ID=<cloudfront-distribution-id>
@@ -100,12 +110,17 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-└── src/
-    ├── index.html      ← single page, entry point
-    ├── css/
-    │   └── style.css   ← all styles, dark-theme design tokens as CSS variables
-    └── js/
-        └── main.js     ← mobile nav toggle, no external libraries
+├── scripts/
+│   ├── assemble_site.sh         ← merge src/ + study/ for preview and deploy
+│   └── build_python_study.py    ← regenerate Python study HTML from Markdown
+├── src/
+│   ├── index.html               ← home page, entry point
+│   └── css/
+│       └── style.css            ← home-page styles
+└── study/
+    ├── site-header.css
+    ├── python/                  ← crash course + full course
+    └── ai/                      ← LLM, RAG, Docker, Strands guides
 ```
 
 ---
