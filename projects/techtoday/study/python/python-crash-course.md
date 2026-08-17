@@ -30,7 +30,7 @@
 
 ## 1. Hello Python
 
-Python is a readable, dynamically typed language. These commands check the install, run a file, and open the interactive REPL — `print()` writes output, and `#` / `"""` mark comments.
+Python is a readable, dynamically typed language where indentation defines code blocks and programs run top-to-bottom. This section covers how to verify your Python setup, the difference between running scripts and using the REPL, and the fundamentals of output and comments. You will also learn why `print()` is central for quick debugging and exploration.
 
 > Don't have Python installed yet? See [Installing Python](python-course.md#installing-python) for Windows/macOS/Linux setup steps.
 
@@ -49,7 +49,7 @@ print("Hello, World!")    # Hello, World!
 
 ## 2. Variables & Types
 
-No `let`, `const`, or `var` — just assign directly.
+Python variables are names bound to objects, not fixed memory slots with declared types. This section introduces dynamic typing, common built-in types (`str`, `int`, `float`, `bool`, `None`), multiple assignment, and truthy/falsy behavior. It also explains type inspection and safe type conversion for real-world input handling.
 
 ```python
 name = "Alice"        # str
@@ -80,7 +80,7 @@ bool("hi")            # True
 
 ## 3. Operators
 
-Operators compute values and compare objects. `/` always returns a float; `//` floors; `==` tests value while `is` tests identity (same object in memory).
+Operators are the building blocks for calculations, comparisons, and control decisions. This section covers arithmetic, comparison, logical, identity, membership, and conditional expressions, plus common pitfalls like `==` versus `is`. You will also see how operator behavior affects branching, filtering, and expression readability.
 
 ```python
 # Arithmetic
@@ -125,7 +125,7 @@ status               # 'adult'
 
 ## 4. Strings
 
-Strings are immutable sequences of characters. Index from `0` (or `-1` from the end), slice with `[start:stop]`, and prefer f-strings for interpolation.
+Strings are immutable Unicode sequences, which makes them predictable and safe to reuse across operations. This section explains indexing, slicing, common transformation methods, and search operations, along with practical formatting using f-strings. It also highlights immutability so you understand when operations create new strings instead of modifying existing ones.
 
 ```python
 s = "Hello, World!"
@@ -168,7 +168,7 @@ s = "h" + s[1:]                # 'hello, World!'
 
 ## 5. Data Structures
 
-Python’s four core collections: lists (ordered, changeable), tuples (ordered, fixed), dicts (key → value), and sets (unique, unordered).
+Python collections model different access patterns: sequence access, key-based lookup, uniqueness, and fixed records. This section compares lists, tuples, dictionaries, and sets with an emphasis on mutability, ordering, lookup cost, and common operations. Choosing the right structure here is one of the biggest productivity and performance wins in Python.
 
 ### Lists — ordered, mutable `[]`
 
@@ -285,7 +285,7 @@ unique                    # [1, 2, 3]  (order not guaranteed)
 
 ## 6. Control Flow
 
-Choose a path with `if` / `elif` / `else`. Python 3.10+ `match` / `case` compares a value against patterns. Blocks are defined by indentation, not braces.
+Control flow determines which code path executes based on conditions and patterns. This section covers `if`/`elif`/`else` for boolean logic and `match`/`case` for structural branching in Python 3.10+. It also reinforces indentation-driven block structure, which is essential for writing correct Python.
 
 ```python
 score = 85
@@ -316,7 +316,7 @@ match command:
 
 ## 7. Loops
 
-`for` walks any iterable; `range()` makes integer sequences; `enumerate()` adds an index; `zip()` walks lists in parallel. `while` repeats until a condition fails; `break` stops, `continue` skips.
+Loops let you process data repeatedly without duplicating code. This section explains iteration with `for` over any iterable, sequence generation with `range`, index pairing via `enumerate`, and parallel traversal with `zip`. It also covers `while`, `break`, and `continue` so you can control termination and flow safely.
 
 ```python
 # for — iterate over anything
@@ -379,7 +379,7 @@ for i in range(10):
 
 ## 8. Functions
 
-Functions package reusable logic. Parameters can have defaults; returning multiple values actually returns a tuple. `*args` / `**kwargs` collect extra positional and keyword arguments.
+Functions encapsulate reusable behavior and make code easier to test, maintain, and compose. This section covers parameters, default arguments, return values, tuple unpacking, variadic arguments (`*args`, `**kwargs`), and lambdas for short callbacks. It also includes the mutable-default-argument pitfall, one of the most important function gotchas in Python.
 
 ```python
 def greet(name, greeting="Hello"):
@@ -439,7 +439,7 @@ add(2)                            # [2]  fresh list each time
 
 ## 9. List Comprehensions
 
-The Pythonic way to transform/filter data.
+Comprehensions provide concise syntax for transforming and filtering iterables while keeping intent clear. This section covers list, dict, and set comprehensions plus generator expressions for lazy evaluation. You will learn when comprehensions improve readability and when a regular loop is a better choice.
 
 ```python
 # [expression for item in iterable]
@@ -469,7 +469,7 @@ total      # 333332833333500000
 
 ## 10. Classes (OOP)
 
-A class is a blueprint; an instance is one object. `__init__` sets instance data (`self.name`); methods take `self`. `__str__` controls how `print()` displays the object.
+Object-oriented programming organizes code around objects that combine state and behavior. This section explains class design, instance versus class attributes, method types, inheritance, method overriding, `super()`, and MRO in multiple inheritance scenarios. It also introduces properties and dataclasses for cleaner, safer object APIs.
 
 ```python
 class Dog:
@@ -648,7 +648,7 @@ print(p == Point(1.0, 2.0))  # True
 
 ## 11. Error Handling
 
-`try` / `except` catch failures without crashing. Put cleanup in `finally` (always runs) and success-only work in `else`. Raise `ValueError` (or a custom subclass) when your own checks fail.
+Error handling turns runtime failures into predictable control paths instead of abrupt crashes. This section covers `try`/`except`/`else`/`finally`, targeted exception catching, re-raising, and custom exceptions for domain-specific errors. You will learn how to fail clearly and recover safely in production-style code.
 
 ```python
 try:
@@ -684,7 +684,7 @@ class AppError(Exception):
 
 ## 12. Modules & Imports
 
-Every `.py` file is a module. `import math` keeps a namespace; `from math import sqrt` pulls names in. The `if __name__ == "__main__"` guard runs code only when the file is executed, not when imported.
+Modules and packages are Python's unit of code organization and reuse. This section explains import styles, aliases, namespace management, package layout, and the `__name__ == "__main__"` guard for script entry points. These concepts are key to scaling from single-file scripts to maintainable projects.
 
 ```python
 import math
@@ -709,7 +709,7 @@ if __name__ == "__main__":
 
 ## 13. File I/O
 
-`with open(...)` opens a file and always closes it, even on error. Use `'r'`/`'w'`/`'a'` for read/write/append; `json` and `pathlib.Path` are the usual tools for structured data and paths.
+File I/O is about safely reading and writing persistent data. This section covers context-managed file access with `with`, text and write modes, and structured formats like JSON. It also introduces `pathlib` for cross-platform path handling and cleaner file manipulation code.
 
 ```python
 # Read
@@ -743,7 +743,7 @@ list(Path(".").glob("**/*.py"))       # [PosixPath('...')]  all .py files
 
 ## 14. Iterators & Generators
 
-A generator is a function that `yield`s values one at a time instead of building a full list. That saves memory and can even represent infinite sequences (like Fibonacci).
+Iterators and generators power Python's lazy data pipelines. This section explains the iterator protocol (`iter`, `next`, `StopIteration`) and generator functions using `yield` for memory-efficient processing. You will also see how infinite streams and one-pass computation become practical with this model.
 
 ```python
 # Generator — uses yield, lazy evaluation, memory efficient
@@ -773,7 +773,7 @@ fib = fibonacci()
 
 ## 15. Decorators
 
-A function that wraps another function to add behavior.
+Decorators let you extend function behavior without changing the original implementation. This section covers wrapper functions, metadata preservation with `functools.wraps`, decorator factories (decorators with arguments), and stacking order. These patterns are widely used for logging, timing, caching, validation, and authorization.
 
 ```python
 import functools
@@ -800,7 +800,7 @@ print(slow_func())
 
 ## 16. Context Managers
 
-Guarantee cleanup code runs (like `try/finally` but cleaner).
+Context managers define setup/teardown boundaries for resources such as files, locks, and timers. This section shows how `with` guarantees cleanup, even during exceptions, and how to build custom managers with `contextlib.contextmanager`. Mastering this pattern prevents resource leaks and keeps code reliable.
 
 ```python
 import time
@@ -825,7 +825,7 @@ with timer():
 
 ## 17. Type Hints
 
-Optional static typing — not enforced at runtime, but great for documentation and IDE support.
+Type hints add explicit contracts to Python code without changing runtime behavior. This section covers parameter and return annotations, common generic types, and optional values. It also shows how tools like mypy and IDEs use hints to catch errors early and improve navigation.
 
 ```python
 from typing import Optional
@@ -850,7 +850,7 @@ find(99)    # None
 
 ## 18. Unpacking & Useful Patterns
 
-Unpacking splits a sequence into variables (`a, *rest = ...`) and `*` / `**` spread lists/dicts into calls. `any`, `all`, `min`, `max`, and `sum` are the everyday reductions.
+Unpacking and argument expansion are core Python patterns for expressive data handling. This section covers sequence unpacking, starred targets, argument spreading with `*` and `**`, and dictionary merging. It also introduces high-value built-ins (`any`, `all`, `min`, `max`, `sum`) for concise aggregate logic.
 
 ```python
 def greet(a, b, c=0):
@@ -890,7 +890,7 @@ list(filter(lambda n: n > 0, nums))    # [1, 7, 3]
 
 ## 19. Common Standard Library
 
-You can go far without extra packages: `os`/`sys` for the environment, `math`/`random`/`datetime` for numbers and time, `re` for patterns, `logging` for messages, `collections` for counters and default dicts.
+Python's standard library provides production-grade tools for most daily tasks without third-party dependencies. This section surveys environment access (`os`, `sys`), numeric and date utilities, regex processing, structured logging, and specialized containers from `collections`. Knowing these modules helps you write faster, cleaner, and dependency-light code.
 
 ```python
 import os
@@ -934,7 +934,7 @@ dd                                     # defaultdict(<class 'list'>, {'key': ['v
 
 ## 20. Virtual Environments & Packages
 
-A venv isolates project dependencies so they don’t collide with system Python. `pip freeze` snapshots versions; `pip install -r requirements.txt` recreates them.
+Virtual environments isolate project dependencies so different projects can safely use different versions of packages. This section covers creating and activating a venv, installing packages with pip, and pinning dependencies with `requirements.txt`. These practices are essential for reproducible setups across machines and deployments.
 
 ```bash
 # Create & activate virtual environment
@@ -952,7 +952,7 @@ deactivate                          # exit venv
 
 ## 21. Async/Await (Quick Intro)
 
-For I/O-bound concurrency (network calls, file I/O).
+`async`/`await` enables cooperative concurrency, especially for I/O-bound workloads such as APIs, sockets, and disk operations. This section introduces coroutines, non-blocking waits, and task orchestration with `asyncio.gather`. You will learn the mental model for running many waiting operations efficiently in one thread.
 
 ```python
 import asyncio
@@ -974,7 +974,7 @@ asyncio.run(main())
 
 ## 22. Pythonic Tips
 
-Idiomatic Python prefers truthiness (`if not lst`), identity checks (`is None`), `enumerate`, `with` for files, chained comparisons, and `" ".join(...)` instead of `+=` in a loop.
+Pythonic code emphasizes clarity, readability, and language-native idioms over verbose patterns. This section highlights practical conventions such as truthiness checks, `is None`, context-managed files, chained comparisons, and efficient string assembly. Adopting these habits makes your code more maintainable and immediately recognizable to other Python developers.
 
 ```python
 my_list = []
@@ -1032,7 +1032,7 @@ if (n := len(data)) > 10:
 
 ## Quick Reference Card
 
-A one-screen cheat sheet of the syntax used above — skim it when you forget a construct, then jump back to the matching section for detail.
+A one-screen cheat sheet of the syntax and patterns used throughout this crash course. Use it for quick recall of constructs, then jump back to the related topic sections for deeper explanation and conceptual context.
 
 ```python
 # Variables
