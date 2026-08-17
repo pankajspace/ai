@@ -6,9 +6,10 @@
 #   1. Check out the repo so the site files are available.
 #   2. Assume a scoped AWS IAM role via OIDC — no long-lived AWS access keys
 #      are stored in GitHub Secrets.
-#   3. rsync the contents of projects/techtoday/src/ to /var/www/techtoday/
-#      on the production EC2 instance via SSH. Nginx serves these files
-#      directly — no Docker container, no image build, no registry.
+#   3. Merge src/ (home page) and study/ into one tree, then rsync it to
+#      /var/www/techtoday/ on the production EC2 instance via SSH. Nginx
+#      serves these files directly — no Docker container, no image build,
+#      no registry.
 #   4. Write a deploy summary to the Actions job summary.
 #
 # See projects/SETUP.md for the one-time Nginx and DNS setup, and
@@ -56,11 +57,16 @@ jobs:
           ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Assemble home page and study guides
+        run: |
+          chmod +x projects/techtoday/scripts/assemble_site.sh
+          projects/techtoday/scripts/assemble_site.sh "$PWD/site"
+
       - name: Deploy static files via rsync
         run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            projects/techtoday/src/ \
+            site/ \
             ec2-user@${{ secrets.EC2_HOST }}:/var/www/techtoday/
 
       - name: Record deploy in job summary
