@@ -3500,6 +3500,7 @@ This section maps your next learning steps by domain so you can move from fundam
 | Goal                   | Libraries / Frameworks to Learn         |
 |------------------------|-----------------------------------------|
 | **Web Development**    | Flask, Django, FastAPI                  |
+| **API Development**    | FastAPI, Flask-RESTful                  |
 | **Data Science**       | NumPy, Pandas, Matplotlib, Jupyter      |
 | **Machine Learning**   | scikit-learn, TensorFlow, PyTorch       |
 | **Automation**         | Selenium, Beautiful Soup, Scrapy        |
@@ -3507,14 +3508,11 @@ This section maps your next learning steps by domain so you can move from fundam
 | **Desktop Apps**       | Tkinter, PyQt, Kivy                     |
 | **Game Development**   | Pygame                                  |
 | **DevOps / Scripting** | Fabric, Invoke, subprocess              |
-| **API Development**    | FastAPI, Flask-RESTful                  |
 
 ### Resources
 
 - 📖 [Official Python Docs](https://docs.python.org/3/)
 - 📖 [Real Python](https://realpython.com/)
-- 📖 [Python Cookbook (O'Reilly)](https://www.oreilly.com/library/view/python-cookbook-3rd/9781449357337/)
-- 🧠 [LeetCode](https://leetcode.com/) — practice problem solving
 - 🧠 [Project Euler](https://projecteuler.net/) — math + programming challenges
 
 > *"Python is a language that lets you work quickly and integrate systems more effectively."* — python.org
