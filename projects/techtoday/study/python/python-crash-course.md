@@ -30,7 +30,16 @@
 
 ## 1. Hello Python
 
-Python is a readable, dynamically typed language where indentation defines code blocks and programs run top-to-bottom. This section covers how to verify your Python setup, the difference between running scripts and using the REPL, and the fundamentals of output and comments. You will also learn why `print()` is central for quick debugging and exploration.
+Python is an **interpreted** language: there is no compile step you run yourself. The interpreter reads your `.py` file, turns it into bytecode, and executes it — which is why the edit-run cycle is instant, and why a type error surfaces only when the offending line actually runs.
+
+Its most visible difference from C-family languages is that **indentation is syntax**. There are no `{ }` braces; a block is defined by being indented under the line that introduces it, and it ends when the indentation returns. Four spaces, consistently, is the convention.
+
+Two ways to run code, used for different things:
+
+1. **The REPL** (`python` with no arguments) evaluates one statement at a time and prints each result. State persists for the session, so it is your scratchpad — check what a method returns, inspect an object with `dir(obj)` or `help(obj)`, test an idea before committing it to a file.
+2. **Script mode** (`python script.py`) runs a fresh interpreter over the whole file, top to bottom. `def` and `class` are themselves statements that execute in order, so nothing is hoisted — you cannot call a function defined further down the file.
+
+Note also that `#` comments are stripped by the tokenizer and vanish, whereas a triple-quoted string is a real expression; when it is the first statement in a module, function, or class, Python keeps it as that object's `__doc__` — which is what `help()` reads.
 
 > Don't have Python installed yet? See [Installing Python](python-course.md#installing-python) for Windows/macOS/Linux setup steps.
 
@@ -49,7 +58,13 @@ print("Hello, World!")    # Hello, World!
 
 ## 2. Variables & Types
 
-Python variables are names bound to objects, not fixed memory slots with declared types. This section introduces dynamic typing, common built-in types (`str`, `int`, `float`, `bool`, `None`), multiple assignment, and truthy/falsy behavior. It also explains type inspection and safe type conversion for real-world input handling.
+The mental model that explains almost everything else: **a Python variable is a name, not a box**. `x = 5` does not reserve a slot and write `5` into it — it creates an integer object on the heap and binds the label `x` to it. Reassigning `x = "hello"` leaves the integer untouched and simply re-points the label.
+
+Three consequences follow directly:
+
+1. **Types belong to objects, not names.** That is what "dynamically typed" means — a name can hold an `int` now and a `list` later, and the type check happens when you attempt an operation, not when you assign.
+2. **Assignment never copies.** `b = a` gives a second name for the *same* object, so mutating through `b` is visible through `a`.
+3. **Mutability is the property that matters.** `str`, `int`, `float`, `tuple`, `bool`, and `None` are immutable and safe to share; `list`, `dict`, and `set` are mutable, so sharing them must be deliberate.
 
 ```python
 name = "Alice"        # str
@@ -66,6 +81,10 @@ print(name, age)      # Alice 30
 
 `type()` and `isinstance()` inspect a value; constructors like `int()`, `str()`, and `bool()` convert between types. Empty values (`0`, `""`, `[]`, `None`) are falsy.
 
+Prefer `isinstance()` over `type()`, because it means "this type **or a subclass**" — which matters more often than you would expect, since `bool` is genuinely a subclass of `int`. The conversion functions are **constructors**: they build a new object rather than reinterpreting memory, and they raise `ValueError` on malformed input (`int("abc")`), which is what makes them a natural validation point for user input.
+
+The truthiness rule is worth memorising because it silently drives every `if` statement: empty containers, zero of any numeric type, and `None` are **falsy**; everything else is **truthy**. That is why `if not my_list:` is the idiomatic emptiness check — and why you must write `if x is None:` when `0` or `""` are legitimate values.
+
 ```python
 age = 30
 type(age)             # <class 'int'>
@@ -80,7 +99,16 @@ bool("hi")            # True
 
 ## 3. Operators
 
-Operators are the building blocks for calculations, comparisons, and control decisions. This section covers arithmetic, comparison, logical, identity, membership, and conditional expressions, plus common pitfalls like `==` versus `is`. You will also see how operator behavior affects branching, filtering, and expression readability.
+Every operator in Python is a call to a **dunder method** in disguise: `a + b` runs `type(a).__add__(a, b)`. That single mechanism is why `+` adds numbers, concatenates strings, and merges lists — each type supplies its own implementation, and your own classes can too.
+
+Four behaviours are worth pinning down before you write anything real:
+
+1. **Two divisions.** `/` is true division and always returns a `float` (`4 / 2` is `2.0`); `//` is floor division and rounds *toward negative infinity*, so `-7 // 2` is `-4`, not `-3`. `%` follows that rule, so its result carries the sign of the divisor — which makes it reliable for wrapping indices and clock arithmetic.
+2. **`and` / `or` do not return booleans.** They return one of their operands and **short-circuit**, stopping as soon as the answer is known. `user and user.name` therefore yields `None` instead of raising, and `port or 8080` supplies a fallback (careful: `0` is falsy).
+3. **`==` versus `is`.** `==` compares *values* and is customisable; `is` compares *object identity* and can never be overridden. Reserve `is` for `None`, `True`, and `False`. It appears to work for small integers only because CPython caches them, then breaks silently for larger ones.
+4. **Comparisons chain.** `0 < x < 10` is real syntax, evaluated as `0 < x and x < 10` with `x` computed once.
+
+Also note that assignment is a **statement**, not an expression — `if (x = 5)` is a syntax error by design, which is exactly why the walrus operator `:=` exists as a separate spelling.
 
 ```python
 # Arithmetic
@@ -125,7 +153,15 @@ status               # 'adult'
 
 ## 4. Strings
 
-Strings are immutable Unicode sequences, which makes them predictable and safe to reuse across operations. This section explains indexing, slicing, common transformation methods, and search operations, along with practical formatting using f-strings. It also highlights immutability so you understand when operations create new strings instead of modifying existing ones.
+Two words define Python strings, and both have consequences.
+
+**Unicode**: a `str` is a sequence of *code points*, not bytes, so `len("café")` is `4` no matter how it is stored on disk. Bytes are a separate type (`bytes`), and you convert explicitly with `.encode()` / `.decode()` — which is why you should pass `encoding="utf-8"` at every I/O boundary.
+
+**Immutable**: no string method modifies the original; every one returns a *new* string. `s.upper()` on its own line does nothing — you must assign the result. This is what makes strings hashable (usable as dict keys) and safe to share, at the cost of making `+=` in a loop quadratic, since each step copies everything accumulated so far. Build strings with `"".join(parts)` instead.
+
+Slicing `s[start:stop:step]` follows three rules that apply to **every** sequence in Python, not just strings: `start` is inclusive and `stop` is exclusive (so `s[:3]` and `s[3:]` tile perfectly), negative indices count from the end, and out-of-range slice bounds are silently clamped rather than raising — unlike plain indexing, which does raise `IndexError`. A negative step walks backwards, which is the whole trick behind `s[::-1]`.
+
+One method to read carefully: `strip("abc")` removes any leading/trailing characters *from that set*, not the substring `"abc"`. Use `removeprefix()` / `removesuffix()` when you mean a literal substring.
 
 ```python
 s = "Hello, World!"
@@ -168,11 +204,20 @@ s = "h" + s[1:]                # 'hello, World!'
 
 ## 5. Data Structures
 
-Python collections model different access patterns: sequence access, key-based lookup, uniqueness, and fixed records. This section compares lists, tuples, dictionaries, and sets with an emphasis on mutability, ordering, lookup cost, and common operations. Choosing the right structure here is one of the biggest productivity and performance wins in Python.
+Picking the right container is the highest-leverage decision in everyday Python, because it fixes both what your code can express and how fast it runs. Four questions decide it:
+
+1. **Does order matter?** Lists and tuples are ordered and indexable; sets are not; dicts preserve insertion order (guaranteed since Python 3.7) but are keyed rather than indexed.
+2. **Will it change?** Mutable: `list`, `dict`, `set`. Immutable: `tuple`, `str`, `frozenset` — and immutability is what makes an object **hashable**, hence usable as a dict key or set member.
+3. **How will you look things up?** Scanning a list is `O(n)`; a dict key lookup or set membership test is `O(1)` on average, because both are hash tables. Converting a list to a set before many `in` checks is the classic Python speedup.
+4. **Same kind of thing, or fixed fields?** A list holds homogeneous items where position is incidental; a tuple holds a fixed number of heterogeneous fields where position is meaningful — which is why a tuple behaves like a lightweight record.
 
 ### Lists — ordered, mutable `[]`
 
 Lists keep items in order and you can change them in place — append, insert, pop, sort. Use them whenever you need a growable sequence.
+
+A list is a **dynamic array of references**, not a linked list. CPython over-allocates the underlying block, so `append()` is amortised `O(1)` — but `insert(0, x)`, `pop(0)`, and `remove(x)` are `O(n)`, because every following reference has to shift. Use `collections.deque` when you need speed at both ends.
+
+One trap to internalise early: `lst.sort()` sorts **in place and returns `None`**, while `sorted(lst)` leaves the original alone and returns a new list. `x = lst.sort()` is a very common bug. The same convention applies to `reverse()`, `append()`, and every other in-place list method.
 
 ```python
 nums = [1, 2, 3, 4, 5]
@@ -216,6 +261,10 @@ nums.count(1)            # 2
 
 Tuples are like lists you cannot mutate. Use them for fixed records (coordinates, pairs) and when you need a hashable sequence as a dict key.
 
+The difference is really about intent, not restriction: lists model *collections* of like items, tuples model *records* with a fixed shape where each position means something. Immutability then buys hashability, safe sharing without defensive copies, and a more compact representation.
+
+Note that it is the **comma** that creates a tuple, not the parentheses — `1, 2` is already one, which is why a stray trailing comma (`x = 5,`) silently produces a one-element tuple. And immutability is *shallow*: a tuple's slots always point at the same objects, but a list inside one can still be mutated.
+
 ```python
 point = (3, 4)
 x, y = point             # x = 3, y = 4
@@ -228,6 +277,12 @@ point[0]                 # 3
 ### Dicts — key-value pairs `{}`
 
 Dicts map unique keys to values with O(1) lookup. Access with `[]` (raises if missing) or `.get()` (safe default); iterate `.items()` for key and value together.
+
+The dictionary is the most important structure in Python because the language itself runs on it: module namespaces, object attributes (`obj.__dict__`), and keyword arguments are all dicts. Learning to reach for one instead of parallel lists or a long `if`/`elif` ladder is a big step toward idiomatic code.
+
+Each key is hashed to find its slot, which is why lookup cost does not grow with size — and why keys must be **hashable**, and therefore effectively immutable. A key whose hash changed after insertion could never be found again.
+
+Match the access method to your intent: `d[key]` when a missing key is genuinely a bug, `d.get(key, default)` when absence is expected, and `d.setdefault(key, []).append(x)` when accumulating per key. Remember too that `.keys()`, `.values()`, and `.items()` return live **views**, so mutating the dict while iterating one raises `RuntimeError`.
 
 ```python
 person = {"name": "Alice", "age": 30}
@@ -263,6 +318,10 @@ merged                         # {'a': 1, 'b': 2}
 
 Sets store unique items and support union `|`, intersection `&`, and difference `-`. `{}` is an empty dict — use `set()` for an empty set.
 
+A set is a hash table storing only keys, so duplicates collapse automatically, elements must be hashable (no lists inside), and membership testing is `O(1)` rather than `O(n)`. It is the right structure whenever the problem is naturally phrased in set language — "which items are in A but not B?", "what are the distinct values?" — where the operators are both clearer and far faster than nested loops.
+
+The trade-off is no order and no indexing (`s[0]` raises `TypeError`). Note also that `remove()` raises `KeyError` on a missing element while `discard()` quietly does nothing; pick according to whether absence is an error.
+
 ```python
 s = {1, 2, 3}
 empty = set()             # NOT {} — that's an empty dict!
@@ -285,7 +344,11 @@ unique                    # [1, 2, 3]  (order not guaranteed)
 
 ## 6. Control Flow
 
-Control flow determines which code path executes based on conditions and patterns. This section covers `if`/`elif`/`else` for boolean logic and `match`/`case` for structural branching in Python 3.10+. It also reinforces indentation-driven block structure, which is essential for writing correct Python.
+Branches are tested top to bottom and **the first true one wins** — every later branch is skipped even if it would also be true. That is why the grading ladder below must run from the highest threshold down; reversing it would classify everyone as the loosest grade.
+
+The condition need not be a boolean: Python calls `bool()` on whatever you give it, so `if my_list:` reads as "if the list is non-empty". Keep the truthiness caveat in mind — use `if x is None:` when `0` or `""` are meaningful values.
+
+`match`/`case` (Python 3.10+) is **not** a `switch`. A switch compares one value against constants; `match` destructures a value against a *shape*, binding the pieces as it goes — so `case (0, y)` means "a 2-tuple starting with 0; call the second element `y`". Patterns are tried in order and the first match wins, so specific cases must come before general ones, and `case _:` is the catch-all wildcard. One trap: a bare name in a pattern always *captures* rather than compares, so use a dotted name (`case Color.RED:`) when you mean to test against a constant.
 
 ```python
 score = 85
@@ -316,7 +379,17 @@ match command:
 
 ## 7. Loops
 
-Loops let you process data repeatedly without duplicating code. This section explains iteration with `for` over any iterable, sequence generation with `range`, index pairing via `enumerate`, and parallel traversal with `zip`. It also covers `while`, `break`, and `continue` so you can control termination and flow safely.
+Python has no C-style `for (i = 0; i < n; i++)`. Its `for` is a **for-each** loop built on the iterator protocol: it calls `iter()` on the object, then `next()` repeatedly until `StopIteration` is raised. Everything follows from that — you can loop over a list, a string, a dict (yielding keys), a file (yielding lines), a generator, or any class that implements `__iter__`.
+
+Because iteration is protocol-driven, manual indexing is almost always the wrong tool. Three helpers cover nearly every case:
+
+1. **`range(start, stop, step)`** generates integers lazily — it is not a list, so `range(10**9)` costs nothing in memory.
+2. **`enumerate(seq, start=0)`** yields `(index, value)` pairs and replaces the `for i in range(len(seq))` anti-pattern.
+3. **`zip(a, b)`** walks several iterables in lockstep, stopping at the **shortest**; pass `strict=True` (3.10+) to make a length mismatch an error rather than silent truncation.
+
+Use `while` when the number of iterations is unknown and you are looping until a *condition* changes — making sure the body actually moves toward that condition. `break` leaves the loop entirely, `continue` skips to the next iteration, and both affect only the **innermost** loop, since Python has no labelled break.
+
+One rule to internalise: never add to or remove from a collection while iterating over it. The iterator tracks a position, so mutation causes skipped elements or a `RuntimeError`. Iterate over a copy or build a new list with a comprehension.
 
 ```python
 # for — iterate over anything
@@ -379,7 +452,11 @@ for i in range(10):
 
 ## 8. Functions
 
-Functions encapsulate reusable behavior and make code easier to test, maintain, and compose. This section covers parameters, default arguments, return values, tuple unpacking, variadic arguments (`*args`, `**kwargs`), and lambdas for short callbacks. It also includes the mutable-default-argument pitfall, one of the most important function gotchas in Python.
+A function in Python is a **first-class object**. `def greet(): ...` creates a function object at runtime and binds it to a name, exactly as `x = 5` binds an integer — so you can store functions in lists, pass them as arguments, and return them from other functions. That fact is what makes `sorted(key=...)`, callbacks, and decorators possible.
+
+Argument passing is neither by value nor by reference but **call by object reference**: the function receives the *same objects* the caller holds. Rebinding a parameter (`x = 99`) affects only the local name; *mutating* the object (`lst.append(99)`) is visible to the caller. This one rule explains the mutable-default gotcha below and most "why did my list change?" bugs.
+
+A few practical points. Every function returns something — `None` if you never write `return`. `return q, r` does not return two values; it builds one tuple that the call site unpacks. And keyword arguments are documentation at the call site: `create_user("Alice", is_admin=True)` beats `create_user("Alice", True)`. You can force that clarity with a bare `*` in the signature, which makes every following parameter keyword-only.
 
 ```python
 def greet(name, greeting="Hello"):
@@ -417,6 +494,10 @@ points                            # [(5, 0), (3, 1), (1, 2)]
 
 Default argument values are created **once** when the function is defined. Never use a mutable default (`[]`, `{}`) — use `None` and create a new object inside the function.
 
+The "names and objects" model explains exactly why. Defaults are evaluated when the `def` statement runs, not on each call, and the resulting object is stored on the function itself — you can see it in `add_bad.__defaults__`. Every call that omits the argument therefore shares that one list, and each `append` accumulates into it.
+
+The `None` sentinel fixes it because the `lst = []` line lives in the function *body*, which does run on every call. The same pattern applies to `{}`, `set()`, and any other mutable default — including subtler ones like `datetime.now()`, which would freeze the timestamp at import time.
+
 ```python
 # ❌ BAD — list is shared across calls
 def add_bad(val, lst=[]):
@@ -439,7 +520,15 @@ add(2)                            # [2]  fresh list each time
 
 ## 9. List Comprehensions
 
-Comprehensions provide concise syntax for transforming and filtering iterables while keeping intent clear. This section covers list, dict, and set comprehensions plus generator expressions for lazy evaluation. You will learn when comprehensions improve readability and when a regular loop is a better choice.
+A comprehension is a **declarative** way to build a collection: rather than describing the loop mechanics (make an empty list, iterate, test, append), you describe the result. Read `[f(x) for x in xs if cond(x)]` in the same order as the set-builder notation it was modelled on: *the set of f(x), for each x in xs, where cond(x) holds*.
+
+Besides reading better, comprehensions are **faster** than the equivalent loop with `.append()` — the append happens in optimised C instead of repeated attribute lookup — and they get their own scope, so the loop variable does not leak.
+
+The placement of `if` confuses everyone once, and the reason is that there are two different constructs. A **trailing** `if` is a *filter*: it decides whether an item is included at all, so it can never have an `else`. A **leading** `a if cond else b` is a *ternary expression*: it decides what value to produce for an item already included, so it must always have one.
+
+Swapping `[]` for `()` gives a **generator expression** — the same syntax, but nothing is computed up front and values are produced one at a time as you consume them. Memory use drops from `O(n)` to `O(1)`, which is why `sum(x**2 for x in range(1_000_000))` never builds the million-element list. The catch is that a generator is exhausted after one pass, so use a list comprehension when you need to index, re-iterate, or take `len()`.
+
+The cost of comprehensions is compression: only *expressions* are allowed, and more than one condition plus a transformation — or more than two `for` clauses — is a signal to write an explicit loop.
 
 ```python
 # [expression for item in iterable]
@@ -469,7 +558,15 @@ total      # 333332833333500000
 
 ## 10. Classes (OOP)
 
-Object-oriented programming organizes code around objects that combine state and behavior. This section explains class design, instance versus class attributes, method types, inheritance, method overriding, `super()`, and MRO in multiple inheritance scenarios. It also introduces properties and dataclasses for cleaner, safer object APIs.
+A class is a **template that bundles state with the behaviour that operates on it**. The motivation is containment: instead of passing a dict of fields into a dozen loose functions and hoping every caller maintains the invariants, the data and its rules live behind one interface.
+
+The mechanical detail that makes it work is `self`. Python does not hide the instance — `buddy.bark()` is literally `Dog.bark(buddy)`, which is why every method takes the instance as its explicit first parameter. Attribute lookup then checks the instance's own `__dict__` first and falls back to the class and its ancestors, which is exactly why **class attributes are shared** across all instances while **instance attributes shadow them** per object.
+
+Python's take on the usual OOP pillars is distinctive:
+
+1. **Encapsulation** — there is no `private` keyword. A leading `_` is a convention meaning "implementation detail", and `@property` lets you start with a plain public attribute and add validation later without changing a single call site.
+2. **Polymorphism** — taken further than most languages through **duck typing**: `speak()` works on anything that defines `speak()`, related by inheritance or not. Interfaces are structural, not declared.
+3. **Inheritance** — easy to overuse. If the relationship is really "has-a" rather than "is-a", prefer composition and delegate.
 
 ```python
 class Dog:
@@ -495,6 +592,8 @@ print(Dog.species)                   # Canis familiaris
 
 A subclass reuses a parent’s behavior and can override methods. `isinstance(obj, Parent)` is True for subclasses — this is how you share an interface across types.
 
+Inheritance models an **"is-a" relationship**, and substitutability is the real payoff: `for a in animals: print(a.speak())` works without knowing which concrete class each element is, and adding a new subclass requires no change to that loop. When a subclass defines a method the parent also defines, it **overrides** it — lookup walks the hierarchy and stops at the first match. Raising `NotImplementedError` in the parent, as `Animal.speak` does, is the informal way to declare a hook that subclasses must fill in.
+
 ```python
 class Animal:
     def __init__(self, name):
@@ -518,6 +617,10 @@ isinstance(Dog("Rex"), Animal)       # True
 ### Multiple Inheritance & The Diamond Problem
 
 Python supports **multiple inheritance** — a class can inherit from more than one parent.
+
+Most languages forbid this because of the obvious question: if two parents define the same method, which one runs? Python answers with a fixed, computable ordering rather than a rule of thumb — every class carries a **Method Resolution Order**, a flat list of classes searched in sequence for any attribute. `Duck.move()` resolves to `Flyer.move` simply because `Flyer` comes earlier in `Duck.__mro__`.
+
+In practice this works best when the extra parents are **mixins**: small, stateless classes adding one orthogonal capability. Inheriting from two full-featured, stateful classes is where the trouble starts.
 
 ```python
 class Flyer:
@@ -561,6 +664,8 @@ class DomesticDog(Dog, Pet):   # 💎 Diamond: both parents share Animal
 
 **Python's fix: MRO (Method Resolution Order)** — uses **C3 linearization** to create a deterministic, left-to-right, depth-first order that respects the hierarchy.
 
+Naive depth-first resolution would reach `Animal` through `Dog` before ever considering `Pet` — visiting a more general class before a more specific one, and potentially running the shared ancestor's `__init__` twice. C3 linearization avoids that by guaranteeing three properties: a class always precedes its own parents, the order in which parents were listed is preserved, and the result is consistent across the whole hierarchy. Hence `DomesticDog → Dog → Pet → Animal → object`, with the shared ancestor visited exactly once, at the end. If no consistent ordering exists, Python refuses to create the class and raises `TypeError` at definition time rather than misbehaving later.
+
 ```python
 DomesticDog.__mro__
 # (DomesticDog, Dog, Pet, Animal, object)
@@ -569,6 +674,8 @@ DomesticDog().speak()   # 'Woof!' — Dog comes before Pet in MRO
 ```
 
 **Use `super()` to cooperate across the MRO chain:**
+
+`super()` does not mean "my parent" — it means "the next class after me in the MRO of the actual instance's type". That value depends on the object at runtime, not on where the code was written, which is exactly why hard-coding `Animal.__init__(self, ...)` breaks the chain while `super().__init__(...)` keeps it intact. Passing `**kwargs` up the chain lets each class consume the arguments it understands and forward the rest, so every `__init__` runs exactly once regardless of how the classes are combined.
 
 ```python
 class Animal:
@@ -604,6 +711,10 @@ print(d.name, d.breed, d.owner)   # Rex Lab Alice
 
 `@property` lets you access a method like an attribute (`c.area`) while still running validation in a setter. Use it to hide internal fields (`_radius`) behind a clean API.
 
+This solves a problem other languages solve with mandatory boilerplate. In Java you write `getX()`/`setX()` from day one, because retrofitting them later breaks every caller. Python lets you start with a plain public attribute and *upgrade it in place* the day you need validation, laziness, or a computed value — `c.radius` keeps working unchanged while the implementation quietly becomes a method call. That is why "just use a public attribute until you need more" is idiomatic here rather than sloppy.
+
+Two mechanics to note: the backing field must have a different name (the `_radius` convention) or the setter would recurse forever, and a read-only property like `area` is recomputed on every access — use `functools.cached_property` when that computation is expensive.
+
 ```python
 class Circle:
     def __init__(self, radius):
@@ -632,6 +743,10 @@ print(c.area)         # 314.159
 
 Auto-generates `__init__`, `__repr__`, `__eq__` — use for data-holding classes.
 
+`@dataclass` is a **code generator**: at class-definition time it reads the annotated attributes and synthesises the methods you would otherwise hand-write, turning thirty lines of mechanical boilerplate into five declarations. The **type annotations are what drive it** — an attribute without one is not treated as a field at all (though the annotations are still not enforced at runtime).
+
+Three options cover most needs: `field(default_factory=list)` for mutable defaults (a plain `= []` is rejected outright, precisely because of the shared-default bug from section 8), `frozen=True` to make instances immutable and therefore hashable, and `order=True` to generate comparisons that treat the fields as a tuple in declaration order.
+
 ```python
 from dataclasses import dataclass
 
@@ -648,7 +763,13 @@ print(p == Point(1.0, 2.0))  # True
 
 ## 11. Error Handling
 
-Error handling turns runtime failures into predictable control paths instead of abrupt crashes. This section covers `try`/`except`/`else`/`finally`, targeted exception catching, re-raising, and custom exceptions for domain-specific errors. You will learn how to fail clearly and recover safely in production-style code.
+An exception is a **control-flow mechanism**, not just an error report. When one is raised, Python abandons the current expression and unwinds the call stack until it finds a matching `except` — or reaches the top and prints a traceback. That is why a deeply nested failure can be handled in one place far up the stack, instead of every intermediate function checking and forwarding return codes.
+
+Python leans on exceptions more than most languages, guided by **EAFP** — *Easier to Ask Forgiveness than Permission*. Rather than testing preconditions first, you attempt the operation and handle the failure: `d[key]` inside a `try` is preferred to `if key in d`, which does the lookup twice and leaves a window for state to change in between.
+
+The discipline that makes this work is **catching narrowly**. `except Exception:` swallows typos and logic bugs alongside genuine failures, turning a loud crash into silent wrong behaviour — and a bare `except:` also traps `KeyboardInterrupt`, so you cannot even stop your own program. Catch the specific exceptions you know how to recover from and let the rest propagate; a traceback is a feature.
+
+The four clauses divide the work: keep `try` as small as possible (ideally the one risky call), put success-dependent follow-up in `else`, and put cleanup in `finally`, which runs on every path out — normal completion, handled exception, unhandled exception, even a `return` inside the `try`. Handlers are tested in order and matching respects inheritance, so broad ones must come last.
 
 ```python
 try:
@@ -682,9 +803,17 @@ class AppError(Exception):
 
 `ValueError` · `TypeError` · `KeyError` · `IndexError` · `FileNotFoundError` · `AttributeError` · `ZeroDivisionError` · `ImportError` · `NameError`
 
+These sit in a hierarchy rooted at `BaseException`, and the shape of that tree is what makes targeted catching possible. `KeyError` and `IndexError` both derive from `LookupError`, so one handler covers both; `FileNotFoundError` and `PermissionError` derive from `OSError`. The `ValueError` / `TypeError` split encodes a real distinction — the *type* was right but the *value* was not, versus the type itself was wrong. `KeyboardInterrupt` and `SystemExit` deliberately sit outside `Exception` so that `except Exception:` cannot trap them.
+
 ## 12. Modules & Imports
 
-Modules and packages are Python's unit of code organization and reuse. This section explains import styles, aliases, namespace management, package layout, and the `__name__ == "__main__"` guard for script entry points. These concepts are key to scaling from single-file scripts to maintainable projects.
+A **module** is simply a `.py` file and a **package** is a directory of them. Both exist to give names a home: each module has its own global namespace, so `utils.parse` and `network.parse` never collide.
+
+The mechanics explain most import errors. `import utils` searches `sys.path` in order — the script's own directory first, then `PYTHONPATH`, then installed packages — and takes the **first** match, which is why naming your file `random.py` shadows the standard library module of the same name. Once found, the module is **executed top to bottom exactly once** and cached in `sys.modules`; every later import reuses that cached object. So any side effect at module level happens at import time, which is a strong reason to keep module bodies to definitions and constants.
+
+On import style: `import math` binds one name and keeps every use explicitly qualified, which makes origins obvious and circular imports survivable. `from math import sqrt` is shorter but hides where the name came from. `from module import *` is the form to avoid entirely — it pulls in an unknown set of names that can silently overwrite your own.
+
+The `__name__` guard follows from the same machinery: Python sets `__name__` to the module's own name when importing and to `"__main__"` when running the file directly, so `if __name__ == "__main__":` distinguishes "used as a library" from "run as a program". Without it, importing a module would execute its demo code as a side effect — and `multiprocessing` on Windows and macOS would spawn processes recursively.
 
 ```python
 import math
@@ -709,7 +838,15 @@ if __name__ == "__main__":
 
 ## 13. File I/O
 
-File I/O is about safely reading and writing persistent data. This section covers context-managed file access with `with`, text and write modes, and structured formats like JSON. It also introduces `pathlib` for cross-platform path handling and cleaner file manipulation code.
+`open()` returns a **file object** — best understood as a cursor over a stream. It holds a position that advances as you read, which is why calling `f.read()` twice returns the whole file and then an empty string. The operating system also limits how many files a process may hold open, and buffered writes are not guaranteed to reach disk until the file is closed.
+
+That is exactly what `with open(...) as f:` guarantees. It is a **context manager** whose exit step closes the file on every path out of the block — including exceptions and early `return` — whereas a manual `f.close()` is skipped whenever something raises in between. Treat `with` as the only correct form.
+
+The other decision at every `open()` is **text versus binary**. Text mode decodes bytes into `str` and normalises line endings; binary mode (`"rb"`, `"wb"`) gives you raw `bytes`. Since the default encoding is platform-dependent, always pass `encoding="utf-8"` explicitly for text.
+
+Two practical notes. `f.read()` and `f.readlines()` load the entire file into memory, while iterating the file object (`for line in f:`) is lazy and stays constant-memory regardless of size — each line keeps its trailing `\n`, hence the customary `.strip()`. And `"w"` truncates the file the moment it is opened, before you write anything, so an exception later leaves you with an empty file; write to a temporary file and rename when the data matters.
+
+JSON is the usual interchange format, but the mapping is **lossy in one direction**: tuples come back as lists, non-string dict keys are coerced to strings, and `set`, `datetime`, and custom classes are not serialisable without a custom encoder. For paths, `pathlib` treats a path as an *object* that knows how to operate on itself (`p.parent`, `p.suffix`, `p.read_text()`) and overloads `/` for joining, which removes the whole class of separator bugs across platforms.
 
 ```python
 # Read
@@ -743,7 +880,11 @@ list(Path(".").glob("**/*.py"))       # [PosixPath('...')]  all .py files
 
 ## 14. Iterators & Generators
 
-Iterators and generators power Python's lazy data pipelines. This section explains the iterator protocol (`iter`, `next`, `StopIteration`) and generator functions using `yield` for memory-efficient processing. You will also see how infinite streams and one-pass computation become practical with this model.
+This is the machinery every `for` loop quietly relies on, and two roles are involved. An **iterable** can produce an iterator (it implements `__iter__`) and can be traversed repeatedly, since each loop asks for a fresh one. An **iterator** is the cursor doing the walking (it implements `__next__`) and is **single-use**: once it raises `StopIteration` it stays exhausted forever. That distinction explains why you can loop over a list twice but a generator only once, and why `zip`, `map`, and `enumerate` are empty the second time around.
+
+A **generator** is the easy way to build an iterator. A single `yield` anywhere in a function body changes what `def` produces: calling the function no longer runs it — it returns a generator object and executes nothing. The body starts on the first `next()`, runs to the first `yield`, hands back that value, and then *freezes*, preserving local variables and the exact position inside loops. The next `next()` resumes there. When the function finally returns, `StopIteration` is raised automatically.
+
+That suspend-and-resume ability is why `fibonacci()` can be infinite — the `while True:` loop never completes, but it also never runs longer than the consumer asks for. And because each generator both consumes an iterable and produces one, generators compose like Unix pipes: a read stage feeding a filter stage feeding a final loop processes a 50 GB file in constant memory, with nothing computed until the last loop starts pulling.
 
 ```python
 # Generator — uses yield, lazy evaluation, memory efficient
@@ -773,7 +914,19 @@ fib = fibonacci()
 
 ## 15. Decorators
 
-Decorators let you extend function behavior without changing the original implementation. This section covers wrapper functions, metadata preservation with `functools.wraps`, decorator factories (decorators with arguments), and stacking order. These patterns are widely used for logging, timing, caching, validation, and authorization.
+A decorator is a **function that takes a function and returns a replacement for it**. It works only because functions are first-class objects (section 8): you can accept one as an argument, define a new one that closes over it, and return that instead.
+
+The `@` syntax is pure sugar — `@timer` above `def slow_func` means exactly `slow_func = timer(slow_func)`. The name now refers to the wrapper, which closes over the original and can run code before it, after it, or around it in a `try`/`finally`.
+
+What this buys you is separating **cross-cutting concerns** — timing, caching, retries, logging, authentication, validation — from the logic they surround, instead of copy-pasting them into every function that needs them. You already use decorators as a consumer: `@property`, `@staticmethod`, `@dataclass`, `@functools.lru_cache`, and every web framework's route decorator.
+
+Three details make the difference between a working decorator and a broken one:
+
+1. **`*args, **kwargs`** — the wrapper must accept whatever the decorated function accepts, since the decorator cannot know its signature, and pass it straight through.
+2. **`return`** — forgetting to return the inner call's result is the most common bug; the function suddenly returns `None`.
+3. **`@functools.wraps(func)`** — copies `__name__`, `__doc__`, and friends onto the wrapper. Without it the function reports itself as `wrapper`, its docstring vanishes from `help()`, and introspection-based tools misbehave. Treat it as mandatory.
+
+When decorators are stacked, application happens bottom-up and execution is therefore top-down, like layers of an onion — so order changes behaviour (a cache above an auth check would serve results without checking permissions).
 
 ```python
 import functools
@@ -800,7 +953,11 @@ print(slow_func())
 
 ## 16. Context Managers
 
-Context managers define setup/teardown boundaries for resources such as files, locks, and timers. This section shows how `with` guarantees cleanup, even during exceptions, and how to build custom managers with `contextlib.contextmanager`. Mastering this pattern prevents resource leaks and keeps code reliable.
+A context manager answers a question every program faces: *how do I guarantee this cleanup runs, no matter how the block is left?* Files must be closed, locks released, transactions committed or rolled back — and the block might exit through an exception, a `return`, or a `break`.
+
+`try`/`finally` solves it, but pushes the burden onto every caller and separates setup from teardown by however many lines the body happens to be. `with` moves that responsibility into the resource itself. The protocol is two methods: `__enter__()` runs on entry and its return value is what `as` binds; `__exit__(exc_type, exc_value, traceback)` runs on the way out and receives the exception details if one occurred, or three `None`s if not. Returning a truthy value from `__exit__` **suppresses** the exception — which is how `contextlib.suppress()` works — while the usual `False`/`None` lets it propagate after cleanup.
+
+`@contextmanager` reuses the suspend-and-resume behaviour of generators from section 14: code before the `yield` is the setup, code after it is the teardown, and both live in one readable function. Wrap the `yield` in `try`/`finally` in real code — if the `with` body raises, the exception is thrown *into* the generator at the `yield`, so without `finally` everything after it is skipped and your cleanup never runs. That is precisely the flaw in the simple `timer()` above, which prints nothing when the block fails.
 
 ```python
 import time
@@ -825,7 +982,13 @@ with timer():
 
 ## 17. Type Hints
 
-Type hints add explicit contracts to Python code without changing runtime behavior. This section covers parameter and return annotations, common generic types, and optional values. It also shows how tools like mypy and IDEs use hints to catch errors early and improve navigation.
+Type hints add an **optional, gradual** static type layer to a dynamically typed language. *Optional* is literal: the interpreter parses annotations, stores them in `__annotations__`, and then ignores them entirely. Passing an `int` where the hint says `str` raises nothing at runtime — checking is a separate step performed by `mypy`, `pyright`, or your editor's language server.
+
+So why write them? Three reasons carry the value: they catch a real class of bugs before the code runs (a function that can return `None` used without a check, arguments silently swapped); they are documentation that **cannot go stale**, because the checker verifies it; and they power accurate autocomplete, safe renames, and go-to-definition.
+
+*Gradual* means you can annotate one function or one module and leave the rest — anything unannotated is treated as `Any` and simply not checked, which is what makes hints practical to add to an existing codebase, starting with public interfaces.
+
+Syntax notes: since Python 3.9 the builtin generics work directly (`list[str]`, `dict[str, int]`), so the old `typing.List` is unnecessary; since 3.10, `str | None` is the preferred spelling of `Optional[str]`.
 
 ```python
 from typing import Optional
@@ -850,7 +1013,13 @@ find(99)    # None
 
 ## 18. Unpacking & Useful Patterns
 
-Unpacking and argument expansion are core Python patterns for expressive data handling. This section covers sequence unpacking, starred targets, argument spreading with `*` and `**`, and dictionary merging. It also introduces high-value built-ins (`any`, `all`, `min`, `max`, `sum`) for concise aggregate logic.
+Unpacking lets the **left-hand side of an assignment mirror the shape of the data**. Instead of `x = point[0]; y = point[1]`, you write `x, y = point` — the structure is stated once and the names fall out of it. Python iterates the right-hand side and binds each value to the matching target, so it works with any iterable. Without a star the counts must match exactly; with a **starred target** (at most one), it greedily absorbs whatever the fixed targets do not claim, always producing a `list`.
+
+This also explains `a, b = b, a`: the right side is evaluated first into a temporary tuple, which is then unpacked — the language makes the temporary variable for you.
+
+The `*` and `**` symbols mean opposite things depending on position. In a **definition** they *collect* (`def f(*args, **kwargs)` gathers extras into a tuple and a dict); in a **call** they *spread* (`f(*lst)` explodes a sequence into positional arguments, `f(**d)` into keyword arguments). Packing and unpacking being exact inverses is what makes transparent forwarding — the basis of decorators and wrappers — possible.
+
+The built-ins listed here are worth internalising because they replace hand-written loops with a single readable expression. `any()` and `all()` also **short-circuit**, stopping at the first decisive element, and combining them with a generator expression means no intermediate list is ever built.
 
 ```python
 def greet(a, b, c=0):
@@ -890,7 +1059,15 @@ list(filter(lambda n: n > 0, nums))    # [1, 7, 3]
 
 ## 19. Common Standard Library
 
-Python's standard library provides production-grade tools for most daily tasks without third-party dependencies. This section surveys environment access (`os`, `sys`), numeric and date utilities, regex processing, structured logging, and specialized containers from `collections`. Knowing these modules helps you write faster, cleaner, and dependency-light code.
+Python's "batteries included" philosophy means the answer to a surprising number of problems is already installed — and every dependency you avoid is one fewer version conflict, security advisory, and install step. What each module below is actually for:
+
+1. **`os` / `sys`** — the boundary with the operating system and interpreter. `os.environ` is the standard place to read configuration and secrets; `sys.argv` carries command-line arguments (graduate to `argparse` once there is more than one).
+2. **`math`** — float mathematics in C. Note `math.isclose()` for comparing floats, since `==` on floats is unreliable.
+3. **`random`** — fast and statistically good, but **not cryptographically secure**. Anything involving passwords, tokens, or session IDs must use the `secrets` module instead.
+4. **`datetime`** — the critical distinction is naive versus timezone-aware. A naive `datetime` does not identify a real moment, so store and compute in UTC and convert only for display.
+5. **`re`** — always write patterns as raw strings (`r"\d+"`), or Python's own escaping consumes the backslashes first. Quantifiers are **greedy** by default, so `.*` swallows more than you expect — use `.*?` for the lazy form.
+6. **`logging`** — the replacement for `print` in anything that runs unattended: severity levels let you filter, `getLogger(__name__)` gives per-module control, and handlers route output to files or services.
+7. **`collections`** — specialised containers that delete boilerplate. `Counter` tallies and ranks; `defaultdict(list)` turns grouping into a single `dd[key].append(x)` by calling a factory for missing keys; `deque` gives `O(1)` operations at *both* ends where a list's `pop(0)` is `O(n)`.
 
 ```python
 import os
@@ -934,7 +1111,11 @@ dd                                     # defaultdict(<class 'list'>, {'key': ['v
 
 ## 20. Virtual Environments & Packages
 
-Virtual environments isolate project dependencies so different projects can safely use different versions of packages. This section covers creating and activating a venv, installing packages with pip, and pinning dependencies with `requirements.txt`. These practices are essential for reproducible setups across machines and deployments.
+The problem is unavoidable in a shared installation: project A needs `django==3.2`, project B needs `django==4.2`, and a single global `site-packages` can hold only one. Installing B's requirements silently breaks A — and since your operating system's own tooling depends on the system Python, `sudo pip install` can break the machine itself.
+
+A virtual environment is nothing magical: it is a directory with its own `site-packages` and a link to a base interpreter. "Activating" it just prepends its `bin/` to your `PATH`, so `python` and `pip` resolve to the project's copies — which is why deleting the folder is a complete uninstall. The rules that follow: **one environment per project, never installed globally, never committed to version control.** What you commit is the *declaration* of dependencies, so the environment can be rebuilt anywhere.
+
+On that declaration, note the difference between what you **declare** and what you **lock**. Your direct requirements are a short list with deliberately loose bounds (`requests>=2.28`), expressing intent. `pip freeze` produces something else entirely — the exact version of every installed package, including transitive ones you never asked for. That is a lock file: perfect for reproducing a deployment, poor as a record of intent. Modern projects declare dependencies in `pyproject.toml` and generate the lock separately; `uv` is a fast, increasingly standard tool for both.
 
 ```bash
 # Create & activate virtual environment
@@ -952,7 +1133,16 @@ deactivate                          # exit venv
 
 ## 21. Async/Await (Quick Intro)
 
-`async`/`await` enables cooperative concurrency, especially for I/O-bound workloads such as APIs, sockets, and disk operations. This section introduces coroutines, non-blocking waits, and task orchestration with `asyncio.gather`. You will learn the mental model for running many waiting operations efficiently in one thread.
+Async solves one specific problem: **a program that spends most of its time waiting**. A script fetching 100 URLs is idle almost the entire run, blocked on the network. Sequential code waits 100 times in a row; async code issues all the requests and handles each response as it arrives.
+
+The model is **cooperative multitasking on a single thread**. An **event loop** holds a set of coroutines and runs one at a time; every `await` on something not-yet-ready is a coroutine voluntarily handing control back, letting the loop run another until the first one's data arrives. Two consequences follow immediately:
+
+1. **Concurrency, not parallelism.** Only one line of Python runs at any instant, so async gives no speedup for CPU-bound work — that needs `multiprocessing`.
+2. **One blocking call freezes everything.** Because scheduling is cooperative, a coroutine that calls `time.sleep()` or `requests.get()` never yields and stalls the whole loop. Async requires async-aware libraries throughout (`asyncio.sleep`, `aiohttp`), or offloading via `asyncio.to_thread()`.
+
+The vocabulary is small: `async def` defines a **coroutine function**; calling it returns a coroutine object and runs *nothing* — forgetting to `await` is the classic beginner bug. `await` suspends until the awaited thing completes. `asyncio.run(main())` starts the loop and is the single entry point from synchronous code.
+
+Crucially, awaiting one coroutine after another is still sequential. Concurrency comes from scheduling several at once, which is what `asyncio.gather()` does — hence ~2s rather than 3s below. In Python 3.11+, `asyncio.TaskGroup` is preferred: it cancels the remaining tasks when one fails instead of leaving them running.
 
 ```python
 import asyncio
@@ -974,7 +1164,13 @@ asyncio.run(main())
 
 ## 22. Pythonic Tips
 
-Pythonic code emphasizes clarity, readability, and language-native idioms over verbose patterns. This section highlights practical conventions such as truthiness checks, `is None`, context-managed files, chained comparisons, and efficient string assembly. Adopting these habits makes your code more maintainable and immediately recognizable to other Python developers.
+"Pythonic" is not a synonym for clever or short. It means solving a problem the way the language was designed to — using its protocols and idioms rather than transliterating patterns from another language. Non-Pythonic code usually still works; it is just longer, slower, and harder for the next reader.
+
+The tips below are individual expressions of a few underlying principles: **prefer iteration protocols to manual index arithmetic**, **let objects manage their own resources** through context managers, **express intent declaratively** with comprehensions and built-ins, and **keep the common case short while making the exceptional case explicit**.
+
+Two of them are worth the extra sentence. `if not my_list:` relies on truthiness, so use `if x is None:` instead whenever `0`, `""`, or `[]` are legitimate values distinct from "missing". And `" ".join(words)` is not merely tidier than `+=` in a loop — strings are immutable, so each `+=` copies everything accumulated so far, making the loop quadratic while `join` is linear.
+
+Consistency matters more than any single rule, which is why PEP 8 exists and why automated formatters and linters (`black`, `ruff`) are near-universal: they settle style so review can focus on behaviour.
 
 ```python
 my_list = []

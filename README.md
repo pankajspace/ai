@@ -3,7 +3,8 @@
 # Learn
 
 ## Links
-1. [Claude Code Full Course YT FCC](https://youtu.be/7l6bXLAKyEI?si=ZmzRWDW1drlCaeHX)
+1. [Claude Code 101](https://anthropic.skilljar.com/claude-code-101)
+2. [Claude Code Full Course YT FCC](https://youtu.be/7l6bXLAKyEI?si=ZmzRWDW1drlCaeHX)
 2. [Agentic AI – Complete Course for Beginners YT FCC](https://www.youtube.com/watch?v=Zy7EXDONlTY)
 3. [Build an End-to-End Multi-Agent AI System YT](https://www.youtube.com/watch?v=BM39OouLNsM)
 
