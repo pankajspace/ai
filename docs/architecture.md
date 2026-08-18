@@ -16,7 +16,7 @@ This document describes the High-Level Design (HLD) for the AI project hosted in
 
 ### Out of Scope
 - Low-level implementation details, source code, or configuration files.
-- Detailed database schema or query optimisation.
+- Detailed database schema or query optimization.
 - Specific model hyperparameter tuning or experiment tracking procedures.
 - Cost estimates (TODO — to be added after component owners are assigned).
 
@@ -48,8 +48,9 @@ The AI platform is a modular, pipeline-oriented system that continuously ingests
                           │         Monitoring, Observability & Alerting            │
                           └─────────────────────────────────────────────────────────┘
 
-<!-- TODO: Replace this ASCII diagram with a proper diagram file (e.g., docs/diagrams/architecture.png or a draw.io/Mermaid source) once available. -->
 ```
+
+> TODO: Replace this ASCII diagram with a proper diagram file (e.g., `docs/diagrams/architecture.png` or a draw.io/Mermaid source) once available.
 
 ---
 
@@ -66,9 +67,9 @@ The AI platform is a modular, pipeline-oriented system that continuously ingests
 - Manages data lifecycle policies (retention, archival, deletion) to control cost and compliance.
 
 ### 4.3 Preprocessing
-- Transforms raw data into clean, normalised, model-ready formats.
+- Transforms raw data into clean, normalized, model-ready formats.
 - Handles missing values, outlier detection, encoding, and feature engineering.
-- Produces reproducible, versioned preprocessing artefacts (pipelines/transforms) to ensure training–serving consistency.
+- Produces reproducible, versioned preprocessing artifacts (pipelines/transforms) to ensure training–serving consistency.
 
 ### 4.4 Feature Store *(if used)*
 - Centralises reusable features so multiple models can share them without duplication.
@@ -77,7 +78,7 @@ The AI platform is a modular, pipeline-oriented system that continuously ingests
 
 ### 4.5 Model Training
 - Executes training jobs (batch or distributed) consuming features from storage or the feature store.
-- Tracks experiments, metrics, hyperparameters, and artefacts (TODO: specify tracking tool — e.g., MLflow, W&B, Vertex AI Experiments).
+- Tracks experiments, metrics, hyperparameters, and artifacts (TODO: specify tracking tool — e.g., MLflow, W&B, Vertex AI Experiments).
 - Validates trained models against a hold-out dataset and defined acceptance criteria before promotion.
 
 ### 4.6 Model Serving / API
@@ -110,10 +111,10 @@ The following describes the end-to-end data flow at a high level:
 2. **Raw Storage** — Data lands in the raw layer in its original format and is timestamped/versioned.
 3. **Preprocessing** — Scheduled or event-triggered jobs read from raw storage, clean and transform the data, and write feature-ready datasets to the curated layer. Output format: TODO (e.g., Parquet, TFRecord).
 4. **Feature Store / Training Dataset** — Curated features are registered and made available for training runs and online serving. Dataset sizes: TODO.
-5. **Model Training & Validation** — Training jobs consume feature datasets, produce model artefacts, and log metrics. Accepted models are tagged for promotion.
-6. **Model Registry** — Approved model artefacts and associated metadata (version, training metrics, lineage) are stored in the registry (TODO: specify — e.g., MLflow Model Registry, Vertex AI Model Registry).
+5. **Model Training & Validation** — Training jobs consume feature datasets, produce model artifacts, and log metrics. Accepted models are tagged for promotion.
+6. **Model Registry** — Approved model artifacts and associated metadata (version, training metrics, lineage) are stored in the registry (TODO: specify — e.g., MLflow Model Registry, Vertex AI Model Registry).
 7. **Model Serving** — The serving layer loads the registered model version and exposes it via API. Request/response payloads: TODO (e.g., JSON with input features → JSON with prediction scores). Expected SLA: TODO ms p99 latency.
-8. **Monitoring** — Inference requests and predictions are logged and analysed for drift, performance degradation, and anomalies. Feedback loops (human review, ground-truth labels) feed back into the training pipeline as new labelled data.
+8. **Monitoring** — Inference requests and predictions are logged and analyzed for drift, performance degradation, and anomalies. Feedback loops (human review, ground-truth labels) feed back into the training pipeline as new labelled data.
 
 ---
 
