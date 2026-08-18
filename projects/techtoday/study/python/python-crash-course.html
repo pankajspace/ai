@@ -22,7 +22,7 @@
                         <summary>Python</summary>
                         <div class="tt-study-links">
                             <a href="../python/python-crash-course.html" aria-current="page">Python Crash Course</a>
-                            <a href="../python/python-course.html">Python Course</a>
+                            <a href="../python/python-detailed-course.html">Python Detailed Course</a>
                         </div>
                     </details>
                     <details class="tt-study-group">
@@ -79,7 +79,7 @@
 </ol>
 <p>Note also that <code>#</code> comments are stripped by the tokenizer and vanish, whereas a triple-quoted string is a real expression; when it is the first statement in a module, function, or class, Python keeps it as that object's <code>__doc__</code> — which is what <code>help()</code> reads.</p>
 <blockquote>
-<p>Don't have Python installed yet? See <a href="python-course.html#installing-python">Installing Python</a> for Windows/macOS/Linux setup steps.</p>
+<p>Don't have Python installed yet? See <a href="python-detailed-course.html#installing-python">Installing Python</a> for Windows/macOS/Linux setup steps.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>--version<span class="w">          </span><span class="c1"># check installation (macOS/Linux: python3 --version)</span>
 python<span class="w"> </span>script.py<span class="w">          </span><span class="c1"># run a file (macOS/Linux: python3 script.py)</span>
@@ -1013,6 +1013,27 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 deactivate<span class="w">                          </span><span class="c1"># exit venv</span>
 </code></pre></div>
 
+<h3 id="uv-fast-alternative">uv (Fast Alternative)<a class="headerlink" href="#uv-fast-alternative" title="Permanent link">#</a></h3>
+<p><code>uv</code> is a fast tool for creating environments and installing packages. It can use the same <code>.venv</code> layout as <code>venv</code>, but resolves and installs packages much faster than the traditional <code>pip</code> workflow.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install uv (choose one)</span>
+curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+brew<span class="w"> </span>install<span class="w"> </span>uv<span class="w">                    </span><span class="c1"># macOS alternative</span>
+
+<span class="c1"># Create an environment</span>
+uv<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">           </span><span class="c1"># macOS/Linux</span>
+<span class="c1"># .venv\\Scripts\\activate          # Windows</span>
+
+<span class="c1"># Install packages</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>requests<span class="w"> </span>flask
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># For pyproject.toml projects</span>
+uv<span class="w"> </span>lock<span class="w">                              </span><span class="c1"># resolve exact versions</span>
+uv<span class="w"> </span>sync<span class="w">                              </span><span class="c1"># create/update the environment</span>
+</code></pre></div>
+
+<p>Use <code>uv</code> when you want one fast tool for environment creation, dependency resolution, and repeatable installs. The existing <code>venv</code> and <code>pip</code> commands remain valid and are useful when you want only Python's built-in tooling.</p>
 <h2 id="21-asyncawait-quick-intro">21. Async/Await (Quick Intro)<a class="headerlink" href="#21-asyncawait-quick-intro" title="Permanent link">#</a></h2>
 <p>Async solves one specific problem: <strong>a program that spends most of its time waiting</strong>. A script fetching 100 URLs is idle almost the entire run, blocked on the network. Sequential code waits 100 times in a row; async code issues all the requests and handles each response as it arrives.</p>
 <p>The model is <strong>cooperative multitasking on a single thread</strong>. An <strong>event loop</strong> holds a set of coroutines and runs one at a time; every <code>await</code> on something not-yet-ready is a coroutine voluntarily handing control back, letting the loop run another until the first one's data arrives. Two consequences follow immediately:</p>
@@ -1189,7 +1210,7 @@ deactivate<span class="w">                          </span><span class="c1"># ex
 </code></pre></div>
 
 <blockquote>
-<p>🐍 <strong>Next steps:</strong> For deeper coverage of OOP, generators, async, testing, and more — see the full <a href="python-course.html">Python Course</a>.</p>
+<p>🐍 <strong>Next steps:</strong> For deeper coverage of OOP, generators, async, testing, and more — see the full <a href="python-detailed-course.html">Python Detailed Course</a>.</p>
 </blockquote>
         </article>
     </main>

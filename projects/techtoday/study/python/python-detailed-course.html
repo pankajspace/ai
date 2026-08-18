@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />
-    <title>Python Course | TechToday</title>
+    <title>Python Detailed Course | TechToday</title>
     <link rel="stylesheet" href="python-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
 </head>
@@ -22,7 +22,7 @@
                         <summary>Python</summary>
                         <div class="tt-study-links">
                             <a href="../python/python-crash-course.html">Python Crash Course</a>
-                            <a href="../python/python-course.html" aria-current="page">Python Course</a>
+                            <a href="../python/python-detailed-course.html" aria-current="page">Python Detailed Course</a>
                         </div>
                     </details>
                     <details class="tt-study-group">
@@ -42,7 +42,7 @@
     <div class="progress" aria-hidden="true"></div>
     <main>
         <article class="study">
-            <h1 id="python-course">Python Course<a class="headerlink" href="#python-course" title="Permanent link">#</a></h1>
+            <h1 id="python-detailed-course">Python Detailed Course<a class="headerlink" href="#python-detailed-course" title="Permanent link">#</a></h1>
 <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">#</a></h2>
 <ol class="table-of-contents table-of-contents-numbered">
 <li><a href="#1-getting-started">Getting Started</a></li>
@@ -2573,6 +2573,30 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 deactivate
 </code></pre></div>
 
+<h3 id="uv-fast-environment-and-package-manager">uv (Fast Environment and Package Manager)<a class="headerlink" href="#uv-fast-environment-and-package-manager" title="Permanent link">#</a></h3>
+<p><code>uv</code> is a fast Rust-based tool from Astral that can create virtual environments, install packages, resolve dependencies, and manage a <code>pyproject.toml</code> workflow. It complements the built-in <code>venv</code>: <code>uv venv</code> creates the environment, while <code>uv pip</code> installs into it without requiring activation.</p>
+<p>Install <code>uv</code> with the official installer or your system package manager, then use it like this:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install uv (choose one)</span>
+curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+brew<span class="w"> </span>install<span class="w"> </span>uv<span class="w">                    </span><span class="c1"># macOS alternative</span>
+
+<span class="c1"># Create and activate an environment</span>
+uv<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">           </span><span class="c1"># macOS/Linux</span>
+<span class="c1"># .venv\\Scripts\\activate          # Windows</span>
+
+<span class="c1"># Install packages into the environment</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>requests<span class="w"> </span>flask
+
+<span class="c1"># Install an existing requirements file</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># Resolve and lock declared dependencies from pyproject.toml</span>
+uv<span class="w"> </span>lock
+uv<span class="w"> </span>sync
+</code></pre></div>
+
+<p>The important distinction is that <code>uv</code> can manage the complete workflow: <code>uv lock</code> records exact resolved versions in <code>uv.lock</code>, and <code>uv sync</code> makes the environment match that lock file. This makes a fresh checkout reproducible while keeping the human-edited dependency declarations in <code>pyproject.toml</code>.</p>
 <h3 id="pip--package-manager">pip — Package Manager<a class="headerlink" href="#pip--package-manager" title="Permanent link">#</a></h3>
 <p><code>pip install</code> fetches from PyPI. Pin versions in <code>requirements.txt</code> so teammates and servers install the same stack.</p>
 <p>The distinction that matters is between the dependencies you <strong>declare</strong> and the ones you <strong>lock</strong>. Your direct requirements are a small list with deliberately loose bounds (<code>requests&gt;=2.28</code>), expressing what your code needs. <code>pip freeze</code> produces something different: the exact version of every package currently installed, including transitive dependencies you never asked for. That output is a <em>lock file</em> — ideal for reproducing a deployment exactly, and a poor way to record intent, since it makes upgrades opaque. Keeping the two in separate files (<code>requirements.in</code> and <code>requirements.txt</code>, for instance) is the common resolution.</p>

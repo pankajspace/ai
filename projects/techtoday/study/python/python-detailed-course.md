@@ -1,6 +1,6 @@
 [<- README](../../README.md)
 
-# Python Course
+# Python Detailed Course
 
 ## Table of Contents
 

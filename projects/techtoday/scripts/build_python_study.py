@@ -12,7 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STUDY_DIR = PROJECT_ROOT / "study" / "python"
 GUIDES = (
     ("python-crash-course", "Python Crash Course", "Crash course"),
-    ("python-course", "Python Course", "Full course"),
+    ("python-detailed-course", "Python Detailed Course", "Full course"),
 )
 
 
@@ -24,7 +24,7 @@ def github_slugify(value: str, separator: str) -> str:
 
 def render_site_header(current_slug: str) -> str:
     crash_current = ' aria-current="page"' if current_slug == "python-crash-course" else ""
-    course_current = ' aria-current="page"' if current_slug == "python-course" else ""
+    course_current = ' aria-current="page"' if current_slug == "python-detailed-course" else ""
     return f"""<header class="tt-site-header">
         <nav class="tt-site-nav" aria-label="Main navigation">
             <a class="tt-site-brand" href="../../index.html">
@@ -38,7 +38,7 @@ def render_site_header(current_slug: str) -> str:
                         <summary>Python</summary>
                         <div class="tt-study-links">
                             <a href="../python/python-crash-course.html"{crash_current}>Python Crash Course</a>
-                            <a href="../python/python-course.html"{course_current}>Python Course</a>
+                            <a href="../python/python-detailed-course.html"{course_current}>Python Detailed Course</a>
                         </div>
                     </details>
                     <details class="tt-study-group">
@@ -93,7 +93,7 @@ def render_guide(slug: str, title: str) -> str:
             'class="table-of-contents table-of-contents-numbered"',
             1,
         )
-    content = content.replace('href="python-course.md', 'href="python-course.html')
+    content = content.replace('href="python-detailed-course.md', 'href="python-detailed-course.html')
     content = content.replace('href="python-crash-course.md', 'href="python-crash-course.html')
 
     return f"""<!DOCTYPE html>

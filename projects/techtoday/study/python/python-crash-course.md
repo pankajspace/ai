@@ -41,7 +41,7 @@ Two ways to run code, used for different things:
 
 Note also that `#` comments are stripped by the tokenizer and vanish, whereas a triple-quoted string is a real expression; when it is the first statement in a module, function, or class, Python keeps it as that object's `__doc__` — which is what `help()` reads.
 
-> Don't have Python installed yet? See [Installing Python](python-course.md#installing-python) for Windows/macOS/Linux setup steps.
+> Don't have Python installed yet? See [Installing Python](python-detailed-course.md#installing-python) for Windows/macOS/Linux setup steps.
 
 ```bash
 python --version          # check installation (macOS/Linux: python3 --version)
@@ -1131,6 +1131,31 @@ pip install -r requirements.txt     # restore dependencies
 deactivate                          # exit venv
 ```
 
+### uv (Fast Alternative)
+
+`uv` is a fast tool for creating environments and installing packages. It can use the same `.venv` layout as `venv`, but resolves and installs packages much faster than the traditional `pip` workflow.
+
+```bash
+# Install uv (choose one)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+brew install uv                    # macOS alternative
+
+# Create an environment
+uv venv .venv
+source .venv/bin/activate           # macOS/Linux
+# .venv\\Scripts\\activate          # Windows
+
+# Install packages
+uv pip install requests flask
+uv pip install -r requirements.txt
+
+# For pyproject.toml projects
+uv lock                              # resolve exact versions
+uv sync                              # create/update the environment
+```
+
+Use `uv` when you want one fast tool for environment creation, dependency resolution, and repeatable installs. The existing `venv` and `pip` commands remain valid and are useful when you want only Python's built-in tooling.
+
 ## 21. Async/Await (Quick Intro)
 
 Async solves one specific problem: **a program that spends most of its time waiting**. A script fetching 100 URLs is idle almost the entire run, blocked on the network. Sequential code waits 100 times in a row; async code issues all the requests and handles each response as it arrives.
@@ -1293,4 +1318,4 @@ from math import sqrt
 sqrt(9)                              # 3.0
 ```
 
-> 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Course](python-course.md).
+> 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Detailed Course](python-detailed-course.md).

@@ -10,7 +10,7 @@
 
 ## Python
 1. [Python Crash Course](projects/techtoday/study/python/python-crash-course.md)
-2. [Python Course](projects/techtoday/study/python/python-course.md)
+2. [Python Detailed Course](projects/techtoday/study/python/python-detailed-course.md)
 
 ## Study AI : Shivank Agarwal
 1. [LLMs - Prompting](study/01-llms-prompting/llms-prompting.md) : 27-06-2026
