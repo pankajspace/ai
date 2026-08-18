@@ -25,8 +25,9 @@
 19. [19. Common Standard Library](#19-common-standard-library)
 20. [20. Virtual Environments & Packages](#20-virtual-environments--packages)
 21. [21. Async/Await (Quick Intro)](#21-asyncawait-quick-intro)
-22. [22. Pythonic Tips](#22-pythonic-tips)
-23. [23. Quick Reference Card](#quick-reference-card)
+22. [22. Concurrency: Threading (Quick Intro)](#22-concurrency-threading-quick-intro)
+23. [23. Pythonic Tips](#23-pythonic-tips)
+24. [24. Quick Reference Card](#quick-reference-card)
 
 ## 1. Hello Python
 
@@ -1187,7 +1188,36 @@ asyncio.run(main())
 # ['Data from url1', 'Data from url2']
 ```
 
-## 22. Pythonic Tips
+## 22. Concurrency: Threading (Quick Intro)
+
+Threading allows Python to handle multiple I/O-bound tasks concurrently. Because of the Global Interpreter Lock (GIL), multiple threads cannot execute Python bytecode simultaneously. However, the GIL is released during I/O operations (like network requests or file reads), making threads highly effective for programs that spend time waiting.
+
+Use the `threading` module to create threads, or `concurrent.futures.ThreadPoolExecutor` for a simpler, higher-level pool API.
+
+```python
+import threading
+import time
+
+def fetch_data(url):
+    print(f"Fetching {url}...")
+    time.sleep(2)  # Simulate network I/O
+    print(f"Done: {url}")
+
+# Run multiple tasks concurrently
+threads = []
+for u in ["url1", "url2", "url3"]:
+    t = threading.Thread(target=fetch_data, args=(u,))
+    t.start()
+    threads.append(t)
+
+# Wait for all threads to complete
+for t in threads:
+    t.join()
+
+print("All tasks finished!")
+```
+
+## 23. Pythonic Tips
 
 "Pythonic" is not a synonym for clever or short. It means solving a problem the way the language was designed to — using its protocols and idioms rather than transliterating patterns from another language. Non-Pythonic code usually still works; it is just longer, slower, and harder for the next reader.
 

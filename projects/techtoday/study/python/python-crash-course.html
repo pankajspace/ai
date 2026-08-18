@@ -66,8 +66,9 @@
 <li><a href="#19-common-standard-library">19. Common Standard Library</a></li>
 <li><a href="#20-virtual-environments--packages">20. Virtual Environments &amp; Packages</a></li>
 <li><a href="#21-asyncawait-quick-intro">21. Async/Await (Quick Intro)</a></li>
-<li><a href="#22-pythonic-tips">22. Pythonic Tips</a></li>
-<li><a href="#quick-reference-card">23. Quick Reference Card</a></li>
+<li><a href="#22-concurrency-threading-quick-intro">22. Concurrency: Threading (Quick Intro)</a></li>
+<li><a href="#23-pythonic-tips">23. Pythonic Tips</a></li>
+<li><a href="#quick-reference-card">24. Quick Reference Card</a></li>
 </ol>
 <h2 id="1-hello-python">1. Hello Python<a class="headerlink" href="#1-hello-python" title="Permanent link">#</a></h2>
 <p>Python is an <strong>interpreted</strong> language: there is no compile step you run yourself. The interpreter reads your <code>.py</code> file, turns it into bytecode, and executes it — which is why the edit-run cycle is instant, and why a type error surfaces only when the offending line actually runs.</p>
@@ -1060,7 +1061,32 @@ uv<span class="w"> </span>sync<span class="w">                              </sp
 <span class="c1"># [&#39;Data from url1&#39;, &#39;Data from url2&#39;]</span>
 </code></pre></div>
 
-<h2 id="22-pythonic-tips">22. Pythonic Tips<a class="headerlink" href="#22-pythonic-tips" title="Permanent link">#</a></h2>
+<h2 id="22-concurrency-threading-quick-intro">22. Concurrency: Threading (Quick Intro)<a class="headerlink" href="#22-concurrency-threading-quick-intro" title="Permanent link">#</a></h2>
+<p>Threading allows Python to handle multiple I/O-bound tasks concurrently. Because of the Global Interpreter Lock (GIL), multiple threads cannot execute Python bytecode simultaneously. However, the GIL is released during I/O operations (like network requests or file reads), making threads highly effective for programs that spend time waiting.</p>
+<p>Use the <code>threading</code> module to create threads, or <code>concurrent.futures.ThreadPoolExecutor</code> for a simpler, higher-level pool API.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_data</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Simulate network I/O</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Done: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Run multiple tasks concurrently</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;url1&quot;</span><span class="p">,</span> <span class="s2">&quot;url2&quot;</span><span class="p">,</span> <span class="s2">&quot;url3&quot;</span><span class="p">]:</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">fetch_data</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">u</span><span class="p">,))</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+<span class="c1"># Wait for all threads to complete</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All tasks finished!&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="23-pythonic-tips">23. Pythonic Tips<a class="headerlink" href="#23-pythonic-tips" title="Permanent link">#</a></h2>
 <p>"Pythonic" is not a synonym for clever or short. It means solving a problem the way the language was designed to — using its protocols and idioms rather than transliterating patterns from another language. Non-Pythonic code usually still works; it is just longer, slower, and harder for the next reader.</p>
 <p>The tips below are individual expressions of a few underlying principles: <strong>prefer iteration protocols to manual index arithmetic</strong>, <strong>let objects manage their own resources</strong> through context managers, <strong>express intent declaratively</strong> with comprehensions and built-ins, and <strong>keep the common case short while making the exceptional case explicit</strong>.</p>
 <p>Two of them are worth the extra sentence. <code>if not my_list:</code> relies on truthiness, so use <code>if x is None:</code> instead whenever <code>0</code>, <code>""</code>, or <code>[]</code> are legitimate values distinct from "missing". And <code>" ".join(words)</code> is not merely tidier than <code>+=</code> in a loop — strings are immutable, so each <code>+=</code> copies everything accumulated so far, making the loop quadratic while <code>join</code> is linear.</p>
