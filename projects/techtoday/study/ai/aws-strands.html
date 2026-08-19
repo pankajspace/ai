@@ -61,21 +61,9 @@
       text-decoration: underline
     }
 
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 52px
-    }
+    
 
-    @media (max-width:960px) {
-      .wrap {
-        grid-template-columns: 1fr;
-        gap: 0
-      }
-    }
+    
 
     header.hero {
       border-bottom: 1px solid var(--line);
@@ -585,6 +573,90 @@
       border: 1px solid var(--line);
       margin-bottom: 8px
     }
+  
+    
+       .tt-site-header~.wrap nav.toc {
+         max-height: none !important;
+       }
+       .mobile-toc > summary {
+         display: block;
+         cursor: pointer;
+         font-family: 'Manrope', sans-serif;
+         font-weight: 700;
+         font-size: 1rem;
+         color: var(--text);
+         background: var(--surface);
+         padding: 12px 16px;
+         border-radius: var(--radius);
+         border: 1px solid var(--line);
+         margin-bottom: 12px;
+         transition: border-color 0.2s;
+       }
+       .mobile-toc > summary:hover {
+         border-color: var(--accent);
+       }
+       .mobile-toc > summary::marker {
+         color: var(--accent);
+       }
+    }
+
+  
+    #progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0;
+      background: linear-gradient(90deg, var(--orange), var(--gold));
+      z-index: 200;
+      transition: width .1s linear
+    }
+    #topnav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 150;
+      backdrop-filter: blur(10px);
+      background: rgba(253, 247, 240, .82);
+      border-bottom: 1px solid var(--line);
+      transform: translateY(-110%);
+      transition: transform .35s
+    }
+    #topnav.show {
+      transform: translateY(0)
+    }
+    #topnav .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 54px;
+      gap: 14px
+    }
+    #topnav .brand {
+      font-family: 'Fraunces';
+      font-weight: 600;
+      font-size: 16px
+    }
+    #topnav nav {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+    #topnav nav a {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-decoration: none;
+      padding: 5px 9px;
+      border-radius: 8px;
+      white-space: nowrap
+    }
+    #topnav nav a:hover {
+      background: var(--paper-2)
+    }
+
   </style>
   <link rel="stylesheet" href="ai-study-theme.css">
   <link rel="stylesheet" href="../../site-header.css">
@@ -615,6 +687,15 @@
       </details>
     </nav>
   </header>
+<div id="progress"></div>
+  <div id="topnav">
+    <div class="wrap">
+      <div class="brand">AWS&nbsp;<b>Strands</b></div>
+      <nav>
+        <a href="#s0">AWS setup from zero</a><a href="#s1">Why agents exist</a><a href="#s2">RAG and how it works</a><a href="#s3">What is an agent?</a><a href="#s4">LLM → multi-agent journey</a><a href="#s5">Agent protocols: MCP &amp; A2A</a><a href="#s6">The AWS agentic stack</a><a href="#s7">Strands SDK &amp; the agent loop</a><a href="#s8">Hello World agents (run it)</a><a href="#s9">LLM, agent, tools</a><a href="#s10">Function → tool</a><a href="#s11">Your first tool agent</a><a href="#s12">When one tool isn't enough</a><a href="#s13">Pre-built community tools</a><a href="#s14">AWS integration: use_aws</a><a href="#s15">Custom tools</a><a href="#s16">Advanced patterns</a><a href="#s17">Capstone project</a><a href="#s17b">All commands in one place</a><a href="#s18">Study plan &amp; troubleshooting</a>
+      </nav>
+    </div>
+  </div>
 
   <header class="hero">
     <div class="hero-inner">
@@ -633,40 +714,7 @@
   </header>
 
   <div class="wrap">
-    <nav class="toc">
-      <h4>Setup</h4>
-      <ul>
-        <li><a href="#s0">0 · AWS setup from zero</a></li>
-      </ul>
-      <h4>Module 1 · shivank1</h4>
-      <ul>
-        <li><a href="#s1">1 · Why agents exist</a></li>
-        <li><a href="#s2">2 · RAG and how it works</a></li>
-        <li><a href="#s3">3 · What is an agent?</a></li>
-        <li><a href="#s4">4 · LLM → multi-agent journey</a></li>
-        <li><a href="#s5">5 · Agent protocols: MCP &amp; A2A</a></li>
-        <li><a href="#s6">6 · The AWS agentic stack</a></li>
-        <li><a href="#s7">7 · Strands SDK &amp; the agent loop</a></li>
-        <li><a href="#s8">8 · Hello World agents (run it)</a></li>
-      </ul>
-      <h4>Module 2 · shivank2</h4>
-      <ul>
-        <li><a href="#s9">9 · LLM, agent, tools</a></li>
-        <li><a href="#s10">10 · Function → tool</a></li>
-        <li><a href="#s11">11 · Your first tool agent</a></li>
-        <li><a href="#s12">12 · When one tool isn't enough</a></li>
-        <li><a href="#s13">13 · Pre-built community tools</a></li>
-        <li><a href="#s14">14 · AWS integration: use_aws</a></li>
-        <li><a href="#s15">15 · Custom tools</a></li>
-        <li><a href="#s16">16 · Advanced patterns</a></li>
-      </ul>
-      <h4>Wrap-up</h4>
-      <ul>
-        <li><a href="#s17">17 · Capstone project</a></li>
-        <li><a href="#s17b">All commands in one place</a></li>
-        <li><a href="#s18">18 · Study plan &amp; troubleshooting</a></li>
-      </ul>
-    </nav>
+    
 
     <main>
 
@@ -2395,6 +2443,16 @@ env | grep AWS               # what credentials are actually set?</pre>
     });
   </script>
   <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+  
+  <script>
+    const prog = document.getElementById('progress'), tnav = document.getElementById('topnav');
+    addEventListener('scroll', () => { 
+        const h = document.documentElement, sc = h.scrollTop, max = h.scrollHeight - h.clientHeight; 
+        if(prog) prog.style.width = (sc / max * 100) + '%'; 
+        if(tnav) tnav.classList.toggle('show', sc > 620); 
+    });
+  </script>
+
   <script src="ai-study.js"></script>
 </body>
 
