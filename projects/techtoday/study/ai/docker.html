@@ -146,7 +146,8 @@
       display: flex;
       align-items: center;
       gap: 0;
-      overflow-x: auto;
+      flex-wrap: wrap;
+      row-gap: 8px;
       padding: 10px 16px
     }
 
@@ -857,6 +858,67 @@
       }
     }
 
+    #progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      width: 0;
+      background: linear-gradient(90deg, var(--cargo), var(--crane));
+      z-index: 200;
+      transition: width .1s linear
+    }
+    #topnav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 150;
+      backdrop-filter: blur(10px);
+      background: rgba(253, 247, 240, .82);
+      border-bottom: 1px solid var(--line);
+      transform: translateY(-110%);
+      transition: transform .35s
+    }
+    #topnav.show {
+      transform: translateY(0)
+    }
+    #topnav .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 54px;
+      padding: 8px 0;
+      gap: 14px
+    }
+    #topnav .brand {
+      font-family: 'Space Grotesk';
+      font-weight: 600;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    #topnav .brand b {
+      color: var(--cargo)
+    }
+    #topnav nav {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+    #topnav nav a {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 5px 9px;
+      border-radius: 8px;
+      white-space: nowrap
+    }
+    #topnav nav a:hover {
+      background: #EEF3F8;
+      color: var(--ink);
+    }
     @media (prefers-reduced-motion:reduce) {
       * {
         transition: none !important;
@@ -909,23 +971,20 @@
     </div>
   </div>
 
-  <nav class="route">
-    <div class="route-inner">
-      <a class="port p0" href="#port0"><span class="box">P0</span><span class="lbl"><b>Setup + Analogy</b><span>Mental
-            model</span></span></a>
-      <a class="port p1" href="#port1"><span class="box">P1</span><span class="lbl"><b>ML
-            Project</b><span>Dockerfile</span></span></a>
-      <a class="port p2" href="#port2"><span class="box">P2</span><span class="lbl"><b>LLM
-            Project</b><span>Compose</span></span></a>
-      <a class="port p3" href="#port3"><span class="box">P3</span><span class="lbl"><b>Agentic
-            Project</b><span>Microservices</span></span></a>
-      <a class="port p4" href="#port4"><span class="box">P4</span><span class="lbl"><b>Cheatsheet</b><span>Debug +
-            fixes</span></span></a>
-      <a class="port p5" href="#revise"><span class="box">P5</span><span
-          class="lbl"><b>Self-test</b><span>Flashcards</span></span></a>
+  <div id="progress"></div>
+  <div id="topnav">
+    <div class="wrap">
+      <div class="brand">Dockerize&nbsp;<b>Everything</b></div>
+      <nav>
+        <a href="#port0">Setup + Analogy</a>
+        <a href="#port1">ML Project</a>
+        <a href="#port2">LLM Project</a>
+        <a href="#port3">Agentic Project</a>
+        <a href="#port4">Cheatsheet</a>
+        <a href="#revise">Self-test</a>
+      </nav>
     </div>
-    <div id="progressbar"></div>
-  </nav>
+  </div>
 
   <main>
 
@@ -2573,10 +2632,12 @@ docker compose logs -f</pre>
 
     document.getElementById('printbtn').addEventListener('click', () => window.print());
 
-    const bar = document.getElementById('progressbar');
+    const prog = document.getElementById('progress'), tnav = document.getElementById('topnav');
     window.addEventListener('scroll', () => {
       const h = document.documentElement;
-      bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+      const sc = h.scrollTop, max = h.scrollHeight - h.clientHeight;
+      if(prog) prog.style.width = (sc / max * 100) + '%';
+      if(tnav) tnav.classList.toggle('show', sc > 620);
     }, { passive: true });
   </script>
   <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
