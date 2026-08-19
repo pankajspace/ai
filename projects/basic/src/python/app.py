@@ -147,7 +147,7 @@ def arena():
         {
           "result": {
             "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
-            "model_b": {"model": "llama-3.1-70b-versatile", "reply": "..."}
+            "model_b": {"model": "openai/gpt-oss-120b", "reply": "..."}
           }
         }
 

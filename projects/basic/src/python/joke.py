@@ -10,7 +10,7 @@ from config import get_groq_client
 # Llama 3.3 70B Versatile is one of Groq's fastest hosted open-source models.
 # The "versatile" variant is instruction-tuned and performs well on creative
 # tasks like joke generation.
-JOKE_MODEL = "llama-3.1-70b-versatile"
+JOKE_MODEL = "openai/gpt-oss-120b"
 
 
 def get_joke(topic: str = "") -> str:
