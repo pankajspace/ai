@@ -13,7 +13,7 @@ OPENAI_MODEL = "gpt-4o-mini"
 
 # Model B — Meta's Llama 3.3 70B served by Groq: open-source, free tier,
 # very fast inference thanks to Groq's custom LPU hardware.
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "llama-3.1-70b-versatile"
 
 
 def _ask(client, model: str, prompt: str) -> str:
