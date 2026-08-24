@@ -122,3 +122,47 @@ const updateScroll = () => {
 window.addEventListener("scroll", updateScroll, { passive: true });
 backToTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 updateScroll();
+(() => {
+    const isAiUrl = () => {
+        const href = window.location.href.toLowerCase();
+        const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, "");
+        const search = window.location.search.toLowerCase();
+        const hash = window.location.hash.toLowerCase();
+
+        if (
+            href.startsWith("https://techtoday.click/ai") ||
+            href.startsWith("https://www.techtoday.click/ai") ||
+            href.startsWith("http://techtoday.click/ai") ||
+            href.startsWith("http://www.techtoday.click/ai")
+        ) {
+            return true;
+        }
+
+        if (pathname === "/ai" || pathname.endsWith("/ai")) {
+            return true;
+        }
+
+        if (search.includes("ai") || hash === "#ai") {
+            return true;
+        }
+
+        return false;
+    };
+
+    const updateAiMenuVisibility = () => {
+        const aiGroup = document.getElementById("ai-study-group");
+        if (!aiGroup) return;
+
+        if (isAiUrl()) {
+            aiGroup.removeAttribute("hidden");
+            aiGroup.style.display = "";
+        } else {
+            aiGroup.setAttribute("hidden", "");
+            aiGroup.style.display = "none";
+        }
+    };
+
+    updateAiMenuVisibility();
+    window.addEventListener("popstate", updateAiMenuVisibility);
+    window.addEventListener("hashchange", updateAiMenuVisibility);
+})();
