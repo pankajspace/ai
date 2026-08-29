@@ -19,8 +19,8 @@ python3 -m http.server 8000
 Open http://localhost:8000. You can also open `index.html` directly, but a
 local server is more reliable for relative asset paths.
 
-Deploy still uses `assemble_site.sh` so `scripts/`, `README.md`, and env files
-are not copied to the server.
+Deploy copies the project directly and excludes non-public files like
+`README.md`, `.env*`, and `.gitignore`.
 
 ### Commit and Automatic Deployment
 
@@ -65,8 +65,12 @@ git push -u origin fix/techtoday-rollback
 Use this only if GitHub Actions is unavailable. From the repository root:
 
 ```bash
-cd projects/techtoday
-./scripts/assemble_site.sh /tmp/techtoday-site
+mkdir -p /tmp/techtoday-site
+rsync -av --delete \
+    --exclude '.env*' \
+    --exclude '.gitignore' \
+    --exclude 'README.md' \
+    projects/techtoday/ /tmp/techtoday-site/
 rsync -avz --delete /tmp/techtoday-site/ \
     ec2-user@44.193.134.238:/var/www/techtoday/
 ```
@@ -84,8 +88,12 @@ Use this only if the site has been moved from EC2 to S3 and CloudFront:
 
 ```bash
 S3_BUCKET=<bucket-name>
-cd projects/techtoday
-./scripts/assemble_site.sh /tmp/techtoday-site
+mkdir -p /tmp/techtoday-site
+rsync -av --delete \
+    --exclude '.env*' \
+    --exclude '.gitignore' \
+    --exclude 'README.md' \
+    projects/techtoday/ /tmp/techtoday-site/
 aws s3 sync /tmp/techtoday-site/ s3://$S3_BUCKET/ \
     --delete --cache-control "public, max-age=86400"
 aws s3 cp /tmp/techtoday-site/index.html s3://$S3_BUCKET/index.html \
@@ -114,9 +122,7 @@ projects/techtoday/
 ├── index.html                   ← home page, entry point
 ├── style.css                    ← home-page styles
 ├── site-header.css              ← shared Study nav header
-├── scripts/
-│   ├── assemble_site.sh         ← copy public files for deploy
-│   └── build_python_study.py    ← regenerate Python study HTML from Markdown
+├── scripts/                     ← optional local tooling (if present)
 └── study/
     ├── python/                  ← crash course + full course
     └── ai/                      ← LLM, RAG, Docker, Strands guides

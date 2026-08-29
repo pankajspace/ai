@@ -59,8 +59,12 @@ jobs:
 
       - name: Assemble home page and study guides
         run: |
-          chmod +x projects/techtoday/scripts/assemble_site.sh
-          projects/techtoday/scripts/assemble_site.sh "$PWD/site"
+          mkdir -p "$PWD/site"
+          rsync -av --delete \
+            --exclude '.env*' \
+            --exclude '.gitignore' \
+            --exclude 'README.md' \
+            projects/techtoday/ "$PWD/site/"
 
       - name: Deploy static files via rsync
         run: |
