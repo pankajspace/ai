@@ -9,6 +9,31 @@ cp .env.example .env            # then paste your GROQ_API_KEY inside
 ```
 Get a free Groq key at https://console.groq.com
 
+## Running in Browser
+Start the FastAPI web server:
+```bash
+python app.py
+```
+Then open your browser and navigate to:
+```
+http://localhost:7860
+```
+The app serves a custom dark-theme single-page interface at that URL.
+
+> **Note:** The server binds to `0.0.0.0:7860` by default. If port 7860 is already in use, you can launch uvicorn directly on a different port:
+> ```bash
+> uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+> ```
+> then visit `http://localhost:8000`.
+
+Available API endpoints (useful for testing independently):
+1. `GET  /api/questions` — fetch all interview questions
+2. `POST /api/evaluate`  — submit an answer for evaluation
+3. `POST /api/coach`     — ask a meta-question mid-session
+4. `GET  /api/scorecard` — live session scorecard and weakest area
+5. `GET  /api/report`    — final aggregated performance report
+6. `POST /api/reset`     — reset the current session
+
 ## What to do
 Read `Problem_Statement_and_Milestones.md` (in the project root, one level
 up) for the full problem statement and the asks. In short:
