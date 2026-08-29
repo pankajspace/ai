@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — DeskBuddy · Docker Demo Lab</title>
+    <meta name="description"
+        content="How the DeskBuddy demo works." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">🐳</span>
+                <span>Docker Demo Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F916; DeskBuddy</h1>
+                <p class="subtitle">Level 3 &middot; 3 containers</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">POST /deskbuddy/chat</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py</span>
+                        <span class="flow-detail">proxy</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">DeskBuddy Agent Container</span>
+                        <span class="flow-detail">Chat route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Redis</span>
+                        <span class="flow-detail">load history</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent Loop</span>
+                        <span class="flow-detail">OpenAI &harr; Tools Container</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Redis</span>
+                        <span class="flow-detail">save history</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">answer</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br/>deskbuddy_chat"]
+    B -->|proxy_request| C["deskbuddy-agent:9000<br/>POST /chat"]
+    C -->|load history| D["Redis<br/>history:session_id"]
+    D -->|history| C
+    C -->|messages + tools| E["OpenAI API<br/>gpt-4o-mini"]
+    E -.->|tool_calls| C
+    C -.->|call_tool| F["tools:7000<br/>/calculator or /datetime"]
+    F -.->|result| C
+    C -.->|append tool result| E
+    E -->|final answer| C
+    C -->|save history| D
+    C -->|answer| B
+    B -->|answer| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Agent loop handling tool calls and Redis memory.</span>
+                <pre><code class="language-python">@app.post("/chat")
+def chat(req: Chat):
+    # --- 1. Load this session's memory from Redis ---------------------------
+    key = f"history:{req.session_id}"
+    history = [json.loads(m) for m in r.lrange(key, 0, -1)]
+    history.append({"role": "user", "content": req.message})
+
+    # --- 2. The agent loop: think -&gt; act -&gt; observe -&gt; repeat ---------------
+    msg = None
+    for _ in range(5):  # safety fuse: max 5 laps
+        resp = llm.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=history,
+            tools=TOOL_DEFS,
+        )
+        msg = resp.choices[0].message
+
+        if not msg.tool_calls:
+            break  # the LLM answered in words - we're done
+
+        # The LLM asked to run one or more tools
+        history.append(msg.model_dump(exclude_none=True))
+        for tc in msg.tool_calls:
+            result = call_tool(tc.function.name, json.loads(tc.function.arguments))
+            history.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": json.dumps(result),
+                }
+            )
+
+    # --- 3. Save memory back to Redis and return the answer -----------------
+    history.append({"role": "assistant", "content": msg.content})
+    r.delete(key)
+    for m in history:
+        r.rpush(key, json.dumps(m))
+
+    return {"answer": msg.content}</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

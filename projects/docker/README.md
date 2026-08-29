@@ -580,9 +580,12 @@ projects/docker/
 ├── deploy.yml.template
 ├── README.md
 └── src/
-    ├── index.html               # Demo Lab UI
+    ├── index.html               # Demo Lab UI (each demo card has an ⓘ info icon linking to its explainer page)
     ├── css/style.css            # Dark theme + demo form styles
+    ├── css/info.css             # Layout and styles for explainer pages
     ├── js/main.js               # Demo interaction logic
+    ├── js/info.js               # Explainer page code block copy functionality
+    ├── info/                    # One 'how this works' explainer page per demo
     ├── python/                  # Flask proxy server
     │   ├── app.py               # Routes + proxy to internal services
     │   └── config.py            # .env loader

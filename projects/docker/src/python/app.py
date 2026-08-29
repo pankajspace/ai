@@ -104,6 +104,12 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/info/<path:filename>")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
 # ---------------------------------------------------------------------------
 # Routes — QuickBite ETA (Level 1, keyless)
 # ---------------------------------------------------------------------------
