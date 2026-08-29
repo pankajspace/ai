@@ -24,6 +24,8 @@ are not copied to the server.
 
 ### Commit and Automatic Deployment
 
+This section was last verified on 2026-08-29.
+
 Create a feature branch and commit only this project from the repository root:
 
 ```bash
