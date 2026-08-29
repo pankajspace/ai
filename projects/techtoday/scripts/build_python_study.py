@@ -41,7 +41,7 @@ def render_site_header(current_slug: str) -> str:
                             <a href="../python/python-detailed-course.html"{course_current}>Python Detailed Course</a>
                         </div>
                     </details>
-                    <details class="tt-study-group">
+                    <details class="tt-study-group" id="ai-study-group" hidden>
                         <summary>AI</summary>
                         <div class="tt-study-links">
                             <a href="../ai/llms-prompting.html">LLMs &amp; Prompting</a>
@@ -99,6 +99,14 @@ def render_guide(slug: str, title: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />

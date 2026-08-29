@@ -2,6 +2,14 @@
 <html lang="en">
 
 <head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TechToday - AI &amp; Software Projects</title>
@@ -29,7 +37,7 @@
                             <a href="study/python/python-detailed-course.html">Python Detailed Course</a>
                         </div>
                     </details>
-                    <details class="study-group">
+                    <details class="study-group" id="ai-study-group" hidden>
                         <summary>AI</summary>
                         <div class="study-group-links">
                             <a href="study/ai/llms-prompting.html">LLMs &amp; Prompting</a>
@@ -126,6 +134,53 @@
             <p>&copy; 2026 TechToday.</p>
         </div>
     </footer>
+
+    <script>
+        (() => {
+            const isAiUrl = () => {
+                const href = window.location.href.toLowerCase();
+                const pathname = window.location.pathname.toLowerCase().replace(/\/+$/, "");
+                const search = window.location.search.toLowerCase();
+                const hash = window.location.hash.toLowerCase();
+
+                if (
+                    href.startsWith("https://techtoday.click/ai") ||
+                    href.startsWith("https://www.techtoday.click/ai") ||
+                    href.startsWith("http://techtoday.click/ai") ||
+                    href.startsWith("http://www.techtoday.click/ai")
+                ) {
+                    return true;
+                }
+
+                if (pathname === "/ai" || pathname.endsWith("/ai")) {
+                    return true;
+                }
+
+                if (search.includes("ai") || hash === "#ai") {
+                    return true;
+                }
+
+                return false;
+            };
+
+            const updateAiMenuVisibility = () => {
+                const aiGroup = document.getElementById("ai-study-group");
+                if (!aiGroup) return;
+
+                if (isAiUrl()) {
+                    aiGroup.removeAttribute("hidden");
+                    aiGroup.style.display = "";
+                } else {
+                    aiGroup.setAttribute("hidden", "");
+                    aiGroup.style.display = "none";
+                }
+            };
+
+            updateAiMenuVisibility();
+            window.addEventListener("popstate", updateAiMenuVisibility);
+            window.addEventListener("hashchange", updateAiMenuVisibility);
+        })();
+    </script>
 </body>
 
 </html>
