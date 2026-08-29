@@ -264,7 +264,7 @@ pre {
     position: relative;
     margin: 22px 0;
     padding: 20px;
-    overflow-x: auto;
+    overflow: hidden;
     background: var(--code);
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -274,12 +274,21 @@ pre {
 pre::before {
     content: "";
     position: absolute;
-    inset: 0 0 auto 0;
-    height: 2px;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 3px;
     background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    pointer-events: none;
+    z-index: 1;
 }
 
 pre code {
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
     padding: 0;
     color: #d8e2eb;
     background: transparent;
@@ -402,6 +411,7 @@ pre code {
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: 2;
     padding: 5px 8px;
     color: var(--muted);
     background: var(--surface-raised);
@@ -541,6 +551,7 @@ hr {
 }
 
 @media (max-width: 640px) {
+
     .study,
     .study-layout {
         width: 90%;
