@@ -21,7 +21,7 @@ In `index.html`, wrap each card's existing title text in a `<span class="card-ti
 ```
 
 - Use `data-tooltip` (not `title`) — a custom CSS tooltip reads it via `content: attr(data-tooltip)`, avoiding a duplicate native browser tooltip.
-- Opens the explainer in the same tab (no `target="_blank"`), allowing users to navigate directly and return via the "&larr; Back to demos" link.
+- Opens the explainer in the same tab (no `target="_blank"`), allowing users to navigate directly and return via the "&larr; Go Back" link.
 - One link per card, `href="info/<demo>.html"` — a relative path so it still resolves correctly in production behind an Nginx `PATH_PREFIX`.
 
 In `style.css`, add (the card `h2` must already be `display:flex` so `margin-left:auto` pushes the icon to the right):
@@ -93,7 +93,7 @@ Create once per project (not once per demo):
 
 Copy the structure of an existing page (e.g. `projects/basic/src/info/joke.html`) and adapt the content. Section order:
 
-1. **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a "&larr; Back to demos" link.
+1. **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a "&larr; Go Back" link.
 2. **Hero** — the card's emoji + title as `<h1>`, and a one-line subtitle (models/providers used).
 3. **Concept** — 1-2 short paragraphs: what the demo does and *why* that model/provider/approach was chosen.
 4. **Request flow** — a plain CSS box+arrow diagram (`.flow-diagram`) showing the browser → Flask route → module function → provider API → browser round trip. Use `.flow-diagram.flow-vertical` + `.flow-branch` instead of the default horizontal layout when a step fans out into parallel calls (e.g. calling two providers at once).
@@ -166,7 +166,7 @@ Also load highlight.js's stylesheet in `<head>` for the code blocks:
 
 - Check for errors on every edited/created file.
 - Open `src/index.html` in the integrated browser, confirm each card shows the green ⓘ icon that turns orange on hover with a tooltip reading "Explanation".
-- Open each `src/info/<demo>.html`, confirm: the request-flow diagram renders, the Mermaid code-flow diagram renders with labeled arrows (both call and return directions), code blocks are syntax-highlighted with a working Copy button, and "&larr; Back to demos" returns to `index.html`.
+- Open each `src/info/<demo>.html`, confirm: the request-flow diagram renders, the Mermaid code-flow diagram renders with labeled arrows (both call and return directions), code blocks are syntax-highlighted with a working Copy button, and "&larr; Go Back" returns to `index.html`.
 
 ## 6. Docs
 
