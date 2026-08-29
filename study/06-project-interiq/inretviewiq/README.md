@@ -1,30 +1,41 @@
 # InterviewIQ -- Starter Kit
 
 ## Setup
+
+### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
+- An OpenAI API key — get one at https://platform.openai.com/api-keys
+
+### 1. Configure environment
 ```bash
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env            # then paste your GROQ_API_KEY inside
+cp .env.example .env
+# Open .env and set:  OPENAI_API_KEY=sk-...your-key...
 ```
-Get a free Groq key at https://console.groq.com
+
+### 2. Build and run with Docker Compose
+```bash
+docker compose up --build
+```
+That's it — no Python install, no venv needed.
+
+To run in the background:
+```bash
+docker compose up --build -d
+```
+
+To stop:
+```bash
+docker compose down
+```
 
 ## Running in Browser
-Start the FastAPI web server:
-```bash
-python app.py
-```
-Then open your browser and navigate to:
+Once the container is up, open your browser and navigate to:
 ```
 http://localhost:7860
 ```
 The app serves a custom dark-theme single-page interface at that URL.
 
-> **Note:** The server binds to `0.0.0.0:7860` by default. If port 7860 is already in use, you can launch uvicorn directly on a different port:
-> ```bash
-> uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-> ```
-> then visit `http://localhost:8000`.
+> **Note:** To use a different host port, edit `docker-compose.yml` and change `"7860:7860"` to e.g. `"8080:7860"`, then visit `http://localhost:8080`.
 
 Available API endpoints (useful for testing independently):
 1. `GET  /api/questions` — fetch all interview questions
@@ -33,6 +44,14 @@ Available API endpoints (useful for testing independently):
 4. `GET  /api/scorecard` — live session scorecard and weakest area
 5. `GET  /api/report`    — final aggregated performance report
 6. `POST /api/reset`     — reset the current session
+
+### Alternative: run without Docker
+If you prefer plain pip:
+```bash
+pip install -r requirements.txt
+cp .env.example .env   # fill in OPENAI_API_KEY
+python app.py
+```
 
 ## What to do
 Read `Problem_Statement_and_Milestones.md` (in the project root, one level
