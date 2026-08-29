@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — LLM Arena · AI Playground</title>
+    <meta name="description"
+        content="How the LLM Arena demo works: comparing GPT-4o mini and Llama 3.3 70B, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Playground</span>
+            </a>
+            <a href="../" class="back-link">&larr; Back to demos</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F94A; LLM Arena</h1>
+                <p class="subtitle">GPT-4o mini (OpenAI) vs. Llama 3.3 70B (Groq)</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    This demo sends the exact same prompt to a proprietary model
+                    (<strong>GPT-4o mini</strong> via OpenAI) and an open-source model
+                    (<strong>Llama 3.3 70B</strong> via Groq), then displays both replies side by side. It's a
+                    simple way to compare how two different providers respond to identical input.
+                </p>
+                <p>
+                    Both providers are called through the same helper function because Groq's API is
+                    wire-compatible with OpenAI's — only the client and model name differ.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Type a prompt, click “Battle”</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /arena</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">battle()</span>
+                        <span class="flow-detail">Sends the same prompt to both providers</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">GPT-4o mini replies</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">Groq API</span>
+                            <span class="flow-detail">Llama 3.3 70B replies</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Both replies rendered side by side</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />prompt] -->|POST /arena| B[app.py<br />arena route]
+                        B -->|prompt| C[arena.py<br />battle]
+                        C -->|prompt| D[OpenAI API<br />GPT-4o mini]
+                        C -->|prompt| E[Groq API<br />Llama 3.3 70B]
+                        D -->|reply A| C
+                        E -->|reply B| C
+                        C -->|both replies| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Sends one prompt to two models and returns both replies.</span>
+                <pre><code class="language-python">OPENAI_MODEL = "gpt-4o-mini"          # proprietary model
+GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served fast by Groq
+
+
+def _ask(client, model: str, prompt: str) -> str:
+    # Both providers accept the same request format, so one helper covers both.
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content
+
+
+def battle(prompt: str) -> dict:
+    # Call sequentially, in order, so both replies answer the same prompt.
+    openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
+    groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
+
+    # Label each reply with its model so the UI can tell them apart.
+    return {
+        "model_a": {"model": OPENAI_MODEL, "reply": openai_reply},
+        "model_b": {"model": GROQ_MODEL, "reply": groq_reply},
+    }</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the arena over HTTP as <code>POST /arena</code>.</span>
+                <pre><code class="language-python">@bp.route("/arena", methods=["POST"])
+def arena():
+    data = request.get_json(force=True)
+    prompt = (data.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        result = battle(prompt)
+        return jsonify({"result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

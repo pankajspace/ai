@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Joke Generator · AI Playground</title>
+    <meta name="description"
+        content="How the Joke Generator demo works: Groq, Llama 3.3 70B, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Playground</span>
+            </a>
+            <a href="../" class="back-link">&larr; Back to demos</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F602; Joke Generator</h1>
+                <p class="subtitle">Llama 3.3 70B via Groq</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    This demo asks an LLM to tell a joke about a topic you supply. It uses
+                    <strong>Groq</strong> as the inference provider because Groq's custom LPU hardware serves
+                    open-source models like Llama extremely fast, and offers a free tier — a good fit for a
+                    low-latency interactive demo.
+                </p>
+                <p>
+                    The request uses a high <code>temperature</code> (1.3) so the model leans toward creative,
+                    varied output instead of repeating the same few jokes it defaults to at lower temperatures.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Type a topic, click &ldquo;Tell me a joke&rdquo;</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /joke</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">get_joke()</span>
+                        <span class="flow-detail">Builds the prompt</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Groq API</span>
+                        <span class="flow-detail">Llama 3.3 70B generates the joke</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Joke rendered in the result box</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />topic] -->|POST /joke| B[app.py<br />joke route]
+                        B -->|topic| C[joke.py<br />get_joke]
+                        C -->|prompt + temperature| D[Groq API<br />Llama 3.3 70B]
+                        D -->|joke text| C
+                        C -->|joke text| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Generates the joke via Groq's chat completions API.</span>
+                <pre><code class="language-python">from config import get_groq_client
+
+# Llama 3.3 70B via Groq: fast inference, generous free tier.
+JOKE_MODEL = "openai/gpt-oss-120b"
+
+
+def get_joke(topic: str = "") -> str:
+    # Fall back to "random" instead of sending an empty string to the model.
+    subject = topic.strip() if topic.strip() else "random"
+
+    client = get_groq_client()
+    response = client.chat.completions.create(
+        model=JOKE_MODEL,
+        temperature=1.3,  # high temperature = more creative, varied jokes
+        messages=[
+            {
+                "role": "system",
+                # Persona + "never repeat" nudge the model toward variety.
+                "content": "You are a comedian with a huge repertoire of jokes. Never repeat the same joke twice.",
+            },
+            {
+                "role": "user",
+                # Ask for just the joke so the UI can display it directly.
+                "content": f"Tell me a joke about {subject}. Just the joke, no commentary.",
+            },
+        ],
+    )
+    return response.choices[0].message.content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the joke generator over HTTP as <code>POST /joke</code>.</span>
+                <pre><code class="language-python">@bp.route("/joke", methods=["POST"])
+def joke():
+    data = request.get_json(force=True)
+    # topic is optional; an empty string makes get_joke() pick randomly.
+    topic = (data.get("topic") or "").strip()
+    try:
+        text = get_joke(topic)
+        response = jsonify({"result": text})
+        # Every click should fetch a fresh joke — never serve a cached one.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

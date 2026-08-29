@@ -303,6 +303,9 @@ projects/basic/
     │   ├── summarizer.py   # scraper + OpenAI → markdown page summary
     │   ├── arena.py        # OpenAI + Groq → side-by-side model comparison
     │   └── app.py          # Flask server — Blueprint routes + index.html serving
+    ├── css/                # stylesheet(s), incl. info.css for the explainer pages
+    ├── js/                 # front-end behavior (main.js)
+    ├── info/               # "how this demo works" explainer pages (one per card)
     └── index.html          # single-page web UI (vanilla JS, no build step)
 ```
 
@@ -350,6 +353,7 @@ projects/basic/
 - Self-contained single-page app — no framework, no build step, no dependencies.
 - Four cards: Joke Generator, Travel Suggestion, Website Summarizer, LLM Arena.
 - Each card disables its button until the required input has a value, shows a spinner during the request, and renders errors inline without a page reload.
+- Each card title has an ⓘ info icon linking to a matching page under `src/info/` that explains the concept and shows the actual code for that demo.
 - Uses `const API = "";` as a base URL placeholder.  At runtime the Flask `index` route replaces this with `PATH_PREFIX` so the same file works locally and behind an Nginx path prefix.
 
 ---

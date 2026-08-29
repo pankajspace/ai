@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Website Summarizer · AI Playground</title>
+    <meta name="description"
+        content="How the Website Summarizer demo works: scraping, GPT-4o mini, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Playground</span>
+            </a>
+            <a href="../" class="back-link">&larr; Back to demos</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F50E; Website Summarizer</h1>
+                <p class="subtitle">requests + BeautifulSoup + GPT-4o mini</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    This demo fetches a web page, strips out the HTML noise, and asks an LLM to summarize what's
+                    left. It's a two-step pipeline kept in separate modules so each step is independently testable
+                    and the scraper can be reused by future features.
+                </p>
+                <ol>
+                    <li><strong>Scrape</strong> — <code>scraper.py</code> downloads the page with a browser-like
+                        <code>User-Agent</code> and removes <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>,
+                        <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>,
+                        <code>&lt;img&gt;</code>, and <code>&lt;input&gt;</code> tags before extracting plain text.
+                    </li>
+                    <li><strong>Summarize</strong> — <code>summarizer.py</code> passes the cleaned text to
+                        <strong>GPT-4o mini</strong>, which is instructed to respond in markdown and ignore leftover
+                        navigation boilerplate.
+                    </li>
+                </ol>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Paste a URL, click “Summarize”</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /summarize</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">fetch_website_contents()</span>
+                        <span class="flow-detail">Downloads + cleans the page</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">summarize()</span>
+                        <span class="flow-detail">Sends cleaned text to OpenAI</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Markdown summary rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />url] -->|POST /summarize| B[app.py<br />summarizer route]
+                        B -->|url| C[summarizer.py<br />summarize]
+                        C -->|url| D[scraper.py<br />fetch_website_contents]
+                        D -->|cleaned page text| C
+                        C -->|page text + prompt| E[OpenAI API<br />GPT-4o mini]
+                        E -->|markdown summary| C
+                        C -->|summary| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Scraper</h2>
+                <span class="file-label">Downloads a page and returns cleaned, readable text.</span>
+                <pre><code class="language-python">def fetch_website_contents(url: str) -> str:
+    # Users often paste bare domains; add a scheme so requests doesn't error.
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=15)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        # Return an error string instead of raising, so it can reach the UI.
+        return f"Could not fetch the website. Error: {e}"
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    title = soup.title.string if soup.title else "No title found"
+
+    # Strip tags that add noise but no useful text for the LLM prompt.
+    for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
+        tag.decompose()
+
+    text = soup.get_text(separator="\n", strip=True)
+    return f"Title: {title}\n\nPage contents:\n{text}"</code></pre>
+
+                <h2>Summarizer</h2>
+                <span class="file-label">Chains the scraper into a GPT-4o mini chat completion.</span>
+                <pre><code class="language-python"># Tell the model to ignore leftover nav boilerplate and reply in markdown.
+SYSTEM_PROMPT = """You analyze the contents of a website and
+give a short, friendly summary. Ignore navigation menus.
+Respond in markdown."""
+
+
+def summarize(url: str) -> str:
+    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    website = fetch_website_contents(url)
+
+    # Step 2 — ask the model to summarize what we scraped.
+    client = get_openai_client()
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Summarize this website:\n\n{website}"},
+        ],
+    )
+    return response.choices[0].message.content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the summarizer over HTTP as <code>POST /summarize</code>.</span>
+                <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    # Validate at the boundary instead of scraping an empty URL.
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        text = summarize(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Travel Suggestion · AI Playground</title>
+    <meta name="description" content="How the Travel Suggestion demo works: GPT-4o mini and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Playground</span>
+            </a>
+            <a href="../" class="back-link">&larr; Back to demos</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x2708;&#xFE0F; Travel Suggestion</h1>
+                <p class="subtitle">GPT-4o mini via OpenAI</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    This demo asks an LLM to suggest one thing to do in a city you name. It uses
+                    <strong>OpenAI's GPT-4o mini</strong> because the task is open-ended creative writing that
+                    benefits from strong instruction-following, while staying cheap and fast enough for an
+                    interactive demo.
+                </p>
+                <p>
+                    A short system prompt ("You are a witty travel guide") gives the model a consistent persona
+                    for every request, and the user prompt asks for exactly one suggestion so the reply stays
+                    short enough to fit in the result card.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Type a city, click “Suggest something”</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /travel</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">get_travel_suggestion()</span>
+                        <span class="flow-detail">Builds the prompt</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">OpenAI API</span>
+                        <span class="flow-detail">GPT-4o mini suggests an activity</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Suggestion rendered in the result box</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />city] -->|POST /travel| B[app.py<br />travel route]
+                        B -->|city| C[travel.py<br />get_travel_suggestion]
+                        C -->|prompt| D[OpenAI API<br />GPT-4o mini]
+                        D -->|suggestion| C
+                        C -->|suggestion| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Generates the suggestion via OpenAI's chat completions API.</span>
+                <pre><code class="language-python">from config import get_openai_client
+
+# gpt-4o-mini: fast, cheap, and good enough for a short creative reply.
+TRAVEL_MODEL = "gpt-4o-mini"
+
+
+def get_travel_suggestion(city: str = "Bangalore") -> str:
+    client = get_openai_client()
+    response = client.chat.completions.create(
+        model=TRAVEL_MODEL,
+        messages=[
+            {
+                "role": "system",
+                # A brief persona keeps every response short and fun.
+                "content": "You are a witty travel guide.",
+            },
+            {
+                "role": "user",
+                # Asking for exactly one suggestion keeps the reply concise.
+                "content": f"Suggest one thing to do in {city}.",
+            },
+        ],
+    )
+    return response.choices[0].message.content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the travel suggester over HTTP as <code>POST /travel</code>.</span>
+                <pre><code class="language-python">@bp.route("/travel", methods=["POST"])
+def travel():
+    data = request.get_json(force=True)
+    # Fall back to Bangalore so the demo always has a usable city.
+    city = (data.get("city") or "").strip() or "Bangalore"
+    try:
+        text = get_travel_suggestion(city)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
