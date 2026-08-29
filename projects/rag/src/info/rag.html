@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — RAG Q&amp;A · RAG Lab</title>
+    <meta name="description"
+        content="How the RAG Q&amp;A demo works: LangChain, Chroma, GPT-4o mini, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>RAG Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F50D; RAG Q&amp;A</h1>
+                <p class="subtitle">LangChain + Chroma + GPT-4o mini</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    Retrieval-Augmented Generation (RAG) grounds LLM answers in a specific knowledge base rather than
+                    the model's training data. The pipeline: (1) chunk and embed the knowledge base into a Chroma
+                    vector store, (2) embed the question and find the most similar chunks, (3) inject those chunks
+                    into a prompt and ask GPT-4o mini to answer using only that context.
+                </p>
+                <p>
+                    This prevents hallucination and lets the model answer questions about private documents.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Knowledge base + question</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /rag</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">build_index(docs)</span>
+                        <span class="flow-detail">Chroma vector store</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">rag_answer(question, db)</span>
+                        <span class="flow-detail">similarity_search → top 3 chunks</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">RAG_PROMPT | GPT-4o mini</span>
+                        <span class="flow-detail">Grounded answer</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Answer rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>knowledge base + question"] -->|POST /rag| B["app.py<br/>rag_route"]
+    B -->|docs list| C["index.py<br/>build_index"]
+    C -->|chunks + embeddings| D["Chroma<br/>vector store"]
+    B -->|question, db| E["rag.py<br/>rag_answer"]
+    E -->|question| D
+    D -->|top 3 similar chunks| E
+    E -->|context + question| F["RAG_PROMPT<br/>| GPT-4o mini"]
+    F -->|grounded answer| E
+    E -->|answer text| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Indexer</h2>
+                <span class="file-label">Chunks, embeds, and persists documents into a Chroma vector store.</span>
+                <pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+
+from config import get_embedder
+
+
+def build_index(
+    docs: list[str],
+    persist_directory: str = "./chroma_db",
+    chunk_size: int = 500,
+    chunk_overlap: int = 50,
+) -&gt; Chroma:
+    """Chunk, embed, and persist documents into a Chroma vector store."""
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+    # create_documents wraps each chunk in a LangChain Document object.
+    chunks = splitter.create_documents(docs)
+    embedder = get_embedder()
+    # from_documents embeds each chunk and stores vectors in Chroma.
+    db = Chroma.from_documents(chunks, embedder, persist_directory=persist_directory)
+    return db, len(chunks)</code></pre>
+
+                <h2>RAG query</h2>
+                <span class="file-label">Retrieves relevant chunks and generates a grounded answer.</span>
+                <pre><code class="language-python">from langchain_chroma import Chroma
+from langchain_core.prompts import ChatPromptTemplate
+
+from config import get_chat_model, get_embedder
+
+# Instructs the model to answer ONLY from the provided context —
+# prevents it from falling back on its training data.
+RAG_PROMPT = ChatPromptTemplate.from_template("""
+Answer the question using ONLY the context below. If the context doesn't contain
+the answer, say "I don't know." Be concise and quote facts directly.
+
+Context:
+{context}
+
+Question: {question}
+""")
+
+
+def rag_answer(question: str, persist_directory: str = "./chroma_db", db=None) -&gt; str:
+    """Retrieve relevant chunks and generate a grounded answer."""
+    if db is None:
+        embedder = get_embedder()
+        db = Chroma(persist_directory=persist_directory, embedding_function=embedder)
+    model = get_chat_model()
+    # similarity_search returns the k most similar document chunks.
+    chunks = db.similarity_search(question, k=3)
+    context = "\n\n".join(c.page_content for c in chunks)
+    chain = RAG_PROMPT | model
+    return chain.invoke({"context": context, "question": question}).content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the RAG pipeline over HTTP as <code>POST /rag</code>.</span>
+                <pre><code class="language-python">@bp.route("/rag", methods=["POST"])
+def rag_route():
+    """Answer a question using a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        db, _ = build_index(docs, persist_directory=None)
+        answer = rag_answer(question, db=db)
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

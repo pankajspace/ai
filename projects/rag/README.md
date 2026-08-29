@@ -279,9 +279,19 @@ projects/rag/
     │   ├── rag.py          # retrieve + generate answer from vector store
     │   ├── rerank.py       # cross-encoder reranking of retrieval results
     │   └── pdf_chat.py     # pasted PDF text indexing and Q&A
-    ├── index.html          # single-page UI (served by Flask)
-    ├── css/style.css       # dark theme (shares TechToday design tokens)
-    └── js/main.js          # front-end behavior, no frameworks
+    ├── index.html          # single-page UI (served by Flask); each card title has an ⓘ info icon linking to its explainer page
+    ├── css/
+    │   ├── style.css       # dark theme (shares TechToday design tokens)
+    │   └── info.css        # styles for the explainer pages
+    ├── js/
+    │   ├── main.js         # front-end behavior, no frameworks
+    │   └── info.js         # syntax highlighting and Copy button for explainer code blocks
+    └── info/               # one explainer page per demo
+        ├── embeddings.html
+        ├── chunking.html
+        ├── rag.html
+        ├── rerank.html
+        └── pdfchat.html
 ```
 
 ### Backend layout
@@ -291,7 +301,8 @@ projects/rag/
 3. `index.py` and `rag.py` form the two-step RAG pipeline: build an in-memory vector store from user-provided text, then query it with an LLM.
 4. `rerank.py` shows how to improve retrieval accuracy with a cross-encoder as a second-stage ranker.
 5. `pdf_chat.py` applies the full pipeline to pasted PDF text without storing uploaded files.
-6. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/rag/` in production.
+6. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/rag/` in production. It also serves the `src/info/` explainer pages via the `/info/<filename>` route.
+7. Each card title in `index.html` has a green ⓘ info icon that links to a self-contained explainer page in `src/info/` explaining the concept, request flow, code flow, and backend source for that demo. `src/css/info.css` styles those pages and `src/js/info.js` provides syntax highlighting and a Copy button for all code blocks.
 
 All textarea-backed demos accept at most 1000 characters. The browser prevents longer input with `maxlength`, and Flask enforces the same limit for `/chunk`, `/rag`, `/rerank`, and `/pdf-index`.
 

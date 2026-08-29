@@ -272,9 +272,12 @@ projects/langchain/
     │   ├── summarizer.py   # LangChain chain: prompt | model | parser
     │   ├── chat.py         # memory chat: MessagesPlaceholder + history
     │   └── agent.py        # tool-using shop agent (function calling)
+    ├── info/               # one explainer page per demo (summarize.html, agent.html, chat.html)
     ├── index.html          # single-page UI (served by Flask)
     ├── css/style.css       # dark theme (shares TechToday design tokens)
-    └── js/main.js          # front-end behavior, no frameworks
+    ├── css/info.css        # styles for the explainer pages
+    ├── js/main.js          # front-end behavior, no frameworks
+    └── js/info.js          # syntax highlighting and Copy button for explainer code blocks
 ```
 
 ### Backend layout
@@ -284,6 +287,8 @@ projects/langchain/
 3. `agent.py` uses the native OpenAI SDK because the function-calling request/response shape is clearest in the raw API.
 4. `scraper.py` uses LangChain's `WebBaseLoader` to perform web scraping — integrating with the LangChain ecosystem — so it can be reused by any feature that needs page text.
 5. `app.py` attaches every route to a Blueprint and registers it once under a runtime `PATH_PREFIX`, so the same code runs at `/` locally and under `/langchain/` in production.
+
+Note: Each card's title in the frontend has an ⓘ info icon linking to its respective explainer page in `src/info/`.
 
 ### Path prefix routing
 

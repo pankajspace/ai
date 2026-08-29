@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Chunking · RAG Lab</title>
+    <meta name="description"
+        content="How the Chunking demo works: RecursiveCharacterTextSplitter, overlapping chunks, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>RAG Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x2702;&#xFE0F; Chunking</h1>
+                <p class="subtitle">RecursiveCharacterTextSplitter &middot; local, no API key</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    LLMs have a context window limit — you can't pass an entire book as a prompt. The solution is to
+                    split the document into overlapping chunks. The <code>RecursiveCharacterTextSplitter</code> tries
+                    to split at natural boundaries (paragraphs, then sentences, then words) instead of cutting mid-word.
+                </p>
+                <p>
+                    Overlapping chunks (<code>chunk_overlap</code>) ensures context at the boundary is never lost —
+                    this is the "context glue" that makes retrieval accurate.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Long text</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /chunk</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">chunk_route()</span>
+                        <span class="flow-detail">app.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">chunk_text()</span>
+                        <span class="flow-detail">chunk.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">RecursiveCharacterTextSplitter</span>
+                        <span class="flow-detail">split at paragraphs / sentences / words</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">List of chunks rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>long text"] -->|POST /chunk| B["app.py<br/>chunk_route"]
+    B -->|text| C["chunk.py<br/>chunk_text"]
+    C -->|text, chunk_size=100, overlap=10| D["RecursiveCharacterTextSplitter<br/>split at paragraphs/sentences/words"]
+    D -->|list of chunk strings| C
+    C -->|chunks list| B
+    B -->|JSON result: chunks + count| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Splits text into overlapping chunks using LangChain's splitter.</span>
+                <pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+
+def chunk_text(
+    text: str,
+    chunk_size: int = 100,   # target characters per chunk
+    chunk_overlap: int = 10,  # characters shared between adjacent chunks
+) -&gt; list[str]:
+    """Split text into overlapping chunks."""
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+    # split_text tries paragraph &gt; sentence &gt; word boundaries before hard-cutting.
+    return splitter.split_text(text)</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the text splitter over HTTP as <code>POST /chunk</code>.</span>
+                <pre><code class="language-python">@bp.route("/chunk", methods=["POST"])
+def chunk_route():
+    """Split text into overlapping chunks.
+
+    Request body (JSON): ``{ "text": "&lt;long text&gt;" }``
+    Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    text = (data.get("text") or "").strip()
+    validation = validate_textarea(text, "Text")
+    if validation:
+        return validation
+    try:
+        chunks = chunk_text(text)
+        return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

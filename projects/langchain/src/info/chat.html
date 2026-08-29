@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Memory Chat · LangChain Lab</title>
+    <meta name="description" content="How the Memory Chat works." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>LangChain Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🧠 Memory Chat</h1>
+                <p class="subtitle">LangChain MessagesPlaceholder + GPT-4o mini</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>LLMs have no built-in memory — they only "remember" because we re-send past turns with every request. The <code>MessagesPlaceholder</code> is the slot in the prompt where that conversation history is injected. The web layer is stateless: the browser keeps the running history and sends it as JSON with each message.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">message + history</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py</span>
+                        <span class="flow-detail">POST /chat</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">chat.py</span>
+                        <span class="flow-detail">reply()</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">LangChain</span>
+                        <span class="flow-detail">prompt | model</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">appends to history</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>message + history"] --&gt;|POST /chat| B["app.py<br/>chat"]
+    B --&gt;|message, history| C["chat.py<br/>reply"]
+    C --&gt;|_to_messages| D["Convert dicts<br/>to LangChain msgs"]
+    D --&gt;|HumanMessage/AIMessage list| C
+    C --&gt;|history + question| E["LangChain chain<br/>prompt | model"]
+    E --&gt;|full conversation| F["OpenAI API<br/>GPT-4o mini"]
+    F --&gt;|reply text| E
+    E --&gt;|AIMessage| C
+    C --&gt;|.content text| B
+    B --&gt;|JSON result| A
+    A --&gt;|appends to local history| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">chat.py — memory chat chain</span>
+                <pre><code class="language-python">from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+from config import get_chat_model
+
+# The prompt has three parts: a system persona, the history placeholder where
+# past turns slot in, and the newest human question.
+PROMPT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a friendly assistant. Use the conversation history to "
+            "stay consistent.",
+        ),
+        MessagesPlaceholder("history"),
+        ("human", "{question}"),
+    ]
+)
+
+
+def _build_chain():
+    """Assemble the chat chain: prompt | model.
+
+    Built lazily inside a function (rather than at import time) so importing
+    this module never requires an API key — the model client is only created
+    when a reply is actually requested.  A slightly warmer temperature keeps
+    replies conversational; the parser is omitted because reply() reads
+    ``.content`` from the returned message directly.
+    """
+    return PROMPT | get_chat_model(temperature=0.7)
+
+
+def _to_messages(history: list[dict]) -&gt; list:
+    """Convert plain {role, content} dicts into LangChain message objects.
+
+    The browser sends history as JSON dicts (``{"role": "user"|"assistant",
+    "content": "..."}``).  LangChain's placeholder expects ``HumanMessage`` /
+    ``AIMessage`` objects, so we translate here at the boundary.
+
+    Args:
+        history: Prior turns as a list of ``{"role", "content"}`` dicts.
+
+    Returns:
+        A list of alternating ``HumanMessage`` / ``AIMessage`` objects.
+    """
+    messages = []
+    for turn in history:
+        if turn.get("role") == "assistant":
+            messages.append(AIMessage(turn.get("content", "")))
+        else:
+            messages.append(HumanMessage(turn.get("content", "")))
+    return messages
+
+
+def reply(question: str, history: list[dict] | None = None) -&gt; str:
+    """Answer a question with the conversation history for context.
+
+    Args:
+        question: The newest user message.
+        history:  Prior turns as ``{"role", "content"}`` dicts.  Defaults to
+                  an empty conversation.
+
+    Returns:
+        The assistant's reply text.
+    """
+    messages = _to_messages(history or [])
+    response = _build_chain().invoke({"history": messages, "question": question})
+    return response.content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py</span>
+                <pre><code class="language-python">@bp.route("/chat", methods=["POST"])
+def chat():
+    """Reply to a message using the conversation history for memory."""
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    history = data.get("history") or []
+    if not message:
+        return jsonify({"error": "A message is required."}), 400
+    try:
+        text = reply(message, history)
+        response = jsonify({"result": text})
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

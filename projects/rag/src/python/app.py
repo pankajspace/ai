@@ -92,6 +92,12 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/info/<path:filename>")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
 @bp.route("/embeddings", methods=["POST"])
 def embeddings_route():
     """Compare two texts and return their cosine similarity.

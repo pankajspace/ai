@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — PDF Chat · RAG Lab</title>
+    <meta name="description"
+        content="How the PDF Chat demo works: RAG pipeline, Chroma, GPT-4o mini, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>RAG Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F4C4; PDF Chat</h1>
+                <p class="subtitle">RAG pipeline + Chroma + GPT-4o mini</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    PDF Chat is a complete end-to-end RAG pipeline applied to pasted PDF text. First, the text is
+                    chunked and embedded into an in-memory Chroma vector store (<code>/pdf-index</code>). Then, for
+                    each question, the most relevant chunks are retrieved and injected into a prompt that tells
+                    GPT-4o mini to answer only from the document.
+                </p>
+                <p>
+                    The in-memory store persists for the browser session on the server (<code>_pdf_state</code>).
+                    This keeps the server from storing uploaded files while still showing the full RAG pipeline
+                    on real document text.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Paste PDF text, click "Index Text"</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /pdf-index</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">build_pdf_text_index()</span>
+                        <span class="flow-detail">chunk + embed into in-memory Chroma</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Indexed! Now ask a question</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /pdf-chat</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">ask_pdf(db, question)</span>
+                        <span class="flow-detail">retrieve top 4 chunks + GPT-4o mini</span>
+                    </div>
+                    <div class="flow-arrow-down">&#x2193;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Answer grounded in the document</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>PDF text"] -->|POST /pdf-index| B["app.py<br/>pdf_index"]
+    B -->|pdf_text| C["pdf_chat.py<br/>build_pdf_text_index"]
+    C -->|chunk + embed| D["in-memory Chroma<br/>_pdf_state db"]
+    D -->|Chroma db| B
+    A2["Browser<br/>question"] -->|POST /pdf-chat| E["app.py<br/>pdf_chat"]
+    E -->|db, question| F["pdf_chat.py<br/>ask_pdf"]
+    F -->|question| D
+    D -->|top 4 chunks| F
+    F -->|context + question| G["PDF_PROMPT<br/>| GPT-4o mini"]
+    G -->|answer| F
+    F -->|answer text| E
+    E -->|JSON result| A2
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Indexes pasted PDF text and answers questions from its content.</span>
+                <pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
+from langchain_core.prompts import ChatPromptTemplate
+
+from config import get_chat_model, get_embedder
+
+PDF_PROMPT = ChatPromptTemplate.from_template("""
+You are a helpful PDF assistant. Answer the question using ONLY the context below.
+If the context doesn't contain the answer, say "I couldn't find that in the document."
+
+Context:
+{context}
+
+Question: {question}
+""")
+
+
+def build_pdf_text_index(pdf_text: str) -&gt; Chroma:
+    """Chunk pasted PDF text and build an in-memory vector store.
+
+    Args:
+        pdf_text: Text copied from a PDF.
+
+    Returns:
+        A ``Chroma`` vector store containing the embedded text chunks.
+    """
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    chunks = splitter.create_documents([pdf_text])
+    embedder = get_embedder()
+    db = Chroma.from_documents(chunks, embedder)
+    return db
+
+
+def ask_pdf(db: Chroma, question: str) -&gt; str:
+    """Answer a question using the content of an indexed PDF.
+
+    Args:
+        db: A Chroma vector store built by ``build_pdf_text_index``.
+        question: The user's question about the PDF.
+
+    Returns:
+        The model's answer.
+    """
+    model = get_chat_model()
+    chunks = db.similarity_search(question, k=4)
+    context = "\n\n".join(c.page_content for c in chunks)
+    chain = PDF_PROMPT | model
+    return chain.invoke({"context": context, "question": question}).content</code></pre>
+
+                <h2>API routes</h2>
+                <span class="file-label">Exposes the two-phase PDF pipeline over HTTP as <code>POST /pdf-index</code> and <code>POST /pdf-chat</code>.</span>
+                <pre><code class="language-python">@bp.route("/pdf-index", methods=["POST"])
+def pdf_index():
+    """Index pasted PDF text in an in-memory vector store.
+
+    Request body (JSON): ``{ "pdf_text": "&lt;text copied from a PDF&gt;" }``
+    Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
+    Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    pdf_text = (data.get("pdf_text") or "").strip()
+    validation = validate_textarea(pdf_text, "PDF text")
+    if validation:
+        return validation
+    try:
+        _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        return jsonify({"result": "PDF text indexed. Ask me anything about it."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-chat", methods=["POST"])
+def pdf_chat():
+    """Answer a question about the previously indexed PDF text.
+
+    Request body (JSON): ``{ "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    if _pdf_state["db"] is None:
+        return jsonify({"error": "Please add PDF text first."}), 400
+    try:
+        answer = ask_pdf(_pdf_state["db"], question)
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

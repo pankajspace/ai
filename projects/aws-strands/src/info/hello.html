@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Hello World Agent · AI Agents on AWS</title>
+    <meta name="description" content="Explanation of Hello World Agent." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Agents on AWS</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F916; Hello World Agent</h1>
+                <p class="subtitle">Amazon Nova Pro via Bedrock</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>The simplest Strands agent — no tools, so the agentic loop runs exactly once. The model answers directly from Bedrock. Explain that without tools there's no reason to loop: the model just generates a reply. Amazon Nova Pro on Bedrock was chosen because it's a capable foundational model with a simple API available on AWS.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">Browser prompt</div>\n                    <div class="flow-arrow">POST /ask</div>\n                    <div class="flow-step">app.py ask_route</div>\n                    <div class="flow-arrow">hello_agent.py ask()</div>\n                    <div class="flow-step">Agent(no tools)</div>\n                    <div class="flow-arrow">Bedrock Nova Pro</div>\n                    <div class="flow-step">back to Browser</div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser&lt;br/&gt;prompt"] --&gt;|POST /ask| B["app.py&lt;br/&gt;ask_route"]
+    B --&gt;|prompt| C["hello_agent.py&lt;br/&gt;ask"]
+    C --&gt;|Agent(no tools)| D["Bedrock&lt;br/&gt;Nova Pro"]
+    D --&gt;|reply text| C
+    C --&gt;|reply text| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">hello_agent.py</span>
+                <pre><code class="language-python">from strands import Agent
+from strands.models.bedrock import BedrockModel
+
+from config import MODEL_ID, agent_text
+
+
+def ask(prompt: str) -&gt; str:
+    """Send a prompt to a plain, tool-less agent and return its reply."""
+    # No tools: the agentic loop runs exactly once — the model answers directly.
+    agent = Agent(model=BedrockModel(model_id=MODEL_ID), callback_handler=None)
+    return agent_text(agent(prompt))</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py</span>
+                <pre><code class="language-python">@bp.route("/ask", methods=["POST"])
+def ask_route():
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        return jsonify({"result": ask(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

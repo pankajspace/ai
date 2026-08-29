@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Sales Report Agent · AI Agents on AWS</title>
+    <meta name="description" content="Explanation of Sales Report Agent." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Agents on AWS</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F4CA; Sales Report Agent</h1>
+                <p class="subtitle">multi-tool planning via Strands + Bedrock</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>"Pull last quarter's sales data and email a summary" is three tasks: query, analyse, send. The agent is given three small single-purpose tools and works out the order itself — that's planning. Nobody hard-coded the sequence; the agentic loop figures it out from context.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">Browser request</div>\n                    <div class="flow-arrow">POST /sales</div>\n                    <div class="flow-step">sales_agent.py report()</div>\n                    <div class="flow-arrow">Agent plans: get_sales_data</div>\n                    <div class="flow-step">analyze_sales</div>\n                    <div class="flow-arrow">send_email</div>\n                    <div class="flow-step">Bedrock phrases result</div>\n                    <div class="flow-arrow">Browser</div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser&lt;br/&gt;sales request"] --&gt;|POST /sales| B["app.py&lt;br/&gt;sales_route"]
+    B --&gt;|request| C["sales_agent.py&lt;br/&gt;report"]
+    C --&gt;|request + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+    D --&gt;|tool call: get_sales_data| E["get_sales_data&lt;br/&gt;quarter"]
+    E --&gt;|revenue, deals| D
+    D --&gt;|tool call: analyze_sales| F["analyze_sales&lt;br/&gt;revenue, deals"]
+    F --&gt;|metrics string| D
+    D --&gt;|tool call: send_email| G["send_email&lt;br/&gt;to, subject, body"]
+    G --&gt;|sent confirmation| D
+    D --&gt;|final answer| C
+    C --&gt;|final answer| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">sales_agent.py</span>
+                <pre><code class="language-python">"""Module 2 demo — multi-tool planning: a sales report agent.
+
+"Pull last quarter's sales data and email a summary to the team" is three
+tasks: query, analyse, send. The agent is given three small, single-purpose
+tools and works out the order itself — that is planning.
+"""
+
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+from config import MODEL_ID, agent_text
+
+
+@tool
+def get_sales_data(quarter: str) -&gt; dict:
+    """Retrieve sales data for a specific quarter."""
+    return {"revenue": 1250000, "deals": 47, "quarter": quarter}
+
+
+@tool
+def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str:
+    """Calculate key metrics from sales data."""
+    avg_deal = revenue / deals
+    return f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"
+
+
+@tool
+def send_email(to: str, subject: str, body: str) -&gt; str:
+    """Send an email message."""
+    return f"Email sent to {to}"
+
+
+def report(question: str) -&gt; str:
+    """Answer a sales request, letting the agent chain its three tools."""
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        tools=[get_sales_data, analyze_sales, send_email],
+        callback_handler=None,
+    )
+    return agent_text(agent(question))
+</code></pre>
+
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

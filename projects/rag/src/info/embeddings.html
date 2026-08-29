@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Embeddings · RAG Lab</title>
+    <meta name="description"
+        content="How the Embeddings demo works: all-MiniLM-L6-v2, cosine similarity, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>RAG Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F9E0; Embeddings</h1>
+                <p class="subtitle">all-MiniLM-L6-v2 &middot; local, no API key</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    Words and sentences can be encoded as vectors (lists of numbers) called embeddings. Two sentences
+                    that mean similar things will have vectors pointing in similar directions — cosine similarity
+                    measures the angle between them. The <code>all-MiniLM-L6-v2</code> model runs entirely locally
+                    (no API key), making it fast and free.
+                </p>
+                <p>
+                    This demo encodes both sentences and returns their similarity score between 0 (unrelated) and
+                    1 (semantically identical).
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Two sentences</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /embeddings</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">embeddings_route()</span>
+                        <span class="flow-detail">app.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">compare_similarity()</span>
+                        <span class="flow-detail">embeddings.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">get_embedder()</span>
+                        <span class="flow-detail">embed both texts → cosine similarity → score</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Similarity score rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>text_a + text_b"] -->|POST /embeddings| B["app.py<br/>embeddings_route"]
+    B -->|text_a, text_b| C["embeddings.py<br/>compare_similarity"]
+    C -->|text_a| D["get_embedder<br/>all-MiniLM-L6-v2"]
+    C -->|text_b| D
+    D -->|vector v1| C
+    D -->|vector v2| C
+    C -->|dot(v1,v2) / norm| E["cosine similarity<br/>score 0-1"]
+    E -->|float| C
+    C -->|score| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Encodes two texts and returns their cosine similarity.</span>
+                <pre><code class="language-python">from numpy import dot
+from numpy.linalg import norm
+
+from config import get_embedder
+
+
+def compare_similarity(text_a: str, text_b: str) -&gt; float:
+    """Encode two texts and return their cosine similarity (0-1)."""
+    embedder = get_embedder()
+    # embed_query converts a string into a high-dimensional vector.
+    v1 = embedder.embed_query(text_a)
+    v2 = embedder.embed_query(text_b)
+    # Cosine similarity = dot product / (product of magnitudes).
+    # Result: 1 = identical direction, 0 = orthogonal (unrelated).
+    return float(dot(v1, v2) / (norm(v1) * norm(v2)))</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the similarity scorer over HTTP as <code>POST /embeddings</code>.</span>
+                <pre><code class="language-python">@bp.route("/embeddings", methods=["POST"])
+def embeddings_route():
+    """Compare two texts and return their cosine similarity.
+
+    Request body (JSON): ``{ "text_a": "&lt;text&gt;", "text_b": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    text_a = (data.get("text_a") or "").strip()
+    text_b = (data.get("text_b") or "").strip()
+    if not text_a or not text_b:
+        return jsonify({"error": "Both text_a and text_b are required."}), 400
+    try:
+        score = compare_similarity(text_a, text_b)
+        return jsonify({"result": {"similarity": round(score, 4)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

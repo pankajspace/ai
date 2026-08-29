@@ -310,9 +310,12 @@ projects/aws-strands/
     │   ├── stock_agent.py     # Module 2 — class-based, stateful tools (/stock)
     │   ├── warehouse_agent.py # Module 2 — async parallel lookups (/warehouse)
     │   └── travel_agent.py    # Module 3 — multi-tool travel assistant (/travel)
-    ├── index.html          # single-page web UI
+    ├── info/               # Explainer pages for how each demo works
+    ├── index.html          # single-page web UI (each card has an ⓘ info icon linking to its explainer page)
     ├── css/style.css       # dark theme (TechToday design tokens)
-    └── js/main.js          # front-end behavior, no frameworks
+    ├── css/info.css        # layout styles for the explainer pages
+    ├── js/main.js          # front-end behavior, no frameworks
+    └── js/info.js          # syntax highlighting and copy buttons for explainer pages
 ```
 
 ---

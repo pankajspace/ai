@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Reranking · RAG Lab</title>
+    <meta name="description"
+        content="How the Reranking demo works: bi-encoder retrieval, cross-encoder reranking, and the code behind it." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>RAG Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F500; Reranking</h1>
+                <p class="subtitle">bi-encoder retrieval + cross-encoder reranking</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    A bi-encoder (the sentence-transformer used for indexing) is fast but approximate — it
+                    independently encodes the query and each document. A cross-encoder scores each
+                    (question, candidate) pair together, which is much more accurate but too slow to run over
+                    an entire corpus.
+                </p>
+                <p>
+                    The trick: retrieve many cheap candidates with the bi-encoder (<code>initial_k=25</code>),
+                    then rerank the top ones with the cross-encoder to get the best <code>top_k=3</code>. This
+                    two-stage approach gives near-cross-encoder accuracy at bi-encoder speed.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Knowledge base + question</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /rerank</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">build_index()</span>
+                        <span class="flow-detail">Chroma vector store</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">retrieve_with_rerank(db, question)</span>
+                        <span class="flow-detail">bi-encoder: k=25 → cross-encoder rerank → top 3</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Top 3 chunks rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>knowledge base + question"] -->|POST /rerank| B["app.py<br/>rerank_route"]
+    B -->|docs| C["index.py<br/>build_index"]
+    C -->|Chroma db| B
+    B -->|db, question| D["rerank.py<br/>retrieve_with_rerank"]
+    D -->|question| E["Chroma<br/>similarity_search k=25"]
+    E -->|25 candidate chunks| D
+    D -->|question, candidate pairs| F["CrossEncoder<br/>ms-marco-MiniLM-L6-v2"]
+    F -->|relevance scores| D
+    D -->|sort by score, take top 3| G["Top 3 chunks"]
+    G -->|page_content list| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Retrieves candidates with a bi-encoder, then reranks with a cross-encoder.</span>
+                <pre><code class="language-python">from sentence_transformers import CrossEncoder
+from langchain_chroma import Chroma
+
+from config import get_embedder
+
+# Lazy-loaded cross-encoder — only downloaded when /rerank is first called.
+_reranker = None
+
+
+def _get_reranker():
+    global _reranker
+    if _reranker is None:
+        _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
+    return _reranker
+
+
+def retrieve_with_rerank(
+    db: Chroma,
+    question: str,
+    top_k: int = 3,
+    initial_k: int = 25,
+) -&gt; list:
+    """Retrieve candidates with bi-encoder, rerank with cross-encoder."""
+    # Stage 1: fast bi-encoder retrieval (approximate)
+    candidates = db.similarity_search(question, k=initial_k)
+    if not candidates:
+        return []
+    reranker = _get_reranker()
+    pairs = [(question, c.page_content) for c in candidates]
+    # Stage 2: accurate cross-encoder scoring of each (question, chunk) pair
+    scores = reranker.predict(pairs)
+    # Sort by score only — avoids comparing Document objects when scores tie.
+    ranked = sorted(zip(scores, candidates), key=lambda pair: pair[0], reverse=True)
+    return [c for _, c in ranked[:top_k]]</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the reranking pipeline over HTTP as <code>POST /rerank</code>.</span>
+                <pre><code class="language-python">@bp.route("/rerank", methods=["POST"])
+def rerank_route():
+    """Retrieve and rerank results from a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        db, _ = build_index(docs, persist_directory=None)
+        reranked = retrieve_with_rerank(db, question, top_k=3)
+        results = [doc.page_content for doc in reranked]
+        return jsonify({"result": {"results": results}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

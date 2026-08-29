@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Shop Agent · LangChain Lab</title>
+    <meta name="description" content="How the Shop Agent works." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>LangChain Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🛍️ Shop Agent</h1>
+                <p class="subtitle">tool-using agent via OpenAI function calling</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>A tool-using agent — the LLM decides on its own when to call a tool. Three tools are available: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model uses OpenAI's function-calling protocol: it may request tool calls in its response, the server runs the real functions and appends the results, and the model is called again to phrase the final answer.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">question</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py</span>
+                        <span class="flow-detail">POST /agent</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">agent.py</span>
+                        <span class="flow-detail">ask()</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">OpenAI API</span>
+                        <span class="flow-detail">with tools</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Tool Calls</span>
+                        <span class="flow-detail">dispatch results</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">JSON answer</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>shopping question"] --&gt;|POST /agent| B["app.py<br/>shop_agent"]
+    B --&gt;|user_message| C["agent.py<br/>ask"]
+    C --&gt;|messages + TOOLS| D["OpenAI API<br/>GPT-4o mini"]
+    D --&gt;|tool_calls request| E["Tool dispatch<br/>TOOL_FUNCTIONS registry"]
+    E --&gt;|call get_price| F["get_price<br/>item"]
+    E --&gt;|call check_stock| G["check_stock<br/>item"]
+    E --&gt;|call apply_discount| H["apply_discount<br/>item"]
+    F --&gt;|price string| E
+    G --&gt;|stock string| E
+    H --&gt;|discounted price| E
+    E --&gt;|tool results| C
+    C --&gt;|messages + results| D
+    D --&gt;|final answer text| C
+    C --&gt;|answer| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">agent.py — tool definitions &amp; ask function</span>
+                <pre><code class="language-python">import json
+import random
+
+from config import CHAT_MODEL, get_openai_client
+
+# Our tiny "database" — dicts standing in for a real product catalog.
+PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
+
+STOCK = {"shoes": 12, "hat": 5, "bag": 0, "shorts": 8, "pants": 3}
+
+DISCOUNT_PERCENT = 10
+
+
+def get_price(item: str) -&gt; str:
+    """Look up the price of a shop item.
+
+    Args:
+        item: The item name the user asked about.
+
+    Returns:
+        A rupee price string, or "₹unknown" if the item is not stocked.
+    """
+    return f"₹{PRICES.get(item.lower(), 'unknown')}"
+
+
+def check_stock(item: str) -&gt; str:
+    """Check the stock availability of a shop item.
+
+    Args:
+        item: The item name to check stock for.
+
+    Returns:
+        A string describing the stock level, or "unknown item" if not found.
+    """
+    item_lower = item.lower()
+    if item_lower not in STOCK:
+        return f"{item} is not a known item in our shop."
+    qty = STOCK[item_lower]
+    if qty == 0:
+        return f"{item} is currently out of stock."
+    return f"{item} has {qty} units in stock."
+
+
+def apply_discount(item: str) -&gt; str:
+    """Apply a 10% discount to a shop item and return the discounted price.
+
+    Args:
+        item: The item name to apply the discount to.
+
+    Returns:
+        A string with the original and discounted price, or an error message.
+    """
+    item_lower = item.lower()
+    if item_lower not in PRICES:
+        return f"{item} is not a known item in our shop."
+    original = PRICES[item_lower]
+    discounted = original - (original * DISCOUNT_PERCENT // 100)
+    return f"{item}: ₹{original} → ₹{discounted} ({DISCOUNT_PERCENT}% off)"
+
+
+# A registry mapping tool names to their Python functions.
+TOOL_FUNCTIONS = {
+    "get_price": get_price,
+    "check_stock": check_stock,
+    "apply_discount": apply_discount,
+}
+
+# Describe the tools so the model knows they exist and how to call them.
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_price",
+            "description": "Get the price of a shop item the user asks about.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item": {"type": "string", "description": "the item name"}
+                },
+                "required": ["item"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_stock",
+            "description": "Check the stock availability of a shop item.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item": {"type": "string", "description": "the item name"}
+                },
+                "required": ["item"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "apply_discount",
+            "description": "Apply a 10% discount to a shop item and return the discounted price.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "item": {"type": "string", "description": "the item name"}
+                },
+                "required": ["item"],
+            },
+        },
+    },
+]
+
+
+def ask(user_message: str) -&gt; str:
+    """Answer a shopping question, using the available tools when needed.
+
+    The flow mirrors the OpenAI function-calling protocol:
+      1. Send the message plus the tools menu; the model may request a tool.
+      2. If it did, run the real function and append the result.
+      3. Send everything back so the model can phrase a final answer.
+
+    Args:
+        user_message: The shopper's question.
+
+    Returns:
+        The assistant's final natural-language reply.
+    """
+    client = get_openai_client()
+    messages = [{"role": "user", "content": user_message}]
+
+    # 1. First call — the model sees the tools menu and may ask for a tool.
+    response = client.chat.completions.create(
+        model=CHAT_MODEL, messages=messages, tools=TOOLS
+    )
+    msg = response.choices[0].message
+
+    # 2. Did it request one or more tool calls?
+    if msg.tool_calls:
+
+        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
+        messages.append(msg)
+
+        for call in msg.tool_calls:
+            fn_name = call.function.name
+
+            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            args = json.loads(call.function.arguments)
+            # Look up the tool function from the registry and call it.
+            fn = TOOL_FUNCTIONS.get(fn_name)
+            result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
+            messages.append(
+                {
+                    "role": "tool",  # the third role, alongside user/assistant
+                    "tool_call_id": call.id,
+                    "content": result,
+                }
+            )
+        # 3. Send tool results back so the model can answer in plain language.
+        response = client.chat.completions.create(
+            model=CHAT_MODEL, messages=messages
+        )
+        msg = response.choices[0].message
+
+    return msg.content</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py</span>
+                <pre><code class="language-python">@bp.route("/agent", methods=["POST"])
+def shop_agent():
+    """Answer a shopping question, letting the agent call its price tool."""
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A message is required."}), 400
+    try:
+        text = ask(message)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

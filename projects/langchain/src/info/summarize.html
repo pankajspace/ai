@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Website Summarizer · LangChain Lab</title>
+    <meta name="description" content="How the Website Summarizer works." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>LangChain Lab</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🔎 Website Summarizer</h1>
+                <p class="subtitle">LangChain chain + GPT-4o mini</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>This demo uses a LangChain <code>prompt | model | parser</code> chain to summarize any web page. First, <code>WebBaseLoader</code> fetches and cleans the page text. Then the chain fills a prompt template with that text and calls GPT-4o mini with low temperature (0.3) for a factual, consistent summary. The <code>|</code> operator is LangChain's way of composing steps — each step's output becomes the next step's input.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">URL</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py</span>
+                        <span class="flow-detail">POST /summarize</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">summarize(url)</span>
+                        <span class="flow-detail">summarizer.py</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">WebBaseLoader</span>
+                        <span class="flow-detail">fetch &amp; clean</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">LangChain</span>
+                        <span class="flow-detail">prompt | model</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">JSON summary</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser<br/>URL"] --&gt;|POST /summarize| B["app.py<br/>summarizer"]
+    B --&gt;|url| C["summarizer.py<br/>summarize"]
+    C --&gt;|url| D["scraper.py<br/>fetch_website_contents"]
+    D --&gt;|HTTP GET| E["WebBaseLoader<br/>target website"]
+    E --&gt;|page text| D
+    D --&gt;|title + body text| C
+    C --&gt;|website text| F["LangChain chain<br/>prompt | model | parser"]
+    F --&gt;|prompt| G["OpenAI API<br/>GPT-4o mini"]
+    G --&gt;|markdown summary| F
+    F --&gt;|summary text| C
+    C --&gt;|summary text| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Scraper</h2>
+                <span class="file-label">scraper.py — fetch_website_contents</span>
+                <pre><code class="language-python">from langchain_community.document_loaders import WebBaseLoader
+
+# Many servers block requests that don't look like a real browser.
+# Sending a realistic User-Agent avoids most simple bot-detection checks.
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+def fetch_website_contents(url: str) -&gt; str:
+    """Download a web page and return its title and cleaned text using LangChain."""
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+    try:
+        loader = WebBaseLoader(url)
+        # Pass headers and timeout via requests_kwargs
+        loader.requests_kwargs = {"headers": HEADERS, "timeout": 15}
+        docs = loader.load()
+        if not docs:
+            return "Could not fetch the website."
+        title = docs[0].metadata.get("title", "No title found")
+        text = docs[0].page_content.strip()
+        return f"Title: {title}\n\nPage contents:\n{text}"
+    except Exception as e:
+        return f"Could not fetch the website. Error: {e}"</code></pre>
+
+                <h2>Summarizer</h2>
+                <span class="file-label">summarizer.py — summarize</span>
+                <pre><code class="language-python">from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
+from config import get_chat_model
+from scraper import fetch_website_contents
+
+# A reusable prompt template with a {website} blank the chain fills in.
+# Low temperature = factual, consistent output. Markdown = renders nicely in UI.
+PROMPT = ChatPromptTemplate.from_template(
+    "You analyze the contents of a website and give a short, friendly "
+    "summary. Ignore navigation menus. Respond in markdown.\n\n"
+    "Summarize this website:\n\n{website}"
+)
+
+
+def summarize(url: str) -&gt; str:
+    """Fetch a web page and return a short markdown summary of it."""
+    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    website = fetch_website_contents(url)
+    # Step 2 — run the chain; the dict fills the {website} blank by name.
+    chain = PROMPT | get_chat_model(temperature=0.3) | StrOutputParser()
+    return chain.invoke({"website": website})</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py</span>
+                <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    """Scrape a URL and return a LangChain-generated markdown summary."""
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        text = summarize(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

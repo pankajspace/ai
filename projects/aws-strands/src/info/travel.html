@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Travel Assistant · AI Agents on AWS</title>
+    <meta name="description" content="Explanation of Travel Assistant." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Agents on AWS</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x2708;&#xFE0F; Travel Assistant</h1>
+                <p class="subtitle">multi-tool capstone via Strands + Bedrock</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>The capstone demo: a multi-tool agent that checks the weather, suggests a packing list based on those conditions, prices the trip, and compares it to the budget. The agent chains four tools (plus the pre-built calculator) in the right order — nobody wrote that sequence. The agentic loop works it out from the system prompt and tool schemas.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">Browser trip query</div>\n                    <div class="flow-arrow">POST /travel</div>\n                    <div class="flow-step">travel_agent.py plan()</div>\n                    <div class="flow-arrow">Agent</div>\n                    <div class="flow-step">Bedrock: get_weather_forecast</div>\n                    <div class="flow-arrow">suggest_packing_list</div>\n                    <div class="flow-step">estimate_trip_cost</div>\n                    <div class="flow-arrow">calculator (if needed)</div>\n                    <div class="flow-step">final answer</div>\n                    <div class="flow-arrow">Browser</div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser&lt;br/&gt;trip description"] --&gt;|POST /travel| B["app.py&lt;br/&gt;travel_route"]
+    B --&gt;|trip description| C["travel_agent.py&lt;br/&gt;plan"]
+    C --&gt;|query + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+    D --&gt;|tool call| E["get_weather_forecast&lt;br/&gt;city, days"]
+    E --&gt;|high/low/conditions| D
+    D --&gt;|tool call| F["suggest_packing_list&lt;br/&gt;temp + conditions"]
+    F --&gt;|items list| D
+    D --&gt;|tool call| G["estimate_trip_cost&lt;br/&gt;city, days, travellers"]
+    G --&gt;|cost breakdown| D
+    D --&gt;|final answer| C
+    C --&gt;|final answer| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">travel_agent.py</span>
+                <pre><code class="language-python">"""Module 3 (capstone) demo — a multi-tool Travel Assistant.
+
+The agent chains three custom tools plus a pre-built calculator: it checks the
+weather first, feeds those numbers into a packing list, then prices the trip
+and compares it to the budget. Nobody wrote that sequence — the agentic loop
+works it out.
+"""
+
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+from strands_tools import calculator
+
+from config import MODEL_ID, agent_text
+
+
+@tool
+def get_weather_forecast(city: str, days: int) -&gt; dict:
+    """Get the weather forecast for a city over a number of days.
+
+    Args:
+        city: Destination city name (e.g., "Goa", "Bangalore")
+        days: Number of days in the trip
+    """
+    # Mock data — swap in a real weather API to take this further.
+    forecasts = {
+        "goa":       {"high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"},
+        "bangalore": {"high_c": 27, "low_c": 18, "conditions": "mild, light evening rain"},
+        "jaipur":    {"high_c": 38, "low_c": 25, "conditions": "hot and dry"},
+        "manali":    {"high_c": 14, "low_c": 3,  "conditions": "cold, chance of snow"},
+    }
+    data = forecasts.get(city.lower(), {"high_c": 28, "low_c": 20, "conditions": "moderate"})
+    return {"city": city, "days": days, **data}
+
+
+@tool
+def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list:
+    """Suggest what to pack based on temperatures, trip length and conditions.
+
+    Args:
+        high_c: Daytime high in Celsius
+        low_c: Night-time low in Celsius
+        days: Number of days in the trip
+        conditions: Short description of expected weather
+    """
+    items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
+    if high_c &gt;= 30:
+        items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
+    if low_c &lt;= 15:
+        items += ["warm jacket", "thermal layer"]
+    elif low_c &lt;= 22:
+        items += ["light jacket for evenings"]
+    if "rain" in conditions.lower() or "shower" in conditions.lower():
+        items += ["compact umbrella", "quick-dry footwear"]
+    if "snow" in conditions.lower():
+        items += ["gloves", "woollen cap", "waterproof boots"]
+    return items
+
+
+@tool
+def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
+    """Estimate the cost of a trip in Indian rupees.
+
+    Args:
+        city: Destination city
+        days: Number of days
+        travellers: Number of people travelling (default: 1)
+    """
+    per_night = {"goa": 3500, "bangalore": 3000, "jaipur": 2500, "manali": 2800}
+    stay = per_night.get(city.lower(), 3000) * days
+    food = 1200 * days * travellers
+    local_travel = 800 * days
+    total = stay + food + local_travel
+    return {
+        "city": city,
+        "days": days,
+        "travellers": travellers,
+        "stay_inr": stay,
+        "food_inr": food,
+        "local_travel_inr": local_travel,
+        "total_inr": total,
+    }
+
+
+def plan(question: str) -&gt; str:
+    """Plan a trip end-to-end, letting the agent chain its tools as needed."""
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
+        system_prompt=(
+            "You are a practical travel assistant. "
+            "When asked about a trip: check the weather first, then suggest what to pack "
+            "based on that weather, then estimate the cost. "
+            "Always say whether the trip fits the user's budget, and keep advice concise."
+        ),
+        callback_handler=None,
+    )
+    return agent_text(agent(question))
+</code></pre>
+
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>

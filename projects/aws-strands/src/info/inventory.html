@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Inventory Checker · AI Agents on AWS</title>
+    <meta name="description" content="Explanation of Inventory Checker." />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>AI Agents on AWS</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F4E6; Inventory Checker</h1>
+                <p class="subtitle">custom tool with mock DB via Strands + Bedrock</p>
+            </div>
+        </section>
+        <section>
+            <div class="container info-content">
+                <h2>Concept</h2>
+                <p>When community tools don't fit (internal APIs, proprietary databases), you write your own. The @tool decorator, type hints, and docstring are all Strands needs — the mock dictionary here stands in for a real database. The agent-facing interface is identical regardless of what's behind the tool.</p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">Browser question</div>\n                    <div class="flow-arrow">POST /inventory</div>\n                    <div class="flow-step">app.py inventory_route</div>\n                    <div class="flow-arrow">inventory_agent.py check()</div>\n                    <div class="flow-step">Agent</div>\n                    <div class="flow-arrow">Bedrock</div>\n                    <div class="flow-step">check_inventory(product_id)</div>\n                    <div class="flow-arrow">mock DB dict</div>\n                    <div class="flow-step">answer</div>\n                    <div class="flow-arrow">Browser</div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A["Browser&lt;br/&gt;stock question"] --&gt;|POST /inventory| B["app.py&lt;br/&gt;inventory_route"]
+    B --&gt;|question| C["inventory_agent.py&lt;br/&gt;check"]
+    C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+    D --&gt;|tool call: check_inventory| E["check_inventory&lt;br/&gt;product_id"]
+    E --&gt;|qty from mock dict| D
+    D --&gt;|stock answer text| C
+    C --&gt;|stock answer text| B
+    B --&gt;|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">inventory_agent.py</span>
+                <pre><code class="language-python">"""Module 2 demo — a custom tool: an online-store inventory check.
+
+When community tools don't fit (internal API, proprietary database) you write
+your own. The mock dictionary stands in for a real database; the agent-facing
+part — decorator, type hints, docstring — is identical either way.
+"""
+
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+from config import MODEL_ID, agent_text
+
+
+@tool
+def check_inventory(product_id: str) -&gt; str:
+    """Check if a product is in stock.
+
+    Args:
+        product_id: The product ID to check (e.g., "PROD-123")
+    """
+    # In production you'd query your real database here.
+    inventory = {"PROD-123": 15, "PROD-456": 0, "PROD-789": 8}
+    quantity = inventory.get(product_id, 0)
+    if quantity &gt; 0:
+        return f"Product {product_id} is in stock. We have {quantity} units available."
+    return f"Product {product_id} is currently out of stock."
+
+
+def check(question: str) -&gt; str:
+    """Answer a stock question using the check_inventory custom tool."""
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        tools=[check_inventory],
+        callback_handler=None,
+    )
+    return agent_text(agent(question))
+</code></pre>
+
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+</html>
