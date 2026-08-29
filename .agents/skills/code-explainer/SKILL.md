@@ -15,13 +15,13 @@ In `index.html`, wrap each card's existing title text in a `<span class="card-ti
 ```html
 <h2>
     <span class="card-title">😂 Joke Generator</span>
-    <a class="info-link" href="info/joke.html" target="_blank" rel="noopener"
+    <a class="info-link" href="info/joke.html"
         data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
 </h2>
 ```
 
 - Use `data-tooltip` (not `title`) — a custom CSS tooltip reads it via `content: attr(data-tooltip)`, avoiding a duplicate native browser tooltip.
-- `target="_blank" rel="noopener"` — opens the explainer in a new tab without leaking a `window.opener` reference.
+- Opens the explainer in the same tab (no `target="_blank"`), allowing users to navigate directly and return via the "&larr; Back to demos" link.
 - One link per card, `href="info/<demo>.html"` — a relative path so it still resolves correctly in production behind an Nginx `PATH_PREFIX`.
 
 In `style.css`, add (the card `h2` must already be `display:flex` so `margin-left:auto` pushes the icon to the right):
