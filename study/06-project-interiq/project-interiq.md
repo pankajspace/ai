@@ -1,4 +1,4 @@
-[<- README](../../README.md) | [Notes]
+[<- README](../../README.md) | [Notes](InterviewIQ-Class-Notes/)
 
 # AI Infused Learning - 6
 
