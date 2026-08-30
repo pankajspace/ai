@@ -5,7 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — QuickBite ETA · Docker Demo Lab</title>
-    <meta name="description" content="How the QuickBite ETA demo works." />
+    <meta name="description"
+        content="How the QuickBite ETA demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -33,12 +34,13 @@
 
         <section>
             <div class="container info-content">
+<h2>Concept</h2>
+<p>This demo runs a single FastAPI container holding a pre-trained scikit-learn model. The browser sends a POST request to the flask proxy, which forwards it to the <code>quickbite</code> container. The container extracts features, runs <code>model.predict()</code>, and returns the ETA in minutes. There are no external API calls and no API keys required.</p>
+<h2>Theory & Concepts</h2>
+<p><b>What you'll build:</b> a sklearn model (a food-delivery ETA predictor) served via FastAPI, packed into a container. This is where the <b>core fundamentals</b> live: Dockerfile anatomy, layers, caching, port mapping, .dockerignore.</p>
+                <p>Imagine you're an ML engineer at a Zomato-style startup. You've built a model that predicts <em>how many minutes until an order arrives</em> &mdash; distance, restaurant prep time, rider availability, rain as inputs; ETA as output.</p>
+                <p>The model runs beautifully on your laptop. Then DevOps says: <em>"Ship it to the server."</em> The server has Python 3.9; you have 3.12. Different sklearn version. Don't even ask about NumPy. Welcome to dependency hell &mdash; and Docker is the air conditioning.</p>
 
-                <h2>Concept</h2>
-                <p>This demo runs a single FastAPI container holding a pre-trained scikit-learn model. The browser sends
-                    a POST request to the flask proxy, which forwards it to the <code>quickbite</code> container. The
-                    container extracts features, runs <code>model.predict()</code>, and returns the ETA in minutes.
-                    There are no external API calls and no API keys required.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -71,13 +73,13 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-                        flowchart TD
-                        A["Browser"] -->|POST /quickbite/predict| B["app.py<br />quickbite_predict"]
-                        B -->|proxy_request| C["quickbite:8000<br />POST /predict"]
-                        C -->|features| D["joblib.load('eta_model.pkl')"]
-                        D -->|eta_minutes| C
-                        C -->|JSON result| B
-                        B -->|JSON result| A
+flowchart TD
+    A["Browser"] -->|POST /quickbite/predict| B["app.py<br/>quickbite_predict"]
+    B -->|proxy_request| C["quickbite:8000<br/>POST /predict"]
+    C -->|features| D["joblib.load('eta_model.pkl')"]
+    D -->|eta_minutes| C
+    C -->|JSON result| B
+    B -->|JSON result| A
                     </div>
                 </div>
 

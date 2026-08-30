@@ -37,7 +37,32 @@
                     pre-built calculator) in the right order — nobody wrote that sequence. The agentic loop works it out
                     from the system prompt and tool schemas.</p>
 
-                <h2>Request flow</h2>
+                <h2>Theory & Concepts</h2>
+<p>This project deliberately mirrors Diagram 3 (the travel planner), so you finish where Module 1 began — except
+          this time you build it yourself. It exercises every skill from both modules: custom tools, multiple tools, a
+          pre-built tool, a system prompt, and the agentic loop.</p>
+<h3>The brief</h3>
+<p>Build an agent that answers: <em>"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should
+            I pack and what will it cost?"</em> — and actually reasons across weather, packing, and budget to answer it.
+        </p>
+<h3>Starter code</h3>
+<h3>What to observe together</h3>
+<p>Notice that the agent calls <code class="inl">get_weather_forecast</code> <strong>first</strong>, then feeds
+          those numbers into <code class="inl">suggest_packing_list</code>, then prices the trip and compares against
+          the budget. Nobody wrote that sequence — the agentic loop worked it out. That is Diagram 9, running in your
+          own terminal.</p>
+<h3>Extension challenges</h3>
+<ul>
+          <li><strong>Easy</strong> — add a <code class="inl">get_visa_requirements(country)</code> tool and ask about
+            an international trip.</li>
+          <li><strong>Medium</strong> — replace the mock weather with a real API call using <code class="inl">requests</code> (this is exactly the pattern from Section 10).</li>
+          <li><strong>Medium</strong> — regroup the three tools into a <code class="inl">TravelTools</code> class with
+            shared state, per Section 16.1.</li>
+          <li><strong>Harder</strong> — make the weather and cost lookups <code class="inl">async</code> so a multi-city
+            comparison runs in parallel (Section 16.2).</li>
+          <li><strong>Harder</strong> — add <code class="inl">file_write</code> from <code class="inl">strands_tools</code> and have the agent save an itinerary to disk.</li>
+        </ul>
+<h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">
                         <span class="flow-title">Browser trip query</span>

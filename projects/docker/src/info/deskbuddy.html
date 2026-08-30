@@ -5,7 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — DeskBuddy · Docker Demo Lab</title>
-    <meta name="description" content="How the DeskBuddy demo works." />
+    <meta name="description"
+        content="How the DeskBuddy demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -33,14 +34,17 @@
 
         <section>
             <div class="container info-content">
+<h2>Concept</h2>
+<p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
+<h2>Theory & Concepts</h2>
+<p><b>What you'll build:</b> a 3-container agentic system &mdash; an <b>agent service</b> (LLM + tool-calling loop), a <b>tools service</b> (separate microservice), and <b>Redis</b> (conversation memory). New concepts: microservice separation, private networking (no published port!), and one compose file running it all.</p>
+                <h3>What an agent actually is</h3>
+                <p>An agent is an LLM that doesn't just answer &mdash; it <em>does things</em>. It thinks, picks up a tool, checks the result, and keeps going.</p>
+                <p>Think of the architecture as an office: the <em>agent = the manager</em> (decides what needs doing), <em>tools = the departments</em> (they do the actual work), and <em>Redis = the office register</em> (remembers who said what).</p>
+                <p>Why three separate boxes? Because in production, the tools team is different from the agent team. You update the tools without touching the agent. That's <em>microservices</em> &mdash; and without Docker, microservices are just a slide in a deck.</p>
+                <h3>What is Redis, in 30 seconds?</h3>
+                <p>Redis is a super-fast "sticky-note board" database: you store values under names (<i>key &rarr; value</i>) and read them back in microseconds. Here it remembers each conversation: key = the session ID, value = the message history. Why not a Python variable? Because containers die and restart &mdash; a variable dies with them. Redis in its own container (with a volume) means the agent can crash, restart, and still remember you.</p>
 
-                <h2>Concept</h2>
-                <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI +
-                    LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and
-                    <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to
-                    call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the
-                    final answer is reached.
-                </p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -83,20 +87,20 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-                        flowchart TD
-                        A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br />deskbuddy_chat"]
-                        B -->|proxy_request| C["deskbuddy-agent:9000<br />POST /chat"]
-                        C -->|load history| D["Redis<br />history:session_id"]
-                        D -->|history| C
-                        C -->|messages + tools| E["OpenAI API<br />gpt-4o-mini"]
-                        E -.->|tool_calls| C
-                        C -.->|call_tool| F["tools:7000<br />/calculator or /datetime"]
-                        F -.->|result| C
-                        C -.->|append tool result| E
-                        E -->|final answer| C
-                        C -->|save history| D
-                        C -->|answer| B
-                        B -->|answer| A
+flowchart TD
+    A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br/>deskbuddy_chat"]
+    B -->|proxy_request| C["deskbuddy-agent:9000<br/>POST /chat"]
+    C -->|load history| D["Redis<br/>history:session_id"]
+    D -->|history| C
+    C -->|messages + tools| E["OpenAI API<br/>gpt-4o-mini"]
+    E -.->|tool_calls| C
+    C -.->|call_tool| F["tools:7000<br/>/calculator or /datetime"]
+    F -.->|result| C
+    C -.->|append tool result| E
+    E -->|final answer| C
+    C -->|save history| D
+    C -->|answer| B
+    B -->|answer| A
                     </div>
                 </div>
 
@@ -109,7 +113,7 @@ def chat(req: Chat):
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]
     history.append({"role": "user", "content": req.message})
 
-    # --- 2. The agent loop: think -&gt; act -&gt; observe -&gt; repeat ---------------
+    # --- 2. The agent loop: think -> act -> observe -> repeat ---------------
     msg = None
     for _ in range(5):  # safety fuse: max 5 laps
         resp = llm.chat.completions.create(
@@ -152,8 +156,7 @@ def deskbuddy_chat():
     return jsonify(data), status</code></pre>
 
                 <h2>Tools service</h2>
-                <span class="file-label">tools/app.py &mdash; a plain FastAPI worker with no AI, called over the private
-                    Docker network.</span>
+                <span class="file-label">tools/app.py &mdash; a plain FastAPI worker with no AI, called over the private Docker network.</span>
                 <pre><code class="language-python">@app.post("/calculator")
 def calculator(c: Calc):
     """Evaluate a math expression like '23*47' or '(100-8)/4'."""

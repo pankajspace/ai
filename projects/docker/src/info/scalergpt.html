@@ -5,7 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — ScalerGPT · Docker Demo Lab</title>
-    <meta name="description" content="How the ScalerGPT demo works." />
+    <meta name="description"
+        content="How the ScalerGPT demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -33,12 +34,25 @@
 
         <section>
             <div class="container info-content">
+<h2>Concept</h2>
+<p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an answer using only that context.</p>
+<h2>Theory & Concepts</h2>
+<p><b>What you'll build:</b> a RAG chatbot (FastAPI + OpenAI API + ChromaDB). New concepts: <b>secrets/env vars, docker compose, volumes, multi-container networking, startup readiness</b>. This code is battle-tested &mdash; it includes fixes for two real bugs that show up every time.</p>
+                <p>This time the model isn't yours &mdash; it's OpenAI's. LLM projects bring three problems classic ML didn't have:</p>
+                <ol>
+                    <li><em>Secrets</em> &mdash; bake your API key into the image and you've written your PIN on your ATM card.</li>
+                    <li><em>Multiple services</em> &mdash; an app plus a vector database. Two boxes, one order.</li>
+                    <li><em>State</em> &mdash; the database's data must survive even after its container dies.</li>
+                </ol>
+                <p>The three solutions you'll learn here: <em>.env files, docker compose, and volumes.</em></p>
+                <h3>RAG in 60 seconds</h3>
+                <p><b>RAG = Retrieval Augmented Generation</b> &mdash; an open-book exam for the LLM. Instead of answering from memory (where it hallucinates), the model is handed the relevant pages from <i>your</i> notes and told "answer using only this."</p>
+                <ul>
+                    <li><b>Embedding:</b> turning text into a list of numbers such that similar meanings get similar numbers. It's how the machine "feels" that <i>"container"</i> and <i>"Docker box"</i> are related even though they share no words.</li>
+                    <li><b>Vector database (Chroma):</b> a library that stores those numbers and can instantly find "the 3 most similar passages to this question."</li>
+                    <li><b>The pipeline:</b> question &rarr; find relevant chunks (retrieve) &rarr; paste them into the prompt (augment) &rarr; let the LLM write the answer (generate).</li>
+                </ul>
 
-                <h2>Concept</h2>
-                <p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses
-                    Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB
-                    for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an
-                    answer using only that context.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -76,15 +90,15 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-                        flowchart TD
-                        A["Browser"] -->|POST /scalergpt/ask| B["app.py<br />scalergpt_ask"]
-                        B -->|proxy_request| C["scalergpt:8000<br />POST /ask"]
-                        C -->|query| D["chroma container<br />collection.query"]
-                        D -->|relevant chunks| C
-                        C -->|context + query| E["OpenAI API<br />gpt-4o-mini"]
-                        E -->|answer text| C
-                        C -->|JSON result| B
-                        B -->|JSON result| A
+flowchart TD
+    A["Browser"] -->|POST /scalergpt/ask| B["app.py<br/>scalergpt_ask"]
+    B -->|proxy_request| C["scalergpt:8000<br/>POST /ask"]
+    C -->|query| D["chroma container<br/>collection.query"]
+    D -->|relevant chunks| C
+    C -->|context + query| E["OpenAI API<br/>gpt-4o-mini"]
+    E -->|answer text| C
+    C -->|JSON result| B
+    B -->|JSON result| A
                     </div>
                 </div>
 

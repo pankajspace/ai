@@ -36,7 +36,19 @@
                     async and using agent.invoke_async(), the calls run in parallel, finishing in ~2 seconds instead of
                     ~6. This is the async tools pattern from Module 2.</p>
 
-                <h2>Request flow</h2>
+                <h2>Theory & Concepts</h2>
+<p>This module closes with three scenarios where the plain <code class="inl">@tool</code> approach strains.
+          Learn these as <em>"recognise it when it happens"</em>, not as something to memorise.</p>
+<h3>16.1 · The database connection problem → class-based tools</h3>
+<p>The story: your agent has five tools, each opening its own database connection. Your DBA messages: <em>"Why
+            is your agent opening 50 database connections per minute?"</em> Each tool call opens and closes a
+          connection; multiply by concurrent users and the database drowns.</p>
+<p><strong>The fix:</strong> group related tools in a class so they share one connection.</p>
+<h3>16.2 · Slow sequential calls → async tools</h3>
+<p>If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make the tool
+          <code class="inl">async</code> and they run in parallel.
+        </p>
+<h2>Request flow</h2>
                 <div class="flow-diagram flow-vertical">
                     <div class="flow-step">
                         <span class="flow-title">Browser question</span>
