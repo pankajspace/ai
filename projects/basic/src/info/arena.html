@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — LLM Arena · AI Playground</title>
     <meta name="description"
-        content="How the LLM Arena demo works: comparing GPT-4o mini and Llama 3.3 70B, and the code behind it." />
+        content="How the LLM Arena demo works: comparing GPT-4o mini and GPT OSS 120B, and the code behind it." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -28,7 +28,7 @@
         <section class="hero">
             <div class="container">
                 <h1>&#x1F94A; LLM Arena</h1>
-                <p class="subtitle">GPT-4o mini (OpenAI) vs. Llama 3.3 70B (Groq)</p>
+                <p class="subtitle">GPT-4o mini (OpenAI) vs. GPT OSS 120B (OpenAI API)</p>
             </div>
         </section>
 
@@ -39,12 +39,11 @@
                 <p>
                     This demo sends the exact same prompt to a proprietary model
                     (<strong>GPT-4o mini</strong> via OpenAI) and an open-source model
-                    (<strong>Llama 3.3 70B</strong> via Groq), then displays both replies side by side. It's a
+                    (<strong>GPT OSS 120B</strong> via OpenAI API), then displays both replies side by side. It's a
                     simple way to compare how two different providers respond to identical input.
                 </p>
                 <p>
-                    Both providers are called through the same helper function because Groq's API is
-                    wire-compatible with OpenAI's — only the client and model name differ.
+                    Both models are called through the same helper function because they both use the OpenAI SDK — only the client and model name differ.
                 </p>
 
                 <h2>Request flow</h2>
@@ -70,8 +69,8 @@
                             <span class="flow-detail">GPT-4o mini replies</span>
                         </div>
                         <div class="flow-step">
-                            <span class="flow-title">Groq API</span>
-                            <span class="flow-detail">Llama 3.3 70B replies</span>
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">GPT OSS 120B replies</span>
                         </div>
                     </div>
                     <div class="flow-arrow-down">&darr;</div>
@@ -88,7 +87,7 @@
                         A[Browser<br />prompt] -->|POST /arena| B[app.py<br />arena route]
                         B -->|prompt| C[arena.py<br />battle]
                         C -->|prompt| D[OpenAI API<br />GPT-4o mini]
-                        C -->|prompt| E[Groq API<br />Llama 3.3 70B]
+                        C -->|prompt| E[OpenAI API<br />GPT OSS 120B]
                         D -->|reply A| C
                         E -->|reply B| C
                         C -->|both replies| B
@@ -99,7 +98,7 @@
                 <h2>Backend</h2>
                 <span class="file-label">Sends one prompt to two models and returns both replies.</span>
                 <pre><code class="language-python">OPENAI_MODEL = "gpt-4o-mini"          # proprietary model
-GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served fast by Groq
+GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served fast by OpenAI API
 
 
 def _ask(client, model: str, prompt: str) -> str:
@@ -114,7 +113,7 @@ def _ask(client, model: str, prompt: str) -> str:
 def battle(prompt: str) -> dict:
     # Call OpenAI first (typically higher latency due to a more capable model).
     openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
-    # Then call Groq — Groq's LPU hardware makes Llama responses very fast.
+    # Then call the OSS endpoint via OpenAI API.
     groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
 
     # Label each reply with its model so the UI can tell them apart.

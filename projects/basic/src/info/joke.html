@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Joke Generator · AI Playground</title>
     <meta name="description"
-        content="How the Joke Generator demo works: Groq, Llama 3.3 70B, and the code behind it." />
+        content="How the Joke Generator demo works: OpenAI, GPT OSS 120B, and the code behind it." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -28,7 +28,7 @@
         <section class="hero">
             <div class="container">
                 <h1>&#x1F602; Joke Generator</h1>
-                <p class="subtitle">Llama 3.3 70B via Groq</p>
+                <p class="subtitle">GPT OSS 120B via OpenAI API</p>
             </div>
         </section>
 
@@ -37,10 +37,9 @@
 
                 <h2>Concept</h2>
                 <p>
-                    This demo asks an LLM to tell a joke about a topic you supply. It uses
-                    <strong>Groq</strong> as the inference provider because Groq's custom LPU hardware serves
-                    open-source models like Llama extremely fast, and offers a free tier — a good fit for a
-                    low-latency interactive demo.
+                    This demo asks an LLM to tell a joke about a topic you supply. It uses the
+                    <strong>OpenAI API</strong> as the inference provider to hit an open-source model endpoint.
+                    Note: the python code uses historical variable names like <code>get_groq_client</code>.
                 </p>
                 <p>
                     The request uses a high <code>temperature</code> (1.3) so the model leans toward creative,
@@ -65,8 +64,8 @@
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
-                        <span class="flow-title">Groq API</span>
-                        <span class="flow-detail">Llama 3.3 70B generates the joke</span>
+                        <span class="flow-title">OpenAI API</span>
+                        <span class="flow-detail">GPT OSS 120B generates the joke</span>
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
@@ -81,7 +80,7 @@
                         flowchart TD
                         A[Browser<br />topic] -->|POST /joke| B[app.py<br />joke route]
                         B -->|topic| C[joke.py<br />get_joke]
-                        C -->|prompt + temperature| D[Groq API<br />Llama 3.3 70B]
+                        C -->|prompt + temperature| D[OpenAI API<br />GPT OSS 120B]
                         D -->|joke text| C
                         C -->|joke text| B
                         B -->|JSON result| A
@@ -89,10 +88,10 @@
                 </div>
 
                 <h2>Backend</h2>
-                <span class="file-label">Generates the joke via Groq's chat completions API.</span>
+                <span class="file-label">Generates the joke via OpenAI API's chat completions API.</span>
                 <pre><code class="language-python">from config import get_groq_client
 
-# Llama 3.3 70B via Groq: fast inference, generous free tier.
+# GPT OSS 120B via OpenAI API: fast inference.
 JOKE_MODEL = "openai/gpt-oss-120b"
 
 
