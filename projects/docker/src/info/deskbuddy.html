@@ -5,8 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — DeskBuddy · Docker Demo Lab</title>
-    <meta name="description"
-        content="How the DeskBuddy demo works." />
+    <meta name="description" content="How the DeskBuddy demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -36,7 +35,11 @@
             <div class="container info-content">
 
                 <h2>Concept</h2>
-                <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
+                <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI +
+                    LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and
+                    <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to
+                    call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the
+                    final answer is reached.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -79,20 +82,20 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br/>deskbuddy_chat"]
-    B -->|proxy_request| C["deskbuddy-agent:9000<br/>POST /chat"]
-    C -->|load history| D["Redis<br/>history:session_id"]
-    D -->|history| C
-    C -->|messages + tools| E["OpenAI API<br/>gpt-4o-mini"]
-    E -.->|tool_calls| C
-    C -.->|call_tool| F["tools:7000<br/>/calculator or /datetime"]
-    F -.->|result| C
-    C -.->|append tool result| E
-    E -->|final answer| C
-    C -->|save history| D
-    C -->|answer| B
-    B -->|answer| A
+                        flowchart TD
+                        A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br />deskbuddy_chat"]
+                        B -->|proxy_request| C["deskbuddy-agent:9000<br />POST /chat"]
+                        C -->|load history| D["Redis<br />history:session_id"]
+                        D -->|history| C
+                        C -->|messages + tools| E["OpenAI API<br />gpt-4o-mini"]
+                        E -.->|tool_calls| C
+                        C -.->|call_tool| F["tools:7000<br />/calculator or /datetime"]
+                        F -.->|result| C
+                        C -.->|append tool result| E
+                        E -->|final answer| C
+                        C -->|save history| D
+                        C -->|answer| B
+                        B -->|answer| A
                     </div>
                 </div>
 
@@ -138,6 +141,34 @@ def chat(req: Chat):
 
     return {"answer": msg.content}</code></pre>
 
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the DeskBuddy agent container.</span>
+                <pre><code class="language-python">@bp.route("/deskbuddy/chat", methods=["POST"])
+def deskbuddy_chat():
+    """Proxy chat message to the DeskBuddy agent service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    return jsonify(data), status</code></pre>
+
+                <h2>Tools service</h2>
+                <span class="file-label">tools/app.py &mdash; a plain FastAPI worker with no AI, called over the private
+                    Docker network.</span>
+                <pre><code class="language-python">@app.post("/calculator")
+def calculator(c: Calc):
+    """Evaluate a math expression like '23*47' or '(100-8)/4'."""
+    try:
+        # Demo only — never use eval on untrusted input in production!
+        result = eval(c.expression, {"__builtins__": {}})
+        return {"result": result}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/datetime")
+def now():
+    """Return the current date and time in ISO format."""
+    return {"now": datetime.datetime.now().isoformat()}</code></pre>
+
             </div>
         </section>
     </main>
@@ -164,7 +195,12 @@ def chat(req: Chat):
                 secondaryColor: "#2a2a2a",
                 tertiaryColor: "#2a2a2a",
                 fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
+                fontSize: "9px",
+            },
+            flowchart: {
+                nodeSpacing: 32,
+                rankSpacing: 35,
+                padding: 8,
             },
         });
     </script>

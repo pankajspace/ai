@@ -5,8 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — ScalerGPT · Docker Demo Lab</title>
-    <meta name="description"
-        content="How the ScalerGPT demo works." />
+    <meta name="description" content="How the ScalerGPT demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -36,7 +35,10 @@
             <div class="container info-content">
 
                 <h2>Concept</h2>
-                <p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an answer using only that context.</p>
+                <p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses
+                    Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB
+                    for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an
+                    answer using only that context.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -74,15 +76,15 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser"] -->|POST /scalergpt/ask| B["app.py<br/>scalergpt_ask"]
-    B -->|proxy_request| C["scalergpt:8000<br/>POST /ask"]
-    C -->|query| D["chroma container<br/>collection.query"]
-    D -->|relevant chunks| C
-    C -->|context + query| E["OpenAI API<br/>gpt-4o-mini"]
-    E -->|answer text| C
-    C -->|JSON result| B
-    B -->|JSON result| A
+                        flowchart TD
+                        A["Browser"] -->|POST /scalergpt/ask| B["app.py<br />scalergpt_ask"]
+                        B -->|proxy_request| C["scalergpt:8000<br />POST /ask"]
+                        C -->|query| D["chroma container<br />collection.query"]
+                        D -->|relevant chunks| C
+                        C -->|context + query| E["OpenAI API<br />gpt-4o-mini"]
+                        E -->|answer text| C
+                        C -->|JSON result| B
+                        B -->|JSON result| A
                     </div>
                 </div>
 
@@ -124,6 +126,15 @@ def ask(q: Question):
         "sources_used": len(documents[0]),
     }</code></pre>
 
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the ScalerGPT container.</span>
+                <pre><code class="language-python">@bp.route("/scalergpt/ask", methods=["POST"])
+def scalergpt_ask():
+    """Proxy RAG question to the ScalerGPT FastAPI service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    return jsonify(data), status</code></pre>
+
             </div>
         </section>
     </main>
@@ -150,7 +161,12 @@ def ask(q: Question):
                 secondaryColor: "#2a2a2a",
                 tertiaryColor: "#2a2a2a",
                 fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
+                fontSize: "9px",
+            },
+            flowchart: {
+                nodeSpacing: 32,
+                rankSpacing: 35,
+                padding: 8,
             },
         });
     </script>

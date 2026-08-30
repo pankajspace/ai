@@ -83,17 +83,17 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>text_a + text_b"] -->|POST /embeddings| B["app.py<br/>embeddings_route"]
-    B -->|text_a, text_b| C["embeddings.py<br/>compare_similarity"]
-    C -->|text_a| D["get_embedder<br/>all-MiniLM-L6-v2"]
-    C -->|text_b| D
-    D -->|vector v1| C
-    D -->|vector v2| C
-    C -->|dot(v1,v2) / norm| E["cosine similarity<br/>score 0-1"]
-    E -->|float| C
-    C -->|score| B
-    B -->|JSON result| A
+                        flowchart TD
+                        A[Browser: text_a + text_b] -->|"POST /embeddings"| B[app.py: embeddings_route]
+                        B -->|"text_a, text_b"| C[embeddings.py: compare_similarity]
+                        C -->|"text_a"| D[get_embedder: all-MiniLM-L6-v2]
+                        C -->|text_b| D
+                        D -->|"vector v1"| C
+                        D -->|"vector v2"| C
+                        C -->|"cosine(v1, v2)"| E[cosine similarity: score 0 to 1]
+                        E -->|"float"| C
+                        C -->|"score"| B
+                        B -->|"JSON result"| A
                     </div>
                 </div>
 
@@ -116,7 +116,8 @@ def compare_similarity(text_a: str, text_b: str) -&gt; float:
     return float(dot(v1, v2) / (norm(v1) * norm(v2)))</code></pre>
 
                 <h2>API route</h2>
-                <span class="file-label">Exposes the similarity scorer over HTTP as <code>POST /embeddings</code>.</span>
+                <span class="file-label">Exposes the similarity scorer over HTTP as
+                    <code>POST /embeddings</code>.</span>
                 <pre><code class="language-python">@bp.route("/embeddings", methods=["POST"])
 def embeddings_route():
     """Compare two texts and return their cosine similarity.
@@ -141,7 +142,9 @@ def embeddings_route():
     </main>
 
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -159,7 +162,12 @@ def embeddings_route():
                 secondaryColor: "#2a2a2a",
                 tertiaryColor: "#2a2a2a",
                 fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
+                fontSize: "9px",
+            },
+            flowchart: {
+                nodeSpacing: 32,
+                rankSpacing: 35,
+                padding: 8,
             },
         });
     </script>

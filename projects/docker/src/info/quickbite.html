@@ -5,8 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — QuickBite ETA · Docker Demo Lab</title>
-    <meta name="description"
-        content="How the QuickBite ETA demo works." />
+    <meta name="description" content="How the QuickBite ETA demo works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -36,7 +35,10 @@
             <div class="container info-content">
 
                 <h2>Concept</h2>
-                <p>This demo runs a single FastAPI container holding a pre-trained scikit-learn model. The browser sends a POST request to the flask proxy, which forwards it to the <code>quickbite</code> container. The container extracts features, runs <code>model.predict()</code>, and returns the ETA in minutes. There are no external API calls and no API keys required.</p>
+                <p>This demo runs a single FastAPI container holding a pre-trained scikit-learn model. The browser sends
+                    a POST request to the flask proxy, which forwards it to the <code>quickbite</code> container. The
+                    container extracts features, runs <code>model.predict()</code>, and returns the ETA in minutes.
+                    There are no external API calls and no API keys required.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -69,13 +71,13 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser"] -->|POST /quickbite/predict| B["app.py<br/>quickbite_predict"]
-    B -->|proxy_request| C["quickbite:8000<br/>POST /predict"]
-    C -->|features| D["joblib.load('eta_model.pkl')"]
-    D -->|eta_minutes| C
-    C -->|JSON result| B
-    B -->|JSON result| A
+                        flowchart TD
+                        A["Browser"] -->|POST /quickbite/predict| B["app.py<br />quickbite_predict"]
+                        B -->|proxy_request| C["quickbite:8000<br />POST /predict"]
+                        C -->|features| D["joblib.load('eta_model.pkl')"]
+                        D -->|eta_minutes| C
+                        C -->|JSON result| B
+                        B -->|JSON result| A
                     </div>
                 </div>
 
@@ -100,6 +102,15 @@ def predict(order: Order):
     X = pd.DataFrame([order.model_dump()])
     eta = round(float(model.predict(X)[0]), 1)
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the QuickBite container.</span>
+                <pre><code class="language-python">@bp.route("/quickbite/predict", methods=["POST"])
+def quickbite_predict():
+    """Proxy ETA prediction to the QuickBite FastAPI service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    return jsonify(data), status</code></pre>
 
             </div>
         </section>
@@ -127,7 +138,12 @@ def predict(order: Order):
                 secondaryColor: "#2a2a2a",
                 tertiaryColor: "#2a2a2a",
                 fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
+                fontSize: "9px",
+            },
+            flowchart: {
+                nodeSpacing: 32,
+                rankSpacing: 35,
+                padding: 8,
             },
         });
     </script>

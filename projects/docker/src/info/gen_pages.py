@@ -68,7 +68,12 @@ TEMPLATE_END = """
                 secondaryColor: "#2a2a2a",
                 tertiaryColor: "#2a2a2a",
                 fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
+                fontSize: "9px",
+            },
+            flowchart: {
+                nodeSpacing: 32,
+                rankSpacing: 35,
+                padding: 8,
             },
         });
     </script>
@@ -156,6 +161,15 @@ def predict(order: Order):
     X = pd.DataFrame([order.model_dump()])
     eta = round(float(model.predict(X)[0]), 1)
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the QuickBite container.</span>
+                <pre><code class="language-python">@bp.route("/quickbite/predict", methods=["POST"])
+def quickbite_predict():
+    \"\"\"Proxy ETA prediction to the QuickBite FastAPI service.\"\"\"
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    return jsonify(data), status</code></pre>
 """
     },
     {
@@ -253,6 +267,15 @@ def ask(q: Question):
         "answer": resp.choices[0].message.content,
         "sources_used": len(documents[0]),
     }</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the ScalerGPT container.</span>
+                <pre><code class="language-python">@bp.route("/scalergpt/ask", methods=["POST"])
+def scalergpt_ask():
+    \"\"\"Proxy RAG question to the ScalerGPT FastAPI service.\"\"\"
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    return jsonify(data), status</code></pre>
 """
     },
     {
@@ -364,6 +387,33 @@ def chat(req: Chat):
         r.rpush(key, json.dumps(m))
 
     return {"answer": msg.content}</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">app.py &mdash; proxies the browser to the DeskBuddy agent container.</span>
+                <pre><code class="language-python">@bp.route("/deskbuddy/chat", methods=["POST"])
+def deskbuddy_chat():
+    \"\"\"Proxy chat message to the DeskBuddy agent service.\"\"\"
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    return jsonify(data), status</code></pre>
+
+                <h2>Tools service</h2>
+                <span class="file-label">tools/app.py &mdash; a plain FastAPI worker with no AI, called over the private Docker network.</span>
+                <pre><code class="language-python">@app.post("/calculator")
+def calculator(c: Calc):
+    \"\"\"Evaluate a math expression like '23*47' or '(100-8)/4'.\"\"\"
+    try:
+        # Demo only \u2014 never use eval on untrusted input in production!
+        result = eval(c.expression, {"__builtins__": {}})
+        return {"result": result}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/datetime")
+def now():
+    \"\"\"Return the current date and time in ISO format.\"\"\"
+    return {"now": datetime.datetime.now().isoformat()}</code></pre>
 """
     }
 ]
