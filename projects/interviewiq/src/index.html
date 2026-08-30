@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewIQ — AI Mock-Interview Coach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-api-base="">
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand-wrapper">
+                <div class="brand-icon">🎙️</div>
+                <div>
+                    <h1 class="brand-title">InterviewIQ</h1>
+                    <p class="brand-tagline">AI-Powered Mock-Interview Coach • Real-Time Evaluation & Session Memory</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    <span>Session Active</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <main class="main-grid">
+            <!-- Left Column: Question & Answer Evaluation -->
+            <section class="left-panel">
+                <!-- Question Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>🎯 Active Interview Question</span>
+                    </div>
+                    
+                    <!-- Question Nav Stepper -->
+                    <div class="question-nav" id="questionNav"></div>
+
+                    <!-- Question Content -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <span class="badge badge-purple" id="questionCategoryBadge">Behavioral</span>
+                        <span class="badge badge-blue" id="questionNumberBadge">Question 1 of 5</span>
+                    </div>
+                    <div class="question-text" id="questionText">Loading question...</div>
+                    
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 8px;">
+                        EXPECTED DOMAIN CONCEPTS & KEYWORDS:
+                    </div>
+                    <div class="keyword-chips" id="expectedKeywordChips"></div>
+                </div>
+
+                <!-- Candidate Answer Area -->
+                <div class="card">
+                    <div class="card-title" style="justify-content: space-between;">
+                        <span>✍️ Candidate Response</span>
+                        <div class="button-row">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnStrongAnswer">⚡ Load Strong Answer</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnWeakAnswer">⚠️ Load Weak Answer</button>
+                        </div>
+                    </div>
+
+                    <div class="textarea-container">
+                        <textarea 
+                            id="answerInput" 
+                            class="answer-textarea" 
+                            placeholder="Type or paste your answer here... For behavioral questions, follow Situation, Task, Action, Result (STAR)..."
+                        ></textarea>
+                        <div class="char-counter" id="charCount">0 chars</div>
+                    </div>
+
+                    <div class="button-row" style="justify-content: space-between;">
+                        <button type="button" class="btn btn-primary" id="btnEvaluate">
+                            <span>🚀</span>
+                            <span>Evaluate Answer</span>
+                        </button>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Uses multi-turn tool calling engine</span>
+                    </div>
+                </div>
+
+                <!-- Instant Evaluation Diagnostic Panel -->
+                <div class="card" id="evaluationPanel">
+                    <div class="card-title">
+                        <span>📊 Instant Diagnostic & Feedback</span>
+                    </div>
+
+                    <!-- 3 Metric Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">Relevance Score</div>
+                            <div class="stat-value blue" id="statRelevance">0/100</div>
+                            <div class="stat-sub" id="statRelevanceSub">Awaiting response</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">STAR Framework</div>
+                            <div class="stat-value green" id="statStar">0%</div>
+                            <div class="star-steps">
+                                <div class="star-step" id="starS">S</div>
+                                <div class="star-step" id="starT">T</div>
+                                <div class="star-step" id="starA">A</div>
+                                <div class="star-step" id="starR">R</div>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Filler Words</div>
+                            <div class="stat-value amber" id="statFillers">0</div>
+                            <div class="stat-sub" id="statFillersSub">0.0% Density</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Coach Feedback Card -->
+                    <div class="feedback-box">
+                        <h4>💬 AI Coach Observation</h4>
+                        <div id="feedbackContent" style="color: var(--text-primary);">
+                            Select a question, type or load an answer, and click <strong>Evaluate Answer</strong> to receive real-time feedback.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Live Scorecard, Coach Chat & Final Report -->
+            <section class="right-panel">
+                <!-- Live Scorecard -->
+                <div class="card">
+                    <div class="card-title" style="justify-content: space-between;">
+                        <span>📈 Live Session Scorecard</span>
+                    </div>
+                    <div style="font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 12px;" id="sessionStatsSummary">
+                        Session Average Relevance: 0.0/100 | Questions Answered: 0
+                    </div>
+                    <div class="table-container">
+                        <table class="scorecard-table">
+                            <thead>
+                                <tr>
+                                    <th>Turn</th>
+                                    <th>Category</th>
+                                    <th>Question</th>
+                                    <th>Relevance</th>
+                                    <th>STAR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scorecardTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                        No answers evaluated yet.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Mid-Session Coach Chat -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>🤖 Mid-Session AI Coach Chat</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+                        Ask meta-questions anytime during the interview. The coach aggregates the <em>entire session</em> without recency bias.
+                    </p>
+
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-bubble coach">
+                                👋 Welcome! I am your <strong>InterviewIQ Coach</strong>. As you answer questions, you can ask me about your progress, weakest areas, or coaching advice anytime!
+                            </div>
+                        </div>
+                        <div class="chat-input-bar">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Ask coach: 'What is my weakest area so far?'...">
+                            <button class="btn btn-primary btn-sm" id="btnSendChat">Ask</button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Prompt Pills -->
+                    <div class="quick-prompts">
+                        <button class="quick-prompt-btn" onclick="sendCoachMessage('What is my weakest area so far?')">🔍 Weakest Area?</button>
+                        <button class="quick-prompt-btn" onclick="sendCoachMessage('How am I doing so far across all questions?')">📊 Progress Check</button>
+                        <button class="quick-prompt-btn" onclick="sendCoachMessage('What should I improve before my next turn?')">💡 Improvement Tips</button>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="card" style="display: flex; gap: 12px; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn btn-primary" id="btnGenerateReport" style="flex: 2;">
+                        <span>🏆</span>
+                        <span>Generate Final Assessment Report</span>
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnResetSession" style="flex: 1;">
+                        <span>🔄</span>
+                        <span>Reset</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Final Report Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <button type="button" class="modal-close" id="btnCloseModal">✕</button>
+            <div class="report-markdown" id="reportContent">
+                <h2>Generating Final Report...</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal Overlay -->
+    <div class="modal-overlay" id="resetModalOverlay">
+        <div class="modal-content" style="max-width: 440px; text-align: center;">
+            <div style="font-size: 2.8rem; margin-bottom: 12px;">⚠️</div>
+            <h3 style="font-size: 1.3rem; margin-bottom: 8px; color: var(--text-primary);">Reset Session Memory?</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5;">
+                This will clear all answered questions, scorecard records, and cumulative session analytics.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" class="btn btn-secondary" id="btnCancelReset" style="flex: 1;">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmReset" style="flex: 1;">Yes, Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
