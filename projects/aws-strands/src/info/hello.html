@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Hello World Agent." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,23 +32,44 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>The simplest Strands agent — no tools, so the agentic loop runs exactly once. The model answers directly from Bedrock. Explain that without tools there's no reason to loop: the model just generates a reply. Amazon Nova Pro on Bedrock was chosen because it's a capable foundational model with a simple API available on AWS.</p>
+                <p>The simplest Strands agent — no tools, so the agentic loop runs exactly once. The model answers
+                    directly from Bedrock. Explain that without tools there's no reason to loop: the model just
+                    generates a reply. Amazon Nova Pro on Bedrock was chosen because it's a capable foundational model
+                    with a simple API available on AWS.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser prompt</div>\n                    <div class="flow-arrow">POST /ask</div>\n                    <div class="flow-step">app.py ask_route</div>\n                    <div class="flow-arrow">hello_agent.py ask()</div>\n                    <div class="flow-step">Agent(no tools)</div>\n                    <div class="flow-arrow">Bedrock Nova Pro</div>\n                    <div class="flow-step">back to Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser prompt</span>
+                        <span class="flow-detail">POST /ask</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py ask_route</span>
+                        <span class="flow-detail">hello_agent.py ask()</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent(no tools)</span>
+                        <span class="flow-detail">Bedrock Nova Pro</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">back to Browser</span>
+                        <span class="flow-detail">JSON result</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;prompt"] --&gt;|POST /ask| B["app.py&lt;br/&gt;ask_route"]
-    B --&gt;|prompt| C["hello_agent.py&lt;br/&gt;ask"]
-    C --&gt;|Agent(no tools)| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|reply text| C
-    C --&gt;|reply text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;prompt"] --&gt;|POST /ask| B["app.py&lt;br/&gt;ask_route"]
+                        B --&gt;|prompt| C["hello_agent.py&lt;br/&gt;ask"]
+                        C --&gt;|Agent(no tools)| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|reply text| C
+                        C --&gt;|reply text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -110,4 +134,5 @@ def ask_route():
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

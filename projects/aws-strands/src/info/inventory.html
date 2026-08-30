@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Inventory Checker." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,25 +32,51 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>When community tools don't fit (internal APIs, proprietary databases), you write your own. The @tool decorator, type hints, and docstring are all Strands needs — the mock dictionary here stands in for a real database. The agent-facing interface is identical regardless of what's behind the tool.</p>
+                <p>When community tools don't fit (internal APIs, proprietary databases), you write your own. The @tool
+                    decorator, type hints, and docstring are all Strands needs — the mock dictionary here stands in for
+                    a real database. The agent-facing interface is identical regardless of what's behind the tool.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser question</div>\n                    <div class="flow-arrow">POST /inventory</div>\n                    <div class="flow-step">app.py inventory_route</div>\n                    <div class="flow-arrow">inventory_agent.py check()</div>\n                    <div class="flow-step">Agent</div>\n                    <div class="flow-arrow">Bedrock</div>\n                    <div class="flow-step">check_inventory(product_id)</div>\n                    <div class="flow-arrow">mock DB dict</div>\n                    <div class="flow-step">answer</div>\n                    <div class="flow-arrow">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser question</span>
+                        <span class="flow-detail">POST /inventory</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py inventory_route</span>
+                        <span class="flow-detail">inventory_agent.py check()</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent</span>
+                        <span class="flow-detail">Bedrock</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">check_inventory(product_id)</span>
+                        <span class="flow-detail">mock DB dict</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">answer</span>
+                        <span class="flow-detail">Browser</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;stock question"] --&gt;|POST /inventory| B["app.py&lt;br/&gt;inventory_route"]
-    B --&gt;|question| C["inventory_agent.py&lt;br/&gt;check"]
-    C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call: check_inventory| E["check_inventory&lt;br/&gt;product_id"]
-    E --&gt;|qty from mock dict| D
-    D --&gt;|stock answer text| C
-    C --&gt;|stock answer text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;stock question"] --&gt;|POST /inventory|
+                        B["app.py&lt;br/&gt;inventory_route"]
+                        B --&gt;|question| C["inventory_agent.py&lt;br/&gt;check"]
+                        C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call: check_inventory| E["check_inventory&lt;br/&gt;product_id"]
+                        E --&gt;|qty from mock dict| D
+                        D --&gt;|stock answer text| C
+                        C --&gt;|stock answer text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -126,4 +155,5 @@ def check(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Sales Report Agent." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,29 +32,49 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>"Pull last quarter's sales data and email a summary" is three tasks: query, analyse, send. The agent is given three small single-purpose tools and works out the order itself — that's planning. Nobody hard-coded the sequence; the agentic loop figures it out from context.</p>
+                <p>"Pull last quarter's sales data and email a summary" is three tasks: query, analyse, send. The agent
+                    is given three small single-purpose tools and works out the order itself — that's planning. Nobody
+                    hard-coded the sequence; the agentic loop figures it out from context.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser request</div>\n                    <div class="flow-arrow">POST /sales</div>\n                    <div class="flow-step">sales_agent.py report()</div>\n                    <div class="flow-arrow">Agent plans: get_sales_data</div>\n                    <div class="flow-step">analyze_sales</div>\n                    <div class="flow-arrow">send_email</div>\n                    <div class="flow-step">Bedrock phrases result</div>\n                    <div class="flow-arrow">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser request</span>
+                        <span class="flow-detail">POST /sales</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">sales_agent.py report()</span>
+                        <span class="flow-detail">Agent plans: get_sales_data</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">analyze_sales</span>
+                        <span class="flow-detail">send_email</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Bedrock phrases result</span>
+                        <span class="flow-detail">Browser</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;sales request"] --&gt;|POST /sales| B["app.py&lt;br/&gt;sales_route"]
-    B --&gt;|request| C["sales_agent.py&lt;br/&gt;report"]
-    C --&gt;|request + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call: get_sales_data| E["get_sales_data&lt;br/&gt;quarter"]
-    E --&gt;|revenue, deals| D
-    D --&gt;|tool call: analyze_sales| F["analyze_sales&lt;br/&gt;revenue, deals"]
-    F --&gt;|metrics string| D
-    D --&gt;|tool call: send_email| G["send_email&lt;br/&gt;to, subject, body"]
-    G --&gt;|sent confirmation| D
-    D --&gt;|final answer| C
-    C --&gt;|final answer| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;sales request"] --&gt;|POST /sales| B["app.py&lt;br/&gt;sales_route"]
+                        B --&gt;|request| C["sales_agent.py&lt;br/&gt;report"]
+                        C --&gt;|request + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call: get_sales_data| E["get_sales_data&lt;br/&gt;quarter"]
+                        E --&gt;|revenue, deals| D
+                        D --&gt;|tool call: analyze_sales| F["analyze_sales&lt;br/&gt;revenue, deals"]
+                        F --&gt;|metrics string| D
+                        D --&gt;|tool call: send_email| G["send_email&lt;br/&gt;to, subject, body"]
+                        G --&gt;|sent confirmation| D
+                        D --&gt;|final answer| C
+                        C --&gt;|final answer| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -134,4 +157,5 @@ def report(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

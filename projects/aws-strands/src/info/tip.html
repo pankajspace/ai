@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Tip Calculator." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,25 +32,50 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>A tool-enabled agent. Any phrasing of a tip question routes to the same calculate_tip tool — no regex or intent classifier needed. The @tool decorator is all that's needed to expose a Python function to the agent: Strands reads the type hints and docstring to build the tool's schema automatically.</p>
+                <p>A tool-enabled agent. Any phrasing of a tip question routes to the same calculate_tip tool — no regex
+                    or intent classifier needed. The @tool decorator is all that's needed to expose a Python function to
+                    the agent: Strands reads the type hints and docstring to build the tool's schema automatically.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser question</div>\n                    <div class="flow-arrow">POST /tip</div>\n                    <div class="flow-step">app.py tip_route</div>\n                    <div class="flow-arrow">tip_agent.py calculate()</div>\n                    <div class="flow-step">Agent</div>\n                    <div class="flow-arrow">Bedrock decides to call calculate_tip</div>\n                    <div class="flow-step">calculate_tip() returns dict</div>\n                    <div class="flow-arrow">Bedrock phrases answer</div>\n                    <div class="flow-step">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser question</span>
+                        <span class="flow-detail">POST /tip</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py tip_route</span>
+                        <span class="flow-detail">tip_agent.py calculate()</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent</span>
+                        <span class="flow-detail">Bedrock decides to call calculate_tip</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">calculate_tip() returns dict</span>
+                        <span class="flow-detail">Bedrock phrases answer</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">JSON result</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;tip question"] --&gt;|POST /tip| B["app.py&lt;br/&gt;tip_route"]
-    B --&gt;|question| C["tip_agent.py&lt;br/&gt;calculate"]
-    C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call: calculate_tip| E["calculate_tip&lt;br/&gt;bill, %, people"]
-    E --&gt;|tip + total + per_person| D
-    D --&gt;|answer text| C
-    C --&gt;|answer text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;tip question"] --&gt;|POST /tip| B["app.py&lt;br/&gt;tip_route"]
+                        B --&gt;|question| C["tip_agent.py&lt;br/&gt;calculate"]
+                        C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call: calculate_tip| E["calculate_tip&lt;br/&gt;bill, %, people"]
+                        E --&gt;|tip + total + per_person| D
+                        D --&gt;|answer text| C
+                        C --&gt;|answer text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -130,4 +158,5 @@ def calculate(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

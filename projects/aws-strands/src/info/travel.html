@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Travel Assistant." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,29 +32,55 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>The capstone demo: a multi-tool agent that checks the weather, suggests a packing list based on those conditions, prices the trip, and compares it to the budget. The agent chains four tools (plus the pre-built calculator) in the right order — nobody wrote that sequence. The agentic loop works it out from the system prompt and tool schemas.</p>
+                <p>The capstone demo: a multi-tool agent that checks the weather, suggests a packing list based on those
+                    conditions, prices the trip, and compares it to the budget. The agent chains four tools (plus the
+                    pre-built calculator) in the right order — nobody wrote that sequence. The agentic loop works it out
+                    from the system prompt and tool schemas.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser trip query</div>\n                    <div class="flow-arrow">POST /travel</div>\n                    <div class="flow-step">travel_agent.py plan()</div>\n                    <div class="flow-arrow">Agent</div>\n                    <div class="flow-step">Bedrock: get_weather_forecast</div>\n                    <div class="flow-arrow">suggest_packing_list</div>\n                    <div class="flow-step">estimate_trip_cost</div>\n                    <div class="flow-arrow">calculator (if needed)</div>\n                    <div class="flow-step">final answer</div>\n                    <div class="flow-arrow">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser trip query</span>
+                        <span class="flow-detail">POST /travel</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">travel_agent.py plan()</span>
+                        <span class="flow-detail">Agent</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Bedrock: get_weather_forecast</span>
+                        <span class="flow-detail">suggest_packing_list</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">estimate_trip_cost</span>
+                        <span class="flow-detail">calculator (if needed)</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">final answer</span>
+                        <span class="flow-detail">Browser</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;trip description"] --&gt;|POST /travel| B["app.py&lt;br/&gt;travel_route"]
-    B --&gt;|trip description| C["travel_agent.py&lt;br/&gt;plan"]
-    C --&gt;|query + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call| E["get_weather_forecast&lt;br/&gt;city, days"]
-    E --&gt;|high/low/conditions| D
-    D --&gt;|tool call| F["suggest_packing_list&lt;br/&gt;temp + conditions"]
-    F --&gt;|items list| D
-    D --&gt;|tool call| G["estimate_trip_cost&lt;br/&gt;city, days, travellers"]
-    G --&gt;|cost breakdown| D
-    D --&gt;|final answer| C
-    C --&gt;|final answer| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;trip description"] --&gt;|POST /travel| B["app.py&lt;br/&gt;travel_route"]
+                        B --&gt;|trip description| C["travel_agent.py&lt;br/&gt;plan"]
+                        C --&gt;|query + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call| E["get_weather_forecast&lt;br/&gt;city, days"]
+                        E --&gt;|high/low/conditions| D
+                        D --&gt;|tool call| F["suggest_packing_list&lt;br/&gt;temp + conditions"]
+                        F --&gt;|items list| D
+                        D --&gt;|tool call| G["estimate_trip_cost&lt;br/&gt;city, days, travellers"]
+                        G --&gt;|cost breakdown| D
+                        D --&gt;|final answer| C
+                        C --&gt;|final answer| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -191,4 +220,5 @@ def plan(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Math Assistant." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,25 +32,46 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>Uses the pre-built calculator tool from strands_tools plus a system prompt. Strands ships ready-made community tools so you don't have to write everything from scratch. The calculator tool evaluates math expressions precisely (no floating-point guessing by the LLM). A system prompt shapes the agent's persona on every request.</p>
+                <p>Uses the pre-built calculator tool from strands_tools plus a system prompt. Strands ships ready-made
+                    community tools so you don't have to write everything from scratch. The calculator tool evaluates
+                    math expressions precisely (no floating-point guessing by the LLM). A system prompt shapes the
+                    agent's persona on every request.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser question</div>\n                    <div class="flow-arrow">POST /math</div>\n                    <div class="flow-step">app.py math_route</div>\n                    <div class="flow-arrow">math_agent.py solve()</div>\n                    <div class="flow-step">Agent(calculator tool)</div>\n                    <div class="flow-arrow">Bedrock Nova Pro</div>\n                    <div class="flow-step">calculator called</div>\n                    <div class="flow-arrow">result back to Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser question</span>
+                        <span class="flow-detail">POST /math</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">app.py math_route</span>
+                        <span class="flow-detail">math_agent.py solve()</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent(calculator tool)</span>
+                        <span class="flow-detail">Bedrock Nova Pro</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">calculator called</span>
+                        <span class="flow-detail">result back to Browser</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;question"] --&gt;|POST /math| B["app.py&lt;br/&gt;math_route"]
-    B --&gt;|question| C["math_agent.py&lt;br/&gt;solve"]
-    C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call: calculator| E["calculator&lt;br/&gt;tool"]
-    E --&gt;|result| D
-    D --&gt;|answer text| C
-    C --&gt;|answer text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;question"] --&gt;|POST /math| B["app.py&lt;br/&gt;math_route"]
+                        B --&gt;|question| C["math_agent.py&lt;br/&gt;solve"]
+                        C --&gt;|question + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call: calculator| E["calculator&lt;br/&gt;tool"]
+                        E --&gt;|result| D
+                        D --&gt;|answer text| C
+                        C --&gt;|answer text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -105,4 +129,5 @@ def solve(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Warehouse Check." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,31 +32,58 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>Three warehouse lookups at ~2 seconds each would take ~6 seconds sequentially. By making the tool async and using agent.invoke_async(), the calls run in parallel, finishing in ~2 seconds instead of ~6. This is the async tools pattern from Module 2.</p>
+                <p>Three warehouse lookups at ~2 seconds each would take ~6 seconds sequentially. By making the tool
+                    async and using agent.invoke_async(), the calls run in parallel, finishing in ~2 seconds instead of
+                    ~6. This is the async tools pattern from Module 2.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">Browser question</div>\n                    <div class="flow-arrow">POST /warehouse</div>\n                    <div class="flow-step">warehouse_agent.py lookup()</div>\n                    <div class="flow-arrow">asyncio.run</div>\n                    <div class="flow-step">Agent.invoke_async</div>\n                    <div class="flow-arrow">Bedrock</div>\n                    <div class="flow-step">check_warehouse_inventory called for east, west, central in parallel (all ~2s)</div>\n                    <div class="flow-arrow">answers merged</div>\n                    <div class="flow-step">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser question</span>
+                        <span class="flow-detail">POST /warehouse</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">warehouse_agent.py lookup()</span>
+                        <span class="flow-detail">asyncio.run</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Agent.invoke_async</span>
+                        <span class="flow-detail">Bedrock</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">check_warehouse_inventory called for east, west, central in parallel
+                            (all ~2s)</span>
+                        <span class="flow-detail">answers merged</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser</span>
+                        <span class="flow-detail">JSON result</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;warehouse question"] --&gt;|POST /warehouse| B["app.py&lt;br/&gt;warehouse_route"]
-    B --&gt;|question| C["warehouse_agent.py&lt;br/&gt;lookup"]
-    C --&gt;|asyncio.run| D["Agent&lt;br/&gt;invoke_async"]
-    D --&gt;|question + tool| E["Bedrock&lt;br/&gt;Nova Pro"]
-    E --&gt;|parallel tool calls| F["check_warehouse&lt;br/&gt;east"]
-    E --&gt;|parallel tool calls| G["check_warehouse&lt;br/&gt;west"]
-    E --&gt;|parallel tool calls| H["check_warehouse&lt;br/&gt;central"]
-    F --&gt;|qty| E
-    G --&gt;|qty| E
-    H --&gt;|qty| E
-    E --&gt;|merged answer| D
-    D --&gt;|answer text| C
-    C --&gt;|answer text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;warehouse question"] --&gt;|POST /warehouse|
+                        B["app.py&lt;br/&gt;warehouse_route"]
+                        B --&gt;|question| C["warehouse_agent.py&lt;br/&gt;lookup"]
+                        C --&gt;|asyncio.run| D["Agent&lt;br/&gt;invoke_async"]
+                        D --&gt;|question + tool| E["Bedrock&lt;br/&gt;Nova Pro"]
+                        E --&gt;|parallel tool calls| F["check_warehouse&lt;br/&gt;east"]
+                        E --&gt;|parallel tool calls| G["check_warehouse&lt;br/&gt;west"]
+                        E --&gt;|parallel tool calls| H["check_warehouse&lt;br/&gt;central"]
+                        F --&gt;|qty| E
+                        G --&gt;|qty| E
+                        H --&gt;|qty| E
+                        E --&gt;|merged answer| D
+                        D --&gt;|answer text| C
+                        C --&gt;|answer text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -142,4 +172,5 @@ def lookup(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

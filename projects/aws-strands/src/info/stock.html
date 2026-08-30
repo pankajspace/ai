@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="Explanation of Inventory Manager." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,28 +32,48 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>Grouping related tools in a class lets them share ONE resource — a single self.products store — instead of each tool opening its own. A module-level instance keeps the state alive across requests, so an update made in one call is visible to the next.</p>
+                <p>Grouping related tools in a class lets them share ONE resource — a single self.products store —
+                    instead of each tool opening its own. A module-level instance keeps the state alive across requests,
+                    so an update made in one call is visible to the next.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
-                    <div class="flow-step">Browser request</div>\n                    <div class="flow-arrow">POST /stock</div>\n                    <div class="flow-step">stock_agent.py manage()</div>\n                    <div class="flow-arrow">Agent</div>\n                    <div class="flow-step">Bedrock</div>\n                    <div class="flow-arrow">check_stock or update_stock on shared InventoryTools instance</div>\n                    <div class="flow-step">answer</div>\n                    <div class="flow-arrow">Browser</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Browser request</span>
+                        <span class="flow-detail">POST /stock</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">stock_agent.py manage()</span>
+                        <span class="flow-detail">Agent</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Bedrock</span>
+                        <span class="flow-detail">check_stock or update_stock on shared InventoryTools instance</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">answer</span>
+                        <span class="flow-detail">Browser</span>
+                    </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser&lt;br/&gt;stock request"] --&gt;|POST /stock| B["app.py&lt;br/&gt;stock_route"]
-    B --&gt;|request| C["stock_agent.py&lt;br/&gt;manage"]
-    C --&gt;|request + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
-    D --&gt;|tool call: check_stock| E["InventoryTools&lt;br/&gt;check_stock"]
-    E --&gt;|qty + price| D
-    D --&gt;|tool call: update_stock| F["InventoryTools&lt;br/&gt;update_stock"]
-    F --&gt;|updated confirmation| D
-    E &amp; F --&gt;|shared self.products| G["Module-level&lt;br/&gt;_inventory instance"]
-    D --&gt;|final answer| C
-    C --&gt;|final answer| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser&lt;br/&gt;stock request"] --&gt;|POST /stock| B["app.py&lt;br/&gt;stock_route"]
+                        B --&gt;|request| C["stock_agent.py&lt;br/&gt;manage"]
+                        C --&gt;|request + tools| D["Bedrock&lt;br/&gt;Nova Pro"]
+                        D --&gt;|tool call: check_stock| E["InventoryTools&lt;br/&gt;check_stock"]
+                        E --&gt;|qty + price| D
+                        D --&gt;|tool call: update_stock| F["InventoryTools&lt;br/&gt;update_stock"]
+                        F --&gt;|updated confirmation| D
+                        E &amp; F --&gt;|shared self.products| G["Module-level&lt;br/&gt;_inventory instance"]
+                        D --&gt;|final answer| C
+                        C --&gt;|final answer| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -155,4 +178,5 @@ def manage(question: str) -&gt; str:
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>
