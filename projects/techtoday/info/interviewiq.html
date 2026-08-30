@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — InterviewIQ · TechToday</title>
+    <meta name="description" content="How the InterviewIQ demo works: ReAct tool-calling agents and session memory." />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../" class="back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🎯 InterviewIQ</h1>
+                <p class="subtitle">ReAct tool-calling agents via Groq</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    InterviewIQ evaluates candidate answers using <strong>tool-calling agents</strong>.
+                    Unlike a single prompt evaluation, the LLM dynamically chooses which evaluation tools
+                    to invoke (filler-word detection, STAR structure analysis, keyword relevance scoring),
+                    then synthesises coaching feedback.
+                </p>
+                <p>
+                    Session memory tracks performance across turns and identifies the weakest area without
+                    recency bias. This uses an authentic ReAct-style loop where the LLM reads the tool menu
+                    and iterates.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Submit answer</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /evaluate</span>
+                        <span class="flow-detail">Flask route</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">_run_loop()</span>
+                        <span class="flow-detail">ReAct tool loop</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Groq API</span>
+                        <span class="flow-detail">Evaluates and synthesises</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Feedback rendered</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />answer] -->|POST /evaluate| B[app.py<br />evaluate route]
+                        B -->|answer + expected_keywords| C[agent.py<br />evaluate_answer]
+                        C -->|messages + tools| D[Groq API]
+                        D -->|tool calls| C
+                        C -->|tool results| D
+                        D -->|synthesised feedback| C
+                        C -->|JSON feedback + results| B
+                        B -->|JSON| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">The authentic ReAct-style tool-calling loop where the LLM decides which tools
+                    to invoke.</span>
+                <pre><code class="language-python">    def _run_loop(self, messages: list, results_out: dict | None = None) -> str:
+        """Shared tool-calling loop (the authentic ReAct pattern).
+
+        Sends messages to the LLM, executes whichever tools the LLM requests,
+        appends the results back, and loops until the model stops calling
+        tools (up to MAX_TOOL_ROUNDS).
+        """
+        for _ in range(MAX_TOOL_ROUNDS):
+            response = self._create_with_retry(
+                model=self._model,
+                messages=messages,
+                tools=TOOLS_SCHEMA,
+                tool_choice="auto",
+            )
+            msg = response.choices[0].message
+
+            if not msg.tool_calls:
+                return msg.content or ""
+
+            messages.append(msg)
+            for call in msg.tool_calls:
+                args = (
+                    json.loads(call.function.arguments)
+                    if call.function.arguments
+                    else {}
+                )
+                fn = self._tool_functions[call.function.name]
+                result = fn(args)
+
+                # Record tool results for session logging (except the report
+                # itself, which is meta-data, not per-answer evaluation).
+                if (
+                    results_out is not None
+                    and call.function.name != "generate_final_report"
+                ):
+                    results_out[call.function.name] = result
+
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": (
+                        result if isinstance(result, str) else json.dumps(result)
+                    ),
+                })
+
+        # Ran out of rounds — ask for a final answer without offering tools.
+        response = self._create_with_retry(
+            model=self._model, messages=messages
+        )
+        return response.choices[0].message.content or ""</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the evaluation logic over HTTP.</span>
+                <pre><code class="language-python">@bp.route("/evaluate", methods=["POST"])
+def evaluate():
+    """Evaluate a candidate's answer to an interview question."""
+    data = request.get_json(force=True)
+    question_id = data.get("question_id")
+    answer = (data.get("answer") or "").strip()
+
+    if not answer:
+        return jsonify({"error": "An answer is required."}), 400
+
+    q = get_question_by_id(question_id)
+    if not q:
+        return jsonify({"error": f"Question ID {question_id} not found."}), 400
+
+    try:
+        result = _agent.evaluate_answer(q, answer)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        // Theme the flowchart to match the site's dark palette.
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                edgeLabelBackground: "#1e1e1e",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "12px",
+            },
+            flowchart: {
+                nodeSpacing: 45,
+                rankSpacing: 50,
+                padding: 12,
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
