@@ -11,8 +11,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def chunk_text(
     text: str,
-    chunk_size: int = 100, # 800
-    chunk_overlap: int = 10, # 100
+    chunk_size: int = 100,  # target characters per chunk
+    chunk_overlap: int = 10,  # characters shared between adjacent chunks
 ) -> list[str]:
     """Split *text* into overlapping chunks.
 

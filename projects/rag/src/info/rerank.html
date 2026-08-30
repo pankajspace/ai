@@ -79,29 +79,31 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>knowledge base + question"] -->|POST /rerank| B["app.py<br/>rerank_route"]
-    B -->|docs| C["index.py<br/>build_index"]
-    C -->|Chroma db| B
-    B -->|db, question| D["rerank.py<br/>retrieve_with_rerank"]
-    D -->|question| E["Chroma<br/>similarity_search k=25"]
-    E -->|25 candidate chunks| D
-    D -->|question, candidate pairs| F["CrossEncoder<br/>ms-marco-MiniLM-L6-v2"]
-    F -->|relevance scores| D
-    D -->|sort by score, take top 3| G["Top 3 chunks"]
-    G -->|page_content list| B
-    B -->|JSON result| A
+                        flowchart TD
+                        A["Browser<br />knowledge base + question"] -->|POST /rerank| B["app.py<br />rerank_route"]
+                        B -->|docs| C["index.py<br />build_index"]
+                        C -->|Chroma db| B
+                        B -->|db, question| D["rerank.py<br />retrieve_with_rerank"]
+                        D -->|question| E["Chroma<br />similarity_search k=25"]
+                        E -->|25 candidate chunks| D
+                        D -->|question, candidate pairs| F["CrossEncoder<br />ms-marco-MiniLM-L6-v2"]
+                        F -->|relevance scores| D
+                        D -->|sort by score, take top 3| G["Top 3 chunks"]
+                        G -->|page_content list| B
+                        B -->|JSON result| A
                     </div>
                 </div>
 
                 <h2>Backend</h2>
-                <span class="file-label">Retrieves candidates with a bi-encoder, then reranks with a cross-encoder.</span>
+                <span class="file-label">Retrieves candidates with a bi-encoder, then reranks with a
+                    cross-encoder.</span>
                 <pre><code class="language-python">from sentence_transformers import CrossEncoder
 from langchain_chroma import Chroma
 
 from config import get_embedder
 
-# Lazy-loaded cross-encoder — only downloaded when /rerank is first called.
+# Lazy-loaded cross-encoder — only downloaded when /rerank is first called,
+# not at import time (which would block Flask startup).
 _reranker = None
 
 
@@ -127,7 +129,9 @@ def retrieve_with_rerank(
     pairs = [(question, c.page_content) for c in candidates]
     # Stage 2: accurate cross-encoder scoring of each (question, chunk) pair
     scores = reranker.predict(pairs)
-    # Sort by score only — avoids comparing Document objects when scores tie.
+    # Sort by score only. Sorting whole (score, Document) tuples breaks when
+    # two scores tie, because Python then compares the Document objects, which
+    # don't support "&lt;" ("'&lt;' not supported between instances of 'Document'").
     ranked = sorted(zip(scores, candidates), key=lambda pair: pair[0], reverse=True)
     return [c for _, c in ranked[:top_k]]</code></pre>
 
@@ -152,7 +156,7 @@ def rerank_route():
     try:
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
         db, _ = build_index(docs, persist_directory=None)
-        reranked = retrieve_with_rerank(db, question, top_k=3)
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
         results = [doc.page_content for doc in reranked]
         return jsonify({"result": {"results": results}})
     except Exception as e:
@@ -163,7 +167,9 @@ def rerank_route():
     </main>
 
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

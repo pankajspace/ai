@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="How the Memory Chat works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,7 +32,10 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>LLMs have no built-in memory — they only "remember" because we re-send past turns with every request. The <code>MessagesPlaceholder</code> is the slot in the prompt where that conversation history is injected. The web layer is stateless: the browser keeps the running history and sends it as JSON with each message.</p>
+                <p>LLMs have no built-in memory — they only "remember" because we re-send past turns with every request.
+                    The <code>MessagesPlaceholder</code> is the slot in the prompt where that conversation history is
+                    injected. The web layer is stateless: the browser keeps the running history and sends it as JSON
+                    with each message.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -62,18 +68,18 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>message + history"] --&gt;|POST /chat| B["app.py<br/>chat"]
-    B --&gt;|message, history| C["chat.py<br/>reply"]
-    C --&gt;|_to_messages| D["Convert dicts<br/>to LangChain msgs"]
-    D --&gt;|HumanMessage/AIMessage list| C
-    C --&gt;|history + question| E["LangChain chain<br/>prompt | model"]
-    E --&gt;|full conversation| F["OpenAI API<br/>GPT-4o mini"]
-    F --&gt;|reply text| E
-    E --&gt;|AIMessage| C
-    C --&gt;|.content text| B
-    B --&gt;|JSON result| A
-    A --&gt;|appends to local history| A
+                        flowchart TD
+                        A["Browser<br />message + history"] --&gt;|POST /chat| B["app.py<br />chat"]
+                        B --&gt;|message, history| C["chat.py<br />reply"]
+                        C --&gt;|_to_messages| D["Convert dicts<br />to LangChain msgs"]
+                        D --&gt;|HumanMessage/AIMessage list| C
+                        C --&gt;|history + question| E["LangChain chain<br />prompt | model"]
+                        E --&gt;|full conversation| F["OpenAI API<br />GPT-4o mini"]
+                        F --&gt;|reply text| E
+                        E --&gt;|AIMessage| C
+                        C --&gt;|.content text| B
+                        B --&gt;|JSON result| A
+                        A --&gt;|appends to local history| A
                     </div>
                 </div>
 
@@ -155,12 +161,14 @@ def chat():
     """Reply to a message using the conversation history for memory."""
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
+    # history is optional; default to an empty conversation for the first turn.
     history = data.get("history") or []
     if not message:
         return jsonify({"error": "A message is required."}), 400
     try:
         text = reply(message, history)
         response = jsonify({"result": text})
+        # Chat replies are turn-specific — never cache them.
         response.headers["Cache-Control"] = "no-store"
         return response
     except Exception as e:
@@ -169,7 +177,9 @@ def chat():
         </section>
     </main>
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -198,4 +208,5 @@ def chat():
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

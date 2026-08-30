@@ -104,16 +104,25 @@
         url = "https://" + url
 
     try:
+        # timeout=15 prevents the endpoint from hanging indefinitely on slow
+        # or unresponsive servers.
         response = requests.get(url, headers=HEADERS, timeout=15)
+        # Raise an HTTPError for 4xx/5xx status codes so we can catch and
+        # return a friendly error message below.
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         # Return an error string instead of raising, so it can reach the UI.
         return f"Could not fetch the website. Error: {e}"
 
+    # Parse the raw HTML with BeautifulSoup's built-in html.parser (no extra
+    # C libraries required, unlike lxml).
     soup = BeautifulSoup(response.text, "html.parser")
     title = soup.title.string if soup.title else "No title found"
 
-    # Strip tags that add noise but no useful text for the LLM prompt.
+    # Remove tags that add noise but no useful content for an LLM:
+    #   script / style        — code and CSS, not human-readable text
+    #   nav / header / footer — repeated site chrome that inflates token count
+    #   img / input           — non-text elements whose attributes we don't need
     for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
         tag.decompose()
 
@@ -138,7 +147,13 @@ def summarize(url: str) -> str:
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Summarize this website:\n\n{website}"},
+            {
+                # We embed the full page text directly into the user message.
+                # For very large pages this could exceed the context window;
+                # a production version would truncate or chunk the text first.
+                "role": "user",
+                "content": f"Summarize this website:\n\n{website}",
+            },
         ],
     )
     return response.choices[0].message.content</code></pre>

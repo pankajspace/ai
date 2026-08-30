@@ -50,7 +50,9 @@ bp = Blueprint("main", __name__)
 
 # Server-side state for PDF chat — stores the in-memory Chroma index per
 # session.  In a production multi-user app this would use a session store;
-# for this learning project a single shared state is fine.
+# for this learning project a single shared state is fine. It's a dict
+# (not a plain variable) so the route functions below can mutate it in
+# place without needing a `global` declaration.
 _pdf_state = {"db": None}
 
 
@@ -155,7 +157,10 @@ def rag_route():
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # One "document" per non-blank line of the pasted knowledge base.
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # persist_directory=None keeps the index in memory only — it's rebuilt
+        # fresh from the request body on every call, nothing is written to disk.
         db, _ = build_index(docs, persist_directory=None)
         answer = rag_answer(question, db=db)
         return jsonify({"result": answer})
@@ -182,7 +187,7 @@ def rerank_route():
     try:
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
         db, _ = build_index(docs, persist_directory=None)
-        reranked = retrieve_with_rerank(db, question, top_k=3)
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
         results = [doc.page_content for doc in reranked]
         return jsonify({"result": {"results": results}})
     except Exception as e:

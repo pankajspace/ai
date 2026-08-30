@@ -43,12 +43,14 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) ->
         conditions: Short description of expected weather
     """
     items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
-    if high_c >= 30:
+    if high_c >= 30:  # hot-weather threshold
         items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
-    if low_c <= 15:
+    if low_c <= 15:  # cold-night threshold
         items += ["warm jacket", "thermal layer"]
-    elif low_c <= 22:
+    elif low_c <= 22:  # mild-night threshold — lighter layer than the cold case above
         items += ["light jacket for evenings"]
+    # Keyword match on the forecast text rather than a structured field — fragile
+    # if get_weather_forecast's wording changes, but keeps the tool signature simple.
     if "rain" in conditions.lower() or "shower" in conditions.lower():
         items += ["compact umbrella", "quick-dry footwear"]
     if "snow" in conditions.lower():
@@ -67,8 +69,8 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     """
     per_night = {"goa": 3500, "bangalore": 3000, "jaipur": 2500, "manali": 2800}
     stay = per_night.get(city.lower(), 3000) * days
-    food = 1200 * days * travellers
-    local_travel = 800 * days
+    food = 1200 * days * travellers  # flat per-person, per-day food estimate (INR)
+    local_travel = 800 * days  # flat per-day local transport estimate (INR), not per traveller
     total = stay + food + local_travel
     return {
         "city": city,

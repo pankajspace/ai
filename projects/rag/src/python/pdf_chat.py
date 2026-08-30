@@ -33,10 +33,10 @@ def build_pdf_text_index(pdf_text: str) -> Chroma:
     Returns:
         A ``Chroma`` vector store containing the embedded text chunks.
     """
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)  # bigger chunks than the chunking demo's 100/10 since PDF pages carry more context per paragraph
     chunks = splitter.create_documents([pdf_text])
     embedder = get_embedder()
-    db = Chroma.from_documents(chunks, embedder)
+    db = Chroma.from_documents(chunks, embedder)  # in-memory only (no persist_directory) — index is rebuilt each time PDF text is submitted
     return db
 
 
@@ -51,7 +51,7 @@ def ask_pdf(db: Chroma, question: str) -> str:
         The model's answer.
     """
     model = get_chat_model()
-    chunks = db.similarity_search(question, k=4)
+    chunks = db.similarity_search(question, k=4)  # one more chunk than the rag.py demo's k=3, since PDF answers often span more context
     context = "\n\n".join(c.page_content for c in chunks)
     chain = PDF_PROMPT | model
     return chain.invoke({"context": context, "question": question}).content

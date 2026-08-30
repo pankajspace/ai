@@ -149,7 +149,7 @@ import joblib
 import pandas as pd
 
 app = FastAPI(title="QuickBite ETA")
-model = joblib.load("eta_model.pkl")
+model = joblib.load("eta_model.pkl")  # loaded once at startup, reused for every request
 
 class Order(BaseModel):
     distance_km: float
@@ -159,6 +159,8 @@ class Order(BaseModel):
 
 @app.post("/predict")
 def predict(order: Order):
+    # sklearn expects tabular input; wrap the single order in a one-row
+    # DataFrame whose column names must match the Order fields exactly.
     X = pd.DataFrame([order.model_dump()])
     eta = round(float(model.predict(X)[0]), 1)
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}</code></pre>
@@ -405,6 +407,8 @@ def calculator(c: Calc):
     \"\"\"Evaluate a math expression like '23*47' or '(100-8)/4'.\"\"\"
     try:
         # Demo only \u2014 never use eval on untrusted input in production!
+        # The empty __builtins__ blocks access to dangerous functions,
+        # but a real system would use a proper math parser.
         result = eval(c.expression, {"__builtins__": {}})
         return {"result": result}
     except Exception as e:

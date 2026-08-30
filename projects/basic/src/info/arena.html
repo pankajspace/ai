@@ -112,8 +112,9 @@ def _ask(client, model: str, prompt: str) -> str:
 
 
 def battle(prompt: str) -> dict:
-    # Call sequentially, in order, so both replies answer the same prompt.
+    # Call OpenAI first (typically higher latency due to a more capable model).
     openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
+    # Then call Groq — Groq's LPU hardware makes Llama responses very fast.
     groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
 
     # Label each reply with its model so the UI can tell them apart.
@@ -129,7 +130,7 @@ def arena():
     data = request.get_json(force=True)
     prompt = (data.get("prompt") or "").strip()
     if not prompt:
-        return jsonify({"error": "A prompt is required."}), 400
+        return jsonify({"error": "A prompt is required."}), 400  # validate at the boundary
     try:
         result = battle(prompt)
         return jsonify({"result": result})

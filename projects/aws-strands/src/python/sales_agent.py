@@ -14,6 +14,7 @@ from config import MODEL_ID, agent_text
 @tool
 def get_sales_data(quarter: str) -> dict:
     """Retrieve sales data for a specific quarter."""
+    # Mock data — swap in a real CRM/warehouse query to take this further.
     return {"revenue": 1250000, "deals": 47, "quarter": quarter}
 
 
@@ -27,6 +28,7 @@ def analyze_sales(revenue: int, deals: int, quarter: str) -> str:
 @tool
 def send_email(to: str, subject: str, body: str) -> str:
     """Send an email message."""
+    # Mock send — no real email is dispatched; wire up an SMTP/SES client here.
     return f"Email sent to {to}"
 
 

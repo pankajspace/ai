@@ -82,17 +82,17 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>knowledge base + question"] -->|POST /rag| B["app.py<br/>rag_route"]
-    B -->|docs list| C["index.py<br/>build_index"]
-    C -->|chunks + embeddings| D["Chroma<br/>vector store"]
-    B -->|question, db| E["rag.py<br/>rag_answer"]
-    E -->|question| D
-    D -->|top 3 similar chunks| E
-    E -->|context + question| F["RAG_PROMPT<br/>| GPT-4o mini"]
-    F -->|grounded answer| E
-    E -->|answer text| B
-    B -->|JSON result| A
+                        flowchart TD
+                        A["Browser<br />knowledge base + question"] -->|POST /rag| B["app.py<br />rag_route"]
+                        B -->|docs list| C["index.py<br />build_index"]
+                        C -->|chunks + embeddings| D["Chroma<br />vector store"]
+                        B -->|question, db| E["rag.py<br />rag_answer"]
+                        E -->|question| D
+                        D -->|top 3 similar chunks| E
+                        E -->|context + question| F["RAG_PROMPT<br />| GPT-4o mini"]
+                        F -->|grounded answer| E
+                        E -->|answer text| B
+                        B -->|JSON result| A
                     </div>
                 </div>
 
@@ -173,7 +173,10 @@ def rag_route():
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # One "document" per non-blank line of the pasted knowledge base.
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # persist_directory=None keeps the index in memory only — it's rebuilt
+        # fresh from the request body on every call, nothing is written to disk.
         db, _ = build_index(docs, persist_directory=None)
         answer = rag_answer(question, db=db)
         return jsonify({"result": answer})
@@ -185,7 +188,9 @@ def rag_route():
     </main>
 
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +8,10 @@
     <meta name="description" content="How the Website Summarizer works." />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
     <header>
         <nav class="nav container">
@@ -29,7 +32,11 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>This demo uses a LangChain <code>prompt | model | parser</code> chain to summarize any web page. First, <code>WebBaseLoader</code> fetches and cleans the page text. Then the chain fills a prompt template with that text and calls GPT-4o mini with low temperature (0.3) for a factual, consistent summary. The <code>|</code> operator is LangChain's way of composing steps — each step's output becomes the next step's input.</p>
+                <p>This demo uses a LangChain <code>prompt | model | parser</code> chain to summarize any web page.
+                    First, <code>WebBaseLoader</code> fetches and cleans the page text. Then the chain fills a prompt
+                    template with that text and calls GPT-4o mini with low temperature (0.3) for a factual, consistent
+                    summary. The <code>|</code> operator is LangChain's way of composing steps — each step's output
+                    becomes the next step's input.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -67,19 +74,19 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>URL"] --&gt;|POST /summarize| B["app.py<br/>summarizer"]
-    B --&gt;|url| C["summarizer.py<br/>summarize"]
-    C --&gt;|url| D["scraper.py<br/>fetch_website_contents"]
-    D --&gt;|HTTP GET| E["WebBaseLoader<br/>target website"]
-    E --&gt;|page text| D
-    D --&gt;|title + body text| C
-    C --&gt;|website text| F["LangChain chain<br/>prompt | model | parser"]
-    F --&gt;|prompt| G["OpenAI API<br/>GPT-4o mini"]
-    G --&gt;|markdown summary| F
-    F --&gt;|summary text| C
-    C --&gt;|summary text| B
-    B --&gt;|JSON result| A
+                        flowchart TD
+                        A["Browser<br />URL"] --&gt;|POST /summarize| B["app.py<br />summarizer"]
+                        B --&gt;|url| C["summarizer.py<br />summarize"]
+                        C --&gt;|url| D["scraper.py<br />fetch_website_contents"]
+                        D --&gt;|HTTP GET| E["WebBaseLoader<br />target website"]
+                        E --&gt;|page text| D
+                        D --&gt;|title + body text| C
+                        C --&gt;|website text| F["LangChain chain<br />prompt | model | parser"]
+                        F --&gt;|prompt| G["OpenAI API<br />GPT-4o mini"]
+                        G --&gt;|markdown summary| F
+                        F --&gt;|summary text| C
+                        C --&gt;|summary text| B
+                        B --&gt;|JSON result| A
                     </div>
                 </div>
 
@@ -103,6 +110,7 @@ def fetch_website_contents(url: str) -&gt; str:
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
     try:
+        # WebBaseLoader uses requests and BeautifulSoup under the hood.
         loader = WebBaseLoader(url)
         # Pass headers and timeout via requests_kwargs
         loader.requests_kwargs = {"headers": HEADERS, "timeout": 15}
@@ -110,6 +118,7 @@ def fetch_website_contents(url: str) -&gt; str:
         if not docs:
             return "Could not fetch the website."
         title = docs[0].metadata.get("title", "No title found")
+        # WebBaseLoader parses text with soup.get_text() by default.
         text = docs[0].page_content.strip()
         return f"Title: {title}\n\nPage contents:\n{text}"
     except Exception as e:
@@ -147,6 +156,8 @@ def summarizer():
     """Scrape a URL and return a LangChain-generated markdown summary."""
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper make a request with an empty URL.
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
     try:
@@ -158,7 +169,9 @@ def summarizer():
         </section>
     </main>
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
@@ -187,4 +200,5 @@ def summarizer():
     </script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

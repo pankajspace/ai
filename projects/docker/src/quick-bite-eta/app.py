@@ -8,7 +8,7 @@ import joblib
 import pandas as pd
 
 app = FastAPI(title="QuickBite ETA")
-model = joblib.load("eta_model.pkl")
+model = joblib.load("eta_model.pkl")  # loaded once at startup, reused for every request
 
 
 class Order(BaseModel):
@@ -25,6 +25,8 @@ def health():
 
 @app.post("/predict")
 def predict(order: Order):
+    # sklearn expects tabular input; wrap the single order in a one-row
+    # DataFrame whose column names must match the Order fields exactly.
     X = pd.DataFrame([order.model_dump()])
     eta = round(float(model.predict(X)[0]), 1)
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}

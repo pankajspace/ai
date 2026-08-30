@@ -16,7 +16,7 @@ def solve(question: str) -> str:
     """Answer a math question using the pre-built calculator tool."""
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
-        tools=[calculator],
+        tools=[calculator],  # pre-built tool from strands_tools community package
         system_prompt="You are a helpful math assistant.",
         callback_handler=None,
     )

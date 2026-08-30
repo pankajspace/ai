@@ -89,19 +89,19 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>PDF text"] -->|POST /pdf-index| B["app.py<br/>pdf_index"]
-    B -->|pdf_text| C["pdf_chat.py<br/>build_pdf_text_index"]
-    C -->|chunk + embed| D["in-memory Chroma<br/>_pdf_state db"]
-    D -->|Chroma db| B
-    A2["Browser<br/>question"] -->|POST /pdf-chat| E["app.py<br/>pdf_chat"]
-    E -->|db, question| F["pdf_chat.py<br/>ask_pdf"]
-    F -->|question| D
-    D -->|top 4 chunks| F
-    F -->|context + question| G["PDF_PROMPT<br/>| GPT-4o mini"]
-    G -->|answer| F
-    F -->|answer text| E
-    E -->|JSON result| A2
+                        flowchart TD
+                        A["Browser<br />PDF text"] -->|POST /pdf-index| B["app.py<br />pdf_index"]
+                        B -->|pdf_text| C["pdf_chat.py<br />build_pdf_text_index"]
+                        C -->|chunk + embed| D["in-memory Chroma<br />_pdf_state db"]
+                        D -->|Chroma db| B
+                        A2["Browser<br />question"] -->|POST /pdf-chat| E["app.py<br />pdf_chat"]
+                        E -->|db, question| F["pdf_chat.py<br />ask_pdf"]
+                        F -->|question| D
+                        D -->|top 4 chunks| F
+                        F -->|context + question| G["PDF_PROMPT<br />| GPT-4o mini"]
+                        G -->|answer| F
+                        F -->|answer text| E
+                        E -->|JSON result| A2
                     </div>
                 </div>
 
@@ -133,10 +133,10 @@ def build_pdf_text_index(pdf_text: str) -&gt; Chroma:
     Returns:
         A ``Chroma`` vector store containing the embedded text chunks.
     """
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)  # bigger chunks than the chunking demo's 100/10 since PDF pages carry more context per paragraph
     chunks = splitter.create_documents([pdf_text])
     embedder = get_embedder()
-    db = Chroma.from_documents(chunks, embedder)
+    db = Chroma.from_documents(chunks, embedder)  # in-memory only (no persist_directory) — index is rebuilt each time PDF text is submitted
     return db
 
 
@@ -151,13 +151,14 @@ def ask_pdf(db: Chroma, question: str) -&gt; str:
         The model's answer.
     """
     model = get_chat_model()
-    chunks = db.similarity_search(question, k=4)
+    chunks = db.similarity_search(question, k=4)  # one more chunk than the rag.py demo's k=3, since PDF answers often span more context
     context = "\n\n".join(c.page_content for c in chunks)
     chain = PDF_PROMPT | model
     return chain.invoke({"context": context, "question": question}).content</code></pre>
 
                 <h2>API routes</h2>
-                <span class="file-label">Exposes the two-phase PDF pipeline over HTTP as <code>POST /pdf-index</code> and <code>POST /pdf-chat</code>.</span>
+                <span class="file-label">Exposes the two-phase PDF pipeline over HTTP as <code>POST /pdf-index</code>
+                    and <code>POST /pdf-chat</code>.</span>
                 <pre><code class="language-python">@bp.route("/pdf-index", methods=["POST"])
 def pdf_index():
     """Index pasted PDF text in an in-memory vector store.
@@ -203,7 +204,9 @@ def pdf_chat():
     </main>
 
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
