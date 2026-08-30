@@ -41,7 +41,8 @@
 3. [LangChain Lab](projects/langchain/README.md)
 4. [RAG Lab](projects/rag/README.md)
 5. [Docker Demo Lab](projects/docker/README.md)
-6. [Container App Template](projects/template/README.md)
+6. [InterviewIQ](projects/interviewiq/README.md)
+7. [Container App Template](projects/template/README.md)
 
 ---
 
