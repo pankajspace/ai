@@ -49,13 +49,11 @@
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Vanilla RAG is good, but advanced RAG techniques like reranking and hybrid search make it significantly more accurate.</p>
-                <p>Two-stage retrieval improves results:</p>
-                <ul>
-                    <li><strong>Vector Search (Fast pass):</strong> A bi-encoder quickly scans documents and retrieves the top candidates.</li>
-                    <li><strong>Reranker (Slow pass):</strong> A cross-encoder reads the query and each candidate document together to deeply judge relevance and re-order the results.</li>
-                </ul>
-                <p>Hybrid search combines semantic search with exact-word keyword search to ensure you don't miss documents when you need a specific term.</p>
+                <p>When you submit a knowledge base and a question to this <strong>Reranking</strong> demo, you are witnessing a powerful <strong>two-stage retrieval</strong> architecture designed to solve the precision issues of traditional RAG. The goal is to find the most relevant chunks of your text to answer the question, balancing speed and pinpoint accuracy.</p>
+                
+                <p>In the first stage, the demo uses a <strong>Bi-Encoder</strong> to rapidly sift through the knowledge base. The bi-encoder processes your question and each chunk of the knowledge base independently to create vector embeddings in Chroma. It then performs a fast similarity search to retrieve a broad initial set of candidates (in this code, <code>initial_k=25</code>). While fast, this method is approximate. Because the question and text chunks are encoded separately, the bi-encoder might miss subtle semantic connections, occasionally ranking a highly relevant document lower than it should.</p>
+                
+                <p>To fix this, the demo introduces a second stage: the <strong>Cross-Encoder</strong> (specifically, <code>ms-marco-MiniLM-L6-v2</code>). The backend takes the 25 candidates and pairs each one with your original question. The cross-encoder evaluates these pairs <em>together</em> simultaneously, allowing its attention mechanisms to analyze the deep contextual interactions between the specific words in your question and the text chunk. This generates a highly accurate relevance score for each pair. Finally, the code sorts the candidates by these new scores and returns the absolute best 3 (<code>top_k=3</code>) to the browser. By applying the expensive cross-encoder only to a small subset of fast bi-encoder results, the demo achieves near-perfect accuracy without sacrificing performance.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

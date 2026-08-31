@@ -32,12 +32,14 @@
                 <p>A tool-using agent — the LLM decides on its own when to call a tool. Three tools are available: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model uses OpenAI's function-calling protocol: it may request tool calls in its response, the server runs the real functions and appends the results, and the model is called again to phrase the final answer.</p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>The mechanics behind a tool-using agent:</p>
-                <ul>
-                    <li><strong>Agent:</strong> An AI system that decides on its own when and how to use a tool to accomplish a task.</li>
-                    <li><strong>Function Calling Protocol:</strong> The model is provided with a menu of tools. If it requests a tool call, the server executes the real function and appends the result to the conversation.</li>
-                    <li><strong>Tool Dispatch:</strong> The process of mapping the model's requested function name and JSON arguments to the actual Python function, executing it, and returning the result.</li>
-                </ul>
+<p>The <b>Shop Agent</b> demo illustrates how Large Language Models (LLMs) can transition from passive chatbots into active problem-solvers using <b>Tool Calling</b> (Function Calling). By default, an LLM doesn't know the current price of shoes or if a bag is in stock. Instead of guessing, the Shop Agent is given a specific set of abilities it can use to find out.</p>
+<p>The demo operates in an autonomous loop using the OpenAI function-calling protocol:</p>
+<ul>
+    <li><b>Providing the Tools:</b> Before asking GPT-4o-mini a question, the application sends a JSON "menu" describing three available Python functions: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model knows what these tools do and what arguments they require (like the item name).</li>
+    <li><b>The Model's Decision:</b> When you ask, "Do you have shoes and how much are they?", the LLM realizes it needs external data. Instead of replying with a text answer, it returns a structured request asking the backend to run <code>check_stock("shoes")</code> and <code>get_price("shoes")</code>.</li>
+    <li><b>Backend Execution:</b> The Python backend intercepts this request, looks up the real functions in its <code>TOOL_FUNCTIONS</code> registry, and executes them against its mock database. The LLM never runs code itself; it only asks the backend to do it.</li>
+    <li><b>Final Synthesis:</b> The backend appends the results from those functions (e.g., "12 units in stock", "₹799") back into the conversation history as "tool" messages. The LLM is called one last time with this new context, allowing it to formulate a natural, accurate response based on the live shop data.</li>
+</ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

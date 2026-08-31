@@ -48,11 +48,11 @@
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>This interactive travel guide depends on these key AI concepts:</p>
+                <p><strong>Prompt Engineering for UI Constraints</strong></p>
+                <p>The Travel Suggestion demo illustrates how careful prompt design can adapt LLM outputs to fit specific application requirements:</p>
                 <ul>
-                    <li><strong>System Prompts &amp; Persona:</strong> The System role establishes the AI's personality and boundaries upfront. By instructing it to be a "witty travel guide," every response adopts that specific tone.</li>
-                    <li><strong>Statelessness (No Memory):</strong> An LLM does not remember past interactions. Since it has no memory, the context (the system prompt) and the user's specific query (the city) must be explicitly packaged and sent inside the context window for every single request.</li>
-                    <li><strong>The Grammar of Chat:</strong> This app perfectly illustrates the standard chat API structure using the <em>System</em> (personality) and <em>User</em> (query) roles to steer the <em>Assistant</em> (response).</li>
+                    <li><strong>Enforcing Brevity:</strong> In a UI designed around compact result cards, long-winded answers break the layout. By explicitly structuring the user prompt as <em>"Suggest one thing to do in {city}"</em>, we force the GPT-4o mini model to narrow its focus. This guarantees a concise, punchy response that fits perfectly into the demo's visual design.</li>
+                    <li><strong>Stateless Persona Maintenance:</strong> Every time you click "Suggest something," the backend makes a fresh, isolated API call. Because the OpenAI API is stateless, it doesn't remember your previous city searches. Therefore, we must inject the system prompt (<em>"You are a witty travel guide."</em>) into every single request to guarantee the tone remains consistently playful, regardless of how many times you use the tool.</li>
                 </ul>
 
                 <h2>Request flow</h2>

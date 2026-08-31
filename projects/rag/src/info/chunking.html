@@ -47,14 +47,11 @@
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Chunking cuts a document into smaller snippets before embedding, solving the LLM context window limit. The four common strategies are:</p>
-                <ul>
-                    <li>Character splitting</li>
-                    <li>Recursive character splitting (respects paragraph/sentence boundaries)</li>
-                    <li>Document specific splitting</li>
-                    <li>Semantic splitting</li>
-                </ul>
-                <p>Overlapping chunks ensure that context at the boundary is never lost.</p>
+                <p>When you paste a long document into this <strong>Chunking</strong> demo, you're addressing a core limitation of Large Language Models (LLMs) and embedding models: the context window limit. You cannot feed an entire book into an API and expect it to process it in one go. Instead, the text must be broken down into smaller segments, or "chunks". In this demo, when you submit your text via the browser, the backend uses LangChain's <code>RecursiveCharacterTextSplitter</code> to intelligently divide your input.</p>
+                
+                <p>Rather than simply slicing your text into arbitrary 100-character blocks (which could cut a word or sentence in half, destroying its meaning), this demo's splitter is recursive. It first tries to split your text by paragraphs. If a paragraph is still larger than the <code>chunk_size</code>, it drops down to splitting by sentences, and then by words. This ensures that the chunks you see rendered in the result retain their natural linguistic boundaries and semantic meaning.</p>
+                
+                <p>Additionally, you might notice that the end of one chunk in the demo's output often repeats at the beginning of the next. This is governed by the <code>chunk_overlap</code> parameter (set to 10 characters in this code). This overlap acts as a contextual glue. If a critical concept in your submitted text spans across the boundary of a split, the overlap ensures that neither chunk loses the full context. This sliding window approach is what makes downstream retrieval in a full RAG pipeline accurate and reliable.</p>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

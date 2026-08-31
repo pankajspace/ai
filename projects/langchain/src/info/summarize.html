@@ -39,13 +39,14 @@
                     becomes the next step's input.</p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Key LangChain components used in this summarizer:</p>
-                <ul>
-                    <li><strong>ChatPromptTemplate:</strong> A reusable prompt with blanks left as variables (e.g., <code>{website}</code>) to be filled in later.</li>
-                    <li><strong>ChatOpenAI:</strong> The model wrapped in a LangChain wrapper, allowing it to easily connect with other LangChain pieces.</li>
-                    <li><strong>StrOutputParser:</strong> Unwraps the answer package from the model and returns just the plain text string.</li>
-                    <li><strong>Pipe Operator (<code>|</code>):</strong> Joins pieces into a chain, meaning "then" (e.g., prompt, <em>then</em> model, <em>then</em> parser).</li>
-                </ul>
+<p>The <b>Website Summarizer</b> demo demonstrates how to build robust AI data pipelines using <b>LangChain</b> and its Expression Language (LCEL). Instead of manually concatenating strings and parsing complex API responses, this demo links specialized components together into a single, cohesive <b>Chain</b> where the output of one step flows naturally into the next using the pipe (<code>|</code>) operator.</p>
+<p>When you submit a URL to be summarized, the application processes it through a sequence of well-defined stages:</p>
+<ul>
+    <li><b>Document Loading:</b> Before the LLM can summarize a webpage, the raw HTML must be fetched and cleaned. The demo uses LangChain's <code>WebBaseLoader</code> to download the page (using custom headers to avoid basic bot detection) and extract just the readable text, stripping away messy navigation menus and scripts.</li>
+    <li><b>Prompt Templating:</b> The scraped text is then passed to a <code>ChatPromptTemplate</code>. Instead of hardcoding the prompt, this template holds a static instruction ("give a short, friendly summary") and dynamically injects the website's text into a <code>{website}</code> variable.</li>
+    <li><b>Model Execution:</b> The formatted prompt flows into the LLM (GPT-4o-mini). By using a low temperature (0.3), the model is instructed to be highly factual and consistent, ensuring the summary closely reflects the actual webpage content rather than hallucinated details.</li>
+    <li><b>Output Parsing:</b> Finally, the LLM returns a complex object containing token counts and metadata. The <code>StrOutputParser</code> at the end of the chain extracts just the raw markdown summary string, which is then sent back to your browser to be rendered cleanly in the UI.</li>
+</ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

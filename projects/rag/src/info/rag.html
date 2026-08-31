@@ -47,13 +47,11 @@
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Retrieval-Augmented Generation (RAG) fixes two main LLM flaws: lack of fresh/private data, and confident hallucinations. It acts as a "smart librarian" between your question and the model.</p>
-                <p>The standard pipeline involves:</p>
+                <p><strong>Grounding Generation in Fact</strong></p>
+                <p>The RAG Q&amp;A demo showcases how to prevent LLM hallucinations by injecting facts directly into the prompt context:</p>
                 <ul>
-                    <li>Indexing your documents (Chunking + Embedding + Vector DB).</li>
-                    <li>Searching the Vector DB for meaning based on the user's question.</li>
-                    <li>Providing the retrieved relevant pages to the LLM.</li>
-                    <li>Asking the LLM to answer the question using ONLY the provided context.</li>
+                    <li><strong>Chunking and Embedding:</strong> You can't just pass massive documents to an LLM on every question. When you provide a knowledge base, the <code>build_index()</code> function uses LangChain to split the text into manageable 500-character chunks. These chunks are then converted into numerical vectors (embeddings) and stored in a Chroma database, which acts as a semantic search engine.</li>
+                    <li><strong>Contextual Retrieval and Prompt Injection:</strong> When you ask a question, the system searches the Chroma database for the three most relevant chunks. The magic happens in the <code>RAG_PROMPT</code>: it combines those retrieved chunks with your question, and explicitly instructs GPT-4o mini to <em>"Answer the question using ONLY the context below."</em> By strictly limiting the model's knowledge universe to the provided chunks, the demo ensures factual, grounded answers rather than generic guesses.</li>
                 </ul>
 
                 <h2>Request flow</h2>

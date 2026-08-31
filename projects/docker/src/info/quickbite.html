@@ -37,9 +37,13 @@
 <h2>Concept</h2>
 <p>This demo runs a single FastAPI container holding a pre-trained scikit-learn model. The browser sends a POST request to the flask proxy, which forwards it to the <code>quickbite</code> container. The container extracts features, runs <code>model.predict()</code>, and returns the ETA in minutes. There are no external API calls and no API keys required.</p>
 <h2>Theory & Concepts</h2>
-<p><b>What you'll build:</b> a sklearn model (a food-delivery ETA predictor) served via FastAPI, packed into a container. This is where the <b>core fundamentals</b> live: Dockerfile anatomy, layers, caching, port mapping, .dockerignore.</p>
-                <p>Imagine you're an ML engineer at a Zomato-style startup. You've built a model that predicts <em>how many minutes until an order arrives</em> &mdash; distance, restaurant prep time, rider availability, rain as inputs; ETA as output.</p>
-                <p>The model runs beautifully on your laptop. Then DevOps says: <em>"Ship it to the server."</em> The server has Python 3.9; you have 3.12. Different sklearn version. Don't even ask about NumPy. Welcome to dependency hell &mdash; and Docker is the air conditioning.</p>
+<p>The <b>QuickBite ETA</b> demo demonstrates how to reliably deploy a classical machine learning model into production using <b>Containerization</b>. When a data scientist trains a model locally, it depends on specific library versions (like scikit-learn or pandas) and Python configurations. Deploying this model directly to a server often results in the "it works on my machine" problem due to environment mismatches.</p>
+<p>This demo solves that by wrapping the entire prediction pipeline into a single, immutable Docker container. When you submit an order via the browser, here is how the architecture handles it:</p>
+<ul>
+    <li><b>Containerized Environment:</b> The Docker image bundles the exact versions of Python, FastAPI, and scikit-learn needed. This guarantees that whether the QuickBite container runs on a developer's laptop or a cloud server, the environment is perfectly consistent.</li>
+    <li><b>FastAPI Serving Layer:</b> The container runs a high-performance web server that exposes a <code>/predict</code> endpoint. It translates the incoming JSON order details (like distance, prep time, and weather) into a Pandas DataFrame that the model can understand.</li>
+    <li><b>The Inference Engine:</b> At startup, the container loads a pre-trained scikit-learn model (<code>eta_model.pkl</code>) into memory. When the FastAPI route receives your data, it runs <code>model.predict()</code> to instantly calculate the estimated delivery time in minutes and returns it to your browser.</li>
+</ul>
 
 
                 <h2>Request flow</h2>

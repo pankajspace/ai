@@ -38,12 +38,14 @@
                     with each message.</p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>LangChain simplifies the process of adding memory to an LLM chain using specialized components:</p>
-                <ul>
-                    <li><strong>Memory:</strong> LLMs have no built-in memory. They only remember because we resend past turns with every request.</li>
-                    <li><strong>MessagesPlaceholder:</strong> A "parking spot" for history. It acts as a slot in the prompt where the conversation history is injected.</li>
-                    <li><strong>HumanMessage &amp; AIMessage:</strong> LangChain objects used to represent user inputs and the assistant's replies.</li>
-                </ul>
+<p>The <b>Memory Chat</b> demo illustrates how to give a Large Language Model the illusion of memory. By default, LLMs like GPT-4o-mini are completely stateless—they do not remember the question you asked them just seconds ago. To have a continuous conversation, the application must manage the history and resend the entire transcript every time.</p>
+<p>This demo uses <b>Stateless Client-Side Memory</b> combined with LangChain's prompt structuring to achieve this conversational flow:</p>
+<ul>
+    <li><b>Client-Side State:</b> Instead of storing the chat history in a backend database, the web browser keeps track of the conversation. Every time you type a new message, the browser sends your latest question along with the entire array of past user and assistant messages as JSON.</li>
+    <li><b>Role Delineation:</b> The backend translates this JSON history into strict LangChain objects (<code>HumanMessage</code> and <code>AIMessage</code>). This clear role separation ensures the LLM knows exactly what it said previously versus what the user asked.</li>
+    <li><b>Dynamic Prompting:</b> The core of this demo is the <code>ChatPromptTemplate</code>. It starts with a fixed System Persona ("You are a friendly assistant"). Then, it uses a <code>MessagesPlaceholder("history")</code> to dynamically inject the variable-length list of past messages. Finally, it appends your newest question at the very end.</li>
+    <li><b>Execution:</b> The LangChain chain passes this fully assembled conversation to the model. The model reads the context, generates a reply, and the backend sends it to the browser, which appends it to its local history for the next turn.</li>
+</ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

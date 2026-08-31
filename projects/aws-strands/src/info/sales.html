@@ -37,13 +37,9 @@
                     hard-coded the sequence; the agentic loop figures it out from context.</p>
 
                 <h2>Theory & Concepts</h2>
-                <p>The scenario: you ask a sales assistant to <em>"pull last quarter's sales data and email a summary to
-                        the
-                        team."</em> That is not one task — it is three: query the database, analyse the numbers, send an
-                    email.</p>
-                <p>You never told the agent the sequence. It recognised it needed data first, then analysis, then
-                    delivery — and
-                    chained them. That is planning.</p>
+                <p>The <strong>Sales Report Agent</strong> demo showcases one of the most powerful capabilities of agentic systems: <strong>Autonomous Multi-Tool Planning</strong>. When the user submits a request like "Pull last quarter's sales data, calculate the metrics, and email a summary to the team," they are asking for a complex, multi-step workflow. Instead of hardcoding this sequence, we give the agent three simple tools.</p>
+                <p>In <code>sales_agent.py</code>, we define <code>get_sales_data</code>, <code>analyze_sales</code>, and <code>send_email</code>. The agent is responsible for figuring out the order. Using dynamic planning, the Bedrock agent first realizes it needs data, so it calls <code>get_sales_data</code>. Once it observes the returned revenue and deal count, it deduces that the next logical step is to call <code>analyze_sales</code> to calculate the averages. Finally, armed with the analyzed metrics, it invokes <code>send_email</code> to complete the user's request.</p>
+                <p>This dynamic chaining is revolutionary because the developer never wrote a script that says "do A, then B, then C." The LLM acts as the orchestrator. If <code>get_sales_data</code> had returned an error, the agent could potentially adapt its plan. By providing single-purpose tools and letting the agent reason about the workflow, we can handle complex, ambiguous user requests without writing rigid state machines.</p>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

@@ -49,13 +49,12 @@
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Chatting with a PDF puts all RAG concepts together into a complete application, allowing you to securely interact with private data.</p>
-                <p>The architecture consists of:</p>
+                <p><strong>End-to-End Document Intelligence</strong></p>
+                <p>The PDF Chat demo combines chunking, vector storage, and grounded generation into a cohesive pipeline for querying real documents:</p>
                 <ul>
-                    <li>A PDF extractor to pull text from pages.</li>
-                    <li>A chunker to split the text into manageable pieces.</li>
-                    <li>An embedder and vector database to store and search the meaning of those pieces.</li>
-                    <li>An LLM to read the retrieved pages and answer the user's question without guessing.</li>
+                    <li><strong>Optimized Chunk Sizing:</strong> When you paste PDF text, <code>build_pdf_text_index()</code> splits it into 800-character chunks—larger than a standard text demo. This is intentional: PDF paragraphs often contain dense, continuous context, so a larger chunk size ensures that related concepts aren't prematurely cut off before being stored in the in-memory Chroma database.</li>
+                    <li><strong>Ephemeral Vector Storage:</strong> For an interactive web demo, spinning up a persistent database is overkill. This demo leverages an in-memory Chroma instance (<code>_pdf_state</code>). The vectors exist only as long as the server session, allowing you to ask multiple questions (using <code>ask_pdf()</code> to retrieve the top 4 chunks) without permanently saving your private PDF data to disk.</li>
+                    <li><strong>Reliability via Prompting:</strong> The <code>PDF_PROMPT</code> acts as a strict guardrail. By telling GPT-4o mini to explicitly state <em>"I couldn't find that in the document"</em> if the answer isn't in the context, we prioritize factual accuracy and trust over the model's natural inclination to invent plausible-sounding answers.</li>
                 </ul>
 
                 <h2>Request flow</h2>

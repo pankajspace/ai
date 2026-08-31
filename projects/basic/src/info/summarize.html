@@ -54,11 +54,11 @@
                 </ol>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>Building a summarizer relies on understanding how LLMs process information:</p>
+                <p><strong>HTML Sanitization and Prompt Constraints</strong></p>
+                <p>The Website Summarizer demo demonstrates how to effectively prepare messy real-world data for an LLM:</p>
                 <ul>
-                    <li><strong>Context Windows:</strong> Every LLM has a limited context window measured in tokens. By stripping out HTML noise (like scripts, styles, and navigation menus) before sending the page to the model, we ensure the actual content fits within this limit and saves on token costs.</li>
-                    <li><strong>System vs. User Prompts:</strong> The <em>System</em> role is used to set the behavior ("give a short, friendly summary" and "respond in markdown"), while the <em>User</em> role supplies the actual data (the scraped website text).</li>
-                    <li><strong>A Core Industry Tool:</strong> Summarizing unstructured text (news, meeting notes, contracts) is one of the most widely used AI applications in the business world today.</li>
+                    <li><strong>Token Efficiency through Scraping:</strong> Web pages are filled with HTML tags, scripts, and navigation menus that are irrelevant to the actual content. In the <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens and increase API costs, while potentially confusing the model with structural noise.</li>
+                    <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's output can be predictably rendered by our frontend. Furthermore, instructing the model to "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that survived the BeautifulSoup cleanup.</li>
                 </ul>
 
                 <h2>Request flow</h2>

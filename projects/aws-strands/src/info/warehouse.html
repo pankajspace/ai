@@ -37,21 +37,9 @@
                     ~6. This is the async tools pattern from Module 2.</p>
 
                 <h2>Theory & Concepts</h2>
-                <p>This module closes with three scenarios where the plain <code class="inl">@tool</code> approach
-                    strains.
-                    Learn these as <em>"recognise it when it happens"</em>, not as something to memorise.</p>
-                <h3>16.1 · The database connection problem → class-based tools</h3>
-                <p>The story: your agent has five tools, each opening its own database connection. Your DBA messages:
-                    <em>"Why
-                        is your agent opening 50 database connections per minute?"</em> Each tool call opens and closes
-                    a
-                    connection; multiply by concurrent users and the database drowns.</p>
-                <p><strong>The fix:</strong> group related tools in a class so they share one connection.</p>
-                <h3>16.2 · Slow sequential calls → async tools</h3>
-                <p>If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make
-                    the tool
-                    <code class="inl">async</code> and they run in parallel.
-                </p>
+                <p>The <strong>Warehouse Check</strong> demo illustrates how to drastically reduce latency when an agent needs to perform multiple tasks at once. In this demo, the agent needs to check inventory across "east", "west", and "central" warehouses. Because we added an artificial 2-second delay to the <code>check_warehouse_inventory</code> tool, querying them one by one would take about 6 seconds.</p>
+                <p>To solve this, we define the tool as an <code>async</code> function and use <code>agent.invoke_async()</code> in <code>warehouse_agent.py</code>. When Amazon Nova Pro recognizes it needs data from all three locations to answer the user's browser query, it emits three tool calls simultaneously.</p>
+                <p>The Strands framework executes all three asynchronous lookups in parallel. As a result, the entire operation takes roughly 2 seconds (the time of the longest single lookup) instead of 6. The results are merged, and the final response is rapidly returned to the user, highlighting how async parallel execution is vital for responsive agent applications.</p>
                 <h2>Request flow</h2>
                 <div class="flow-diagram flow-vertical">
                     <div class="flow-step">

@@ -37,13 +37,13 @@
 <h2>Concept</h2>
 <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
 <h2>Theory & Concepts</h2>
-<p><b>What you'll build:</b> a 3-container agentic system &mdash; an <b>agent service</b> (LLM + tool-calling loop), a <b>tools service</b> (separate microservice), and <b>Redis</b> (conversation memory). New concepts: microservice separation, private networking (no published port!), and one compose file running it all.</p>
-                <h3>What an agent actually is</h3>
-                <p>An agent is an LLM that doesn't just answer &mdash; it <em>does things</em>. It thinks, picks up a tool, checks the result, and keeps going.</p>
-                <p>Think of the architecture as an office: the <em>agent = the manager</em> (decides what needs doing), <em>tools = the departments</em> (they do the actual work), and <em>Redis = the office register</em> (remembers who said what).</p>
-                <p>Why three separate boxes? Because in production, the tools team is different from the agent team. You update the tools without touching the agent. That's <em>microservices</em> &mdash; and without Docker, microservices are just a slide in a deck.</p>
-                <h3>What is Redis, in 30 seconds?</h3>
-                <p>Redis is a super-fast "sticky-note board" database: you store values under names (<i>key &rarr; value</i>) and read them back in microseconds. Here it remembers each conversation: key = the session ID, value = the message history. Why not a Python variable? Because containers die and restart &mdash; a variable dies with them. Redis in its own container (with a volume) means the agent can crash, restart, and still remember you.</p>
+<p>The <b>DeskBuddy</b> demo illustrates a production-ready <b>Agentic Architecture</b> distributed across multiple Docker containers. At its core, an agent uses a Large Language Model (LLM) not just to generate text, but to iteratively reason and take action—specifically, by deciding when to call external functions (tools). In this demo, when you ask DeskBuddy to "calculate 23 * 47" or "what time is it", the LLM realizes it needs external help and emits a structured JSON request rather than a direct answer.</p>
+<p>To make this secure and scalable, the demo adopts a <b>Microservices approach</b> with three isolated containers:</p>
+<ul>
+    <li><b>The Agent Container:</b> This FastAPI service runs the core loop. It receives your chat, asks the GPT-4o-mini model for a response, and handles the conditional logic. If the LLM requests a tool call, the agent pauses to dispatch the request to the Tools Container, then feeds the result back to the LLM to form a final answer.</li>
+    <li><b>The Tools Container:</b> Running tools in the same process as your agent can be dangerous, especially with features like math evaluation. The DeskBuddy architecture isolates the <code>/calculator</code> and <code>/datetime</code> endpoints in a separate, sandboxed service. The agent communicates with this container over a private Docker network, minimizing security risks.</li>
+    <li><b>The Redis Container (Memory):</b> LLMs are stateless by nature. To remember your past messages, the DeskBuddy agent loads and saves the conversation history from a Redis database using your session ID. By externalizing state, the agent container itself remains stateless and resilient.</li>
+</ul>
 
 
                 <h2>Request flow</h2>
