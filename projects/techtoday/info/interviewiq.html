@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — InterviewIQ · TechToday</title>
-    <meta name="description" content="How the InterviewIQ demo works: ReAct tool-calling agents and session memory." />
+    <meta name="description" content="How the InterviewIQ demo works: ReAct tool-calling agents, deterministic evaluation, and anti-recency session memory." />
     <link rel="stylesheet" href="../style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -27,7 +27,7 @@
         <section class="hero">
             <div class="container">
                 <h1>🎯 InterviewIQ</h1>
-                <p class="subtitle">ReAct tool-calling agents via OpenAI</p>
+                <p class="subtitle">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency Session Memory</p>
             </div>
         </section>
 
@@ -36,16 +36,56 @@
 
                 <h2>Concept</h2>
                 <p>
-                    InterviewIQ evaluates candidate answers using <strong>tool-calling agents</strong>.
-                    Unlike a single prompt evaluation, the LLM dynamically chooses which evaluation tools
-                    to invoke (filler-word detection, STAR structure analysis, keyword relevance scoring),
-                    then synthesises coaching feedback.
+                    <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ embeds the LLM as a cognitive orchestrator inside an autonomous loop.
                 </p>
                 <p>
-                    Session memory tracks performance across turns and identifies the weakest area without
-                    recency bias. This uses an authentic ReAct-style loop where the LLM reads the tool menu
-                    and iterates.
+                    The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density, STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger tracks candidate performance across all turns, applying deterministic mathematical ranking to eliminate recency bias and power mid-session meta-coaching.
                 </p>
+
+                <h2>Theory &amp; Concepts</h2>
+
+                <p><strong>1. Autonomous ReAct Agent Loop vs. Static Pipelines</strong></p>
+                <p>
+                    Traditional LLM applications operate in a rigid, single-turn sequence: <code>User Prompt &rarr; LLM &rarr; Output</code>. This passive paradigm struggles in complex evaluation tasks because language models suffer from cognitive overload, hallucination during precise mathematical counting, and an inability to inspect intermediate diagnostic data.
+                </p>
+                <p>
+                    InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022) via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
+                </p>
+                <ul>
+                    <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter specifications, and natural-language descriptions.</li>
+                    <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata, the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g., invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate arguments.</li>
+                    <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to deterministic Python functions, captures the structured outputs, and appends them back to the message transcript under the <code>tool</code> role.</li>
+                    <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>) until all necessary observations are gathered, then switches from tool calling to generating its final synthesized coaching critique.</li>
+                </ul>
+
+                <p><strong>2. Separation of Concerns: Deterministic NLP vs. Generative Synthesis</strong></p>
+                <p>
+                    A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code does with 100% precision</em>. Large Language Models are probabilistic next-token predictors; they are inherently unreliable at exact character counting, regex matching, and statistical calculations.
+                </p>
+                <ul>
+                    <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled regex word-boundary patterns (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).</li>
+                    <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action, Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
+                    <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates morphological regex stems to match expected domain keywords across grammatical inflections (e.g., <code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>), scoring coverage against a calibrated tiered curve (0–100).</li>
+                    <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging, constructive feedback.</li>
+                </ul>
+
+                <p><strong>3. Structured Session Memory &amp; Anti-Recency Bias</strong></p>
+                <p>
+                    Standard conversational AI setups pass entire chat transcripts into the prompt context. This introduces severe <strong>recency bias</strong> and <strong>context dilution</strong> ("lost-in-the-middle" phenomenon), where the model overemphasizes recent turns and forgets early answers.
+                </p>
+                <p>
+                    InterviewIQ overcomes this using an append-only structured session ledger (<code>InterviewSessionMemory</code>):
+                </p>
+                <ul>
+                    <li><strong>Immutable Turn Ledgers:</strong> Every interview turn stores the question metadata, candidate answer, and raw structured dicts from all tool executions.</li>
+                    <li><strong>Mathematical Composite Ranking:</strong> Weakest and strongest performance areas are determined globally across all turns using a deterministic composite sort key:
+                        <br/>
+                        <code>rank_key(turn) = (relevance_score &uarr;, star_score &uarr;, -total_filler_count &darr;)</code>
+                        <br/>
+                        The globally weakest turn is computed as <code>min(turns, key=rank_key)</code>, ensuring an objective assessment even if the candidate aced the most recent question.
+                    </li>
+                    <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls this tool, reads the aggregated memory state, and provides an evidence-based progress review.</li>
+                </ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -56,44 +96,118 @@
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
                         <span class="flow-title">POST /evaluate</span>
-                        <span class="flow-detail">Flask route</span>
+                        <span class="flow-detail">Flask blueprint route</span>
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
                         <span class="flow-title">_run_loop()</span>
-                        <span class="flow-detail">ReAct tool loop</span>
+                        <span class="flow-detail">ReAct tool-calling loop</span>
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
-                        <span class="flow-title">OpenAI API</span>
-                        <span class="flow-detail">Evaluates and synthesises</span>
+                        <span class="flow-title">Tool Execution</span>
+                        <span class="flow-detail">Deterministic Python tools</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">LLM Synthesis</span>
+                        <span class="flow-detail">Coaching feedback</span>
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
                         <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Feedback rendered</span>
+                        <span class="flow-detail">Live dashboard updated</span>
                     </div>
                 </div>
 
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />answer] -->|POST /evaluate| B[app.py<br />evaluate route]
-                        B -->|answer + expected_keywords| C[agent.py<br />evaluate_answer]
-                        C -->|messages + tools| D[OpenAI API]
-                        D -->|tool calls| C
-                        C -->|tool results| D
-                        D -->|synthesised feedback| C
-                        C -->|JSON feedback + results| B
-                        B -->|JSON| A
+flowchart TD
+    A[Browser<br/>question_id + answer] -->|POST /evaluate| B[app.py<br/>evaluate route]
+    B -->|question_data + answer| C[agent.py<br/>EvaluatorAgent.evaluate_answer]
+    C -->|messages + TOOLS_SCHEMA| D[OpenAI API / LLM]
+    D -->|tool_calls request| E[Tool Dispatcher<br/>_tool_functions]
+    E -->|call detect_filler_words| F[tools.py<br/>detect_filler_words]
+    E -->|call check_star_structure| G[tools.py<br/>check_star_structure]
+    E -->|call score_relevance| H[tools.py<br/>score_relevance]
+    F -->|filler metrics dict| E
+    G -->|STAR metrics dict| E
+    H -->|relevance score dict| E
+    E -->|structured tool observations| C
+    C -->|messages + tool results| D
+    D -->|synthesized coaching advice| C
+    C -->|record turn + raw results| I[InterviewSessionMemory<br/>add_turn]
+    C -->|structured JSON evaluation| B
+    B -->|HTTP 200 JSON| A
                     </div>
                 </div>
 
-                <h2>Backend</h2>
-                <span class="file-label">The authentic ReAct-style tool-calling loop where the LLM decides which tools
-                    to invoke.</span>
-                <pre><code class="language-python">    def _run_loop(self, messages: list, results_out: dict | None = None) -> str:
+                <h2>Backend — ReAct Agent &amp; Session Memory</h2>
+                <span class="file-label">agent.py — The multi-turn tool-calling loop and anti-recency session store</span>
+                <pre><code class="language-python">class InterviewSessionMemory:
+    """Append-only session store for interview turns.
+
+    Each turn records the question, answer, and the structured dict results
+    returned by each evaluation tool.
+    """
+
+    def __init__(self):
+        self._turns: list[dict] = []
+
+    def add_turn(
+        self, question: str, answer: str, results: dict,
+        category: str = "", question_id: int = 0,
+        expected_keywords: list | None = None,
+    ) -> None:
+        self._turns.append({
+            "turn_id": len(self._turns) + 1,
+            "question_id": question_id,
+            "question": question,
+            "category": category,
+            "expected_keywords": expected_keywords or [],
+            "answer": answer,
+            "results": results,
+        })
+
+    def get_weakest_area(self) -> dict | None:
+        """Return the turn with the lowest composite score.
+
+        Uses a 3-key sort (relevance ASC, star_score ASC, filler_count DESC)
+        to explicitly avoid recency bias — the weakest area is the globally
+        worst turn, not the most recent one.
+        """
+        if not self._turns:
+            return None
+
+        def sort_key(turn):
+            r = turn["results"]
+            rel = r.get("score_relevance", {}).get("score", 50)
+            star = r.get("check_star_structure", {}).get("star_score", 50)
+            fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
+            # Lower relevance, lower STAR, higher fillers = weaker.
+            return (rel, star, -fillers)
+
+        weakest = min(self._turns, key=sort_key)
+        rel_data = weakest["results"].get("score_relevance", {})
+        star_data = weakest["results"].get("check_star_structure", {})
+        filler_data = weakest["results"].get("detect_filler_words", {})
+        return {
+            "turn_id": weakest["turn_id"],
+            "question_id": weakest["question_id"],
+            "question": weakest["question"],
+            "category": weakest["category"],
+            "relevance_score": rel_data.get("score", 0),
+            "star_score": star_data.get("star_score", 0),
+            "filler_count": filler_data.get("total_filler_count", 0),
+            "unmatched_keywords": rel_data.get("unmatched_keywords", []),
+        }
+
+
+class EvaluatorAgent:
+    """Tool-calling evaluator agent with session memory."""
+
+    def _run_loop(self, messages: list, results_out: dict | None = None) -> str:
         """Shared tool-calling loop (the authentic ReAct pattern).
 
         Sends messages to the LLM, executes whichever tools the LLM requests,
@@ -144,8 +258,101 @@
         )
         return response.choices[0].message.content or ""</code></pre>
 
+                <h2>Deterministic Tools</h2>
+                <span class="file-label">tools.py — Rule-based exact metrics for filler words, STAR coverage, and keyword relevance</span>
+                <pre><code class="language-python">def detect_filler_words(answer: str) -> dict[str, Any]:
+    """Count filler words (um, like, basically, etc.) and compute density."""
+    if not answer or not answer.strip():
+        return {"detected_fillers": {}, "total_filler_count": 0, "filler_density_per_100_words": 0.0}
+
+    text_lower = answer.lower()
+    detected_fillers: dict[str, int] = {}
+    total_count = 0
+
+    for name, pattern in FILLER_PATTERNS:
+        matches = re.findall(pattern, text_lower, flags=re.IGNORECASE)
+        count = len(matches)
+        if count > 0:
+            detected_fillers[name] = count
+            total_count += count
+
+    words = re.findall(r"\b\w+\b", text_lower)
+    word_count = len(words)
+    density = round((total_count / max(word_count, 1)) * 100, 1)
+
+    return {
+        "detected_fillers": detected_fillers,
+        "total_filler_count": total_count,
+        "has_fillers": total_count > 0,
+        "filler_density_per_100_words": density,
+        "word_count": word_count,
+    }
+
+
+def check_star_structure(answer: str) -> dict[str, Any]:
+    """Check whether a behavioral answer covers Situation, Task, Action, Result."""
+    text_lower = answer.lower()
+    covered: list[str] = []
+    missing: list[str] = []
+    components_status: dict[str, bool] = {}
+
+    for component, patterns in STAR_PATTERNS.items():
+        found = any(re.search(p, text_lower, flags=re.IGNORECASE) for p in patterns)
+        components_status[component.lower()] = found
+        if found:
+            covered.append(component)
+        else:
+            missing.append(component)
+
+    star_score = round((len(covered) / 4) * 100, 1)
+    return {
+        "covered_components": covered,
+        "missing_components": missing,
+        "star_score": star_score,
+        "is_star_complete": len(covered) == 4,
+    }
+
+
+def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]:
+    """Score relevance against expected domain concepts using inflection matching."""
+    text_lower = answer.lower()
+    matched_keywords: list[str] = []
+    unmatched_keywords: list[str] = []
+
+    for kw in expected_keywords:
+        pattern = _build_keyword_pattern(kw.lower().strip())
+        if re.search(pattern, text_lower, flags=re.IGNORECASE):
+            matched_keywords.append(kw)
+        else:
+            unmatched_keywords.append(kw)
+
+    total_expected = len(expected_keywords)
+    total_matched = len(matched_keywords)
+    coverage_ratio = total_matched / max(total_expected, 1)
+
+    # Calibrated tiered scoring curve
+    if total_expected == 0:
+        score = 100
+    elif total_matched == 0:
+        score = 0
+    elif coverage_ratio >= 0.70:
+        score = min(100, int(round(90 + ((coverage_ratio - 0.70) / 0.30) * 10)))
+    elif coverage_ratio >= 0.45:
+        score = int(round(75 + ((coverage_ratio - 0.45) / 0.25) * 14))
+    elif coverage_ratio >= 0.25:
+        score = int(round(50 + ((coverage_ratio - 0.25) / 0.20) * 24))
+    else:
+        score = max(5, int(round((coverage_ratio / 0.25) * 45)))
+
+    return {
+        "score": score,
+        "matched_keywords": matched_keywords,
+        "unmatched_keywords": unmatched_keywords,
+        "keyword_coverage_ratio": round(coverage_ratio, 2),
+    }</code></pre>
+
                 <h2>API route</h2>
-                <span class="file-label">Exposes the evaluation logic over HTTP.</span>
+                <span class="file-label">app.py — Flask blueprint endpoints exposing evaluation and session reporting</span>
                 <pre><code class="language-python">@bp.route("/evaluate", methods=["POST"])
 def evaluate():
     """Evaluate a candidate's answer to an interview question."""
@@ -163,6 +370,22 @@ def evaluate():
     try:
         result = _agent.evaluate_answer(q, answer)
         return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/coach", methods=["POST"])
+def coach():
+    """Handle free-form candidate meta-questions via the ReAct agent."""
+    data = request.get_json(force=True)
+    message = (data.get("query") or data.get("message") or "").strip()
+
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+
+    try:
+        reply = _agent.ask_agent(message)
+        return jsonify({"response": reply})
     except Exception as e:
         return jsonify({"error": str(e)}), 500</code></pre>
 
