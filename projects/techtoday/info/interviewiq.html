@@ -153,6 +153,7 @@ flowchart TD
     """
 
     def __init__(self):
+        # Step 1: Initialize empty ledger for recorded question turns
         self._turns: list[dict] = []
 
     def add_turn(
@@ -160,6 +161,7 @@ flowchart TD
         category: str = "", question_id: int = 0,
         expected_keywords: list | None = None,
     ) -> None:
+        # Step 2: Append immutable turn record containing metadata and tool observations
         self._turns.append({
             "turn_id": len(self._turns) + 1,
             "question_id": question_id,
@@ -180,14 +182,16 @@ flowchart TD
         if not self._turns:
             return None
 
+        # Step 3: Define 3-tuple sort key: (relevance ASC, star_score ASC, -filler_count DESC)
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
             star = r.get("check_star_structure", {}).get("star_score", 50)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
-            # Lower relevance, lower STAR, higher fillers = weaker.
+            # Lower relevance, lower STAR, higher fillers = weaker performance
             return (rel, star, -fillers)
 
+        # Step 4: Deterministically select the globally worst turn
         weakest = min(self._turns, key=sort_key)
         rel_data = weakest["results"].get("score_relevance", {})
         star_data = weakest["results"].get("check_star_structure", {})
@@ -215,6 +219,7 @@ class EvaluatorAgent:
         tools (up to MAX_TOOL_ROUNDS).
         """
         for _ in range(MAX_TOOL_ROUNDS):
+            # Step 1: Model inference with tools schema provided
             response = self._create_with_retry(
                 model=self._model,
                 messages=messages,
@@ -223,27 +228,31 @@ class EvaluatorAgent:
             )
             msg = response.choices[0].message
 
+            # Step 2: Termination condition — if no tool calls made, return final text reply
             if not msg.tool_calls:
                 return msg.content or ""
 
+            # Step 3: Append assistant message requesting tool calls to history
             messages.append(msg)
             for call in msg.tool_calls:
+                # Parse JSON arguments emitted by the model
                 args = (
                     json.loads(call.function.arguments)
                     if call.function.arguments
                     else {}
                 )
+                # Dispatch execution to registered Python tool function
                 fn = self._tool_functions[call.function.name]
                 result = fn(args)
 
-                # Record tool results for session logging (except the report
-                # itself, which is meta-data, not per-answer evaluation).
+                # Record tool results for session logging (except meta-report tool)
                 if (
                     results_out is not None
                     and call.function.name != "generate_final_report"
                 ):
                     results_out[call.function.name] = result
 
+                # Append tool observation under "role": "tool" with matching tool_call_id
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.id,
@@ -252,7 +261,7 @@ class EvaluatorAgent:
                     ),
                 })
 
-        # Ran out of rounds — ask for a final answer without offering tools.
+        # Step 4: Safety fallback — if rounds exhausted, request answer without offering tools
         response = self._create_with_retry(
             model=self._model, messages=messages
         )
@@ -262,6 +271,7 @@ class EvaluatorAgent:
                 <span class="file-label">tools.py — Rule-based exact metrics for filler words, STAR coverage, and keyword relevance</span>
                 <pre><code class="language-python">def detect_filler_words(answer: str) -> dict[str, Any]:
     """Count filler words (um, like, basically, etc.) and compute density."""
+    # Step 1: Return zero counts immediately if response text is empty
     if not answer or not answer.strip():
         return {"detected_fillers": {}, "total_filler_count": 0, "filler_density_per_100_words": 0.0}
 
@@ -269,6 +279,7 @@ class EvaluatorAgent:
     detected_fillers: dict[str, int] = {}
     total_count = 0
 
+    # Step 2: Iterate compiled regex patterns with word boundaries (\b)
     for name, pattern in FILLER_PATTERNS:
         matches = re.findall(pattern, text_lower, flags=re.IGNORECASE)
         count = len(matches)
@@ -276,10 +287,14 @@ class EvaluatorAgent:
             detected_fillers[name] = count
             total_count += count
 
+    # Step 3: Count total words in answer using token regex
     words = re.findall(r"\b\w+\b", text_lower)
     word_count = len(words)
+
+    # Step 4: Compute normalized filler density per 100 words
     density = round((total_count / max(word_count, 1)) * 100, 1)
 
+    # Step 5: Return comprehensive metrics dictionary
     return {
         "detected_fillers": detected_fillers,
         "total_filler_count": total_count,
@@ -296,6 +311,7 @@ def check_star_structure(answer: str) -> dict[str, Any]:
     missing: list[str] = []
     components_status: dict[str, bool] = {}
 
+    # Step 1: Evaluate presence of contextual indicator patterns for each STAR phase
     for component, patterns in STAR_PATTERNS.items():
         found = any(re.search(p, text_lower, flags=re.IGNORECASE) for p in patterns)
         components_status[component.lower()] = found
@@ -304,7 +320,10 @@ def check_star_structure(answer: str) -> dict[str, Any]:
         else:
             missing.append(component)
 
+    # Step 2: Compute percentage of STAR components satisfied (0% to 100%)
     star_score = round((len(covered) / 4) * 100, 1)
+
+    # Step 3: Return STAR structural breakdown
     return {
         "covered_components": covered,
         "missing_components": missing,
@@ -319,6 +338,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
     matched_keywords: list[str] = []
     unmatched_keywords: list[str] = []
 
+    # Step 1: Match morphological keyword regex stems against candidate response
     for kw in expected_keywords:
         pattern = _build_keyword_pattern(kw.lower().strip())
         if re.search(pattern, text_lower, flags=re.IGNORECASE):
@@ -326,11 +346,12 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
         else:
             unmatched_keywords.append(kw)
 
+    # Step 2: Compute raw coverage ratio
     total_expected = len(expected_keywords)
     total_matched = len(matched_keywords)
     coverage_ratio = total_matched / max(total_expected, 1)
 
-    # Calibrated tiered scoring curve
+    # Step 3: Map coverage ratio to calibrated tiered scoring curve (0 to 100)
     if total_expected == 0:
         score = 100
     elif total_matched == 0:
@@ -344,6 +365,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
     else:
         score = max(5, int(round((coverage_ratio / 0.25) * 45)))
 
+    # Step 4: Return relevance metrics dictionary
     return {
         "score": score,
         "matched_keywords": matched_keywords,
@@ -356,17 +378,21 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
                 <pre><code class="language-python">@bp.route("/evaluate", methods=["POST"])
 def evaluate():
     """Evaluate a candidate's answer to an interview question."""
+    # Step 1: Parse request JSON
     data = request.get_json(force=True)
     question_id = data.get("question_id")
     answer = (data.get("answer") or "").strip()
 
+    # Step 2: Validate non-empty candidate response
     if not answer:
         return jsonify({"error": "An answer is required."}), 400
 
+    # Step 3: Lookup question metadata by ID
     q = get_question_by_id(question_id)
     if not q:
         return jsonify({"error": f"Question ID {question_id} not found."}), 400
 
+    # Step 4: Execute evaluation via agent ReAct loop and return structured assessment
     try:
         result = _agent.evaluate_answer(q, answer)
         return jsonify(result)
@@ -377,12 +403,15 @@ def evaluate():
 @bp.route("/coach", methods=["POST"])
 def coach():
     """Handle free-form candidate meta-questions via the ReAct agent."""
+    # Step 1: Parse query or chat message from request body
     data = request.get_json(force=True)
     message = (data.get("query") or data.get("message") or "").strip()
 
+    # Step 2: Validate question presence
     if not message:
         return jsonify({"error": "A question is required."}), 400
 
+    # Step 3: Ask agent to review session memory and synthesize guidance
     try:
         reply = _agent.ask_agent(message)
         return jsonify({"response": reply})
