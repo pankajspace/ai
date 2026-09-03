@@ -91,40 +91,52 @@ tasks: query, analyse, send. The agent is given three small, single-purpose
 tools and works out the order itself — that is planning.
 """
 
+# Import Agent runner and @tool decorator from Strands
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
 from config import MODEL_ID, agent_text
 
 
+# Tool 1: Retrieve quarterly sales figures from CRM/database
 @tool
 def get_sales_data(quarter: str) -&gt; dict:
     """Retrieve sales data for a specific quarter."""
-    # Mock data — swap in a real CRM/warehouse query to take this further.
+    # Mock data representing sales performance — in production query PostgreSQL/Snowflake
     return {"revenue": 1250000, "deals": 47, "quarter": quarter}
 
 
+# Tool 2: Compute statistical aggregations on the raw sales metrics
 @tool
 def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str:
     """Calculate key metrics from sales data."""
+    # Compute the average deal size across closed deals
     avg_deal = revenue / deals
     return f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"
 
 
+# Tool 3: Dispatch email notification with the generated summary
 @tool
 def send_email(to: str, subject: str, body: str) -&gt; str:
     """Send an email message."""
-    # Mock send — no real email is dispatched; wire up an SMTP/SES client here.
+    # Mock send — in production wire up AWS SES or SMTP client
     return f"Email sent to {to}"
 
 
 def report(question: str) -&gt; str:
     """Answer a sales request, letting the agent chain its three tools."""
+    # Step 1: Supply the agent with all 3 complementary tools
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
-        tools=[get_sales_data, analyze_sales, send_email],
+        tools=[get_sales_data, analyze_sales, send_email],  # Agent plans execution order autonomously
         callback_handler=None,
     )
+
+    # Step 2: Execute multi-step planning loop:
+    # 1) Model calls get_sales_data(quarter)
+    # 2) Model passes returned revenue/deals into analyze_sales()
+    # 3) Model passes analysis into send_email()
+    # 4) Model produces the final confirmation text
     return agent_text(agent(question))
 </code></pre>
 

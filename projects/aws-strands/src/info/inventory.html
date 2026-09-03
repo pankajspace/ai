@@ -93,12 +93,15 @@ your own. The mock dictionary stands in for a real database; the agent-facing
 part — decorator, type hints, docstring — is identical either way.
 """
 
+# Import the core Agent class and @tool decorator from Strands
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
 from config import MODEL_ID, agent_text
 
 
+# Decorating with @tool registers the function so Strands automatically extracts
+# the schema (name, docstring, typed arguments) and provides it to Bedrock.
 @tool
 def check_inventory(product_id: str) -&gt; str:
     """Check if a product is in stock.
@@ -106,9 +109,11 @@ def check_inventory(product_id: str) -&gt; str:
     Args:
         product_id: The product ID to check (e.g., "PROD-123")
     """
-    # In production you'd query your real database here.
+    # Step 1: Query the data store (mock dictionary representing inventory database)
     inventory = {"PROD-123": 15, "PROD-456": 0, "PROD-789": 8}
     quantity = inventory.get(product_id, 0)
+
+    # Step 2: Return a clear status string for the agent to incorporate into its answer
     if quantity &gt; 0:
         return f"Product {product_id} is in stock. We have {quantity} units available."
     return f"Product {product_id} is currently out of stock."
@@ -116,11 +121,15 @@ def check_inventory(product_id: str) -&gt; str:
 
 def check(question: str) -&gt; str:
     """Answer a stock question using the check_inventory custom tool."""
+    # Step 1: Instantiate the agent with the custom tool registered
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
-        tools=[check_inventory],
+        tools=[check_inventory],  # Agent decides when and with what arguments to call this tool
         callback_handler=None,
     )
+
+    # Step 2: Execute ReAct loop: the model decides to call check_inventory, observes the result,
+    # and synthesizes a final conversational response.
     return agent_text(agent(question))
 </code></pre>
 

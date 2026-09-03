@@ -79,16 +79,26 @@
 
                 <h2>Backend</h2>
                 <span class="file-label">hello_agent.py</span>
-                <pre><code class="language-python">from strands import Agent
+                <pre><code class="language-python"># Import the core Strands Agent runner and the AWS Bedrock foundation model integration
+from strands import Agent
 from strands.models.bedrock import BedrockModel
 
+# Import application configuration: Bedrock model ID and response extractor
 from config import MODEL_ID, agent_text
 
 
 def ask(prompt: str) -&gt; str:
     """Send a prompt to a plain, tool-less agent and return its reply."""
-    # No tools: the agentic loop runs exactly once — the model answers directly.
-    agent = Agent(model=BedrockModel(model_id=MODEL_ID), callback_handler=None)
+    # Step 1: Initialize the Strands Agent configured with Amazon Nova Pro on Bedrock.
+    # Because no tools are provided, the agentic loop runs exactly once:
+    # the model processes the prompt and replies directly without tool iterations.
+    agent = Agent(
+        model=BedrockModel(model_id=MODEL_ID),
+        callback_handler=None,  # Disable streaming callbacks for simple synchronous reply
+    )
+
+    # Step 2: Invoke the agent with the user prompt.
+    # agent(prompt) returns an AgentResult object; agent_text() extracts the string reply.
     return agent_text(agent(prompt))</code></pre>
 
                 <h2>API route</h2>
@@ -100,13 +110,19 @@ def ask_route():
     Request body (JSON): {"message": "&lt;prompt&gt;"}
     Response (JSON):     {"result": "&lt;agent reply&gt;"}
     """
+    # Step 1: Parse the incoming JSON request payload from the browser
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
+
+    # Step 2: Validate that a non-empty prompt was provided
     if not message:
         return jsonify({"error": "A prompt is required."}), 400
+
+    # Step 3: Run the agent and return the generated text response
     try:
         return jsonify({"result": ask(message)})
     except Exception as e:
+        # Gracefully catch runtime exceptions and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
             </div>
         </section>
