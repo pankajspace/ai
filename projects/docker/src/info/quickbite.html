@@ -95,8 +95,10 @@ import joblib
 import pandas as pd
 
 app = FastAPI(title="QuickBite ETA")
+# Load the pre-trained scikit-learn regression model once into memory at application startup
 model = joblib.load("eta_model.pkl")  # loaded once at startup, reused for every request
 
+# Define Pydantic schema for strict request validation
 class Order(BaseModel):
     distance_km: float
     prep_time_min: float
@@ -105,10 +107,13 @@ class Order(BaseModel):
 
 @app.post("/predict")
 def predict(order: Order):
-    # sklearn expects tabular input; wrap the single order in a one-row
-    # DataFrame whose column names must match the Order fields exactly.
+    # Step 1: Wrap order fields into a single-row DataFrame matching trained feature names
     X = pd.DataFrame([order.model_dump()])
+
+    # Step 2: Run inference through the scikit-learn model and round to 1 decimal place
     eta = round(float(model.predict(X)[0]), 1)
+
+    # Step 3: Return structured response containing predicted ETA and friendly message
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}</code></pre>
 
                 <h2>API route</h2>
@@ -116,8 +121,13 @@ def predict(order: Order):
                 <pre><code class="language-python">@bp.route("/quickbite/predict", methods=["POST"])
 def quickbite_predict():
     """Proxy ETA prediction to the QuickBite FastAPI service."""
+    # Step 1: Parse incoming JSON request containing delivery parameters
     body = request.get_json(force=True)
+
+    # Step 2: Proxy HTTP request to the QuickBite FastAPI container over Docker network
     data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+
+    # Step 3: Return predicted ETA payload directly to browser
     return jsonify(data), status</code></pre>
 
             </div>
