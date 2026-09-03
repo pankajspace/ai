@@ -88,6 +88,8 @@ function setupCard(config) {
 
     const currentValue = () => input.value.trim();
 
+    btn.disabled = !currentValue();
+
     if (input.tagName === "TEXTAREA") setupTextareaCounter(input);
 
     input.addEventListener("input", () => {
@@ -96,7 +98,10 @@ function setupCard(config) {
     });
 
     input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && currentValue()) btn.click();
+        if (e.key === "Enter" && currentValue()) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 
     btn.addEventListener("click", () => {
@@ -137,13 +142,18 @@ function setupEmbeddings() {
 
     const bothFilled = () => inputA.value.trim() && inputB.value.trim();
 
+    btn.disabled = !bothFilled();
+
     [inputA, inputB].forEach((input) => {
         input.addEventListener("input", () => {
             btn.disabled = !bothFilled();
             validation.textContent = "";
         });
         input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && bothFilled()) btn.click();
+            if (e.key === "Enter" && bothFilled()) {
+                e.preventDefault();
+                btn.click();
+            }
         });
     });
 
@@ -224,6 +234,7 @@ function setupPdfChat() {
 
     questionInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && questionInput.value.trim() && pdfIndexed) {
+            e.preventDefault();
             chatBtn.click();
         }
     });
@@ -260,9 +271,18 @@ function setupChunking() {
 
     setupTextareaCounter(input);
 
+    btn.disabled = !input.value.trim();
+
     input.addEventListener("input", () => {
         btn.disabled = !input.value.trim();
         validation.textContent = "";
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && input.value.trim()) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 
     btn.addEventListener("click", () => {
@@ -308,6 +328,8 @@ function setupKbCard({ kbId, inputId, buttonId, resultId, validationId, endpoint
 
     const bothFilled = () => kb.value.trim() && input.value.trim();
 
+    btn.disabled = !bothFilled();
+
     setupTextareaCounter(kb);
 
     [kb, input].forEach((el) => {
@@ -318,7 +340,10 @@ function setupKbCard({ kbId, inputId, buttonId, resultId, validationId, endpoint
     });
 
     input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && bothFilled()) btn.click();
+        if (e.key === "Enter" && bothFilled()) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 
     btn.addEventListener("click", () => {
