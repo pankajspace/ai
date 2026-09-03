@@ -99,49 +99,55 @@
                 <span class="file-label">Generates the joke via OpenAI API's chat completions API.</span>
                 <pre><code class="language-python">from config import get_groq_client
 
-# GPT OSS 120B via OpenAI API: fast inference.
+# GPT OSS 120B via OpenAI API: fast inference on an open model endpoint
 JOKE_MODEL = "openai/gpt-oss-120b"
 
 
 def get_joke(topic: str = "") -> str:
-    # Fall back to "random" instead of sending an empty string to the model.
+    # Step 1: Fall back to "random" instead of sending an empty string to the model
     subject = topic.strip() if topic.strip() else "random"
 
+    # Step 2: Initialize the OpenAI-compatible inference client
     client = get_groq_client()
+
+    # Step 3: Issue chat completion with creative sampling temperature and comedian persona
     response = client.chat.completions.create(
         model=JOKE_MODEL,
         temperature=1.3,  # high temperature = more creative, varied jokes
         messages=[
             {
                 "role": "system",
-                # Persona + "never repeat" nudge the model toward variety.
+                # Persona + "never repeat" nudge the model toward variety and novel humor
                 "content": "You are a comedian with a huge repertoire of jokes. Never repeat the same joke twice.",
             },
             {
                 "role": "user",
-                # Ask for just the joke so the UI can display it directly.
+                # Ask for just the joke so the UI can display it cleanly without filler
                 "content": f"Tell me a joke about {subject}. Just the joke, no commentary.",
             },
         ],
     )
-    # choices[0] is the first (and only) completion; .message.content is the
-    # assistant's reply text.
+    # Step 4: Extract the generated joke from choices[0].message.content
     return response.choices[0].message.content</code></pre>
 
                 <h2>API route</h2>
                 <span class="file-label">Exposes the joke generator over HTTP as <code>POST /joke</code>.</span>
                 <pre><code class="language-python">@bp.route("/joke", methods=["POST"])
 def joke():
+    # Step 1: Parse incoming JSON payload
     data = request.get_json(force=True)
-    # topic is optional; an empty string makes get_joke() pick randomly.
+    # topic is optional; an empty string makes get_joke() pick randomly
     topic = (data.get("topic") or "").strip()
+
+    # Step 2: Fetch joke and attach no-store caching headers
     try:
         text = get_joke(topic)
         response = jsonify({"result": text})
-        # Every click should fetch a fresh joke — never serve a cached one.
+        # Every click should fetch a fresh joke — disable client/proxy caching
         response.headers["Cache-Control"] = "no-store"
         return response
     except Exception as e:
+        # Catch errors and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

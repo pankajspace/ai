@@ -100,40 +100,49 @@
                 <span class="file-label">Generates the suggestion via OpenAI's chat completions API.</span>
                 <pre><code class="language-python">from config import get_openai_client
 
-# gpt-4o-mini: fast, cheap, and good enough for a short creative reply.
+# gpt-4o-mini: fast, cheap, and well-suited for a concise creative reply
 TRAVEL_MODEL = "gpt-4o-mini"
 
 
 def get_travel_suggestion(city: str = "Bangalore") -> str:
+    # Step 1: Initialize the OpenAI client
     client = get_openai_client()
+
+    # Step 2: Query the model with travel guide persona
     response = client.chat.completions.create(
         model=TRAVEL_MODEL,
         messages=[
             {
                 "role": "system",
-                # A brief persona keeps every response short and fun.
+                # A brief persona keeps every response short, lively, and engaging
                 "content": "You are a witty travel guide.",
             },
             {
                 "role": "user",
-                # Asking for exactly one suggestion keeps the reply concise.
+                # Asking for exactly one suggestion keeps the reply punchy and concise
                 "content": f"Suggest one thing to do in {city}.",
             },
         ],
     )
+    # Step 3: Extract and return the completion content
     return response.choices[0].message.content</code></pre>
 
                 <h2>API route</h2>
                 <span class="file-label">Exposes the travel suggester over HTTP as <code>POST /travel</code>.</span>
                 <pre><code class="language-python">@bp.route("/travel", methods=["POST"])
 def travel():
+    # Step 1: Parse request JSON payload
     data = request.get_json(force=True)
-    # Fall back to Bangalore so the demo always has a usable city.
+
+    # Step 2: Default to Bangalore if input is blank so the demo always succeeds
     city = (data.get("city") or "").strip() or "Bangalore"
+
+    # Step 3: Generate suggestion and return JSON response
     try:
         text = get_travel_suggestion(city)
         return jsonify({"result": text})
     except Exception as e:
+        # Return error details on failure
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

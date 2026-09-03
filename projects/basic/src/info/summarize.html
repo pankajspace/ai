@@ -107,78 +107,83 @@
                 <h2>Scraper</h2>
                 <span class="file-label">Downloads a page and returns cleaned, readable text.</span>
                 <pre><code class="language-python">def fetch_website_contents(url: str) -> str:
-    # Users often paste bare domains; add a scheme so requests doesn't error.
+    # Step 1: Prepend scheme if user passed a bare domain
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
     try:
-        # timeout=15 prevents the endpoint from hanging indefinitely on slow
-        # or unresponsive servers.
+        # Step 2: Fetch raw HTML; 15-second timeout prevents hanging on slow hosts
         response = requests.get(url, headers=HEADERS, timeout=15)
-        # Raise an HTTPError for 4xx/5xx status codes so we can catch and
-        # return a friendly error message below.
+        # Raise an HTTPError for 4xx/5xx status codes to handle failures cleanly below
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        # Return an error string instead of raising, so it can reach the UI.
+        # Return an error string instead of raising, so it can display cleanly in the UI
         return f"Could not fetch the website. Error: {e}"
 
-    # Parse the raw HTML with BeautifulSoup's built-in html.parser (no extra
-    # C libraries required, unlike lxml).
+    # Step 3: Parse HTML with BeautifulSoup (html.parser requires no external C libraries)
     soup = BeautifulSoup(response.text, "html.parser")
     title = soup.title.string if soup.title else "No title found"
 
-    # Remove tags that add noise but no useful content for an LLM:
+    # Step 4: Remove tags that add noise but no useful content for an LLM:
     #   script / style        — code and CSS, not human-readable text
     #   nav / header / footer — repeated site chrome that inflates token count
     #   img / input           — non-text elements whose attributes we don't need
     for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
         tag.decompose()
 
+    # Step 5: Extract cleaned, human-readable text content
     text = soup.get_text(separator="\n", strip=True)
     return f"Title: {title}\n\nPage contents:\n{text}"</code></pre>
 
                 <h2>Summarizer</h2>
                 <span class="file-label">Chains the scraper into a GPT-4o mini chat completion.</span>
-                <pre><code class="language-python"># Tell the model to ignore leftover nav boilerplate and reply in markdown.
+                <pre><code class="language-python"># Instruct the model to ignore leftover navigation boilerplate and reply in markdown
 SYSTEM_PROMPT = """You analyze the contents of a website and
 give a short, friendly summary. Ignore navigation menus.
 Respond in markdown."""
 
 
 def summarize(url: str) -> str:
-    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    # Step 1: Fetch and clean page text (title + body text, scripts/nav stripped)
     website = fetch_website_contents(url)
 
-    # Step 2 — ask the model to summarize what we scraped.
+    # Step 2: Initialize OpenAI client
     client = get_openai_client()
+
+    # Step 3: Prompt GPT-4o mini to summarize the extracted webpage contents
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {
-                # We embed the full page text directly into the user message.
-                # For very large pages this could exceed the context window;
-                # a production version would truncate or chunk the text first.
+                # Embed full page text directly into the user message.
+                # (For very large production documents, chunking/truncation would precede this).
                 "role": "user",
                 "content": f"Summarize this website:\n\n{website}",
             },
         ],
     )
+    # Step 4: Return generated markdown summary text
     return response.choices[0].message.content</code></pre>
 
                 <h2>API route</h2>
                 <span class="file-label">Exposes the summarizer over HTTP as <code>POST /summarize</code>.</span>
                 <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
 def summarizer():
+    # Step 1: Parse incoming JSON request
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
-    # Validate at the boundary instead of scraping an empty URL.
+
+    # Step 2: Validate URL at the API boundary before initiating scraping
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
+
+    # Step 3: Scrape website and generate summary
     try:
         text = summarize(url)
         return jsonify({"result": text})
     except Exception as e:
+        # Catch network or LLM failures and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

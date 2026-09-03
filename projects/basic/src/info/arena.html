@@ -106,26 +106,30 @@
 
                 <h2>Backend</h2>
                 <span class="file-label">Sends one prompt to two models and returns both replies.</span>
-                <pre><code class="language-python">OPENAI_MODEL = "gpt-4o-mini"          # proprietary model
-GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served fast by OpenAI API
+                <pre><code class="language-python"># Model definitions for side-by-side evaluation
+OPENAI_MODEL = "gpt-4o-mini"          # proprietary frontier model
+GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served with high throughput via OpenAI API
 
 
 def _ask(client, model: str, prompt: str) -> str:
-    # Both providers accept the same request format, so one helper covers both.
+    # Both providers follow the standard OpenAI chat completions wire format,
+    # so a single shared helper handles inference for both endpoints.
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
     )
+    # Extract the assistant's text content from the first completion choice
     return response.choices[0].message.content
 
 
 def battle(prompt: str) -> dict:
-    # Call OpenAI first (typically higher latency due to a more capable model).
+    # Step 1: Call OpenAI model first
     openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
-    # Then call the OSS endpoint via OpenAI API.
+
+    # Step 2: Call open-source model endpoint
     groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
 
-    # Label each reply with its model so the UI can tell them apart.
+    # Step 3: Package both replies with metadata for side-by-side UI rendering
     return {
         "model_a": {"model": OPENAI_MODEL, "reply": openai_reply},
         "model_b": {"model": GROQ_MODEL, "reply": groq_reply},
@@ -135,14 +139,20 @@ def battle(prompt: str) -> dict:
                 <span class="file-label">Exposes the arena over HTTP as <code>POST /arena</code>.</span>
                 <pre><code class="language-python">@bp.route("/arena", methods=["POST"])
 def arena():
+    # Step 1: Parse the incoming JSON request payload
     data = request.get_json(force=True)
     prompt = (data.get("prompt") or "").strip()
+
+    # Step 2: Validate that a non-empty prompt was submitted
     if not prompt:
         return jsonify({"error": "A prompt is required."}), 400  # validate at the boundary
+
+    # Step 3: Query both models in the battle arena and return combined results
     try:
         result = battle(prompt)
         return jsonify({"result": result})
     except Exception as e:
+        # Catch unexpected model/network failures and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>
