@@ -119,14 +119,19 @@ def build_index(
     chunk_overlap: int = 50,
 ) -&gt; Chroma:
     """Chunk, embed, and persist documents into a Chroma vector store."""
+    # Step 1: Instantiate RecursiveCharacterTextSplitter with 500 character chunks and 50 character overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
-    # create_documents wraps each chunk in a LangChain Document object.
+
+    # Step 2: Wrap each text segment in a LangChain Document object
     chunks = splitter.create_documents(docs)
+
+    # Step 3: Load embedding model
     embedder = get_embedder()
-    # from_documents embeds each chunk and stores vectors in Chroma.
+
+    # Step 4: Embed chunks into dense vector representations and store in ChromaDB
     db = Chroma.from_documents(chunks, embedder, persist_directory=persist_directory)
     return db, len(chunks)</code></pre>
 
@@ -138,7 +143,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from config import get_chat_model, get_embedder
 
 # Instructs the model to answer ONLY from the provided context —
-# prevents it from falling back on its training data.
+# prevents it from hallucinating or falling back on external pre-training data.
 RAG_PROMPT = ChatPromptTemplate.from_template("""
 Answer the question using ONLY the context below. If the context doesn't contain
 the answer, say "I don't know." Be concise and quote facts directly.
@@ -152,13 +157,19 @@ Question: {question}
 
 def rag_answer(question: str, persist_directory: str = "./chroma_db", db=None) -&gt; str:
     """Retrieve relevant chunks and generate a grounded answer."""
+    # Step 1: Open existing vector store if not already provided in memory
     if db is None:
         embedder = get_embedder()
         db = Chroma(persist_directory=persist_directory, embedding_function=embedder)
+
+    # Step 2: Retrieve top 3 nearest neighbor chunks based on cosine distance
     model = get_chat_model()
-    # similarity_search returns the k most similar document chunks.
     chunks = db.similarity_search(question, k=3)
+
+    # Step 3: Concatenate retrieved chunks into single context string
     context = "\n\n".join(c.page_content for c in chunks)
+
+    # Step 4: Pipe context and question through RAG_PROMPT to the LLM
     chain = RAG_PROMPT | model
     return chain.invoke({"context": context, "question": question}).content</code></pre>
 
@@ -172,23 +183,28 @@ def rag_route():
     Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse request JSON payload
     data = request.get_json(force=True)
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+
+    # Step 2: Validate presence of both knowledge base and query text
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
     if not question:
         return jsonify({"error": "A question is required."}), 400
+
+    # Step 3: Build ephemeral in-memory index from knowledge base lines and generate answer
     try:
-        # One "document" per non-blank line of the pasted knowledge base.
+        # Split pasted text into lines as distinct document passages
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
-        # persist_directory=None keeps the index in memory only — it's rebuilt
-        # fresh from the request body on every call, nothing is written to disk.
+        # persist_directory=None keeps the index in memory only — rebuilt fresh per request
         db, _ = build_index(docs, persist_directory=None)
         answer = rag_answer(question, db=db)
         return jsonify({"result": answer})
     except Exception as e:
+        # Return HTTP 500 on unexpected errors
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

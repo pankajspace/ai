@@ -114,12 +114,15 @@ from config import get_embedder
 
 def compare_similarity(text_a: str, text_b: str) -&gt; float:
     """Encode two texts and return their cosine similarity (0-1)."""
+    # Step 1: Load the sentence-transformers embedding model (all-MiniLM-L6-v2)
     embedder = get_embedder()
-    # embed_query converts a string into a high-dimensional vector.
+
+    # Step 2: embed_query converts text strings into dense 384-dimensional vector representations
     v1 = embedder.embed_query(text_a)
     v2 = embedder.embed_query(text_b)
-    # Cosine similarity = dot product / (product of magnitudes).
-    # Result: 1 = identical direction, 0 = orthogonal (unrelated).
+
+    # Step 3: Compute cosine similarity = dot product / (product of vector magnitudes)
+    # Result: 1.0 = identical direction/meaning, 0.0 = orthogonal/completely unrelated
     return float(dot(v1, v2) / (norm(v1) * norm(v2)))</code></pre>
 
                 <h2>API route</h2>
@@ -133,15 +136,21 @@ def embeddings_route():
     Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse request JSON payload
     data = request.get_json(force=True)
     text_a = (data.get("text_a") or "").strip()
     text_b = (data.get("text_b") or "").strip()
+
+    # Step 2: Validate that both comparison strings were supplied
     if not text_a or not text_b:
         return jsonify({"error": "Both text_a and text_b are required."}), 400
+
+    # Step 3: Compute cosine similarity and return 4-decimal rounded score
     try:
         score = compare_similarity(text_a, text_b)
         return jsonify({"result": {"similarity": round(score, 4)}})
     except Exception as e:
+        # Return HTTP 500 on unexpected errors
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

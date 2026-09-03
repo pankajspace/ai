@@ -101,20 +101,22 @@ flowchart TD
 
                 <h2>Backend</h2>
                 <span class="file-label">Splits text into overlapping chunks using LangChain's splitter.</span>
-                <pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+                <pre><code class="language-python"># Import LangChain text splitter designed to maintain semantic boundaries
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def chunk_text(
     text: str,
-    chunk_size: int = 100,   # target characters per chunk
-    chunk_overlap: int = 10,  # characters shared between adjacent chunks
+    chunk_size: int = 100,   # target character length per segment
+    chunk_overlap: int = 10,  # character overlap window between adjacent chunks to preserve context
 ) -&gt; list[str]:
     """Split text into overlapping chunks."""
+    # Step 1: Initialize RecursiveCharacterTextSplitter with target size and overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
-    # split_text tries paragraph &gt; sentence &gt; word boundaries before hard-cutting.
+    # Step 2: Split text hierarchically (paragraphs > sentences > words) before hard-cutting
     return splitter.split_text(text)</code></pre>
 
                 <h2>API route</h2>
@@ -127,15 +129,21 @@ def chunk_route():
     Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse incoming JSON request
     data = request.get_json(force=True)
     text = (data.get("text") or "").strip()
+
+    # Step 2: Validate input boundary (reject empty or whitespace-only text)
     validation = validate_textarea(text, "Text")
     if validation:
         return validation
+
+    # Step 3: Execute chunking and return chunk list with count
     try:
         chunks = chunk_text(text)
         return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
     except Exception as e:
+        # Return error message on failure
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>
