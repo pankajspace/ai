@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Math Assistant · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Math Assistant." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -88,8 +90,10 @@ This also uses a SYSTEM PROMPT &mdash; standing instructions that shape the agen
 behaviour on every request.
 """
 
+# Import the core Agent and Bedrock model adapter from Strands
 from strands import Agent
 from strands.models.bedrock import BedrockModel
+# Import ready-made calculator tool from the strands_tools ecosystem
 from strands_tools import calculator
 
 from config import MODEL_ID, agent_text
@@ -97,12 +101,17 @@ from config import MODEL_ID, agent_text
 
 def solve(question: str) -&gt; str:
     """Answer a math question using the pre-built calculator tool."""
+    # Step 1: Initialize the agent with the calculator tool and system prompt
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
-        tools=[calculator],  # pre-built tool from strands_tools community package
-        system_prompt="You are a helpful math assistant.",
+        tools=[calculator],  # Pre-built tool that evaluates arithmetic expressions safely
+        system_prompt="You are a helpful math assistant.",  # Shapes persona and prevents off-topic digression
         callback_handler=None,
     )
+
+    # Step 2: Invoke the agent with the math question.
+    # The LLM autonomously issues a tool call to `calculator`, receives the exact
+    # numerical result, and crafts the final natural-language explanation.
     return agent_text(agent(question))</code></pre>
 
             </div>

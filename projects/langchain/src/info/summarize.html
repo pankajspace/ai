@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Website Summarizer · LangChain Lab</title>
     <meta name="description" content="How the Website Summarizer works." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -104,7 +106,7 @@
                 <span class="file-label">scraper.py — fetch_website_contents</span>
                 <pre><code class="language-python">from langchain_community.document_loaders import WebBaseLoader
 
-# Many servers block requests that don't look like a real browser.
+# Many servers block requests that don'''t look like a real browser.
 # Sending a realistic User-Agent avoids most simple bot-detection checks.
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -117,21 +119,24 @@ HEADERS = {
 
 def fetch_website_contents(url: str) -&gt; str:
     """Download a web page and return its title and cleaned text using LangChain."""
+    # Step 1: Ensure URL contains http/https scheme
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
     try:
-        # WebBaseLoader uses requests and BeautifulSoup under the hood.
+        # Step 2: Initialize WebBaseLoader (backed by requests and BeautifulSoup)
         loader = WebBaseLoader(url)
-        # Pass headers and timeout via requests_kwargs
+        # Step 3: Pass browser spoofing headers and 15-second network timeout
         loader.requests_kwargs = {"headers": HEADERS, "timeout": 15}
         docs = loader.load()
         if not docs:
             return "Could not fetch the website."
+        # Step 4: Extract page metadata title and cleaned page text
         title = docs[0].metadata.get("title", "No title found")
-        # WebBaseLoader parses text with soup.get_text() by default.
+        # WebBaseLoader parses text with soup.get_text() by default
         text = docs[0].page_content.strip()
         return f"Title: {title}\n\nPage contents:\n{text}"
     except Exception as e:
+        # Return user-friendly error message on network failure
         return f"Could not fetch the website. Error: {e}"</code></pre>
 
                 <h2>Summarizer</h2>
@@ -142,8 +147,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from config import get_chat_model
 from scraper import fetch_website_contents
 
-# A reusable prompt template with a {website} blank the chain fills in.
-# Low temperature = factual, consistent output. Markdown = renders nicely in UI.
+# Reusable prompt template with a {website} placeholder filled by LCEL invocation.
+# Low temperature (0.3) ensures concise, factual markdown summaries.
 PROMPT = ChatPromptTemplate.from_template(
     "You analyze the contents of a website and give a short, friendly "
     "summary. Ignore navigation menus. Respond in markdown.\n\n"
@@ -153,10 +158,11 @@ PROMPT = ChatPromptTemplate.from_template(
 
 def summarize(url: str) -&gt; str:
     """Fetch a web page and return a short markdown summary of it."""
-    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    # Step 1: Download and clean webpage content
     website = fetch_website_contents(url)
-    # Step 2 — run the chain; the dict fills the {website} blank by name.
+    # Step 2: Assemble LCEL pipeline: Prompt | ChatModel | StrOutputParser
     chain = PROMPT | get_chat_model(temperature=0.3) | StrOutputParser()
+    # Step 3: Invoke chain with webpage text and return generated markdown
     return chain.invoke({"website": website})</code></pre>
 
                 <h2>API route</h2>
@@ -164,16 +170,20 @@ def summarize(url: str) -&gt; str:
                 <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
 def summarizer():
     """Scrape a URL and return a LangChain-generated markdown summary."""
+    # Step 1: Parse request JSON payload
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
-    # Validate at the boundary — return 400 immediately rather than letting
-    # the scraper make a request with an empty URL.
+
+    # Step 2: Validate URL at API boundary before attempting scraping
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
+
+    # Step 3: Scrape website and generate summary via LangChain chain
     try:
         text = summarize(url)
         return jsonify({"result": text})
     except Exception as e:
+        # Return HTTP 500 on unexpected errors
         return jsonify({"error": str(e)}), 500</code></pre>
             </div>
         </section>

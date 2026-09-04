@@ -7,6 +7,8 @@
     <title>How it works — Reranking · RAG Lab</title>
     <meta name="description"
         content="How the Reranking demo works: bi-encoder retrieval, cross-encoder reranking, and the code behind it." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -109,8 +111,7 @@ from langchain_chroma import Chroma
 
 from config import get_embedder
 
-# Lazy-loaded cross-encoder — only downloaded when /rerank is first called,
-# not at import time (which would block Flask startup).
+# Lazy-loaded cross-encoder — initialized on first use to prevent blocking Flask startup
 _reranker = None
 
 
@@ -128,18 +129,23 @@ def retrieve_with_rerank(
     initial_k: int = 25,
 ) -&gt; list:
     """Retrieve candidates with bi-encoder, rerank with cross-encoder."""
-    # Stage 1: fast bi-encoder retrieval (approximate)
+    # Stage 1: Fast bi-encoder vector search retrieving a broad candidate pool (top 25)
     candidates = db.similarity_search(question, k=initial_k)
     if not candidates:
         return []
+
+    # Stage 2: Initialize cross-encoder and build (query, passage) pairs
     reranker = _get_reranker()
     pairs = [(question, c.page_content) for c in candidates]
-    # Stage 2: accurate cross-encoder scoring of each (question, chunk) pair
+
+    # Stage 3: Cross-encoder jointly attends over query and chunk tokens to produce accurate relevance scores
     scores = reranker.predict(pairs)
-    # Sort by score only. Sorting whole (score, Document) tuples breaks when
-    # two scores tie, because Python then compares the Document objects, which
-    # don't support "&lt;" ("'&lt;' not supported between instances of 'Document'").
+
+    # Stage 4: Sort candidate documents by cross-encoder score in descending order
+    # (Sort by score only to prevent comparison errors on tie scores between Document instances)
     ranked = sorted(zip(scores, candidates), key=lambda pair: pair[0], reverse=True)
+
+    # Stage 5: Return top-k highest scoring chunks
     return [c for _, c in ranked[:top_k]]</code></pre>
 
                 <h2>API route</h2>
@@ -152,21 +158,27 @@ def rerank_route():
     Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse request JSON payload
     data = request.get_json(force=True)
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+
+    # Step 2: Validate knowledge base and question inputs
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
     if not question:
         return jsonify({"error": "A question is required."}), 400
+
+    # Step 3: Run two-stage retrieval (bi-encoder retrieval followed by cross-encoder reranking)
     try:
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
         db, _ = build_index(docs, persist_directory=None)
-        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # Select top 3 after cross-encoder reranking
         results = [doc.page_content for doc in reranked]
         return jsonify({"result": {"results": results}})
     except Exception as e:
+        # Return HTTP 500 on unexpected errors
         return jsonify({"error": str(e)}), 500</code></pre>
 
             </div>

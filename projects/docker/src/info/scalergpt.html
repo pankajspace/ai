@@ -7,6 +7,8 @@
     <title>How it works — ScalerGPT · Docker Demo Lab</title>
     <meta name="description"
         content="How the ScalerGPT demo works." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -98,18 +100,19 @@ flowchart TD
                 <span class="file-label">Retrieves context from ChromaDB and calls OpenAI for RAG.</span>
                 <pre><code class="language-python">@app.post("/ask")
 def ask(q: Question):
+    # Step 0: Verify documents have been embedded and stored in the Chroma collection
     if collection.count() == 0:
         raise HTTPException(
             status_code=400,
             detail="No documents indexed yet. Run: docker compose exec scalergpt python ingest.py",
         )
 
-    # 1. RETRIEVE - find the most relevant chunks from the vector DB
+    # 1. RETRIEVE - query vector database for top 3 semantically relevant chunks
     hits = collection.query(query_texts=[q.query], n_results=3)
     documents = hits.get("documents") or [[]]
     context = "\n\n---\n\n".join(documents[0])
 
-    # 2. AUGMENT - stuff that context into the prompt
+    # 2. AUGMENT - inject retrieved context into system prompt to ground the model
     system_prompt = (
         "You are ScalerGPT, a helpful teaching assistant. "
         "Answer the user's question using ONLY the context below. "
@@ -117,7 +120,7 @@ def ask(q: Question):
         f"CONTEXT:\n{context}"
     )
 
-    # 3. GENERATE - let the LLM write the final answer
+    # 3. GENERATE - invoke GPT-4o mini to formulate the final grounded answer
     resp = llm.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -126,6 +129,7 @@ def ask(q: Question):
         ],
     )
 
+    # Step 4: Return question, answer, and count of supporting source chunks used
     return {
         "question": q.query,
         "answer": resp.choices[0].message.content,
@@ -137,8 +141,13 @@ def ask(q: Question):
                 <pre><code class="language-python">@bp.route("/scalergpt/ask", methods=["POST"])
 def scalergpt_ask():
     """Proxy RAG question to the ScalerGPT FastAPI service."""
+    # Step 1: Parse request JSON containing user query
     body = request.get_json(force=True)
+
+    # Step 2: Proxy HTTP request to the ScalerGPT container over internal Docker network
     data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+
+    # Step 3: Return answer and source citations to browser
     return jsonify(data), status</code></pre>
 
             </div>

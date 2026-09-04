@@ -63,9 +63,18 @@ function setupCard(config) {
 
     const currentValue = () => input.value.trim();
 
+    btn.disabled = !currentValue();
+
     input.addEventListener("input", () => {
         btn.disabled = !currentValue();
         if (validation) validation.textContent = "";
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && currentValue()) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 
     btn.addEventListener("click", () => {
@@ -146,7 +155,10 @@ function setupChat() {
     });
 
     input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && input.value.trim()) send();
+        if (e.key === "Enter" && input.value.trim()) {
+            e.preventDefault();
+            send();
+        }
     });
 
     btn.addEventListener("click", send);

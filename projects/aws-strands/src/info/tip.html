@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Tip Calculator · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Tip Calculator." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -91,12 +93,15 @@ The agent understands INTENT, not keywords: every phrasing of a tip question
 routes to the same ``calculate_tip`` tool with no regex or intent classifier.
 """
 
+# Import core Agent class and @tool decorator from Strands
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
 from config import MODEL_ID, agent_text
 
 
+# @tool extracts parameter types (float, int) and defaults (num_people=1)
+# to inform Bedrock how to parse unstructured text into structured arguments.
 @tool
 def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict:
     """Calculate tip and split the bill among people.
@@ -106,9 +111,14 @@ def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1
         tip_percentage: Tip percentage (e.g., 15, 18, 20)
         num_people: Number of people splitting the bill (default: 1)
     """
+    # Step 1: Calculate tip amount and total payable
     tip = bill_amount * (tip_percentage / 100)
     total = bill_amount + tip
+
+    # Step 2: Split the total bill among the party members
     per_person = total / num_people
+
+    # Step 3: Return structured numerical breakdown to the agent
     return {
         "bill": bill_amount,
         "tip": round(tip, 2),
@@ -119,11 +129,15 @@ def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1
 
 def calculate(question: str) -&gt; str:
     """Answer a natural-language tip question using the calculate_tip tool."""
+    # Step 1: Create the agent and provide the calculate_tip tool
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[calculate_tip],
         callback_handler=None,
     )
+
+    # Step 2: The model maps user intent into bill_amount, tip_percentage, and party size,
+    # invokes calculate_tip(), and explains the breakdown back to the user.
     return agent_text(agent(question))
 </code></pre>
 

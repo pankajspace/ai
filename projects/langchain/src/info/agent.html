@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Shop Agent · LangChain Lab</title>
     <meta name="description" content="How the Shop Agent works." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
@@ -103,14 +105,13 @@ import random
 
 from config import CHAT_MODEL, get_openai_client
 
-# Our tiny "database" — dicts standing in for a real product catalog.
+# In-memory product catalogs representing shop inventory and pricing database
 PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
-
 STOCK = {"shoes": 12, "hat": 5, "bag": 0, "shorts": 8, "pants": 3}
-
 DISCOUNT_PERCENT = 10
 
 
+# Tool Function 1: Query price catalog
 def get_price(item: str) -&gt; str:
     """Look up the price of a shop item.
 
@@ -120,9 +121,11 @@ def get_price(item: str) -&gt; str:
     Returns:
         A rupee price string, or "₹unknown" if the item is not stocked.
     """
+    # Look up item in price dictionary; return formatted rupee string or fallback
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 
 
+# Tool Function 2: Query stock level
 def check_stock(item: str) -&gt; str:
     """Check the stock availability of a shop item.
 
@@ -133,14 +136,18 @@ def check_stock(item: str) -&gt; str:
         A string describing the stock level, or "unknown item" if not found.
     """
     item_lower = item.lower()
+    # Step 1: Check if product exists in inventory
     if item_lower not in STOCK:
         return f"{item} is not a known item in our shop."
+    # Step 2: Check current quantity count
     qty = STOCK[item_lower]
     if qty == 0:
         return f"{item} is currently out of stock."
+    # Step 3: Return stock availability message
     return f"{item} has {qty} units in stock."
 
 
+# Tool Function 3: Apply discount calculation
 def apply_discount(item: str) -&gt; str:
     """Apply a 10% discount to a shop item and return the discounted price.
 
@@ -151,21 +158,24 @@ def apply_discount(item: str) -&gt; str:
         A string with the original and discounted price, or an error message.
     """
     item_lower = item.lower()
+    # Step 1: Verify product is sold in store
     if item_lower not in PRICES:
         return f"{item} is not a known item in our shop."
+    # Step 2: Calculate discounted rate using integer arithmetic
     original = PRICES[item_lower]
     discounted = original - (original * DISCOUNT_PERCENT // 100)
+    # Step 3: Return original and discounted breakdown
     return f"{item}: ₹{original} → ₹{discounted} ({DISCOUNT_PERCENT}% off)"
 
 
-# A registry mapping tool names to their Python functions.
+# Registry mapping tool schema names directly to callable Python functions
 TOOL_FUNCTIONS = {
     "get_price": get_price,
     "check_stock": check_stock,
     "apply_discount": apply_discount,
 }
 
-# Describe the tools so the model knows they exist and how to call them.
+# OpenAI Function-Calling JSON Schema: tells model which tools exist and argument types
 TOOLS = [
     {
         "type": "function",
@@ -229,39 +239,40 @@ def ask(user_message: str) -&gt; str:
     client = get_openai_client()
     messages = [{"role": "user", "content": user_message}]
 
-    # 1. First call — the model sees the tools menu and may ask for a tool.
+    # Step 1: Initial call — model inspects available tools and decides whether to invoke one
     response = client.chat.completions.create(
         model=CHAT_MODEL, messages=messages, tools=TOOLS
     )
     msg = response.choices[0].message
 
-    # 2. Did it request one or more tool calls?
+    # Step 2: Check if model issued tool call requests
     if msg.tool_calls:
-
-        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
+        # Record assistant tool request in conversation history (required by OpenAI protocol)
         messages.append(msg)
 
         for call in msg.tool_calls:
             fn_name = call.function.name
-
-            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            # Parse argument JSON string (e.g. '{"item": "shoes"}')
             args = json.loads(call.function.arguments)
-            # Look up the tool function from the registry and call it.
+            # Dispatch to matched Python tool function
             fn = TOOL_FUNCTIONS.get(fn_name)
             result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
+            # Append observation under role "tool" with matching tool_call_id
             messages.append(
                 {
-                    "role": "tool",  # the third role, alongside user/assistant
+                    "role": "tool",
                     "tool_call_id": call.id,
                     "content": result,
                 }
             )
-        # 3. Send tool results back so the model can answer in plain language.
+
+        # Step 3: Send tool results back so model formulates final conversational answer
         response = client.chat.completions.create(
             model=CHAT_MODEL, messages=messages
         )
         msg = response.choices[0].message
 
+    # Return synthesized assistant answer
     return msg.content</code></pre>
 
                 <h2>API route</h2>
@@ -269,14 +280,20 @@ def ask(user_message: str) -&gt; str:
                 <pre><code class="language-python">@bp.route("/agent", methods=["POST"])
 def shop_agent():
     """Answer a shopping question, letting the agent call its price tool."""
+    # Step 1: Parse JSON request body from client
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
+
+    # Step 2: Validate that a non-empty message was supplied
     if not message:
         return jsonify({"error": "A message is required."}), 400
+
+    # Step 3: Execute the agent tool-calling loop and return the response
     try:
         text = ask(message)
         return jsonify({"result": text})
     except Exception as e:
+        # Gracefully return HTTP 500 on error
         return jsonify({"error": str(e)}), 500</code></pre>
             </div>
         </section>

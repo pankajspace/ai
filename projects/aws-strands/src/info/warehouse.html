@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Warehouse Check · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Warehouse Check." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -102,12 +104,16 @@ in PARALLEL, so the whole thing takes about 2 seconds instead.
 
 import asyncio
 
+# Import asynchronous Agent runner and @tool decorator
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
 from config import MODEL_ID, agent_text
 
 
+# An `async def` tool allows non-blocking concurrency: when the LLM requests
+# inventory checks across multiple warehouses simultaneously, Strands executes
+# all coroutines concurrently using asyncio.gather under the hood.
 @tool
 async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
     """Check inventory at a specific warehouse.
@@ -116,14 +122,18 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
         product_id: Product ID to check
         warehouse: Warehouse identifier (e.g., "east", "west", "central")
     """
-    # Simulate an API call delay so parallelism is observable.
+    # Step 1: Simulate network latency (2 seconds) to demonstrate asynchronous speedup
     await asyncio.sleep(2)
+
+    # Step 2: Lookup the regional inventory dictionary
     data = {
         "east":    {"PROD-123": 45, "PROD-456": 12},
         "west":    {"PROD-123": 30, "PROD-456": 0},
         "central": {"PROD-123": 60, "PROD-456": 25},
     }
     quantity = data.get(warehouse, {}).get(product_id, 0)
+
+    # Step 3: Return warehouse stock count dictionary
     return {"warehouse": warehouse, "product_id": product_id, "quantity": quantity}
 
 
@@ -131,13 +141,16 @@ def lookup(question: str) -&gt; str:
     """Answer a multi-warehouse question, running the lookups in parallel."""
 
     async def run():
+        # Step 1: Initialize the agent with the asynchronous tool
         agent = Agent(
             model=BedrockModel(model_id=MODEL_ID),
             tools=[check_warehouse_inventory],
             callback_handler=None,
         )
+        # Step 2: invoke_async dispatches multiple tool calls in parallel rather than sequentially
         return await agent.invoke_async(question)
 
+    # Step 3: Run the async event loop to completion and extract text reply
     return agent_text(asyncio.run(run()))
 </code></pre>
 

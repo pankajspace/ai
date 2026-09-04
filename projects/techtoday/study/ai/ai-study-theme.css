@@ -39,6 +39,11 @@ body.scaler-guide .react-msg.answer {
     border-color: #6b3a2e;
 }
 
+/* .wow keeps its light peach gradient by default, which makes the dark-mode ink invisible */
+body.scaler-guide .wow {
+    background: linear-gradient(135deg, #2b1e18, #34241c);
+}
+
 body.scaler-guide .analogy.teal,
 body.scaler-guide .react-msg.obs,
 body.scaler-guide .recap .r {
@@ -99,6 +104,38 @@ body.scaler-guide .slider::-webkit-slider-thumb {
 body.scaler-guide .slider::-moz-range-thumb {
     background: var(--ink);
     border-color: var(--paper);
+}
+
+/* these keep a light gradient/solid background by default, making --ink text invisible */
+body.scaler-guide .piece.now,
+body.scaler-guide .strat-tab.active {
+    background: linear-gradient(180deg, #2b2118, #241b14);
+}
+
+body.scaler-guide .cmp-card.left {
+    background: linear-gradient(180deg, #332a1a, #20252a);
+}
+
+body.scaler-guide .cmp-card.right {
+    background: linear-gradient(180deg, #1c2636, #20252a);
+}
+
+body.scaler-guide .cmp-card.teal-l {
+    background: linear-gradient(180deg, #17302c, #20252a);
+}
+
+body.scaler-guide .cmp-card.purple-r {
+    background: linear-gradient(180deg, #2a2032, #20252a);
+}
+
+/* decode step chips use --ink as bg in light theme; force a dark bg for dark theme */
+body.scaler-guide .decode .dn {
+    background: #37414c;
+    color: var(--ink);
+}
+
+body.scaler-guide .rerank .doc.gold {
+    background: linear-gradient(135deg, #342b1a, #3a2f1c);
 }
 
 body.docker-guide {
@@ -178,6 +215,16 @@ body.docker-guide .fc .a {
 
 body.docker-guide .howto {
     background: linear-gradient(135deg, #111c26, #1b2b39);
+}
+
+/* th reuses var(--ink) as its background, which flips light in this theme */
+body.docker-guide th {
+    background: #0b1117;
+}
+
+/* nav hover keeps a hardcoded light background, making the (now light) --ink text invisible */
+body.docker-guide #topnav nav a:hover {
+    background: rgba(255, 255, 255, .08);
 }
 
 .back-to-top {
@@ -290,7 +337,7 @@ body.docker-guide .howto {
         transition: transform 0.2s ease;
     }
 
-    #topnav .topic-menu-panel[open] > .topic-menu-summary::after {
+    #topnav .topic-menu-panel[open]>.topic-menu-summary::after {
         transform: rotate(180deg);
     }
 
@@ -380,18 +427,26 @@ body.docker-guide .route-inner {
     margin: 0 auto !important;
 }
 
-body.docker-guide .content, body.scaler-guide .content {
+body.docker-guide .content,
+body.scaler-guide .content {
     width: 100% !important;
     max-width: 100% !important;
 }
 
 /* Prevent horizontal scroll issues across all AI guides */
-html, body {
+html,
+body {
     overflow-x: clip;
 }
 
-main, .wrap, .wrap > *, .content > *, .code, pre, .runbox, svg {
+main,
+.wrap,
+.wrap>*,
+.content>*,
+.code,
+pre,
+.runbox,
+svg {
     min-width: 0;
     max-width: 100vw;
 }
-

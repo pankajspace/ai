@@ -7,6 +7,8 @@
     <title>How it works — PDF Chat · RAG Lab</title>
     <meta name="description"
         content="How the PDF Chat demo works: RAG pipeline, Chroma, GPT-4o mini, and the code behind it." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -122,6 +124,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from config import get_chat_model, get_embedder
 
+# Strict RAG system prompt that forces the LLM to ground answers exclusively in the PDF text
 PDF_PROMPT = ChatPromptTemplate.from_template("""
 You are a helpful PDF assistant. Answer the question using ONLY the context below.
 If the context doesn't contain the answer, say "I couldn't find that in the document."
@@ -142,10 +145,15 @@ def build_pdf_text_index(pdf_text: str) -&gt; Chroma:
     Returns:
         A ``Chroma`` vector store containing the embedded text chunks.
     """
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)  # bigger chunks than the chunking demo's 100/10 since PDF pages carry more context per paragraph
+    # Step 1: Split PDF text with larger chunk size (800 chars / 100 overlap) to preserve multi-sentence paragraphs
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     chunks = splitter.create_documents([pdf_text])
+
+    # Step 2: Initialize embedding model
     embedder = get_embedder()
-    db = Chroma.from_documents(chunks, embedder)  # in-memory only (no persist_directory) — index is rebuilt each time PDF text is submitted
+
+    # Step 3: Create temporary in-memory Chroma vector store (persist_directory=None)
+    db = Chroma.from_documents(chunks, embedder)  # index is rebuilt each time new PDF text is submitted
     return db
 
 
@@ -159,9 +167,16 @@ def ask_pdf(db: Chroma, question: str) -&gt; str:
     Returns:
         The model's answer.
     """
+    # Step 1: Initialize LLM chat model
     model = get_chat_model()
-    chunks = db.similarity_search(question, k=4)  # one more chunk than the rag.py demo's k=3, since PDF answers often span more context
+
+    # Step 2: Retrieve top 4 most relevant text chunks from the vector database
+    chunks = db.similarity_search(question, k=4)
+
+    # Step 3: Assemble retrieved chunks into unified context block
     context = "\n\n".join(c.page_content for c in chunks)
+
+    # Step 4: Run LCEL prompt-to-model chain and extract textual response
     chain = PDF_PROMPT | model
     return chain.invoke({"context": context, "question": question}).content</code></pre>
 
@@ -176,11 +191,16 @@ def pdf_index():
     Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
     Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse request JSON
     data = request.get_json(force=True)
     pdf_text = (data.get("pdf_text") or "").strip()
+
+    # Step 2: Validate that non-empty text was provided
     validation = validate_textarea(pdf_text, "PDF text")
     if validation:
         return validation
+
+    # Step 3: Build Chroma vector index and cache in session state dictionary
     try:
         _pdf_state["db"] = build_pdf_text_index(pdf_text)
         return jsonify({"result": "PDF text indexed. Ask me anything about it."})
@@ -196,12 +216,17 @@ def pdf_chat():
     Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # Step 1: Parse request JSON and extract user query
     data = request.get_json(force=True)
     question = (data.get("question") or "").strip()
+
+    # Step 2: Validate question and verify that a PDF index has been uploaded
     if not question:
         return jsonify({"error": "A question is required."}), 400
     if _pdf_state["db"] is None:
         return jsonify({"error": "Please add PDF text first."}), 400
+
+    # Step 3: Perform vector search, prompt LLM, and return grounded answer
     try:
         answer = ask_pdf(_pdf_state["db"], question)
         return jsonify({"result": answer})

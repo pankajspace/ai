@@ -63,9 +63,18 @@ function setupCard(config) {
 
     const currentValue = () => input.value.trim();
 
+    btn.disabled = !currentValue();
+
     input.addEventListener("input", () => {
         btn.disabled = !currentValue();
         if (validation) validation.textContent = "";
+    });
+
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && currentValue()) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 
     btn.addEventListener("click", () => {

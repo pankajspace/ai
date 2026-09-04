@@ -7,6 +7,8 @@
     <title>How it works — DeskBuddy · Docker Demo Lab</title>
     <meta name="description"
         content="How the DeskBuddy demo works." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -109,13 +111,16 @@ flowchart TD
                 <pre><code class="language-python">@app.post("/chat")
 def chat(req: Chat):
     # --- 1. Load this session's memory from Redis ---------------------------
+    # Construct session key and deserialize conversation history list
     key = f"history:{req.session_id}"
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]
+    # Append the newest incoming user turn
     history.append({"role": "user", "content": req.message})
 
     # --- 2. The agent loop: think -> act -> observe -> repeat ---------------
     msg = None
-    for _ in range(5):  # safety fuse: max 5 laps
+    for _ in range(5):  # safety fuse: max 5 iterations to avoid runaway loops
+        # Step 2a: Send current history and tool schemas to GPT-4o mini
         resp = llm.chat.completions.create(
             model="gpt-4o-mini",
             messages=history,
@@ -123,13 +128,17 @@ def chat(req: Chat):
         )
         msg = resp.choices[0].message
 
+        # Step 2b: If model made no tool calls, it has reached its final answer
         if not msg.tool_calls:
             break  # the LLM answered in words - we're done
 
-        # The LLM asked to run one or more tools
+        # Step 2c: Model requested one or more tool calls
+        # Record assistant tool-call request message in conversation history
         history.append(msg.model_dump(exclude_none=True))
         for tc in msg.tool_calls:
+            # Forward call across Docker network to the tools microservice
             result = call_tool(tc.function.name, json.loads(tc.function.arguments))
+            # Append tool observation with matching tool_call_id
             history.append(
                 {
                     "role": "tool",
@@ -139,7 +148,9 @@ def chat(req: Chat):
             )
 
     # --- 3. Save memory back to Redis and return the answer -----------------
+    # Append final assistant reply to conversation history
     history.append({"role": "assistant", "content": msg.content})
+    # Overwrite Redis session list with full updated history
     r.delete(key)
     for m in history:
         r.rpush(key, json.dumps(m))
@@ -151,8 +162,13 @@ def chat(req: Chat):
                 <pre><code class="language-python">@bp.route("/deskbuddy/chat", methods=["POST"])
 def deskbuddy_chat():
     """Proxy chat message to the DeskBuddy agent service."""
+    # Step 1: Parse request JSON payload from the browser
     body = request.get_json(force=True)
+
+    # Step 2: Proxy HTTP request to the deskbuddy-agent container over internal Docker network
     data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+
+    # Step 3: Return agent response payload and status code directly to client
     return jsonify(data), status</code></pre>
 
                 <h2>Tools service</h2>
@@ -163,16 +179,18 @@ def calculator(c: Calc):
     try:
         # Demo only — never use eval on untrusted input in production!
         # The empty __builtins__ blocks access to dangerous functions,
-        # but a real system would use a proper math parser.
+        # but a real system would use a proper math parser (e.g. ast.literal_eval).
         result = eval(c.expression, {"__builtins__": {}})
         return {"result": result}
     except Exception as e:
+        # Return error description if expression fails to evaluate
         return {"error": str(e)}
 
 
 @app.get("/datetime")
 def now():
     """Return the current date and time in ISO format."""
+    # Deterministic microservice endpoint returning current server timestamp
     return {"now": datetime.datetime.now().isoformat()}</code></pre>
 
             </div>

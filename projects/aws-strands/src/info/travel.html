@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Travel Assistant · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Travel Assistant." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -98,6 +100,7 @@ and compares it to the budget. Nobody wrote that sequence — the agentic loop
 works it out.
 """
 
+# Import Strands Agent class, @tool decorator, Bedrock model, and calculator
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
@@ -105,6 +108,7 @@ from strands_tools import calculator
 from config import MODEL_ID, agent_text
 
 
+# Tool 1: Lookup city weather metrics and forecast description
 @tool
 def get_weather_forecast(city: str, days: int) -&gt; dict:
     """Get the weather forecast for a city over a number of days.
@@ -113,7 +117,7 @@ def get_weather_forecast(city: str, days: int) -&gt; dict:
         city: Destination city name (e.g., "Goa", "Bangalore")
         days: Number of days in the trip
     """
-    # Mock data — swap in a real weather API to take this further.
+    # Mock data — in production query a live weather API
     forecasts = {
         "goa":       {"high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"},
         "bangalore": {"high_c": 27, "low_c": 18, "conditions": "mild, light evening rain"},
@@ -124,6 +128,7 @@ def get_weather_forecast(city: str, days: int) -&gt; dict:
     return {"city": city, "days": days, **data}
 
 
+# Tool 2: Rule-based recommendation engine for clothing and trip gear
 @tool
 def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list:
     """Suggest what to pack based on temperatures, trip length and conditions.
@@ -135,14 +140,15 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&
         conditions: Short description of expected weather
     """
     items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
-    if high_c &gt;= 30:  # hot-weather threshold
+    # Hot-weather threshold adjustments
+    if high_c &gt;= 30:
         items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
-    if low_c &lt;= 15:  # cold-night threshold
+    # Cold / mild night adjustments
+    if low_c &lt;= 15:
         items += ["warm jacket", "thermal layer"]
-    elif low_c &lt;= 22:  # mild-night threshold — lighter layer than the cold case above
+    elif low_c &lt;= 22:
         items += ["light jacket for evenings"]
-    # Keyword match on the forecast text rather than a structured field — fragile
-    # if get_weather_forecast's wording changes, but keeps the tool signature simple.
+    # Precipitation condition matching
     if "rain" in conditions.lower() or "shower" in conditions.lower():
         items += ["compact umbrella", "quick-dry footwear"]
     if "snow" in conditions.lower():
@@ -150,6 +156,7 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&
     return items
 
 
+# Tool 3: Budget calculator estimating total lodging, food, and transit costs
 @tool
 def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
     """Estimate the cost of a trip in Indian rupees.
@@ -177,6 +184,7 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
 
 def plan(question: str) -&gt; str:
     """Plan a trip end-to-end, letting the agent chain its tools as needed."""
+    # Step 1: Configure agent with domain tools, calculator, and execution instructions
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
@@ -188,6 +196,9 @@ def plan(question: str) -&gt; str:
         ),
         callback_handler=None,
     )
+
+    # Step 2: Multi-step ReAct loop: model chains weather -> packing -> cost calculation
+    # and synthesizes a complete travel recommendation.
     return agent_text(agent(question))
 </code></pre>
 

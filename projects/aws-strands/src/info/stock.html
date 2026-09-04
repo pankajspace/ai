@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Inventory Manager · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Inventory Manager." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -91,6 +93,7 @@ instance keeps the state alive across requests, so an update made in one call
 is visible to the next — check, update, then re-check and watch it persist.
 """
 
+# Import Agent runner and @tool decorator from Strands
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -98,9 +101,11 @@ from config import MODEL_ID, agent_text
 
 
 class InventoryTools:
+    """Class encapsulating shared, mutable inventory state across tool methods."""
+
     def __init__(self):
         # Shared resource: all tools access the same data store.
-        # In production: self.db = connect_to_database()   &lt;-- opened ONCE
+        # In production: self.db = connect_to_database()   <-- opened ONCE
         self.products = {
             "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
             "PROD-456": {"name": "USB-C Hub", "quantity": 0, "price": 49.99},
@@ -114,9 +119,11 @@ class InventoryTools:
         Args:
             product_id: The product ID to check
         """
+        # Step 1: Look up product entry in shared state
         product = self.products.get(product_id)
         if not product:
             return f"Product {product_id} not found"
+        # Step 2: Return current stock quantity and unit price
         return f"{product['name']}: {product['quantity']} units at ${product['price']}"
 
     @tool
@@ -127,23 +134,28 @@ class InventoryTools:
             product_id: The product ID to update
             quantity: New quantity to set
         """
+        # Step 1: Update in-memory quantity if valid product ID
         if product_id in self.products:
             self.products[product_id]["quantity"] = quantity
             return f"Updated {product_id} to {quantity} units"
         return f"Product {product_id} not found"
 
 
-# One shared instance — state persists across web requests.
+# One shared singleton instance — state persists across successive HTTP requests.
 _inventory = InventoryTools()
 
 
 def manage(question: str) -&gt; str:
     """Answer a stock request with the class-based, stateful inventory tools."""
+    # Step 1: Provide bound methods (_inventory.check_stock, _inventory.update_stock)
+    # directly to the agent. Strands inspects the bound methods and their parent instance.
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[_inventory.check_stock, _inventory.update_stock],
         callback_handler=None,
     )
+
+    # Step 2: Execute ReAct loop; modifications made by update_stock remain in memory
     return agent_text(agent(question))
 </code></pre>
 

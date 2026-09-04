@@ -70,7 +70,7 @@ async function askScalerGPT() {
         resultEl.className = "result visible wrong-result";
         resultEl.textContent = `Error: ${e.message}`;
     } finally {
-        btn.disabled = false;
+        btn.disabled = !document.getElementById("sg-query").value.trim();
         btn.textContent = "Ask ScalerGPT 📚";
     }
 }
@@ -108,8 +108,42 @@ async function chatDeskBuddy() {
         resultEl.className = "result visible wrong-result";
         resultEl.textContent = prevContent + `Error: ${e.message}`;
     } finally {
-        btn.disabled = false;
+        btn.disabled = !document.getElementById("db-message").value.trim();
         btn.textContent = "Send to Agent 🤖";
+    }
+}
+
+// ── Input & Enter-key actions (ScalerGPT & DeskBuddy) ────────────────
+
+function setupInputActions() {
+    const sgInput = document.getElementById("sg-query");
+    const sgBtn = document.getElementById("sg-ask-btn");
+    if (sgInput && sgBtn) {
+        sgBtn.disabled = !sgInput.value.trim();
+        sgInput.addEventListener("input", () => {
+            sgBtn.disabled = !sgInput.value.trim();
+        });
+        sgInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && sgInput.value.trim()) {
+                e.preventDefault();
+                sgBtn.click();
+            }
+        });
+    }
+
+    const dbInput = document.getElementById("db-message");
+    const dbBtn = document.getElementById("db-chat-btn");
+    if (dbInput && dbBtn) {
+        dbBtn.disabled = !dbInput.value.trim();
+        dbInput.addEventListener("input", () => {
+            dbBtn.disabled = !dbInput.value.trim();
+        });
+        dbInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && dbInput.value.trim()) {
+                e.preventDefault();
+                dbBtn.click();
+            }
+        });
     }
 }
 
@@ -135,4 +169,5 @@ function setupToggles() {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupToggles();
+    setupInputActions();
 });

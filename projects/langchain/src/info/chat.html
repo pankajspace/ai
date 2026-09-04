@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — Memory Chat · LangChain Lab</title>
     <meta name="description" content="How the Memory Chat works." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -100,8 +102,10 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from config import get_chat_model
 
-# The prompt has three parts: a system persona, the history placeholder where
-# past turns slot in, and the newest human question.
+# Assemble ChatPromptTemplate:
+# 1. "system" message establishes assistant personality and consistency instructions
+# 2. MessagesPlaceholder("history") dynamically inserts previous conversational turns
+# 3. "human" message slot contains the current user message
 PROMPT = ChatPromptTemplate.from_messages(
     [
         (
@@ -124,6 +128,7 @@ def _build_chain():
     replies conversational; the parser is omitted because reply() reads
     ``.content`` from the returned message directly.
     """
+    # Pipe prompt template into ChatOpenAI model (temperature=0.7 for natural conversation)
     return PROMPT | get_chat_model(temperature=0.7)
 
 
@@ -142,8 +147,10 @@ def _to_messages(history: list[dict]) -&gt; list:
     """
     messages = []
     for turn in history:
+        # Map assistant roles to AIMessage objects
         if turn.get("role") == "assistant":
             messages.append(AIMessage(turn.get("content", "")))
+        # Map user/human roles to HumanMessage objects
         else:
             messages.append(HumanMessage(turn.get("content", "")))
     return messages
@@ -160,8 +167,13 @@ def reply(question: str, history: list[dict] | None = None) -&gt; str:
     Returns:
         The assistant's reply text.
     """
+    # Step 1: Convert raw JSON dictionaries into typed LangChain message objects
     messages = _to_messages(history or [])
+
+    # Step 2: Invoke the LCEL chain with historical messages and current question
     response = _build_chain().invoke({"history": messages, "question": question})
+
+    # Step 3: Extract and return response text
     return response.content</code></pre>
 
                 <h2>API route</h2>
@@ -169,19 +181,25 @@ def reply(question: str, history: list[dict] | None = None) -&gt; str:
                 <pre><code class="language-python">@bp.route("/chat", methods=["POST"])
 def chat():
     """Reply to a message using the conversation history for memory."""
+    # Step 1: Parse incoming JSON request body
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
-    # history is optional; default to an empty conversation for the first turn.
+    # history is optional; default to an empty conversation for the first turn
     history = data.get("history") or []
+
+    # Step 2: Validate prompt boundary
     if not message:
         return jsonify({"error": "A message is required."}), 400
+
+    # Step 3: Invoke LangChain conversational chain with history
     try:
         text = reply(message, history)
         response = jsonify({"result": text})
-        # Chat replies are turn-specific — never cache them.
+        # Chat replies are turn-specific — never cache them
         response.headers["Cache-Control"] = "no-store"
         return response
     except Exception as e:
+        # Catch errors and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
             </div>
         </section>
