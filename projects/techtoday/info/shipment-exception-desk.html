@@ -129,32 +129,34 @@
                 </div>
 
                 <h2>Code flow</h2>
+                <!-- beautify ignore:start -->
+                <!-- prettier-ignore -->
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />report_text + shipment_value + customer_tier] -->|POST /api/triage JSON|
-                        B[app.py<br />triage_report route]
-                        B -->|validated fields| C[pipeline.py<br />process_exception]
-                        C -->|report_text| D[chains.py<br />classify_chain]
-                        D -->|category| C
-                        C -->|shipment_value + category| E[tools.py<br />compensation calculators]
-                        E -->|amount + reason| C
-                        C -->|category + amount + tier| F[pipeline.py<br />evaluate_escalation]
-                        F -->|escalated decision + reason| C
-                        C -->|inputs for escalated case| G[chains.py<br />escalate_chain]
-                        C -->|inputs for resolved case| H[chains.py<br />draft_email_chain]
-                        G -->|manager briefing text| C
-                        H -->|customer email text| C
-                        C -->|result record| I[session.py<br />log_exception]
-                        I -->|stored entry| C
-                        C -->|final JSON result + steps| B
-                        B -->|HTTP 200 JSON| A
-                        A -->|GET /api/log| J[app.py<br />fetch_log]
-                        J -->|session records JSON| A
-                        A -->|GET /api/summary| K[app.py<br />fetch_summary]
-                        K -->|aggregated KPI JSON| A
+flowchart TD
+    A[Browser<br/>report + value + tier] -->|POST /api/triage| B[app.py<br/>triage_report]
+    B -->|validated fields| C[pipeline.py<br/>process_exception]
+    C -->|report_text| D[chains.py<br/>classify_chain]
+    D -->|category| C
+    C -->|value + category| E[tools.py<br/>compensation calc]
+    E -->|amount + reason| C
+    C -->|category + amount| F[pipeline.py<br/>evaluate_escalation]
+    F -->|escalated + reason| C
+    C -->|escalated case| G[chains.py<br/>escalate_chain]
+    C -->|resolved case| H[chains.py<br/>draft_email_chain]
+    G -->|manager briefing| C
+    H -->|customer email| C
+    C -->|result record| I[session.py<br/>log_exception]
+    I -->|stored entry| C
+    C -->|result + steps| B
+    B -->|HTTP 200 JSON| A
+    A -->|GET /api/log| J[app.py<br/>fetch_log]
+    J -->|session records| A
+    A -->|GET /api/summary| K[app.py<br/>fetch_summary]
+    K -->|aggregated KPIs| A
                     </div>
                 </div>
+                <!-- beautify ignore:end -->
 
                 <h2>Pipeline Orchestration</h2>
                 <span class="file-label">pipeline.py — classifies, compensates, escalates, drafts, and logs each
