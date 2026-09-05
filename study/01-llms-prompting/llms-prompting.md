@@ -1,6 +1,6 @@
 [<- README](../../README.md) | [Notes](llms-prompting.html)
 
-# AI Infused Learning - 1
+# LLMs and Prompting
 
 # Links
 1. [Class 1 Notes](https://22f1001418.github.io/AI-engg-scripts-SL/)

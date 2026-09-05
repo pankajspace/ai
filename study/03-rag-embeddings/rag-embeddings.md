@@ -1,6 +1,6 @@
 [<- README](../../README.md) | [Notes](rag-embeddings.html)
 
-# AI Infused Learning - 3
+# RAG — Retrieval-Augmented Generation and Embeddings
 
 # Contact
 - [Shivank](mailto:[shivank.agrawal_1@scaler.com])

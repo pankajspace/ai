@@ -1,6 +1,6 @@
 [<- README](../../README.md) | [Notes](langchain-agents.html)
 
-# AI Infused Learning - 2
+# LangChain Agents
 
 # Links
 1. [Class 2 Notes](https://scaler-content.github.io/class-2-AI-engg/)
