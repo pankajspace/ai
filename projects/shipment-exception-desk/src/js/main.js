@@ -60,6 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const refreshDataBtn = document.getElementById("refresh-data-btn");
     const clearLogBtn = document.getElementById("clear-log-btn");
     const triageTableBody = document.getElementById("triage-table-body");
+    const resetModalOverlay = document.getElementById("resetModalOverlay");
+    const btnCancelReset = document.getElementById("btnCancelReset");
+    const btnConfirmReset = document.getElementById("btnConfirmReset");
 
     // KPI Elements
     const kpiTotalExceptions = document.getElementById("kpi-total-exceptions");
@@ -328,8 +331,27 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshDataBtn.addEventListener("click", refreshData);
 
     // Clear Session Handler
-    clearLogBtn.addEventListener("click", async () => {
-        if (!confirm("Are you sure you want to clear the daily session ledger?")) return;
+    clearLogBtn.addEventListener("click", openResetModal);
+    btnCancelReset.addEventListener("click", closeResetModal);
+    btnConfirmReset.addEventListener("click", async () => {
+        await executeReset();
+        closeResetModal();
+    });
+    resetModalOverlay.addEventListener("click", (e) => {
+        if (e.target.id === "resetModalOverlay") {
+            closeResetModal();
+        }
+    });
+
+    function openResetModal() {
+        resetModalOverlay.classList.add("active");
+    }
+
+    function closeResetModal() {
+        resetModalOverlay.classList.remove("active");
+    }
+
+    async function executeReset() {
         try {
             const res = await fetch(`${API}/api/reset`, { method: "POST" });
             if (res.ok) {
@@ -338,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error(err);
         }
-    });
+    }
 
     // Initial load
     refreshData();
