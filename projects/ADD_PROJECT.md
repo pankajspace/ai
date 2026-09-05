@@ -9,8 +9,8 @@ project's `README.md`. Keep the current next-port allocation in this guide.
 
 The current next available values are:
 
-1. Local development port: `8086`.
-2. EC2 host port: `5006`.
+1. Local development port: `8087`.
+2. EC2 host port: `5007`.
 After adding a project, advance the local and EC2 values in this section so the
 next project does not reuse them.
 

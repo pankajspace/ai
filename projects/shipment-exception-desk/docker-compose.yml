@@ -1,0 +1,19 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    command: python src/python/app.py
+    ports:
+      - "8086:5000"
+    volumes:
+      - ./src:/app/src
+
+  triage-check:
+    build: .
+    env_file: .env
+    command: python src/python/triage_check.py
+
+  cli:
+    build: .
+    env_file: .env
+    command: python src/python/main.py --demo

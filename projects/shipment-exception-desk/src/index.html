@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Northwind Logistics — Shipment Exception Desk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚚</text></svg>" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
+
+    <main class="project-page">
+        <section class="project-shell">
+            <div class="container">
+                <header class="app-header">
+                    <div class="brand-wrapper">
+                        <div class="brand-icon">🚚</div>
+                        <div>
+                            <h1 class="brand-title">Shipment Exception Desk</h1>
+                            <p class="brand-tagline">Northwind Logistics triage pipeline with live audit trail and daily
+                                aggregation</p>
+                        </div>
+                    </div>
+                    <div class="header-status">
+                        <span class="status-badge"><span class="status-dot"></span>Pipeline Active</span>
+                    </div>
+                </header>
+
+                <!-- Main Workspace Grid -->
+                <section class="grid-layout">
+                    <!-- Left Column: Ingestion & Input -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h2>1. Ingest Exception Report</h2>
+                            <span class="badge badge-neutral">Intake Form</span>
+                        </div>
+
+                        <div class="preset-section">
+                            <label class="section-label">Quick Test Presets:</label>
+                            <div class="preset-buttons">
+                                <button type="button" class="btn btn-preset" data-preset="delay">Mild Delay
+                                    ($50)</button>
+                                <button type="button" class="btn btn-preset" data-preset="loss">High Loss
+                                    ($500)</button>
+                                <button type="button" class="btn btn-preset" data-preset="damage">Minor Damage
+                                    ($60)</button>
+                                <button type="button" class="btn btn-preset" data-preset="unknown">Garbled
+                                    ($10)</button>
+                                <button type="button" class="btn btn-preset" data-preset="premium">Premium Damage
+                                    ($120)</button>
+                            </div>
+                        </div>
+
+                        <form id="triage-form">
+                            <div class="form-group">
+                                <label for="report-text">Exception Report Text <span class="required">*</span></label>
+                                <textarea id="report-text" name="report_text" rows="5"
+                                    placeholder="Paste or type customer complaint / carrier exception description..."
+                                    required></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="shipment-value">Shipment Value (USD $) <span
+                                            class="required">*</span></label>
+                                    <div class="input-prefix-wrapper">
+                                        <span class="input-prefix">$</span>
+                                        <input type="number" id="shipment-value" name="shipment_value" value="75.00"
+                                            step="0.01" min="0" required />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Customer Account Tier <span class="required">*</span></label>
+                                    <div class="tier-toggle">
+                                        <label class="tier-option">
+                                            <input type="radio" name="customer_tier" value="standard" checked />
+                                            <span class="tier-label">Standard</span>
+                                        </label>
+                                        <label class="tier-option">
+                                            <input type="radio" name="customer_tier" value="premium" />
+                                            <span class="tier-label">Premium</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="submit-btn" class="btn btn-primary">
+                                <span class="btn-text">🚀 Triage & Process Exception</span>
+                                <span class="btn-spinner hidden"></span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Results & Execution Trail -->
+                    <div class="card result-card">
+                        <div class="card-header">
+                            <h2>2. Triage Decision & Audit Trail</h2>
+                            <span id="decision-pill" class="badge badge-neutral">Awaiting Input</span>
+                        </div>
+
+                        <!-- Dynamic Status Banner -->
+                        <div id="status-banner" class="status-banner banner-idle">
+                            <div class="banner-icon">ℹ️</div>
+                            <div class="banner-content">
+                                <h3 id="banner-title">Awaiting Exception Submission</h3>
+                                <p id="banner-desc">Submit a report on the left or select a preset to trigger the
+                                    LangChain
+                                    triage pipeline.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Metric Grid -->
+                        <div class="metrics-row">
+                            <div class="metric-box">
+                                <span class="metric-title">Category</span>
+                                <span id="category-output" class="metric-val">—</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-title">Approved Compensation</span>
+                                <span id="comp-output" class="metric-val">—</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-title">Action Route</span>
+                                <span id="route-output" class="metric-val">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Audit Trail Stepper -->
+                        <div class="steps-section">
+                            <label class="section-label">Pipeline Execution Trail:</label>
+                            <ol id="pipeline-steps" class="step-list">
+                                <li class="step-placeholder">Pipeline steps will appear here upon execution...</li>
+                            </ol>
+                        </div>
+
+                        <!-- Generated Message Output -->
+                        <div class="draft-section">
+                            <div class="draft-header">
+                                <label id="draft-label" class="section-label">Generated Communication Draft:</label>
+                                <button type="button" id="copy-draft-btn" class="btn btn-sm btn-outline">📋 Copy
+                                    Draft</button>
+                            </div>
+                            <pre id="draft-output" class="draft-box">Communication draft will be generated here...</pre>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Section: Daily Log & Aggregations -->
+                <section class="card table-card">
+                    <div class="card-header">
+                        <div class="tab-controls">
+                            <button class="tab-btn active" data-tab="log-tab">📋 Daily Triage Log</button>
+                            <button class="tab-btn" data-tab="summary-tab">📊 Daily Aggregation Summary</button>
+                        </div>
+                        <div class="tab-actions">
+                            <button id="refresh-data-btn" class="btn btn-sm btn-outline">🔄 Refresh</button>
+                            <button id="clear-log-btn" class="btn btn-sm btn-danger">🗑️ Clear Ledger</button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 1: Live Table -->
+                    <div id="log-tab" class="tab-content active">
+                        <div class="table-container">
+                            <table id="triage-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Category</th>
+                                        <th>Shipment Value</th>
+                                        <th>Compensation</th>
+                                        <th>Customer Tier</th>
+                                        <th>Status</th>
+                                        <th>Decision Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="triage-table-body">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">No exceptions processed yet in this session.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Daily Summary Aggregation -->
+                    <div id="summary-tab" class="tab-content">
+                        <div class="summary-kpi-grid">
+                            <div class="kpi-card">
+                                <span class="kpi-label">Total Exceptions</span>
+                                <span id="kpi-total-exceptions" class="kpi-value">0</span>
+                            </div>
+                            <div class="kpi-card">
+                                <span class="kpi-label">Total Compensation Paid</span>
+                                <span id="kpi-total-compensation" class="kpi-value">$0.00</span>
+                            </div>
+                            <div class="kpi-card">
+                                <span class="kpi-label">Escalation Rate</span>
+                                <span id="kpi-escalation-rate" class="kpi-value">0.0%</span>
+                                <span id="kpi-escalation-counts" class="kpi-subtext">0 escalated / 0 resolved</span>
+                            </div>
+                            <div class="kpi-card kpi-highlight">
+                                <span class="kpi-label">Costliest Category</span>
+                                <span id="kpi-costliest-category" class="kpi-value">None</span>
+                                <span id="kpi-costliest-amount" class="kpi-subtext">$0.00 total payout</span>
+                            </div>
+                        </div>
+
+                        <div class="category-breakdown-section">
+                            <h3>Category Payout Breakdown</h3>
+                            <div class="table-container">
+                                <table id="breakdown-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Total Claims</th>
+                                            <th>Total Payout</th>
+                                            <th>Escalated Claims</th>
+                                            <th>Payout Share (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="breakdown-table-body">
+                                        <tr>
+                                            <td colspan="5" class="empty-state">No data available yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

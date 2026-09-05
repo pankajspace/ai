@@ -1,0 +1,220 @@
+# CI/CD workflow TEMPLATE for a container project.
+#
+# This workflow is SELF-PROVISIONING and idempotent: on every push it creates
+# the ECR repository, the secrets env file, the per-project Docker Compose
+# file, and the Nginx location block if they don't already exist, then builds,
+# pushes, and restarts only this project. Adding a project needs NO manual
+# ECR/Nginx/Compose/env wiring on EC2 (ADD_PROJECT.md § 4–§ 7 are automated).
+#
+# To enable automatic deploys for your new project:
+#   1. Copy it to .github/workflows/deploy-<project-name>.yml
+#   2. Replace shipment-exception-desk with the project folder name and 5006 with the
+#      project's unique EC2 host port (500x range), e.g.:
+#        # Linux (GNU sed)
+#        sed -i -e 's/shipment-exception-desk/my-project/g' -e 's/5006/5005/g' \
+#          .github/workflows/deploy-my-project.yml
+#        # macOS (BSD sed)
+#        sed -i '' -e 's/shipment-exception-desk/my-project/g' -e 's/5006/5005/g' \
+#          .github/workflows/deploy-my-project.yml
+#   3. Commit — every later push under projects/<project-name>/ redeploys it.
+#
+# The Nginx include that makes per-project location files take effect is
+# AUTO-ENSURED by this workflow: if the app.techtoday.click SSL server block is
+# missing
+#   include /etc/nginx/conf.d/app-locations/*.conf;
+# the deploy step inserts it once (validated with `nginx -t`, rolled back on
+# failure). Fresh hosts already get it from projects/SETUP.md § 2.8, so there is
+# no manual per-host Nginx step.
+#
+# The only remaining manual step for a project that needs BRAND-NEW API keys is
+# adding those key/values to the shared techtoday/secrets secret once; the env
+# file is regenerated from it on every deploy.
+#
+# It reuses the same shared GitHub secrets (AWS_REGION, AWS_ACCOUNT_ID,
+# AWS_DEPLOY_ROLE_ARN, EC2_HOST, EC2_SSH_KEY) as the other projects — no new
+# secrets to configure. See projects/SETUP.md § 2.11 / § 2.12.
+name: Deploy shipment-exception-desk
+
+on:
+  push:
+    branches: [main]
+    # Only run when this project's own files change, so unrelated commits
+    # don't trigger an unnecessary redeploy.
+    paths:
+      - 'projects/shipment-exception-desk/**'
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: techtoday/shipment-exception-desk
+  # Full 40-character git commit SHA for this run, pushed as one of the three
+  # image tags below.
+  IMAGE_TAG: ${{ github.sha }}
+  # Unique EC2 host port for this project (500x range). The container always
+  # listens on 5000 internally; Nginx forwards /shipment-exception-desk/ to this port.
+  HOST_PORT: 5006
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      # id-token: write lets this job request a short-lived OIDC token from
+      # GitHub, exchanged for temporary AWS credentials — no static AWS keys
+      # stored as GitHub Secrets.
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          source-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repository exists
+        # Idempotent — creates techtoday/shipment-exception-desk on the first deploy so no
+        # manual `aws ecr create-repository` is ever needed.
+        run: |
+          aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" >/dev/null 2>&1 \
+            || aws ecr create-repository --repository-name "$ECR_REPOSITORY" \
+                 --region "$AWS_REGION"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute a human-readable build tag
+        # Sortable, human-friendly tag: YYYYMMDD-HHMMSS-<run-number>-<short-sha>
+        # e.g. 20260701-153045-42-a1b2c3d — used by the rollback procedure in
+        # the project's README.
+        id: vars
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BUILD_TAG=$(date -u +'%Y%m%d-%H%M%S')-${GITHUB_RUN_NUMBER}-${SHORT_SHA}
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build, tag, and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
+        run: |
+          cd projects/shipment-exception-desk
+
+          # Build once, then apply all three tags to the same image layers.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Record build tag in job summary
+        run: |
+          echo "### Deployed image tags" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Provision and deploy on EC2 via SSH
+        # Idempotent self-provisioning: ensures the Nginx location, the secrets
+        # env file, and the per-project Compose file all exist, then pulls
+        # ":latest" and restarts only this project. Nginx is reloaded only when
+        # its location file actually changes.
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 15m
+          script: |
+            set -e
+            REGION=${{ env.AWS_REGION }}
+            ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}
+            IMAGE=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com/techtoday/shipment-exception-desk:latest
+
+            aws ecr get-login-password --region $REGION | \
+              docker login --username AWS --password-stdin \
+              $ACCOUNT.dkr.ecr.$REGION.amazonaws.com
+
+            # --- Nginx include (one-time per host, auto-ensured) ---
+            # Makes the per-project app-locations/*.conf files take effect. On a
+            # host provisioned before this include existed, insert it once into
+            # the app.techtoday.click SSL server block, validated before reload
+            # and rolled back if nginx rejects it. No-op once present.
+            APP_CONF=/etc/nginx/conf.d/app.conf
+            if [ -f "$APP_CONF" ] && ! grep -q 'app-locations/\*\.conf' "$APP_CONF"; then
+              INC_TMP=$(mktemp)
+              awk '
+                { print }
+                !ins && /listen[[:space:]]+443/ { print "    include /etc/nginx/conf.d/app-locations/*.conf;"; ins=1 }
+              ' "$APP_CONF" > "$INC_TMP"
+              if grep -q 'app-locations/\*\.conf' "$INC_TMP"; then
+                sudo cp "$APP_CONF" "$APP_CONF.pre-app-locations.bak"
+                sudo cp "$INC_TMP" "$APP_CONF"
+                if sudo nginx -t; then
+                  sudo systemctl reload nginx
+                else
+                  echo "nginx -t failed after include insert; restoring $APP_CONF" >&2
+                  sudo cp "$APP_CONF.pre-app-locations.bak" "$APP_CONF"
+                fi
+              else
+                echo "No 'listen 443' line in $APP_CONF; add the app-locations include manually (SETUP.md § 2.8)." >&2
+              fi
+              rm -f "$INC_TMP"
+            fi
+
+            # --- Nginx location (write + reload only when it changes) ---
+            sudo mkdir -p /etc/nginx/conf.d/app-locations
+            NGINX_TMP=$(mktemp)
+            cat > "$NGINX_TMP" <<'NGINX'
+            location /shipment-exception-desk/ {
+                proxy_pass         http://localhost:5006;
+                proxy_set_header   Host $host;
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header   X-Forwarded-Proto $scheme;
+            }
+            NGINX
+            NGINX_DEST=/etc/nginx/conf.d/app-locations/shipment-exception-desk.conf
+            if ! sudo cmp -s "$NGINX_TMP" "$NGINX_DEST" 2>/dev/null; then
+              sudo cp "$NGINX_TMP" "$NGINX_DEST"
+              sudo nginx -t && sudo systemctl reload nginx
+            fi
+            rm -f "$NGINX_TMP"
+
+            # --- Secrets env file (regenerated so new keys are picked up) ---
+            mkdir -p ~/secrets
+            aws secretsmanager get-secret-value \
+              --secret-id techtoday/secrets --region $REGION \
+              --query SecretString --output text | \
+              python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+              > ~/secrets/shipment-exception-desk.env
+            chmod 600 ~/secrets/shipment-exception-desk.env
+
+            # --- Per-project Compose file (self-contained, no shared edits) ---
+            mkdir -p ~/apps/shipment-exception-desk
+            cat > ~/apps/shipment-exception-desk/docker-compose.yml <<COMPOSE
+            services:
+              shipment-exception-desk:
+                image: $IMAGE
+                restart: unless-stopped
+                command: python src/python/app.py
+                ports:
+                  - "5006:5000"
+                environment:
+                  - PATH_PREFIX=/shipment-exception-desk
+                env_file:
+                  - $HOME/secrets/shipment-exception-desk.env
+            COMPOSE
+
+            # --- Deploy: free disk, pull, restart just this project ---
+            docker image prune -af
+            docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml pull
+            docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml up -d
