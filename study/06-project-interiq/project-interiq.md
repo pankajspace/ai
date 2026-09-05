@@ -1,6 +1,6 @@
 [<- README](../../README.md) | [Notes](InterviewIQ-Class-Notes/)
 
-# AI Infused Learning - 6
+# Project: InterviewIQ
 
 # Links
 1. [Problem Statement & Project Milestones](https://docs.google.com/document/d/1tzr6V-3UI3kY7NbNmURqvl9GOKjT0y_QZWo5aLwhyxU/edit?tab=t.0#heading=h.ufwicjakpdn8)

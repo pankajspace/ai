@@ -21,6 +21,7 @@
 4. [Docker](study/04-docker/docker.md) : 25-07-2026
 5. [AWS Strands](study/05-aws-strands/aws-strands.md) : 08-08-2026
 6. [Project InterIQ](study/06-project-interiq/project-interiq.md) : 29-08-2026
+7. [Project Shipment Exception Desk](study/07-project-shipment-exception-desk/project-shipment-exception-desk.md) : 05-09-2026
 
 ## Revision AI Quick
 1. [Revision](study/revision.md)
