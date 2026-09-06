@@ -34,14 +34,28 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>When community tools don't fit (internal APIs, proprietary databases), you write your own. The @tool
-                    decorator, type hints, and docstring are all Strands needs — the mock dictionary here stands in for
-                    a real database. The agent-facing interface is identical regardless of what's behind the tool.</p>
+                <p>
+                    When community tools do not fit private APIs or proprietary databases, you write custom tools. The
+                    <code>@tool</code> decorator, Python type hints, and docstrings are all the Strands framework needs
+                    to generate tool schemas. A local dictionary stands in for a production database, showing that agent
+                    interfaces remain identical regardless of the underlying data source.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>In this <strong>Inventory Checker</strong> demo, we tackle a fundamental limitation of AI: Large Language Models (LLMs) cannot natively access private or real-time data like an internal store database. We solve this through <strong>Custom Tool Integration</strong>. When the user asks "Do you have PROD-123 in stock?", the Bedrock agent doesn't try to guess the answer. Instead, it knows it has access to a tool named <code>check_inventory</code>.</p>
-                <p>This is made possible by the <code>@tool</code> decorator in <code>inventory_agent.py</code>. By adding this decorator, along with standard Python type hints (like <code>product_id: str</code>) and a descriptive docstring, the Strands framework automatically generates a tool schema. The agent reads this schema and understands that to answer an inventory question, it must output a specific tool call containing the <code>product_id</code>.</p>
-                <p>What makes this architecture powerful is the separation of concerns. In our demo, the <code>check_inventory</code> function simply looks up the product in a hardcoded mock dictionary (<code>{"PROD-123": 15, ...}</code>). However, because the agent only interacts with the tool's interface, you could easily swap this dictionary for a real SQL query against a production database. The agent's logic remains completely unchanged, proving how easily you can prototype and scale agentic workflows.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Inventory Checker</strong> demo demonstrates how to ground AI in private, real-time data
+                    through custom tool integration:</p>
+                <ul>
+                    <li><strong>Custom Tool Integration:</strong> Large Language Models cannot natively access internal
+                        databases. When asked "Do you have PROD-123 in stock?", the Bedrock agent avoids guessing by
+                        routing the question to the registered <code>check_inventory</code> tool.</li>
+                    <li><strong>Automatic Schema Generation:</strong> In <code>inventory_agent.py</code>, decorating a
+                        function with <code>@tool</code> and adding type hints (like <code>product_id: str</code>)
+                        allows Strands to automatically construct a JSON schema contract that the model inspects to
+                        decide when and how to call the function.</li>
+                    <li><strong>Decoupled Architecture:</strong> The demo's mock dictionary can be swapped for a live
+                        SQL query or REST API without altering agent prompt or orchestration code, demonstrating clean
+                        separation of concerns.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

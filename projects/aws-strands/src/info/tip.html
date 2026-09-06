@@ -34,14 +34,27 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>A tool-enabled agent. Any phrasing of a tip question routes to the same calculate_tip tool — no regex
-                    or intent classifier needed. The @tool decorator is all that's needed to expose a Python function to
-                    the agent: Strands reads the type hints and docstring to build the tool's schema automatically.</p>
+                <p>
+                    A tool-enabled agent where any phrasing of a tip-calculation question routes to the same
+                    <code>calculate_tip</code> tool without regex or intent classifiers. The <code>@tool</code>
+                    decorator exposes the Python function to Bedrock while Strands parses type hints and docstrings to
+                    build the tool's JSON schema automatically.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>The <strong>Tip Calculator</strong> demo illustrates the core concept of <strong>Function Calling</strong> (or Tool Use). On its own, an LLM might struggle with precise arithmetic. By giving it access to a <code>calculate_tip</code> Python function, we empower the agent to offload math to deterministic code, ensuring absolute accuracy.</p>
-                <p>In our <code>tip_agent.py</code>, we simply define a function that takes a <code>bill_amount</code>, <code>tip_percentage</code>, and an optional <code>num_people</code>. The <code>@tool</code> decorator tells the Strands framework to expose this function to the Bedrock agent. When a user asks a tip-related question via the browser, the agent pauses its text generation, invokes <code>calculate_tip</code> with the extracted numbers, and then uses the returned dictionary (containing the exact tip, total, and per-person split) to formulate its final friendly response.</p>
-                <p>The standout feature of this approach is <strong>Semantic Intent</strong>. We didn't have to write any regex or intent classification logic to parse the user's question. Whether the user types "What's a 20% tip on $85?" or "Split a 50 dollar bill 3 ways with 15% tip", the LLM natively understands the intent. It extracts the correct parameters from the messy natural language and perfectly maps them to our tool's arguments, showcasing the flexibility of agent-driven routing.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Tip Calculator</strong> demo illustrates function calling and semantic entity extraction
+                    in agent workflows:</p>
+                <ul>
+                    <li><strong>Function Calling &amp; Tool Offloading:</strong> LLMs often approximate arithmetic.
+                        Exposing <code>calculate_tip</code> enables the Bedrock agent to offload percentage and division
+                        calculations to deterministic Python code for 100% mathematical accuracy.</li>
+                    <li><strong>Semantic Intent Parsing:</strong> Whether the prompt is "What's 18% on $85?" or "Split
+                        an 85 dollar dinner 3 ways with 18% tip", the model extracts parameters and maps them to
+                        function arguments without handcrafted regex or classification rules.</li>
+                    <li><strong>Context-Aware Synthesis:</strong> After receiving the calculated dictionary (tip amount,
+                        grand total, and per-person breakdown), the agent seamlessly synthesizes a clean, friendly
+                        conversational summary for the user.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

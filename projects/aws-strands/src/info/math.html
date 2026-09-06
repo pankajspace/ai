@@ -34,15 +34,27 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>Uses the pre-built calculator tool from strands_tools plus a system prompt. Strands ships ready-made
-                    community tools so you don't have to write everything from scratch. The calculator tool evaluates
-                    math expressions precisely (no floating-point guessing by the LLM). A system prompt shapes the
-                    agent's persona on every request.</p>
+                <p>
+                    Uses the pre-built calculator tool from <code>strands_tools</code> alongside an explicit system
+                    prompt. Strands provides ready-made community tools so developers avoid reinventing common
+                    utilities. The calculator executes arithmetic deterministically, eliminating floating-point errors
+                    and arithmetic hallucinations common to raw LLMs.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>The <strong>Math Assistant</strong> demo illustrates how we solve the problem of LLMs struggling with exact math. When you ask a math question in the browser, it reaches <code>math_agent.py</code> where the agent is set up with a pre-built <code>calculator</code> tool from the <code>strands_tools</code> library.</p>
-                <p>We also give the agent a system prompt ("You are a helpful math assistant.") to guide its behavior. When Amazon Nova Pro sees a mathematical expression, instead of guessing the answer (which LLMs are prone to do), it emits a tool call to the calculator. Strands executes this calculation securely in Python and hands the exact result back to the model.</p>
-                <p>The model then formulates a natural language response containing the accurate result and sends it back to your browser. This demonstrates how off-the-shelf tools can instantly upgrade an agent's capabilities with deterministic precision.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Math Assistant</strong> demo illustrates how to solve mathematical reasoning limitations
+                    in LLMs by offloading computation to deterministic tools:</p>
+                <ul>
+                    <li><strong>Deterministic Tool Execution:</strong> LLMs predict tokens probabilistically, which
+                        often leads to subtle errors in multi-digit arithmetic. When asked a math problem, Amazon Nova
+                        Pro recognizes the need for precision and delegates the formula to the calculator tool.</li>
+                    <li><strong>System Prompt Persona:</strong> An explicit system prompt ("You are a helpful math
+                        assistant.") guides the agent's tone and instructs it to verify expressions before returning
+                        answers.</li>
+                    <li><strong>Off-the-Shelf Community Tools:</strong> By leveraging pre-built tools from
+                        <code>strands_tools</code>, developers can instantly extend agent capabilities without writing
+                        custom evaluation sandboxes.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

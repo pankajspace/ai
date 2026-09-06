@@ -34,15 +34,28 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>The simplest Strands agent — no tools, so the agentic loop runs exactly once. The model answers
-                    directly from Bedrock. Explain that without tools there's no reason to loop: the model just
-                    generates a reply. Amazon Nova Pro on Bedrock was chosen because it's a capable foundational model
-                    with a simple API available on AWS.</p>
+                <p>
+                    The simplest Strands agent — no tools, so the agentic loop executes once. The model answers directly
+                    from Bedrock. Without tools, there is no need for iterative multi-step reasoning; the agent simply
+                    generates a single direct response. Amazon Nova Pro on Bedrock was chosen because it is a fast,
+                    capable foundation model accessible via AWS.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>In this <strong>Hello World</strong> demo, you can see the absolute baseline of an agentic loop. When you type a prompt in the browser, it is sent via a POST request to the <code>/ask</code> route in <code>app.py</code>. From there, it passes to <code>hello_agent.py</code>, where the Strands Agent is instantiated with the Amazon Nova Pro model.</p>
-                <p>Because we haven't provided any tools to the agent, there is no loop of reasoning and acting. The agent behaves just like a standard LLM call: it reads your prompt, uses Nova Pro's internal knowledge to formulate a response, and returns the generated text directly to the browser as a JSON payload.</p>
-                <p>Understanding this single-turn interaction—browser to backend to Bedrock and back—is the foundation. It shows you the raw capability of the model before we give it the ability to take actions via tools.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Hello World</strong> demo illustrates the baseline request-response cycle of an agentic
+                    architecture:</p>
+                <ul>
+                    <li><strong>Minimal Agentic Loop:</strong> Even though the Strands <code>Agent</code> class is
+                        designed for multi-turn reasoning and tool execution, here it runs without tools. The loop
+                        completes in a single turn: receiving the user prompt, querying the foundation model, and
+                        returning the result.</li>
+                    <li><strong>Direct Foundation Model Inference:</strong> Without external tools, the agent acts as a
+                        direct interface to Amazon Nova Pro on AWS Bedrock. The model relies entirely on its internal
+                        pre-trained weights to synthesize an answer.</li>
+                    <li><strong>Single-Turn Baseline:</strong> Establishing this clean request-response round trip
+                        (Browser &rarr; Flask proxy &rarr; Strands Agent &rarr; Bedrock &rarr; Browser) provides the
+                        foundation upon which multi-turn tool loops and stateful memory are built.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

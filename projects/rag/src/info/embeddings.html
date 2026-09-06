@@ -39,22 +39,32 @@
 
                 <h2>Concept</h2>
                 <p>
-                    Words and sentences can be encoded as vectors (lists of numbers) called embeddings. Two sentences
-                    that mean similar things will have vectors pointing in similar directions — cosine similarity
-                    measures the angle between them. The <code>all-MiniLM-L6-v2</code> model runs entirely locally
-                    (no API key), making it fast and free.
+                    Words and sentences can be encoded as dense numerical vectors called embeddings. Sentences with
+                    similar meanings have vectors pointing in similar directions in vector space — cosine similarity
+                    measures the angle between them. The <code>all-MiniLM-L6-v2</code> model runs entirely locally (no
+                    API key required), making it fast, deterministic, and free.
                 </p>
                 <p>
-                    This demo encodes both sentences and returns their similarity score between 0 (unrelated) and
-                    1 (semantically identical).
+                    This demo encodes both sentences and returns their semantic similarity score between 0 (completely
+                    unrelated) and 1 (semantically identical).
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>When you enter two distinct sentences into this <strong>Embeddings</strong> demo, you are testing how an AI mathematically measures meaning. At the core of this process is the concept of <strong>Embeddings</strong>. The demo takes your two text inputs and passes them through a local neural network model (<code>all-MiniLM-L6-v2</code>). This model maps each sentence into a dense vector—a high-dimensional list of floating-point numbers—in a continuous vector space. In this space, the direction of the vector corresponds to the semantic meaning of the text.</p>
-                
-                <p>Because the embedding model has been trained on massive datasets to pull similar concepts together and push dissimilar ones apart, the resulting vectors capture deep semantic features like topic, context, and tone. However, representing your sentences as lists of numbers is only half the battle. To determine how closely related your two inputs are, the backend needs to compare these two vectors.</p>
-                
-                <p>This is where the <strong>Cosine Similarity</strong> calculation in the demo's code comes into play. Using numpy, the backend calculates the dot product of the two vectors divided by the product of their magnitudes. Geometrically, this measures the <em>angle</em> between the two vectors rather than their absolute distance (which could be skewed if one sentence is much longer than the other). The demo then renders this result as a score between 0 and 1. A score close to 1 means your two sentences point in the same direction and have highly similar meanings, while a lower score closer to 0 indicates they are semantically unrelated. This mathematical translation is what allows the system to compare texts based on actual meaning rather than just matching identical keywords.</p>
+                <p>The <strong>Embeddings</strong> demo demonstrates how modern AI systems convert language meaning into
+                    mathematical vectors:</p>
+                <ul>
+                    <li><strong>Dense Vector Representations:</strong> The local model (<code>all-MiniLM-L6-v2</code>)
+                        maps each input sentence into a 384-dimensional dense vector. Rather than tracking keyword
+                        frequency, these numbers capture high-level semantic features including topic, context, and
+                        intent.</li>
+                    <li><strong>Semantic Clustering:</strong> Because the embedding model is pre-trained on massive text
+                        datasets, it maps conceptually related terms (e.g., "puppy" and "canine") close together in
+                        vector space, even if they share zero identical words.</li>
+                    <li><strong>Cosine Similarity vs. Distance:</strong> The backend uses NumPy to compute the dot
+                        product divided by the product of vector norms. Measuring the angle rather than Euclidean
+                        distance ensures the comparison is not skewed by sentence length, outputting an intuitive score
+                        between 0 and 1.</li>
+                </ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">

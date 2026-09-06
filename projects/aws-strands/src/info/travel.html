@@ -34,15 +34,28 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>The capstone demo: a multi-tool agent that checks the weather, suggests a packing list based on those
-                    conditions, prices the trip, and compares it to the budget. The agent chains four tools (plus the
-                    pre-built calculator) in the right order — nobody wrote that sequence. The agentic loop works it out
-                    from the system prompt and tool schemas.</p>
+                <p>
+                    The capstone demo: a multi-tool agent that checks weather forecasts, suggests a customized packing
+                    list based on those conditions, prices the trip, and compares costs against a budget. The agent
+                    chains four tools (plus a pre-built calculator) in the correct logical sequence without hardcoded
+                    orchestration scripts.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>The <strong>Travel Assistant</strong> demo is the capstone showing autonomous multi-tool orchestration. When you ask for a trip plan, the request is passed to <code>travel_agent.py</code>, where the agent is equipped with four tools: <code>get_weather_forecast</code>, <code>suggest_packing_list</code>, <code>estimate_trip_cost</code>, and the <code>calculator</code>.</p>
-                <p>Crucially, there is no code in the demo that says "first call weather, then call packing list, then calculate cost." The agent's system prompt simply instructs it to check the weather, suggest packing based on that weather, and estimate the cost.</p>
-                <p>Amazon Nova Pro figures out the dependencies on the fly. It realizes it must call <code>get_weather_forecast</code> first. Once it receives the temperatures and conditions, it feeds those specific details into <code>suggest_packing_list</code>. Finally, it uses <code>estimate_trip_cost</code> (and the calculator if needed) to figure out the budget. This loop repeats autonomously until the agent has all the information to build the final response sent back to your browser.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Travel Assistant</strong> demo illustrates end-to-end multi-tool orchestration with
+                    dynamic dependency resolution:</p>
+                <ul>
+                    <li><strong>Autonomous Dependency Resolution:</strong> The system prompt instructs the agent to
+                        check weather, suggest packing, and estimate costs. Amazon Nova Pro determines on the fly that
+                        packing suggestions depend on weather results, calling <code>get_weather_forecast</code> first
+                        before invoking <code>suggest_packing_list</code>.</li>
+                    <li><strong>Heterogeneous Tool Pipeline:</strong> The agent unifies diverse capabilities—combining
+                        mock API lookups (weather), rule-based recommendation logic (packing lists), and exact
+                        mathematical computation (budget calculations)—into a single turn-by-turn workflow.</li>
+                    <li><strong>Goal-Driven Autonomous Loop:</strong> The agent cycles through observation, thought, and
+                        tool execution until all requirements of the prompt are satisfied, returning a complete, unified
+                        travel itinerary to the user.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

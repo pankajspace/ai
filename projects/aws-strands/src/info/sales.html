@@ -34,14 +34,28 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>"Pull last quarter's sales data and email a summary" is three tasks: query, analyse, send. The agent
-                    is given three small single-purpose tools and works out the order itself — that's planning. Nobody
-                    hard-coded the sequence; the agentic loop figures it out from context.</p>
+                <p>
+                    A multi-step workflow like "pull sales data, analyze metrics, and email a summary" spans three
+                    distinct operations: querying, computing, and communicating. Rather than hardcoding a rigid
+                    pipeline, the agent receives three single-purpose tools and dynamically plans the execution sequence
+                    on its own.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>The <strong>Sales Report Agent</strong> demo showcases one of the most powerful capabilities of agentic systems: <strong>Autonomous Multi-Tool Planning</strong>. When the user submits a request like "Pull last quarter's sales data, calculate the metrics, and email a summary to the team," they are asking for a complex, multi-step workflow. Instead of hardcoding this sequence, we give the agent three simple tools.</p>
-                <p>In <code>sales_agent.py</code>, we define <code>get_sales_data</code>, <code>analyze_sales</code>, and <code>send_email</code>. The agent is responsible for figuring out the order. Using dynamic planning, the Bedrock agent first realizes it needs data, so it calls <code>get_sales_data</code>. Once it observes the returned revenue and deal count, it deduces that the next logical step is to call <code>analyze_sales</code> to calculate the averages. Finally, armed with the analyzed metrics, it invokes <code>send_email</code> to complete the user's request.</p>
-                <p>This dynamic chaining is revolutionary because the developer never wrote a script that says "do A, then B, then C." The LLM acts as the orchestrator. If <code>get_sales_data</code> had returned an error, the agent could potentially adapt its plan. By providing single-purpose tools and letting the agent reason about the workflow, we can handle complex, ambiguous user requests without writing rigid state machines.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Sales Report Agent</strong> demo showcases autonomous multi-tool planning and dynamic
+                    execution order:</p>
+                <ul>
+                    <li><strong>Autonomous Multi-Tool Planning:</strong> Instead of writing rigid conditional scripts,
+                        the developer provides three single-purpose tools (<code>get_sales_data</code>,
+                        <code>analyze_sales</code>, and <code>send_email</code>). The LLM reasons about dependencies to
+                        determine the correct order of operations.</li>
+                    <li><strong>Dynamic Tool Chaining:</strong> The agent first queries the data, inspects the returned
+                        deals and revenue, feeds those numbers into the analysis tool, and finally uses the computed
+                        averages to draft and send the email.</li>
+                    <li><strong>Resilient Orchestration:</strong> Because the LLM acts as the orchestrator, it can
+                        inspect intermediate errors and adjust its plan dynamically, offering far greater flexibility
+                        than fixed state machines.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

@@ -34,14 +34,28 @@
         <section>
             <div class="container info-content">
                 <h2>Concept</h2>
-                <p>Grouping related tools in a class lets them share ONE resource — a single self.products store —
-                    instead of each tool opening its own. A module-level instance keeps the state alive across requests,
-                    so an update made in one call is visible to the next.</p>
+                <p>
+                    Grouping related tools inside a Python class lets them share a single stateful resource — a shared
+                    <code>self.products</code> store — instead of each function maintaining isolated state. A
+                    module-level instance preserves this state across requests so updates made in one turn are
+                    immediately visible in the next.
+                </p>
 
-                <h2>Theory & Concepts</h2>
-                <p>In this <strong>Inventory Manager</strong> demo, the user can ask the agent to check and update stock levels. When a request hits the <code>/stock</code> endpoint, the agent uses tools wrapped inside an <code>InventoryTools</code> class.</p>
-                <p>Unlike standalone functions, these class-based tools share a single persistent state—the <code>self.products</code> dictionary (simulating a database). This allows the agent to update a product's stock using the <code>update_stock</code> tool and immediately verify the new quantity using the <code>check_stock</code> tool within the same conversation turn.</p>
-                <p>Because the <code>_inventory</code> instance is created at the module level in <code>stock_agent.py</code>, this state persists across different browser requests. You can ask to update the stock in one request, and verify it in another, demonstrating how stateful tools allow agents to manage shared resources efficiently without reconnecting to a database on every tool call.</p>
+                <h2>Theory &amp; Concepts</h2>
+                <p>The <strong>Inventory Manager</strong> demo explores shared state and multi-turn persistence in
+                    tool-calling agents:</p>
+                <ul>
+                    <li><strong>Class-Based Stateful Tools:</strong> Tools defined as methods on
+                        <code>InventoryTools</code> share access to <code>self.products</code>. When the agent calls
+                        <code>update_stock</code>, the modified count is instantly visible to subsequent calls to
+                        <code>check_stock</code> within the same turn.</li>
+                    <li><strong>Module-Level Persistence:</strong> By keeping the <code>_inventory</code> instance at
+                        module level in <code>stock_agent.py</code>, stock updates persist across separate HTTP requests
+                        from the browser without requiring immediate database re-fetching.</li>
+                    <li><strong>Atomic Verification:</strong> The agent can update an item's stock and immediately
+                        verify the new count before responding, ensuring reliable verification in automated inventory
+                        tasks.</li>
+                </ul>
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">

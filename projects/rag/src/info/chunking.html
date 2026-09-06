@@ -39,21 +39,32 @@
 
                 <h2>Concept</h2>
                 <p>
-                    LLMs have a context window limit — you can't pass an entire book as a prompt. The solution is to
-                    split the document into overlapping chunks. The <code>RecursiveCharacterTextSplitter</code> tries
-                    to split at natural boundaries (paragraphs, then sentences, then words) instead of cutting mid-word.
+                    LLMs have a context window limit — you cannot pass an entire book as a single prompt without running
+                    into token limits or degraded recall. The standard solution is splitting documents into smaller,
+                    overlapping chunks. LangChain's <code>RecursiveCharacterTextSplitter</code> splits at natural
+                    semantic boundaries (paragraphs, sentences, and words) rather than cutting mid-word.
                 </p>
                 <p>
-                    Overlapping chunks (<code>chunk_overlap</code>) ensures context at the boundary is never lost —
-                    this is the "context glue" that makes retrieval accurate.
+                    Overlapping boundaries (<code>chunk_overlap</code>) ensure context spanning across split points is
+                    never lost — acting as "context glue" that makes downstream vector retrieval accurate.
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
-                <p>When you paste a long document into this <strong>Chunking</strong> demo, you're addressing a core limitation of Large Language Models (LLMs) and embedding models: the context window limit. You cannot feed an entire book into an API and expect it to process it in one go. Instead, the text must be broken down into smaller segments, or "chunks". In this demo, when you submit your text via the browser, the backend uses LangChain's <code>RecursiveCharacterTextSplitter</code> to intelligently divide your input.</p>
-                
-                <p>Rather than simply slicing your text into arbitrary 100-character blocks (which could cut a word or sentence in half, destroying its meaning), this demo's splitter is recursive. It first tries to split your text by paragraphs. If a paragraph is still larger than the <code>chunk_size</code>, it drops down to splitting by sentences, and then by words. This ensures that the chunks you see rendered in the result retain their natural linguistic boundaries and semantic meaning.</p>
-                
-                <p>Additionally, you might notice that the end of one chunk in the demo's output often repeats at the beginning of the next. This is governed by the <code>chunk_overlap</code> parameter (set to 10 characters in this code). This overlap acts as a contextual glue. If a critical concept in your submitted text spans across the boundary of a split, the overlap ensures that neither chunk loses the full context. This sliding window approach is what makes downstream retrieval in a full RAG pipeline accurate and reliable.</p>
+                <p>The <strong>Chunking</strong> demo illustrates the essential preprocessing step for building
+                    effective Retrieval-Augmented Generation (RAG) systems:</p>
+                <ul>
+                    <li><strong>Managing Context Window Limits:</strong> Pushing entire documents into an LLM context is
+                        expensive and causes "needle-in-a-haystack" retrieval failure. Segmenting source documents into
+                        digestible chunks allows precise, relevant information to be retrieved on demand.</li>
+                    <li><strong>Recursive Boundary Splitting:</strong> Naive splitting by fixed character counts can cut
+                        words or sentences in half, destroying meaning. <code>RecursiveCharacterTextSplitter</code>
+                        recursively checks split characters in order: double line breaks (paragraphs), single line
+                        breaks (sentences), and spaces (words) to preserve semantic coherence.</li>
+                    <li><strong>Context Continuity via Overlap:</strong> The <code>chunk_overlap</code> setting creates
+                        a sliding window between consecutive passages. When an important concept or sentence spans
+                        across a chunk boundary, both chunks retain enough shared text so vector embeddings correctly
+                        capture the full context.</li>
+                </ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
@@ -91,13 +102,14 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A["Browser<br/>long text"] -->|POST /chunk| B["app.py<br/>chunk_route"]
-    B -->|text| C["chunk.py<br/>chunk_text"]
-    C -->|text, chunk_size=100, overlap=10| D["RecursiveCharacterTextSplitter<br/>split at paragraphs/sentences/words"]
-    D -->|list of chunk strings| C
-    C -->|chunks list| B
-    B -->|JSON result: chunks + count| A
+                        flowchart TD
+                        A["Browser<br />long text"] -->|POST /chunk| B["app.py<br />chunk_route"]
+                        B -->|text| C["chunk.py<br />chunk_text"]
+                        C -->|text, chunk_size=100, overlap=10| D["RecursiveCharacterTextSplitter<br />split at
+                        paragraphs/sentences/words"]
+                        D -->|list of chunk strings| C
+                        C -->|chunks list| B
+                        B -->|JSON result: chunks + count| A
                     </div>
                 </div>
 
@@ -153,7 +165,9 @@ def chunk_route():
     </main>
 
     <footer>
-        <div class="container"><p>&copy; 2026 TechToday.</p></div>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
