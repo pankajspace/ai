@@ -4699,7 +4699,7 @@ console.log(countProvinces([[1, 1, 0],
                     checks.</figcaption>
             </figure>
 
-            <div class="code-tabs" data-label="Building graphs">
+            <div class="code-tabs" data-label="Adjacency list — unweighted and weighted">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 from collections import defaultdict
@@ -4720,24 +4720,6 @@ def build_weighted(n, edges):
         graph[a].append((b, w))
         graph[b].append((a, w))
     return graph
-
-
-def build_matrix(n, edges):
-    """O(V^2) space; good for dense graphs and Floyd-Warshall."""
-    matrix = [[0] * n for _ in range(n)]
-    for a, b in edges:
-        matrix[a][b] = matrix[b][a] = 1
-    return matrix
-
-
-# A grid IS a graph: each cell is a vertex with up to four edges.
-DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
-
-def grid_neighbours(grid, r, c):
-    for dr, dc in DIRECTIONS:
-        nr, nc = r + dr, c + dc
-        if 0 &lt;= nr &lt; len(grid) and 0 &lt;= nc &lt; len(grid[0]):
-            yield nr, nc
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -4767,7 +4749,27 @@ function buildWeighted(edges) {         // edges: [a, b, weight]
   }
   return graph;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>The matrix representation trades memory for a constant-time "is there an edge?" test. It is the right
+                choice only when the graph is dense, or when an algorithm indexes edges directly — Floyd-Warshall being
+                the obvious case.</p>
+
+            <div class="code-tabs" data-label="Adjacency matrix">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def build_matrix(n, edges):
+    """O(V^2) space; good for dense graphs and Floyd-Warshall."""
+    matrix = [[0] * n for _ in range(n)]
+    for a, b in edges:
+        matrix[a][b] = matrix[b][a] = 1
+    return matrix
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function buildMatrix(n, edges) {        // O(V^2)
   const matrix = Array.from({ length: n }, () =&gt; new Array(n).fill(0));
   for (const [a, b] of edges) {
@@ -4776,7 +4778,28 @@ function buildMatrix(n, edges) {        // O(V^2)
   }
   return matrix;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Grids need no builder at all. Each cell is a vertex and its edges are implicit in the four compass
+                offsets — which is why so many "matrix" problems are really graph traversals in disguise.</p>
+
+            <div class="code-tabs" data-label="A grid as an implicit graph">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# A grid IS a graph: each cell is a vertex with up to four edges.
+DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
+
+def grid_neighbours(grid, r, c):
+    for dr, dc in DIRECTIONS:
+        nr, nc = r + dr, c + dc
+        if 0 &lt;= nr &lt; len(grid) and 0 &lt;= nc &lt; len(grid[0]):
+            yield nr, nc
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 // A grid is a graph with implicit edges.
 const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
@@ -4893,7 +4916,7 @@ function cloneGraph(node) {         // O(V + E)
                     backtracking.</li>
             </ol>
 
-            <div class="code-tabs" data-label="BFS, DFS, and shortest path reconstruction">
+            <div class="code-tabs" data-label="Breadth-first search">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 from collections import deque
@@ -4915,65 +4938,6 @@ def bfs(graph, start):
                 q.append(neighbour)
 
     return order, dist
-
-
-def dfs_iterative(graph, start):
-    """Same shape, but a stack. O(V + E)."""
-    visited = set()
-    order = []
-    stack = [start]
-
-    while stack:
-        node = stack.pop()              # NEWEST first -&gt; depth first
-        if node in visited:
-            continue
-        visited.add(node)
-        order.append(node)
-        for neighbour in reversed(graph[node]):
-            if neighbour not in visited:
-                stack.append(neighbour)
-
-    return order
-
-
-def shortest_path(graph, start, goal):
-    """BFS + parent pointers. Optimal for UNWEIGHTED graphs only."""
-    if start == goal:
-        return [start]
-    parent = {start: None}
-    q = deque([start])
-
-    while q:
-        node = q.popleft()
-        for neighbour in graph[node]:
-            if neighbour in parent:
-                continue
-            parent[neighbour] = node
-            if neighbour == goal:       # first time we see it = shortest
-                path = [goal]
-                while path[-1] is not None and parent[path[-1]] is not None:
-                    path.append(parent[path[-1]])
-                return path[::-1]
-            q.append(neighbour)
-
-    return None                         # unreachable
-
-
-def connected_components(graph, nodes):
-    """How many separate pieces does the graph have?"""
-    seen, components = set(), 0
-    for node in nodes:
-        if node in seen:
-            continue
-        components += 1
-        stack = [node]
-        while stack:                    # flood the whole component
-            cur = stack.pop()
-            if cur in seen:
-                continue
-            seen.add(cur)
-            stack.extend(graph[cur])
-    return components
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -4997,7 +4961,38 @@ function bfs(graph, start) {            // O(V + E)
   }
   return { order, dist };
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Swap the queue for a stack and the identical loop becomes depth-first. Note the <code>reversed</code>
+                push order: pushing neighbours in reverse means they <em>pop</em> in the original order, so the walk
+                matches the recursive version.</p>
+
+            <div class="code-tabs" data-label="Depth-first search (iterative)">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def dfs_iterative(graph, start):
+    """Same shape, but a stack. O(V + E)."""
+    visited = set()
+    order = []
+    stack = [start]
+
+    while stack:
+        node = stack.pop()              # NEWEST first -&gt; depth first
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+        for neighbour in reversed(graph[node]):
+            if neighbour not in visited:
+                stack.append(neighbour)
+
+    return order
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function dfsIterative(graph, start) {   // O(V + E)
   const visited = new Set();
   const order = [];
@@ -5015,7 +5010,44 @@ function dfsIterative(graph, start) {   // O(V + E)
   }
   return order;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Recording a <strong>parent pointer</strong> as each node is discovered turns BFS into a shortest-path
+                finder. Because BFS reaches every node by the fewest edges, the first time you see the goal you already
+                have the optimal route — just walk the parents backwards.</p>
+
+            <div class="code-tabs" data-label="Shortest path reconstruction (unweighted)">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from collections import deque
+
+def shortest_path(graph, start, goal):
+    """BFS + parent pointers. Optimal for UNWEIGHTED graphs only."""
+    if start == goal:
+        return [start]
+    parent = {start: None}
+    q = deque([start])
+
+    while q:
+        node = q.popleft()
+        for neighbour in graph[node]:
+            if neighbour in parent:
+                continue
+            parent[neighbour] = node
+            if neighbour == goal:       # first time we see it = shortest
+                path = [goal]
+                while path[-1] is not None and parent[path[-1]] is not None:
+                    path.append(parent[path[-1]])
+                return path[::-1]
+            q.append(neighbour)
+
+    return None                         # unreachable
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function shortestPath(graph, start, goal) {   // unweighted only
   if (start === goal) return [start];
   const parent = new Map([[start, null]]);
@@ -5036,6 +5068,52 @@ function shortestPath(graph, start, goal) {   // unweighted only
     }
   }
   return null;                          // unreachable
+}
+</code></pre>
+                </div>
+            </div>
+
+            <p>Finally, counting components: start a fresh traversal from every unvisited node. Each new start is one
+                more disconnected piece, and the flood fill claims everything reachable from it.</p>
+
+            <div class="code-tabs" data-label="Connected components">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def connected_components(graph, nodes):
+    """How many separate pieces does the graph have?"""
+    seen, components = set(), 0
+    for node in nodes:
+        if node in seen:
+            continue
+        components += 1                 # a node we have never reached
+        stack = [node]
+        while stack:                    # flood the whole component
+            cur = stack.pop()
+            if cur in seen:
+                continue
+            seen.add(cur)
+            stack.extend(graph[cur])
+    return components
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function connectedComponents(graph, nodes) {
+  const seen = new Set();
+  let components = 0;
+
+  for (const node of nodes) {
+    if (seen.has(node)) continue;
+    components++;                       // a node we have never reached
+    const stack = [node];
+    while (stack.length) {              // flood the whole component
+      const cur = stack.pop();
+      if (seen.has(cur)) continue;
+      seen.add(cur);
+      stack.push(...(graph.get(cur) ?? []));
+    }
+  }
+  return components;
 }
 </code></pre>
                 </div>
@@ -5908,7 +5986,7 @@ console.log(minCostConnect([[0,0],[2,2],[3,10],[5,2],[7,0]]));   // 20
                     rule against a small adversarial case before trusting it.</p>
             </div>
 
-            <div class="code-tabs" data-label="Interval scheduling and jump game">
+            <div class="code-tabs" data-label="Interval scheduling — sort by end time">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def max_meetings(intervals):
@@ -5923,34 +6001,7 @@ def max_meetings(intervals):
     return count
 
 
-def can_jump(nums):
-    """nums[i] = max jump length from i. Can we reach the end? O(n)."""
-    reach = 0
-    for i, jump in enumerate(nums):
-        if i &gt; reach:               # this index is unreachable
-            return False
-        reach = max(reach, i + jump)
-    return True
-
-
-def min_platforms(arrivals, departures):
-    """Fewest train platforms needed. Classic two-pointer greedy."""
-    arrivals, departures = sorted(arrivals), sorted(departures)
-    i = j = platforms = best = 0
-    while i &lt; len(arrivals):
-        if arrivals[i] &lt;= departures[j]:
-            platforms += 1          # a train arrives before one leaves
-            best = max(best, platforms)
-            i += 1
-        else:
-            platforms -= 1          # a platform frees up
-            j += 1
-    return best
-
-
 print(max_meetings([(1, 3), (2, 5), (4, 7), (6, 8)]))   # 2
-print(can_jump([2, 3, 1, 1, 4]))                        # True
-print(can_jump([3, 2, 1, 0, 4]))                        # False
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -5968,6 +6019,34 @@ function maxMeetings(intervals) {       // sort by END time, O(n log n)
   return count;
 }
 
+console.log(maxMeetings([[1, 3], [2, 5], [4, 7], [6, 8]]));   // 2
+</code></pre>
+                </div>
+            </div>
+
+            <p>The jump game is greedy in a different shape: instead of choosing items, track the furthest index
+                reachable so far. If the scan ever passes that frontier, no earlier jump could have bridged the gap and
+                the answer is settled.</p>
+
+            <div class="code-tabs" data-label="Jump game — can you reach the end?">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def can_jump(nums):
+    """nums[i] = max jump length from i. Can we reach the end? O(n)."""
+    reach = 0
+    for i, jump in enumerate(nums):
+        if i &gt; reach:               # this index is unreachable
+            return False
+        reach = max(reach, i + jump)
+    return True
+
+
+print(can_jump([2, 3, 1, 1, 4]))                        # True
+print(can_jump([3, 2, 1, 0, 4]))                        # False
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function canJump(nums) {                // O(n)
   let reach = 0;
   for (let i = 0; i &lt; nums.length; i++) {
@@ -5977,6 +6056,38 @@ function canJump(nums) {                // O(n)
   return true;
 }
 
+console.log(canJump([2, 3, 1, 1, 4]), canJump([3, 2, 1, 0, 4])); // true false
+</code></pre>
+                </div>
+            </div>
+
+            <p>Minimum platforms sorts arrivals and departures into two independent lists and walks them with two
+                pointers — the same sweep-line counting used for intervals, expressed without building an event list.
+            </p>
+
+            <div class="code-tabs" data-label="Minimum platforms — two-pointer greedy">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def min_platforms(arrivals, departures):
+    """Fewest train platforms needed. Classic two-pointer greedy."""
+    arrivals, departures = sorted(arrivals), sorted(departures)
+    i = j = platforms = best = 0
+    while i &lt; len(arrivals):
+        if arrivals[i] &lt;= departures[j]:
+            platforms += 1          # a train arrives before one leaves
+            best = max(best, platforms)
+            i += 1
+        else:
+            platforms -= 1          # a platform frees up
+            j += 1
+    return best
+
+
+print(min_platforms([900, 940, 950], [910, 1200, 1120]))    # 2
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function minPlatforms(arrivals, departures) {
   const a = [...arrivals].sort((x, y) =&gt; x - y);
   const d = [...departures].sort((x, y) =&gt; x - y);
@@ -5996,8 +6107,7 @@ function minPlatforms(arrivals, departures) {
   return best;
 }
 
-console.log(maxMeetings([[1, 3], [2, 5], [4, 7], [6, 8]]));   // 2
-console.log(canJump([2, 3, 1, 1, 4]), canJump([3, 2, 1, 0, 4])); // true false
+console.log(minPlatforms([900, 940, 950], [910, 1200, 1120]));   // 2
 </code></pre>
                 </div>
             </div>
@@ -6016,7 +6126,7 @@ console.log(canJump([2, 3, 1, 1, 4]), canJump([3, 2, 1, 0, 4])); // true false
                 answers. The subproblems being <em>independent</em> is what distinguishes this from dynamic programming,
                 where subproblems overlap and are therefore cached.</p>
 
-            <div class="code-tabs" data-label="Quickselect, binary exponentiation, counting inversions">
+            <div class="code-tabs" data-label="Quickselect — k-th smallest in O(n)">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 import random
@@ -6049,44 +6159,7 @@ def quickselect(nums, k):
             lo = store + 1              # answer is on the right
 
 
-def power(base, exponent):
-    """base^exponent in O(log n) multiplications instead of O(n)."""
-    result = 1
-    while exponent &gt; 0:
-        if exponent &amp; 1:                # odd exponent -&gt; take one factor out
-            result *= base
-        base *= base                    # square the base
-        exponent &gt;&gt;= 1                  # halve the exponent
-    return result
-
-
-def count_inversions(nums):
-    """Pairs (i &lt; j) with nums[i] &gt; nums[j]. O(n log n) via merge sort:
-    when we take from the right run, every remaining left element is an
-    inversion with it - counted in one operation instead of one by one."""
-    def sort(a):
-        if len(a) &lt;= 1:
-            return a, 0
-        mid = len(a) // 2
-        left, x = sort(a[:mid])
-        right, y = sort(a[mid:])
-        merged, z = [], 0
-        i = j = 0
-        while i &lt; len(left) and j &lt; len(right):
-            if left[i] &lt;= right[j]:
-                merged.append(left[i]); i += 1
-            else:
-                merged.append(right[j]); j += 1
-                z += len(left) - i      # the whole rest of `left` is inverted
-        merged.extend(left[i:]); merged.extend(right[j:])
-        return merged, x + y + z
-
-    return sort(list(nums))[1]
-
-
 print(quickselect([7, 2, 9, 4, 1, 8], 2))       # 4  (third smallest)
-print(power(2, 30))                             # 1073741824
-print(count_inversions([2, 4, 1, 3, 5]))        # 3
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -6112,6 +6185,35 @@ function quickselect(input, k) {        // k-th smallest, O(n) average
   }
 }
 
+console.log(quickselect([7, 2, 9, 4, 1, 8], 2));    // 4
+</code></pre>
+                </div>
+            </div>
+
+            <p>Binary exponentiation applies the same halving idea to arithmetic. Rather than multiplying
+                <code>base</code> by itself <code>n</code> times, square repeatedly and peel off a factor whenever the
+                exponent is odd — turning <code>O(n)</code> multiplications into <code>O(log n)</code>.
+            </p>
+
+            <div class="code-tabs" data-label="Binary exponentiation">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def power(base, exponent):
+    """base^exponent in O(log n) multiplications instead of O(n)."""
+    result = 1
+    while exponent &gt; 0:
+        if exponent &amp; 1:                # odd exponent -&gt; take one factor out
+            result *= base
+        base *= base                    # square the base
+        exponent &gt;&gt;= 1                  # halve the exponent
+    return result
+
+
+print(power(2, 30))                             # 1073741824
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function power(base, exponent) {        // O(log n) multiplications
   let result = 1n;
   let b = BigInt(base);
@@ -6124,6 +6226,47 @@ function power(base, exponent) {        // O(log n) multiplications
   return result;
 }
 
+console.log(power(2, 30).toString());               // 1073741824
+</code></pre>
+                </div>
+            </div>
+
+            <p>Counting inversions is divide and conquer hiding inside a sort. The pairs that are out of order are
+                counted for free during the merge: whenever a value is taken from the right run, every element still
+                left in the left run forms an inversion with it — so a whole batch is counted in one addition.</p>
+
+            <div class="code-tabs" data-label="Counting inversions during a merge sort">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def count_inversions(nums):
+    """Pairs (i &lt; j) with nums[i] &gt; nums[j]. O(n log n) via merge sort:
+    when we take from the right run, every remaining left element is an
+    inversion with it - counted in one operation instead of one by one."""
+    def sort(a):
+        if len(a) &lt;= 1:
+            return a, 0
+        mid = len(a) // 2
+        left, x = sort(a[:mid])
+        right, y = sort(a[mid:])
+        merged, z = [], 0
+        i = j = 0
+        while i &lt; len(left) and j &lt; len(right):
+            if left[i] &lt;= right[j]:
+                merged.append(left[i]); i += 1
+            else:
+                merged.append(right[j]); j += 1
+                z += len(left) - i      # the whole rest of `left` is inverted
+        merged.extend(left[i:]); merged.extend(right[j:])
+        return merged, x + y + z
+
+    return sort(list(nums))[1]
+
+
+print(count_inversions([2, 4, 1, 3, 5]))        # 3
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function countInversions(input) {       // O(n log n) via merge sort
   const sort = (a) =&gt; {
     if (a.length &lt;= 1) return [a, 0];
@@ -6146,8 +6289,6 @@ function countInversions(input) {       // O(n log n) via merge sort
   return sort([...input])[1];
 }
 
-console.log(quickselect([7, 2, 9, 4, 1, 8], 2));    // 4
-console.log(power(2, 30).toString());               // 1073741824
 console.log(countInversions([2, 4, 1, 3, 5]));      // 3
 </code></pre>
                 </div>
@@ -6810,7 +6951,7 @@ console.log(knapsack([1, 3, 4, 2], [15, 20, 30, 18], 6));  // 63
                     shift right, integer-divide by <code>2^k</code>.</li>
             </ol>
 
-            <div class="code-tabs" data-label="The bit tricks worth memorising">
+            <div class="code-tabs" data-label="The bit idioms worth memorising">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 x = 0b1011      # 11
@@ -6827,34 +6968,6 @@ x &amp; -x              # isolate the lowest set bit
 x &amp; (x - 1) == 0    # is x a power of two? (careful: also true for 0)
 bin(x).count("1")   # population count
 x.bit_length()      # 4 - position of the highest set bit
-
-def single_number(nums):
-    """Every value appears twice except one. XOR cancels the pairs. O(n)/O(1)."""
-    result = 0
-    for value in nums:
-        result ^= value
-    return result
-
-def count_bits(x):
-    """Brian Kernighan: loops once per SET bit, not once per bit."""
-    count = 0
-    while x:
-        x &amp;= x - 1
-        count += 1
-    return count
-
-def all_subsets(items):
-    """Enumerate 2^n subsets by counting in binary."""
-    n = len(items)
-    for mask in range(1 &lt;&lt; n):
-        yield [items[i] for i in range(n) if mask &gt;&gt; i &amp; 1]
-
-def swap_without_temp(a, b):
-    a ^= b; b ^= a; a ^= b      # cute, but never do this in real code
-    return a, b
-
-print(single_number([4, 1, 2, 1, 2]))       # 4
-print(list(all_subsets(["a", "b"])))        # [[], ['a'], ['b'], ['a','b']]
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -6872,29 +6985,104 @@ x &amp; (x - 1);            // clear the lowest set bit
 x &amp; -x;                 // isolate the lowest set bit
 (x &amp; (x - 1)) === 0;    // power of two (also true for 0)
 Math.clz32(x);          // count leading zeros -&gt; highest set bit position
+</code></pre>
+                </div>
+            </div>
 
+            <p>The first idiom that earns its keep: XOR is its own inverse, so <code>a ^ a = 0</code>. Xor every
+                element together and all the duplicates annihilate, leaving only the value that appeared once — no hash
+                set, no sorting, constant memory.</p>
+
+            <div class="code-tabs" data-label="XOR to find the single number">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def single_number(nums):
+    """Every value appears twice except one. XOR cancels the pairs. O(n)/O(1)."""
+    result = 0
+    for value in nums:
+        result ^= value
+    return result
+
+
+print(single_number([4, 1, 2, 1, 2]))       # 4
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function singleNumber(nums) {           // XOR cancels pairs, O(n)/O(1)
   let result = 0;
   for (const value of nums) result ^= value;
   return result;
 }
 
+console.log(singleNumber([4, 1, 2, 1, 2]));   // 4
+</code></pre>
+                </div>
+            </div>
+
+            <p>Counting set bits naively tests all 32 or 64 positions. Brian Kernighan's trick instead clears the
+                lowest set bit each round, so the loop runs once per <em>set</em> bit — far fewer iterations on sparse
+                values.</p>
+
+            <div class="code-tabs" data-label="Population count (Brian Kernighan)">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def count_bits(x):
+    """Brian Kernighan: loops once per SET bit, not once per bit."""
+    count = 0
+    while x:
+        x &amp;= x - 1              # clears the lowest set bit
+        count += 1
+    return count
+
+
+print(count_bits(0b1011))       # 3   (bin(x).count("1") is the built-in way)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function countBits(x) {                 // Brian Kernighan
   let count = 0;
   while (x) {
-    x &amp;= x - 1;
+    x &amp;= x - 1;                         // clears the lowest set bit
     count++;
   }
   return count;
 }
 
+console.log(countBits(0b1011));         // 3
+</code></pre>
+                </div>
+            </div>
+
+            <p>Finally, the bridge to bitmask DP: an <code>n</code>-bit integer <em>is</em> a subset of
+                <code>n</code> items. Counting from <code>0</code> to <code>2ⁿ - 1</code> therefore enumerates every
+                subset exactly once.
+            </p>
+
+            <div class="code-tabs" data-label="Enumerating subsets with a bitmask">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def all_subsets(items):
+    """Enumerate 2^n subsets by counting in binary."""
+    n = len(items)
+    for mask in range(1 &lt;&lt; n):
+        # bit i of mask says whether items[i] is in this subset
+        yield [items[i] for i in range(n) if mask &gt;&gt; i &amp; 1]
+
+
+print(list(all_subsets(["a", "b"])))        # [[], ['a'], ['b'], ['a','b']]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function* allSubsets(items) {           // 2^n subsets by counting in binary
   for (let mask = 0; mask &lt; 1 &lt;&lt; items.length; mask++) {
+    // bit i of mask says whether items[i] is in this subset
     yield items.filter((_, i) =&gt; (mask &gt;&gt; i) &amp; 1);
   }
 }
 
-console.log(singleNumber([4, 1, 2, 1, 2]));   // 4
 console.log([...allSubsets(["a", "b"])]);     // [[], ['a'], ['b'], ['a','b']]
 </code></pre>
                 </div>
@@ -6972,10 +7160,10 @@ console.log(countBits(8));      // [0, 1, 1, 2, 1, 2, 2, 3, 1]
             <p>A small set of number-theory tools covers almost every mathematical subproblem you will meet: greatest
                 common divisor, prime generation, modular arithmetic and combinatorics.</p>
 
-            <div class="code-tabs" data-label="GCD, sieve, modular arithmetic, combinatorics">
+            <div class="code-tabs" data-label="GCD and LCM">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
-from math import gcd, comb, isqrt
+from math import gcd
 
 def euclid(a, b):
     """gcd via repeated remainder. O(log min(a, b)) - Euclid, ~300 BC."""
@@ -6989,6 +7177,33 @@ def lcm(a, b):
     return a // gcd(a, b) * b
 
 
+print(euclid(48, 18), lcm(4, 6))        # 6 12
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function gcd(a, b) {                    // O(log min(a, b))
+  while (b) [a, b] = [b, a % b];
+  return a;
+}
+
+const lcm = (a, b) =&gt; (a / gcd(a, b)) * b;   // divide first
+
+console.log(gcd(48, 18), lcm(4, 6));    // 6 12
+</code></pre>
+                </div>
+            </div>
+
+            <p>The sieve generates <em>every</em> prime below <code>n</code> at once. Crossing out starts at
+                <code>p*p</code> rather than <code>2p</code>, because any smaller multiple of <code>p</code> already has
+                a smaller prime factor and was struck out on an earlier pass.
+            </p>
+
+            <div class="code-tabs" data-label="Sieve of Eratosthenes">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from math import isqrt
+
 def sieve(n):
     """All primes up to n. O(n log log n) time, O(n) space."""
     is_prime = [True] * (n + 1)
@@ -7001,6 +7216,34 @@ def sieve(n):
     return [i for i, prime in enumerate(is_prime) if prime]
 
 
+print(sieve(30))                        # [2,3,5,7,11,13,17,19,23,29]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function sieve(n) {                     // O(n log log n)
+  const isPrime = new Array(n + 1).fill(true);
+  isPrime[0] = isPrime[1] = false;
+  for (let p = 2; p * p &lt;= n; p++) {
+    if (!isPrime[p]) continue;
+    for (let m = p * p; m &lt;= n; m += p) isPrime[m] = false;  // start at p*p
+  }
+  return isPrime.flatMap((prime, i) =&gt; (prime ? [i] : []));
+}
+
+console.log(sieve(30));                            // [2,3,...,29]
+</code></pre>
+                </div>
+            </div>
+
+            <p>Factorising a single number is a different job and needs no sieve. Trial division only has to reach
+                <code>√n</code>, because at most one prime factor can exceed it — whatever remains at the end is itself
+                prime.
+            </p>
+
+            <div class="code-tabs" data-label="Prime factorisation">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def prime_factors(n):
     """O(sqrt(n)). Any factor above sqrt(n) can only appear once."""
     factors = []
@@ -7011,10 +7254,38 @@ def prime_factors(n):
             n //= d
         d += 1
     if n &gt; 1:
-        factors.append(n)
+        factors.append(n)            # whatever survives is prime
     return factors
 
 
+print(prime_factors(360))               # [2, 2, 2, 3, 3, 5]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function primeFactors(n) {              // O(sqrt(n))
+  const factors = [];
+  for (let d = 2; d * d &lt;= n; d++) {
+    while (n % d === 0) {
+      factors.push(d);
+      n /= d;
+    }
+  }
+  if (n &gt; 1) factors.push(n);           // whatever survives is prime
+  return factors;
+}
+
+console.log(primeFactors(360));                    // [2,2,2,3,3,5]
+</code></pre>
+                </div>
+            </div>
+
+            <p>Modular exponentiation is binary exponentiation with a <code>% mod</code> after every step, so the
+                numbers never grow. It underpins RSA, hashing and every "answer modulo 10⁹+7" problem.</p>
+
+            <div class="code-tabs" data-label="Modular exponentiation">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def mod_pow(base, exponent, mod):
     """(base ** exponent) % mod without ever building a huge number."""
     result = 1
@@ -7026,44 +7297,15 @@ def mod_pow(base, exponent, mod):
         exponent &gt;&gt;= 1
     return result
 
+
 # Python has these built in: pow(base, exp, mod), math.comb, math.gcd
-print(sieve(30))                        # [2,3,5,7,11,13,17,19,23,29]
-print(prime_factors(360))               # [2, 2, 2, 3, 3, 5]
+from math import comb
 print(mod_pow(2, 100, 1_000_000_007))   # 976371285
 print(comb(10, 3))                      # 120
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function gcd(a, b) {                    // O(log min(a, b))
-  while (b) [a, b] = [b, a % b];
-  return a;
-}
-
-const lcm = (a, b) =&gt; (a / gcd(a, b)) * b;   // divide first
-
-function sieve(n) {                     // O(n log log n)
-  const isPrime = new Array(n + 1).fill(true);
-  isPrime[0] = isPrime[1] = false;
-  for (let p = 2; p * p &lt;= n; p++) {
-    if (!isPrime[p]) continue;
-    for (let m = p * p; m &lt;= n; m += p) isPrime[m] = false;  // start at p*p
-  }
-  return isPrime.flatMap((prime, i) =&gt; (prime ? [i] : []));
-}
-
-function primeFactors(n) {              // O(sqrt(n))
-  const factors = [];
-  for (let d = 2; d * d &lt;= n; d++) {
-    while (n % d === 0) {
-      factors.push(d);
-      n /= d;
-    }
-  }
-  if (n &gt; 1) factors.push(n);
-  return factors;
-}
-
 function modPow(base, exponent, mod) {  // BigInt avoids overflow past 2^53
   let result = 1n;
   let b = BigInt(base) % BigInt(mod);
@@ -7077,8 +7319,6 @@ function modPow(base, exponent, mod) {  // BigInt avoids overflow past 2^53
   return result;
 }
 
-console.log(sieve(30));                            // [2,3,...,29]
-console.log(primeFactors(360));                    // [2,2,2,3,3,5]
 console.log(modPow(2, 100, 1000000007).toString()); // 976371285
 </code></pre>
                 </div>
@@ -7393,7 +7633,7 @@ console.log(arr.sumRange(0, 2));    // 8
                 so keep the matched "AB" and resume comparing at pattern index 2 —
                 the text pointer NEVER goes backwards.</div>
 
-            <div class="code-tabs" data-label="KMP and Rabin-Karp">
+            <div class="code-tabs" data-label="KMP — failure table and search">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def build_lps(pattern):
@@ -7435,32 +7675,7 @@ def kmp_search(text, pattern):
     return matches
 
 
-def rabin_karp(text, pattern, base=256, mod=1_000_000_007):
-    """Rolling hash: compare cheap hashes, verify only on a hit. O(n + m)."""
-    n, m = len(text), len(pattern)
-    if m &gt; n:
-        return []
-
-    high = pow(base, m - 1, mod)        # value of the leading digit
-    pattern_hash = text_hash = 0
-    for i in range(m):
-        pattern_hash = (pattern_hash * base + ord(pattern[i])) % mod
-        text_hash = (text_hash * base + ord(text[i])) % mod
-
-    matches = []
-    for i in range(n - m + 1):
-        # Hash equality can be a collision, so always verify the substring.
-        if text_hash == pattern_hash and text[i:i + m] == pattern:
-            matches.append(i)
-        if i &lt; n - m:
-            # Roll: drop the leftmost character, append the next one. O(1).
-            text_hash = ((text_hash - ord(text[i]) * high) * base
-                         + ord(text[i + m])) % mod
-    return matches
-
-
 print(kmp_search("ABABDABACDABABCABAB", "ABABCABAB"))   # [10]
-print(rabin_karp("abracadabra", "abra"))                # [0, 7]
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -7494,6 +7709,54 @@ function kmpSearch(text, pattern) {     // O(n + m)
   return matches;
 }
 
+console.log(kmpSearch("ABABDABACDABABCABAB", "ABABCABAB"));  // [10]
+</code></pre>
+                </div>
+            </div>
+
+            <h3 id="rabin-karp">Rabin-Karp — the rolling hash<a class="headerlink" href="#rabin-karp"
+                    title="Permanent link">#</a></h3>
+            <p>A completely different escape from the same waste. Instead of being clever about mismatches, compare a
+                cheap <strong>hash</strong> of each window against the pattern's hash. The trick is that the hash rolls
+                in <code>O(1)</code>: drop the leftmost character's contribution, shift, add the new one — no need to
+                re-read the window.</p>
+            <p>Hashes can collide, so a hit must always be verified against the real substring. That keeps it correct,
+                and with a decent modulus collisions are rare enough that the expected cost stays
+                <code>O(n + m)</code>.
+            </p>
+
+            <div class="code-tabs" data-label="Rabin-Karp substring search">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def rabin_karp(text, pattern, base=256, mod=1_000_000_007):
+    """Rolling hash: compare cheap hashes, verify only on a hit. O(n + m)."""
+    n, m = len(text), len(pattern)
+    if m &gt; n:
+        return []
+
+    high = pow(base, m - 1, mod)        # value of the leading digit
+    pattern_hash = text_hash = 0
+    for i in range(m):
+        pattern_hash = (pattern_hash * base + ord(pattern[i])) % mod
+        text_hash = (text_hash * base + ord(text[i])) % mod
+
+    matches = []
+    for i in range(n - m + 1):
+        # Hash equality can be a collision, so always verify the substring.
+        if text_hash == pattern_hash and text[i:i + m] == pattern:
+            matches.append(i)
+        if i &lt; n - m:
+            # Roll: drop the leftmost character, append the next one. O(1).
+            text_hash = ((text_hash - ord(text[i]) * high) * base
+                         + ord(text[i + m])) % mod
+    return matches
+
+
+print(rabin_karp("abracadabra", "abra"))                # [0, 7]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function rabinKarp(text, pattern, base = 256n, mod = 1000000007n) {
   const n = text.length;
   const m = pattern.length;
@@ -7522,7 +7785,6 @@ function rabinKarp(text, pattern, base = 256n, mod = 1000000007n) {
   return matches;
 }
 
-console.log(kmpSearch("ABABDABACDABABCABAB", "ABABCABAB"));  // [10]
 console.log(rabinKarp("abracadabra", "abra"));               // [0, 7]
 </code></pre>
                 </div>
@@ -7622,7 +7884,7 @@ console.log(longestPalindrome("cbbd"));    // 'bb'
 
                 result: [1,6] [8,10] [15,18]</div>
 
-            <div class="code-tabs" data-label="Merge, insert, and sweep">
+            <div class="code-tabs" data-label="Merging overlapping intervals">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def merge_intervals(intervals):
@@ -7640,42 +7902,8 @@ def merge_intervals(intervals):
     return merged
 
 
-def insert_interval(intervals, new):
-    """Insert into an already-sorted, non-overlapping list. O(n)."""
-    out, i, n = [], 0, len(intervals)
-    start, end = new
-
-    while i &lt; n and intervals[i][1] &lt; start:     # entirely before
-        out.append(intervals[i]); i += 1
-    while i &lt; n and intervals[i][0] &lt;= end:      # overlapping - absorb
-        start = min(start, intervals[i][0])
-        end = max(end, intervals[i][1])
-        i += 1
-    out.append([start, end])
-    out.extend(intervals[i:])                   # entirely after
-    return out
-
-
-def max_concurrent(intervals):
-    """Peak number of simultaneous intervals - the sweep line. O(n log n)."""
-    events = []
-    for start, end in intervals:
-        events.append((start, 1))       # someone arrives
-        events.append((end, -1))        # someone leaves
-    # Ends sort before starts at the same instant, so touching intervals
-    # ([1,2] and [2,3]) do not count as overlapping.
-    events.sort(key=lambda e: (e[0], e[1]))
-
-    active = best = 0
-    for _, delta in events:
-        active += delta
-        best = max(best, active)
-    return best
-
-
 print(merge_intervals([[1, 3], [2, 6], [8, 10], [15, 18]]))
 # [[1, 6], [8, 10], [15, 18]]
-print(max_concurrent([[0, 30], [5, 10], [15, 20]]))     # 2
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -7694,6 +7922,40 @@ function mergeIntervals(intervals) {    // O(n log n)
   return merged;
 }
 
+console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]));
+// [[1,6],[8,10],[15,18]]
+</code></pre>
+                </div>
+            </div>
+
+            <p>If the list is <em>already</em> sorted and non-overlapping, inserting one new interval does not need a
+                re-sort at all — a single <code>O(n)</code> pass in three phases: copy everything that ends before the
+                new one starts, absorb everything that touches it, then copy the rest.</p>
+
+            <div class="code-tabs" data-label="Inserting into a sorted interval list">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def insert_interval(intervals, new):
+    """Insert into an already-sorted, non-overlapping list. O(n)."""
+    out, i, n = [], 0, len(intervals)
+    start, end = new
+
+    while i &lt; n and intervals[i][1] &lt; start:     # entirely before
+        out.append(intervals[i]); i += 1
+    while i &lt; n and intervals[i][0] &lt;= end:      # overlapping - absorb
+        start = min(start, intervals[i][0])
+        end = max(end, intervals[i][1])
+        i += 1
+    out.append([start, end])
+    out.extend(intervals[i:])                   # entirely after
+    return out
+
+
+print(insert_interval([[1, 3], [6, 9]], [2, 5]))    # [[1, 5], [6, 9]]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function insertInterval(intervals, [start, end]) {   // O(n)
   const out = [];
   let i = 0;
@@ -7710,6 +7972,40 @@ function insertInterval(intervals, [start, end]) {   // O(n)
   return [...out, ...intervals.slice(i)];
 }
 
+console.log(insertInterval([[1, 3], [6, 9]], [2, 5]));   // [[1,5],[6,9]]
+</code></pre>
+                </div>
+            </div>
+
+            <p>The sweep line is the other half of the toolkit. Rather than manipulating intervals as objects, split
+                each into a <code>+1</code> arrival and a <code>−1</code> departure, sort all the events, and run a
+                counter along the timeline.</p>
+
+            <div class="code-tabs" data-label="Sweep line — peak concurrency">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def max_concurrent(intervals):
+    """Peak number of simultaneous intervals - the sweep line. O(n log n)."""
+    events = []
+    for start, end in intervals:
+        events.append((start, 1))       # someone arrives
+        events.append((end, -1))        # someone leaves
+    # Ends sort before starts at the same instant, so touching intervals
+    # ([1,2] and [2,3]) do not count as overlapping.
+    events.sort(key=lambda e: (e[0], e[1]))
+
+    active = best = 0
+    for _, delta in events:
+        active += delta
+        best = max(best, active)
+    return best
+
+
+print(max_concurrent([[0, 30], [5, 10], [15, 20]]))     # 2
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function maxConcurrent(intervals) {     // sweep line, O(n log n)
   const events = [];
   for (const [start, end] of intervals) {
@@ -7724,8 +8020,6 @@ function maxConcurrent(intervals) {     // sweep line, O(n log n)
   return best;
 }
 
-console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]));
-// [[1,6],[8,10],[15,18]]
 console.log(maxConcurrent([[0, 30], [5, 10], [15, 20]]));   // 2
 </code></pre>
                 </div>
