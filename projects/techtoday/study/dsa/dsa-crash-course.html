@@ -59,7 +59,7 @@
                 <li><a href="#5-hash-tables-and-sets">Hash Tables &amp; Sets</a></li>
                 <li><a href="#6-trees">Trees</a></li>
                 <li><a href="#7-graphs">Graphs</a></li>
-                <li><a href="#8-traversal-and-shortest-paths">Traversal &amp; Shortest Paths</a></li>
+                <li><a href="#8-graph-traversal-and-shortest-paths">Graph Traversal &amp; Shortest Paths</a></li>
                 <li><a href="#9-searching">Searching</a></li>
                 <li><a href="#10-sorting">Sorting</a></li>
                 <li><a href="#11-the-four-problem-solving-philosophies">The Four Problem-Solving Philosophies</a></li>
@@ -945,6 +945,218 @@ console.log(maxDepth(tree));        // 3
                 </div>
             </div>
 
+            <h4 id="tree-traversals">Tree Traversals<a class="headerlink" href="#tree-traversals"
+                    title="Permanent link">#</a></h4>
+            <p>On a binary tree, systematic traversal produces four standard orders. The three depth-first ones differ
+                only
+                in <em>when</em> the node itself is visited relative to its children — a one-line change with completely
+                different uses. In-order on a BST comes out perfectly sorted.</p>
+
+            <h4>In-order traversal (Left &rarr; Root &rarr; Right)</h4>
+            <p>Visits the left subtree, then the root, then the right subtree. Produces sorted order on any valid binary
+                search tree.</p>
+            <div class="viz" data-viz="traversal" data-option="inorder"></div>
+
+            <h4>Pre-order traversal (Root &rarr; Left &rarr; Right)</h4>
+            <p>Visits the root before its children. Ideal for serialising, copying, or prefix-evaluating trees.</p>
+            <div class="viz" data-viz="traversal" data-option="preorder"></div>
+
+            <h4>Post-order traversal (Left &rarr; Right &rarr; Root)</h4>
+            <p>Visits both children before the parent. Essential for bottom-up calculations, directory size
+                accumulation, and deletions.</p>
+            <div class="viz" data-viz="traversal" data-option="postorder"></div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you implement the three depth-first tree traversals (in-order, pre-order, and
+                    post-order)?</p>
+                <p>All three depth-first tree walks visit the left and right subtrees recursively; they differ solely in
+                    <em>when</em> the parent node itself is visited relative to its children:
+                </p>
+                <ol>
+                    <li><strong>In-order (Left &rarr; Root &rarr; Right)</strong>: Processes left child, visits the
+                        current
+                        node, then processes right child. On a BST, this yields keys in strictly ascending sorted order.
+                    </li>
+                    <li><strong>Pre-order (Root &rarr; Left &rarr; Right)</strong>: Visits the node before traversing
+                        either
+                        child. Used for cloning, serializing trees, or inspecting root decisions first.</li>
+                    <li><strong>Post-order (Left &rarr; Right &rarr; Root)</strong>: Traverses both children before
+                        processing
+                        the node. Essential for bottom-up aggregations (height, diameter, subtree sums) and safe node
+                        deletion.</li>
+                </ol>
+
+                <div class="code-tabs" data-label="Binary tree depth-first traversals">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+
+def inorder(node):
+    """Left -&gt; Root -&gt; Right. Sorted on a BST. O(n) time, O(h) space."""
+    return inorder(node.left) + [node.value] + inorder(node.right) if node else []
+
+
+def preorder(node):
+    """Root -&gt; Left -&gt; Right. Serialisation / cloning. O(n) time, O(h) space."""
+    return [node.value] + preorder(node.left) + preorder(node.right) if node else []
+
+
+def postorder(node):
+    """Left -&gt; Right -&gt; Root. Bottom-up evaluation. O(n) time, O(h) space."""
+    return postorder(node.left) + postorder(node.right) + [node.value] if node else []
+
+
+#         4
+#       /   \
+#      2     6
+#     / \   / \
+#    1   3 5   7
+tree = TreeNode(4,
+    TreeNode(2, TreeNode(1), TreeNode(3)),
+    TreeNode(6, TreeNode(5), TreeNode(7)))
+
+print("In-order:  ", inorder(tree))     # [1, 2, 3, 4, 5, 6, 7]
+print("Pre-order: ", preorder(tree))    # [4, 2, 1, 3, 6, 5, 7]
+print("Post-order:", postorder(tree))   # [1, 3, 2, 5, 7, 6, 4]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+function inorder(node) {                // Left -&gt; Root -&gt; Right
+  if (!node) return [];
+  return [...inorder(node.left), node.value, ...inorder(node.right)];
+}
+
+function preorder(node) {               // Root -&gt; Left -&gt; Right
+  if (!node) return [];
+  return [node.value, ...preorder(node.left), ...preorder(node.right)];
+}
+
+function postorder(node) {              // Left -&gt; Right -&gt; Root
+  if (!node) return [];
+  return [...postorder(node.left), ...postorder(node.right), node.value];
+}
+
+const tree = new TreeNode(4,
+  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+  new TreeNode(6, new TreeNode(5), new TreeNode(7))
+);
+
+console.log("In-order:  ", inorder(tree));    // [1, 2, 3, 4, 5, 6, 7]
+console.log("Pre-order: ", preorder(tree));   // [4, 2, 1, 3, 6, 5, 7]
+console.log("Post-order:", postorder(tree));  // [1, 3, 2, 5, 7, 6, 4]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h4>Level-order traversal (BFS)</h4>
+            <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
+            <div class="viz" data-viz="traversal" data-option="level"></div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you traverse a binary tree level-by-level using Breadth-First Search
+                    (Level-Order)?</p>
+                <p>Level-order traversal visits nodes row-by-row from top to bottom using a FIFO queue. By capturing the
+                    number of items in the queue at the start of each round, we process exactly one complete level at a
+                    time before appending children for the next level.</p>
+
+                <div class="code-tabs" data-label="Level-order traversal (BFS)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def level_order(root):
+    """Row-by-row level-order traversal. O(n) time, O(w) space."""
+    if not root:
+        return []
+    levels = []
+    q = deque([root])
+
+    while q:
+        level = []
+        for _ in range(len(q)):         # snapshot level size
+            node = q.popleft()
+            level.append(node.value)
+            if node.left:
+                q.append(node.left)
+            if node.right:
+                q.append(node.right)
+        levels.append(level)
+
+    return levels
+
+
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+
+tree = TreeNode(4,
+    TreeNode(2, TreeNode(1), TreeNode(3)),
+    TreeNode(6, TreeNode(5), TreeNode(7)))
+
+# [[4], [2, 6], [1, 3, 5, 7]]
+print("Level-order:", level_order(tree))
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function levelOrder(root) {             // O(n) time, O(w) space
+  if (!root) return [];
+  const levels = [];
+  const queue = [root];
+  let head = 0;
+
+  while (head &lt; queue.length) {
+    const levelSize = queue.length - head;
+    const currentLevel = [];
+
+    for (let i = 0; i &lt; levelSize; i++) {
+      const node = queue[head++];
+      currentLevel.push(node.value);
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+    levels.push(currentLevel);
+  }
+
+  return levels;
+}
+
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+const tree = new TreeNode(4,
+  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+  new TreeNode(6, new TreeNode(5), new TreeNode(7))
+);
+
+console.log("Level-order:", levelOrder(tree));
+// [[4], [2, 6], [1, 3, 5, 7]]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 7 -->
             <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
 
@@ -1109,11 +1321,13 @@ console.log(countIslands([["1","1","0","0"],
             </div>
 
             <!-- ============================================================ 8 -->
-            <h3 id="8-traversal-and-shortest-paths">Traversal &amp; Shortest Paths<a class="headerlink"
-                    href="#8-traversal-and-shortest-paths" title="Permanent link">#</a></h3>
+            <h3 id="8-graph-traversal-and-shortest-paths"><span id="8-traversal-and-shortest-paths"></span>Graph
+                Traversal &amp; Shortest Paths<a class="headerlink" href="#8-graph-traversal-and-shortest-paths"
+                    title="Permanent link">#</a></h3>
 
-            <p>Once data sits in a tree or graph you need a systematic way to visit it. There are two, and they differ
-                by a single detail: <strong>which item you take out of the waiting list next.</strong></p>
+            <p>Once data sits in a graph, you need a systematic way to explore its vertices and edges without getting
+                trapped in cycles. There are two primary strategies, and they differ
+                by a single detail: <strong>which vertex you take out of the waiting frontier next.</strong></p>
 
             <ul class="card-grid">
                 <li><b>Depth-first search (DFS)</b>Dive as deep as possible down one branch, then back up and try the
@@ -1131,215 +1345,6 @@ console.log(countIslands([["1","1","0","0"],
                     <p>BFS spreads outward in expanding rings, finishing every point at distance 1 before touching
                         anything at distance 2. That is exactly why the first time it reaches your target, it has
                         arrived by the shortest route.</p>
-                </div>
-            </div>
-
-            <p>On a binary tree the same two ideas produce four standard orders. The three depth-first ones differ only
-                in <em>when</em> the node itself is visited relative to its children — a one-line change with completely
-                different uses. In-order on a BST comes out perfectly sorted.</p>
-
-            <h4>In-order traversal (Left &rarr; Root &rarr; Right)</h4>
-            <p>Visits the left subtree, then the root, then the right subtree. Produces sorted order on any valid binary
-                search tree.</p>
-            <div class="viz" data-viz="traversal" data-option="inorder"></div>
-
-            <h4>Pre-order traversal (Root &rarr; Left &rarr; Right)</h4>
-            <p>Visits the root before its children. Ideal for serialising, copying, or prefix-evaluating trees.</p>
-            <div class="viz" data-viz="traversal" data-option="preorder"></div>
-
-            <h4>Post-order traversal (Left &rarr; Right &rarr; Root)</h4>
-            <p>Visits both children before the parent. Essential for bottom-up calculations, directory size
-                accumulation, and deletions.</p>
-            <div class="viz" data-viz="traversal" data-option="postorder"></div>
-
-            <h4>Level-order traversal (BFS)</h4>
-            <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
-            <div class="viz" data-viz="traversal" data-option="level"></div>
-
-            <div class="worked">
-                <b>Interview Question</b>
-                <p class="worked-q">How do you implement the three depth-first tree traversals (in-order, pre-order, and
-                    post-order)?</p>
-                <p>All three depth-first tree walks visit the left and right subtrees recursively; they differ solely in
-                    <em>when</em> the parent node itself is visited relative to its children:
-                </p>
-                <ol>
-                    <li><strong>In-order (Left &rarr; Root &rarr; Right)</strong>: Processes left child, visits the
-                        current
-                        node, then processes right child. On a BST, this yields keys in strictly ascending sorted order.
-                    </li>
-                    <li><strong>Pre-order (Root &rarr; Left &rarr; Right)</strong>: Visits the node before traversing
-                        either
-                        child. Used for cloning, serializing trees, or inspecting root decisions first.</li>
-                    <li><strong>Post-order (Left &rarr; Right &rarr; Root)</strong>: Traverses both children before
-                        processing
-                        the node. Essential for bottom-up aggregations (height, diameter, subtree sums) and safe node
-                        deletion.</li>
-                </ol>
-
-                <div class="code-tabs" data-label="Binary tree depth-first traversals">
-                    <div class="tab-pane" data-lang="python">
-                        <pre><code data-lang="python">
-class TreeNode:
-    def __init__(self, value, left=None, right=None):
-        self.value, self.left, self.right = value, left, right
-
-
-def inorder(node):
-    """Left -&gt; Root -&gt; Right. Sorted on a BST. O(n) time, O(h) space."""
-    return inorder(node.left) + [node.value] + inorder(node.right) if node else []
-
-
-def preorder(node):
-    """Root -&gt; Left -&gt; Right. Serialisation / cloning. O(n) time, O(h) space."""
-    return [node.value] + preorder(node.left) + preorder(node.right) if node else []
-
-
-def postorder(node):
-    """Left -&gt; Right -&gt; Root. Bottom-up evaluation. O(n) time, O(h) space."""
-    return postorder(node.left) + postorder(node.right) + [node.value] if node else []
-
-
-#         4
-#       /   \
-#      2     6
-#     / \   / \
-#    1   3 5   7
-tree = TreeNode(4,
-    TreeNode(2, TreeNode(1), TreeNode(3)),
-    TreeNode(6, TreeNode(5), TreeNode(7)))
-
-print("In-order:  ", inorder(tree))     # [1, 2, 3, 4, 5, 6, 7]
-print("Pre-order: ", preorder(tree))    # [4, 2, 1, 3, 6, 5, 7]
-print("Post-order:", postorder(tree))   # [1, 3, 2, 5, 7, 6, 4]
-</code></pre>
-                    </div>
-                    <div class="tab-pane" data-lang="javascript">
-                        <pre><code data-lang="javascript">
-class TreeNode {
-  constructor(value, left = null, right = null) {
-    this.value = value;
-    this.left = left;
-    this.right = right;
-  }
-}
-
-function inorder(node) {                // Left -&gt; Root -&gt; Right
-  if (!node) return [];
-  return [...inorder(node.left), node.value, ...inorder(node.right)];
-}
-
-function preorder(node) {               // Root -&gt; Left -&gt; Right
-  if (!node) return [];
-  return [node.value, ...preorder(node.left), ...preorder(node.right)];
-}
-
-function postorder(node) {              // Left -&gt; Right -&gt; Root
-  if (!node) return [];
-  return [...postorder(node.left), ...postorder(node.right), node.value];
-}
-
-const tree = new TreeNode(4,
-  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-  new TreeNode(6, new TreeNode(5), new TreeNode(7))
-);
-
-console.log("In-order:  ", inorder(tree));    // [1, 2, 3, 4, 5, 6, 7]
-console.log("Pre-order: ", preorder(tree));   // [4, 2, 1, 3, 6, 5, 7]
-console.log("Post-order:", postorder(tree));  // [1, 3, 2, 5, 7, 6, 4]
-</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="worked">
-                <b>Interview Question</b>
-                <p class="worked-q">How do you traverse a binary tree level-by-level using Breadth-First Search
-                    (Level-Order)?</p>
-                <p>Level-order traversal visits nodes row-by-row from top to bottom using a FIFO queue. By capturing the
-                    number of items in the queue at the start of each round, we process exactly one complete level at a
-                    time before appending children for the next level.</p>
-
-                <div class="code-tabs" data-label="Level-order traversal (BFS)">
-                    <div class="tab-pane" data-lang="python">
-                        <pre><code data-lang="python">
-from collections import deque
-
-def level_order(root):
-    """Row-by-row level-order traversal. O(n) time, O(w) space."""
-    if not root:
-        return []
-    levels = []
-    q = deque([root])
-
-    while q:
-        level = []
-        for _ in range(len(q)):         # snapshot level size
-            node = q.popleft()
-            level.append(node.value)
-            if node.left:
-                q.append(node.left)
-            if node.right:
-                q.append(node.right)
-        levels.append(level)
-
-    return levels
-
-
-class TreeNode:
-    def __init__(self, value, left=None, right=None):
-        self.value, self.left, self.right = value, left, right
-
-
-tree = TreeNode(4,
-    TreeNode(2, TreeNode(1), TreeNode(3)),
-    TreeNode(6, TreeNode(5), TreeNode(7)))
-
-# [[4], [2, 6], [1, 3, 5, 7]]
-print("Level-order:", level_order(tree))
-</code></pre>
-                    </div>
-                    <div class="tab-pane" data-lang="javascript">
-                        <pre><code data-lang="javascript">
-function levelOrder(root) {             // O(n) time, O(w) space
-  if (!root) return [];
-  const levels = [];
-  const queue = [root];
-  let head = 0;
-
-  while (head &lt; queue.length) {
-    const levelSize = queue.length - head;
-    const currentLevel = [];
-
-    for (let i = 0; i &lt; levelSize; i++) {
-      const node = queue[head++];
-      currentLevel.push(node.value);
-      if (node.left) queue.push(node.left);
-      if (node.right) queue.push(node.right);
-    }
-    levels.push(currentLevel);
-  }
-
-  return levels;
-}
-
-class TreeNode {
-  constructor(value, left = null, right = null) {
-    this.value = value;
-    this.left = left;
-    this.right = right;
-  }
-}
-
-const tree = new TreeNode(4,
-  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
-  new TreeNode(6, new TreeNode(5), new TreeNode(7))
-);
-
-console.log("Level-order:", levelOrder(tree));
-// [[4], [2, 6], [1, 3, 5, 7]]
-</code></pre>
-                    </div>
                 </div>
             </div>
 
