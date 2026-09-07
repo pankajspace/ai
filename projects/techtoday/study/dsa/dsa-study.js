@@ -1665,11 +1665,18 @@ const mountViz = (root) => {
     const spec = VIZ[root.dataset.viz];
     if (!spec) return;
 
+    const optValue = root.dataset.option;
+    const optObj = spec.options ? spec.options.find((o) => o.value === optValue) : null;
+
     const head = document.createElement("div");
     head.className = "viz-head";
     const title = document.createElement("span");
     title.className = "viz-title";
-    title.textContent = root.dataset.title || spec.title;
+    let defaultTitle = spec.title;
+    if (optObj) {
+        defaultTitle = `${optObj.label}, step by step`;
+    }
+    title.textContent = root.dataset.title || defaultTitle;
     const counter = document.createElement("span");
     counter.className = "viz-step";
     head.append(title, counter);
@@ -1720,7 +1727,7 @@ const mountViz = (root) => {
     controls.append(speed);
 
     let picker = null;
-    if (spec.options) {
+    if (spec.options && !optValue) {
         picker = document.createElement("select");
         picker.className = "viz-select";
         picker.setAttribute("aria-label", "Variant");
@@ -1730,7 +1737,6 @@ const mountViz = (root) => {
             opt.textContent = label;
             picker.append(opt);
         });
-        if (root.dataset.option) picker.value = root.dataset.option;
         head.append(picker);
     }
 
@@ -1810,7 +1816,13 @@ const mountViz = (root) => {
             play();
         }
     });
-    picker?.addEventListener("change", load);
+    picker?.addEventListener("change", () => {
+        if (!root.dataset.title && spec.options) {
+            const curOpt = spec.options.find((o) => o.value === picker.value);
+            if (curOpt) title.textContent = `${curOpt.label}, step by step`;
+        }
+        load();
+    });
 
     load();
 
