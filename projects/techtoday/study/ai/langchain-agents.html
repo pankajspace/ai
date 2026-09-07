@@ -2,9 +2,18 @@
 <html lang="en">
 
 <head>
+  <script>
+    if (window.location.pathname.endsWith('/ai')) {
+      const base = document.createElement('base');
+      let path = window.location.pathname.replace(/\/ai\/?$/, '');
+      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+      document.head.appendChild(base);
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Engineering · Class 2 — Hands-On: LangChain & Your First Agent | Scaler</title>
+  <meta name="theme-color" content="#0b0d10">
+  <title>LangChain &amp; Agents | TechToday</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon"
@@ -2174,318 +2183,344 @@
           aria-hidden="true">⚡</span><span>TechToday</span></a>
     </nav>
   </header>
-  <div id="progress"></div>
-  <div id="topnav">
-    <div class="wrap">
-      <div class="brand">AI&nbsp;<b>Engineering</b> · Class 2</div>
-      <nav>
-        <a href="#adapt">3 ways</a><a href="#langchain">LangChain</a><a href="#agent">First agent</a>
-        <a href="#game">🎮 Game</a><a href="#project">★ Project</a><a href="#linkedin">Ship it</a><a
-          href="#next">Next</a>
-      </nav>
-    </div>
-  </div>
-
-  <!-- HERO -->
-  <header class="hero">
-    <div class="orb"></div>
-    <div class="wrap">
-      <div>
-        <span class="kicker"><span class="dot"></span> Class 2 · 100% Hands-On · Build Your First Agent</span>
-        <h1 class="title">Today your AI<br>stops talking and<br>starts <em>doing</em>.</h1>
-        <p class="lede">Class 1: you talked to a model. Class 2: you give it <strong>hands</strong>. You'll meet
-          LangChain, snap your first chain together, then build an <strong>agent that decides — on its own — when to use
-            a tool.</strong> Watch it happen live on the right. 👉</p>
-        <div class="hero-meta">
-          <span class="chip">🧭 3 ways to steer a model</span>
-          <span class="chip">🔗 LangChain, hands-on</span>
-          <span class="chip">🤖 A real tool-using agent</span>
-          <span class="chip">🎮 "Tool or No Tool?" game</span>
-          <span class="chip">📣 Ship agent #1 today</span>
-        </div>
-        <div class="signature"><b>Scaler Academy</b> — type along. Every code block has 📋 Copy; every demo is
-          clickable.</div>
-      </div>
-      <div>
-        <div class="phone">
-          <div class="ph-bar">🛍️ Smart Shop Assistant <span class="live">live</span></div>
-          <div class="ph-body" id="heroChat"></div>
-          <button class="replaybtn" id="heroReplay">↻ replay</button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- RECAP -->
-  <section class="block reveal" id="recap">
-    <div class="wrap">
-      <div class="sec-head accent">
-        <div class="sec-num">↺</div>
-        <div>
-          <div class="sec-time">10-second recap</div>
-          <h2>You already did the hard part</h2>
-        </div>
-      </div>
-      <div class="recap">
-        <span class="r"><span class="c"></span> Called an LLM with the OpenAI library</span>
-        <span class="r"><span class="c"></span> system / user / assistant messages</span>
-        <span class="r"><span class="c"></span> Key safely in <code>.env</code></span>
-        <span class="r"><span class="c"></span> Shipped a Summarizer + an LLM Arena</span>
-      </div>
-      <div class="note">
-        <div class="ico">🛠️</div>
-        <div><b>Today's deal — minimal slides, maximum doing</b>
-          <p>Everything today is the <em>same OpenAI call you already know</em>, organised more cleverly. Keep your
-            Class 1 folder open; we build directly on top of it.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- AGENDA -->
-  <section class="block reveal" id="agenda">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-num">⏱</div>
-        <div>
-          <div class="sec-time">Plan for today</div>
-          <h2>Our Class 2 flight plan</h2>
-        </div>
-      </div>
-      <div class="agenda">
-        <div class="row">
-          <div class="tm">0:00</div>
-          <div class="ct"><b>Recap + 3 ways to steer a model</b>
-            <p>Warm-up, prompting vs RAG vs fine-tuning</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">0:15</div>
-          <div class="ct"><b>LangChain: the new words, in plain English</b>
-            <p>Template · model · parser — what each one IS, before any code</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">0:35</div>
-          <div class="ct"><b>Build your first chain</b>
-            <p>Snap-it-together builder, then the real code, line by line</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">1:00</div>
-          <div class="ct"><b>Memory</b>
-            <p>Why models forget &amp; how LangChain remembers — decoded</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">1:10</div>
-          <div class="ct"><b>Your first tiny agent</b>
-            <p>One tool, line by line, + watch the message list grow</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">1:40</div>
-          <div class="ct"><b>🎮 "Tool or No Tool?" game</b>
-            <p>Prove you can think like the agent</p>
-          </div>
-        </div>
-        <div class="row peak">
-          <div class="tm">1:50</div>
-          <div class="ct"><b>Project: Smart Shop Assistant</b>
-            <p>Chat UI + public link</p>
-          </div>
-        </div>
-        <div class="row peak">
-          <div class="tm">2:15</div>
-          <div class="ct"><b>Ship it to LinkedIn</b>
-            <p>Caption + post — today 🎉</p>
-          </div>
-        </div>
-        <div class="row">
-          <div class="tm">2:25</div>
-          <div class="ct"><b>Wrap &amp; what's next</b>
-            <p>Homework + the road ahead (ends ~2:30)</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLOCK 9 -->
-  <section class="block reveal" id="adapt">
-    <div class="wrap">
-      <div class="sec-head accent">
-        <div class="sec-num">9</div>
-        <div>
-          <div class="sec-time">Block 9 · ~5 min · the map</div>
-          <h2>3 ways to make a model<br>do <em>what you want</em></h2>
-        </div>
-      </div>
-      <p class="big-p">Before we build: the entire field of AI engineering boils down to <strong>three</strong> ways of
-        steering a pre-trained model. You'll live in the first, visit the second soon, and almost never need the third.
-      </p>
-      <div class="pieces">
-        <div class="piece">
-          <div class="e">✍️</div><b>1. Prompting</b>
-          <p>Just <em>tell</em> it clearly. Free, instant, no training. <strong>90% of real work lives here</strong> —
-            including everything today.</p>
-        </div>
-        <div class="piece">
-          <div class="e">📚</div><b>2. RAG</b>
-          <p>Hand it <em>your</em> documents at question-time so it answers from real data. A coming class.</p>
-        </div>
-        <div class="piece">
-          <div class="e">🎓</div><b>3. Fine-tuning</b>
-          <p>Actually re-train on examples. Powerful, costly, rarely needed. Reach for it last.</p>
-        </div>
-      </div>
-      <div class="note">
-        <div class="ico">🧭</div>
-        <div><b>Why this matters today</b>
-          <p>Chains, tools, agents — it's all still <strong>option 1, organised cleverly</strong>. Nothing new to fear.
-            Let's build.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLOCK 10 -->
-  <section class="block reveal" id="langchain">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-num">10</div>
-        <div>
-          <div class="sec-time">Block 10 · ~35 min · hands-on</div>
-          <h2>LangChain:<br>snap it together</h2>
-        </div>
-      </div>
-      <p class="big-p">In Class 1 you called the API by hand — perfect for one call. The moment you want
-        <strong>reusable prompts, multi-step pipelines, and memory</strong>, you'd be rebuilding the same plumbing
-        forever. <strong>LangChain is that plumbing, pre-built.</strong>
-      </p>
-      <div class="analogy teal">
-        <div class="ico">🧰</div>
-        <div><b>One-line intuition</b>
-          <p>The raw OpenAI call is a Lego brick. LangChain is the box of connectors that snaps bricks into machines.
-          </p>
-        </div>
-      </div>
-
-      <h4>Install it</h4>
-      <div class="term">
-        <div class="tbar"><i></i><i></i><i></i><span>bash</span></div>
-        <pre><span class="pr">$</span> pip install langchain langchain-openai</pre>
-      </div>
-
-      <h3>First: the 3 new words, in plain English</h3>
-      <p>LangChain code uses three names that look scary. They aren't. Read these <em>before</em> we touch code — each
-        one is a thing you already understand:</p>
-      <div class="newwords">
-        <div class="nw y"><span class="w">ChatPromptTemplate</span><b>= a prompt with blanks</b>
-          <p>A normal prompt where some parts are left as <code>{blanks}</code> to fill in later. Like a wedding-invite
-            template: "Dear <code>{name}</code>, join us on <code>{date}</code>". Write once, reuse for every guest.</p>
-          <div class="say">say it as: "my reusable prompt"</div>
-        </div>
-        <div class="nw o"><span class="w">ChatOpenAI</span><b>= the model, in a LangChain wrapper</b>
-          <p>The exact same GPT you called in Class 1 — just wrapped so it can snap onto other LangChain pieces. Same
-            <code>model=</code>, same <code>temperature=</code>.
-          </p>
-          <div class="say">say it as: "the model"</div>
-        </div>
-        <div class="nw g"><span class="w">StrOutputParser</span><b>= unwraps the answer</b>
-          <p>The model doesn't return plain text — it returns a <em>package</em> (text + metadata like token counts).
-            This piece opens the package and hands you just the string. ("Str" = string, i.e. plain text.)</p>
-          <div class="say">say it as: "give me just the text"</div>
-        </div>
-      </div>
-      <div class="analogy blue">
-        <div class="ico">🗣️</div>
-        <div><b>Why is it called "Chat"PromptTemplate?</b>
-          <p>Because it builds prompts in the <strong>chat format you already know</strong> from Class 1 — system / user
-            / assistant messages. Same grammar, now reusable.</p>
-        </div>
-      </div>
-
-      <h3>Feel a template (before coding one)</h3>
-      <p>This is all a template is — blanks you fill. Pick values and watch the final prompt assemble. The dict you pass
-        to LangChain (<code>{"tone": "witty", ...}</code>) is just "here's what goes in each blank":</p>
-      <div class="tpl">
-        <div style="font-family:'Fraunces';font-size:18px;margin-bottom:10px">Template: &nbsp;Write a <span
-            class="slot">{tone}</span> <span class="slot">{length}</span> post about <span class="slot">{topic}</span>
-        </div>
-        <div class="pickrow"><label>tone</label>
-          <div id="pkTone"></div>
-        </div>
-        <div class="pickrow"><label>length</label>
-          <div id="pkLen"></div>
-        </div>
-        <div class="pickrow"><label>topic</label>
-          <div id="pkTopic"></div>
-        </div>
-        <div class="assembled" id="tplOut"></div>
-      </div>
-
-      <h3>What does the model actually return? (the parser's job)</h3>
-      <p>Here's the bit nobody explains. When the model replies, you don't get plain text — you get a <strong>package
-          called an <code>AIMessage</code></strong> with the text inside it, plus bookkeeping. Press the button to see
-        the package, and what the parser does to it:</p>
-      <div class="sim">
-        <div class="sim-head">
-          <div class="t"><span class="live">Live sim</span> Open the package</div>
-          <div class="hint">why StrOutputParser exists</div>
-        </div>
-        <div class="sim-body">
-          <div class="envstage">
-            <div class="envelope" id="envBox">
-              <div class="et">AIMessage ← the package</div>
-              <div class="field star">content: "Anthropic builds safe AI…"</div>
-              <div class="field">tokens_used: 213</div>
-              <div class="field">model: "gpt-4o-mini"</div>
-              <div class="field">finish_reason: "stop"</div>
+  <div class="progress" aria-hidden="true"></div>
+  <main>
+    <article class="study">
+      <!-- HERO -->
+      <header class="hero">
+        <div class="orb"></div>
+        <div class="wrap">
+          <div>
+            <span class="kicker"><span class="dot"></span> Class 2 · 100% Hands-On · Build Your First Agent</span>
+            <h1 class="title" id="langchain-agents">Today your AI<br>stops talking and<br>starts <em>doing</em>.<a
+                class="headerlink" href="#langchain-agents" title="Permanent link">#</a></h1>
+            <p class="lede">Class 1: you talked to a model. Class 2: you give it <strong>hands</strong>. You'll meet
+              LangChain, snap your first chain together, then build an <strong>agent that decides — on its own — when to
+                use
+                a tool.</strong> Watch it happen live on the right. 👉</p>
+            <div class="hero-meta">
+              <span class="chip">🧭 3 ways to steer a model</span>
+              <span class="chip">🔗 LangChain, hands-on</span>
+              <span class="chip">🤖 A real tool-using agent</span>
+              <span class="chip">🎮 "Tool or No Tool?" game</span>
+              <span class="chip">📣 Ship agent #1 today</span>
             </div>
-            <div class="envarrow" id="envArrow">➜ 🧹 parser ➜</div>
-            <div class="envout" id="envOut">"Anthropic builds safe AI…"<br><span
-                style="font-size:11.5px;font-weight:400">just the text. ready to print, show in Gradio, or save.</span>
+            <div class="signature"><b>Scaler Academy</b> — type along. Every code block has 📋 Copy; every demo is
+              clickable.</div>
+          </div>
+          <div>
+            <div class="phone">
+              <div class="ph-bar">🛍️ Smart Shop Assistant <span class="live">live</span></div>
+              <div class="ph-body" id="heroChat"></div>
+              <button class="replaybtn" id="heroReplay">↻ replay</button>
             </div>
           </div>
-          <div style="text-align:center;margin-top:8px"><button class="btn" id="envBtn">📦 Ask the model → open the
-              package</button></div>
-          <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin:12px 0 0">Without the parser you'd
-            write <code>response.content</code> by hand every time (in Class 1 it was
-            <code>response.choices[0].message.content</code> — remember that mouthful?). The parser does it for you,
-            forever.
-          </p>
         </div>
-      </div>
+      </header>
 
-      <h3>Now build the chain — literally</h3>
-      <p>A chain is the three pieces joined by <code>|</code> (the pipe — read it as <strong>"then"</strong>): prompt
-        <em>then</em> model <em>then</em> parser. Click the pieces in the right order, then run data through:
-      </p>
+      <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+          title="Permanent link">#</a></h2>
+      <ol class="table-of-contents table-of-contents-numbered">
+        <li><a href="#recap">10-Second Recap</a></li>
+        <li><a href="#agenda">The Plan for Today</a></li>
+        <li><a href="#adapt">3 Ways to Steer a Model</a></li>
+        <li><a href="#langchain">LangChain Fundamentals</a></li>
+        <li><a href="#agent">Your First Tool-Using Agent</a></li>
+        <li><a href="#project">Hands-On Project</a></li>
+        <li><a href="#linkedin">Ship It to LinkedIn</a></li>
+        <li><a href="#next">What's Next</a></li>
+      </ol>
 
-      <div class="sim builder">
-        <div class="sim-head">
-          <div class="t"><span class="live">Live sim</span> Chain builder</div>
-          <div class="hint">click pieces in order, then run</div>
-        </div>
-        <div class="sim-body">
-          <div class="slots" id="cbSlots"><span class="slotghost">your chain assembles here… (hint: what comes
-              first?)</span></div>
-          <div class="tray" id="cbTray"></div>
-          <div style="text-align:center;margin-top:10px">
-            <button class="btn" id="cbRun" disabled>▶ Run the chain</button>
-            <button class="btn ghost small" id="cbReset">↺ reset</button>
+      <!-- RECAP -->
+      <section class="block reveal" id="recap">
+        <div class="wrap">
+          <div class="sec-head accent">
+            <div class="sec-num">↺</div>
+            <div>
+              <div class="sec-time">10-second recap</div>
+              <h2>You already did the hard part</h2>
+            </div>
           </div>
-          <div class="runout" id="cbOut" style="display:none"></div>
+          <div class="recap">
+            <span class="r"><span class="c"></span> Called an LLM with the OpenAI library</span>
+            <span class="r"><span class="c"></span> system / user / assistant messages</span>
+            <span class="r"><span class="c"></span> Key safely in <code>.env</code></span>
+            <span class="r"><span class="c"></span> Shipped a Summarizer + an LLM Arena</span>
+          </div>
+          <div class="note">
+            <div class="ico">🛠️</div>
+            <div><b>Today's deal — minimal slides, maximum doing</b>
+              <p>Everything today is the <em>same OpenAI call you already know</em>, organised more cleverly. Keep your
+                Class 1 folder open; we build directly on top of it.</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <h3>The same chain, in real code — decoded line by line</h3>
-      <p>Rebuilding your Class 1 summarizer the LangChain way. The numbered comments match the decoder below — nothing
-        here is mystery code:</p>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>summarizer_langchain.py</span></div>
-        <pre><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+      <!-- AGENDA -->
+      <section class="block reveal" id="agenda">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">⏱</div>
+            <div>
+              <div class="sec-time">Plan for today</div>
+              <h2>Our Class 2 flight plan</h2>
+            </div>
+          </div>
+          <div class="agenda">
+            <div class="row">
+              <div class="tm">0:00</div>
+              <div class="ct"><b>Recap + 3 ways to steer a model</b>
+                <p>Warm-up, prompting vs RAG vs fine-tuning</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">0:15</div>
+              <div class="ct"><b>LangChain: the new words, in plain English</b>
+                <p>Template · model · parser — what each one IS, before any code</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">0:35</div>
+              <div class="ct"><b>Build your first chain</b>
+                <p>Snap-it-together builder, then the real code, line by line</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">1:00</div>
+              <div class="ct"><b>Memory</b>
+                <p>Why models forget &amp; how LangChain remembers — decoded</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">1:10</div>
+              <div class="ct"><b>Your first tiny agent</b>
+                <p>One tool, line by line, + watch the message list grow</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">1:40</div>
+              <div class="ct"><b>🎮 "Tool or No Tool?" game</b>
+                <p>Prove you can think like the agent</p>
+              </div>
+            </div>
+            <div class="row peak">
+              <div class="tm">1:50</div>
+              <div class="ct"><b>Project: Smart Shop Assistant</b>
+                <p>Chat UI + public link</p>
+              </div>
+            </div>
+            <div class="row peak">
+              <div class="tm">2:15</div>
+              <div class="ct"><b>Ship it to LinkedIn</b>
+                <p>Caption + post — today 🎉</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="tm">2:25</div>
+              <div class="ct"><b>Wrap &amp; what's next</b>
+                <p>Homework + the road ahead (ends ~2:30)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCK 9 -->
+      <section class="block reveal" id="adapt">
+        <div class="wrap">
+          <div class="sec-head accent">
+            <div class="sec-num">9</div>
+            <div>
+              <div class="sec-time">Block 9 · ~5 min · the map</div>
+              <h2>3 ways to make a model<br>do <em>what you want</em></h2>
+            </div>
+          </div>
+          <p class="big-p">Before we build: the entire field of AI engineering boils down to <strong>three</strong> ways
+            of
+            steering a pre-trained model. You'll live in the first, visit the second soon, and almost never need the
+            third.
+          </p>
+          <div class="pieces">
+            <div class="piece">
+              <div class="e">✍️</div><b>1. Prompting</b>
+              <p>Just <em>tell</em> it clearly. Free, instant, no training. <strong>90% of real work lives here</strong>
+                —
+                including everything today.</p>
+            </div>
+            <div class="piece">
+              <div class="e">📚</div><b>2. RAG</b>
+              <p>Hand it <em>your</em> documents at question-time so it answers from real data. A coming class.</p>
+            </div>
+            <div class="piece">
+              <div class="e">🎓</div><b>3. Fine-tuning</b>
+              <p>Actually re-train on examples. Powerful, costly, rarely needed. Reach for it last.</p>
+            </div>
+          </div>
+          <div class="note">
+            <div class="ico">🧭</div>
+            <div><b>Why this matters today</b>
+              <p>Chains, tools, agents — it's all still <strong>option 1, organised cleverly</strong>. Nothing new to
+                fear.
+                Let's build.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCK 10 -->
+      <section class="block reveal" id="langchain">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">10</div>
+            <div>
+              <div class="sec-time">Block 10 · ~35 min · hands-on</div>
+              <h2>LangChain:<br>snap it together</h2>
+            </div>
+          </div>
+          <p class="big-p">In Class 1 you called the API by hand — perfect for one call. The moment you want
+            <strong>reusable prompts, multi-step pipelines, and memory</strong>, you'd be rebuilding the same plumbing
+            forever. <strong>LangChain is that plumbing, pre-built.</strong>
+          </p>
+          <div class="analogy teal">
+            <div class="ico">🧰</div>
+            <div><b>One-line intuition</b>
+              <p>The raw OpenAI call is a Lego brick. LangChain is the box of connectors that snaps bricks into
+                machines.
+              </p>
+            </div>
+          </div>
+
+          <h4>Install it</h4>
+          <div class="term">
+            <div class="tbar"><i></i><i></i><i></i><span>bash</span></div>
+            <pre><span class="pr">$</span> pip install langchain langchain-openai</pre>
+          </div>
+
+          <h3>First: the 3 new words, in plain English</h3>
+          <p>LangChain code uses three names that look scary. They aren't. Read these <em>before</em> we touch code —
+            each
+            one is a thing you already understand:</p>
+          <div class="newwords">
+            <div class="nw y"><span class="w">ChatPromptTemplate</span><b>= a prompt with blanks</b>
+              <p>A normal prompt where some parts are left as <code>{blanks}</code> to fill in later. Like a
+                wedding-invite
+                template: "Dear <code>{name}</code>, join us on <code>{date}</code>". Write once, reuse for every guest.
+              </p>
+              <div class="say">say it as: "my reusable prompt"</div>
+            </div>
+            <div class="nw o"><span class="w">ChatOpenAI</span><b>= the model, in a LangChain wrapper</b>
+              <p>The exact same GPT you called in Class 1 — just wrapped so it can snap onto other LangChain pieces.
+                Same
+                <code>model=</code>, same <code>temperature=</code>.
+              </p>
+              <div class="say">say it as: "the model"</div>
+            </div>
+            <div class="nw g"><span class="w">StrOutputParser</span><b>= unwraps the answer</b>
+              <p>The model doesn't return plain text — it returns a <em>package</em> (text + metadata like token
+                counts).
+                This piece opens the package and hands you just the string. ("Str" = string, i.e. plain text.)</p>
+              <div class="say">say it as: "give me just the text"</div>
+            </div>
+          </div>
+          <div class="analogy blue">
+            <div class="ico">🗣️</div>
+            <div><b>Why is it called "Chat"PromptTemplate?</b>
+              <p>Because it builds prompts in the <strong>chat format you already know</strong> from Class 1 — system /
+                user
+                / assistant messages. Same grammar, now reusable.</p>
+            </div>
+          </div>
+
+          <h3>Feel a template (before coding one)</h3>
+          <p>This is all a template is — blanks you fill. Pick values and watch the final prompt assemble. The dict you
+            pass
+            to LangChain (<code>{"tone": "witty", ...}</code>) is just "here's what goes in each blank":</p>
+          <div class="tpl">
+            <div style="font-family:'Fraunces';font-size:18px;margin-bottom:10px">Template: &nbsp;Write a <span
+                class="slot">{tone}</span> <span class="slot">{length}</span> post about <span
+                class="slot">{topic}</span>
+            </div>
+            <div class="pickrow"><label>tone</label>
+              <div id="pkTone"></div>
+            </div>
+            <div class="pickrow"><label>length</label>
+              <div id="pkLen"></div>
+            </div>
+            <div class="pickrow"><label>topic</label>
+              <div id="pkTopic"></div>
+            </div>
+            <div class="assembled" id="tplOut"></div>
+          </div>
+
+          <h3>What does the model actually return? (the parser's job)</h3>
+          <p>Here's the bit nobody explains. When the model replies, you don't get plain text — you get a
+            <strong>package
+              called an <code>AIMessage</code></strong> with the text inside it, plus bookkeeping. Press the button to
+            see
+            the package, and what the parser does to it:</p>
+          <div class="sim">
+            <div class="sim-head">
+              <div class="t"><span class="live">Live sim</span> Open the package</div>
+              <div class="hint">why StrOutputParser exists</div>
+            </div>
+            <div class="sim-body">
+              <div class="envstage">
+                <div class="envelope" id="envBox">
+                  <div class="et">AIMessage ← the package</div>
+                  <div class="field star">content: "Anthropic builds safe AI…"</div>
+                  <div class="field">tokens_used: 213</div>
+                  <div class="field">model: "gpt-4o-mini"</div>
+                  <div class="field">finish_reason: "stop"</div>
+                </div>
+                <div class="envarrow" id="envArrow">➜ 🧹 parser ➜</div>
+                <div class="envout" id="envOut">"Anthropic builds safe AI…"<br><span
+                    style="font-size:11.5px;font-weight:400">just the text. ready to print, show in Gradio, or
+                    save.</span>
+                </div>
+              </div>
+              <div style="text-align:center;margin-top:8px"><button class="btn" id="envBtn">📦 Ask the model → open the
+                  package</button></div>
+              <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin:12px 0 0">Without the parser
+                you'd
+                write <code>response.content</code> by hand every time (in Class 1 it was
+                <code>response.choices[0].message.content</code> — remember that mouthful?). The parser does it for you,
+                forever.
+              </p>
+            </div>
+          </div>
+
+          <h3>Now build the chain — literally</h3>
+          <p>A chain is the three pieces joined by <code>|</code> (the pipe — read it as <strong>"then"</strong>):
+            prompt
+            <em>then</em> model <em>then</em> parser. Click the pieces in the right order, then run data through:
+          </p>
+
+          <div class="sim builder">
+            <div class="sim-head">
+              <div class="t"><span class="live">Live sim</span> Chain builder</div>
+              <div class="hint">click pieces in order, then run</div>
+            </div>
+            <div class="sim-body">
+              <div class="slots" id="cbSlots"><span class="slotghost">your chain assembles here… (hint: what comes
+                  first?)</span></div>
+              <div class="tray" id="cbTray"></div>
+              <div style="text-align:center;margin-top:10px">
+                <button class="btn" id="cbRun" disabled>▶ Run the chain</button>
+                <button class="btn ghost small" id="cbReset">↺ reset</button>
+              </div>
+              <div class="runout" id="cbOut" style="display:none"></div>
+            </div>
+          </div>
+
+          <h3>The same chain, in real code — decoded line by line</h3>
+          <p>Rebuilding your Class 1 summarizer the LangChain way. The numbered comments match the decoder below —
+            nothing
+            here is mystery code:</p>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>summarizer_langchain.py</span>
+            </div>
+            <pre><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
 <span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate
 <span class="kw">from</span> langchain_core.output_parsers <span class="kw">import</span> StrOutputParser
 <span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
@@ -2505,61 +2540,67 @@ chain <span class="op">=</span> prompt <span class="op">|</span> model <span cla
     <span class="kw">return</span> chain.<span class="fn">invoke</span>({<span class="st">"website"</span>: <span class="fn">fetch_website_contents</span>(url)})   <span class="cm"># ⑤</span>
 
 <span class="fn">print</span>(<span class="fn">summarize</span>(<span class="st">"https://anthropic.com"</span>))</pre>
-      </div>
-      <div class="decode">
-        <div class="dhead">🔍 decoder — what each numbered line does</div>
-        <div class="drow">
-          <div class="dn">①</div>
-          <p><code>from_template(...)</code> turns my text into a <strong>reusable prompt</strong>. The
-            <code>{website}</code> part is the blank — it will be filled in later, just like the playground above.
-          </p>
-        </div>
-        <div class="drow">
-          <div class="dn">②</div>
-          <p>The <strong>same model from Class 1</strong>, wrapped for LangChain. <code>temperature=0.3</code> = mostly
-            focused (summaries shouldn't be wildly creative).</p>
-        </div>
-        <div class="drow">
-          <div class="dn">③</div>
-          <p>The <strong>package-opener</strong> you just saw in the animation: takes the model's <code>AIMessage</code>
-            package, hands back plain text.</p>
-        </div>
-        <div class="drow">
-          <div class="dn">④</div>
-          <p>The pipe <code>|</code> means <strong>"then"</strong>. Read aloud: "the prompt, <em>then</em> the model,
-            <em>then</em> the parser." Data flows left → right, exactly like the builder.
-          </p>
-        </div>
-        <div class="drow">
-          <div class="dn">⑤</div>
-          <p><code>invoke</code> means <strong>"run it"</strong>. The dict <code>{"website": ...}</code> says which
-            blank gets what — the key <code>"website"</code> matches the <code>{website}</code> blank by name.</p>
-        </div>
-      </div>
-      <div class="wow"><span class="star">✨</span>
-        <div><b>The unlock</b>
-          <p><code>chain</code> is now a <strong>reusable building block</strong>. New task? Swap the template.
-            Different model? Swap line ②. Hindi summaries? Add one word to the prompt. That composability is LangChain's
-            entire point.</p>
-        </div>
-      </div>
+          </div>
+          <div class="decode">
+            <div class="dhead">🔍 decoder — what each numbered line does</div>
+            <div class="drow">
+              <div class="dn">①</div>
+              <p><code>from_template(...)</code> turns my text into a <strong>reusable prompt</strong>. The
+                <code>{website}</code> part is the blank — it will be filled in later, just like the playground above.
+              </p>
+            </div>
+            <div class="drow">
+              <div class="dn">②</div>
+              <p>The <strong>same model from Class 1</strong>, wrapped for LangChain. <code>temperature=0.3</code> =
+                mostly
+                focused (summaries shouldn't be wildly creative).</p>
+            </div>
+            <div class="drow">
+              <div class="dn">③</div>
+              <p>The <strong>package-opener</strong> you just saw in the animation: takes the model's
+                <code>AIMessage</code>
+                package, hands back plain text.</p>
+            </div>
+            <div class="drow">
+              <div class="dn">④</div>
+              <p>The pipe <code>|</code> means <strong>"then"</strong>. Read aloud: "the prompt, <em>then</em> the
+                model,
+                <em>then</em> the parser." Data flows left → right, exactly like the builder.
+              </p>
+            </div>
+            <div class="drow">
+              <div class="dn">⑤</div>
+              <p><code>invoke</code> means <strong>"run it"</strong>. The dict <code>{"website": ...}</code> says which
+                blank gets what — the key <code>"website"</code> matches the <code>{website}</code> blank by name.</p>
+            </div>
+          </div>
+          <div class="wow"><span class="star">✨</span>
+            <div><b>The unlock</b>
+              <p><code>chain</code> is now a <strong>reusable building block</strong>. New task? Swap the template.
+                Different model? Swap line ②. Hindi summaries? Add one word to the prompt. That composability is
+                LangChain's
+                entire point.</p>
+            </div>
+          </div>
 
-      <h3>Bonus piece — Memory (decoded too)</h3>
-      <p>Class 1 truth: models forget everything between calls. The fix is simple — <strong>re-send the old messages
-          every time</strong>. LangChain gives that a tidy home. Two tiny new words first:</p>
-      <div class="newwords">
-        <div class="nw b"><span class="w">HumanMessage / AIMessage</span><b>= labelled chat bubbles</b>
-          <p>Just a way to store "the human said X" and "the AI replied Y" — the same user/assistant roles from Class 1,
-            as Python objects.</p>
-        </div>
-        <div class="nw p"><span class="w">MessagesPlaceholder</span><b>= a parking spot for history</b>
-          <p>A blank in your prompt that holds <em>a list of past messages</em> instead of one word. "Insert the whole
-            conversation so far, right here."</p>
-        </div>
-      </div>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>memory_demo.py</span></div>
-        <pre><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate, MessagesPlaceholder
+          <h3>Bonus piece — Memory (decoded too)</h3>
+          <p>Class 1 truth: models forget everything between calls. The fix is simple — <strong>re-send the old messages
+              every time</strong>. LangChain gives that a tidy home. Two tiny new words first:</p>
+          <div class="newwords">
+            <div class="nw b"><span class="w">HumanMessage / AIMessage</span><b>= labelled chat bubbles</b>
+              <p>Just a way to store "the human said X" and "the AI replied Y" — the same user/assistant roles from
+                Class 1,
+                as Python objects.</p>
+            </div>
+            <div class="nw p"><span class="w">MessagesPlaceholder</span><b>= a parking spot for history</b>
+              <p>A blank in your prompt that holds <em>a list of past messages</em> instead of one word. "Insert the
+                whole
+                conversation so far, right here."</p>
+            </div>
+          </div>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>memory_demo.py</span></div>
+            <pre><span class="kw">from</span> langchain_core.prompts <span class="kw">import</span> ChatPromptTemplate, MessagesPlaceholder
 <span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage, AIMessage
 
 prompt <span class="op">=</span> ChatPromptTemplate.<span class="fn">from_messages</span>([
@@ -2572,68 +2613,73 @@ chain <span class="op">=</span> prompt <span class="op">|</span> model
 history <span class="op">=</span> [<span class="fn">HumanMessage</span>(<span class="st">"My name is Aarav."</span>), <span class="fn">AIMessage</span>(<span class="st">"Hi Aarav!"</span>)]
 <span class="fn">print</span>(chain.<span class="fn">invoke</span>({<span class="st">"history"</span>: history, <span class="st">"question"</span>: <span class="st">"What's my name?"</span>}).content)
 <span class="cm"># → "Your name is Aarav."  ✅ it "remembered" — because WE re-sent the history</span></pre>
-      </div>
-      <div class="note">
-        <div class="ico">💡</div>
-        <div><b>De-mystify this for them</b>
-          <p>The model didn't magically remember. <strong>We re-sent the old messages</strong>, and the placeholder
-            slotted them in. All "chatbot memory" everywhere is exactly this trick. (One thing: this invoke returns the
-            <em>package</em> — that's why we wrote <code>.content</code>. Add <code>| parser</code> to the chain and you
-            wouldn't need it. See how the pieces connect?)
+          </div>
+          <div class="note">
+            <div class="ico">💡</div>
+            <div><b>De-mystify this for them</b>
+              <p>The model didn't magically remember. <strong>We re-sent the old messages</strong>, and the placeholder
+                slotted them in. All "chatbot memory" everywhere is exactly this trick. (One thing: this invoke returns
+                the
+                <em>package</em> — that's why we wrote <code>.content</code>. Add <code>| parser</code> to the chain and
+                you
+                wouldn't need it. See how the pieces connect?)
+              </p>
+            </div>
+          </div>
+          <div class="note">
+            <div class="ico">🎙️</div>
+            <div><b>Speaker note</b>
+              <p>Run the summarizer live and change the template in front of them ("now make it snarky"). The target
+                feeling: <em>"oh — it's just my Class 1 code, tidied up."</em></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCK 11 -->
+      <section class="block reveal" id="agent">
+        <div class="wrap">
+          <div class="sec-head accent">
+            <div class="sec-num">11</div>
+            <div>
+              <div class="sec-time">Block 11 · ~30 min · the leap</div>
+              <h2>Your first<br>(tiny) agent</h2>
+            </div>
+          </div>
+          <p class="big-p">Everything so far <em>talks</em>. An <strong>agent</strong> is a model with a
+            <strong>tool</strong> and the freedom to <strong>decide when to use it</strong>. We'll build the smallest
+            one
+            possible — a shop assistant with exactly one skill: looking up real prices.
           </p>
-        </div>
-      </div>
-      <div class="note">
-        <div class="ico">🎙️</div>
-        <div><b>Speaker note</b>
-          <p>Run the summarizer live and change the template in front of them ("now make it snarky"). The target
-            feeling: <em>"oh — it's just my Class 1 code, tidied up."</em></p>
-        </div>
-      </div>
-    </div>
-  </section>
+          <div class="def">
+            <div class="lab">agent = LLM + tool + loop</div>
+            <p>The model thinks "do I need a tool here?" → if yes, calls it → reads the result → answers. Nobody
+              hard-codes
+              <em>when</em>. <strong>That decision is the entire difference between a chatbot and an agent.</strong>
+            </p>
+          </div>
+          <div class="analogy gold">
+            <div class="ico">🧮</div>
+            <div><b>Why tools?</b>
+              <p>LLMs are great with language, terrible with facts they don't have — today's price, live stock, exact
+                math.
+                A tool lets the model <em>fetch truth</em> instead of guessing. Tools cure "confident but wrong."</p>
+            </div>
+          </div>
 
-  <!-- BLOCK 11 -->
-  <section class="block reveal" id="agent">
-    <div class="wrap">
-      <div class="sec-head accent">
-        <div class="sec-num">11</div>
-        <div>
-          <div class="sec-time">Block 11 · ~30 min · the leap</div>
-          <h2>Your first<br>(tiny) agent</h2>
-        </div>
-      </div>
-      <p class="big-p">Everything so far <em>talks</em>. An <strong>agent</strong> is a model with a
-        <strong>tool</strong> and the freedom to <strong>decide when to use it</strong>. We'll build the smallest one
-        possible — a shop assistant with exactly one skill: looking up real prices.
-      </p>
-      <div class="def">
-        <div class="lab">agent = LLM + tool + loop</div>
-        <p>The model thinks "do I need a tool here?" → if yes, calls it → reads the result → answers. Nobody hard-codes
-          <em>when</em>. <strong>That decision is the entire difference between a chatbot and an agent.</strong>
-        </p>
-      </div>
-      <div class="analogy gold">
-        <div class="ico">🧮</div>
-        <div><b>Why tools?</b>
-          <p>LLMs are great with language, terrible with facts they don't have — today's price, live stock, exact math.
-            A tool lets the model <em>fetch truth</em> instead of guessing. Tools cure "confident but wrong."</p>
-        </div>
-      </div>
+          <h3>Our shop's "database" (kept deliberately tiny)</h3>
+          <div class="menu">
+            <div class="mi">👟 shoes — <b>₹799</b></div>
+            <div class="mi">🧢 hat — <b>₹399</b></div>
+            <div class="mi">🎒 bag — <b>₹1420</b></div>
+            <div class="mi">🩳 shorts — <b>₹1299</b></div>
+            <div class="mi">👖 pants — <b>₹1699</b></div>
+          </div>
 
-      <h3>Our shop's "database" (kept deliberately tiny)</h3>
-      <div class="menu">
-        <div class="mi">👟 shoes — <b>₹799</b></div>
-        <div class="mi">🧢 hat — <b>₹399</b></div>
-        <div class="mi">🎒 bag — <b>₹1420</b></div>
-        <div class="mi">🩳 shorts — <b>₹1299</b></div>
-        <div class="mi">👖 pants — <b>₹1699</b></div>
-      </div>
-
-      <h4>Step 1 — the tool is just a Python function</h4>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 1</span></div>
-        <pre><span class="kw">import</span> json
+          <h4>Step 1 — the tool is just a Python function</h4>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 1</span></div>
+            <pre><span class="kw">import</span> json
 <span class="kw">from</span> openai <span class="kw">import</span> OpenAI
 <span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
 load_dotenv()
@@ -2644,18 +2690,21 @@ PRICES <span class="op">=</span> {<span class="st">"shoes"</span>: <span class="
 <span class="kw">def</span> <span class="fn">get_price</span>(item):
     <span class="kw">print</span>(<span class="st">f"🔧 tool called: get_price({item})"</span>)     <span class="cm"># so you SEE it happen</span>
     <span class="kw">return</span> <span class="st">f"₹{PRICES.get(item.lower(), 'unknown')}"</span></pre>
-      </div>
-      <p style="font-size:14px;color:var(--ink-soft)">Two tiny notes for the Python: <code>PRICES</code> is an ordinary
-        dict standing in for a database, and <code>.get(item, 'unknown')</code> means "look it up, and if it's not
-        there, say <em>unknown</em> instead of crashing." That's the entire tool — <strong>any function you can write
-          can become an agent's tool.</strong></p>
+          </div>
+          <p style="font-size:14px;color:var(--ink-soft)">Two tiny notes for the Python: <code>PRICES</code> is an
+            ordinary
+            dict standing in for a database, and <code>.get(item, 'unknown')</code> means "look it up, and if it's not
+            there, say <em>unknown</em> instead of crashing." That's the entire tool — <strong>any function you can
+              write
+              can become an agent's tool.</strong></p>
 
-      <h4>Step 2 — describe the tool so the model knows it exists</h4>
-      <p>The model can't see your Python. You hand it a <strong>menu card describing the tool</strong> — written as a
-        dict (the nested braces look busy, but it's only four facts). Decoder below:</p>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 2</span></div>
-        <pre>tools <span class="op">=</span> [{
+          <h4>Step 2 — describe the tool so the model knows it exists</h4>
+          <p>The model can't see your Python. You hand it a <strong>menu card describing the tool</strong> — written as
+            a
+            dict (the nested braces look busy, but it's only four facts). Decoder below:</p>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 2</span></div>
+            <pre>tools <span class="op">=</span> [{
     <span class="st">"type"</span>: <span class="st">"function"</span>,                                      <span class="cm"># ①</span>
     <span class="st">"function"</span>: {
         <span class="st">"name"</span>: <span class="st">"get_price"</span>,                                 <span class="cm"># ②</span>
@@ -2667,42 +2716,45 @@ PRICES <span class="op">=</span> {<span class="st">"shoes"</span>: <span class="
         },
     },
 }]</pre>
-      </div>
-      <div class="decode">
-        <div class="dhead">🔍 decoder — the menu card, four facts</div>
-        <div class="drow">
-          <div class="dn">①</div>
-          <p><strong>What kind of tool?</strong> A function. (That's the only kind you'll use for a long time — just
-            write this line as-is.)</p>
-        </div>
-        <div class="drow">
-          <div class="dn">②</div>
-          <p><strong>Its name</strong> — must exactly match your Python function's name, so we can find it when the
-            model asks for it.</p>
-        </div>
-        <div class="drow">
-          <div class="dn">③</div>
-          <p><strong>When to use it</strong> — written for the <em>model</em> to read. This sentence is literally how
-            the model decides whether to call your tool. Write it clearly!</p>
-        </div>
-        <div class="drow">
-          <div class="dn">④</div>
-          <p><strong>What inputs it needs</strong> — one input called <code>item</code>, which is text
-            (<code>"string"</code>), and it's <code>required</code>. That's all the nesting says.</p>
-        </div>
-      </div>
-      <div class="note">
-        <div class="ico">✍️</div>
-        <div><b>The non-obvious insight</b>
-          <p>Line ③ is <strong>prompt engineering in disguise</strong>. A vague description ("does stuff with items") →
-            the model misuses the tool. A clear one → it behaves. Your words steer the machine, even inside JSON.</p>
-        </div>
-      </div>
+          </div>
+          <div class="decode">
+            <div class="dhead">🔍 decoder — the menu card, four facts</div>
+            <div class="drow">
+              <div class="dn">①</div>
+              <p><strong>What kind of tool?</strong> A function. (That's the only kind you'll use for a long time — just
+                write this line as-is.)</p>
+            </div>
+            <div class="drow">
+              <div class="dn">②</div>
+              <p><strong>Its name</strong> — must exactly match your Python function's name, so we can find it when the
+                model asks for it.</p>
+            </div>
+            <div class="drow">
+              <div class="dn">③</div>
+              <p><strong>When to use it</strong> — written for the <em>model</em> to read. This sentence is literally
+                how
+                the model decides whether to call your tool. Write it clearly!</p>
+            </div>
+            <div class="drow">
+              <div class="dn">④</div>
+              <p><strong>What inputs it needs</strong> — one input called <code>item</code>, which is text
+                (<code>"string"</code>), and it's <code>required</code>. That's all the nesting says.</p>
+            </div>
+          </div>
+          <div class="note">
+            <div class="ico">✍️</div>
+            <div><b>The non-obvious insight</b>
+              <p>Line ③ is <strong>prompt engineering in disguise</strong>. A vague description ("does stuff with
+                items") →
+                the model misuses the tool. A clear one → it behaves. Your words steer the machine, even inside JSON.
+              </p>
+            </div>
+          </div>
 
-      <h4>Step 3 — the loop: think → maybe call tool → answer</h4>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 3</span></div>
-        <pre><span class="kw">def</span> <span class="fn">agent</span>(user_message):
+          <h4>Step 3 — the loop: think → maybe call tool → answer</h4>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>agent.py · part 3</span></div>
+            <pre><span class="kw">def</span> <span class="fn">agent</span>(user_message):
     messages <span class="op">=</span> [{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: user_message}]
 
     response <span class="op">=</span> client.chat.completions.<span class="fn">create</span>(          <span class="cm"># ① send message + tools menu</span>
@@ -2723,338 +2775,346 @@ PRICES <span class="op">=</span> {<span class="st">"shoes"</span>: <span class="
 
 <span class="fn">print</span>(<span class="fn">agent</span>(<span class="st">"How much are the shoes?"</span>))      <span class="cm"># → tool fires → "₹799"</span>
 <span class="fn">print</span>(<span class="fn">agent</span>(<span class="st">"Hi! What can you help with?"</span>))   <span class="cm"># → no tool → just chats</span></pre>
-      </div>
-      <div class="decode">
-        <div class="dhead">🔍 decoder — the loop, step by step</div>
-        <div class="drow">
-          <div class="dn">1</div>
-          <p>We send the user's message <em>plus our tools menu</em>. The model now knows a tool exists and may ask to
-            use it.</p>
-        </div>
-        <div class="drow">
-          <div class="dn">2</div>
-          <p><code>msg.tool_calls</code> = "did the model ask to run a tool?" If it did, this holds <em>which tool</em>
-            and <em>with what input</em> — e.g. <code>get_price</code>, <code>item="shoes"</code>. If not, it's empty
-            and we skip straight to the answer.</p>
-        </div>
-        <div class="drow">
-          <div class="dn">3</div>
-          <p>The model's request arrives as text, so <code>json.loads(...)</code> converts it into a Python dict we can
-            read — then <strong>we</strong> run the real function. (Important: the model never runs code itself. It
-            <em>asks</em>; your Python <em>does</em>.)
-          </p>
-        </div>
-        <div class="drow">
-          <div class="dn">4</div>
-          <p>We append the tool's result to the conversation with <code>role: "tool"</code> (a third role, joining
-            system/user/assistant!) and send everything back, so the model can write a friendly final answer using the
-            real data.</p>
-        </div>
-      </div>
-
-      <h3>Watch the conversation grow (this makes it click)</h3>
-      <p>The whole agent is just <strong>a list of messages getting longer</strong>. Step through one question and watch
-        each card get appended — this is exactly what your code's <code>messages.append(...)</code> lines do:</p>
-      <div class="sim">
-        <div class="sim-head">
-          <div class="t"><span class="live">Live sim</span> The messages list, live</div>
-          <div class="hint">"How much are the shoes?"</div>
-        </div>
-        <div class="sim-body">
-          <div class="msgstack">
-            <div class="mtitle">messages = [</div>
-            <div id="msList"></div>
-            <div class="mtitle">]</div>
           </div>
-          <div class="mexplain" id="msExplain">Press ▶ to start. We begin with just the user's question.</div>
-          <div style="display:flex;gap:10px;margin-top:12px">
-            <button class="btn" id="msNext">▶ Next step</button>
-            <button class="btn ghost small" id="msReset">↺ Reset</button>
+          <div class="decode">
+            <div class="dhead">🔍 decoder — the loop, step by step</div>
+            <div class="drow">
+              <div class="dn">1</div>
+              <p>We send the user's message <em>plus our tools menu</em>. The model now knows a tool exists and may ask
+                to
+                use it.</p>
+            </div>
+            <div class="drow">
+              <div class="dn">2</div>
+              <p><code>msg.tool_calls</code> = "did the model ask to run a tool?" If it did, this holds <em>which
+                  tool</em>
+                and <em>with what input</em> — e.g. <code>get_price</code>, <code>item="shoes"</code>. If not, it's
+                empty
+                and we skip straight to the answer.</p>
+            </div>
+            <div class="drow">
+              <div class="dn">3</div>
+              <p>The model's request arrives as text, so <code>json.loads(...)</code> converts it into a Python dict we
+                can
+                read — then <strong>we</strong> run the real function. (Important: the model never runs code itself. It
+                <em>asks</em>; your Python <em>does</em>.)
+              </p>
+            </div>
+            <div class="drow">
+              <div class="dn">4</div>
+              <p>We append the tool's result to the conversation with <code>role: "tool"</code> (a third role, joining
+                system/user/assistant!) and send everything back, so the model can write a friendly final answer using
+                the
+                real data.</p>
+            </div>
+          </div>
+
+          <h3>Watch the conversation grow (this makes it click)</h3>
+          <p>The whole agent is just <strong>a list of messages getting longer</strong>. Step through one question and
+            watch
+            each card get appended — this is exactly what your code's <code>messages.append(...)</code> lines do:</p>
+          <div class="sim">
+            <div class="sim-head">
+              <div class="t"><span class="live">Live sim</span> The messages list, live</div>
+              <div class="hint">"How much are the shoes?"</div>
+            </div>
+            <div class="sim-body">
+              <div class="msgstack">
+                <div class="mtitle">messages = [</div>
+                <div id="msList"></div>
+                <div class="mtitle">]</div>
+              </div>
+              <div class="mexplain" id="msExplain">Press ▶ to start. We begin with just the user's question.</div>
+              <div style="display:flex;gap:10px;margin-top:12px">
+                <button class="btn" id="msNext">▶ Next step</button>
+                <button class="btn ghost small" id="msReset">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="wow"><span class="star">🤯</span>
+            <div><b><code>if msg.tool_calls</code> is the entire secret</b>
+              <p>The model asked to run <code>get_price("shoes")</code> <em>on its own</em>. Give it ten tools and it
+                picks
+                among them. You now understand how Cursor, support bots, and every "AI agent" headline actually works —
+                same
+                pattern, bigger toolbox.</p>
+            </div>
+          </div>
+
+          <h3 id="game">🎮 Quick game: think like the agent</h3>
+          <p>Before you trust the agent, prove you understand it. For each question, predict: <strong>will the model
+              call
+              the tool or answer directly?</strong> Get 5 in a row:</p>
+          <div class="game">
+            <div class="q" id="gmQ">
+              <div
+                style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)"
+                id="gmCounter">question 1 of 5</div>
+              <div class="qtext" id="gmText"></div>
+              <div class="opts">
+                <button class="opt" data-v="tool">🔧 Calls the tool</button>
+                <button class="opt" data-v="chat">💬 Just answers</button>
+              </div>
+              <div class="verdict" id="gmVerdict"></div>
+              <div class="scorebar" id="gmScore"></div>
+              <div style="margin-top:12px"><button class="btn small" id="gmNext" style="display:none">Next
+                  →</button><button class="btn small ghost" id="gmRestart" style="display:none">↺ Play again</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            <div class="ico">🎙️</div>
+            <div><b>Speaker note</b>
+              <p>Play this as a class — hands up for tool vs chat before revealing. The "ooh" on question 4 (the trick
+                one)
+                is reliably the best moment of the session.</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="wow"><span class="star">🤯</span>
-        <div><b><code>if msg.tool_calls</code> is the entire secret</b>
-          <p>The model asked to run <code>get_price("shoes")</code> <em>on its own</em>. Give it ten tools and it picks
-            among them. You now understand how Cursor, support bots, and every "AI agent" headline actually works — same
-            pattern, bigger toolbox.</p>
-        </div>
-      </div>
-
-      <h3 id="game">🎮 Quick game: think like the agent</h3>
-      <p>Before you trust the agent, prove you understand it. For each question, predict: <strong>will the model call
-          the tool or answer directly?</strong> Get 5 in a row:</p>
-      <div class="game">
-        <div class="q" id="gmQ">
-          <div
-            style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)"
-            id="gmCounter">question 1 of 5</div>
-          <div class="qtext" id="gmText"></div>
-          <div class="opts">
-            <button class="opt" data-v="tool">🔧 Calls the tool</button>
-            <button class="opt" data-v="chat">💬 Just answers</button>
+      <!-- BLOCK 12 -->
+      <section class="block reveal" id="project">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">12</div>
+            <div>
+              <div class="sec-time">Block 12 · ~25 min · 🏁 THE BUILD</div>
+              <h2>Project:<br>Smart Shop Assistant</h2>
+            </div>
           </div>
-          <div class="verdict" id="gmVerdict"></div>
-          <div class="scorebar" id="gmScore"></div>
-          <div style="margin-top:12px"><button class="btn small" id="gmNext" style="display:none">Next →</button><button
-              class="btn small ghost" id="gmRestart" style="display:none">↺ Play again</button></div>
-        </div>
-      </div>
-      <div class="note">
-        <div class="ico">🎙️</div>
-        <div><b>Speaker note</b>
-          <p>Play this as a class — hands up for tool vs chat before revealing. The "ooh" on question 4 (the trick one)
-            is reliably the best moment of the session.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLOCK 12 -->
-  <section class="block reveal" id="project">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-num">12</div>
-        <div>
-          <div class="sec-time">Block 12 · ~25 min · 🏁 THE BUILD</div>
-          <h2>Project:<br>Smart Shop Assistant</h2>
-        </div>
-      </div>
-      <p class="big-p">Same <code>agent()</code> from Block 11 — we give it a face. Gradio has a ready-made <strong>chat
-          interface</strong>, so this takes four lines:</p>
-      <div class="code">
-        <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>app.py</span></div>
-        <pre><span class="kw">import</span> gradio <span class="kw">as</span> gr
+          <p class="big-p">Same <code>agent()</code> from Block 11 — we give it a face. Gradio has a ready-made
+            <strong>chat
+              interface</strong>, so this takes four lines:</p>
+          <div class="code">
+            <div class="bar"><i class="r"></i><i class="y"></i><i class="g"></i><span>app.py</span></div>
+            <pre><span class="kw">import</span> gradio <span class="kw">as</span> gr
 <span class="kw">from</span> agent <span class="kw">import</span> agent              <span class="cm"># the function you just wrote</span>
 
 <span class="kw">def</span> <span class="fn">chat</span>(message, history):          <span class="cm"># ① Gradio fills these two in for you</span>
     <span class="kw">return</span> <span class="fn">agent</span>(message)
 
 gr.<span class="fn">ChatInterface</span>(fn<span class="op">=</span>chat, title<span class="op">=</span><span class="st">"🛍️ Smart Shop Assistant"</span>).<span class="fn">launch</span>(share<span class="op">=</span><span class="kw">True</span>)  <span class="cm"># ②</span></pre>
-      </div>
-      <div class="decode">
-        <div class="dhead">🔍 decoder</div>
-        <div class="drow">
-          <div class="dn">①</div>
-          <p>Gradio's chat box calls your function for you, handing it the user's new <code>message</code> and the chat
-            <code>history</code> (a list of past turns). We only need the message today; <em>your homework hint:</em>
-            pass <code>history</code> into the agent and it gains memory — exactly the trick from the memory section.
-          </p>
-        </div>
-        <div class="drow">
-          <div class="dn">②</div>
-          <p><code>ChatInterface</code> = a ready-made chat UI (bubbles, input box, send button) around any function.
-            <code>share=True</code> = also give me a public link.
-          </p>
-        </div>
-      </div>
-      <h4>Run it</h4>
-      <div class="term">
-        <div class="tbar"><i></i><i></i><i></i><span>bash — your project folder</span></div>
-        <pre><span class="pr">$</span> pip install openai gradio python-dotenv
+          </div>
+          <div class="decode">
+            <div class="dhead">🔍 decoder</div>
+            <div class="drow">
+              <div class="dn">①</div>
+              <p>Gradio's chat box calls your function for you, handing it the user's new <code>message</code> and the
+                chat
+                <code>history</code> (a list of past turns). We only need the message today; <em>your homework
+                  hint:</em>
+                pass <code>history</code> into the agent and it gains memory — exactly the trick from the memory
+                section.
+              </p>
+            </div>
+            <div class="drow">
+              <div class="dn">②</div>
+              <p><code>ChatInterface</code> = a ready-made chat UI (bubbles, input box, send button) around any
+                function.
+                <code>share=True</code> = also give me a public link.
+              </p>
+            </div>
+          </div>
+          <h4>Run it</h4>
+          <div class="term">
+            <div class="tbar"><i></i><i></i><i></i><span>bash — your project folder</span></div>
+            <pre><span class="pr">$</span> pip install openai gradio python-dotenv
 <span class="pr">$</span> python app.py
 
 <span class="ok">Running on local URL:  http://127.0.0.1:7860</span>
 <span class="ok">Running on public URL: https://shop-xyz.gradio.live</span>   <span class="cmt"># ← your shareable agent!</span></pre>
-      </div>
-      <div class="run-steps">
-        <div class="rs">
-          <div><b>Ask a price question</b>
-            <p>"How much are the pants?" — watch your terminal print <code>🔧 tool called: get_price(pants)</code>. Your
-              agent used its tool!</p>
           </div>
-        </div>
-        <div class="rs">
-          <div><b>Then ask small talk</b>
-            <p>"What's your return policy?" — no tool fires. It's <em>deciding</em>, not following a script.</p>
+          <div class="run-steps">
+            <div class="rs">
+              <div><b>Ask a price question</b>
+                <p>"How much are the pants?" — watch your terminal print <code>🔧 tool called: get_price(pants)</code>.
+                  Your
+                  agent used its tool!</p>
+              </div>
+            </div>
+            <div class="rs">
+              <div><b>Then ask small talk</b>
+                <p>"What's your return policy?" — no tool fires. It's <em>deciding</em>, not following a script.</p>
+              </div>
+            </div>
+            <div class="rs">
+              <div><b>Record that contrast</b>
+                <p>15 seconds: one tool question, one chat question, terminal visible. That's your LinkedIn clip.</p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="rs">
-          <div><b>Record that contrast</b>
-            <p>15 seconds: one tool question, one chat question, terminal visible. That's your LinkedIn clip.</p>
-          </div>
-        </div>
-      </div>
 
-      <h3>Try the working agent 👇</h3>
-      <p>A live, in-browser version with the real chat feel — typing dots, tool-call chips, the works. Watch
-        <em>when</em> the 🔧 appears (and when it doesn't):
-      </p>
-      <div class="chatui">
-        <div class="cbar">🛍️ <b>Smart Shop Assistant</b> <span class="pill">live demo</span></div>
-        <div class="clog" id="shopLog">
-          <div class="cmsg b show">Hi! I'm your shop assistant. Ask me the price of anything 🙂</div>
-        </div>
-        <div class="cin">
-          <input class="text" id="shopIn" placeholder="e.g. How much are the shoes?" style="flex:1">
-          <button class="btn" id="shopSend">Send</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="shopExamples"></div>
-      <div class="statrow">
-        <div class="s"><b id="stTool">0</b><span>tool calls</span></div>
-        <div class="s"><b id="stChat">0</b><span>direct answers</span></div>
-      </div>
-      <p style="font-size:13px;color:var(--ink-faint);margin-top:10px">⚙️ Simulated in-browser (keyword matching plays
-        the "model") so it runs key-free. Your real <code>agent.py</code> lets GPT make that decision far more flexibly
-        — same loop, same trace.</p>
-
-      <div class="industry">
-        <div class="tag">🏭 Industry spotlight · this IS how real agents work</div>
-        <h4>One tool today → a toolbox tomorrow</h4>
-        <p>Add tools for your database, email and calendar and this becomes a real assistant: "find my order, refund it,
-          email the customer." Every production agent — coding agents included — is this exact loop with a bigger
-          toolbox. You now own the core pattern.</p>
-        <div class="cos"><span>Support bots</span><span>Booking assistants</span><span>Coding agents</span><span>Ops
-            automation</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLOCK 13 -->
-  <section class="block reveal" id="linkedin">
-    <div class="wrap">
-      <div class="sec-head accent">
-        <div class="sec-num">13</div>
-        <div>
-          <div class="sec-time">Block 13 · ~15 min · 📣 ship it</div>
-          <h2>Ship your first<br>agent to LinkedIn</h2>
-        </div>
-      </div>
-      <p class="big-p">"I built an AI <em>agent</em>" lands harder than "I built a chatbot" — because most people have
-        no idea how simple the trick is. Post the clip, use this caption, and hit the big button below when you're live.
-        😄</p>
-      <div class="li-card">
-        <div class="li-top">
-          <div class="li-av">You</div>
-          <div>
-            <div class="nm">Your Name</div>
-            <div class="mt">AI Engineering learner · now · 🌐</div>
-          </div>
-        </div>
-        <div class="li-body">🤖 I built my first AI agent today — and it can actually <em>use a tool</em>.
-
-          Ask it "how much are the shoes?" → it decides, on its own, to look up the price.
-          Ask it anything else → it just chats. Nobody told it when to use the tool. It figured that out.
-
-          That tiny decision (LLM + a tool + a loop) is the exact pattern behind Cursor, support bots, and every "AI
-          agent" you've read about. It's so much simpler than it sounds. 🤯
-
-          Stack: Python + LangChain + one function + Gradio.
-
-          Learning this hands-on with @Shivank Agrawal — an industry expert who builds real AI systems every day and
-          makes it genuinely click. 🙌
-
-          Day 2 with @Scaler. What tool should I give my agent next? 👇
-
-          #AIEngineering #LLM #Agents #Python #BuildInPublic</div>
-        <div class="li-foot"><span>👍 You and others</span><span>💬 Comments</span><span>↗ Repost</span></div>
-      </div>
-      <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">👉 Tag <a class="link"
-          href="https://www.linkedin.com/in/shivankagrawal/" target="_blank"
-          rel="noopener">linkedin.com/in/shivankagrawal</a> and @Scaler so we can reshare and boost your reach.</p>
-      <div style="text-align:center;margin:26px 0 6px">
-        <button class="btn" id="shippedBtn" style="font-size:17px;padding:15px 30px">🚀 I posted it!</button>
-        <div id="shippedMsg" style="margin-top:12px;font-weight:700;color:var(--teal);min-height:24px"></div>
-      </div>
-      <div class="note">
-        <div class="ico">🔥</div>
-        <div><b>Two classes, two ships</b>
-          <p>You're officially "building in public." Recruiters notice consistency far more than one flashy post. Keep
-            the streak alive.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BLOCK 14 -->
-  <section class="block reveal" id="next">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-num">14</div>
-        <div>
-          <div class="sec-time">Block 14 · ~10 min</div>
-          <h2>What you did &amp;<br>what's <em>next</em></h2>
-        </div>
-      </div>
-      <div class="takeaways">
-        <div class="tk">
-          <div class="e">🧭</div><b>3 ways to steer</b>
-          <p>Prompting, RAG, fine-tuning — you'll mostly prompt.</p>
-        </div>
-        <div class="tk">
-          <div class="e">🔗</div><b>LangChain</b>
-          <p>prompt | model | parser — chains you can snap together.</p>
-        </div>
-        <div class="tk">
-          <div class="e">🤖</div><b>Agents</b>
-          <p>LLM + tool + loop. The model decides. You saw it.</p>
-        </div>
-        <div class="tk">
-          <div class="e">🛍️</div><b>You shipped</b>
-          <p>A working tool-using agent, in public. 🎉</p>
-        </div>
-      </div>
-      <h3>The road ahead (still hands-on)</h3>
-      <div class="flow">
-        <div class="step">
-          <div class="n">→</div>
-          <div><b>More tools (your homework)</b>
-            <p>Add <code>check_stock(item)</code> or <code>apply_discount(item)</code> and watch the agent pick the
-              right one. Post the clip!</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="n">→</div>
-          <div><b>RAG — chat with your own PDFs</b>
-            <p>The next big build: a model that answers from <em>your</em> documents.</p>
-          </div>
-        </div>
-        <div class="step">
-          <div class="n">→</div>
-          <div><b>Multi-agent teams</b>
-            <p>Several agents handing work to each other — once one agent feels easy.</p>
-          </div>
-        </div>
-      </div>
-      <div class="note">
-        <div class="ico">📚</div>
-        <div><b>A note on theory</b>
-          <p>We're deliberately deferring the deep "how models are built" topics — attention, training, scaling — until
-            you're comfortable building. They'll land as "<em>oh, that's why it works</em>" instead of abstract lecture.
+          <h3>Try the working agent 👇</h3>
+          <p>A live, in-browser version with the real chat feel — typing dots, tool-call chips, the works. Watch
+            <em>when</em> the 🔧 appears (and when it doesn't):
           </p>
+          <div class="chatui">
+            <div class="cbar">🛍️ <b>Smart Shop Assistant</b> <span class="pill">live demo</span></div>
+            <div class="clog" id="shopLog">
+              <div class="cmsg b show">Hi! I'm your shop assistant. Ask me the price of anything 🙂</div>
+            </div>
+            <div class="cin">
+              <input class="text" id="shopIn" placeholder="e.g. How much are the shoes?" style="flex:1">
+              <button class="btn" id="shopSend">Send</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="shopExamples"></div>
+          <div class="statrow">
+            <div class="s"><b id="stTool">0</b><span>tool calls</span></div>
+            <div class="s"><b id="stChat">0</b><span>direct answers</span></div>
+          </div>
+          <p style="font-size:13px;color:var(--ink-faint);margin-top:10px">⚙️ Simulated in-browser (keyword matching
+            plays
+            the "model") so it runs key-free. Your real <code>agent.py</code> lets GPT make that decision far more
+            flexibly
+            — same loop, same trace.</p>
+
+          <div class="industry">
+            <div class="tag">🏭 Industry spotlight · this IS how real agents work</div>
+            <h4>One tool today → a toolbox tomorrow</h4>
+            <p>Add tools for your database, email and calendar and this becomes a real assistant: "find my order, refund
+              it,
+              email the customer." Every production agent — coding agents included — is this exact loop with a bigger
+              toolbox. You now own the core pattern.</p>
+            <div class="cos"><span>Support bots</span><span>Booking assistants</span><span>Coding agents</span><span>Ops
+                automation</span></div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
+
+      <!-- BLOCK 13 -->
+      <section class="block reveal" id="linkedin">
+        <div class="wrap">
+          <div class="sec-head accent">
+            <div class="sec-num">13</div>
+            <div>
+              <div class="sec-time">Block 13 · ~15 min · 📣 ship it</div>
+              <h2>Ship your first<br>agent to LinkedIn</h2>
+            </div>
+          </div>
+          <p class="big-p">"I built an AI <em>agent</em>" lands harder than "I built a chatbot" — because most people
+            have
+            no idea how simple the trick is. Post the clip, use this caption, and hit the big button below when you're
+            live.
+            😄</p>
+          <div class="li-card">
+            <div class="li-top">
+              <div class="li-av">You</div>
+              <div>
+                <div class="nm">Your Name</div>
+                <div class="mt">AI Engineering learner · now · 🌐</div>
+              </div>
+            </div>
+            <div class="li-body">🤖 I built my first AI agent today — and it can actually <em>use a tool</em>.
+
+              Ask it "how much are the shoes?" → it decides, on its own, to look up the price.
+              Ask it anything else → it just chats. Nobody told it when to use the tool. It figured that out.
+
+              That tiny decision (LLM + a tool + a loop) is the exact pattern behind Cursor, support bots, and every "AI
+              agent" you've read about. It's so much simpler than it sounds. 🤯
+
+              Stack: Python + LangChain + one function + Gradio.
+
+              Learning this hands-on with @Shivank Agrawal — an industry expert who builds real AI systems every day and
+              makes it genuinely click. 🙌
+
+              Day 2 with @Scaler. What tool should I give my agent next? 👇
+
+              #AIEngineering #LLM #Agents #Python #BuildInPublic</div>
+            <div class="li-foot"><span>👍 You and others</span><span>💬 Comments</span><span>↗ Repost</span></div>
+          </div>
+          <p style="font-size:13.5px;color:var(--ink-soft);margin-top:10px">👉 Tag <a class="link"
+              href="https://www.linkedin.com/in/shivankagrawal/" target="_blank"
+              rel="noopener">linkedin.com/in/shivankagrawal</a> and @Scaler so we can reshare and boost your reach.</p>
+          <div style="text-align:center;margin:26px 0 6px">
+            <button class="btn" id="shippedBtn" style="font-size:17px;padding:15px 30px">🚀 I posted it!</button>
+            <div id="shippedMsg" style="margin-top:12px;font-weight:700;color:var(--teal);min-height:24px"></div>
+          </div>
+          <div class="note">
+            <div class="ico">🔥</div>
+            <div><b>Two classes, two ships</b>
+              <p>You're officially "building in public." Recruiters notice consistency far more than one flashy post.
+                Keep
+                the streak alive.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCK 14 -->
+      <section class="block reveal" id="next">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">14</div>
+            <div>
+              <div class="sec-time">Block 14 · ~10 min</div>
+              <h2>What you did &amp;<br>what's <em>next</em></h2>
+            </div>
+          </div>
+          <div class="takeaways">
+            <div class="tk">
+              <div class="e">🧭</div><b>3 ways to steer</b>
+              <p>Prompting, RAG, fine-tuning — you'll mostly prompt.</p>
+            </div>
+            <div class="tk">
+              <div class="e">🔗</div><b>LangChain</b>
+              <p>prompt | model | parser — chains you can snap together.</p>
+            </div>
+            <div class="tk">
+              <div class="e">🤖</div><b>Agents</b>
+              <p>LLM + tool + loop. The model decides. You saw it.</p>
+            </div>
+            <div class="tk">
+              <div class="e">🛍️</div><b>You shipped</b>
+              <p>A working tool-using agent, in public. 🎉</p>
+            </div>
+          </div>
+          <h3>The road ahead (still hands-on)</h3>
+          <div class="flow">
+            <div class="step">
+              <div class="n">→</div>
+              <div><b>More tools (your homework)</b>
+                <p>Add <code>check_stock(item)</code> or <code>apply_discount(item)</code> and watch the agent pick the
+                  right one. Post the clip!</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="n">→</div>
+              <div><b>RAG — chat with your own PDFs</b>
+                <p>The next big build: a model that answers from <em>your</em> documents.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="n">→</div>
+              <div><b>Multi-agent teams</b>
+                <p>Several agents handing work to each other — once one agent feels easy.</p>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            <div class="ico">📚</div>
+            <div><b>A note on theory</b>
+              <p>We're deliberately deferring the deep "how models are built" topics — attention, training, scaling —
+                until
+                you're comfortable building. They'll land as "<em>oh, that's why it works</em>" instead of abstract
+                lecture.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
 
   <!-- SECTIONS_INSERT -->
 
-  <footer class="course-footer">
-    <div class="wrap">
-      <div class="grid">
-        <div>
-          <h3>Class 2 shipped 🎉</h3>
-          <p style="color:#d8ccbf">You wrote LangChain, built an agent that uses a tool on its own, and put it on the
-            internet. Most people never get this far.</p>
-        </div>
-        <div>
-          <h4
-            style="color:#ffb39e;text-transform:uppercase;font-size:12px;letter-spacing:.12em;font-family:'JetBrains Mono'">
-            Before next class</h4>
-          <p style="color:#d8ccbf;font-size:14px">Give your agent a SECOND tool and post a clip of it choosing between
-            them.</p>
-        </div>
-      </div>
-      <div class="sig"><span>AI Engineering · Class 2 — Hands-On: LangChain &amp; Your First Agent</span><span>Scaler
-          Academy</span></div>
-    </div>
+  <footer class="study-footer">
+    TechToday AI Study Library &mdash; LangChain &amp; Agents · Scaler Academy Class 2
   </footer>
   <script>
-    /* ===== base: progress, nav, reveal (with safety net), copy buttons ===== */
-    const prog = document.getElementById('progress'), tnav = document.getElementById('topnav');
-    addEventListener('scroll', () => { const h = document.documentElement, sc = h.scrollTop, max = h.scrollHeight - h.clientHeight; prog.style.width = (sc / max * 100) + '%'; tnav.classList.toggle('show', sc > 620); });
+    /* ===== base: reveal (with safety net), copy buttons ===== */
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0, rootMargin: '0px 0px -8% 0px' });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
     function revealOnScreen() { var vh = innerHeight || document.documentElement.clientHeight; document.querySelectorAll('.reveal:not(.in)').forEach(function (el) { var r = el.getBoundingClientRect(); if (r.top < vh * 0.95 && r.bottom > 0) el.classList.add('in'); }); }

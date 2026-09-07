@@ -251,139 +251,328 @@ body.docker-guide #topnav nav a:hover {
     pointer-events: auto;
 }
 
-#topnav {
-    background: rgba(17, 19, 21, .94);
+/* ==========================================================================
+   TechToday - AI Study Guides Shared Layout & Theme
+   Matches the 2-column sticky sidebar layout of Python & DSA guides.
+   ========================================================================== */
+
+:root {
+    --page: #0b0d10;
+    --surface: #11151a;
+    --surface-raised: #171c22;
+    --line: #28303a;
+    --line-soft: #1e252d;
+    --text: #dce4ec;
+    --muted: #94a0ad;
+    --accent: #ff7657;
+    --accent-bright: #ff9b82;
+    --code: #080a0d;
 }
 
-#topnav .topic-menu-panel {
-    display: contents;
+/* Base reading progress bar */
+.progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 100;
+    width: 0;
+    height: 3px;
+    background: var(--accent, #ff7657);
+    transition: width 0.1s linear;
 }
 
-#topnav .topic-menu-summary {
+/* 2-column study grid layout */
+.study-layout {
+    display: grid;
+    grid-template-columns: 268px minmax(0, 1fr);
+    justify-content: center;
+    gap: 28px;
+    width: 90%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px 0 96px;
+}
+
+.study-layout .study {
+    width: auto;
+    margin: 0;
+    padding: 20px 0 0;
+    min-width: 0;
+}
+
+/* Hide in-article TOC when inside study-layout (as sidebar renders it) */
+.study-layout .study>#table-of-contents,
+.study-layout .study>.table-of-contents {
     display: none;
 }
 
-#topnav nav {
-    counter-reset: topic-item;
+/* Sticky sidebar topic navigation */
+.topic-menu {
+    position: sticky;
+    top: 53px;
+    z-index: 40;
+    align-self: start;
+    max-height: calc(100vh - 53px);
+    overflow-y: auto;
+    padding: 28px 14px 28px 0;
+    border-right: 1px solid var(--line, #28303a);
 }
 
-#topnav nav a::before {
-    counter-increment: topic-item;
-    content: counter(topic-item) ". ";
-    color: var(--ink-soft, var(--muted, #a9b8c5));
-    font-variant-numeric: tabular-nums;
-    font-size: 0.9em;
-    margin-right: 2px;
-    opacity: 0.85;
+.topic-menu::-webkit-scrollbar {
+    width: 4px;
 }
 
-#topnav nav a.is-active::before {
-    color: var(--accent, var(--orange, var(--cargo, #ff7657)));
+.topic-menu::-webkit-scrollbar-thumb {
+    background: var(--line, #28303a);
+    border-radius: 4px;
 }
 
-#topnav nav a.is-active {
-    color: var(--accent, var(--orange, var(--cargo, #ff7657)));
+.topic-menu-title,
+.topic-menu-panel>summary {
+    margin: 0 0 12px;
+    color: var(--accent, #ff7657);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.topic-menu-panel>summary {
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.topic-menu-panel>summary::-webkit-details-marker {
+    display: none;
+}
+
+.topic-menu .table-of-contents {
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.topic-menu .table-of-contents li {
+    margin: 0 0 2px;
+}
+
+.topic-menu .table-of-contents a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--muted, #94a0ad);
+    font-size: 13px;
+    line-height: 1.4;
+    text-decoration: none;
+    border-radius: 4px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.topic-menu .table-of-contents a:hover {
+    color: var(--text, #fff);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.topic-menu .table-of-contents a.is-active {
+    color: var(--accent-bright, var(--accent, #ff7657));
     background: rgba(255, 255, 255, 0.08);
+    border-left-color: var(--accent, #ff7657);
+    font-weight: 600;
 }
 
+/* In-page Table of Contents */
+.table-of-contents {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 28px;
+    padding-left: 0;
+    list-style: none;
+    margin: 24px 0 48px;
+}
+
+.table-of-contents li {
+    margin: 0;
+}
+
+.table-of-contents a {
+    display: block;
+    padding: 6px 10px;
+    border-left: 2px solid transparent;
+    color: var(--muted, #94a0ad);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.table-of-contents a:hover,
+.table-of-contents a:focus-visible {
+    color: var(--accent-bright, var(--accent, #ff7657));
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--accent, #ff7657);
+}
+
+.table-of-contents-numbered {
+    counter-reset: toc-item;
+}
+
+.table-of-contents-numbered li {
+    counter-increment: toc-item;
+}
+
+.table-of-contents-numbered a::before {
+    content: counter(toc-item) ". ";
+    color: var(--muted, #94a0ad);
+    font-variant-numeric: tabular-nums;
+    margin-right: 4px;
+}
+
+/* Permanent heading links */
+.headerlink {
+    margin-left: 8px;
+    color: var(--line, #28303a);
+    font-family: sans-serif;
+    font-size: 0.65em;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+h2:hover .headerlink,
+h3:hover .headerlink,
+h1:hover .headerlink {
+    color: var(--accent, #ff7657);
+    opacity: 1;
+}
+
+/* Floating Back to Top button */
+.back-to-top {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--line, #28303a);
+    border-radius: 50%;
+    background: var(--surface-raised, #171c22);
+    color: var(--text, #fff);
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.back-to-top:hover {
+    background: var(--line, #28303a);
+    transform: translateY(-2px);
+}
+
+/* Unified footer */
+.study-footer {
+    padding: 32px 0;
+    border-top: 1px solid var(--line, #28303a);
+    color: var(--muted, #94a0ad);
+    font-size: 13px;
+    text-align: center;
+    margin-top: 60px;
+}
+
+/* Responsive Table Wrapper */
+.table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+/* Inner wrappers inside article.study must fill article width */
+.study-layout .wrap,
+.study .wrap,
+body.docker-guide .study-layout main,
+body.docker-guide .study .hero-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+}
+
+body.docker-guide .content,
+body.scaler-guide .content {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Mobile layout matching Python and DSA guides */
 @media (max-width: 960px) {
-    #topnav .wrap {
-        height: auto;
-        min-height: auto;
+    .study-layout {
+        display: block;
+        width: 90%;
+        max-width: 1500px;
+        padding-top: 0;
+    }
+
+    .topic-menu {
+        position: sticky;
+        top: 53px;
+        max-height: none;
+        margin: 0 -16px 12px;
         padding: 0 16px;
-        display: block;
+        overflow: visible;
+        background: var(--page, #0b0d10);
+        border-right: 0;
+        border-bottom: 1px solid var(--line, #28303a);
     }
 
-    #topnav .brand {
-        display: none;
+    .topic-menu-panel[open] {
+        padding-bottom: 12px;
     }
 
-    #topnav .topic-menu-panel {
-        display: block;
-        width: 100%;
-    }
-
-    #topnav .topic-menu-panel[open] {
-        padding-bottom: 8px;
-    }
-
-    #topnav .topic-menu-summary {
+    .topic-menu-panel>summary {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        width: 100%;
-        padding: 13px 0;
         margin: 0;
+        padding: 14px 0;
         cursor: pointer;
-        list-style: none;
-        user-select: none;
-        color: var(--accent, var(--orange, var(--cargo, #ff7657)));
-        font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        pointer-events: auto;
     }
 
-    #topnav .topic-menu-summary::-webkit-details-marker {
-        display: none;
-    }
-
-    #topnav .topic-menu-summary::after {
+    .topic-menu-panel>summary::after {
         content: "\25BE";
-        color: var(--accent, var(--orange, var(--cargo, #ff7657)));
+        color: var(--accent, #ff7657);
         font-size: 14px;
-        margin-left: 8px;
         transition: transform 0.2s ease;
     }
 
-    #topnav .topic-menu-panel[open]>.topic-menu-summary::after {
+    .topic-menu-panel[open]>summary::after {
         transform: rotate(180deg);
     }
 
-    #topnav nav {
-        width: 100%;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        gap: 3px;
+    .topic-menu .table-of-contents {
         max-height: min(60vh, 420px);
         overflow-y: auto;
-        padding: 6px 0 10px;
-        border-top: 1px solid var(--line, rgba(255, 255, 255, 0.1));
+        padding-bottom: 8px;
     }
 
-    #topnav nav::-webkit-scrollbar {
-        width: 4px;
+    .table-of-contents {
+        grid-template-columns: 1fr;
     }
+}
 
-    #topnav nav::-webkit-scrollbar-thumb {
-        background: var(--line, #3b3d3f);
-        border-radius: 4px;
-    }
-
-    #topnav nav a {
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 13px;
-        font-weight: 500;
-        line-height: 1.4;
-        padding: 8px 12px;
-        border-radius: 6px;
-        border-left: 2px solid transparent;
-        color: var(--ink-soft, var(--muted, #a9b8c5));
-        white-space: normal;
-        text-decoration: none;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-    }
-
-    #topnav nav a:hover,
-    #topnav nav a.is-active {
-        color: var(--ink, var(--text, #fff));
-        background: rgba(255, 255, 255, 0.06);
-        border-left-color: var(--accent, var(--orange, var(--cargo, #ff7657)));
+@media (min-width: 961px) {
+    .topic-menu-panel>summary {
+        cursor: default;
+        pointer-events: none;
     }
 }
 
@@ -417,29 +606,14 @@ body.docker-guide #topnav nav a:hover {
     }
 }
 
-/* Override container width to match techtoday index.html layout */
-.wrap,
-body.docker-guide main,
-body.docker-guide .hero-wrap,
-body.docker-guide .route-inner {
-    width: 90% !important;
-    max-width: 1500px !important;
-    margin: 0 auto !important;
-}
-
-body.docker-guide .content,
-body.scaler-guide .content {
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* Prevent horizontal scroll issues across all AI guides */
+/* Prevent horizontal overflow across guides */
 html,
 body {
     overflow-x: clip;
 }
 
 main,
+.study,
 .wrap,
 .wrap>*,
 .content>*,
@@ -448,5 +622,5 @@ pre,
 .runbox,
 svg {
     min-width: 0;
-    max-width: 100vw;
+    max-width: 100%;
 }
