@@ -137,6 +137,13 @@
                 </p>
             </div>
 
+            <p>Big-O measures <strong>space</strong> the same way it measures time — and it is the half people forget.
+                What counts is the <em>extra</em> memory an algorithm allocates, not the input itself. Two things catch
+                beginners out: <strong>the call stack is memory</strong>, so recursing <code>n</code> deep costs
+                <code>O(n)</code> even if you allocate nothing; and <strong>slicing copies</strong>, so
+                <code>nums[1:]</code> inside a loop quietly turns a linear algorithm quadratic.
+            </p>
+
             <hr />
 
             <h2 id="unit-1">Unit 1 — Foundational Linear Structures<a class="headerlink" href="#unit-1"
@@ -214,6 +221,26 @@ const grid = Array.from({ length: 3 }, () =&gt; new Array(4).fill(0)); // correc
 const wrong = new Array(3).fill(new Array(4).fill(0));              // one row
 </code></pre>
                 </div>
+            </div>
+
+            <h4 id="why-append-is-cheap">Why appending is cheap<a class="headerlink" href="#why-append-is-cheap"
+                    title="Permanent link">#</a></h4>
+            <p>A fixed block of memory cannot grow, so how is <code>append</code> <code>O(1)</code>? The array quietly
+                reserves spare capacity. When it fills up, the language allocates a block <strong>twice the
+                    size</strong>
+                and copies everything across — an <code>O(n)</code> operation. Because the size doubles, that copy
+                happens exponentially rarely: across <code>n</code> appends the total copying is less than
+                <code>2n</code>. Spread over all of them that is <code>O(1)</code> each, which is what
+                <strong>amortised</strong> means — a long run is fast, not that every single call is.
+            </p>
+
+            <div class="callout callout-warn">
+                <p><strong>Strings are arrays of characters that you cannot edit.</strong> In both Python and
+                    JavaScript strings are <strong>immutable</strong>, so every "change" builds a whole new string. That
+                    makes <code>text += word</code> inside a loop <code>O(n²)</code> — the single most common accidental
+                    slowdown in beginner code. Collect the pieces in a list and <code>"".join(parts)</code> (Python) or
+                    <code>parts.join("")</code> (JavaScript) once, for <code>O(n)</code>.
+                </p>
             </div>
 
             <!-- ============================================================ 2 -->
@@ -860,6 +887,12 @@ console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
                 </li>
             </ol>
 
+            <p>Two words get used constantly when comparing sorts. A sort is <strong>stable</strong> if items that
+                compare equal keep their original relative order — that is what lets you sort by surname, then by
+                department, and still have surnames ordered within each department. It is <strong>in place</strong> if
+                it needs only <code>O(1)</code> extra memory rather than a second array. Merge sort is stable but not in
+                place; quicksort is in place but not stable.</p>
+
             <div class="callout callout-tip">
                 <p>Python's <code>sort()</code> and JavaScript's <code>Array.prototype.sort()</code> are both
                     <strong>Timsort</strong> — stable, <code>O(n log n)</code>, and <code>O(n)</code> on
@@ -1102,6 +1135,25 @@ function dfs(graph, start) {            // stack -&gt; dive deep
             <p>Merge sort and quicksort are the canonical examples: split ten million items down to single items, where
                 the problem is trivial, then reassemble. The sub-problems being <em>independent</em> is what separates
                 this from dynamic programming.</p>
+
+            <p>All of it runs on <strong>recursion</strong> — a function that calls itself on a smaller input. You write
+                it as if the smaller case is already solved, which is the mental leap, and handle only the smallest case
+                by hand. Every recursive function needs exactly three things:</p>
+            <ol>
+                <li>A <strong>base case</strong> that returns without recursing — in merge sort, a list of one item is
+                    already sorted.</li>
+                <li>A <strong>recursive case</strong> that calls itself on a <em>strictly smaller</em> input.</li>
+                <li><strong>Progress</strong> — every path must move toward the base case.</li>
+            </ol>
+
+            <div class="callout callout-warn">
+                <p>Miss the base case, or fail to shrink the input, and the recursion never stops. Each call occupies a
+                    real frame on the <strong>call stack</strong>, so it does not hang — it crashes with
+                    <code>RecursionError</code> in Python (default limit ~1000 frames) or
+                    <code>Maximum call stack size exceeded</code> in JavaScript. Neither language optimises tail calls,
+                    so genuinely deep recursion must be rewritten as a loop with an explicit stack.
+                </p>
+            </div>
 
             <h3 id="dynamic-programming">3. Dynamic Programming<a class="headerlink" href="#dynamic-programming"
                     title="Permanent link">#</a></h3>
