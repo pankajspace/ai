@@ -41,6 +41,7 @@
                     <details class="tt-study-group">
                         <summary>DSA</summary>
                         <div class="tt-study-links">
+                            <a href="../dsa/dsa-crash-course.html">DSA Crash Course</a>
                             <a href="../dsa/dsa-detailed-course.html">DSA Detailed Course</a>
                         </div>
                     </details>
@@ -117,7 +118,8 @@
                     instructions Python can execute quickly, cached in <code>__pycache__/*.pyc</code>), and executes
                     that bytecode on a virtual machine. This means you just save and run! However, this is also why a
                     syntax error is caught immediately, but a <code>TypeError</code> only appears when the offending
-                    line actually runs.</li>
+                    line actually runs.
+                </li>
                 <li><strong>High-level</strong> — memory allocation, garbage collection (Python automatically cleans up
                     unused data so you don't run out of memory), and pointer arithmetic are handled for you. You
                     describe <em>what</em> you want to do, not exactly how the machine should move bytes around.</li>
@@ -157,7 +159,8 @@ pip3<span class="w"> </span>--version
 
             <blockquote>
                 <p>On macOS/Linux the commands are <code>python3</code>/<code>pip3</code> unless you've aliased
-                    <code>python</code>/<code>pip</code> to point at Python 3.</p>
+                    <code>python</code>/<code>pip</code> to point at Python 3.
+                </p>
             </blockquote>
             <p>The <code>python3</code> vs <code>python</code> split is historical: macOS and most Linux distributions
                 shipped Python 2 as <code>/usr/bin/python</code> for years, so Python 3 was installed alongside it under
@@ -174,7 +177,8 @@ pip3<span class="w"> </span>--version
                 <strong>Script mode</strong> starts a fresh interpreter and executes every module-level statement in
                 order — including <code>def</code> (functions) and <code>class</code> (objects), which are themselves
                 statements that bind a name to an object. Nothing is "hoisted" (moved to the top automatically): you
-                cannot call a function on line 3 that is defined on line 10.</p>
+                cannot call a function on line 3 that is defined on line 10.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Interactive REPL</span>
 python
@@ -193,7 +197,8 @@ python<span class="w"> </span>my_script.py
                 <code>()</code> tell Python to actually perform that job right now. Third, <code>"Hello, World!"</code>
                 is a <strong>string literal</strong>, which is just programmer jargon for "text surrounded by quotes".
                 Notice how clean it is: there's no complicated setup code and no semicolons at the end of the line.
-                Python likes to keep things simple.</p>
+                Python likes to keep things simple.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, World!&quot;</span><span class="p">)</span>    <span class="c1"># Hello, World!</span>
 </code></pre>
@@ -227,7 +232,8 @@ python<span class="w"> </span>my_script.py
                 (a dictionary that maps names to objects, like a room's directory). Reassigning <code>x = "hello"</code>
                 simply re-points that label to a new string object — think of peeling a sticky note off one thing and
                 putting it on another. The old integer is left to be reclaimed by <strong>garbage collection</strong>
-                (Python's automatic system for deleting unused data).</p>
+                (Python's automatic system for deleting unused data).
+            </p>
             <p>This "names and objects" model explains most of Python's surprising behaviour:</p>
             <ol>
                 <li><strong>Types belong to objects, not to names.</strong> A name can point at an <code>int</code>
@@ -235,14 +241,16 @@ python<span class="w"> </span>my_script.py
                     type check happens when an operation is attempted, not when the name is created.</li>
                 <li><strong>Assignment never copies.</strong> <code>b = a</code> gives you a second name for the
                     <em>same</em> object. If that object is <strong>mutable</strong> (able to be changed in place),
-                    changes made through <code>b</code> are visible through <code>a</code>.</li>
+                    changes made through <code>b</code> are visible through <code>a</code>.
+                </li>
                 <li><strong>Mutability is the property that really matters.</strong> Types like <code>int</code>,
                     <code>float</code>, <code>str</code>, <code>tuple</code>, and <code>bool</code> are
                     <strong>immutable</strong> (unchangeable): no operation changes them in place, so they are safe to
                     share freely and are <strong>hashable</strong> (meaning they can be converted to a fixed value for
                     fast lookups). Types like <code>list</code>, <code>dict</code>, and <code>set</code> are
                     <strong>mutable</strong>, so sharing them means changes in one place affect everywhere the object is
-                    used.</li>
+                    used.
+                </li>
                 <li><strong>Everything is an object</strong>, including functions, classes, and modules. That uniformity
                     is why passing functions around as data works so naturally.</li>
             </ol>
@@ -269,25 +277,32 @@ python<span class="w"> </span>my_script.py
                 overflows), unlike the fixed-size integers of most languages. <code>float</code> is an IEEE-754 double
                 (a standard way computers represent decimals), which is why <code>0.1 + 0.2</code> famously evaluates to
                 <code>0.30000000000000004</code> due to tiny binary rounding errors; reach for
-                <code>decimal.Decimal</code> when exact base-10 math matters, such as money.</p>
+                <code>decimal.Decimal</code> when exact base-10 math matters, such as money.
+            </p>
             <ol>
                 <li>The <code>int</code> type represents immutable whole numbers like <code>42</code>, <code>-7</code>,
                     or <code>0b1010</code>.</li>
                 <li>The <code>float</code> type represents immutable decimal numbers like <code>3.14</code>,
-                    <code>-0.001</code>, or <code>1e10</code>.</li>
+                    <code>-0.001</code>, or <code>1e10</code>.
+                </li>
                 <li>The <code>complex</code> type represents immutable complex numbers like <code>3 + 4j</code>.</li>
                 <li>The <code>bool</code> type represents immutable true/false values: <code>True</code> and
-                    <code>False</code>.</li>
+                    <code>False</code>.
+                </li>
                 <li>The <code>str</code> type represents immutable text like <code>"hello"</code> or
-                    <code>'world'</code>.</li>
+                    <code>'world'</code>.
+                </li>
                 <li>The <code>list</code> type represents a <strong>mutable</strong> sequence of items like
-                    <code>[1, 2, 3]</code>.</li>
+                    <code>[1, 2, 3]</code>.
+                </li>
                 <li>The <code>tuple</code> type represents an immutable sequence of items like <code>(1, 2, 3)</code>.
                 </li>
                 <li>The <code>set</code> type represents a <strong>mutable</strong> collection of unique items like
-                    <code>{1, 2, 3}</code>.</li>
+                    <code>{1, 2, 3}</code>.
+                </li>
                 <li>The <code>dict</code> type represents a <strong>mutable</strong> map of keys to values like
-                    <code>{"a": 1, "b": 2}</code>.</li>
+                    <code>{"a": 1, "b": 2}</code>.
+                </li>
                 <li>The <code>None</code> type represents a single immutable value that means "nothing"
                     (<code>None</code>).</li>
             </ol>
@@ -300,13 +315,15 @@ python<span class="w"> </span>my_script.py
                 you mean "this type <strong>or a subclass of it</strong>". The distinction matters because
                 <code>bool</code> is genuinely a subclass of <code>int</code> in Python, so
                 <code>isinstance(True, int)</code> is <code>True</code> while <code>type(True) is int</code> is
-                <code>False</code>.</p>
+                <code>False</code>.
+            </p>
             <p>The conversion functions are <strong>constructors</strong>, not casts — they build a brand-new object
                 rather than reinterpreting existing memory. <code>bool()</code> deserves special attention because it
                 silently drives every <code>if</code> statement: empty containers (<code>""</code>, <code>[]</code>,
                 <code>{}</code>, <code>set()</code>), zero of any numeric type, and <code>None</code> are
                 <strong>falsy</strong> (treated as false); everything else is <strong>truthy</strong> (treated as true).
-                That rule is what makes <code>if not my_list:</code> the standard way to check if a list is empty.</p>
+                That rule is what makes <code>if not my_list:</code> the standard way to check if a list is empty.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="nb">type</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>            <span class="c1"># &lt;class &#39;int&#39;&gt;</span>
 <span class="nb">isinstance</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="c1"># True</span>
@@ -328,26 +345,30 @@ python<span class="w"> </span>my_script.py
                 <code>type(a).__add__(a, b)</code> behind the scenes; if that returns <code>NotImplemented</code>, it
                 falls back to <code>type(b).__radd__(b, a)</code>. This single mechanism is why <code>+</code>
                 concatenates (joins) strings, merges lists, and adds numbers — each type supplies its own custom
-                implementation.</p>
+                implementation.
+            </p>
             <p>One structural point: in Python, <strong>assignment is a statement, not an expression</strong>. This
                 means <code>x = 5</code> produces no value and cannot appear inside an <code>if</code> condition or a
                 function call. That deliberate restriction eliminates the classic bug of accidentally typing
                 <code>if (x = 5)</code> when you meant <code>if (x == 5)</code>. It is exactly why the <strong>walrus
                     operator</strong> <code>:=</code> was introduced separately for when you really need assignment to
-                act as a value-producing expression.</p>
+                act as a value-producing expression.
+            </p>
             <h3 id="arithmetic">Arithmetic<a class="headerlink" href="#arithmetic" title="Permanent link">#</a></h3>
             <p>The standard math operators <code>+ - * /</code> work exactly as you would expect. There are also special
                 operators: <code>//</code> performs floor division (rounding down), <code>%</code> calculates the
                 remainder (modulo), and <code>**</code> raises a number to a power (exponentiation). If you ever mix an
                 <code>int</code> and a <code>float</code> in an equation, Python will automatically promote the final
-                result to a <code>float</code>.</p>
+                result to a <code>float</code>.
+            </p>
             <p>The two division operators exist for a reason. <code>/</code> is <strong>true division</strong> and
                 always returns a <code>float</code> (a decimal), even when the result is exact (so <code>4 / 2</code> is
                 <code>2.0</code>). <code>//</code> is <strong>floor division</strong>, which rounds <em>toward negative
                     infinity</em> rather than toward zero — so <code>-7 // 2</code> is <code>-4</code>, not
                 <code>-3</code>. The modulo operator <code>%</code> is defined to stay consistent with that rule,
                 meaning its result always carries the sign of the <em>divisor</em>. This is what makes <code>%</code>
-                reliable for cyclic math, like wrapping around an array or calculating clock positions.</p>
+                reliable for cyclic math, like wrapping around an array or calculating clock positions.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="mi">5</span> <span class="o">+</span> <span class="mi">3</span>     <span class="c1"># 8    Addition</span>
 <span class="mi">5</span> <span class="o">-</span> <span class="mi">3</span>     <span class="c1"># 2    Subtraction</span>
@@ -365,7 +386,8 @@ python<span class="w"> </span>my_script.py
             <p><strong>Chaining</strong> is a genuine Python feature, not a formatting trick:
                 <code>0 &lt; x &lt; 10</code> is evaluated as <code>0 &lt; x and x &lt; 10</code> except that
                 <code>x</code> is computed only once. It works for any mix of comparison operators and any number of
-                terms, and it is both faster and more readable than the explicit <code>and</code> form.</p>
+                terms, and it is both faster and more readable than the explicit <code>and</code> form.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="mi">5</span> <span class="o">==</span> <span class="mi">5</span>    <span class="c1"># True    Equal</span>
 <span class="mi">5</span> <span class="o">!=</span> <span class="mi">3</span>    <span class="c1"># True    Not equal</span>
@@ -380,7 +402,8 @@ python<span class="w"> </span>my_script.py
             <p><code>and</code> / <code>or</code> / <code>not</code> combine booleans. They
                 <strong>short-circuit</strong> (stop evaluating as soon as they know the answer): <code>and</code> stops
                 at the first falsy value, <code>or</code> at the first truthy one — so they can actually return the
-                final value they looked at, not just <code>True</code> or <code>False</code>.</p>
+                final value they looked at, not just <code>True</code> or <code>False</code>.
+            </p>
             <p>This is a subtlety that trips up newcomers: <code>and</code> and <code>or</code> do <strong>not</strong>
                 guarantee a boolean result, they return <em>one of their operands</em> (the actual values you gave
                 them). <code>and</code> walks left to right and yields the first falsy value it finds, or the last value
@@ -389,7 +412,8 @@ python<span class="w"> </span>my_script.py
                 safe guards: <code>user and user.name</code> returns <code>None</code> instead of crashing with an
                 <code>AttributeError</code> if <code>user</code> is missing, and <code>config.get("port") or 8080</code>
                 easily supplies a fallback. Be careful with that second pattern when <code>0</code> or <code>""</code>
-                are legitimate values, since they are falsy and would be accidentally replaced by the fallback!</p>
+                are legitimate values, since they are falsy and would be accidentally replaced by the fallback!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kc">True</span> <span class="ow">and</span> <span class="kc">False</span>   <span class="c1"># False</span>
 <span class="kc">True</span> <span class="ow">or</span> <span class="kc">False</span>    <span class="c1"># True</span>
@@ -412,12 +436,14 @@ python<span class="w"> </span>my_script.py
                 — like <code>x is None</code> or <code>x is True</code> — because CPython guarantees there is exactly
                 one such object. Using <code>is</code> for value comparison appears to work for small integers only
                 because CPython <strong>interns</strong> (caches and reuses) them, and then it silently breaks for
-                larger values: <code>256 is 256</code> is <code>True</code>, but <code>257 is 257</code> may not be.</p>
+                larger values: <code>256 is 256</code> is <code>True</code>, but <code>257 is 257</code> may not be.
+            </p>
             <p>Membership with <code>in</code> also has very different costs depending on the container: scanning a list
                 or tuple is <strong>O(n)</strong> (the time it takes grows linearly with the number of items — double
                 the list, double the time), while checking a <code>set</code> or a <code>dict</code> key is
                 <strong>O(1)</strong> (constant time — it takes the same time whether there are 10 or 10 million items,
-                because it uses a <strong>hash table</strong> to instantly compute the location).</p>
+                because it uses a <strong>hash table</strong> to instantly compute the location).
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Identity — checks if same object in memory</span>
 <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
@@ -438,13 +464,15 @@ python<span class="w"> </span>my_script.py
             <h3 id="assignment-shortcuts">Assignment Shortcuts<a class="headerlink" href="#assignment-shortcuts"
                     title="Permanent link">#</a></h3>
             <p><code>+=</code>, <code>*=</code>, and friends update a name in place. For lists, <code>+=</code> is like
-                <code>extend</code> — it mutates the existing list.</p>
+                <code>extend</code> — it mutates the existing list.
+            </p>
             <p>That list behaviour is not a quirk; it follows from the dunder protocol. Augmented assignment first tries
                 the <em>in-place</em> method (<code>__iadd__</code>), and only falls back to <code>__add__</code> plus a
                 rebind if the type does not provide one. Mutable types like <code>list</code> implement
                 <code>__iadd__</code>, so <code>lst += [1]</code> mutates the object every other name is also pointing
                 at. Immutable types cannot, so <code>x += 1</code> on an integer always creates a new object and rebinds
-                the name. The practical difference:</p>
+                the name. The practical difference:
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">];</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span>
 <span class="n">a</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>        <span class="c1"># mutates in place -&gt; b is also [1, 2, 3]</span>
@@ -473,7 +501,8 @@ python<span class="w"> </span>my_script.py
                 where it improves readability, while its deliberately different spelling keeps the
                 <code>=</code>/<code>==</code> typo hazard out. Reach for it when you would otherwise compute a value
                 twice, or when a loop condition needs the value it is testing — and avoid it when it merely crams
-                unrelated work into a condition.</p>
+                unrelated work into a condition.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Without walrus</span>
 <span class="n">data</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Enter: &quot;</span><span class="p">)</span>
@@ -494,7 +523,8 @@ python<span class="w"> </span>my_script.py
                     href="#ternary-conditional-expression" title="Permanent link">#</a></h3>
             <p>A conditional expression (often called a ternary operator) is a one-line if/else statement that
                 <strong>returns a value</strong>, written like <code>a if condition else b</code>. You should use it for
-                simple, clear choices, but avoid it for long or complex branches.</p>
+                simple, clear choices, but avoid it for long or complex branches.
+            </p>
             <p>The ordering reads oddly at first because the <em>value</em> comes before the <em>test</em>; read it as
                 "give me <code>a</code>, if <code>condition</code> holds, otherwise <code>b</code>". Being an expression
                 is the whole point — it can appear anywhere a value is expected: inside an f-string, as a function
@@ -525,7 +555,8 @@ python<span class="w"> </span>my_script.py
                 between multiple parts of your program running at once (threads). The trade-off is that repeated string
                 concatenation in a loop (using <code>+=</code>) gets slower and slower (quadratic time), since each
                 <code>+=</code> has to copy the whole accumulated string into a new object. That is why using
-                <code>"".join(parts)</code> is the standard, fast way to build a long string from many pieces.</p>
+                <code>"".join(parts)</code> is the standard, fast way to build a long string from many pieces.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Hello, World!&quot;</span>
 <span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;Hello, World!&#39;</span>        <span class="c1"># single or double quotes</span>
@@ -549,16 +580,19 @@ python<span class="w"> </span>my_script.py
                 </li>
                 <li><strong>Negative indices count from the end</strong>, with <code>-1</code> as the last element — so
                     <code>s[-3:]</code> means "give me the last three items" without you needing to manually calculate
-                    the length first.</li>
+                    the length first.
+                </li>
                 <li><strong>Slicing never raises an <code>IndexError</code>.</strong> Out-of-range bounds are silently
                     clamped (adjusted to the nearest edge), so asking for <code>"ab"[:100]</code> safely returns just
                     <code>"ab"</code>. However, plain single indexing (like <code>s[100]</code>) <em>does</em> raise an
-                    error if the item doesn't exist. That asymmetry is intentional and frequently useful!</li>
+                    error if the item doesn't exist. That asymmetry is intentional and frequently useful!
+                </li>
             </ol>
             <p>A negative <code>step</code> walks backwards, which is the whole trick behind how <code>s[::-1]</code>
                 works. A slice of a string or tuple produces a new immutable object; a slice of a list produces a
                 <strong>shallow copy</strong> (a new outer list, but the items inside are the same) — making
-                <code>lst[:]</code> a very handy shortcut for "copy this entire list".</p>
+                <code>lst[:]</code> a very handy shortcut for "copy this entire list".
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Python&quot;</span>
 <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="c1"># &#39;P&#39;     first character</span>
@@ -575,7 +609,8 @@ python<span class="w"> </span>my_script.py
                     title="Permanent link">#</a></h3>
             <p>Methods always return <strong>new</strong> strings (because of immutability). <code>split</code> and
                 <code>join</code> are your main tools for converting between strings and lists. <code>find</code>
-                returns <code>-1</code> if the text is missing, whereas <code>index</code> crashes with an error.</p>
+                returns <code>-1</code> if the text is missing, whereas <code>index</code> crashes with an error.
+            </p>
             <p>Rather than memorising the huge list of methods, group them by purpose: <strong>trimming</strong>
                 (<code>strip</code>, <code>lstrip</code>, <code>rstrip</code>), <strong>case</strong>
                 (<code>lower</code>, <code>upper</code>, <code>title</code>, <code>capitalize</code>),
@@ -583,14 +618,16 @@ python<span class="w"> </span>my_script.py
                 <code>startswith</code>, <code>endswith</code>), <strong>splitting and joining</strong>
                 (<code>split</code>, <code>rsplit</code>, <code>splitlines</code>, <code>join</code>), and
                 <strong>classification</strong> (<code>isalpha</code>, <code>isdigit</code>, <code>isspace</code>,
-                etc.).</p>
+                etc.).
+            </p>
             <p>Two pairs are worth calling out. <code>find()</code> returns <code>-1</code> when the substring is absent
                 while <code>index()</code> raises a <code>ValueError</code> — choose based on whether "not found" is a
                 normal outcome (use <code>find</code>) or a bug (use <code>index</code>). And <code>strip("abc")</code>
                 does <strong>not</strong> remove the literal word <code>"abc"</code>; it strips any leading and trailing
                 characters belonging to that <em>set</em> of characters, so <code>"cabbage".strip("abc")</code> gives
                 <code>"ge"</code>. Use <code>removeprefix()</code> or <code>removesuffix()</code> (available in Python
-                3.9+) when you mean to remove an exact word.</p>
+                3.9+) when you mean to remove an exact word.
+            </p>
             <p>Note also that <code>"a b".split()</code> with no argument splits on <strong>any run of
                     whitespace</strong> and discards empty spaces, whereas <code>split(" ")</code> splits on each single
                 space character exactly and can produce empty strings in the resulting list.</p>
@@ -643,18 +680,21 @@ python<span class="w"> </span>my_script.py
                 <li><strong>Does order matter?</strong> Lists and tuples preserve the exact order you put items in, and
                     let you look them up by their number position. Sets do not have any set order. Dictionaries preserve
                     <em>insertion</em> order (the order you added them) but are looked up by custom keys, not numbered
-                    positions.</li>
+                    positions.
+                </li>
                 <li><strong>Will it change after creation?</strong> <strong>Mutable</strong> (changeable) containers
                     like <code>list</code>, <code>dict</code>, and <code>set</code> can be modified in place after you
                     create them. <strong>Immutable</strong> (unchangeable) ones like <code>tuple</code>,
                     <code>frozenset</code>, and <code>str</code> cannot — which makes them <strong>hashable</strong> and
-                    therefore safe to use as dictionary keys or set members.</li>
+                    therefore safe to use as dictionary keys or set members.
+                </li>
                 <li><strong>How will you look things up?</strong> Scanning a list to find a value is
                     <strong>O(n)</strong> (it gets slower as the list gets longer); looking up a dictionary key or
                     checking if a set has an item is <strong>O(1)</strong> on average (it takes the same time whether
                     there are 10 or 10 million items, because both are backed by <strong>hash tables</strong>).
                     Converting a slow list to a fast set before checking "is this item inside?" is one of the most
-                    common ways to speed up real-world code.</li>
+                    common ways to speed up real-world code.
+                </li>
                 <li><strong>Are the elements the same kind of thing?</strong> A list usually holds <em>homogeneous</em>
                     items (all the same type, like a list of names) where position doesn't mean much on its own; a tuple
                     usually holds a fixed number of <em>heterogeneous</em> fields (different types, like a name and an
@@ -666,7 +706,8 @@ python<span class="w"> </span>my_script.py
             <p>A list is the default sequence type in Python. You can look up items by their index position, grab chunks
                 using a slice, and mutate (change) it with methods like <code>append</code>, <code>insert</code>, or
                 <code>pop</code>. Mixing different data types in the same list is allowed, but it is usually a sign of
-                messy code.</p>
+                messy code.
+            </p>
             <p>A Python list is a <strong>dynamic array of pointers</strong> (a flexible list of memory references). The
                 elements live in a contiguous block of references that CPython over-allocates (reserves extra space
                 for), which is why repeatedly adding items with <code>append()</code> is <strong>amortised O(1)</strong>
@@ -675,7 +716,8 @@ python<span class="w"> </span>my_script.py
                 (removing the first item), and <code>remove(x)</code> are <strong>O(n)</strong> (slower as the list
                 grows) because every single item after it has to shift over. When you need fast operations at
                 <em>both</em> ends, use <code>collections.deque</code> (a special double-ended queue covered in section
-                26).</p>
+                26).
+            </p>
             <p>Because a list stores references (pointers to objects) rather than the values themselves, it can hold
                 mixed types, and <code>lst.copy()</code> or <code>lst[:]</code> gives a <strong>shallow copy</strong> —
                 the outer list is new, but the inner objects inside it are still the exact same shared objects. Note
@@ -683,7 +725,8 @@ python<span class="w"> </span>my_script.py
                 mutates (changes) the list in place and returns <code>None</code> (so writing
                 <code>x = lst.sort()</code> is a classic bug that makes <code>x</code> equal to <code>None</code>),
                 while <code>sorted(lst)</code> leaves the original list alone and returns a brand-new sorted list. Both
-                are stable, meaning equal elements keep their relative order.</p>
+                are stable, meaning equal elements keep their relative order.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">mixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>  <span class="c1"># can mix types</span>
@@ -723,7 +766,8 @@ python<span class="w"> </span>my_script.py
                     href="#tuples--ordered-immutable" title="Permanent link">#</a></h3>
             <p>Tuples are fixed-length records. To make a one-item tuple, you must include a trailing comma, like
                 <code>(42,)</code>. Tuples can be safely used as dictionary keys because they are
-                <strong>hashable</strong> (as long as all their contents are also hashable).</p>
+                <strong>hashable</strong> (as long as all their contents are also hashable).
+            </p>
             <p>A tuple is not merely "a list you can't change" — it signals different <em>intent</em> to anyone reading
                 your code. Lists model collections of similar items; tuples model records with a fixed shape where the
                 position carries meaning, such as <code>(x, y)</code> coordinates or <code>(host, port)</code>.
@@ -735,7 +779,8 @@ python<span class="w"> </span>my_script.py
                 <code>x = 5,</code>) silently produces a one-element tuple instead of a regular integer! Second,
                 immutability is <strong>shallow</strong>: a tuple guarantees its slots always point at the same objects,
                 but if one of those objects happens to be a mutable list, that list can still be changed (and the tuple
-                then stops being hashable in practice).</p>
+                then stops being hashable in practice).
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">point</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">single</span> <span class="o">=</span> <span class="p">(</span><span class="mi">42</span><span class="p">,)</span>            <span class="c1"># trailing comma needed for single-element tuple</span>
@@ -770,7 +815,8 @@ python<span class="w"> </span>my_script.py
                 writing nested loops. The trade-offs are that sets carry no order and no indexing (asking for
                 <code>s[0]</code> raises a <code>TypeError</code>), and that <code>remove()</code> raises a
                 <code>KeyError</code> if the element is missing, while <code>discard()</code> quietly does nothing —
-                pick according to whether absence is an error.</p>
+                pick according to whether absence is an error.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">fruits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">,</span> <span class="s2">&quot;cherry&quot;</span><span class="p">}</span>
 <span class="n">empty_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>          <span class="c1"># NOT {} — that&#39;s an empty dict!</span>
@@ -812,7 +858,8 @@ python<span class="w"> </span>my_script.py
                     href="#dictionaries--key-value-pairs" title="Permanent link">#</a></h3>
             <p>A dictionary is the core mapping type in Python. Your keys must be <strong>hashable</strong> (like
                 strings, numbers, or tuples). You should prefer using <code>.get(key, default)</code> instead of
-                <code>[key]</code> whenever a missing key is a normal, expected possibility.</p>
+                <code>[key]</code> whenever a missing key is a normal, expected possibility.
+            </p>
             <p>The dictionary is the most important data structure in Python, because the language itself is built on
                 it: module <strong>namespaces</strong> (directories of names), object attributes
                 (<code>obj.__dict__</code>), keyword arguments, and class bodies are all dictionaries under the hood.
@@ -824,14 +871,16 @@ python<span class="w"> </span>my_script.py
                 therefore effectively immutable: if a key's hash changed after you inserted it, the dict could never
                 find it again! Since Python 3.7, dictionaries also <strong>preserve insertion order</strong> as a
                 guaranteed built-in behaviour (meaning they remember the order you added things in), which makes the
-                older <code>collections.OrderedDict</code> rarely necessary anymore.</p>
+                older <code>collections.OrderedDict</code> rarely necessary anymore.
+            </p>
             <p>Three access habits are worth forming: use <code>d[key]</code> when a missing key genuinely means
                 something is broken (a bug), use <code>d.get(key, default)</code> when absence is expected, and use
                 <code>d.setdefault(key, []).append(x)</code> (or <code>collections.defaultdict</code>) when you are
                 accumulating values per key. Also remember that <code>.keys()</code>, <code>.values()</code>, and
                 <code>.items()</code> return <strong>views</strong>, not lists — they are live windows looking at the
                 dict's current state, which is why modifying a dict while you are looping over one of its views raises a
-                <code>RuntimeError</code>.</p>
+                <code>RuntimeError</code>.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">person</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Alice&quot;</span><span class="p">,</span>
@@ -900,13 +949,15 @@ python<span class="w"> </span>my_script.py
             <p>Control flow is where Python's whitespace rule becomes concrete: a block of code belongs to its
                 <code>if</code> statement because it is <em>indented under</em> it, and the block ends when the
                 indentation returns to normal. Choose 4 spaces, never mix tabs with spaces (Python 3 rejects the mixture
-                outright and will crash), and let your code editor enforce it for you.</p>
+                outright and will crash), and let your code editor enforce it for you.
+            </p>
             <p>The other idea running through this section is <strong>truthiness</strong> (the concept that any value
                 can act like True or False). A condition doesn't have to be a strict boolean: Python calls
                 <code>bool()</code> on whatever you give it, so <code>if my_list:</code> simply reads as "if the list is
                 non-empty". This keeps your conditions short, but it is also why you must write
                 <code>if x is None:</code> rather than just <code>if not x:</code> if you know that <code>0</code>,
-                <code>""</code>, or <code>[]</code> are legitimate values distinct from "missing".</p>
+                <code>""</code>, or <code>[]</code> are legitimate values distinct from "missing".
+            </p>
             <h3 id="if--elif--else">if / elif / else<a class="headerlink" href="#if--elif--else"
                     title="Permanent link">#</a></h3>
             <p>Conditions are any truthy or falsy value. Only the very first matching branch runs. Indentation acts as
@@ -948,19 +999,23 @@ python<span class="w"> </span>my_script.py
                 actually destructures (takes apart) a value to check its <em>shape</em>, and when a pattern matches, it
                 can automatically assign the pieces to new variables — meaning matching and unpacking happen in a
                 single, clean step. That is what makes it so amazingly useful for handling complex, nested JSON-like
-                data or taking apart abstract data structures.</p>
+                data or taking apart abstract data structures.
+            </p>
             <p>The vocabulary of patterns is worth learning explicitly:</p>
             <ol>
                 <li><strong>Literal patterns</strong> — <code>case "quit":</code> simply checks for an exact match using
-                    <code>==</code>.</li>
+                    <code>==</code>.
+                </li>
                 <li><strong>Or-patterns</strong> — <code>case "quit" | "exit":</code> matches if <em>any</em> of the
                     alternatives are true.</li>
                 <li><strong>Capture patterns</strong> — a bare variable name like <code>y</code> matches anything at all
                     and <em>binds</em> it (saves it into the variable <code>y</code>), which is why
                     <code>case (0, y)</code> means "a 2-item tuple where the first element is 0; capture whatever the
-                    second one is and call it <code>y</code>".</li>
+                    second one is and call it <code>y</code>".
+                </li>
                 <li><strong>Class patterns</strong> — <code>case str(cmd)</code> checks if the subject is a
-                    <code>str</code> (string), and if so, binds it to <code>cmd</code>.</li>
+                    <code>str</code> (string), and if so, binds it to <code>cmd</code>.
+                </li>
                 <li><strong>Guards</strong> — adding an <code>if cmd.startswith("open")</code> at the end adds an extra
                     custom condition that must also be true.</li>
                 <li><strong>Wildcard</strong> — <code>case _:</code> matches absolutely anything but doesn't save it; it
@@ -972,7 +1027,8 @@ python<span class="w"> </span>my_script.py
                 beware of the capture rule: a bare name always <em>binds</em> rather than comparing, so
                 <code>case RED:</code> does not check if the value equals a constant named <code>RED</code>; it just
                 captures the value into a new variable called <code>RED</code>! If you want to check against a constant,
-                you need a dotted name like <code>case Color.RED:</code>.</p>
+                you need a dotted name like <code>case Color.RED:</code>.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;quit&quot;</span>
 
@@ -1011,7 +1067,8 @@ python<span class="w"> </span>my_script.py
                 (yielding it line by line), a dictionary (yielding its keys), a generator (yielding computed values on
                 the fly), a database cursor, or even your own custom class, as long as it has an <code>__iter__</code>
                 <strong>dunder method</strong> (special double-underscore method). Section 16 covers this protocol in
-                more detail.</p>
+                more detail.
+            </p>
             <p>The practical rule of thumb: use <code>for</code> when you are walking through a collection of items, and
                 use <code>while</code> when you are repeating an action until a specific <em>condition</em> changes.</p>
             <h3 id="for-loop">for Loop<a class="headerlink" href="#for-loop" title="Permanent link">#</a></h3>
@@ -1023,14 +1080,16 @@ python<span class="w"> </span>my_script.py
             <ol>
                 <li><strong><code>range(start, stop, step)</code></strong> produces numbers lazily — it doesn't build a
                     massive list of numbers in memory, but instead computes the next value only when asked. This means
-                    <code>range(10**9)</code> (a billion) costs practically zero memory!</li>
+                    <code>range(10**9)</code> (a billion) costs practically zero memory!
+                </li>
                 <li><strong><code>enumerate(seq, start=0)</code></strong> gives you both the <code>(index, value)</code>
                     pairs as you loop. It completely replaces the clunky <code>for i in range(len(seq))</code>
                     anti-pattern.</li>
                 <li><strong><code>zip(a, b, ...)</code></strong> lets you loop over multiple lists side-by-side in
                     lockstep, automatically stopping when the <strong>shortest</strong> list runs out. If you pass
                     <code>strict=True</code> (available in Python 3.10+), it will instead raise an error if the lists
-                    are different lengths.</li>
+                    are different lengths.
+                </li>
                 <li><strong>Dict iteration:</strong> When iterating over a dictionary, you get just the keys by default.
                     If you need both keys and values, use <code>for k, v in my_dict.items():</code>.</li>
             </ol>
@@ -1111,7 +1170,8 @@ python<span class="w"> </span>my_script.py
                     <em>without</em> ever hitting a <code>break</code> statement. Think of it as "no break happened",
                     not as "otherwise". It is the natural, built-in way to say "I searched for something in the loop,
                     didn't find it, so do this instead" without needing a separate <code>found = False</code> tracking
-                    variable.</li>
+                    variable.
+                </li>
                 <li><strong><code>pass</code></strong> is a completely silent placeholder that does absolutely nothing.
                     Use it when Python syntax demands a block of code but you aren't ready to write anything there yet.
                 </li>
@@ -1119,7 +1179,8 @@ python<span class="w"> </span>my_script.py
             <p>One important limit to keep in mind: <code>break</code> and <code>continue</code> only affect the
                 <strong>innermost</strong> loop they are sitting inside. Python doesn't have labelled breaks (like
                 <code>break outer_loop</code>), so to completely escape from multiple nested loops, you should either
-                put them in a function and use <code>return</code>, or use a tracking variable to know when to stop.</p>
+                put them in a function and use <code>return</code>, or use a tracking variable to know when to stop.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># break — exit the loop entirely</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
@@ -1159,7 +1220,8 @@ python<span class="w"> </span>my_script.py
                 <code>greet</code>, exactly the same way <code>x = 5</code> attaches a number. Because of this, you can
                 store functions inside lists, pass them as arguments to other functions, return them, and even attach
                 custom properties to them. Decorators, callbacks, and passing a custom sorting rule like
-                <code>sorted(..., key=len)</code> all rely entirely on this fact.</p>
+                <code>sorted(..., key=len)</code> all rely entirely on this fact.
+            </p>
             <p>The other crucial idea is Python's unique way of passing arguments, which is <strong>call by object
                     reference</strong> (sometimes known as call by sharing). When you give a variable to a function, the
                 function receives a reference to the <em>exact same object</em> you had. If you re-assign that name
@@ -1167,7 +1229,8 @@ python<span class="w"> </span>my_script.py
                 <em>mutate</em> the object it points at (like <code>lst.append(99)</code>), that change modifies the
                 original object and is permanently visible outside the function! Understanding this single rule explains
                 the famous "mutable default gotcha" and almost every bug where your lists or dictionaries seem to
-                magically change.</p>
+                magically change.
+            </p>
             <h3 id="basic-functions">Basic Functions<a class="headerlink" href="#basic-functions"
                     title="Permanent link">#</a></h3>
             <p>Use <code>def</code> to create a function object. You run it by adding parentheses <code>()</code>; if
@@ -1191,14 +1254,16 @@ python<span class="w"> </span>my_script.py
                     title="Permanent link">#</a></h3>
             <p>Positional arguments are matched up in the exact order you defined them. Keyword arguments (written as
                 <code>name=value</code>) can be provided in any order. If you define default values, they must always
-                come <em>after</em> the required parameters.</p>
+                come <em>after</em> the required parameters.
+            </p>
             <p>Using keyword arguments isn't just a handy shortcut — it acts as built-in documentation for anyone
                 reading the code. A call like <code>create_user("Alice", True, False)</code> is confusing;
                 <code>create_user("Alice", is_admin=True, send_email=False)</code> is perfectly clear. You can even
                 <em>force</em> people to use keyword arguments for clarity: putting a lone <code>*</code> in the
                 definition forces every parameter after it to be keyword-only (like
                 <code>def f(a, *, verbose=False)</code>), and putting a <code>/</code> makes everything before it strict
-                positional-only.</p>
+                positional-only.
+            </p>
             <p>The <strong>mutable default argument</strong> is the most famous trap in Python, and the "call by object
                 reference" rule explains why it happens. Default values are created exactly <strong>once</strong>, the
                 moment Python first reads the <code>def</code> statement — they are not recreated every time you call
@@ -1250,18 +1315,21 @@ python<span class="w"> </span>my_script.py
             <p><code>return</code> exits the function immediately. If you don't write <code>return</code> (or just write
                 <code>return</code> with nothing after it), the function secretly yields <code>None</code>. If you
                 return multiple values separated by commas, Python packs them into a single tuple that you can easily
-                unpack when you call the function.</p>
+                unpack when you call the function.
+            </p>
             <p>Python doesn't actually have a true "multiple return value" trick — <code>return q, r</code> simply
                 builds a single tuple, and <code>q, r = divide(17, 5)</code> unpacks that tuple again. That is why the
                 number of variables on the left must exactly match the tuple's length. If you need to return more than
                 two or three values, returning a <code>NamedTuple</code> or a dataclass (covered in section 27) keeps
                 your code readable, since writing <code>result.remainder</code> is much clearer than remembering what
-                <code>result[1]</code> is.</p>
+                <code>result[1]</code> is.
+            </p>
             <p>A function that both mutates (changes) an object and also returns a value is usually considered a bad
                 design pattern; Python's own standard library follows the rule that in-place operations always return
                 <code>None</code> (like <code>lst.sort()</code> or <code>lst.append()</code>). That is exactly why
                 trying to chain them together (like <code>lst.append(1).sort()</code>) will crash because
-                <code>append</code> returned <code>None</code>.</p>
+                <code>append</code> returned <code>None</code>.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Return multiple values (as a tuple)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
@@ -1329,10 +1397,12 @@ python<span class="w"> </span>my_script.py
                 <em>not</em> by <code>if</code>, <code>for</code>, or <code>while</code> blocks! A variable created
                 inside a <code>for</code> loop is still perfectly visible and usable after the loop ends, which is a big
                 surprise if you are coming from languages like C, Java, or JavaScript where loops have their own private
-                scope.</p>
+                scope.
+            </p>
             <h3 id="legb-rule">LEGB Rule<a class="headerlink" href="#legb-rule" title="Permanent link">#</a></h3>
             <p>Python searches for variable names in this exact order: <strong>L</strong>ocal →
-                <strong>E</strong>nclosing → <strong>G</strong>lobal → <strong>B</strong>uilt-in.</p>
+                <strong>E</strong>nclosing → <strong>G</strong>lobal → <strong>B</strong>uilt-in.
+            </p>
             <p>The search stops at the first scope that actually has the name, and it only ever looks <em>outward</em>
                 to bigger scopes, never inward. <strong>Local</strong> is the current function's body;
                 <strong>Enclosing</strong> covers any outer functions if you have a function inside a function;
@@ -1341,7 +1411,8 @@ python<span class="w"> </span>my_script.py
                 <code>len</code>, <code>print</code>, and <code>range</code>. This last layer is exactly why naming a
                 variable <code>list = [1, 2]</code> is totally legal but very dangerous: your local name wins the
                 search, so if you try to use the built-in <code>list(...)</code> tool later, it will crash with a
-                <code>TypeError</code> because it found your variable instead!</p>
+                <code>TypeError</code> because it found your variable instead!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span>            <span class="c1"># Global scope</span>
 
@@ -1370,7 +1441,8 @@ python<span class="w"> </span>my_script.py
                 explicitly say otherwise. <code>global x</code> tells Python that any time you assign to <code>x</code>
                 in this function, it should target the main file's namespace; <code>nonlocal x</code> targets the
                 nearest enclosing <em>function</em> scope (and will crash your program at compile time if there is no
-                such variable to be found).</p>
+                such variable to be found).
+            </p>
             <p>Both should be used rarely. A function that reaches out and secretly rewrites state somewhere else is
                 very hard to test and hard to understand, and in programs running multiple threads, it invites chaotic
                 bugs called race conditions. It is almost always better to return a new value, or to bundle the changing
@@ -1405,7 +1477,8 @@ python<span class="w"> </span>my_script.py
                 function still needs to use <code>factor</code>, Python safely packages that variable into a special
                 <strong>cell object</strong>, keeping it alive. The inner function carries this piece of private,
                 persistent state with it forever, and each time you call the factory, it produces an independent copy:
-                meaning <code>double</code> and <code>triple</code> do not step on each other's <code>factor</code>.</p>
+                meaning <code>double</code> and <code>triple</code> do not step on each other's <code>factor</code>.
+            </p>
             <p>That makes a closure a fantastic, lightweight alternative to writing a whole class if you only need a
                 single method — it's the exact same idea behind decorators (section 17), callbacks, and function
                 factories. The classic trap to watch out for is <strong>late binding</strong>: a closure captures the
@@ -1413,7 +1486,8 @@ python<span class="w"> </span>my_script.py
                 <code>[lambda: i for i in range(3)]</code> actually creates three functions that all return
                 <code>2</code>, because by the time you call them, the loop has already finished and <code>i</code> is
                 2! To fix this and freeze the value immediately, bind it explicitly with a default argument like
-                <code>lambda i=i: i</code>.</p>
+                <code>lambda i=i: i</code>.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_multiplier</span><span class="p">(</span><span class="n">factor</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">multiply</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -1441,17 +1515,20 @@ python<span class="w"> </span>my_script.py
                 writing out a <code>for</code> loop with <code>.append()</code>, because the appending happens deep
                 inside Python's fast C code rather than looking up the append tool over and over. They also get their
                 <strong>own scope</strong> (since Python 3), meaning the loop variable you use inside the brackets won't
-                accidentally overwrite a variable with the same name outside.</p>
+                accidentally overwrite a variable with the same name outside.
+            </p>
             <p>The only downside is that comprehensions compress your logic. The moment you need more than one
                 <code>if</code> condition plus a transformation — or if you need to actually do something complex rather
                 than just calculating a value (since only <em>expressions</em> are allowed) — you should switch back to
                 a normal loop. Nesting more than two <code>for</code> clauses inside a comprehension is almost always a
-                mistake because it becomes impossible to read.</p>
+                mistake because it becomes impossible to read.
+            </p>
             <h3 id="list-comprehensions">List Comprehensions<a class="headerlink" href="#list-comprehensions"
                     title="Permanent link">#</a></h3>
             <p>The standard syntax is <code>[expression for item in iterable if condition]</code>. If you need an
                 <code>if/else</code> choice for the values, you must put it <strong>at the very front</strong> in the
-                expression part (like <code>a if cond else b</code>), not after the <code>for</code> part.</p>
+                expression part (like <code>a if cond else b</code>), not after the <code>for</code> part.
+            </p>
             <p>That rule confuses everyone at first! The reason is that the two <code>if</code>s are completely
                 different tools. An <code>if</code> at the end is a <strong>filter</strong> — it decides whether an item
                 makes it into the list at all. An <code>a if cond else b</code> at the beginning is a <strong>ternary
@@ -1461,7 +1538,8 @@ python<span class="w"> </span>my_script.py
             <p>For nested comprehensions, read the <code>for</code> clauses <strong>left to right in the exact same
                     order you would write normal nested loops</strong>:
                 <code>[num for row in matrix for num in row]</code> is the exact equivalent of writing
-                <code>for row in matrix:</code> on line 1, then <code>for num in row:</code> on line 2.</p>
+                <code>for row in matrix:</code> on line 1, then <code>for num in row:</code> on line 2.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Basic: [expression for item in iterable]</span>
 <span class="n">squares</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
@@ -1507,7 +1585,8 @@ python<span class="w"> </span>my_script.py
                 then it is immediately discarded. This means memory usage stays perfectly flat (known as
                 <code>O(1)</code>) instead of growing with the size of the data (known as <code>O(n)</code>). It also
                 means the work stops immediately if you stop asking for numbers — which is how a generator can actually
-                represent an endless, infinite sequence without crashing your computer!</p>
+                represent an endless, infinite sequence without crashing your computer!
+            </p>
             <p>Use a generator expression whenever you only need to use the results exactly once, usually by feeding it
                 straight into another function: <code>sum(x**2 for x in data)</code> doesn't even need extra
                 parentheses, and it calculates the sum without ever building a giant list in memory. However, you should
@@ -1542,14 +1621,16 @@ python<span class="w"> </span>my_script.py
                     <code>@property</code> tool (explained below) for when you later need to add strict validation
                     rules. Using a double-underscore prefix triggers something called <em>name mangling</em> (scrambling
                     the name behind the scenes), but this is meant to prevent accidental naming collisions in complex
-                    families of classes, not to provide true privacy.</li>
+                    families of classes, not to provide true privacy.
+                </li>
                 <li><strong>Inheritance</strong> — creating a new, specialized class based on a general one, so you can
                     reuse code and override specific behaviors.</li>
                 <li><strong>Polymorphism</strong> — letting different types of objects respond to the exact same command
                     in their own way. Python takes this to the extreme with <strong>duck typing</strong> (if it walks
                     like a duck and quacks like a duck, it's a duck!): calling <code>speak()</code> will work on
                     <em>any</em> object that has a <code>speak()</code> method, regardless of whether it's related to an
-                    Animal class. Python checks what an object can <em>do</em>, not what it <em>is</em>.</li>
+                    Animal class. Python checks what an object can <em>do</em>, not what it <em>is</em>.
+                </li>
                 <li><strong>Abstraction</strong> — providing a simple, reliable interface while hiding the messy
                     internal details, which Python formalises using abstract base classes.</li>
             </ol>
@@ -1560,12 +1641,14 @@ python<span class="w"> </span>my_script.py
                 attribute, it checks the object's personal storage (its <code>__dict__</code>) first, and if it's empty,
                 it falls back to checking the class blueprint itself. That simple rule is exactly why class-level
                 attributes are shared across all instances, while object-level attributes can override them on a
-                per-object basis.</p>
+                per-object basis.
+            </p>
             <h3 id="classes--objects">Classes &amp; Objects<a class="headerlink" href="#classes--objects"
                     title="Permanent link">#</a></h3>
             <p>The <code>__init__</code> special method acts as the constructor to set up a new object;
                 <code>self</code> represents the specific object being created. Class attributes are shared by all
-                objects of that class; instance attributes belong only to that specific object.</p>
+                objects of that class; instance attributes belong only to that specific object.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Dog</span><span class="p">:</span>
     <span class="c1"># Class attribute (shared by all instances)</span>
@@ -1651,10 +1734,12 @@ python<span class="w"> </span>my_script.py
                 moment multiple inheritance is involved: hard-coding the parent's name locks the call to one specific
                 class, which breaks the chain and can accidentally run a shared ancestor's code twice.
                 <code>super()</code> instead acts like a smart pointer that looks up <em>whatever class happens to come
-                    next in the family tree of the actual object at runtime</em>.</p>
+                    next in the family tree of the actual object at runtime</em>.
+            </p>
             <p>The golden rule for using <code>__init__</code>: always call <code>super().__init__(...)</code>
                 <strong>before</strong> you try to use any inherited attributes. That way, you guarantee the parent's
-                setup is fully complete before you rely on it.</p>
+                setup is fully complete before you rely on it.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Animal</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">sound</span><span class="p">):</span>
@@ -1680,11 +1765,13 @@ python<span class="w"> </span>my_script.py
                 predictable order rather than guessing. Every class carries a hidden list called the <strong>Method
                     Resolution Order (MRO)</strong> — a flat, ordered list of classes to search through whenever you
                 call a method. So, <code>Duck.move()</code> runs the <code>Flyer.move</code> code simply because
-                <code>Flyer</code> happens to be listed earlier in <code>Duck.__mro__</code>.</p>
+                <code>Flyer</code> happens to be listed earlier in <code>Duck.__mro__</code>.
+            </p>
             <p>In the real world, multiple inheritance is safest and most useful when the extra parents are
                 <strong>mixins</strong>: small, simple classes that just add one specific extra feature (like a
                 <code>JSONSerializableMixin</code> or a <code>LoggingMixin</code>) and aren't meant to exist on their
-                own. Trying to inherit from two massive, complex classes at once is usually where nightmares begin.</p>
+                own. Trying to inherit from two massive, complex classes at once is usually where nightmares begin.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Flyer</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1711,7 +1798,8 @@ python<span class="w"> </span>my_script.py
                 run their setups, does the grandparent <code>A</code> get set up once or twice? A naive system would
                 just trace up through <code>B</code> to <code>A</code> before ever looking at <code>C</code>, which is
                 wrong because it means it skipped a direct parent (<code>C</code>) in favor of a distant grandparent
-                (<code>A</code>).</p>
+                (<code>A</code>).
+            </p>
             <p>Python solves this gracefully with an algorithm called <strong>C3 linearization</strong>. This algorithm
                 flattens the diamond into a single straight line guaranteeing three things: a class always comes before
                 its parents, the order you listed the parents in is respected, and the entire tree makes logical sense.
@@ -1759,7 +1847,8 @@ python<span class="w"> </span>my_script.py
             <p>When you use multiple inheritance, you should always use <code>super()</code> together with
                 <code>**kwargs</code> (which captures any leftover keyword arguments). This ensures every class in the
                 MRO chain gets the specific arguments it needs without crashing, and guarantees no class's setup runs
-                twice.</p>
+                twice.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Animal</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1797,7 +1886,8 @@ python<span class="w"> </span>my_script.py
                     - Pass <code>**kwargs</code> through <code>__init__</code> chains to handle varying constructor
                     signatures
                     - Python raises <code>TypeError</code> if it can't compute a consistent MRO (e.g., conflicting
-                    orderings)</p>
+                    orderings)
+                </p>
             </blockquote>
             <h3 id="properties-getters--setters">Properties (Getters &amp; Setters)<a class="headerlink"
                     href="#properties-getters--setters" title="Permanent link">#</a></h3>
@@ -1811,14 +1901,16 @@ python<span class="w"> </span>my_script.py
                 simple with a plain public variable like <code>c.radius = 5</code>. Later, if you suddenly need to
                 validate it or log changes, you just swap it for a <code>@property</code>. The magic is that
                 <code>c.radius</code> keeps working exactly like before for all your users, but behind the scenes it is
-                now running your custom method!</p>
+                now running your custom method!
+            </p>
             <p>Mechanically, <code>@property</code> installs a <strong>descriptor</strong>. This tells Python to
                 intercept anyone trying to read or write to that variable and run your methods (<code>__get__</code> or
                 <code>__set__</code>) instead. Because of this, the actual secret variable holding the data needs a
                 different name (conventionally with an underscore, like <code>_radius</code>), otherwise the setter
                 would try to set itself and get stuck in an endless loop. Also, note that a read-only property (like
                 calculating <code>area</code>) runs its math every single time you ask for it — if the math is slow, you
-                can use <code>functools.cached_property</code> to do the math once and remember the answer.</p>
+                can use <code>functools.cached_property</code> to do the math once and remember the answer.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Circle</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
@@ -1854,7 +1946,8 @@ python<span class="w"> </span>my_script.py
             <p>A <code>@classmethod</code> receives the class itself (usually named <code>cls</code>) as its first
                 argument — use this when you want to create an alternative way to build an object. A
                 <code>@staticmethod</code> is basically just a normal function that lives inside a class for neatness;
-                it receives no special <code>self</code> or <code>cls</code> argument.</p>
+                it receives no special <code>self</code> or <code>cls</code> argument.
+            </p>
             <p>The three types of methods differ only in what special hidden argument Python hands them: an instance
                 method gets the object itself, a class method gets the blueprint (the class), and a static method gets
                 nothing.</p>
@@ -1864,7 +1957,8 @@ python<span class="w"> </span>my_script.py
                 calling <code>PremiumDate.from_string(...)</code> correctly returns a <code>PremiumDate</code>. If you
                 had just hard-coded <code>Date(...)</code>, you would incorrectly get a basic Date back! This smart
                 pattern is used all over Python's built-in tools: <code>dict.fromkeys()</code>,
-                <code>datetime.fromtimestamp()</code>, and <code>Path.cwd()</code>.</p>
+                <code>datetime.fromtimestamp()</code>, and <code>Path.cwd()</code>.
+            </p>
             <p>A <code>@staticmethod</code> is just a regular function that makes sense to store alongside the class,
                 but doesn't actually need to look at any of the class's data. Its real value is just keeping your code
                 organized; if a static method never touches the class, you could easily just pull it out and make it a
@@ -1904,12 +1998,14 @@ python<span class="w"> </span>my_script.py
                 until the exact moment your code tries to run it — which could happen in front of a user! An ABC shifts
                 the error to the exact moment you try to create the object: if a subclass is missing a required method,
                 Python crashes instantly with a <code>TypeError</code> and tells you exactly what is missing. That turns
-                a sneaky hidden bug into a loud, obvious warning.</p>
+                a sneaky hidden bug into a loud, obvious warning.
+            </p>
             <p>An ABC is more powerful than a simple interface though: it can also hold <strong>concrete</strong> (fully
                 written) methods and shared variables. This lets you build a template where the parent handles the main
                 logic, and the children just fill in the specific varying pieces. You can even combine
                 <code>@abstractmethod</code> with <code>@property</code> or <code>@classmethod</code> to force children
-                to implement those too.</p>
+                to implement those too.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
@@ -1947,13 +2043,15 @@ python<span class="w"> </span>my_script.py
                 <code>len(x)</code> secretly calls <code>x.__len__()</code>, <code>x + y</code> secretly calls
                 <code>x.__add__(y)</code>, <code>x[0]</code> calls <code>x.__getitem__(0)</code>,
                 <code>for i in x</code> calls <code>x.__iter__()</code>, and using <code>with x:</code> calls
-                <code>x.__enter__()</code>.</p>
+                <code>x.__enter__()</code>.
+            </p>
             <p>This is what programmers mean by "Pythonic" design. Instead of making up your own method names like
                 <code>vector.add(other)</code> or <code>collection.getSize()</code>, you implement the standard dunder
                 methods. Suddenly, your class magically works with the rest of Python — tools like
                 <code>sorted()</code>, <code>sum()</code>, the <code>in</code> keyword, unpacking, f-strings, and
                 <code>with</code> all cooperate automatically for free. You never call these dunder methods directly
-                yourself; you just define them and let Python's syntax trigger them.</p>
+                yourself; you just define them and let Python's syntax trigger them.
+            </p>
             <p>A few rules keep things working correctly:</p>
             <ol>
                 <li><strong><code>__repr__</code> vs <code>__str__</code></strong> — <code>__repr__</code> is meant for
@@ -1967,18 +2065,21 @@ python<span class="w"> </span>my_script.py
                     <code>__hash__</code> to <code>None</code>, meaning your object can no longer be put in a set or
                     used as a dictionary key. This is a good thing, because two objects that compare as equal must have
                     the same hash! Only define <code>__hash__</code> explicitly if your object is totally immutable
-                    (unchangeable) and needs to live in sets or dicts.</li>
+                    (unchangeable) and needs to live in sets or dicts.
+                </li>
                 <li><strong>Return <code>NotImplemented</code>, not <code>False</code>,</strong> when you write math or
                     comparison methods and you don't recognize the other object's type. This signals Python to ask the
                     <em>other</em> object if it knows how to do the math (by trying its <code>__radd__</code> method)
-                    before finally giving up and throwing a <code>TypeError</code>.</li>
+                    before finally giving up and throwing a <code>TypeError</code>.
+                </li>
                 <li><strong><code>__bool__</code> falls back to <code>__len__</code>.</strong> If your class doesn't
                     have either, every single instance will be considered truthy — which is why an empty custom list
                     might mistakenly act like <code>True</code> in an <code>if</code> statement.</li>
             </ol>
             <p>If you use the <code>functools.total_ordering</code> decorator and just define <code>__eq__</code> and
                 <code>__lt__</code> (less than), Python will do the heavy lifting and fill in all the other comparison
-                operators for you automatically.</p>
+                operators for you automatically.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Vector</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -2048,7 +2149,8 @@ python<span class="w"> </span>my_script.py
                 safe home: every file has its own private global area, meaning a <code>parse</code> function in
                 <code>utils.py</code> and a <code>parse</code> function in <code>network.py</code> will never crash into
                 each other. The <code>import</code> system is what lets you safely snap all these separate files
-                together into one big program.</p>
+                together into one big program.
+            </p>
             <p>It's important to understand how importing works so you can avoid common errors. When you write
                 <code>import utils</code>, Python searches a list of folders (called <code>sys.path</code>) in a
                 specific order — it checks your script's folder first, then some system variables, and finally the
@@ -2059,7 +2161,8 @@ python<span class="w"> </span>my_script.py
                 to <code>import</code> it again, Python just hands you the cached version rather than running the code
                 twice. Because of this, anything that actually <em>does work</em> (like opening a connection or printing
                 a message) happens the instant the file is imported. That's a huge reason to only put definitions and
-                constants at the top level of a file, and hide the actual work inside functions.</p>
+                constants at the top level of a file, and hide the actual work inside functions.
+            </p>
             <h3 id="importing">Importing<a class="headerlink" href="#importing" title="Permanent link">#</a></h3>
             <p>You can <code>import module</code>, pull specific things with <code>from module import name</code>, or
                 give them a nickname using <code>as</code>. Always put imports at the top of your file, and try to avoid
@@ -2130,7 +2233,8 @@ python<span class="w"> </span>my_script.py
                 But when Python <em>runs</em> a file directly from the command line, it sets <code>__name__</code> to
                 <code>"__main__"</code> instead. This clever trick lets the file figure out if someone is just trying to
                 use it as a library, or if someone is actually running it as a program. This means one file can safely
-                do both!</p>
+                do both!
+            </p>
             <p>Without this <code>if</code> check, importing your module would instantly run any code sitting at the
                 bottom — meaning it might accidentally print out tests, start a web server, or parse command line
                 arguments just because you tried to <code>import utils</code>. It also breaks multiprocessing (running
@@ -2187,13 +2291,15 @@ python<span class="w"> </span>my_script.py
                 handle the failure if it blows up. For example, doing <code>d[key]</code> inside a <code>try</code>
                 block is highly preferred over writing <code>if key in d:</code>. The nervous "check first" version is
                 slower because it searches the dictionary twice, and in complex programs, the data might even change in
-                the split-second between your check and your action!</p>
+                the split-second between your check and your action!
+            </p>
             <p>The golden rule that keeps this safe is <strong>catching narrowly</strong>. If you write
                 <code>except Exception:</code>, you are essentially catching <em>everything</em> — including typos,
                 massive logic bugs, and genuine failures. This turns a loud, helpful crash into silent, broken behavior
                 that is impossible to debug. Only catch the specific errors you actually know how to fix, and let the
                 rest crash the program — a traceback is a helpful feature, not an enemy. Never write a completely blank
-                <code>except:</code>, because that will even block you from stopping the program with Ctrl+C!</p>
+                <code>except:</code>, because that will even block you from stopping the program with Ctrl+C!
+            </p>
             <h3 id="try--except--else--finally">try / except / else / finally<a class="headerlink"
                     href="#try--except--else--finally" title="Permanent link">#</a></h3>
             <p><code>except</code> is where you handle the failure; <code>else</code> runs only if the code worked
@@ -2206,13 +2312,15 @@ python<span class="w"> </span>my_script.py
                 only if everything went perfectly and is completely safe from accidentally triggering the
                 <code>except</code> block. Put cleanup work in the <code>finally</code> block, because Python guarantees
                 it will run no matter what happens: whether it succeeds, fails, crashes, or even hits a
-                <code>return</code> or <code>break</code> statement!</p>
+                <code>return</code> or <code>break</code> statement!
+            </p>
             <p>If you have multiple <code>except</code> blocks, Python checks them from top to bottom and stops at the
                 first match. Because of this, you must put specific errors first, and general errors (like
                 <code>except Exception</code>) at the very bottom. If you want to actually look at the error message,
                 add <code>as e</code> (like <code>except ValueError as e:</code>). Just remember that Python deletes the
                 <code>e</code> variable the second the block ends, so if you need to remember the error for later, save
-                it to a different variable!</p>
+                it to a different variable!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">try</span><span class="p">:</span>
     <span class="n">result</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">/</span> <span class="mi">0</span>
@@ -2240,12 +2348,15 @@ python<span class="w"> </span>my_script.py
                 can catch both at once by just catching <code>LookupError</code>. And Python draws a clear line between
                 a <code>ValueError</code> (the type is right, but the actual data is wrong, like
                 <code>int("apple")</code>) and a <code>TypeError</code> (the type itself is wrong, like
-                <code>"a" + 1</code>).</p>
+                <code>"a" + 1</code>).
+            </p>
             <ol>
                 <li>A <code>ValueError</code> occurs when you provide the wrong value, like trying to run
-                    <code>int("abc")</code>.</li>
+                    <code>int("abc")</code>.
+                </li>
                 <li>A <code>TypeError</code> occurs when you try to combine or use the wrong data type, like
-                    <code>"a" + 1</code>.</li>
+                    <code>"a" + 1</code>.
+                </li>
                 <li>A <code>KeyError</code> happens when you ask for a dictionary key that does not exist.</li>
                 <li>An <code>IndexError</code> happens when you ask for a list index that is outside the range of the
                     list.</li>
@@ -2266,7 +2377,8 @@ python<span class="w"> </span>my_script.py
             <p>You can use <code>raise ValueError("...")</code> to shout that something went wrong and hand the problem
                 back up to whoever called your function. If you use the word <code>raise</code> all by itself inside an
                 <code>except</code> block, it simply throws the exact same error again so it can keep traveling up the
-                chain.</p>
+                chain.
+            </p>
             <p>You should raise an error the second you realize something is wrong, and try to pick the most specific
                 error class you can. Other programmers will write their <code>except</code> blocks based on the class
                 (like <code>ValueError</code>), while the actual text message is just there to help humans reading the
@@ -2305,19 +2417,22 @@ python<span class="w"> </span>my_script.py
                     title="Permanent link">#</a></h3>
             <p>Create your own error by inheriting from <code>Exception</code> (like
                 <code>class InsufficientFundsError(Exception):</code>). This lets other programmers catch <strong>your
-                    specific business error</strong> without accidentally swallowing other unrelated bugs.</p>
+                    specific business error</strong> without accidentally swallowing other unrelated bugs.
+            </p>
             <p>A custom exception isn't just a fancy name — it's a real tool for whoever uses your code. Creating a
                 specific name gives them something exact to target in their <code>except</code> block. Even better, you
                 can attach custom data to it (like <code>e.balance</code> or <code>e.amount</code>) so they can use that
                 data in their error-handling logic, instead of forcing them to try and extract numbers from a messy
                 string message. Think about what happens if you just raised a plain <code>ValueError</code> instead: if
                 the programmer catches it, they have no idea if it was your specific banking rule that failed, or if an
-                <code>int()</code> conversion just failed somewhere else nearby.</p>
+                <code>int()</code> conversion just failed somewhere else nearby.
+            </p>
             <p>In large projects, the best practice is to create one single "base" error for your whole package (like
                 <code>class PaymentError(Exception)</code>), and then make all your specific errors inherit from that
                 base. That way, users have a choice: they can catch the broad <code>PaymentError</code> if they want to
                 handle all payment issues at once, or they can catch a specific <code>InsufficientFundsError</code> if
-                they need to do something special.</p>
+                they need to do something special.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">InsufficientFundsError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised when a withdrawal exceeds the balance.&quot;&quot;&quot;</span>
@@ -2353,13 +2468,15 @@ python<span class="w"> </span>my_script.py
                 string because the cursor is already at the very end — this is a super common trap! The operating system
                 also limits how many files a program can hold open at once, and when you write data, it doesn't always
                 hit the hard drive immediately until the file is closed. This is why closing files reliably is
-                incredibly important.</p>
+                incredibly important.
+            </p>
             <p>That is exactly the problem that <code>with open(...) as f:</code> solves. It uses something called a
                 <strong>context manager</strong> (explained in section 18) to guarantee that the file gets closed the
                 moment you finish the block of code, no matter what — even if the code crashes with an error or hits a
                 <code>return</code> early. If you try to manually write <code>f.close()</code>, an error in the middle
                 of your code might stop that line from ever running, leaving the file open forever. Therefore, using
-                <code>with</code> is considered the only correct way to open a file.</p>
+                <code>with</code> is considered the only correct way to open a file.
+            </p>
             <p>The other big choice when opening a file is <strong>text versus binary</strong>. Text mode automatically
                 decodes the computer bytes into a readable Python <code>str</code> (string) and handles line-endings for
                 you; binary mode just hands you the raw unformatted <code>bytes</code>. Because different computers
@@ -2377,7 +2494,8 @@ python<span class="w"> </span>my_script.py
                 iterator, handing you just one line at a time. This means the memory usage stays tiny no matter how
                 massive the file is. Just remember that each line you get still has the invisible "newline" character
                 (<code>\n</code>) attached to the end, which is why you almost always want to call <code>.strip()</code>
-                on it to clean it up.</p>
+                on it to clean it up.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Best practice: use &#39;with&#39; (auto-closes file)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -2435,15 +2553,18 @@ python<span class="w"> </span>my_script.py
                 <li>The <code>"x"</code> mode is for exclusive creation; it creates a new file but deliberately crashes
                     if one already exists.</li>
                 <li>The <code>"b"</code> mode stands for binary, which you combine with other modes (like
-                    <code>"rb"</code>) to read non-text files like images or audio.</li>
+                    <code>"rb"</code>) to read non-text files like images or audio.
+                </li>
                 <li>The <code>"+"</code> mode allows you to read and write at the exact same time (like
-                    <code>"r+"</code>).</li>
+                    <code>"r+"</code>).
+                </li>
             </ol>
             <h3 id="working-with-json">Working with JSON<a class="headerlink" href="#working-with-json"
                     title="Permanent link">#</a></h3>
             <p>Use <code>json.dump</code> and <code>json.load</code> to talk directly to files; use
                 <code>json.dumps</code> and <code>json.loads</code> to talk to string variables. Note that JSON only
-                allows strings as dictionary keys, and any Python tuples will silently be turned into normal lists.</p>
+                allows strings as dictionary keys, and any Python tuples will silently be turned into normal lists.
+            </p>
             <p>The little <code>s</code> in <code>dumps</code>/<code>loads</code> just stands for <em>string</em> —
                 that's the only difference between the tools. JSON is the universal language of the internet because
                 almost every programming language can read it. However, because it has to be simple enough for everyone,
@@ -2451,7 +2572,8 @@ python<span class="w"> </span>my_script.py
                 dictionary keys are forcefully turned into strings, and advanced Python objects like <code>set</code>,
                 <code>datetime</code>, or your custom classes simply crash the converter unless you write custom
                 instructions for them. This means you can't assume that saving a Python object to JSON and loading it
-                back will give you the exact same object.</p>
+                back will give you the exact same object.
+            </p>
             <p>Two practical tips: if a human needs to read the file, always add <code>indent=2</code> to format it
                 nicely; if you are sending it across the internet, leave <code>indent</code> out to save space. Also,
                 remember that <code>json.load</code> sucks the entire file into memory at once, so if you are trying to
@@ -2489,7 +2611,8 @@ python<span class="w"> </span>my_script.py
                 Everything comes back as a string, so you have to manually turn <code>"30"</code> into the integer
                 <code>30</code> yourself. When possible, always use <code>DictReader</code> instead of normal
                 <code>reader</code>, because asking for <code>row["Age"]</code> will still work perfectly even if
-                someone rearranges the columns, while asking for <code>row[1]</code> will suddenly break.</p>
+                someone rearranges the columns, while asking for <code>row[1]</code> will suddenly break.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
 
@@ -2525,14 +2648,16 @@ python<span class="w"> </span>my_script.py
                 <code>os.path.join(a, b)</code>. The modern <code>pathlib</code> tool turns the path into a smart
                 <strong>object</strong> that knows all about itself. So instead of passing it to a function, you just
                 ask it questions directly: <code>p.parent</code>, <code>p.stem</code>, <code>p.suffix</code>, or ask it
-                to do things like <code>p.exists()</code> and <code>p.read_text()</code>.</p>
+                to do things like <code>p.exists()</code> and <code>p.read_text()</code>.
+            </p>
             <p>Being able to use the division slash <code>/</code> to stick folders together is more than just a neat
                 party trick — it totally eliminates the nightmare of mixing up Windows backslashes (<code>\</code>) and
                 Mac/Linux forward slashes (<code>/</code>). A <code>Path</code> object automatically outputs the correct
                 slash for whatever computer it's running on! Also, <code>Path</code> objects can be used directly as
                 dictionary keys, and almost every modern Python tool that asks for a filename will happily accept a
                 <code>Path</code> object instead. If you need to search for files, use <code>p.glob("*.py")</code> to
-                search one folder, or <code>p.rglob("*.py")</code> to search that folder and every folder inside it.</p>
+                search one folder, or <code>p.rglob("*.py")</code> to search that folder and every folder inside it.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
@@ -2589,7 +2714,8 @@ python<span class="w"> </span>my_script.py
             <p>Knowing this difference explains things that usually confuse beginners: this is exactly why you can loop
                 over a list twice, but you can only loop over a generator once. Tools like <code>zip</code>,
                 <code>map</code>, and <code>enumerate</code> actually give you single-use iterators, not lists, which is
-                why they seem to mysteriously empty themselves after you look at them!</p>
+                why they seem to mysteriously empty themselves after you look at them!
+            </p>
             <p>The huge reward for all this complexity is <strong>laziness</strong>. An iterator calculates each value
                 right at the split-second you ask for it, rather than building a giant list in advance. Because of this,
                 it uses almost zero memory, it can start handing you results before it has finished calculating the
@@ -2604,7 +2730,8 @@ python<span class="w"> </span>my_script.py
                 hiding this ugly machinery for you: behind the scenes, it calls <code>iter()</code> to get the cursor,
                 then repeatedly calls <code>next()</code> inside a secret <code>try</code> block until it catches that
                 <code>StopIteration</code> error. Because that error is an expected part of the design, Python quietly
-                hides the crash from you and just ends the loop.</p>
+                hides the crash from you and just ends the loop.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Lists, strings, etc. are iterable — they produce iterators</span>
 <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -2647,7 +2774,8 @@ python<span class="w"> </span>my_script.py
                 perfectly in place. The next time you ask for a value, it thaws out, picks up exactly where it left off,
                 and runs until it hits another <code>yield</code>. When the function finally hits the end of the file or
                 a <code>return</code> statement, it automatically throws the <code>StopIteration</code> error to signal
-                it is empty.</p>
+                it is empty.
+            </p>
             <p>This amazing pause-and-play superpower is why a generator can create infinite lists like a Fibonacci
                 sequence: even if you write a <code>while True:</code> loop that runs forever, it freezes every single
                 time it yields a number, so it only works exactly as fast as you ask for numbers. It's also why writing
@@ -2687,7 +2815,8 @@ python<span class="w"> </span>my_script.py
                 data. This allows special pause/resume commands to travel directly down the tunnel, and allows a final
                 <code>return</code> value to travel back up. This superpower is what makes it incredibly easy to write
                 recursive generators (like the <code>flatten</code> example below), where a function calls itself over
-                and over to dig through nested lists without messing up the data flow.</p>
+                and over to dig through nested lists without messing up the data flow.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">nested</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">nested</span><span class="p">:</span>
@@ -2716,7 +2845,8 @@ python<span class="w"> </span>my_script.py
                 everything is lazy, it never builds a giant list anywhere in the middle. You could process a massive 50
                 GB log file this way, and your computer would use almost zero RAM, because it's only ever looking at one
                 line of text at a time! Breaking a big task into these small, lazy pipes also makes your code incredibly
-                easy to test and rearrange.</p>
+                easy to test and rearrange.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Processing a huge file line by line</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_large_file</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
@@ -2773,12 +2903,14 @@ python<span class="w"> </span>my_script.py
                 <code>def</code>. When you build one, the inner "wrapper" function usually takes
                 <code>*args, **kwargs</code> (which means "accept absolutely any arguments"), calls the original
                 function, and returns the result. You must also use <code>@functools.wraps</code> to prevent the
-                decorator from accidentally erasing the function's name and documentation.</p>
+                decorator from accidentally erasing the function's name and documentation.
+            </p>
             <p>Using <code>*args, **kwargs</code> is critical because a decorator has no idea what specific arguments
                 the original function expects, so it just acts as a dumb mailman and forwards everything straight
                 through. The most common bug people make when writing their first decorator is forgetting to actually
                 <code>return</code> the result of the inner function, which causes their decorated function to silently
-                return <code>None</code> instead of the correct answer!</p>
+                return <code>None</code> instead of the correct answer!
+            </p>
             <p>The <code>@functools.wraps(func)</code> line is also highly important. It copies the original function's
                 name and helpful docstring onto the new wrapper. If you forget it, Python will think your function is
                 literally named <code>wrapper</code>, and any help menus, debuggers, or web-framework tools that try to
@@ -2816,12 +2948,14 @@ python<span class="w"> </span>my_script.py
                 <code>@timer</code>, Python just applies the <code>timer</code> function directly. But when you type
                 <code>@repeat(3)</code>, Python sees parentheses and <strong>runs that function first</strong>. Whatever
                 that <code>repeat(3)</code> function spits out is what actually becomes the decorator! Therefore,
-                <code>repeat(3)</code> has to return a function, which then returns the final wrapper.</p>
+                <code>repeat(3)</code> has to return a function, which then returns the final wrapper.
+            </p>
             <p>If you unroll the math, <code>@repeat(3)</code> on top of <code>def say_hello</code> translates to:
                 <code>say_hello = repeat(3)(say_hello)</code>. Each layer has a single job to remember: the outer
                 factory remembers the setting (<code>n=3</code>), the middle decorator remembers which
                 <code>function</code> it is targeting, and the inner wrapper actually runs the <code>call</code> when
-                the user finally asks for it.</p>
+                the user finally asks for it.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
@@ -2897,17 +3031,20 @@ python<span class="w"> </span>my_script.py
                     title="Permanent link">#</a></h3>
             <p>A class decorator is the exact same concept, except it swallows a whole <code>class</code> instead of a
                 <code>def</code>. This is a great way to add hidden superpowers or extra methods to a class without
-                making the class itself look messy.</p>
+                making the class itself look messy.
+            </p>
             <p>Because a class is just an object in Python, writing <code>@singleton</code> on top of
                 <code>class Database</code> is just a shortcut for saying <code>Database = singleton(Database)</code>.
                 The decorator might just record the class in a list somewhere and hand it back unchanged, or it might
                 attach a bunch of new custom methods to it before handing it back. It can even replace the class
-                entirely with something else!</p>
+                entirely with something else!
+            </p>
             <p>This is how built-in magic like <code>@dataclass</code> works — you write a few simple variables, and the
                 decorator quietly adds all the messy <code>__init__</code> and <code>__repr__</code> methods for you
                 behind the scenes. Just be careful: if your decorator returns a function instead of a class (like the
                 <code>singleton</code> example below), things like <code>isinstance()</code> might stop working the way
-                you expect, because Python thinks your class is now a function!</p>
+                you expect, because Python thinks your class is now a function!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
@@ -2938,18 +3075,21 @@ python<span class="w"> </span>my_script.py
                     runs, even if my program crashes?</em> Things like files, internet connections, and database
                 transactions absolutely must be closed when you are done. But if your code hits an error, hits a
                 <code>return</code>, or uses <code>break</code> inside a loop, it might skip right past your
-                <code>close()</code> command.</p>
+                <code>close()</code> command.
+            </p>
             <p>You <em>could</em> solve this by wrapping everything in a giant <code>try/finally</code> block, but
                 that's ugly and easy to forget. The <code>with</code> statement solves this beautifully by making the
                 resource clean up after itself automatically. To do this, an object just needs two special dunder
                 methods: <code>__enter__()</code> (which runs when the block starts, and hands you the variable for the
                 <code>as</code> part), and <code>__exit__()</code> (which runs the split-second the block ends). The
                 <code>__exit__</code> method even gets handed the details of any error that happened, so it can decide
-                how to handle it!</p>
+                how to handle it!
+            </p>
             <p>A cool secret: if your <code>__exit__</code> method returns <code>True</code>, Python will completely
                 swallow and hide whatever error just happened (which is how the built-in
                 <code>contextlib.suppress</code> tool works). But normally, it just returns <code>None</code> or
-                <code>False</code>, letting the error bubble up normally so you can see the crash report.</p>
+                <code>False</code>, letting the error bubble up normally so you can see the crash report.
+            </p>
             <h3 id="using-with">Using <code>with</code><a class="headerlink" href="#using-with"
                     title="Permanent link">#</a></h3>
             <p>The <code>with</code> block automatically runs the <code>__enter__</code> setup code at the beginning,
@@ -2971,7 +3111,8 @@ python<span class="w"> </span>my_script.py
             <p>Pay close attention to what <code>__enter__</code> returns, because whatever it spits out is what gets
                 assigned to the variable after the word <code>as</code>. When you open a file, <code>__enter__</code>
                 gives you the actual file cursor. Sometimes, like in the timer example below, it just returns
-                <code>self</code> so you can look at the timer's properties after the block is finished.</p>
+                <code>self</code> so you can look at the timer's properties after the block is finished.
+            </p>
             <p>If the block finishes perfectly, the <code>__exit__</code> method receives three <code>None</code>s. But
                 if something crashes, it receives the exact details of the error. This lets you write smart code that
                 says "if everything is fine, save to the database, but if there's an error, undo everything!" Writing a
@@ -3004,7 +3145,8 @@ python<span class="w"> </span>my_script.py
                 <code>with</code> block starts, Python runs your function until it hits the <code>yield</code>, pauses
                 it, and hands whatever you yielded to the <code>as</code> variable. When the block ends, Python unpauses
                 your function so it can finish the cleanup code. It is so much easier to read because your setup and
-                cleanup code sit right next to each other in one tiny function!</p>
+                cleanup code sit right next to each other in one tiny function!
+            </p>
             <p>But beware: if you don't use <code>try/finally</code>, you will create a terrible bug! If the code inside
                 the user's <code>with</code> block crashes, Python actually throws that crash <em>into</em> your
                 generator right at the <code>yield</code> line. If you don't have a <code>finally</code> block to catch
@@ -3052,7 +3194,8 @@ python<span class="w"> </span>my_script.py
                 <li><strong>They act as bulletproof documentation:</strong> If a function signature says
                     <code>def find(id: int) -&gt; str | None</code>, you instantly know it takes a number and might fail
                     and return <code>None</code>. And unlike standard text comments, type hints can't lie to you because
-                    the checker tool will yell at the programmer if they don't match the code!</li>
+                    the checker tool will yell at the programmer if they don't match the code!
+                </li>
                 <li><strong>They make your code editor incredibly smart:</strong> Autocomplete, instant error squiggles,
                     and the ability to click a function to jump to its definition all rely heavily on type hints to
                     figure out what is going on.</li>
@@ -3063,7 +3206,8 @@ python<span class="w"> </span>my_script.py
             <p>Modern Python has made hints much cleaner. Since Python 3.9, you can just use standard types like
                 <code>list[str]</code> instead of importing special uppercase types. Since Python 3.10, you can use the
                 <code>|</code> symbol to mean "or" — so <code>str | None</code> means "this will be a string, or it will
-                be None".</p>
+                be None".
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Variable annotations</span>
 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Alice&quot;</span>
@@ -3127,12 +3271,14 @@ python<span class="w"> </span>my_script.py
                 <code>filter</code> are <strong>higher-order functions</strong>. That scary term just means they are
                 functions that take <em>another function</em> as an argument! Realizing that you can pass a function
                 into a variable just like you pass a number into a variable unlocks huge superpowers in Python, like
-                building decorators or making custom sorting rules.</p>
+                building decorators or making custom sorting rules.
+            </p>
             <p>A good rule of thumb: if you are writing the math directly on the spot, use a list comprehension. If you
                 already have a pre-written, named function (like <code>str.strip</code>), using
                 <code>map(str.strip, lines)</code> is cleaner. Just remember that both <code>map</code> and
                 <code>filter</code> are lazy iterators (they don't do the work until you ask), so if you want to print
-                the results, you have to wrap them in a <code>list()</code> first!</p>
+                the results, you have to wrap them in a <code>list()</code> first!
+            </p>
             <h3 id="lambda--anonymous-functions">Lambda — Anonymous Functions<a class="headerlink"
                     href="#lambda--anonymous-functions" title="Permanent link">#</a></h3>
             <p>A <code>lambda</code> is just a tiny, nameless function written on a single line. They are most commonly
@@ -3148,7 +3294,8 @@ python<span class="w"> </span>my_script.py
                 faster than writing a whole separate <code>def get_age()</code> function. However, you should never
                 assign a lambda to a variable (like <code>square = lambda x: x * x</code>). If a function is important
                 enough to need a permanent name, just use a normal <code>def</code> — it makes error messages much
-                easier to read when things crash!</p>
+                easier to read when things crash!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># lambda arguments: expression</span>
 <span class="n">square</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span>
@@ -3203,7 +3350,8 @@ python<span class="w"> </span>my_script.py
                 the answer, applies it to the next item, and so on. For example, reducing a list with addition turns
                 <code>[1, 2, 3, 4]</code> into <code>((1+2)+3)+4</code>. It is usually smart to provide a starting value
                 (like <code>0</code> or <code>1</code>), because if you try to reduce an empty list without a starting
-                value, the program will crash.</p>
+                value, the program will crash.
+            </p>
             <p>The creator of Python actually removed <code>reduce</code> from the main tools because it is notoriously
                 hard to read, and most common tasks already have dedicated, easy-to-read tools: <code>sum()</code> for
                 adding, <code>max()</code> for finding the biggest, and <code>math.prod()</code> for multiplying. You
@@ -3233,12 +3381,14 @@ python<span class="w"> </span>my_script.py
                 positional arguments into a tuple, and <code>**kwargs</code> sucks up all the extra keyword arguments
                 into a dictionary. But when you use them in a <strong>function call</strong> (like
                 <code>add(*my_list)</code>), they act like a bomb: <code>*my_list</code> explodes the list into
-                separate, individual items before handing them to the function!</p>
+                separate, individual items before handing them to the function!
+            </p>
             <p>Because the "vacuuming" and "exploding" perfectly reverse each other, they are the ultimate tool for
                 passing data through middle-man functions. If you are writing a decorator or an adapter that needs to
                 accept <em>any</em> data and just pass it straight through to another function, you just write
                 <code>def wrapper(*args, **kwargs): return func(*args, **kwargs)</code>. You don't have to know what the
-                data is; you just vacuum it all up, and immediately explode it all back out!</p>
+                data is; you just vacuum it all up, and immediately explode it all back out!
+            </p>
             <h3 id="args--variable-positional-arguments">*args — Variable Positional Arguments<a class="headerlink"
                     href="#args--variable-positional-arguments" title="Permanent link">#</a></h3>
             <p>A single <code>*</code> parameter sucks up all leftover positional arguments. By the time you use it
@@ -3265,13 +3415,15 @@ python<span class="w"> </span>my_script.py
                     href="#kwargs--variable-keyword-arguments" title="Permanent link">#</a></h3>
             <p>A double <code>**</code> parameter sucks up all leftover keyword arguments (like
                 <code>name="Alice"</code>) and packs them into a dictionary. You can then use <code>.items()</code> to
-                loop through them.</p>
+                loop through them.
+            </p>
             <p>Because it sweeps up absolutely everything left over, it must be the <strong>very last</strong> thing in
                 your function's definition. It only grabs keyword arguments that haven't already been claimed by your
                 other parameters. So if you write <code>def f(a, **kw)</code>, and call it with
                 <code>f(a=1, b=2)</code>, the <code>a</code> goes to its normal spot, and <code>kw</code> just becomes a
                 dictionary holding <code>{"b": 2}</code>. This is the perfect tool for writing functions that can accept
-                endless optional configuration settings!</p>
+                endless optional configuration settings!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_info</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Accept any number of keyword arguments.&quot;&quot;&quot;</span>
@@ -3289,7 +3441,8 @@ python<span class="w"> </span>my_script.py
             <h3 id="combining-all-parameter-types">Combining All Parameter Types<a class="headerlink"
                     href="#combining-all-parameter-types" title="Permanent link">#</a></h3>
             <p>If you use all of them, they must go in this exact order: normal positional arguments, then
-                <code>*args</code>, then keyword-only arguments, and finally <code>**kwargs</code> at the very end.</p>
+                <code>*args</code>, then keyword-only arguments, and finally <code>**kwargs</code> at the very end.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;a=</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">, b=</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -3329,7 +3482,8 @@ python<span class="w"> </span>my_script.py
                     based on the shape of your data</strong>. Instead of writing two boring lines like
                 <code>x = point[0]</code> and <code>y = point[1]</code>, you just write <code>x, y = point</code>.
                 Python automatically looks at the list on the right, and deals out the values to the variables on the
-                left like a dealer handing out playing cards.</p>
+                left like a dealer handing out playing cards.
+            </p>
             <p>This works on any iterable (tuples, lists, strings, generators). There are only two rules to remember.
                 First, the number of variables on the left must exactly match the number of items on the right,
                 otherwise Python will throw an error. Second, you can use a single <code>*</code> variable on the left
@@ -3369,11 +3523,13 @@ python<span class="w"> </span>my_script.py
             <p>Python has three different ways to inject variables into text, because the language evolved over time:
                 the very old <code>%</code> style, the slightly older <code>str.format()</code>, and the modern
                 <strong>f-strings</strong> (added in Python 3.6). You should almost exclusively use f-strings in new
-                code.</p>
+                code.
+            </p>
             <p>An f-string is unbelievably fast because Python literally reads the code inside the curly braces
                 <code>{}</code> and bakes it into the underlying bytecode before the program even runs. Because of this,
                 you can put literally any valid Python code inside the braces: math like <code>f"{a + b}"</code>,
-                function calls like <code>f"{user.get_name()}"</code>, or even <code>if/else</code> statements!</p>
+                function calls like <code>f"{user.get_name()}"</code>, or even <code>if/else</code> statements!
+            </p>
             <p>The secret superpower of f-strings is the mini-language you can trigger by typing a colon <code>:</code>
                 inside the braces. This lets you format numbers beautifully:</p>
             <ol>
@@ -3442,20 +3598,23 @@ python<span class="w"> </span>my_script.py
                 <strong>raw string</strong> (like <code>r"\d+"</code>). If you forget the <code>r</code>, Python's
                 normal string rules will try to read the backslashes first, meaning a <code>\b</code> meant to symbolize
                 a "word boundary" gets accidentally turned into the "backspace" keyboard character! This is the #1 cause
-                of broken regexes.</p>
+                of broken regexes.
+            </p>
             <p>The <code>re</code> tool gives you several ways to hunt: <code>search()</code> finds the first match
                 anywhere in the text, <code>match()</code> only looks at the absolute beginning of the string, and
                 <code>findall()</code> returns a list of every match it can find. If you have a massive block of text,
                 use <code>finditer()</code>, which is a lazy iterator that hands you the matches one by one without
                 freezing your computer. If you plan to use the exact same pattern in a massive loop, you can use
                 <code>re.compile()</code> to pre-load it, though Python is usually smart enough to cache it for you
-                automatically.</p>
+                automatically.
+            </p>
             <p>Watch out for the "greedy" trap! By default, regex tries to match as much text as physically possible. If
                 you use <code>.*</code> to grab everything inside HTML tags like <code>&lt;.*&gt;</code>, it won't stop
                 at the first <code>&gt;</code>; it will swallow your entire document until it hits the final
                 <code>&gt;</code> at the end of the file! You have to add a question mark <code>&lt;.*?&gt;</code> to
                 make it lazy so it stops early. Also, remember that regex is basically a very fast text-scanner — you
-                should never, ever use it to parse complex nested things like HTML, JSON, or real code.</p>
+                should never, ever use it to parse complex nested things like HTML, JSON, or real code.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
@@ -3512,7 +3671,8 @@ python<span class="w"> </span>my_script.py
                 <code>\b</code> (word boundary) are weird because they don't actually consume any characters — they just
                 check if you are standing in the right spot! Finally, wrapping parts of your pattern in parentheses
                 <code>(...)</code> creates a "capture group", which lets you extract just that specific part of the text
-                later.</p>
+                later.
+            </p>
             <ol>
                 <li>The <code>.</code> character matches any single character (except a newline).</li>
                 <li>The <code>\d</code> character matches any digit, equivalent to <code>[0-9]</code>.</li>
@@ -3541,7 +3701,8 @@ python<span class="w"> </span>my_script.py
             <p>The <code>datetime</code> module has a few different tools, and picking the right one will save you
                 massive headaches: <code>date</code> is just a calendar day, <code>time</code> is just a clock time,
                 <code>datetime</code> is both combined, and <code>timedelta</code> is a duration (like "3 hours" or "5
-                days").</p>
+                days").
+            </p>
             <p>The biggest danger in all of programming is the difference between "naive" and "aware" times. A "naive"
                 time has no idea what time zone it is in. So if it says "2:00 PM", it's meaningless because that happens
                 at totally different moments in Tokyo and New York! An "aware" time has a specific time zone attached.
@@ -3550,7 +3711,8 @@ python<span class="w"> </span>my_script.py
                     UTC, and only convert to a local time zone right before you show it to the user.</strong></p>
             <p>You can do basic math with times: a <code>datetime</code> minus a <code>datetime</code> gives you a
                 <code>timedelta</code> (how much time passed between them), and a <code>datetime</code> plus a
-                <code>timedelta</code> gives you a new future <code>datetime</code>.</p>
+                <code>timedelta</code> gives you a new future <code>datetime</code>.
+            </p>
             <p>To convert back and forth to strings, use <code>strftime</code> (<strong>f</strong>ormat into a string)
                 and <code>strptime</code> (<strong>p</strong>arse from a string), using special <code>%</code> codes.
                 However, if you are saving a date for another computer to read, always use <code>.isoformat()</code>
@@ -3628,11 +3790,13 @@ python<span class="w"> </span>my_script.py
                 <li><strong><code>defaultdict</code></strong> is a dictionary that never crashes with a
                     <code>KeyError</code>. When you try to look up a key that doesn't exist, it instantly creates it
                     using a default you provided (like an empty list <code>[]</code> or a <code>0</code>) and then gives
-                    it to you.</li>
+                    it to you.
+                </li>
                 <li><strong><code>namedtuple</code></strong> makes a tiny, lightweight object that acts like a tuple,
                     but lets you use names instead of index numbers (so <code>point.y</code> instead of
                     <code>point[1]</code>). They use very little memory, but if you want something with default values
-                    or methods, you should look at <code>dataclasses</code> instead.</li>
+                    or methods, you should look at <code>dataclasses</code> instead.
+                </li>
                 <li><strong><code>deque</code></strong> (pronounced "deck") is a super-charged list that is incredibly
                     fast at adding or removing things from the <strong>front</strong>. A normal Python list is fast at
                     the end, but terribly slow if you try to <code>insert(0, x)</code>. A <code>deque</code> is
@@ -3719,7 +3883,8 @@ python<span class="w"> </span>my_script.py
                     order you wrote them.</li>
                 <li><strong><code>__post_init__</code>:</strong> If you need to do extra math or setup right
                     <em>after</em> the object is created (like calculating a rectangle's area from its width and
-                    height), put that code in this special method.</li>
+                    height), put that code in this special method.
+                </li>
                 <li><strong><code>slots=True</code>:</strong> In newer Python versions, this tells the computer to pack
                     the object as tightly as possible in memory, making it run much faster.</li>
             </ol>
@@ -3800,7 +3965,8 @@ python<span class="w"> </span>my_script.py
                 <code>Color.RED == 1</code> is always False. But sometimes you <em>do</em> want them to act like numbers
                 (for example, web status codes like 404). For that, you can use <code>IntEnum</code>, which acts just
                 like a regular integer. If you don't actually care what the underlying value is at all, you can just
-                type <code>auto()</code> and Python will assign numbers for you automatically.</p>
+                type <code>auto()</code> and Python will assign numbers for you automatically.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span><span class="p">,</span> <span class="n">IntEnum</span>
 
@@ -3874,7 +4040,8 @@ python<span class="w"> </span>my_script.py
             </p>
             <p>To actually run multiple things at once, you can't just await them one by one. You use
                 <code>asyncio.gather()</code> or <code>asyncio.TaskGroup()</code> to bundle a bunch of tasks together
-                and launch them all simultaneously.</p>
+                and launch them all simultaneously.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
@@ -3922,7 +4089,8 @@ python<span class="w"> </span>my_script.py
             <p>Sometimes you need to loop through data that is arriving slowly over the network. You can use
                 <code>async for</code> to loop over the data, which tells Python to pause and work on other tasks while
                 waiting for the next piece of data to arrive. Similarly, <code>async with</code> lets you connect to a
-                database or server, pausing while the connection actually happens.</p>
+                database or server, pausing while the connection actually happens.
+            </p>
             <p>A great example is fetching a paginated API (where you have to download page 1, then page 2, then page
                 3). With an async generator, you can yield Page 1 as soon as it arrives, process it, and then yield Page
                 2 when it arrives, all without freezing your entire application.</p>
@@ -3966,7 +4134,8 @@ python<span class="w"> </span>my_script.py
                 <strong>GIL</strong> (Global Interpreter Lock). The GIL is like a talking stick — only the thread
                 holding the stick is allowed to run Python code. Python uses this because it is an incredibly safe and
                 easy way to manage computer memory, but it means that even if you have 8 computer cores, multiple
-                threads will just patiently wait in line, passing the stick back and forth.</p>
+                threads will just patiently wait in line, passing the stick back and forth.
+            </p>
             <p>However, threads are incredibly smart about one thing: <strong>waiting</strong>. If a thread needs to
                 wait to download a file, it immediately hands the talking stick to another thread! That's why threads
                 are amazing for network downloads (I/O-bound tasks).</p>
@@ -4032,7 +4201,8 @@ python<span class="w"> </span>my_script.py
                 downloads to finish before looking at the fast downloads.</p>
             <p>The best part? If you realize your tasks are actually CPU-heavy, you can literally just change the word
                 <code>ThreadPoolExecutor</code> to <code>ProcessPoolExecutor</code> and Python will magically switch
-                from using threads to using full processes!</p>
+                from using threads to using full processes!
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -4095,7 +4265,8 @@ python<span class="w"> </span>my_script.py
             <blockquote>
                 <p><strong>The GIL (Global Interpreter Lock):</strong> Python threads can't run Python code truly in
                     parallel (only one thread executes Python bytecode at a time). For CPU-bound work, use
-                    <code>multiprocessing</code> to spin up separate processes.</p>
+                    <code>multiprocessing</code> to spin up separate processes.
+                </p>
             </blockquote>
             <h2 id="31-virtual-environments--dependency-management">31. Virtual Environments &amp; Dependency
                 Management<a class="headerlink" href="#31-virtual-environments--dependency-management"
@@ -4112,12 +4283,14 @@ python<span class="w"> </span>my_script.py
                 <code>.venv</code>) inside your project directory. It holds a totally private copy of Python and a
                 private folder for downloaded packages. When you "activate" the environment, your computer temporarily
                 promises to only use the Python inside that specific folder. The golden rule is: <strong>one virtual
-                    environment per project, and never share them.</strong></p>
+                    environment per project, and never share them.</strong>
+            </p>
             <h3 id="venv-built-in">venv (Built-in)<a class="headerlink" href="#venv-built-in"
                     title="Permanent link">#</a></h3>
             <p>To use the standard tool built directly into Python, open your terminal and type
                 <code>python -m venv .venv</code>. This creates the hidden folder. Then, you must "activate" it so your
-                terminal knows to use it instead of the system Python.</p>
+                terminal knows to use it instead of the system Python.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Create virtual environment</span>
 python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
@@ -4146,7 +4319,8 @@ deactivate
                     class="headerlink" href="#uv-fast-environment-and-package-manager" title="Permanent link">#</a></h3>
             <p><code>uv</code> is an incredibly fast, modern tool written in Rust. It does everything the normal
                 <code>venv</code> tool does, but it runs almost instantly and handles creating environments and
-                installing packages all at once.</p>
+                installing packages all at once.
+            </p>
             <p>Once you install <code>uv</code> on your computer, you can use it to build environments like this:</p>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># Install uv (choose one)</span>
@@ -4173,21 +4347,25 @@ uv<span class="w"> </span>sync
             <p>The coolest part about <code>uv</code> is how it perfectly freezes your project. When you run
                 <code>uv lock</code>, it writes down the exact, to-the-millisecond version of every package your project
                 uses. If a teammate clones your project a year later, <code>uv sync</code> will install those exact same
-                versions, guaranteeing the code will run flawlessly for them too.</p>
+                versions, guaranteeing the code will run flawlessly for them too.
+            </p>
             <h3 id="pip--package-manager">pip — Package Manager<a class="headerlink" href="#pip--package-manager"
                     title="Permanent link">#</a></h3>
             <p><code>pip</code> is the classic Python tool for downloading packages from the internet (specifically from
                 a giant database called PyPI). You should always save a list of your packages in a
-                <code>requirements.txt</code> file so others can install them easily.</p>
+                <code>requirements.txt</code> file so others can install them easily.
+            </p>
             <p>When you write your requirements, you usually just ask for general things like "requests". But when
                 <code>pip</code> actually installs things, it installs dozens of hidden background packages that
                 "requests" needs to run. If you type <code>pip freeze</code>, it prints out the massive, exact list of
                 every single package and its exact version number. This exact list is called a "lock file", and it is
-                highly recommended to save this list so you can replicate your server perfectly later.</p>
+                highly recommended to save this list so you can replicate your server perfectly later.
+            </p>
             <p>One warning: anyone can upload code to PyPI. If you want to install a package called
                 <code>requests</code> but you accidentally type <code>pip install requsts</code>, you might download a
                 malicious virus uploaded by a hacker hoping someone would make a typo! Always double-check your
-                spelling.</p>
+                spelling.
+            </p>
             <div class="highlight">
                 <pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>package_name<span class="w">           </span><span class="c1"># latest version</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="nv">package_name</span><span class="o">==</span><span class="m">1</span>.2.3<span class="w">    </span><span class="c1"># specific version</span>
@@ -4252,23 +4430,27 @@ pip<span class="w"> </span>show<span class="w"> </span>package_name<span class="
                 on each other and don't talk to a real external database. They must be <strong>fast</strong>, because if
                 your tests take 20 minutes to run, you will stop running them. Finally, they must be
                 <strong>deterministic</strong>, meaning they never fail randomly. If a test randomly fails even when the
-                code is fine, developers will just start ignoring it.</p>
+                code is fine, developers will just start ignoring it.
+            </p>
             <p>The most important things to test are edge cases (like what happens if someone passes an empty list?),
                 error handling, and any bug you have ever had to fix in the past. You should only test the
                 <strong>public interface</strong> (the main functions people actually use), rather than the tiny helper
                 functions hidden inside, so you are free to change how the helper functions work without breaking all
-                your tests.</p>
+                your tests.
+            </p>
             <h3 id="unittest-built-in">unittest (Built-in)<a class="headerlink" href="#unittest-built-in"
                     title="Permanent link">#</a></h3>
             <p>To use the built-in <code>unittest</code> framework, you must subclass <code>TestCase</code>, start all
                 your test method names with <code>test_</code>, and check your results using built-in methods like
                 <code>self.assertEqual</code>. You can run all your tests from the terminal by typing
-                <code>python -m unittest</code>.</p>
+                <code>python -m unittest</code>.
+            </p>
             <p>This tool is based on an old Java testing framework, which is why it uses so many classes and camelCase
                 method names. The biggest advantage is that it comes pre-installed with Python, so you don't need to
                 download anything. To keep tests totally isolated, Python actually builds a brand-new instance of your
                 test class for every single test, and it automatically runs your <code>setUp()</code> and
-                <code>tearDown()</code> methods before and after each one.</p>
+                <code>tearDown()</code> methods before and after each one.
+            </p>
             <div class="highlight">
                 <pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
 
@@ -4296,14 +4478,16 @@ pip<span class="w"> </span>show<span class="w"> </span>package_name<span class="
 
             <h3 id="pytest-recommended--install-with-pip-install-pytest">pytest (Recommended — install with
                 <code>pip install pytest</code>)<a class="headerlink"
-                    href="#pytest-recommended--install-with-pip-install-pytest" title="Permanent link">#</a></h3>
+                    href="#pytest-recommended--install-with-pip-install-pytest" title="Permanent link">#</a>
+            </h3>
             <p>With <code>pytest</code>, a plain <code>assert</code> statement is all you need to check results. You
                 simply name your files starting with <code>test_</code>, and <code>pytest</code> will automatically find
                 and run them, printing out beautifully readable error messages if anything fails.</p>
             <p>The best feature of <code>pytest</code> is that you don't have to memorize a hundred different assertion
                 methods like <code>assertEqual</code> or <code>assertTrue</code>. You just write normal Python math like
                 <code>assert a == b</code>, and if it fails, <code>pytest</code> does some deep magic to print out the
-                exact values of both variables so you can see why they didn't match.</p>
+                exact values of both variables so you can see why they didn't match.
+            </p>
             <p>There are two huge superpowers in <code>pytest</code>. The first is <strong>fixtures</strong>, which let
                 you automatically hand data to your tests just by putting a variable name in the test function's
                 arguments. The second is <strong>parametrization</strong>, which lets you write a single test, give it a
@@ -4391,7 +4575,8 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
                 <li><strong><code>logging</code></strong> — This is the professional replacement for the
                     <code>print</code> command. It lets you tag messages with severity levels (like "INFO" or "ERROR"),
                     and makes it easy to route all your errors into a text file instead of just dumping them on the
-                    screen.</li>
+                    screen.
+                </li>
                 <li><strong><code>subprocess</code></strong> — This allows Python to run other terminal programs. You
                     must always pass your commands as a list of strings, never as one giant string, to prevent hackers
                     from tricking your program into running dangerous commands.</li>
@@ -4496,7 +4681,8 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
                 <code>with</code> blocks. You should use tools like <code>any</code> or <code>all</code> to make your
                 code read like plain English. And finally, you should use standard tools like <code>black</code> or
                 <code>ruff</code> to automatically format your code, so you never have to waste time arguing about
-                spaces or tabs!</p>
+                spaces or tabs!
+            </p>
             <h3 id="the-zen-of-python">The Zen of Python<a class="headerlink" href="#the-zen-of-python"
                     title="Permanent link">#</a></h3>
             <p>If you type <code>import this</code> in your terminal, Python will print out 19 poetic rules known as the
@@ -4629,20 +4815,25 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
                 access it).</p>
             <p>Honestly, you shouldn't memorize these rules. Just use a free tool like <code>black</code> or
                 <code>ruff format</code> and it will automatically fix your spacing and capitalization every time you
-                save your file.</p>
+                save your file.
+            </p>
             <ol>
                 <li>You should use <code>snake_case</code> for all function and variable names (e.g.,
-                    <code>my_function()</code>).</li>
+                    <code>my_function()</code>).
+                </li>
                 <li>You should use <code>PascalCase</code> for all class names (e.g., <code>MyClass</code>).</li>
                 <li>You should use <code>UPPER_CASE</code> for all constants that never change (e.g.,
-                    <code>MAX_RETRIES = 3</code>).</li>
+                    <code>MAX_RETRIES = 3</code>).
+                </li>
                 <li>You must always use 4 spaces for indentation, and you should never use tabs.</li>
                 <li>You should try to keep your lines of code shorter than 79 to 120 characters so they fit on a screen.
                 </li>
                 <li>You should use a single leading underscore for internal, private attributes (e.g.,
-                    <code>self._internal_state</code>).</li>
+                    <code>self._internal_state</code>).
+                </li>
                 <li>You should use a double leading underscore when you specifically need name mangling (e.g.,
-                    <code>self.__really_private</code>).</li>
+                    <code>self.__really_private</code>).
+                </li>
             </ol>
             <h3 id="common-gotchas">Common Gotchas<a class="headerlink" href="#common-gotchas"
                     title="Permanent link">#</a></h3>
@@ -4654,11 +4845,13 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
                 <li><strong>Mutable defaults:</strong> If you use a list as a default argument (like
                     <code>def bad(lst=[]):</code>), Python only creates that list once when the program starts. That
                     means every single time you call the function, it accidentally shares the exact same list! Always
-                    use <code>None</code> instead.</li>
+                    use <code>None</code> instead.
+                </li>
                 <li><strong>Late-binding closures:</strong> If you create a bunch of lambda functions inside a
                     <code>for</code> loop, they don't lock in the loop's variable immediately. By the time they actually
                     run, the loop has already finished, so every single lambda will use the very last number from the
-                    loop.</li>
+                    loop.
+                </li>
                 <li><strong>Modifying while iterating:</strong> Never delete items from a list while you are looping
                     through it! Because a list is just a numbered line of items, deleting item #2 makes item #3 slide
                     down into its spot. The loop will then completely skip over it. Instead, just build a brand new
@@ -4670,7 +4863,8 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
                 <li><strong>Shallow versus deep copy:</strong> When you copy a list full of dictionaries using
                     <code>.copy()</code>, Python only copies the outer list. Both lists are still sharing the exact same
                     dictionaries inside! If you want a truly independent copy, you must use <code>copy.deepcopy()</code>
-                    (but beware, it is very slow).</li>
+                    (but beware, it is very slow).
+                </li>
             </ol>
             <div class="highlight">
                 <pre><span></span><code><span class="c1"># ⚠️ Mutable default arguments (covered in section 8)</span>

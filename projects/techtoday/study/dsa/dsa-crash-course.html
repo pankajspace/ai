@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>DSA Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in data structures and algorithms — every structure explained with a real-world mental model, animated, and shown in Python and JavaScript." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="dsa-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <details class="tt-study-menu">
+                <summary>Study</summary>
+                <nav class="tt-study-menu-panel" aria-label="Study guides">
+                    <details class="tt-study-group">
+                        <summary>Python</summary>
+                        <div class="tt-study-links">
+                            <a href="../python/python-crash-course.html">Python Crash Course</a>
+                            <a href="../python/python-detailed-course.html">Python Detailed Course</a>
+                        </div>
+                    </details>
+                    <details class="tt-study-group" open>
+                        <summary>DSA</summary>
+                        <div class="tt-study-links">
+                            <a href="dsa-crash-course.html" aria-current="page">DSA Crash Course</a>
+                            <a href="dsa-detailed-course.html">DSA Detailed Course</a>
+                        </div>
+                    </details>
+                    <details class="tt-study-group" id="ai-study-group" hidden>
+                        <summary>AI</summary>
+                        <div class="tt-study-links">
+                            <a href="../ai/llms-prompting.html">LLMs &amp; Prompting</a>
+                            <a href="../ai/langchain-agents.html">LangChain &amp; Agents</a>
+                            <a href="../ai/rag-embeddings.html">RAG &amp; Embeddings</a>
+                            <a href="../ai/docker.html">Docker</a>
+                            <a href="../ai/aws-strands.html">AWS Strands</a>
+                        </div>
+                    </details>
+                </nav>
+            </details>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="dsa-crash-course">Visual Data Structures &amp; Algorithms<a class="headerlink"
+                    href="#dsa-crash-course" title="Permanent link">#</a></h1>
+
+            <p class="lede">Every structure here comes with a picture you already have in your head — cinema seats, a
+                treasure hunt, a pile of plates, a ticket queue. Learn the mental model first and the code stops being
+                something to memorise. Press <strong>Play</strong> on any animation to watch the idea move.</p>
+
+            <div class="callout callout-key">
+                <p>The whole field answers one question: <strong>given the shape of my data and the operations I need,
+                        what is the cheapest way to arrange it?</strong> Every structure below is one answer, and every
+                    one is a trade — you buy fast lookups with extra memory, or fast inserts with slow scans. Nothing is
+                    universally best.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#0-the-only-maths-you-need">The Only Maths You Need</a></li>
+                <li><a href="#1-arrays">Arrays</a></li>
+                <li><a href="#2-linked-lists">Linked Lists</a></li>
+                <li><a href="#3-stacks">Stacks</a></li>
+                <li><a href="#4-queues">Queues</a></li>
+                <li><a href="#5-hash-tables-and-sets">Hash Tables &amp; Sets</a></li>
+                <li><a href="#6-trees">Trees</a></li>
+                <li><a href="#7-graphs">Graphs</a></li>
+                <li><a href="#8-searching">Searching</a></li>
+                <li><a href="#9-sorting">Sorting</a></li>
+                <li><a href="#10-traversal-and-shortest-paths">Traversal &amp; Shortest Paths</a></li>
+                <li><a href="#11-the-four-problem-solving-philosophies">The Four Problem-Solving Philosophies</a></li>
+                <li><a href="#12-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+            </ol>
+
+            <!-- ============================================================ 0 -->
+            <h2 id="0-the-only-maths-you-need">The Only Maths You Need<a class="headerlink"
+                    href="#0-the-only-maths-you-need" title="Permanent link">#</a></h2>
+
+            <p>Before any structure makes sense you need one idea: <strong>Big-O</strong>. It does not measure seconds —
+                seconds depend on your laptop. It measures how the work <em>grows</em> as the input grows, which is the
+                only thing that still matters when your ten test rows become ten million production rows.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🔍</span>
+                <div class="analogy-body">
+                    <b>Picture it — finding a name in a phone book</b>
+                    <p>Reading every name from page one is <code>O(n)</code>: twice the book, twice the work. Opening
+                        the middle and halving repeatedly is <code>O(log n)</code>: twice the book costs you
+                        <em>one</em> extra step. That gap is the entire subject.
+                    </p>
+                </div>
+            </div>
+
+            <ol>
+                <li><code class="big-o o-great">O(1)</code> <strong>constant</strong> — array index, hash lookup. Input
+                    size is irrelevant.</li>
+                <li><code class="big-o o-great">O(log n)</code> <strong>logarithmic</strong> — binary search, balanced
+                    trees. You halve the problem each step.</li>
+                <li><code class="big-o o-good">O(n)</code> <strong>linear</strong> — one pass over everything.</li>
+                <li><code class="big-o o-ok">O(n log n)</code> <strong>linearithmic</strong> — the good sorts. In
+                    practice, close enough to linear.</li>
+                <li><code class="big-o o-bad">O(n²)</code> <strong>quadratic</strong> — nested loops comparing every
+                    pair. Fine for thousands, painful beyond.</li>
+                <li><code class="big-o o-bad">O(2ⁿ)</code> / <code class="big-o o-bad">O(n!)</code> — every subset,
+                    every permutation. Dies around <code>n = 30</code> and <code>n = 12</code> respectively.</li>
+            </ol>
+
+            <div class="callout callout-tip">
+                <p>A yardstick worth memorising: a machine does roughly <strong>10⁸ simple operations per
+                        second</strong>. So at <code>n = 100,000</code>, an <code>O(n²)</code> solution needs
+                    <code>10¹⁰</code> operations and will time out, while <code>O(n log n)</code> needs about
+                    <code>1.7 × 10⁶</code> and finishes instantly. Read a problem's limits and they tell you which
+                    complexity is expected.
+                </p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-1">Unit 1 — Foundational Linear Structures<a class="headerlink" href="#unit-1"
+                    title="Permanent link">#</a></h2>
+            <p>Linear structures store data sequentially: one item after another, in a row or a defined order.</p>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-arrays">Arrays<a class="headerlink" href="#1-arrays" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Access</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Search</b> <code class="big-o o-good">O(n)</code></li>
+                <li><b>Insert / delete in middle</b> <code class="big-o o-bad">O(n)</code></li>
+            </ul>
+
+            <p>The most fundamental structure: a collection of items stored in <strong>contiguous</strong> memory
+                blocks. The computer reserves a run of slots right next to each other, and each slot gets a serial
+                number — an <strong>index</strong> — starting at <strong>0</strong>.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎬</span>
+                <div class="analogy-body">
+                    <b>Picture it — cinema seats</b>
+                    <p>Seats in a row, numbered in order. With a ticket for Seat 5 you do not ask everyone in seats 1
+                        to 4 where it is — you walk straight to it. That is constant-time access, and it works because
+                        the seats are laid out in a predictable line.</p>
+                </div>
+            </div>
+
+            <p>Because the slots are equal-sized and adjacent, the address of item <code>i</code> is pure arithmetic:
+                <code>base + i × size</code>. No searching involved — that single fact is why arrays are the default
+                container in every language.
+            </p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — instant access</b>Know the index and the computer jumps straight
+                    there, whether there are ten items or ten million.</li>
+                <li class="is-bad"><b>Weakness — the shifting hassle</b>Insert between seats 3 and 4 and everyone from
+                    4 onward shuffles one place right. On a big array that is real work.</li>
+            </ul>
+
+            <div class="ascii">index: 0 1 2 3 4
+                [ 10 | 20 | 30 | 40 | 50 ] insert 25 at index 2
+                &darr;
+                [ 10 | 20 | 25 | 30 | 40 | 50 ] &larr; 30, 40, 50 all had to move right</div>
+
+            <div class="code-tabs" data-label="Arrays">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+seats = [10, 20, 30, 40, 50]
+
+seats[2]              # 30    O(1)  - straight there
+seats.append(60)      # O(1)  - adding at the end is cheap
+seats.insert(2, 25)   # O(n)  - everything after index 2 shifts right
+seats.pop(0)          # O(n)  - everything shifts left
+30 in seats           # O(n)  - it has to look at each item
+
+# Gotcha: build 2-D grids row by row, or every row is the SAME list.
+grid  = [[0] * 4 for _ in range(3)]   # correct
+wrong = [[0] * 4] * 3                 # 3 references to one row
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const seats = [10, 20, 30, 40, 50];
+
+seats[2];                 // 30   O(1)
+seats.push(60);           // O(1)
+seats.splice(2, 0, 25);   // O(n) - shifts everything after index 2
+seats.shift();            // O(n) - re-indexes the whole array
+seats.includes(30);       // O(n)
+
+// Same 2-D gotcha as Python.
+const grid = Array.from({ length: 3 }, () =&gt; new Array(4).fill(0)); // correct
+const wrong = new Array(3).fill(new Array(4).fill(0));              // one row
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-linked-lists">Linked Lists<a class="headerlink" href="#2-linked-lists"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Access by index</b> <code class="big-o o-bad">O(n)</code></li>
+                <li><b>Insert / delete at a known node</b> <code class="big-o o-great">O(1)</code></li>
+            </ul>
+
+            <p>Linked lists fix the array's shifting problem by giving up contiguity. Data is scattered anywhere in
+                memory. Each <strong>node</strong> holds two things: the value, and a <strong>pointer</strong> — the
+                address of the next node.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🗺️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a treasure hunt</b>
+                    <p>You start with one clue. It says "under the mango tree". At the mango tree is a note pointing to
+                        "the old well". You follow the chain of addresses to the treasure. You cannot skip to clue
+                        seven — you have to walk the chain.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="linked-list"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — cheap insertion</b>To splice a node in between two others you just
+                    rewrite two pointers. Nothing else in memory moves.</li>
+                <li class="is-bad"><b>Weakness — no jumping</b>To reach the 100th item you start at the first and
+                    follow 99 pointers. There is no index arithmetic.</li>
+            </ul>
+
+            <h4 id="the-three-flavours">The three flavours<a class="headerlink" href="#the-three-flavours"
+                    title="Permanent link">#</a></h4>
+            <ol>
+                <li><strong>Singly linked</strong> — a one-way street; nodes point forward only.</li>
+                <li><strong>Doubly linked</strong> — a two-way street; each node points forward <em>and</em> back. Costs
+                    an extra pointer, buys backward iteration and <code>O(1)</code> deletion given just the node.</li>
+                <li><strong>Circular</strong> — the last node points back to the first, forming a loop. Think
+                    <em>repeat mode</em> in a music player, or a round-robin scheduler.
+                </li>
+            </ol>
+
+            <div class="code-tabs" data-label="Build one, then reverse it">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+class Node:
+    def __init__(self, value, nxt=None):
+        self.value = value
+        self.next = nxt
+
+# Chain three nodes: 10 -&gt; 20 -&gt; 30 -&gt; None
+head = Node(10, Node(20, Node(30)))
+
+def walk(head):
+    while head:                 # the treasure hunt, one clue at a time
+        print(head.value)
+        head = head.next
+
+def reverse(head):
+    """The classic interview question. O(n) time, O(1) space."""
+    prev = None
+    while head:
+        nxt = head.next         # remember where we were going
+        head.next = prev        # flip this link backwards
+        prev, head = head, nxt  # step both pointers forward
+    return prev                 # the old tail is the new head
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+class Node {
+  constructor(value, next = null) {
+    this.value = value;
+    this.next = next;
+  }
+}
+
+// 10 -&gt; 20 -&gt; 30 -&gt; null
+const head = new Node(10, new Node(20, new Node(30)));
+
+function walk(node) {
+  while (node) {                // follow the chain of clues
+    console.log(node.value);
+    node = node.next;
+  }
+}
+
+function reverse(head) {        // O(n) time, O(1) space
+  let prev = null;
+  let cur = head;
+  while (cur) {
+    const next = cur.next;      // remember the rest
+    cur.next = prev;            // flip the link
+    prev = cur;
+    cur = next;
+  }
+  return prev;                  // old tail becomes the new head
+}
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-stacks">Stacks<a class="headerlink" href="#3-stacks" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Push / pop / peek</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Rule</b> LIFO — last in, first out</li>
+            </ul>
+
+            <p>A stack only lets you add or remove at <strong>one end</strong>, called the top. <strong>Push</strong>
+                puts something on; <strong>pop</strong> takes the top one off.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a pile of plates</b>
+                    <p>You stack washed plates one on top of another. The last plate you put down is the first one you
+                        pick up. Try to pull one from the bottom and the whole pile comes down.</p>
+                </div>
+            </div>
+
+            <p>That restriction sounds limiting until you notice it is the exact shape of <strong>nesting</strong>: the
+                most recently opened thing must be the first one closed. Brackets, HTML tags, function calls and undo
+                history are all nesting problems — which is why stacks are everywhere.</p>
+
+            <ol>
+                <li>The browser <strong>Back</strong> button.</li>
+                <li><strong>Undo</strong> (Ctrl+Z) in any editor.</li>
+                <li>The computer's own <strong>call stack</strong> — one frame per active function call.</li>
+                <li>Depth-first search, and checking balanced brackets.</li>
+            </ol>
+
+            <div class="code-tabs" data-label="Balanced brackets — the classic stack problem">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def is_balanced(s):
+    pairs = {")": "(", "]": "[", "}": "{"}
+    stack = []
+
+    for ch in s:
+        if ch in "([{":
+            stack.append(ch)            # remember what must be closed
+        elif ch in pairs:
+            # It must close the MOST RECENT opener - that is the LIFO rule.
+            if not stack or stack.pop() != pairs[ch]:
+                return False
+
+    return not stack                    # nothing may be left open
+
+print(is_balanced("{[()]}"))    # True
+print(is_balanced("{[(])}"))    # False - right count, wrong nesting
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function isBalanced(s) {
+  const pairs = { ")": "(", "]": "[", "}": "{" };
+  const stack = [];
+
+  for (const ch of s) {
+    if (ch === "(" || ch === "[" || ch === "{") {
+      stack.push(ch);                   // remember what must close
+    } else if (ch in pairs) {
+      if (stack.pop() !== pairs[ch]) return false;   // wrong opener
+    }
+  }
+  return stack.length === 0;            // nothing left open
+}
+
+console.log(isBalanced("{[()]}"));      // true
+console.log(isBalanced("{[(])}"));      // false
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-queues">Queues<a class="headerlink" href="#4-queues" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Enqueue / dequeue</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Rule</b> FIFO — first in, first out</li>
+            </ul>
+
+            <p>A queue is fairness. Data enters at the back (<strong>enqueue</strong>) and leaves from the front
+                (<strong>dequeue</strong>).</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎟️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a ticket counter</b>
+                    <p>People queue for cinema tickets. The first to arrive is the first served. Nobody jumps the line,
+                        and new arrivals join at the back.</p>
+                </div>
+            </div>
+
+            <p>Both a stack and a queue accept the same items — only the <em>exit rule</em> differs. Watch them diverge
+                from identical contents:</p>
+
+            <div class="viz" data-viz="stack-queue"></div>
+
+            <h4 id="queue-variants">The variants worth knowing<a class="headerlink" href="#queue-variants"
+                    title="Permanent link">#</a></h4>
+            <ol>
+                <li><strong>Circular queue</strong> — the end wraps around to the start, reusing the empty slots left
+                    behind at the front instead of growing forever.</li>
+                <li><strong>Double-ended queue (deque)</strong> — add and remove at <em>both</em> ends. It subsumes both
+                    stack and queue.</li>
+                <li><strong>Priority queue</strong> — items are served by importance, not arrival time. Think an
+                    <strong>emergency room</strong>: the heart-attack patient is seen before the mild headache who
+                    arrived an hour earlier. Usually built on a <em>heap</em> (below).
+                </li>
+            </ol>
+
+            <div class="callout callout-warn">
+                <p>In JavaScript, never use <code>array.shift()</code> as a queue. It re-indexes the entire array, so it
+                    is <code>O(n)</code> and quietly turns an <code>O(V + E)</code> breadth-first search into
+                    <code>O(V²)</code>. Keep a head index instead, as in the code below.
+                </p>
+            </div>
+
+            <div class="code-tabs" data-label="Queues, done right">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from collections import deque
+
+q = deque()
+q.append("a")       # enqueue at the back    O(1)
+q.append("b")
+q.popleft()         # dequeue from the front O(1)  -&gt; 'a'
+
+q.appendleft("z")   # deque powers: both ends are O(1)
+q.pop()
+
+# NEVER use list.pop(0) as a queue - it shifts every element, O(n).
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// No built-in deque, and shift() is O(n). A head index fixes it:
+class Queue {
+  constructor() {
+    this.items = [];
+    this.head = 0;
+  }
+
+  enqueue(x) {
+    this.items.push(x);                 // O(1)
+  }
+
+  dequeue() {                           // O(1) amortised
+    if (this.head &gt;= this.items.length) return undefined;
+    return this.items[this.head++];     // move the pointer, not the data
+  }
+
+  get size() {
+    return this.items.length - this.head;
+  }
+}
+</code></pre>
+                </div>
+            </div>
+
+            <h4 id="priority-queue-heap">The priority queue, up close<a class="headerlink" href="#priority-queue-heap"
+                    title="Permanent link">#</a></h4>
+            <p>A <strong>heap</strong> is the usual implementation. It answers exactly one question fast — <em>what is
+                    the smallest item right now?</em> — and deliberately keeps everything else unsorted, which is why
+                it is cheaper than a full tree. It needs no pointers at all: store the tree in a plain array where the
+                children of index <code>i</code> live at <code>2i+1</code> and <code>2i+2</code>.</p>
+
+            <div class="viz" data-viz="heap"></div>
+
+            <hr />
+
+            <h2 id="unit-2">Unit 2 — High-Speed &amp; Relational Structures<a class="headerlink" href="#unit-2"
+                    title="Permanent link">#</a></h2>
+            <p>Past simple lines: structures for near-instant lookup, hierarchies, and networks.</p>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-hash-tables-and-sets">Hash Tables &amp; Sets<a class="headerlink" href="#5-hash-tables-and-sets"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Insert / lookup / delete</b> <code class="big-o o-great">O(1)</code> average</li>
+                <li><b>Worst case</b> <code class="big-o o-bad">O(n)</code></li>
+                <li><b>No ordering</b></li>
+            </ul>
+
+            <p>A hash table is an array you index with something other than a number. It stores
+                <strong>key-value pairs</strong>, and a <strong>hash function</strong> is the machine that turns a key
+                into a slot number.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📱</span>
+                <div class="analogy-body">
+                    <b>Picture it — your phone's contacts</b>
+                    <p>You do not scroll through 1,000 names. You type "Alice" and the phone computes exactly where
+                        that record lives and shows it instantly. The name goes in, a drawer number comes out.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="hash-table"></div>
+
+            <p>Two different keys can land in the same drawer — a <strong>collision</strong>. The usual fix is
+                <strong>chaining</strong>: each bucket holds a little list, and lookups compare keys inside it. As long
+                as the table stays mostly empty the chains stay tiny and lookups stay <code>O(1)</code> on average.
+            </p>
+
+            <p>A <strong>set</strong> is the same machinery with the values thrown away — it stores only unique keys and
+                silently swallows duplicates. Think a <strong>VIP guest list</strong> where a name cannot appear twice.
+            </p>
+
+            <div class="callout callout-interview">
+                <p>The single highest-value habit in this whole course: whenever you catch yourself writing a nested
+                    loop to ask <em>"have I seen this before?"</em> or <em>"does the matching item exist?"</em>, a hash
+                    set turns <code>O(n²)</code> into <code>O(n)</code>. That one substitution solves a startling share
+                    of interview problems.</p>
+            </div>
+
+            <div class="code-tabs" data-label="The O(n²) → O(n) rewrite">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# Dictionaries and sets
+ages = {"ada": 36, "alan": 41}
+ages["grace"] = 45          # O(1) insert
+ages.get("linus", 0)        # 0 - no KeyError
+"ada" in ages               # O(1) membership
+
+seen = {1, 2, 3}            # a set: unique keys only
+seen.add(3)                 # still {1, 2, 3}
+
+def two_sum(nums, target):
+    """Find two numbers adding to target. O(n) instead of O(n^2)."""
+    seen = {}                       # value -&gt; index
+    for i, x in enumerate(nums):
+        if target - x in seen:      # is my partner already here?
+            return seen[target - x], i
+        seen[x] = i
+    return None
+
+print(two_sum([2, 7, 11, 15], 9))   # (0, 1)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// Map is the right default - any key type, keeps insertion order.
+const ages = new Map([["ada", 36], ["alan", 41]]);
+ages.set("grace", 45);      // O(1)
+ages.get("linus") ?? 0;     // 0
+ages.has("ada");            // O(1)
+
+const seen = new Set([1, 2, 3]);
+seen.add(3);                // still {1, 2, 3}
+
+function twoSum(nums, target) {     // O(n) instead of O(n^2)
+  const index = new Map();          // value -&gt; index
+  for (let i = 0; i &lt; nums.length; i++) {
+    if (index.has(target - nums[i])) return [index.get(target - nums[i]), i];
+    index.set(nums[i], i);
+  }
+  return null;
+}
+
+console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-trees">Trees<a class="headerlink" href="#6-trees" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Traversal</b> <code class="big-o o-good">O(n)</code></li>
+                <li><b>Balanced operations</b> <code class="big-o o-great">O(log n)</code></li>
+                <li><b>Degenerate</b> <code class="big-o o-bad">O(n)</code></li>
+            </ul>
+
+            <p>Trees hold <strong>hierarchy</strong> — data spreading out from a single origin. Computer-science trees
+                grow <strong>upside down</strong>: they start at a <strong>root</strong> at the top and branch downward
+                through <strong>parents</strong> and <strong>children</strong> to <strong>leaves</strong>, which are
+                nodes with no children of their own.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">👴</span>
+                <div class="analogy-body">
+                    <b>Picture it — a family tree</b>
+                    <p>The grandfather is the root. His children branch off him, their children branch off them. Every
+                        person has exactly one parent, so there is exactly one path from the root to anyone — which is
+                        why tree code never needs to worry about going in circles.</p>
+                </div>
+            </div>
+
+            <h4 id="binary-search-tree">Binary search tree — the guessing game<a class="headerlink"
+                    href="#binary-search-tree" title="Permanent link">#</a></h4>
+            <p>A <strong>BST</strong> adds one rule: every value in the left subtree is smaller than its parent, every
+                value on the right is larger. That single invariant turns a walk into a search — at each node you throw
+                away an entire subtree without looking at it.</p>
+
+            <div class="viz" data-viz="bst-search"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>The BST's fatal flaw:</strong> insert <code>1, 2, 3, 4, 5</code> in order and every node
+                    becomes a right child. You now have a linked list wearing a tree costume, and every operation
+                    degrades to <code>O(n)</code>. Sorted input is not rare — it is <em>normal</em> for timestamps and
+                    IDs. Hence the next idea.</p>
+            </div>
+
+            <h4 id="balanced-trees">Balanced trees — AVL and red-black<a class="headerlink" href="#balanced-trees"
+                    title="Permanent link">#</a></h4>
+            <p>These trees notice when they are becoming lopsided and <strong>rotate</strong> — a constant-time
+                pointer rearrangement that pulls one node up and pushes another down while preserving the ordering.
+                The result is a guaranteed <code>O(log n)</code> height instead of a hopeful one.</p>
+
+            <figure class="figure">
+                <svg viewBox="0 0 620 220" width="620" role="img" aria-label="Right rotation of a binary search tree">
+                    <text x="20" y="20" fill="#f48771" font-size="12" font-family="monospace">before — left heavy,
+                        height 3</text>
+                    <line x1="150" y1="52" x2="110" y2="90" class="e-idle" />
+                    <line x1="110" y1="126" x2="70" y2="164" class="e-idle" />
+                    <line x1="110" y1="126" x2="150" y2="164" class="e-idle" />
+                    <line x1="150" y1="52" x2="190" y2="90" class="e-idle" />
+                    <circle cx="150" cy="40" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="110" cy="108" r="18" class="n-act" stroke-width="2" />
+                    <circle cx="70" cy="176" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="150" cy="176" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="190" cy="108" r="18" class="n-idle" stroke-width="2" />
+                    <text x="150" y="40" class="n-label">5</text>
+                    <text x="110" y="108" class="n-label n-label-dark">3</text>
+                    <text x="70" y="176" class="n-label">1</text>
+                    <text x="150" y="176" class="n-label">4</text>
+                    <text x="190" y="108" class="n-label">8</text>
+
+                    <text x="290" y="112" fill="#e0af68" font-size="26" font-family="monospace">&rarr;</text>
+                    <text x="268" y="140" fill="#94a0ad" font-size="11" font-family="monospace">rotate right
+                        at 5</text>
+
+                    <text x="380" y="20" fill="#73c991" font-size="12" font-family="monospace">after — balanced,
+                        height 2</text>
+                    <line x1="470" y1="52" x2="420" y2="90" class="e-done" />
+                    <line x1="470" y1="52" x2="520" y2="90" class="e-done" />
+                    <line x1="520" y1="126" x2="490" y2="164" class="e-idle" />
+                    <line x1="520" y1="126" x2="560" y2="164" class="e-idle" />
+                    <circle cx="470" cy="40" r="18" class="n-act" stroke-width="2" />
+                    <circle cx="420" cy="108" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="520" cy="108" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="490" cy="176" r="18" class="n-idle" stroke-width="2" />
+                    <circle cx="560" cy="176" r="18" class="n-idle" stroke-width="2" />
+                    <text x="470" y="40" class="n-label n-label-dark">3</text>
+                    <text x="420" y="108" class="n-label">1</text>
+                    <text x="520" y="108" class="n-label">5</text>
+                    <text x="490" y="176" class="n-label">4</text>
+                    <text x="560" y="176" class="n-label">8</text>
+                </svg>
+                <figcaption>In-order reading is 1, 3, 4, 5, 8 both before and after — the rotation fixes the shape
+                    without disturbing the ordering.</figcaption>
+            </figure>
+
+            <h4 id="tries">Tries — the autocomplete tree<a class="headerlink" href="#tries" title="Permanent link">#</a>
+            </h4>
+            <p>A <strong>trie</strong> (prefix tree) stores words along the <em>edges</em> rather than in the nodes.
+                Each node is a single letter, and shared prefixes share one path — "car" and "cat" both travel the same
+                <code>c → a</code> edges before splitting. Lookup time depends on the length of the word, not on how
+                many words are stored.
+            </p>
+
+            <div class="viz" data-viz="trie"></div>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Adjacency list</b> <code class="big-o o-good">O(V + E)</code> space</li>
+                <li><b>Traversal</b> <code class="big-o o-good">O(V + E)</code></li>
+            </ul>
+
+            <p>Graphs are the most general structure there is: <strong>vertices</strong> (the data points) joined by
+                <strong>edges</strong> (the connections). Any point may connect to any other. Trees, linked lists and
+                grids are all just graphs with extra rules.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🕸️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a social network</b>
+                    <p>Every person is a vertex; every friendship is an edge. There is no root and no parent — everyone
+                        sits in parallel, and you can wander from anyone to anyone by following connections.</p>
+                </div>
+            </div>
+
+            <ol>
+                <li><strong>Undirected</strong> — the relationship runs both ways. <em>Facebook friends.</em></li>
+                <li><strong>Directed</strong> — one-way, drawn with arrows. <em>Instagram followers.</em></li>
+                <li><strong>Weighted</strong> — each edge carries a cost or distance. <em>Google Maps, in kilometres or
+                        minutes.</em></li>
+                <li><strong>Unweighted</strong> — connections with no value attached. <em>Plain social circles.</em>
+                </li>
+            </ol>
+
+            <p>You almost always store a graph as an <strong>adjacency list</strong> — a map from each vertex to its
+                neighbours. It costs <code>O(V + E)</code> and makes "who is next to me?" instant, which is exactly what
+                every traversal asks.</p>
+
+            <div class="code-tabs" data-label="Building a graph">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from collections import defaultdict
+
+def build(edges, directed=False):
+    graph = defaultdict(list)
+    for a, b in edges:
+        graph[a].append(b)
+        if not directed:
+            graph[b].append(a)      # undirected: the road runs both ways
+    return graph
+
+friends = build([("ada", "alan"), ("alan", "grace"), ("ada", "grace")])
+print(friends["ada"])               # ['alan', 'grace']
+
+# A grid is a graph too: each cell is a vertex with up to four edges.
+DIRECTIONS = ((-1, 0), (1, 0), (0, -1), (0, 1))
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function build(edges, directed = false) {
+  const graph = new Map();
+  const add = (a, b) =&gt; {
+    if (!graph.has(a)) graph.set(a, []);
+    graph.get(a).push(b);
+  };
+  for (const [a, b] of edges) {
+    add(a, b);
+    if (!directed) add(b, a);       // undirected: both ways
+  }
+  return graph;
+}
+
+const friends = build([["ada", "alan"], ["alan", "grace"], ["ada", "grace"]]);
+console.log(friends.get("ada"));    // ['alan', 'grace']
+
+const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];   // grid neighbours
+</code></pre>
+                </div>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-3">Unit 3 — Core Algorithms<a class="headerlink" href="#unit-3" title="Permanent link">#</a>
+            </h2>
+            <p>Structures hold the data. Algorithms are the disciplined, step-by-step methods for working with it.</p>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-searching">Searching<a class="headerlink" href="#8-searching" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><strong>Linear search</strong> <code class="big-o o-good">O(n)</code> — check every item one by one.
+                    Slow, but it is the only option on unsorted data.</li>
+                <li><strong>Binary search</strong> <code class="big-o o-great">O(log n)</code> — requires
+                    <strong>sorted</strong> data. Open in the middle, decide whether the target is left or right, throw
+                    the other half away, repeat.
+                </li>
+            </ol>
+
+            <div class="analogy">
+                <span class="analogy-icon">📖</span>
+                <div class="analogy-body">
+                    <b>Picture it — a dictionary</b>
+                    <p>Looking for "monsoon", you do not start at "aardvark". You flip to the middle, land on "K", and
+                        instantly discard the first half of the book. Finding one word among 100,000 takes about
+                        <strong>17 steps</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="binary-search"></div>
+
+            <div class="code-tabs" data-label="Binary search">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def binary_search(nums, target):
+    """Index of target, or -1. Requires a SORTED list."""
+    lo, hi = 0, len(nums) - 1
+    while lo &lt;= hi:
+        mid = lo + (hi - lo) // 2   # overflow-safe midpoint, good habit
+        if nums[mid] == target:
+            return mid
+        if nums[mid] &lt; target:
+            lo = mid + 1            # discard mid and everything left of it
+        else:
+            hi = mid - 1            # discard mid and everything right of it
+    return -1
+
+print(binary_search([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72))   # 8
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function binarySearch(nums, target) {   // needs a SORTED array
+  let lo = 0;
+  let hi = nums.length - 1;
+  while (lo &lt;= hi) {
+    const mid = lo + ((hi - lo) &gt;&gt; 1);  // overflow-safe midpoint
+    if (nums[mid] === target) return mid;
+    if (nums[mid] &lt; target) lo = mid + 1;   // drop the left half
+    else hi = mid - 1;                      // drop the right half
+  }
+  return -1;
+}
+
+console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-sorting">Sorting<a class="headerlink" href="#9-sorting" title="Permanent link">#</a></h3>
+
+            <p>You will rarely write a sort in production — both languages ship excellent ones. You learn them because
+                they are the clearest demonstration of algorithmic technique: one task, solved six ways, with the
+                trade-offs on display. Switch algorithms in the picker and watch how differently each one attacks
+                identical data.</p>
+
+            <div class="viz" data-viz="sorting"></div>
+
+            <ol>
+                <li><strong>Bubble sort</strong> <code class="big-o o-bad">O(n²)</code> — compare neighbours and swap
+                    them, so the largest values <em>bubble up</em> to the end. Simple, slow, rarely the right answer.
+                </li>
+                <li><strong>Selection sort</strong> <code class="big-o o-bad">O(n²)</code> — scan for the smallest item,
+                    put it at the front, repeat on what remains. Makes the fewest writes of any sort.</li>
+                <li><strong>Insertion sort</strong> <code class="big-o o-bad">O(n²)</code> — exactly how you arrange
+                    playing cards in your hand: take the next card and slide it into place among the ones already
+                    sorted. Genuinely fast on nearly-sorted data.</li>
+                <li><strong>Merge sort</strong> <code class="big-o o-ok">O(n log n)</code> — divide and conquer. Split
+                    until each piece is a single item, then merge pairs back together in order. Guaranteed fast, needs
+                    extra space.</li>
+                <li><strong>Quicksort</strong> <code class="big-o o-ok">O(n log n)</code> average — pick a
+                    <strong>pivot</strong>, shove everything smaller to its left and everything larger to its right,
+                    then repeat on both sides. Fastest in practice.
+                </li>
+            </ol>
+
+            <div class="callout callout-tip">
+                <p>Python's <code>sort()</code> and JavaScript's <code>Array.prototype.sort()</code> are both
+                    <strong>Timsort</strong> — stable, <code>O(n log n)</code>, and <code>O(n)</code> on
+                    already-sorted input. Use them. One trap: JavaScript's <code>sort()</code> with no comparator sorts
+                    <em>as strings</em>, so <code>[10, 9, 1].sort()</code> gives <code>[1, 10, 9]</code>. Always pass
+                    <code>(a, b) =&gt; a - b</code>.
+                </p>
+            </div>
+
+            <div class="code-tabs" data-label="Merge sort and quicksort">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def merge_sort(nums):
+    """Divide and conquer. O(n log n) always."""
+    if len(nums) &lt;= 1:
+        return nums
+    mid = len(nums) // 2
+    left = merge_sort(nums[:mid])       # solve each half
+    right = merge_sort(nums[mid:])
+
+    out, i, j = [], 0, 0
+    while i &lt; len(left) and j &lt; len(right):      # then merge them
+        if left[i] &lt;= right[j]:
+            out.append(left[i]); i += 1
+        else:
+            out.append(right[j]); j += 1
+    return out + left[i:] + right[j:]
+
+
+def quicksort(nums):
+    """Pick a pivot, split around it, repeat. Average O(n log n)."""
+    if len(nums) &lt;= 1:
+        return nums
+    pivot = nums[len(nums) // 2]
+    smaller = [x for x in nums if x &lt; pivot]
+    equal = [x for x in nums if x == pivot]
+    larger = [x for x in nums if x &gt; pivot]
+    return quicksort(smaller) + equal + quicksort(larger)
+
+
+print(merge_sort([38, 12, 47, 5, 29]))    # [5, 12, 29, 38, 47]
+print(quicksort([38, 12, 47, 5, 29]))     # [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function mergeSort(nums) {              // O(n log n) always
+  if (nums.length &lt;= 1) return nums;
+  const mid = nums.length &gt;&gt; 1;
+  const left = mergeSort(nums.slice(0, mid));    // solve each half
+  const right = mergeSort(nums.slice(mid));
+
+  const out = [];
+  let i = 0;
+  let j = 0;
+  while (i &lt; left.length &amp;&amp; j &lt; right.length) {  // then merge
+    if (left[i] &lt;= right[j]) out.push(left[i++]);
+    else out.push(right[j++]);
+  }
+  return [...out, ...left.slice(i), ...right.slice(j)];
+}
+
+function quicksort(nums) {              // average O(n log n)
+  if (nums.length &lt;= 1) return nums;
+  const pivot = nums[nums.length &gt;&gt; 1];
+  const smaller = nums.filter((x) =&gt; x &lt; pivot);
+  const equal = nums.filter((x) =&gt; x === pivot);
+  const larger = nums.filter((x) =&gt; x &gt; pivot);
+  return [...quicksort(smaller), ...equal, ...quicksort(larger)];
+}
+
+console.log(mergeSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
+console.log(quicksort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-traversal-and-shortest-paths">Traversal &amp; Shortest Paths<a class="headerlink"
+                    href="#10-traversal-and-shortest-paths" title="Permanent link">#</a></h3>
+
+            <p>Once data sits in a tree or graph you need a systematic way to visit it. There are two, and they differ
+                by a single detail: <strong>which item you take out of the waiting list next.</strong></p>
+
+            <ul class="card-grid">
+                <li><b>Depth-first search (DFS)</b>Dive as deep as possible down one branch, then back up and try the
+                    next. Uses a <strong>stack</strong>, or plain recursion. Good for "does a path exist?", cycle
+                    detection and connected components.</li>
+                <li><b>Breadth-first search (BFS)</b>Visit every immediate neighbour first, then everything two steps
+                    away, and so on. Uses a <strong>queue</strong>. Good for "fewest moves" and shortest paths on
+                    unweighted graphs.</li>
+            </ul>
+
+            <div class="analogy">
+                <span class="analogy-icon">💧</span>
+                <div class="analogy-body">
+                    <b>Picture it — a pebble in a pond</b>
+                    <p>BFS spreads outward in expanding rings, finishing every point at distance 1 before touching
+                        anything at distance 2. That is exactly why the first time it reaches your target, it has
+                        arrived by the shortest route.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="graph-traversal"></div>
+
+            <p>On a binary tree the same two ideas produce four standard orders. The three depth-first ones differ only
+                in <em>when</em> the node itself is visited relative to its children — a one-line change with completely
+                different uses. In-order on a BST comes out perfectly sorted.</p>
+
+            <div class="viz" data-viz="traversal"></div>
+
+            <div class="callout callout-warn">
+                <p>The one thing you must not forget on a graph — as opposed to a tree — is the <strong>visited
+                        set</strong>. Graphs contain cycles, and without it your traversal loops forever.</p>
+            </div>
+
+            <div class="code-tabs" data-label="BFS and DFS — same shape, different container">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from collections import deque
+
+def bfs(graph, start):
+    """Queue -&gt; oldest first -&gt; explores level by level. O(V + E)."""
+    visited = {start}
+    q = deque([start])
+    order = []
+
+    while q:
+        node = q.popleft()              # OLDEST first
+        order.append(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                visited.add(neighbour)  # mark on ENQUEUE, or it enters twice
+                q.append(neighbour)
+    return order
+
+
+def dfs(graph, start):
+    """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
+    visited = set()
+    stack = [start]
+    order = []
+
+    while stack:
+        node = stack.pop()              # NEWEST first
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+        stack.extend(graph[node])
+    return order
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function bfs(graph, start) {            // queue -&gt; level by level
+  const visited = new Set([start]);
+  const queue = [start];
+  const order = [];
+  let head = 0;                         // index, not shift() - keeps it O(1)
+
+  while (head &lt; queue.length) {
+    const node = queue[head++];         // OLDEST first
+    order.push(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (visited.has(neighbour)) continue;
+      visited.add(neighbour);           // mark on ENQUEUE
+      queue.push(neighbour);
+    }
+  }
+  return order;
+}
+
+function dfs(graph, start) {            // stack -&gt; dive deep
+  const visited = new Set();
+  const stack = [start];
+  const order = [];
+
+  while (stack.length) {
+    const node = stack.pop();           // NEWEST first
+    if (visited.has(node)) continue;
+    visited.add(node);
+    order.push(node);
+    stack.push(...(graph.get(node) ?? []));
+  }
+  return order;
+}
+</code></pre>
+                </div>
+            </div>
+
+            <h4 id="dijkstra">Dijkstra's algorithm — shortest path with costs<a class="headerlink" href="#dijkstra"
+                    title="Permanent link">#</a></h4>
+            <p>BFS finds the fewest <em>hops</em>. When edges have costs — kilometres, minutes, money — you need
+                <strong>Dijkstra</strong>. It keeps a <strong>min-heap</strong> (priority queue) of the cheapest place
+                to go next, and <strong>relaxes</strong> edges as it goes: whenever a shortcut is found, the recorded
+                cost is lowered. This is what powers Google Maps.
+            </p>
+
+            <div class="viz" data-viz="dijkstra"></div>
+
+            <div class="callout callout-key">
+                <p>Dijkstra only works because every weight is <strong>non-negative</strong> — that guarantees a settled
+                    node can never be improved later, since a detour only ever adds cost. With negative edges the logic
+                    collapses and you need Bellman-Ford instead.</p>
+            </div>
+
+            <hr />
+
+            <!-- ============================================================ 11 -->
+            <h2 id="11-the-four-problem-solving-philosophies">The Four Problem-Solving Philosophies<a class="headerlink"
+                    href="#11-the-four-problem-solving-philosophies" title="Permanent link">#</a></h2>
+
+            <p>Almost every algorithm is built on one of four mindsets. Recognising which one a problem wants is most
+                of the battle.</p>
+
+            <h3 id="greedy">1. Greedy<a class="headerlink" href="#greedy" title="Permanent link">#</a></h3>
+            <p><strong>Philosophy:</strong> take the best option available <em>right now</em> and never look back.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">💵</span>
+                <div class="analogy-body">
+                    <b>Picture it — making change</b>
+                    <p>A shopkeeper owing you 32 taka grabs the largest note that fits — 20 — then the next largest —
+                        10 — then 2. No planning, no backtracking, done.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>Greedy fails <em>silently</em>, which makes it dangerous. With coins {25, 10, 1}, making 30 greedily
+                    takes 25 + five 1s = <strong>six coins</strong>, but the best answer is three 10s. Always test your
+                    greedy rule against a small adversarial case before trusting it — if you can break it, you need
+                    dynamic programming.</p>
+            </div>
+
+            <h3 id="divide-and-conquer">2. Divide &amp; Conquer<a class="headerlink" href="#divide-and-conquer"
+                    title="Permanent link">#</a></h3>
+            <p><strong>Philosophy:</strong> break an intimidating problem into small independent sub-problems, solve
+                those, and combine the results.</p>
+            <p>Merge sort and quicksort are the canonical examples: split ten million items down to single items, where
+                the problem is trivial, then reassemble. The sub-problems being <em>independent</em> is what separates
+                this from dynamic programming.</p>
+
+            <h3 id="dynamic-programming">3. Dynamic Programming<a class="headerlink" href="#dynamic-programming"
+                    title="Permanent link">#</a></h3>
+            <p><strong>Philosophy:</strong> those who do not remember the past are condemned to recompute it.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📔</span>
+                <div class="analogy-body">
+                    <b>Picture it — keeping a diary</b>
+                    <p>Every time you finish a calculation you write the answer in a diary. When the same question
+                        comes up again — and in recursive problems it comes up constantly — you look it up instead of
+                        redoing the work.</p>
+                </div>
+            </div>
+
+            <p>Fibonacci is the standard demonstration. Naive recursion recomputes the same values an exponential
+                number of times; caching them makes it linear. Step through the animation and watch the cache start
+                intercepting calls:</p>
+
+            <div class="viz" data-viz="recursion"></div>
+
+            <div class="code-tabs" data-label="One line of caching, exponential → linear">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from functools import lru_cache
+
+def fib_slow(n):
+    """O(2^n) - recomputes the same subproblems over and over."""
+    if n &lt;= 1:
+        return n
+    return fib_slow(n - 1) + fib_slow(n - 2)
+
+
+@lru_cache(maxsize=None)
+def fib_fast(n):
+    """O(n). The decorator IS the diary."""
+    if n &lt;= 1:
+        return n
+    return fib_fast(n - 1) + fib_fast(n - 2)
+
+
+def fib_iterative(n):
+    """O(n) time, O(1) space - no recursion at all."""
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+
+print(fib_fast(300))        # instant
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function fibSlow(n) {                   // O(2^n)
+  if (n &lt;= 1) return n;
+  return fibSlow(n - 1) + fibSlow(n - 2);
+}
+
+const memo = new Map();
+function fibFast(n) {                   // O(n) - the Map is the diary
+  if (n &lt;= 1) return n;
+  if (memo.has(n)) return memo.get(n);
+  const value = fibFast(n - 1) + fibFast(n - 2);
+  memo.set(n, value);
+  return value;
+}
+
+function fibIterative(n) {              // O(n) time, O(1) space
+  let [a, b] = [0, 1];
+  for (let i = 0; i &lt; n; i++) [a, b] = [b, a + b];
+  return a;
+}
+
+console.log(fibFast(90));               // use BigInt past 2^53 - 1
+</code></pre>
+                </div>
+            </div>
+
+            <h3 id="backtracking">4. Backtracking<a class="headerlink" href="#backtracking" title="Permanent link">#</a>
+            </h3>
+            <p><strong>Philosophy:</strong> try a path; on hitting a dead end, step back to the last junction and try a
+                different one.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🧩</span>
+                <div class="analogy-body">
+                    <b>Picture it — solving Sudoku</b>
+                    <p>You pencil a 5 into a cell. Three moves later it breaks a rule. So you retrace, erase the 5, and
+                        try a 6. A maze works the same way — and so does a chess engine exploring millions of futures
+                        and abandoning the dead ends.</p>
+                </div>
+            </div>
+
+            <p>The code is always the same three lines — <strong>choose, explore, un-choose</strong>:</p>
+
+            <div class="ascii">def backtrack(state):
+                if is_complete(state):
+                record(state); return
+
+                for choice in candidates(state):
+                if not is_valid(choice, state):
+                continue # PRUNE - this is what makes it tractable
+                state.append(choice) # 1. choose
+                backtrack(state) # 2. explore
+                state.pop() # 3. un-choose</div>
+
+            <div class="code-tabs" data-label="Backtracking: every subset of a list">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def subsets(nums):
+    """All 2^n subsets. At each index: take it, or skip it."""
+    out, path = [], []
+
+    def go(i):
+        if i == len(nums):
+            out.append(path[:])     # copy - path keeps mutating
+            return
+        go(i + 1)                   # skip nums[i]
+        path.append(nums[i])        # 1. choose
+        go(i + 1)                   # 2. explore
+        path.pop()                  # 3. un-choose
+
+    go(0)
+    return out
+
+print(subsets([1, 2, 3]))
+# [[], [3], [2], [2,3], [1], [1,3], [1,2], [1,2,3]]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function subsets(nums) {                // all 2^n subsets
+  const out = [];
+  const path = [];
+
+  const go = (i) =&gt; {
+    if (i === nums.length) {
+      out.push([...path]);              // copy - path keeps mutating
+      return;
+    }
+    go(i + 1);                          // skip
+    path.push(nums[i]);                 // 1. choose
+    go(i + 1);                          // 2. explore
+    path.pop();                         // 3. un-choose
+  };
+
+  go(0);
+  return out;
+}
+
+console.log(subsets([1, 2, 3]).length); // 8
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><strong>Pruning is everything.</strong> Brute-force 8-queens would test 16.7 million placements;
+                    checking for conflicts as you go cuts it to roughly 2,000 recursive calls. When backtracking is too
+                    slow, the fix is a better constraint check — never a faster language.</p>
+            </div>
+
+            <hr />
+
+            <!-- ============================================================ 12 -->
+            <h2 id="12-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink"
+                    href="#12-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+
+            <h3 id="pick-a-structure">Pick a structure<a class="headerlink" href="#pick-a-structure"
+                    title="Permanent link">#</a></h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Structure</th>
+                        <th>Access</th>
+                        <th>Search</th>
+                        <th>Insert</th>
+                        <th>Reach for it when…</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Array</td>
+                        <td><code>O(1)</code></td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(n)</code></td>
+                        <td>you index or iterate far more than you insert</td>
+                    </tr>
+                    <tr>
+                        <td>Linked list</td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(1)</code></td>
+                        <td>you splice constantly and never index</td>
+                    </tr>
+                    <tr>
+                        <td>Stack</td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(1)</code></td>
+                        <td>the problem nests — brackets, undo, DFS</td>
+                    </tr>
+                    <tr>
+                        <td>Queue</td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(1)</code></td>
+                        <td>order of arrival matters — scheduling, BFS</td>
+                    </tr>
+                    <tr>
+                        <td>Hash map / set</td>
+                        <td>—</td>
+                        <td><code>O(1)</code></td>
+                        <td><code>O(1)</code></td>
+                        <td>you ask "have I seen this?" or "does X exist?"</td>
+                    </tr>
+                    <tr>
+                        <td>Heap</td>
+                        <td><code>O(1)</code> min</td>
+                        <td><code>O(n)</code></td>
+                        <td><code>O(log n)</code></td>
+                        <td>you repeatedly need the best item — top-k, Dijkstra</td>
+                    </tr>
+                    <tr>
+                        <td>Balanced BST</td>
+                        <td><code>O(log n)</code></td>
+                        <td><code>O(log n)</code></td>
+                        <td><code>O(log n)</code></td>
+                        <td>you need sorted order <em>and</em> fast lookup</td>
+                    </tr>
+                    <tr>
+                        <td>Trie</td>
+                        <td><code>O(L)</code></td>
+                        <td><code>O(L)</code></td>
+                        <td><code>O(L)</code></td>
+                        <td>prefixes matter — autocomplete, dictionaries</td>
+                    </tr>
+                    <tr>
+                        <td>Graph</td>
+                        <td>—</td>
+                        <td><code>O(V + E)</code></td>
+                        <td><code>O(1)</code></td>
+                        <td>things connect to things — networks, maps, deps</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="pick-an-approach">Pick an approach<a class="headerlink" href="#pick-an-approach"
+                    title="Permanent link">#</a></h3>
+            <ul class="card-grid">
+                <li><b>"Sorted array" + find a pair</b>Two pointers, one at each end. <code>O(n)</code>.</li>
+                <li><b>"Have I seen this before?"</b>Hash set. Turns <code>O(n²)</code> into <code>O(n)</code>.</li>
+                <li><b>"Top k" or "k-th largest"</b>A heap of size <code>k</code>.</li>
+                <li><b>"Fewest moves / steps"</b>BFS.</li>
+                <li><b>"Does a path exist?"</b>DFS.</li>
+                <li><b>"Cheapest route" with costs</b>Dijkstra.</li>
+                <li><b>"How many ways" / "min or max cost"</b>Dynamic programming.</li>
+                <li><b>"All combinations / permutations"</b>Backtracking with pruning.</li>
+                <li><b>"Prefix" or "autocomplete"</b>Trie.</li>
+                <li><b>"Dependencies / prerequisites"</b>Topological sort on a DAG.</li>
+            </ul>
+
+            <h3 id="how-to-attack-any-problem">How to attack any problem<a class="headerlink"
+                    href="#how-to-attack-any-problem" title="Permanent link">#</a></h3>
+            <ol>
+                <li><strong>Restate it</strong> in your own words. Confirm the edge cases: empty input, one element,
+                    duplicates, negatives, maximum size.</li>
+                <li><strong>Write the brute force</strong>, even just out loud. It gives you a correct baseline and a
+                    complexity to beat.</li>
+                <li><strong>Find the waste.</strong> What is being recomputed? What gets thrown away between
+                    iterations?</li>
+                <li><strong>Match the pattern</strong> from the list above.</li>
+                <li><strong>Say the complexity out loud</strong> — time and space — before you call it done.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p>Step 3 is the transferable skill. Two pointers, sliding windows, prefix sums, memoisation, monotonic
+                    stacks and hash maps are all the same move: <em>notice that you are throwing away work between
+                        iterations, and keep it instead.</em></p>
+            </div>
+
+            <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
+            </h3>
+            <ol>
+                <li>📘 The <a href="dsa-detailed-course.html">DSA Detailed Course</a> — the same ground in 38 sections,
+                    plus prefix sums, union-find, topological sort, MSTs, segment trees, string matching and a full
+                    practice roadmap.</li>
+                <li>📖 <a href="https://visualgo.net/">VisuAlgo</a> — interactive visualisations of every structure
+                    here.</li>
+                <li>🧠 <a href="https://leetcode.com/">LeetCode</a> — for the repetitions. Time-box to 25 minutes, then
+                    read the solution and re-solve it from scratch the next day.</li>
+            </ol>
+
+            <blockquote>
+                <p><em>"Bad programmers worry about the code. Good programmers worry about data structures and their
+                        relationships."</em> — Linus Torvalds</p>
+            </blockquote>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Data Structures &amp; Algorithms</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="dsa-study.js"></script>
+</body>
+
+</html>
