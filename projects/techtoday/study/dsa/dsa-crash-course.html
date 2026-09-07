@@ -243,6 +243,53 @@ const wrong = new Array(3).fill(new Array(4).fill(0));              // one row
                 </p>
             </div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Move every zero in an array to the end, keeping the order of the other numbers, and
+                    do it in place. <code>[0, 3, 0, 5, 9, 0, 2]</code> becomes <code>[3, 5, 9, 2, 0, 0, 0]</code>.</p>
+                <p>Building a new array is easy but not "in place". Instead use <strong>two pointers</strong>: one
+                    reads every element, the other marks where the next non-zero belongs. Swapping them pushes zeroes
+                    rightward automatically, and because the reader only ever moves forward this is a single
+                    <code>O(n)</code> pass with no extra memory.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — move zeroes in place">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def move_zeroes(nums):
+    """O(n) time, O(1) space. Order of the non-zeros is preserved."""
+    write = 0                       # next slot a non-zero should land in
+    for read in range(len(nums)):   # read scans every element once
+        if nums[read] != 0:
+            nums[write], nums[read] = nums[read], nums[write]
+            write += 1
+
+
+data = [0, 3, 0, 5, 9, 0, 2]
+move_zeroes(data)
+print(data)                         # [3, 5, 9, 2, 0, 0, 0]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function moveZeroes(nums) {         // O(n) time, O(1) space
+  let write = 0;                    // next slot a non-zero should land in
+  for (let read = 0; read &lt; nums.length; read++) {
+    if (nums[read] !== 0) {
+      [nums[write], nums[read]] = [nums[read], nums[write]];
+      write++;
+    }
+  }
+}
+
+const data = [0, 3, 0, 5, 9, 0, 2];
+moveZeroes(data);
+console.log(data);                  // [3, 5, 9, 2, 0, 0, 0]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 2 -->
             <h3 id="2-linked-lists">Linked Lists<a class="headerlink" href="#2-linked-lists"
                     title="Permanent link">#</a></h3>
@@ -725,6 +772,67 @@ console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
 
             <div class="viz" data-viz="trie"></div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Find the maximum depth of a binary tree — the number of nodes on the longest path
+                    from the root down to a leaf.</p>
+                <p>This is the tree pattern in its purest form, and it is worth memorising because almost every tree
+                    question is a variation of it: <strong>solve the left subtree, solve the right subtree,
+                        combine.</strong>
+                </p>
+                <p>The base case is an empty tree, which has depth <code>0</code>. Anything else is one (for the
+                    current node) plus whichever child subtree runs deeper. You never write a loop — the recursion
+                    visits each node exactly once, so it is <code>O(n)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — maximum depth of a binary tree">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+
+def max_depth(node):
+    """O(n) time, O(h) stack space."""
+    if node is None:
+        return 0                    # base case: an empty tree has no depth
+    # Trust that each side returns its own answer, then combine.
+    return 1 + max(max_depth(node.left), max_depth(node.right))
+
+
+#        3
+#       / \
+#      9   20
+#         /  \
+#        15   7
+tree = TreeNode(3, TreeNode(9), TreeNode(20, TreeNode(15), TreeNode(7)))
+print(max_depth(tree))              # 3
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+function maxDepth(node) {           // O(n) time, O(h) stack space
+  if (!node) return 0;              // base case: empty tree has no depth
+  // Trust each side to return its own answer, then combine.
+  return 1 + Math.max(maxDepth(node.left), maxDepth(node.right));
+}
+
+const tree = new TreeNode(3, new TreeNode(9),
+                             new TreeNode(20, new TreeNode(15), new TreeNode(7)));
+console.log(maxDepth(tree));        // 3
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 7 -->
             <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
 
@@ -800,6 +908,83 @@ console.log(friends.get("ada"));    // ['alan', 'grace']
 
 const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];   // grid neighbours
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Given a grid of <code>"1"</code> (land) and <code>"0"</code> (water), count the
+                    islands. An island is land connected horizontally or vertically.</p>
+                <p>The insight that unlocks a whole family of problems: <strong>a grid is a graph</strong>. Every cell
+                    is a vertex, and its up/down/left/right neighbours are its edges — nobody has to hand you an
+                    adjacency list.</p>
+                <p>So the answer is just "count the connected components". Walk the grid; each time you meet land you
+                    have not seen before, that is a new island, and you flood-fill the whole thing so it is never
+                    counted twice. Sinking each visited cell to <code>"0"</code> is the cheapest possible visited set.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — number of islands">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def count_islands(grid):
+    """O(rows * cols) - every cell is visited at most once."""
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+    islands = 0
+
+    def sink(r, c):
+        """Flood-fill this island so it is never counted again."""
+        if r &lt; 0 or r &gt;= rows or c &lt; 0 or c &gt;= cols or grid[r][c] != "1":
+            return                      # off the grid, or water/already sunk
+        grid[r][c] = "0"                # mark visited by sinking the land
+        sink(r + 1, c); sink(r - 1, c)
+        sink(r, c + 1); sink(r, c - 1)
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == "1":       # unvisited land = a brand new island
+                islands += 1
+                sink(r, c)
+    return islands
+
+
+print(count_islands([["1", "1", "0", "0"],
+                     ["1", "1", "0", "0"],
+                     ["0", "0", "1", "0"]]))     # 2
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function countIslands(grid) {           // O(rows * cols)
+  if (!grid.length) return 0;
+  const rows = grid.length;
+  const cols = grid[0].length;
+  let islands = 0;
+
+  const sink = (r, c) =&gt; {              // flood-fill one island
+    if (r &lt; 0 || r &gt;= rows || c &lt; 0 || c &gt;= cols || grid[r][c] !== "1") return;
+    grid[r][c] = "0";                   // mark visited by sinking the land
+    sink(r + 1, c); sink(r - 1, c);
+    sink(r, c + 1); sink(r, c - 1);
+  };
+
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (grid[r][c] === "1") {         // unvisited land = a new island
+        islands++;
+        sink(r, c);
+      }
+    }
+  }
+  return islands;
+}
+
+console.log(countIslands([["1","1","0","0"],
+                          ["1","1","0","0"],
+                          ["0","0","1","0"]]));  // 2
+</code></pre>
+                    </div>
                 </div>
             </div>
 

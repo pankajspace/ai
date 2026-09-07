@@ -1271,7 +1271,7 @@ console.log(minSubarraySum([2, 3, 1, 2, 4, 3], 7));   // 2
                 ^ ^
                 sum(nums[2..5]) = prefix[6] - prefix[2] = 23 - 4 = 19 one subtraction, O(1)</div>
 
-            <div class="code-tabs" data-label="Prefix sums, 1-D and 2-D">
+            <div class="code-tabs" data-label="1-D prefix sums">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 from itertools import accumulate
@@ -1287,32 +1287,6 @@ nums = [3, 1, 4, 1, 5, 9, 2]
 prefix = build_prefix(nums)                 # or: [0, *accumulate(nums)]
 range_sum = lambda i, j: prefix[j + 1] - prefix[i]   # inclusive i..j
 print(range_sum(2, 5))                      # 19
-
-
-def subarrays_summing_to(nums, k):
-    """Count subarrays with sum exactly k. Works with negatives. O(n)."""
-    counts = {0: 1}         # a prefix sum of 0 has been seen once (empty prefix)
-    running = answer = 0
-    for value in nums:
-        running += value
-        # If running - k was seen before, every such position starts a valid
-        # subarray ending here.
-        answer += counts.get(running - k, 0)
-        counts[running] = counts.get(running, 0) + 1
-    return answer
-
-print(subarrays_summing_to([1, 2, -1, 2, 1], 3))    # 3
-
-
-def build_prefix_2d(grid):
-    """pre[r][c] = sum of the rectangle from (0,0) to (r-1,c-1)."""
-    rows, cols = len(grid), len(grid[0])
-    pre = [[0] * (cols + 1) for _ in range(rows + 1)]
-    for r in range(rows):
-        for c in range(cols):
-            pre[r + 1][c + 1] = (grid[r][c] + pre[r][c + 1]
-                                 + pre[r + 1][c] - pre[r][c])   # inclusion-exclusion
-    return pre
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -1327,7 +1301,34 @@ const nums = [3, 1, 4, 1, 5, 9, 2];
 const prefix = buildPrefix(nums);
 const rangeSum = (i, j) =&gt; prefix[j + 1] - prefix[i];   // inclusive
 console.log(rangeSum(2, 5));              // 19
+</code></pre>
+                </div>
+            </div>
 
+            <p>Pairing prefix sums with a hash map answers a harder question: <em>how many</em> subarrays sum to
+                exactly <code>k</code>. Because it never assumes the running total only grows, this one works with
+                negative numbers — which is precisely where a sliding window fails.</p>
+
+            <div class="code-tabs" data-label="Counting subarrays with a given sum">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def subarrays_summing_to(nums, k):
+    """Count subarrays with sum exactly k. Works with negatives. O(n)."""
+    counts = {0: 1}         # a prefix sum of 0 has been seen once (empty prefix)
+    running = answer = 0
+    for value in nums:
+        running += value
+        # If running - k was seen before, every such position starts a valid
+        # subarray ending here.
+        answer += counts.get(running - k, 0)
+        counts[running] = counts.get(running, 0) + 1
+    return answer
+
+print(subarrays_summing_to([1, 2, -1, 2, 1], 3))    # 3
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function subarraysSummingTo(nums, k) {    // handles negatives, O(n)
   const counts = new Map([[0, 1]]);       // empty prefix seen once
   let running = 0;
@@ -1341,7 +1342,30 @@ function subarraysSummingTo(nums, k) {    // handles negatives, O(n)
 }
 
 console.log(subarraysSummingTo([1, 2, -1, 2, 1], 3));   // 3
+</code></pre>
+                </div>
+            </div>
 
+            <p>The same idea lifts to two dimensions. Each cell stores the sum of the rectangle from the origin to it,
+                built by <strong>inclusion-exclusion</strong> — add the cell above and the cell to the left, then
+                subtract the corner you just counted twice. Any sub-rectangle then costs four lookups.</p>
+
+            <div class="code-tabs" data-label="2-D prefix sums">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def build_prefix_2d(grid):
+    """pre[r][c] = sum of the rectangle from (0,0) to (r-1,c-1)."""
+    rows, cols = len(grid), len(grid[0])
+    pre = [[0] * (cols + 1) for _ in range(rows + 1)]
+    for r in range(rows):
+        for c in range(cols):
+            pre[r + 1][c + 1] = (grid[r][c] + pre[r][c + 1]
+                                 + pre[r + 1][c] - pre[r][c])   # inclusion-exclusion
+    return pre
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function buildPrefix2D(grid) {
   const rows = grid.length;
   const cols = grid[0].length;
@@ -1712,7 +1736,7 @@ class HashMap {
                     the Josephus problem.</li>
             </ol>
 
-            <div class="code-tabs" data-label="Singly linked list: build, reverse, detect a cycle">
+            <div class="code-tabs" data-label="Node type, and building a list">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 class Node:
@@ -1737,40 +1761,6 @@ def to_list(head):
         out.append(head.value)
         head = head.next
     return out
-
-
-def reverse(head):
-    """Flip every pointer. O(n) time, O(1) space - the canonical question."""
-    prev = None
-    while head:
-        nxt = head.next     # 1. remember where we were going
-        head.next = prev    # 2. flip this link backwards
-        prev = head         # 3. prev advances
-        head = nxt          # 4. head advances
-    return prev             # prev is the old tail = the new head
-
-
-def has_cycle(head):
-    """Floyd's tortoise and hare. O(n) time, O(1) space."""
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next            # one step
-        fast = fast.next.next       # two steps
-        if slow is fast:            # if there is a loop they must meet
-            return True
-    return False
-
-
-def middle(head):
-    """The slow pointer lands on the middle when fast reaches the end."""
-    slow = fast = head
-    while fast and fast.next:
-        slow, fast = slow.next, fast.next.next
-    return slow
-
-
-head = from_list([1, 2, 3, 4, 5])
-print(to_list(reverse(head)))       # [5, 4, 3, 2, 1]
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -1793,7 +1783,33 @@ function toArray(head) {
   for (let cur = head; cur; cur = cur.next) out.push(cur.value);
   return out;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Reversal is the canonical linked-list question. The whole trick is that you need three references live
+                at once — save <code>next</code> before overwriting it, or the rest of the list becomes unreachable.</p>
+
+            <div class="code-tabs" data-label="Reversing in place">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def reverse(head):
+    """Flip every pointer. O(n) time, O(1) space - the canonical question."""
+    prev = None
+    while head:
+        nxt = head.next     # 1. remember where we were going
+        head.next = prev    # 2. flip this link backwards
+        prev = head         # 3. prev advances
+        head = nxt          # 4. head advances
+    return prev             # prev is the old tail = the new head
+
+
+head = from_list([1, 2, 3, 4, 5])
+print(to_list(reverse(head)))       # [5, 4, 3, 2, 1]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function reverse(head) {              // O(n) time, O(1) space
   let prev = null;
   let cur = head;
@@ -1806,6 +1822,39 @@ function reverse(head) {              // O(n) time, O(1) space
   return prev;                        // the old tail is the new head
 }
 
+console.log(toArray(reverse(fromArray([1, 2, 3, 4, 5]))));  // [5,4,3,2,1]
+</code></pre>
+                </div>
+            </div>
+
+            <p>These two belong together: both run a slow pointer at one step and a fast pointer at two, and differ
+                only in what they do with the result. One detects a loop, the other lands on the midpoint — the same
+                mechanism answering two questions in a single pass with constant memory.</p>
+
+            <div class="code-tabs" data-label="Fast and slow pointers: cycle detection and midpoint">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def has_cycle(head):
+    """Floyd's tortoise and hare. O(n) time, O(1) space."""
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next            # one step
+        fast = fast.next.next       # two steps
+        if slow is fast:            # if there is a loop they must meet
+            return True
+    return False
+
+
+def middle(head):
+    """The slow pointer lands on the middle when fast reaches the end."""
+    slow = fast = head
+    while fast and fast.next:
+        slow, fast = slow.next, fast.next.next
+    return slow
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function hasCycle(head) {             // Floyd's tortoise and hare
   let slow = head;
   let fast = head;
@@ -1826,8 +1875,6 @@ function middle(head) {
   }
   return slow;
 }
-
-console.log(toArray(reverse(fromArray([1, 2, 3, 4, 5]))));  // [5,4,3,2,1]
 </code></pre>
                 </div>
             </div>
@@ -2440,17 +2487,37 @@ console.log(windowMax([1, 3, -1, -3, 5, 3, 6, 7], 3));
 
             <div class="viz" data-viz="recursion"></div>
 
-            <div class="code-tabs" data-label="From exponential to linear with one decorator">
+            <div class="code-tabs" data-label="Naive recursion — exponential">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
-from functools import lru_cache
-
 def fib_naive(n):
     """O(2^n) - recomputes the same subproblems over and over."""
     if n &lt;= 1:                      # base case
         return n
     return fib_naive(n - 1) + fib_naive(n - 2)
 
+
+print(fib_naive(30))        # slow: ~1.6 million calls
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function fibNaive(n) {                  // O(2^n)
+  if (n &lt;= 1) return n;                 // base case
+  return fibNaive(n - 1) + fibNaive(n - 2);
+}
+</code></pre>
+                </div>
+            </div>
+
+            <p>The logic above is already correct — it is just wasteful, recomputing identical subtrees. Caching each
+                result the first time it is produced collapses <code>O(2ⁿ)</code> to <code>O(n)</code> without changing
+                a single line of the recurrence.</p>
+
+            <div class="code-tabs" data-label="Memoised recursion — linear">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from functools import lru_cache
 
 @lru_cache(maxsize=None)
 def fib_memo(n):
@@ -2460,26 +2527,11 @@ def fib_memo(n):
     return fib_memo(n - 1) + fib_memo(n - 2)
 
 
-def fib_iterative(n):
-    """O(n) time, O(1) space - no stack frames at all."""
-    a, b = 0, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return a
-
-
-print(fib_naive(30))        # slow: ~1.6 million calls
 print(fib_memo(300))        # instant, arbitrary precision integers
-print(fib_iterative(90))    # 2880067194370816120
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function fibNaive(n) {                  // O(2^n)
-  if (n &lt;= 1) return n;                 // base case
-  return fibNaive(n - 1) + fibNaive(n - 2);
-}
-
 const memo = new Map();
 function fibMemo(n) {                   // O(n) time and space
   if (n &lt;= 1) return n;
@@ -2489,17 +2541,40 @@ function fibMemo(n) {                   // O(n) time and space
   return value;
 }
 
+// A reusable memoiser for any single-argument pure function.
+const memoize = (fn, cache = new Map()) =&gt; (x) =&gt;
+  cache.has(x) ? cache.get(x) : (cache.set(x, fn(x)), cache.get(x));
+
+console.log(fibMemo(90));               // 2880067194370816000 (float precision!)
+</code></pre>
+                </div>
+            </div>
+
+            <p>Once you notice each value depends only on the previous two, the recursion is unnecessary. Sweeping
+                forward with two variables gives the same answer in constant space and with no stack frames at all.</p>
+
+            <div class="code-tabs" data-label="Bottom-up iteration — constant space">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def fib_iterative(n):
+    """O(n) time, O(1) space - no stack frames at all."""
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+
+
+print(fib_iterative(90))    # 2880067194370816120
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function fibIterative(n) {              // O(n) time, O(1) space
   let [a, b] = [0, 1];
   for (let i = 0; i &lt; n; i++) [a, b] = [b, a + b];
   return a;
 }
 
-// A reusable memoiser for any single-argument pure function.
-const memoize = (fn, cache = new Map()) =&gt; (x) =&gt;
-  cache.has(x) ? cache.get(x) : (cache.set(x, fn(x)), cache.get(x));
-
-console.log(fibMemo(90));               // 2880067194370816000 (float precision!)
 console.log(fibIterative(90));          // use BigInt beyond 2^53 - 1
 </code></pre>
                 </div>
@@ -2875,7 +2950,7 @@ console.log([10, 9, 1].sort((a, b) =&gt; a - b)); // [1, 9, 10]  - right
                 </li>
             </ol>
 
-            <div class="code-tabs" data-label="Binary search and its two boundary variants">
+            <div class="code-tabs" data-label="Exact-match binary search">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def binary_search(nums, target):
@@ -2892,6 +2967,39 @@ def binary_search(nums, target):
     return -1
 
 
+print(binary_search([1, 3, 3, 3, 7, 9], 7))         # 4
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function binarySearch(nums, target) {   // O(log n) time, O(1) space
+  let lo = 0;
+  let hi = nums.length - 1;             // inclusive range
+  while (lo &lt;= hi) {
+    const mid = lo + ((hi - lo) &gt;&gt; 1);  // overflow-safe midpoint
+    if (nums[mid] === target) return mid;
+    if (nums[mid] &lt; target) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return -1;
+}
+
+console.log(binarySearch([1, 3, 3, 3, 7, 9], 7));      // 4
+</code></pre>
+                </div>
+            </div>
+
+            <p>Exact match is rarely what you actually want. With duplicates you need <em>boundaries</em>: the first
+                index not below the target, and the first index above it. These two are mirror images — the only
+                difference is <code>&lt;</code> versus <code>&lt;=</code> — so they belong side by side. Note they use
+                the
+                half-open range <code>[lo, hi)</code>, which is why the loop condition changes to
+                <code>lo &lt; hi</code>.
+            </p>
+
+            <div class="code-tabs" data-label="Lower and upper bound">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def lower_bound(nums, target):
     """First index with nums[i] &gt;= target (insertion point). O(log n)."""
     lo, hi = 0, len(nums)               # half-open [lo, hi)
@@ -2909,7 +3017,7 @@ def upper_bound(nums, target):
     lo, hi = 0, len(nums)
     while lo &lt; hi:
         mid = lo + (hi - lo) // 2
-        if nums[mid] &lt;= target:
+        if nums[mid] &lt;= target:         # the only change: &lt;= instead of &lt;
             lo = mid + 1
         else:
             hi = mid
@@ -2920,24 +3028,11 @@ def upper_bound(nums, target):
 #   from bisect import bisect_left, bisect_right, insort
 
 data = [1, 3, 3, 3, 7, 9]
-print(binary_search(data, 7))                       # 4
 print(lower_bound(data, 3), upper_bound(data, 3))   # 1 4  -&gt; three 3s
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function binarySearch(nums, target) {   // O(log n) time, O(1) space
-  let lo = 0;
-  let hi = nums.length - 1;             // inclusive range
-  while (lo &lt;= hi) {
-    const mid = lo + ((hi - lo) &gt;&gt; 1);  // overflow-safe midpoint
-    if (nums[mid] === target) return mid;
-    if (nums[mid] &lt; target) lo = mid + 1;
-    else hi = mid - 1;
-  }
-  return -1;
-}
-
 function lowerBound(nums, target) {     // first index with nums[i] &gt;= target
   let lo = 0;
   let hi = nums.length;                 // half-open range
@@ -2954,14 +3049,13 @@ function upperBound(nums, target) {     // first index with nums[i] &gt; target
   let hi = nums.length;
   while (lo &lt; hi) {
     const mid = lo + ((hi - lo) &gt;&gt; 1);
-    if (nums[mid] &lt;= target) lo = mid + 1;
+    if (nums[mid] &lt;= target) lo = mid + 1;   // the only change: &lt;= not &lt;
     else hi = mid;
   }
   return lo;
 }
 
 const data = [1, 3, 3, 3, 7, 9];
-console.log(binarySearch(data, 7));                    // 4
 console.log(lowerBound(data, 3), upperBound(data, 3)); // 1 4
 </code></pre>
                 </div>
@@ -3558,6 +3652,64 @@ console.log([...tree.inOrder()]);       // [1,3,4,6,7,8,10,13,14]
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Given a binary tree, decide whether it is a valid binary search tree.</p>
+                <p>The tempting answer — check that each node sits between its own two children — is
+                    <strong>wrong</strong>.
+                    The BST rule is not local: <em>every</em> value in the left subtree must be smaller, not just the
+                    immediate child. A tree like <code>[10, 5, 15, null, null, 6, 20]</code> passes the naive check but
+                    is invalid, because <code>6</code> sits in <code>10</code>'s right subtree while being smaller
+                    than <code>10</code>.</p>
+                <p>The fix is to carry the permitted range down as you descend. Each step narrows one side of the
+                    window, so a node is valid only if it falls inside the interval it inherited.</p>
+
+                <div class="code-tabs" data-label="Answer — validate a BST in O(n)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def is_valid_bst(root):
+    """O(n) time, O(h) stack. Every node must fit the range it inherits."""
+    def check(node, low, high):
+        if node is None:
+            return True                 # an empty tree is trivially valid
+        if not (low &lt; node.value &lt; high):
+            return False                # violates a bound set by an ancestor
+        # Going left tightens the upper bound; going right lifts the lower one.
+        return (check(node.left, low, node.value)
+                and check(node.right, node.value, high))
+
+    return check(root, float("-inf"), float("inf"))
+
+
+# The classic trap: this tree passes a naive parent-child check but is invalid,
+# because 6 lives in 10's RIGHT subtree yet is smaller than 10.
+#         10
+#        /  \
+#       5    15
+#           /  \
+#          6    20
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function isValidBST(root) {             // O(n) time, O(h) stack
+  const check = (node, low, high) =&gt; {
+    if (!node) return true;             // empty tree is trivially valid
+    if (!(low &lt; node.value &amp;&amp; node.value &lt; high)) return false;
+    // Going left tightens the upper bound; going right lifts the lower one.
+    return check(node.left, low, node.value)
+        &amp;&amp; check(node.right, node.value, high);
+  };
+  return check(root, -Infinity, Infinity);
+}
+
+// Alternative: an in-order walk of a valid BST is strictly increasing, so you
+// can traverse and check each value is greater than the previous one.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <div class="callout callout-warn">
                 <p><strong>The BST's fatal flaw:</strong> insert <code>1, 2, 3, 4, 5</code> in order and every node
                     becomes a right child. You now have a linked list wearing a tree costume, and every operation is
@@ -4126,6 +4278,72 @@ console.log(trie.autocomplete("car"));  // ['car','card','care']
                     what IP routing tables and Git's object store use.</p>
             </div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Given a dictionary of roots and a sentence, replace every word that has a root as
+                    its prefix with the <em>shortest</em> such root. For roots <code>["cat", "bat", "rat"]</code> and
+                    the sentence <code>"the cattle was rattled by the battery"</code>, the answer is
+                    <code>"the cat was rat by the bat"</code>.
+                </p>
+                <p>Checking every word against every root is <code>O(words × roots × length)</code>. A trie collapses
+                    that: walk the word's characters down the trie and stop at the first node flagged as end-of-word.
+                    Because you stop at the first flag, you automatically get the shortest root — no comparison needed.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — replace words with their roots">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def replace_words(roots, sentence):
+    """O(total characters). Uses the Trie class from above."""
+    trie = Trie()
+    for root in roots:
+        trie.insert(root)
+
+    def shortest_root(word):
+        node = trie
+        for i, ch in enumerate(word):
+            node = node.children.get(ch)
+            if node is None:
+                return word             # no root is a prefix of this word
+            if node.is_word:
+                return word[:i + 1]     # first flag hit = SHORTEST root
+        return word
+
+    return " ".join(shortest_root(w) for w in sentence.split())
+
+
+print(replace_words(["cat", "bat", "rat"],
+                    "the cattle was rattled by the battery"))
+# 'the cat was rat by the bat'
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function replaceWords(roots, sentence) {    // O(total characters)
+  const trie = new Trie();
+  for (const root of roots) trie.insert(root);
+
+  const shortestRoot = (word) =&gt; {
+    let node = trie;
+    for (let i = 0; i &lt; word.length; i++) {
+      node = node.children.get(word[i]);
+      if (!node) return word;               // no root prefixes this word
+      if (node.isWord) return word.slice(0, i + 1);   // first flag = shortest
+    }
+    return word;
+  };
+
+  return sentence.split(" ").map(shortestRoot).join(" ");
+}
+
+console.log(replaceWords(["cat", "bat", "rat"],
+                         "the cattle was rattled by the battery"));
+// 'the cat was rat by the bat'
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 21 -->
             <h2 id="21-union-find">21. Union-Find<a class="headerlink" href="#21-union-find"
                     title="Permanent link">#</a></h2>
@@ -4251,6 +4469,60 @@ uf.union(2, 3);
 uf.union(1, 3);
 console.log(uf.connected(0, 3), uf.count);   // true 4
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">You are given an <code>n × n</code> matrix where <code>grid[i][j] = 1</code> means
+                    city <code>i</code> and city <code>j</code> are directly connected. A province is a group of cities
+                    connected directly or indirectly. How many provinces are there?</p>
+                <p>This is Union-Find's home territory: you are told about connections one at a time and asked how many
+                    groups survive. Union every connected pair, and the answer is simply how many groups remain — which
+                    the structure already tracks in <code>count</code>.</p>
+                <p>Only the upper triangle needs scanning, since the matrix is symmetric and <code>union</code> is
+                    order-independent.</p>
+
+                <div class="code-tabs" data-label="Answer — count provinces">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def count_provinces(grid):
+    """O(n^2 * a(n)) - one union attempt per pair. Uses UnionFind from above."""
+    n = len(grid)
+    uf = UnionFind(n)
+
+    for i in range(n):
+        for j in range(i + 1, n):       # upper triangle: the matrix is symmetric
+            if grid[i][j] == 1:
+                uf.union(i, j)          # already-connected pairs are a no-op
+
+    return uf.count                     # groups left after every merge
+
+
+print(count_provinces([[1, 1, 0],
+                       [1, 1, 0],
+                       [0, 0, 1]]))     # 2
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function countProvinces(grid) {         // uses UnionFind from above
+  const n = grid.length;
+  const uf = new UnionFind(n);
+
+  for (let i = 0; i &lt; n; i++) {
+    for (let j = i + 1; j &lt; n; j++) {   // upper triangle - matrix is symmetric
+      if (grid[i][j] === 1) uf.union(i, j);
+    }
+  }
+  return uf.count;                      // groups remaining after every merge
+}
+
+console.log(countProvinces([[1, 1, 0],
+                            [1, 1, 0],
+                            [0, 0, 1]]));   // 2
+</code></pre>
+                    </div>
                 </div>
             </div>
 
@@ -4855,6 +5127,88 @@ console.log(topoSortKahn(2, [[0, 1], [1, 0]]));                  // null
                     parent indicates a cycle, or simply use Union-Find.</p>
             </div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">There are <code>n</code> courses labelled <code>0…n-1</code> and a list of pairs
+                    <code>[a, b]</code> meaning "you must take <code>b</code> before <code>a</code>". Return any valid
+                    order in which to take all the courses, or an empty list if it is impossible.
+                </p>
+                <p>"Must come before" is a directed edge, so this is a topological sort with one extra requirement: the
+                    impossible case. Kahn's algorithm reports it for free — if the queue empties before every course is
+                    placed, the leftovers are stuck waiting on each other, which is a cycle.</p>
+                <p>Watch the edge direction. The pair <code>[a, b]</code> reads "b before a", so the edge runs
+                    <code>b → a</code> and it is <code>a</code>'s in-degree that increases. Reversing this is the most
+                    common mistake in the problem.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — course schedule ordering">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def find_order(n, prerequisites):
+    """O(V + E). Returns [] when a cycle makes the ordering impossible."""
+    graph = [[] for _ in range(n)]
+    in_degree = [0] * n
+
+    for course, needed in prerequisites:    # [a, b] means b BEFORE a
+        graph[needed].append(course)        # so the edge runs needed -&gt; course
+        in_degree[course] += 1
+
+    # Anything with no outstanding prerequisite can be taken immediately.
+    q = deque(c for c in range(n) if in_degree[c] == 0)
+    order = []
+
+    while q:
+        course = q.popleft()
+        order.append(course)
+        for nxt in graph[course]:
+            in_degree[nxt] -= 1             # one prerequisite satisfied
+            if in_degree[nxt] == 0:
+                q.append(nxt)
+
+    # Fewer than n placed means the rest form a cycle.
+    return order if len(order) == n else []
+
+
+print(find_order(4, [[1, 0], [2, 0], [3, 1], [3, 2]]))  # [0, 1, 2, 3]
+print(find_order(2, [[1, 0], [0, 1]]))                  # [] - circular
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function findOrder(n, prerequisites) {  // O(V + E), [] if impossible
+  const graph = Array.from({ length: n }, () =&gt; []);
+  const inDegree = new Array(n).fill(0);
+
+  for (const [course, needed] of prerequisites) {   // [a, b] = b BEFORE a
+    graph[needed].push(course);                     // edge: needed -&gt; course
+    inDegree[course]++;
+  }
+
+  const queue = [];
+  for (let c = 0; c &lt; n; c++) if (inDegree[c] === 0) queue.push(c);
+
+  const order = [];
+  let head = 0;
+  while (head &lt; queue.length) {
+    const course = queue[head++];
+    order.push(course);
+    for (const next of graph[course]) {
+      if (--inDegree[next] === 0) queue.push(next);
+    }
+  }
+
+  return order.length === n ? order : [];   // short means a cycle
+}
+
+console.log(findOrder(4, [[1, 0], [2, 0], [3, 1], [3, 2]]));  // [0,1,2,3]
+console.log(findOrder(2, [[1, 0], [0, 1]]));                  // [] - circular
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 25 -->
             <h2 id="25-shortest-paths">25. Shortest Paths<a class="headerlink" href="#25-shortest-paths"
                     title="Permanent link">#</a></h2>
@@ -5098,6 +5452,83 @@ function floydWarshall(matrix) {        // O(V^3) all pairs
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">A network has <code>n</code> nodes labelled <code>1…n</code>. Given travel times
+                    as directed edges <code>[from, to, time]</code>, a signal is sent from node <code>k</code>. How long
+                    until <em>every</em> node receives it, or <code>-1</code> if some node never does?</p>
+                <p>"Time for all to receive" is the <strong>maximum</strong> of the shortest paths from <code>k</code>
+                    to every node — the last arrival sets the answer. Weights are positive travel times, so Dijkstra
+                    applies directly; run it once from <code>k</code> and take the largest finalised distance.</p>
+                <p>The unreachable case falls out naturally: if any distance is still infinite when the queue drains,
+                    that node has no route from <code>k</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — network delay time">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import heapq
+from collections import defaultdict
+
+def network_delay_time(times, n, k):
+    """O((V + E) log V). times = [(from, to, weight)], nodes are 1..n."""
+    graph = defaultdict(list)
+    for u, v, w in times:
+        graph[u].append((v, w))         # DIRECTED - only one direction
+
+    dist = {}
+    pq = [(0, k)]                       # (distance so far, node)
+
+    while pq:
+        d, node = heapq.heappop(pq)
+        if node in dist:
+            continue                    # stale entry; already finalised
+        dist[node] = d
+        for neighbour, w in graph[node]:
+            if neighbour not in dist:
+                heapq.heappush(pq, (d + w, neighbour))
+
+    # Every node must have been reached, and the slowest one is the answer.
+    return max(dist.values()) if len(dist) == n else -1
+
+
+print(network_delay_time([(2, 1, 1), (2, 3, 1), (3, 4, 1)], 4, 2))   # 2
+print(network_delay_time([(1, 2, 1)], 2, 2))                         # -1
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+// Uses the Heap class from section 19.
+function networkDelayTime(times, n, k) {    // O((V + E) log V)
+  const graph = new Map();
+  for (const [u, v, w] of times) {          // DIRECTED edges
+    if (!graph.has(u)) graph.set(u, []);
+    graph.get(u).push([v, w]);
+  }
+
+  const dist = new Map();
+  const pq = new Heap((a, b) =&gt; a[0] - b[0]);
+  pq.push([0, k]);
+
+  while (pq.size) {
+    const [d, node] = pq.pop();
+    if (dist.has(node)) continue;           // stale entry
+    dist.set(node, d);
+    for (const [neighbour, w] of graph.get(node) ?? []) {
+      if (!dist.has(neighbour)) pq.push([d + w, neighbour]);
+    }
+  }
+
+  // All nodes reached? Then the slowest arrival is the answer.
+  return dist.size === n ? Math.max(...dist.values()) : -1;
+}
+
+console.log(networkDelayTime([[2,1,1],[2,3,1],[3,4,1]], 4, 2));   // 2
+console.log(networkDelayTime([[1,2,1]], 2, 2));                   // -1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 26 -->
             <h2 id="26-minimum-spanning-trees">26. Minimum Spanning Trees<a class="headerlink"
                     href="#26-minimum-spanning-trees" title="Permanent link">#</a></h2>
@@ -5218,6 +5649,80 @@ function prim(graph, start) {           // O(E log V), uses Heap from §19
 console.log(kruskal(4, [[4, 0, 1], [2, 0, 2], [1, 1, 2], [5, 1, 3], [8, 2, 3]]));
 // { mst: [[1,2,1],[0,2,2],[1,3,5]], total: 8 }
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Given points on a plane, the cost of connecting two of them is their Manhattan
+                    distance <code>|x1-x2| + |y1-y2|</code>. Find the minimum total cost to connect all points so that
+                    there is exactly one path between any two.</p>
+                <p>"Connect everything for the least total cost, exactly one path between any pair" is the definition
+                    of a minimum spanning tree. The only twist is that no edge list is given — every pair is implicitly
+                    an edge, so you generate all <code>n(n-1)/2</code> of them and run Kruskal.</p>
+                <p>Note this is <em>not</em> a shortest-path problem. The MST minimises the total wiring, not the
+                    distance between any particular pair — the route between two points in the result may well be a
+                    detour.</p>
+
+                <div class="code-tabs" data-label="Answer — minimum cost to connect all points">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def min_cost_connect(points):
+    """O(n^2 log n) - dominated by sorting the n^2 candidate edges."""
+    n = len(points)
+    edges = []
+    for i in range(n):
+        for j in range(i + 1, n):       # every pair is a candidate edge
+            x1, y1 = points[i]
+            x2, y2 = points[j]
+            edges.append((abs(x1 - x2) + abs(y1 - y2), i, j))
+
+    edges.sort()                        # cheapest first - Kruskal
+    uf = UnionFind(n)
+    total = used = 0
+
+    for weight, u, v in edges:
+        if uf.union(u, v):              # False means it would form a cycle
+            total += weight
+            used += 1
+            if used == n - 1:           # a spanning tree has exactly n-1 edges
+                break
+    return total
+
+
+print(min_cost_connect([(0, 0), (2, 2), (3, 10), (5, 2), (7, 0)]))   # 20
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function minCostConnect(points) {       // O(n^2 log n), uses UnionFind
+  const n = points.length;
+  const edges = [];
+  for (let i = 0; i &lt; n; i++) {
+    for (let j = i + 1; j &lt; n; j++) {   // every pair is a candidate edge
+      const [x1, y1] = points[i];
+      const [x2, y2] = points[j];
+      edges.push([Math.abs(x1 - x2) + Math.abs(y1 - y2), i, j]);
+    }
+  }
+
+  edges.sort((a, b) =&gt; a[0] - b[0]);    // cheapest first - Kruskal
+  const uf = new UnionFind(n);
+  let total = 0;
+  let used = 0;
+
+  for (const [weight, u, v] of edges) {
+    if (uf.union(u, v)) {               // false = would create a cycle
+      total += weight;
+      if (++used === n - 1) break;      // spanning tree has n-1 edges
+    }
+  }
+  return total;
+}
+
+console.log(minCostConnect([[0,0],[2,2],[3,10],[5,2],[7,0]]));   // 20
+</code></pre>
+                    </div>
                 </div>
             </div>
 
@@ -5526,7 +6031,7 @@ console.log(countInversions([2, 4, 1, 3, 5]));      // 3
                 backtrack(state) # 2. explore
                 state.pop() # 3. un-choose (the "backtrack")</div>
 
-            <div class="code-tabs" data-label="Subsets, permutations, and N-Queens">
+            <div class="code-tabs" data-label="Subsets — take it or skip it">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def subsets(nums):
@@ -5546,6 +6051,39 @@ def subsets(nums):
     return out
 
 
+print(len(subsets([1, 2, 3])))      # 8
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function subsets(nums) {                // 2^n subsets
+  const out = [];
+  const path = [];
+  const go = (i) =&gt; {
+    if (i === nums.length) {
+      out.push([...path]);              // copy: path keeps mutating
+      return;
+    }
+    go(i + 1);                          // skip
+    path.push(nums[i]);                 // choose
+    go(i + 1);                          // explore
+    path.pop();                         // un-choose
+  };
+  go(0);
+  return out;
+}
+
+console.log(subsets([1, 2, 3]).length); // 8
+</code></pre>
+                </div>
+            </div>
+
+            <p>Permutations use the same skeleton but a different move: instead of taking or skipping, swap each
+                remaining candidate into the current slot. Swapping in place avoids building a "used" set.</p>
+
+            <div class="code-tabs" data-label="Permutations — swap into place">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def permutations(nums):
     """All n! orderings, swapping in place."""
     out = []
@@ -5563,6 +6101,41 @@ def permutations(nums):
     return out
 
 
+print(len(permutations([1, 2, 3]))) # 6
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function permutations(nums) {           // n! orderings
+  const out = [];
+  const swap = (a, b) =&gt; { [nums[a], nums[b]] = [nums[b], nums[a]]; };
+  const go = (start) =&gt; {
+    if (start === nums.length) {
+      out.push([...nums]);
+      return;
+    }
+    for (let i = start; i &lt; nums.length; i++) {
+      swap(start, i);                   // choose
+      go(start + 1);                    // explore
+      swap(start, i);                   // un-choose
+    }
+  };
+  go(0);
+  return out;
+}
+
+console.log(permutations([1, 2, 3]).length);  // 6
+</code></pre>
+                </div>
+            </div>
+
+            <p>Combinations introduce the idea that makes backtracking usable at all: <strong>pruning</strong>. If
+                there are not enough numbers left to ever reach length <code>k</code>, the loop stops rather than
+                exploring a branch that cannot succeed.</p>
+
+            <div class="code-tabs" data-label="Combinations — with pruning">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def combinations(n, k):
     """C(n, k) combinations, with pruning."""
     out, path = [], []
@@ -5581,6 +6154,43 @@ def combinations(n, k):
     return out
 
 
+print(len(combinations(5, 3)))      # 10
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function combinations(n, k) {           // C(n, k), with pruning
+  const out = [];
+  const path = [];
+  const go = (start) =&gt; {
+    if (path.length === k) {
+      out.push([...path]);
+      return;
+    }
+    // PRUNE: stop when too few numbers remain to reach length k.
+    for (let value = start; value &lt;= n - (k - path.length) + 1; value++) {
+      path.push(value);
+      go(value + 1);
+      path.pop();
+    }
+  };
+  go(1);
+  return out;
+}
+
+console.log(combinations(5, 3).length);  // 10
+</code></pre>
+                </div>
+            </div>
+
+            <p>N-Queens shows pruning doing real work. The three sets make each conflict check <code>O(1)</code>, using
+                the fact that cells on a <code>\</code> diagonal share <code>row - col</code> and cells on a
+                <code>/</code> diagonal share <code>row + col</code>.
+            </p>
+
+            <div class="code-tabs" data-label="N-Queens — pruning with constant-time conflict checks">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def solve_n_queens(n):
     """Count placements of n queens on n x n with no mutual attacks."""
     cols, diag, anti = set(), set(), set()
@@ -5604,48 +6214,11 @@ def solve_n_queens(n):
     return count
 
 
-print(len(subsets([1, 2, 3])))      # 8
-print(len(permutations([1, 2, 3]))) # 6
 print(solve_n_queens(8))            # 92
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function subsets(nums) {                // 2^n subsets
-  const out = [];
-  const path = [];
-  const go = (i) =&gt; {
-    if (i === nums.length) {
-      out.push([...path]);              // copy: path keeps mutating
-      return;
-    }
-    go(i + 1);                          // skip
-    path.push(nums[i]);                 // choose
-    go(i + 1);                          // explore
-    path.pop();                         // un-choose
-  };
-  go(0);
-  return out;
-}
-
-function permutations(nums) {           // n! orderings
-  const out = [];
-  const swap = (a, b) =&gt; { [nums[a], nums[b]] = [nums[b], nums[a]]; };
-  const go = (start) =&gt; {
-    if (start === nums.length) {
-      out.push([...nums]);
-      return;
-    }
-    for (let i = start; i &lt; nums.length; i++) {
-      swap(start, i);                   // choose
-      go(start + 1);                    // explore
-      swap(start, i);                   // un-choose
-    }
-  };
-  go(0);
-  return out;
-}
-
 function solveNQueens(n) {
   const cols = new Set();
   const diag = new Set();               // row - col
@@ -5668,8 +6241,6 @@ function solveNQueens(n) {
   return count;
 }
 
-console.log(subsets([1, 2, 3]).length);       // 8
-console.log(permutations([1, 2, 3]).length);  // 6
 console.log(solveNQueens(8));                 // 92
 </code></pre>
                 </div>
