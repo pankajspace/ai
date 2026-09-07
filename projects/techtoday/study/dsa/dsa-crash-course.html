@@ -244,7 +244,7 @@ const wrong = new Array(3).fill(new Array(4).fill(0));              // one row
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Move every zero in an array to the end, keeping the order of the other numbers, and
                     do it in place. <code>[0, 3, 0, 5, 9, 0, 2]</code> becomes <code>[3, 5, 9, 2, 0, 0, 0]</code>.</p>
                 <p>Building a new array is easy but not "in place". Instead use <strong>two pointers</strong>: one
@@ -576,6 +576,89 @@ class Queue {
 
             <div class="viz" data-viz="heap"></div>
 
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Implement a FIFO queue using only two stacks. You may only use push, pop, peek and
+                    "is empty".</p>
+                <p>A stack reverses order and a queue preserves it — so reversing <em>twice</em> gets you back to the
+                    original order. Push everything onto an <code>in</code> stack. When you need to remove something,
+                    tip the whole <code>in</code> stack into an <code>out</code> stack; that flip puts the oldest item
+                    on top.</p>
+                <p>The trick is to refill <code>out</code> <strong>only when it is empty</strong>. Each element is
+                    moved between stacks at most once, so although a single <code>dequeue</code> may cost
+                    <code>O(n)</code>, the average over many calls is <code>O(1)</code> — amortised, exactly like the
+                    array doubling from earlier.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — queue from two stacks">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class QueueFromStacks:
+    def __init__(self):
+        self.inbox = []             # newest items land here
+        self.outbox = []            # reversed, so the oldest is on top
+
+    def enqueue(self, x):
+        self.inbox.append(x)        # always O(1)
+
+    def _shift(self):
+        # ONLY refill when outbox is empty, or the order breaks.
+        if not self.outbox:
+            while self.inbox:
+                self.outbox.append(self.inbox.pop())   # reverse into outbox
+
+    def dequeue(self):
+        self._shift()
+        return self.outbox.pop() if self.outbox else None
+
+    def peek(self):
+        self._shift()
+        return self.outbox[-1] if self.outbox else None
+
+
+q = QueueFromStacks()
+q.enqueue(1); q.enqueue(2); q.enqueue(3)
+print(q.dequeue(), q.dequeue(), q.dequeue())    # 1 2 3  - FIFO preserved
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class QueueFromStacks {
+  constructor() {
+    this.inbox = [];                // newest items land here
+    this.outbox = [];               // reversed, so the oldest is on top
+  }
+
+  enqueue(x) {
+    this.inbox.push(x);             // always O(1)
+  }
+
+  #shift() {
+    // ONLY refill when outbox is empty, or the ordering breaks.
+    if (this.outbox.length === 0) {
+      while (this.inbox.length) this.outbox.push(this.inbox.pop());
+    }
+  }
+
+  dequeue() {
+    this.#shift();
+    return this.outbox.pop();
+  }
+
+  peek() {
+    this.#shift();
+    return this.outbox.at(-1);
+  }
+}
+
+const q = new QueueFromStacks();
+q.enqueue(1); q.enqueue(2); q.enqueue(3);
+console.log(q.dequeue(), q.dequeue(), q.dequeue());   // 1 2 3
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <hr />
 
             <h2 id="unit-2">Unit 2 — High-Speed &amp; Relational Structures<a class="headerlink" href="#unit-2"
@@ -773,7 +856,7 @@ console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
             <div class="viz" data-viz="trie"></div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Find the maximum depth of a binary tree — the number of nodes on the longest path
                     from the root down to a leaf.</p>
                 <p>This is the tree pattern in its purest form, and it is worth memorising because almost every tree
@@ -912,7 +995,7 @@ const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];   // grid neighbours
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Given a grid of <code>"1"</code> (land) and <code>"0"</code> (water), count the
                     islands. An island is land connected horizontally or vertically.</p>
                 <p>The insight that unlocks a whole family of problems: <strong>a grid is a graph</strong>. Every cell
@@ -1057,6 +1140,74 @@ console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A sorted array was rotated at some unknown pivot — for example
+                    <code>[4, 5, 6, 7, 0, 1, 2]</code>. Find a target in <code>O(log n)</code>.
+                </p>
+                <p>The array is no longer fully sorted, so plain binary search breaks. But here is the key observation:
+                    however you cut it at <code>mid</code>, <strong>at least one half is still properly sorted</strong>.
+                </p>
+                <p>So work out which half is the clean one by comparing <code>nums[lo]</code> with
+                    <code>nums[mid]</code>. If the target lies inside that sorted half's range, search there; otherwise
+                    it must be in the messy half. You still halve the range every step, so it stays logarithmic.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — search a rotated sorted array">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def search_rotated(nums, target):
+    """O(log n). One half of any split is always properly sorted."""
+    lo, hi = 0, len(nums) - 1
+    while lo &lt;= hi:
+        mid = lo + (hi - lo) // 2
+        if nums[mid] == target:
+            return mid
+
+        if nums[lo] &lt;= nums[mid]:               # LEFT half is sorted
+            if nums[lo] &lt;= target &lt; nums[mid]:
+                hi = mid - 1                    # target is inside it
+            else:
+                lo = mid + 1                    # must be in the messy half
+        else:                                   # RIGHT half is sorted
+            if nums[mid] &lt; target &lt;= nums[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+    return -1
+
+
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 0))     # 4
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 3))     # -1
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function searchRotated(nums, target) {  // O(log n)
+  let lo = 0;
+  let hi = nums.length - 1;
+  while (lo &lt;= hi) {
+    const mid = lo + ((hi - lo) &gt;&gt; 1);
+    if (nums[mid] === target) return mid;
+
+    if (nums[lo] &lt;= nums[mid]) {        // LEFT half is sorted
+      if (nums[lo] &lt;= target &amp;&amp; target &lt; nums[mid]) hi = mid - 1;
+      else lo = mid + 1;                // must be in the messy half
+    } else {                            // RIGHT half is sorted
+      if (nums[mid] &lt; target &amp;&amp; target &lt;= nums[hi]) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return -1;
+}
+
+console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 0));   // 4
+console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 3));   // -1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 9 -->
             <h3 id="9-sorting">Sorting<a class="headerlink" href="#9-sorting" title="Permanent link">#</a></h3>
 
@@ -1179,6 +1330,74 @@ function quicksort(nums) {              // average O(n log n)
 
 console.log(quicksort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Sort an array containing only the values <code>0</code>, <code>1</code> and
+                    <code>2</code> in a single pass, in place. This is the "Dutch national flag" problem.
+                </p>
+                <p>Calling <code>sort()</code> works but wastes the biggest clue in the question: there are only
+                    <strong>three</strong> distinct values. That extra information beats the <code>n log n</code>
+                    comparison barrier.
+                </p>
+                <p>Keep three pointers. Everything before <code>low</code> is a 0, everything after <code>high</code>
+                    is a 2, and <code>i</code> scans the unknown middle. Note the asymmetry: after swapping with
+                    <code>high</code> you must <em>not</em> advance <code>i</code>, because the value you just pulled in
+                    from the right has never been examined.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — sort colors in one pass">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def sort_colors(nums):
+    """O(n) time, O(1) space, single pass. Values must be 0, 1 or 2."""
+    low, i, high = 0, 0, len(nums) - 1
+
+    while i &lt;= high:
+        if nums[i] == 0:
+            nums[low], nums[i] = nums[i], nums[low]
+            low += 1
+            i += 1              # the swapped-in value was already checked
+        elif nums[i] == 2:
+            nums[i], nums[high] = nums[high], nums[i]
+            high -= 1           # do NOT advance i - that value is unseen
+        else:                   # nums[i] == 1, already in the middle band
+            i += 1
+
+
+data = [2, 0, 2, 1, 1, 0]
+sort_colors(data)
+print(data)                     # [0, 0, 1, 1, 2, 2]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function sortColors(nums) {     // O(n) time, O(1) space, single pass
+  let low = 0;
+  let i = 0;
+  let high = nums.length - 1;
+
+  while (i &lt;= high) {
+    if (nums[i] === 0) {
+      [nums[low], nums[i]] = [nums[i], nums[low]];
+      low++;
+      i++;                      // swapped-in value was already checked
+    } else if (nums[i] === 2) {
+      [nums[i], nums[high]] = [nums[high], nums[i]];
+      high--;                   // do NOT advance i - that value is unseen
+    } else {
+      i++;                      // a 1 is already in the middle band
+    }
+  }
+}
+
+const data = [2, 0, 2, 1, 1, 0];
+sortColors(data);
+console.log(data);              // [0, 0, 1, 1, 2, 2]
+</code></pre>
+                    </div>
                 </div>
             </div>
 

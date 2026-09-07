@@ -3653,14 +3653,15 @@ console.log([...tree.inOrder()]);       // [1,3,4,6,7,8,10,13,14]
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Given a binary tree, decide whether it is a valid binary search tree.</p>
                 <p>The tempting answer — check that each node sits between its own two children — is
                     <strong>wrong</strong>.
                     The BST rule is not local: <em>every</em> value in the left subtree must be smaller, not just the
                     immediate child. A tree like <code>[10, 5, 15, null, null, 6, 20]</code> passes the naive check but
                     is invalid, because <code>6</code> sits in <code>10</code>'s right subtree while being smaller
-                    than <code>10</code>.</p>
+                    than <code>10</code>.
+                </p>
                 <p>The fix is to carry the permitted range down as you descend. Each step narrows one side of the
                     window, so a node is valid only if it falls inside the interval it inherited.</p>
 
@@ -3949,6 +3950,61 @@ console.log(root.value, root.height);   // 20 3
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Convert a sorted array into a height-balanced binary search tree.</p>
+                <p>Inserting the sorted values one by one is exactly the disaster described above — you get a
+                    right-leaning chain of height <code>n</code>. Balance has to be built in from the start.</p>
+                <p>Since the array is already sorted, its <strong>middle element</strong> is the median, so making it
+                    the root splits the remaining values evenly in two. Recurse on each half and the halving guarantees
+                    a height of <code>⌈log n⌉</code> — no rotations required, because you never create the imbalance in
+                    the first place.</p>
+
+                <div class="code-tabs" data-label="Answer — sorted array to a balanced BST">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def sorted_array_to_bst(nums):
+    """O(n) time, O(log n) stack. Height is guaranteed to be ceil(log n)."""
+    def build(lo, hi):
+        if lo &gt; hi:
+            return None
+        mid = lo + (hi - lo) // 2       # median -&gt; splits the rest evenly
+        node = TreeNode(nums[mid])
+        node.left = build(lo, mid - 1)
+        node.right = build(mid + 1, hi)
+        return node
+
+    return build(0, len(nums) - 1)
+
+
+tree = sorted_array_to_bst([1, 2, 3, 4, 5, 6, 7])
+print(tree.value)       # 4 - the median becomes the root
+# Naive sequential insertion of the same data gives a chain of height 7;
+# this gives height 3.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function sortedArrayToBST(nums) {   // O(n) time, O(log n) stack
+  const build = (lo, hi) =&gt; {
+    if (lo &gt; hi) return null;
+    const mid = lo + ((hi - lo) &gt;&gt; 1);   // median splits the rest evenly
+    return {
+      value: nums[mid],
+      left: build(lo, mid - 1),
+      right: build(mid + 1, hi),
+    };
+  };
+  return build(0, nums.length - 1);
+}
+
+const tree = sortedArrayToBST([1, 2, 3, 4, 5, 6, 7]);
+console.log(tree.value);            // 4 - the median becomes the root
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <!-- ============================================================ 19 -->
             <h2 id="19-heaps-and-priority-queues">19. Heaps &amp; Priority Queues<a class="headerlink"
                     href="#19-heaps-and-priority-queues" title="Permanent link">#</a></h2>
@@ -4104,6 +4160,73 @@ console.log(topK([7, 2, 9, 4, 1, 8], 3));       // [9, 8, 7]
                 <code>O(n log n)</code>, so always <code>heapify</code> an existing array rather than looping over
                 pushes.
             </p>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Merge <code>k</code> sorted linked lists into one sorted list.</p>
+                <p>Concatenating everything and sorting is <code>O(N log N)</code> over all <code>N</code> elements and
+                    throws away the fact that each list is <em>already</em> sorted. The smallest unused value can only
+                    ever be at the head of one of the <code>k</code> lists — so you only ever need the minimum of
+                    <code>k</code> candidates, which is exactly what a heap gives you.
+                </p>
+                <p>Hold one entry per list in a min-heap. Pop the smallest, append it, then push that list's next node.
+                    The heap never exceeds <code>k</code> items, giving <code>O(N log k)</code> — a real improvement
+                    when <code>k</code> is much smaller than <code>N</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — merge k sorted lists in O(N log k)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import heapq
+
+def merge_k_lists(lists):
+    """lists = [head, head, ...]. O(N log k) time, O(k) space."""
+    heap = []
+    # Seed with the head of each list. The counter breaks ties so Python
+    # never tries to compare two Node objects.
+    for i, head in enumerate(lists):
+        if head:
+            heapq.heappush(heap, (head.value, i, head))
+
+    dummy = Node(None)          # dummy head removes the "is it first?" case
+    tail = dummy
+
+    while heap:
+        _, i, node = heapq.heappop(heap)    # smallest head across all lists
+        tail.next = node
+        tail = node
+        if node.next:                       # refill from the same list
+            heapq.heappush(heap, (node.next.value, i, node.next))
+
+    return dummy.next
+
+
+# Three sorted lists -> one sorted list, touching each node once.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+// Uses the Heap class from earlier in this section.
+function mergeKLists(lists) {           // O(N log k) time, O(k) space
+  const heap = new Heap((a, b) =&gt; a.value - b.value);
+  for (const head of lists) if (head) heap.push(head);
+
+  const dummy = { value: null, next: null };   // removes the "first?" case
+  let tail = dummy;
+
+  while (heap.size) {
+    const node = heap.pop();            // smallest head across all lists
+    tail.next = node;
+    tail = node;
+    if (node.next) heap.push(node.next);       // refill from the same list
+  }
+
+  tail.next = null;
+  return dummy.next;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
 
             <div class="callout callout-interview">
                 <p><strong>Recognition signal:</strong> "top <code>k</code>", "<code>k</code>-th largest", "median of a
@@ -4279,7 +4402,7 @@ console.log(trie.autocomplete("car"));  // ['car','card','care']
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Given a dictionary of roots and a sentence, replace every word that has a root as
                     its prefix with the <em>shortest</em> such root. For roots <code>["cat", "bat", "rat"]</code> and
                     the sentence <code>"the cattle was rattled by the battery"</code>, the answer is
@@ -4473,7 +4596,7 @@ console.log(uf.connected(0, 3), uf.count);   // true 4
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">You are given an <code>n × n</code> matrix where <code>grid[i][j] = 1</code> means
                     city <code>i</code> and city <code>j</code> are directly connected. A province is a group of cities
                     connected directly or indirectly. How many provinces are there?</p>
@@ -4696,6 +4819,63 @@ function* gridNeighbours(grid, r, c) {
   }
 }
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Given a reference to a node in a connected undirected graph, return a deep copy of
+                    the whole graph. Every node holds a value and a list of neighbours.</p>
+                <p>The difficulty is not the traversal — it is the <strong>cycles</strong>. Copying naively recurses
+                    forever, because <code>A</code>'s neighbour is <code>B</code> and <code>B</code>'s neighbour is
+                    <code>A</code>.
+                </p>
+                <p>The fix is a map from <em>original node</em> to <em>its copy</em>. It does double duty: it is the
+                    visited set that stops the recursion, and it is how you find the already-made copy to wire up as a
+                    neighbour. Create the copy and record it in the map <strong>before</strong> recursing, or you loop.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — clone an undirected graph">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def clone_graph(node):
+    """O(V + E). The map is both the visited set and the original -&gt; copy index."""
+    if node is None:
+        return None
+    copies = {}                     # original node -&gt; its clone
+
+    def dfs(original):
+        if original in copies:
+            return copies[original]         # already cloned - stops cycles
+        clone = Node(original.value)
+        copies[original] = clone            # record BEFORE recursing
+        for neighbour in original.neighbours:
+            clone.neighbours.append(dfs(neighbour))
+        return clone
+
+    return dfs(node)
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function cloneGraph(node) {         // O(V + E)
+  if (!node) return null;
+  const copies = new Map();         // original node -&gt; its clone
+
+  const dfs = (original) =&gt; {
+    if (copies.has(original)) return copies.get(original);   // stops cycles
+    const clone = { value: original.value, neighbours: [] };
+    copies.set(original, clone);    // record BEFORE recursing
+    for (const neighbour of original.neighbours) {
+      clone.neighbours.push(dfs(neighbour));
+    }
+    return clone;
+  };
+
+  return dfs(node);
+}
+</code></pre>
+                    </div>
                 </div>
             </div>
 
@@ -5128,7 +5308,7 @@ console.log(topoSortKahn(2, [[0, 1], [1, 0]]));                  // null
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">There are <code>n</code> courses labelled <code>0…n-1</code> and a list of pairs
                     <code>[a, b]</code> meaning "you must take <code>b</code> before <code>a</code>". Return any valid
                     order in which to take all the courses, or an empty list if it is impossible.
@@ -5453,7 +5633,7 @@ function floydWarshall(matrix) {        // O(V^3) all pairs
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">A network has <code>n</code> nodes labelled <code>1…n</code>. Given travel times
                     as directed edges <code>[from, to, time]</code>, a signal is sent from node <code>k</code>. How long
                     until <em>every</em> node receives it, or <code>-1</code> if some node never does?</p>
@@ -5653,7 +5833,7 @@ console.log(kruskal(4, [[4, 0, 1], [2, 0, 2], [1, 1, 2], [5, 1, 3], [8, 2, 3]]))
             </div>
 
             <div class="worked">
-                <b>Worked example</b>
+                <b>Interview question</b>
                 <p class="worked-q">Given points on a plane, the cost of connecting two of them is their Manhattan
                     distance <code>|x1-x2| + |y1-y2|</code>. Find the minimum total cost to connect all points so that
                     there is exactly one path between any two.</p>
@@ -6309,7 +6489,7 @@ console.log(solveNQueens(8));                 // 92
             <h3 id="one-dimensional-dp">One-dimensional DP<a class="headerlink" href="#one-dimensional-dp"
                     title="Permanent link">#</a></h3>
 
-            <div class="code-tabs" data-label="Climbing stairs, house robber, coin change, LIS">
+            <div class="code-tabs" data-label="Climbing stairs — Fibonacci in disguise">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def climb_stairs(n):
@@ -6320,6 +6500,28 @@ def climb_stairs(n):
     return b
 
 
+print(climb_stairs(10))                                     # 89
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function climbStairs(n) {               // O(n) time, O(1) space
+  let [a, b] = [1, 1];
+  for (let i = 1; i &lt; n; i++) [a, b] = [b, a + b];
+  return b;
+}
+
+console.log(climbStairs(10));                  // 89
+</code></pre>
+                </div>
+            </div>
+
+            <p>House robber adds a constraint to the same linear shape: you may not take two adjacent items. That turns
+                one running value into two — the best if you take the current house, and the best if you skip it.</p>
+
+            <div class="code-tabs" data-label="House robber — no two adjacent">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def rob(houses):
     """dp[i] = most money from the first i houses, no two adjacent."""
     take, skip = 0, 0
@@ -6329,6 +6531,31 @@ def rob(houses):
     return max(take, skip)          # O(n) time, O(1) space
 
 
+print(rob([2, 7, 9, 3, 1]))                                 # 12
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function rob(houses) {                  // no two adjacent, O(n)/O(1)
+  let take = 0;
+  let skip = 0;
+  for (const money of houses) {
+    [take, skip] = [skip + money, Math.max(skip, take)];
+  }
+  return Math.max(take, skip);
+}
+
+console.log(rob([2, 7, 9, 3, 1]));             // 12
+</code></pre>
+                </div>
+            </div>
+
+            <p>Coin change needs a real table rather than two variables, because the answer for an amount can depend on
+                any smaller amount, not just the previous one or two.</p>
+
+            <div class="code-tabs" data-label="Coin change — fewest coins">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def coin_change(coins, amount):
     """Fewest coins summing to amount, or -1. O(amount * len(coins))."""
     INF = float("inf")
@@ -6340,6 +6567,35 @@ def coin_change(coins, amount):
     return -1 if dp[amount] == INF else dp[amount]
 
 
+print(coin_change([1, 5, 10, 25], 30))                      # 2
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function coinChange(coins, amount) {    // O(amount * coins)
+  const dp = new Array(amount + 1).fill(Infinity);
+  dp[0] = 0;
+  for (let x = 1; x &lt;= amount; x++) {
+    for (const coin of coins) {
+      if (coin &lt;= x) dp[x] = Math.min(dp[x], dp[x - coin] + 1);
+    }
+  }
+  return dp[amount] === Infinity ? -1 : dp[amount];
+}
+
+console.log(coinChange([1, 5, 10, 25], 30));   // 2
+</code></pre>
+                </div>
+            </div>
+
+            <p>Longest increasing subsequence has an obvious <code>O(n²)</code> DP, but the version below is the one
+                worth knowing: it keeps an array of smallest possible tails and binary searches it, giving
+                <code>O(n log n)</code>.
+            </p>
+
+            <div class="code-tabs" data-label="Longest increasing subsequence — patience sorting">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def longest_increasing_subsequence(nums):
     """O(n log n) with patience sorting: tails[k] = smallest possible tail
     of an increasing subsequence of length k + 1."""
@@ -6354,40 +6610,11 @@ def longest_increasing_subsequence(nums):
     return len(tails)               # NOTE: length only, not the sequence
 
 
-print(climb_stairs(10))                                     # 89
-print(rob([2, 7, 9, 3, 1]))                                 # 12
-print(coin_change([1, 5, 10, 25], 30))                      # 2
 print(longest_increasing_subsequence([10, 9, 2, 5, 3, 7]))  # 3
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function climbStairs(n) {               // O(n) time, O(1) space
-  let [a, b] = [1, 1];
-  for (let i = 1; i &lt; n; i++) [a, b] = [b, a + b];
-  return b;
-}
-
-function rob(houses) {                  // no two adjacent, O(n)/O(1)
-  let take = 0;
-  let skip = 0;
-  for (const money of houses) {
-    [take, skip] = [skip + money, Math.max(skip, take)];
-  }
-  return Math.max(take, skip);
-}
-
-function coinChange(coins, amount) {    // O(amount * coins)
-  const dp = new Array(amount + 1).fill(Infinity);
-  dp[0] = 0;
-  for (let x = 1; x &lt;= amount; x++) {
-    for (const coin of coins) {
-      if (coin &lt;= x) dp[x] = Math.min(dp[x], dp[x - coin] + 1);
-    }
-  }
-  return dp[amount] === Infinity ? -1 : dp[amount];
-}
-
 function lis(nums) {                    // O(n log n) patience sorting
   const tails = [];                     // tails[k] = smallest tail of length k+1
   for (const x of nums) {
@@ -6403,9 +6630,6 @@ function lis(nums) {                    // O(n log n) patience sorting
   return tails.length;
 }
 
-console.log(climbStairs(10));                  // 89
-console.log(rob([2, 7, 9, 3, 1]));             // 12
-console.log(coinChange([1, 5, 10, 25], 30));   // 2
 console.log(lis([10, 9, 2, 5, 3, 7]));         // 3
 </code></pre>
                 </div>
@@ -6420,7 +6644,7 @@ console.log(lis([10, 9, 2, 5, 3, 7]));         // 3
 
             <div class="viz" data-viz="knapsack"></div>
 
-            <div class="code-tabs" data-label="LCS, edit distance, knapsack">
+            <div class="code-tabs" data-label="Longest common subsequence">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def lcs_length(a, b):
@@ -6439,6 +6663,36 @@ def lcs_length(a, b):
     return prev[-1]
 
 
+print(lcs_length("ABCBDAB", "BDCABA"))                  # 4
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function lcsLength(a, b) {              // O(n*m) time, O(m) space
+  let prev = new Array(b.length + 1).fill(0);
+  for (const chA of a) {
+    const cur = new Array(b.length + 1).fill(0);
+    for (let j = 1; j &lt;= b.length; j++) {
+      if (chA === b[j - 1]) cur[j] = prev[j - 1] + 1;       // pair up
+      else cur[j] = Math.max(prev[j], cur[j - 1]);          // drop one
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+console.log(lcsLength("ABCBDAB", "BDCABA"));               // 4
+</code></pre>
+                </div>
+            </div>
+
+            <p>Edit distance uses the same two-string grid but three choices instead of two, one per allowed edit.
+                Matching characters cost nothing and move diagonally; otherwise you pay 1 and take the cheapest of
+                delete, insert or replace.</p>
+
+            <div class="code-tabs" data-label="Edit distance (Levenshtein)">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def edit_distance(a, b):
     """Levenshtein: fewest insert/delete/replace to turn a into b. O(n*m)."""
     n, m = len(a), len(b)
@@ -6462,37 +6716,11 @@ def edit_distance(a, b):
     return dp[n][m]
 
 
-def knapsack(weights, values, capacity):
-    """0/1 knapsack, space-optimised to one row. O(n*W) time, O(W) space."""
-    dp = [0] * (capacity + 1)
-    for w, v in zip(weights, values):
-        # Iterate capacity DOWNWARDS so each item is used at most once.
-        # Going upwards would let an item be reused -&gt; unbounded knapsack.
-        for c in range(capacity, w - 1, -1):
-            dp[c] = max(dp[c], dp[c - w] + v)
-    return dp[capacity]
-
-
-print(lcs_length("ABCBDAB", "BDCABA"))                  # 4
 print(edit_distance("kitten", "sitting"))               # 3
-print(knapsack([1, 3, 4, 2], [15, 20, 30, 18], 6))      # 63
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function lcsLength(a, b) {              // O(n*m) time, O(m) space
-  let prev = new Array(b.length + 1).fill(0);
-  for (const chA of a) {
-    const cur = new Array(b.length + 1).fill(0);
-    for (let j = 1; j &lt;= b.length; j++) {
-      if (chA === b[j - 1]) cur[j] = prev[j - 1] + 1;       // pair up
-      else cur[j] = Math.max(prev[j], cur[j - 1]);          // drop one
-    }
-    prev = cur;
-  }
-  return prev[b.length];
-}
-
 function editDistance(a, b) {           // Levenshtein, O(n*m)
   const n = a.length;
   const m = b.length;
@@ -6510,6 +6738,35 @@ function editDistance(a, b) {           // Levenshtein, O(n*m)
   return dp[n][m];
 }
 
+console.log(editDistance("kitten", "sitting"));            // 3
+</code></pre>
+                </div>
+            </div>
+
+            <p>Knapsack shows the space optimisation that applies to most 2-D DP: since each row only ever reads the
+                row above, one array suffices. The direction of the inner loop is the whole trick — iterate capacity
+                <strong>downwards</strong> or an item can be picked twice.
+            </p>
+
+            <div class="code-tabs" data-label="0/1 knapsack, space-optimised">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def knapsack(weights, values, capacity):
+    """0/1 knapsack, space-optimised to one row. O(n*W) time, O(W) space."""
+    dp = [0] * (capacity + 1)
+    for w, v in zip(weights, values):
+        # Iterate capacity DOWNWARDS so each item is used at most once.
+        # Going upwards would let an item be reused -&gt; unbounded knapsack.
+        for c in range(capacity, w - 1, -1):
+            dp[c] = max(dp[c], dp[c - w] + v)
+    return dp[capacity]
+
+
+print(knapsack([1, 3, 4, 2], [15, 20, 30, 18], 6))      # 63
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function knapsack(weights, values, capacity) {  // O(n*W) time, O(W) space
   const dp = new Array(capacity + 1).fill(0);
   for (let i = 0; i &lt; weights.length; i++) {
@@ -6521,8 +6778,6 @@ function knapsack(weights, values, capacity) {  // O(n*W) time, O(W) space
   return dp[capacity];
 }
 
-console.log(lcsLength("ABCBDAB", "BDCABA"));               // 4
-console.log(editDistance("kitten", "sitting"));            // 3
 console.log(knapsack([1, 3, 4, 2], [15, 20, 30, 18], 6));  // 63
 </code></pre>
                 </div>
@@ -6680,6 +6935,57 @@ console.log([...allSubsets(["a", "b"])]);     // [[], ['a'], ['b'], ['a','b']]
                     <code>&gt;&gt;&gt;</code> for unsigned right shift, and <code>BigInt</code> beyond 32 bits. Python
                     integers are arbitrary precision and negative numbers behave as if they had infinite leading 1s.
                 </p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">For every number from <code>0</code> to <code>n</code>, count how many
+                    <code>1</code> bits it has. Return the counts as an array, and do it in <code>O(n)</code> total.
+                </p>
+                <p>Calling a popcount on each number independently is <code>O(n log n)</code>. The linear solution is a
+                    small piece of dynamic programming over bits: every number <code>i</code> is some previously-seen
+                    number with one bit removed.</p>
+                <p>Specifically <code>i &amp; (i - 1)</code> clears the lowest set bit and is therefore strictly smaller
+                    than <code>i</code> — so its answer is already computed. That makes each entry one lookup plus one
+                    addition.</p>
+
+                <div class="code-tabs" data-label="Answer — counting bits for 0..n">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def count_bits(n):
+    """O(n) time, O(n) space. dp[i] builds on an already-solved smaller value."""
+    dp = [0] * (n + 1)
+    for i in range(1, n + 1):
+        # i & (i - 1) clears the lowest set bit, so it is smaller than i
+        # and already computed. One fewer 1 bit than i, hence the + 1.
+        dp[i] = dp[i &amp; (i - 1)] + 1
+    return dp
+
+
+print(count_bits(8))    # [0, 1, 1, 2, 1, 2, 2, 3, 1]
+
+# The alternative recurrence uses the shift instead:
+#   dp[i] = dp[i &gt;&gt; 1] + (i &amp; 1)
+# "the bits of i without its last one, plus that last bit".
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function countBits(n) {         // O(n) time, O(n) space
+  const dp = new Array(n + 1).fill(0);
+  for (let i = 1; i &lt;= n; i++) {
+    // i & (i - 1) clears the lowest set bit -&gt; smaller, already computed.
+    dp[i] = dp[i &amp; (i - 1)] + 1;
+  }
+  return dp;
+}
+
+console.log(countBits(8));      // [0, 1, 1, 2, 1, 2, 2, 3, 1]
+
+// Alternative recurrence: dp[i] = dp[i >> 1] + (i & 1)
+</code></pre>
+                    </div>
+                </div>
             </div>
 
             <!-- ============================================================ 32 -->
@@ -7014,6 +7320,78 @@ console.log(st.query(1, 5));            // 2
 const sums = new SegmentTree([5, 2, 8, 1], (a, b) =&gt; a + b, 0);
 console.log(sums.query(0, 4));          // 16
 </code></pre>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Design a structure over an integer array supporting two operations, both efficient
+                    and interleaved arbitrarily: <code>update(i, value)</code> sets one element, and
+                    <code>sumRange(i, j)</code> returns the sum of an inclusive range.
+                </p>
+                <p>The trap is picking one extreme. A plain array makes <code>update</code> <code>O(1)</code> but
+                    <code>sumRange</code> <code>O(n)</code>; a prefix-sum array flips it — <code>O(1)</code> queries but
+                    an <code>O(n)</code> rebuild on every write. If the question interleaves both, either choice is
+                    <code>O(n)</code> per operation overall.
+                </p>
+                <p>A Fenwick tree balances them at <code>O(log n)</code> each. One wrinkle: it stores
+                    <em>deltas</em>, so to <em>set</em> a value you must add the difference from the current one —
+                    which means keeping the plain array alongside it.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — mutable range sum">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class NumArray:
+    """Both operations O(log n). Uses the Fenwick class from above."""
+
+    def __init__(self, nums):
+        self.nums = list(nums)          # keep the raw values...
+        self.tree = Fenwick(len(nums))  # ...because Fenwick stores DELTAS
+        for i, value in enumerate(nums):
+            self.tree.update(i, value)
+
+    def update(self, i, value):
+        delta = value - self.nums[i]    # convert "set" into "add this much"
+        self.nums[i] = value
+        self.tree.update(i, delta)
+
+    def sum_range(self, i, j):
+        return self.tree.range_sum(i, j)
+
+
+arr = NumArray([1, 3, 5])
+print(arr.sum_range(0, 2))      # 9
+arr.update(1, 2)                # [1, 2, 5]
+print(arr.sum_range(0, 2))      # 8
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class NumArray {                    // both operations O(log n)
+  constructor(nums) {
+    this.nums = [...nums];          // keep raw values...
+    this.tree = new Fenwick(nums.length);   // ...Fenwick stores DELTAS
+    nums.forEach((value, i) =&gt; this.tree.update(i, value));
+  }
+
+  update(i, value) {
+    const delta = value - this.nums[i];     // turn "set" into "add"
+    this.nums[i] = value;
+    this.tree.update(i, delta);
+  }
+
+  sumRange(i, j) {
+    return this.tree.rangeSum(i, j);
+  }
+}
+
+const arr = new NumArray([1, 3, 5]);
+console.log(arr.sumRange(0, 2));    // 9
+arr.update(1, 2);                   // [1, 2, 5]
+console.log(arr.sumRange(0, 2));    // 8
+</code></pre>
+                    </div>
                 </div>
             </div>
 

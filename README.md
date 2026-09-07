@@ -1,8 +1,6 @@
 [RESOURCES](RESOURCES.md)
 
-
-
-## Study AI : Shivank Agarwal
+# Study AI : Shivank Agarwal
 1. [LLMs - Prompting](study/01-llms-prompting/llms-prompting.md) : 27-06-2026
 2. [LangChain - Agents](study/02-langchain-agents/langchain-agents.md) : 04-07-2026
 3. [RAG - Embeddings](study/03-rag-embeddings/rag-embeddings.md) : 18-07-2026
@@ -38,7 +36,7 @@
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
 
-# Claude Code Guide
+## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
 # AI Career Path
