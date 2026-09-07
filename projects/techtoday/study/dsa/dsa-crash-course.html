@@ -59,9 +59,9 @@
                 <li><a href="#5-hash-tables-and-sets">Hash Tables &amp; Sets</a></li>
                 <li><a href="#6-trees">Trees</a></li>
                 <li><a href="#7-graphs">Graphs</a></li>
-                <li><a href="#8-searching">Searching</a></li>
-                <li><a href="#9-sorting">Sorting</a></li>
-                <li><a href="#10-traversal-and-shortest-paths">Traversal &amp; Shortest Paths</a></li>
+                <li><a href="#8-traversal-and-shortest-paths">Traversal &amp; Shortest Paths</a></li>
+                <li><a href="#9-searching">Searching</a></li>
+                <li><a href="#10-sorting">Sorting</a></li>
                 <li><a href="#11-the-four-problem-solving-philosophies">The Four Problem-Solving Philosophies</a></li>
                 <li><a href="#12-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
             </ol>
@@ -1108,14 +1108,188 @@ console.log(countIslands([["1","1","0","0"],
                 </div>
             </div>
 
+            <!-- ============================================================ 8 -->
+            <h3 id="8-traversal-and-shortest-paths">Traversal &amp; Shortest Paths<a class="headerlink"
+                    href="#8-traversal-and-shortest-paths" title="Permanent link">#</a></h3>
+
+            <p>Once data sits in a tree or graph you need a systematic way to visit it. There are two, and they differ
+                by a single detail: <strong>which item you take out of the waiting list next.</strong></p>
+
+            <ul class="card-grid">
+                <li><b>Depth-first search (DFS)</b>Dive as deep as possible down one branch, then back up and try the
+                    next. Uses a <strong>stack</strong>, or plain recursion. Good for "does a path exist?", cycle
+                    detection and connected components.</li>
+                <li><b>Breadth-first search (BFS)</b>Visit every immediate neighbour first, then everything two steps
+                    away, and so on. Uses a <strong>queue</strong>. Good for "fewest moves" and shortest paths on
+                    unweighted graphs.</li>
+            </ul>
+
+            <div class="analogy">
+                <span class="analogy-icon">💧</span>
+                <div class="analogy-body">
+                    <b>Picture it — a pebble in a pond</b>
+                    <p>BFS spreads outward in expanding rings, finishing every point at distance 1 before touching
+                        anything at distance 2. That is exactly why the first time it reaches your target, it has
+                        arrived by the shortest route.</p>
+                </div>
+            </div>
+
+            <p>On a binary tree the same two ideas produce four standard orders. The three depth-first ones differ only
+                in <em>when</em> the node itself is visited relative to its children — a one-line change with completely
+                different uses. In-order on a BST comes out perfectly sorted.</p>
+
+            <h4>In-order traversal (Left &rarr; Root &rarr; Right)</h4>
+            <p>Visits the left subtree, then the root, then the right subtree. Produces sorted order on any valid binary
+                search tree.</p>
+            <div class="viz" data-viz="traversal" data-option="inorder"></div>
+
+            <h4>Pre-order traversal (Root &rarr; Left &rarr; Right)</h4>
+            <p>Visits the root before its children. Ideal for serialising, copying, or prefix-evaluating trees.</p>
+            <div class="viz" data-viz="traversal" data-option="preorder"></div>
+
+            <h4>Post-order traversal (Left &rarr; Right &rarr; Root)</h4>
+            <p>Visits both children before the parent. Essential for bottom-up calculations, directory size
+                accumulation, and deletions.</p>
+            <div class="viz" data-viz="traversal" data-option="postorder"></div>
+
+            <h4>Level-order traversal (BFS)</h4>
+            <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
+            <div class="viz" data-viz="traversal" data-option="level"></div>
+
+            <div class="callout callout-warn">
+                <p>The one thing you must not forget on a graph — as opposed to a tree — is the <strong>visited
+                        set</strong>. Graphs contain cycles, and without it your traversal loops forever.</p>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">How do you traverse a graph layer-by-layer using breadth-first search (BFS)?</p>
+                <p>Initialize
+                    a FIFO queue with the starting node and track visited vertices in a set; repeatedly dequeue the
+                    oldest
+                    node, process it, and enqueue all unvisited neighbors, exploring vertices in order of increasing
+                    distance in <code>O(V + E)</code> time.</p>
+
+                <div class="viz" data-viz="graph-traversal" data-option="bfs"></div>
+
+                <div class="code-tabs" data-label="Breadth-first search">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def bfs(graph, start):
+    """Queue -&gt; oldest first -&gt; explores level by level. O(V + E)."""
+    visited = {start}
+    q = deque([start])
+    order = []
+
+    while q:
+        node = q.popleft()              # OLDEST first
+        order.append(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                visited.add(neighbour)  # mark on ENQUEUE, or it enters twice
+                q.append(neighbour)
+    return order
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function bfs(graph, start) {            // queue -&gt; level by level
+  const visited = new Set([start]);
+  const queue = [start];
+  const order = [];
+  let head = 0;                         // index, not shift() - keeps it O(1)
+
+  while (head &lt; queue.length) {
+    const node = queue[head++];         // OLDEST first
+    order.push(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (visited.has(neighbour)) continue;
+      visited.add(neighbour);           // mark on ENQUEUE
+      queue.push(neighbour);
+    }
+  }
+  return order;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">How do you traverse deep into a graph using depth-first search (DFS)?</p>
+                <p>Swap the BFS queue
+                    for a LIFO stack (or use recursion) — by taking the <em>newest</em> item instead of the oldest,
+                    the same loop dives down a single branch instead of spreading in rings. Nothing else differs.</p>
+
+                <div class="viz" data-viz="graph-traversal" data-option="dfs"></div>
+
+                <div class="code-tabs" data-label="Depth-first search">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def dfs(graph, start):
+    """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
+    visited = set()
+    stack = [start]
+    order = []
+
+    while stack:
+        node = stack.pop()              # NEWEST first
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+        stack.extend(graph[node])
+    return order
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function dfs(graph, start) {            // stack -&gt; dive deep
+  const visited = new Set();
+  const stack = [start];
+  const order = [];
+
+  while (stack.length) {
+    const node = stack.pop();           // NEWEST first
+    if (visited.has(node)) continue;
+    visited.add(node);
+    order.push(node);
+    stack.push(...(graph.get(node) ?? []));
+  }
+  return order;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h4 id="dijkstra">Dijkstra's algorithm — shortest path with costs<a class="headerlink" href="#dijkstra"
+                    title="Permanent link">#</a></h4>
+            <p>BFS finds the fewest <em>hops</em>. When edges have costs — kilometres, minutes, money — you need
+                <strong>Dijkstra</strong>. It keeps a <strong>min-heap</strong> (priority queue) of the cheapest place
+                to go next, and <strong>relaxes</strong> edges as it goes: whenever a shortcut is found, the recorded
+                cost is lowered. This is what powers Google Maps.
+            </p>
+
+            <div class="viz" data-viz="dijkstra"></div>
+
+            <div class="callout callout-key">
+                <p>Dijkstra only works because every weight is <strong>non-negative</strong> — that guarantees a settled
+                    node can never be improved later, since a detour only ever adds cost. With negative edges the logic
+                    collapses and you need Bellman-Ford instead.</p>
+            </div>
+
             <hr />
 
             <h2 id="unit-3">Unit 3 — Core Algorithms<a class="headerlink" href="#unit-3" title="Permanent link">#</a>
             </h2>
             <p>Structures hold the data. Algorithms are the disciplined, step-by-step methods for working with it.</p>
 
-            <!-- ============================================================ 8 -->
-            <h3 id="8-searching">Searching<a class="headerlink" href="#8-searching" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 9 -->
+            <h3 id="9-searching">Searching<a class="headerlink" href="#9-searching" title="Permanent link">#</a></h3>
 
             <ol>
                 <li><strong>Linear search</strong> <code class="big-o o-good">O(n)</code> — check every item one by one.
@@ -1254,8 +1428,8 @@ console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 3));   // -1
                 </div>
             </div>
 
-            <!-- ============================================================ 9 -->
-            <h3 id="9-sorting">Sorting<a class="headerlink" href="#9-sorting" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 10 -->
+            <h3 id="10-sorting">Sorting<a class="headerlink" href="#10-sorting" title="Permanent link">#</a></h3>
 
             <p>You will rarely write a sort in production — both languages ship excellent ones. You learn them because
                 they are the clearest demonstration of algorithmic technique: one task, solved six ways, with the
@@ -1638,182 +1812,6 @@ console.log(data);              // [0, 0, 1, 1, 2, 2]
                     </div>
                 </div>
             </div>
-
-            <!-- ============================================================ 10 -->
-            <h3 id="10-traversal-and-shortest-paths">Traversal &amp; Shortest Paths<a class="headerlink"
-                    href="#10-traversal-and-shortest-paths" title="Permanent link">#</a></h3>
-
-            <p>Once data sits in a tree or graph you need a systematic way to visit it. There are two, and they differ
-                by a single detail: <strong>which item you take out of the waiting list next.</strong></p>
-
-            <ul class="card-grid">
-                <li><b>Depth-first search (DFS)</b>Dive as deep as possible down one branch, then back up and try the
-                    next. Uses a <strong>stack</strong>, or plain recursion. Good for "does a path exist?", cycle
-                    detection and connected components.</li>
-                <li><b>Breadth-first search (BFS)</b>Visit every immediate neighbour first, then everything two steps
-                    away, and so on. Uses a <strong>queue</strong>. Good for "fewest moves" and shortest paths on
-                    unweighted graphs.</li>
-            </ul>
-
-            <div class="analogy">
-                <span class="analogy-icon">💧</span>
-                <div class="analogy-body">
-                    <b>Picture it — a pebble in a pond</b>
-                    <p>BFS spreads outward in expanding rings, finishing every point at distance 1 before touching
-                        anything at distance 2. That is exactly why the first time it reaches your target, it has
-                        arrived by the shortest route.</p>
-                </div>
-            </div>
-
-            <p>On a binary tree the same two ideas produce four standard orders. The three depth-first ones differ only
-                in <em>when</em> the node itself is visited relative to its children — a one-line change with completely
-                different uses. In-order on a BST comes out perfectly sorted.</p>
-
-            <h4>In-order traversal (Left &rarr; Root &rarr; Right)</h4>
-            <p>Visits the left subtree, then the root, then the right subtree. Produces sorted order on any valid binary
-                search tree.</p>
-            <div class="viz" data-viz="traversal" data-option="inorder"></div>
-
-            <h4>Pre-order traversal (Root &rarr; Left &rarr; Right)</h4>
-            <p>Visits the root before its children. Ideal for serialising, copying, or prefix-evaluating trees.</p>
-            <div class="viz" data-viz="traversal" data-option="preorder"></div>
-
-            <h4>Post-order traversal (Left &rarr; Right &rarr; Root)</h4>
-            <p>Visits both children before the parent. Essential for bottom-up calculations, directory size
-                accumulation, and deletions.</p>
-            <div class="viz" data-viz="traversal" data-option="postorder"></div>
-
-            <h4>Level-order traversal (BFS)</h4>
-            <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
-            <div class="viz" data-viz="traversal" data-option="level"></div>
-
-            <div class="callout callout-warn">
-                <p>The one thing you must not forget on a graph — as opposed to a tree — is the <strong>visited
-                        set</strong>. Graphs contain cycles, and without it your traversal loops forever.</p>
-            </div>
-
-            <div class="worked">
-                <b>Question</b>
-                <p class="worked-q">How do you traverse a graph layer-by-layer using breadth-first search (BFS)?</p>
-                <p>Initialize
-                    a FIFO queue with the starting node and track visited vertices in a set; repeatedly dequeue the
-                    oldest
-                    node, process it, and enqueue all unvisited neighbors, exploring vertices in order of increasing
-                    distance in <code>O(V + E)</code> time.</p>
-
-                <div class="viz" data-viz="graph-traversal" data-option="bfs"></div>
-
-                <div class="code-tabs" data-label="Breadth-first search">
-                    <div class="tab-pane" data-lang="python">
-                        <pre><code data-lang="python">
-from collections import deque
-
-def bfs(graph, start):
-    """Queue -&gt; oldest first -&gt; explores level by level. O(V + E)."""
-    visited = {start}
-    q = deque([start])
-    order = []
-
-    while q:
-        node = q.popleft()              # OLDEST first
-        order.append(node)
-        for neighbour in graph[node]:
-            if neighbour not in visited:
-                visited.add(neighbour)  # mark on ENQUEUE, or it enters twice
-                q.append(neighbour)
-    return order
-</code></pre>
-                    </div>
-                    <div class="tab-pane" data-lang="javascript">
-                        <pre><code data-lang="javascript">
-function bfs(graph, start) {            // queue -&gt; level by level
-  const visited = new Set([start]);
-  const queue = [start];
-  const order = [];
-  let head = 0;                         // index, not shift() - keeps it O(1)
-
-  while (head &lt; queue.length) {
-    const node = queue[head++];         // OLDEST first
-    order.push(node);
-    for (const neighbour of graph.get(node) ?? []) {
-      if (visited.has(neighbour)) continue;
-      visited.add(neighbour);           // mark on ENQUEUE
-      queue.push(neighbour);
-    }
-  }
-  return order;
-}
-</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="worked">
-                <b>Question</b>
-                <p class="worked-q">How do you traverse deep into a graph using depth-first search (DFS)?</p>
-                <p>Swap the BFS queue
-                    for a LIFO stack (or use recursion) — by taking the <em>newest</em> item instead of the oldest,
-                    the same loop dives down a single branch instead of spreading in rings. Nothing else differs.</p>
-
-                <div class="viz" data-viz="graph-traversal" data-option="dfs"></div>
-
-                <div class="code-tabs" data-label="Depth-first search">
-                    <div class="tab-pane" data-lang="python">
-                        <pre><code data-lang="python">
-def dfs(graph, start):
-    """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
-    visited = set()
-    stack = [start]
-    order = []
-
-    while stack:
-        node = stack.pop()              # NEWEST first
-        if node in visited:
-            continue
-        visited.add(node)
-        order.append(node)
-        stack.extend(graph[node])
-    return order
-</code></pre>
-                    </div>
-                    <div class="tab-pane" data-lang="javascript">
-                        <pre><code data-lang="javascript">
-function dfs(graph, start) {            // stack -&gt; dive deep
-  const visited = new Set();
-  const stack = [start];
-  const order = [];
-
-  while (stack.length) {
-    const node = stack.pop();           // NEWEST first
-    if (visited.has(node)) continue;
-    visited.add(node);
-    order.push(node);
-    stack.push(...(graph.get(node) ?? []));
-  }
-  return order;
-}
-</code></pre>
-                    </div>
-                </div>
-            </div>
-
-            <h4 id="dijkstra">Dijkstra's algorithm — shortest path with costs<a class="headerlink" href="#dijkstra"
-                    title="Permanent link">#</a></h4>
-            <p>BFS finds the fewest <em>hops</em>. When edges have costs — kilometres, minutes, money — you need
-                <strong>Dijkstra</strong>. It keeps a <strong>min-heap</strong> (priority queue) of the cheapest place
-                to go next, and <strong>relaxes</strong> edges as it goes: whenever a shortcut is found, the recorded
-                cost is lowered. This is what powers Google Maps.
-            </p>
-
-            <div class="viz" data-viz="dijkstra"></div>
-
-            <div class="callout callout-key">
-                <p>Dijkstra only works because every weight is <strong>non-negative</strong> — that guarantees a settled
-                    node can never be improved later, since a detour only ever adds cost. With negative edges the logic
-                    collapses and you need Bellman-Ford instead.</p>
-            </div>
-
-            <hr />
 
             <!-- ============================================================ 11 -->
             <h2 id="11-the-four-problem-solving-philosophies">The Four Problem-Solving Philosophies<a class="headerlink"
