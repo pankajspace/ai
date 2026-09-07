@@ -3301,7 +3301,8 @@ console.log(countingSort([4, 1, 3, 1, 4, 0], 4));  // [0, 1, 1, 3, 4, 4]
                 <p>Sort numbers digit by digit from least significant digit (LSD) to most significant digit using a
                     stable counting sort on each digit. Earlier digit orderings are preserved by stability, sorting in
                     <code>O(d · (n + b))</code> time where <code>d</code> is digit count and <code>b</code> is base
-                    (10).</p>
+                    (10).
+                </p>
 
                 <div class="code-tabs" data-label="Radix sort (LSD)">
                     <div class="tab-pane" data-lang="python">
@@ -3974,6 +3975,83 @@ function inorderIterative(root) {       // explicit stack, no recursion
     cur = cur.right;                    // then go right
   }
   return out;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">How do you perform pre-order and post-order tree traversals iteratively using an
+                    explicit stack?</p>
+                <p>Iterative pre-order visits the current node and pushes children (right child first so left pops
+                    first).
+                    Iterative post-order pops each node, records its value, pushes its left then right child, and
+                    returns
+                    the reversed output (or uses two stacks) to produce the exact
+                    <code>Left &rarr; Right &rarr; Root</code>
+                    sequence without recursion.</p>
+
+                <div class="code-tabs" data-label="Pre-order and post-order without recursion">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def preorder_iterative(root):
+    """Pre-order (Root, Left, Right) without recursion."""
+    if not root:
+        return []
+    out, stack = [], [root]
+    while stack:
+        node = stack.pop()
+        out.append(node.value)
+        if node.right:                  # push right first so left pops first
+            stack.append(node.right)
+        if node.left:
+            stack.append(node.left)
+    return out
+
+
+def postorder_iterative(root):
+    """Post-order (Left, Right, Root) without recursion."""
+    if not root:
+        return []
+    out, stack = [], [root]
+    while stack:
+        node = stack.pop()
+        out.append(node.value)
+        if node.left:                   # push left first
+            stack.append(node.left)
+        if node.right:                  # push right second
+            stack.append(node.right)
+    return out[::-1]                    # reverse produces Left -&gt; Right -&gt; Root
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function preorderIterative(root) {      // Root, Left, Right
+  if (!root) return [];
+  const out = [];
+  const stack = [root];
+  while (stack.length) {
+    const node = stack.pop();
+    out.push(node.value);
+    if (node.right) stack.push(node.right);   // right pushed first
+    if (node.left) stack.push(node.left);     // left pops first
+  }
+  return out;
+}
+
+function postorderIterative(root) {     // Left, Right, Root
+  if (!root) return [];
+  const out = [];
+  const stack = [root];
+  while (stack.length) {
+    const node = stack.pop();
+    out.push(node.value);
+    if (node.left) stack.push(node.left);
+    if (node.right) stack.push(node.right);
+  }
+  return out.reverse();
 }
 </code></pre>
                     </div>
@@ -5681,6 +5759,72 @@ function bfs(graph, start) {            // O(V + E)
 
             <div class="worked">
                 <b>Question</b>
+                <p class="worked-q">How do you traverse deep into a graph recursively using Depth-First Search (DFS)?
+                </p>
+                <p>DFS dives along each branch until it hits a dead end or an already-visited vertex before
+                    backtracking.
+                    By relying on the call stack, each recursive call visits an unvisited neighbour. A
+                    <code>visited</code> set is mandatory on graphs to prevent infinite loops in cycles.
+                </p>
+
+                <div class="code-tabs" data-label="Depth-first search (recursive)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def dfs_recursive(graph, start):
+    """Recursive DFS: uses the system call stack. O(V + E) time, O(V) space."""
+    visited = set()
+    order = []
+
+    def dfs(node):
+        visited.add(node)
+        order.append(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                dfs(neighbour)
+
+    dfs(start)
+    return order
+
+
+# Undirected graph traversal from 'A'
+print(dfs_recursive({"A": ["B", "C"], "B": ["A", "D"], "C": ["A", "D"], "D": ["B", "C"]}, "A"))
+# ['A', 'B', 'D', 'C']
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function dfsRecursive(graph, start) {   // O(V + E) time, O(V) space
+  const visited = new Set();
+  const order = [];
+
+  function dfs(node) {
+    visited.add(node);
+    order.push(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!visited.has(neighbour)) {
+        dfs(neighbour);
+      }
+    }
+  }
+
+  dfs(start);
+  return order;
+}
+
+const graph = new Map([
+  ["A", ["B", "C"]],
+  ["B", ["A", "D"]],
+  ["C", ["A", "D"]],
+  ["D", ["B", "C"]],
+]);
+console.log(dfsRecursive(graph, "A"));  // ['A', 'B', 'D', 'C']
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
                 <p class="worked-q">How do you traverse deep into a graph iteratively using a stack (DFS)?</p>
                 <p>Swap the queue
                     for a stack and the identical loop becomes depth-first. Note the <code>reversed</code>
@@ -5846,6 +5990,305 @@ function connectedComponents(graph, nodes) {
   }
   return components;
 }
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="cycle-detection">Cycle detection<a class="headerlink" href="#cycle-detection"
+                    title="Permanent link">#</a></h3>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">How do you detect a cycle in an undirected graph using DFS?</p>
+                <p>In an undirected graph, every edge is bidirectional. As DFS explores from <code>node</code> to
+                    <code>neighbour</code>, if <code>neighbour</code> has already been visited and is <strong>not the
+                        parent</strong> we just came from, an alternative path connects them — proving a
+                    <strong>cycle exists</strong>.
+                </p>
+
+                <div class="code-tabs" data-label="Cycle detection in an undirected graph">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def has_cycle_undirected(graph, nodes):
+    """DFS with parent tracking. O(V + E) time, O(V) space."""
+    visited = set()
+
+    def dfs(node, parent):
+        visited.add(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                if dfs(neighbour, node):
+                    return True
+            elif neighbour != parent:   # visited and not parent -&gt; cycle
+                return True
+        return False
+
+    for node in nodes:
+        if node not in visited:
+            if dfs(node, None):
+                return True
+    return False
+
+
+# A -- B -- C -- A  (has cycle)
+print(has_cycle_undirected({"A": ["B", "C"], "B": ["A", "C"], "C": ["A", "B"]}, ["A", "B", "C"]))  # True
+# A -- B -- C  (no cycle)
+print(has_cycle_undirected({"A": ["B"], "B": ["A", "C"], "C": ["B"]}, ["A", "B", "C"]))            # False
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function hasCycleUndirected(graph, nodes) {  // O(V + E) time, O(V) space
+  const visited = new Set();
+
+  function dfs(node, parent) {
+    visited.add(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!visited.has(neighbour)) {
+        if (dfs(neighbour, node)) return true;
+      } else if (neighbour !== parent) {
+        return true;                    // visited and not parent -&gt; cycle
+      }
+    }
+    return false;
+  }
+
+  for (const node of nodes) {
+    if (!visited.has(node)) {
+      if (dfs(node, null)) return true;
+    }
+  }
+  return false;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">How do you detect a cycle in a directed graph using DFS (three-state / recursion
+                    stack)?</p>
+                <p>In a directed graph, visiting an already-visited vertex does <em>not</em> imply a cycle (it could be
+                    a cross edge or forward edge). A cycle exists if and only if DFS encounters a node that is currently
+                    on the <strong>active recursion stack</strong> (a back edge). We track 3 states:
+                    <code>0 = unvisited</code> (WHITE), <code>1 = visiting</code> / on call stack (GREY), and
+                    <code>2 = visited</code> / completely explored (BLACK).
+                </p>
+
+                <div class="code-tabs" data-label="Cycle detection in a directed graph">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def has_cycle_directed(graph, nodes):
+    """Detect directed cycle via 3 states: 0=unvisited, 1=on stack, 2=done. O(V + E)."""
+    state = {node: 0 for node in nodes}
+
+    def dfs(node):
+        state[node] = 1                 # push onto recursion stack
+        for neighbour in graph[node]:
+            if state[neighbour] == 1:   # back edge -&gt; cycle!
+                return True
+            if state[neighbour] == 0 and dfs(neighbour):
+                return True
+        state[node] = 2                 # pop from stack / fully explored
+        return False
+
+    for node in nodes:
+        if state[node] == 0:
+            if dfs(node):
+                return True
+    return False
+
+
+# 0 -&gt; 1 -&gt; 2 -&gt; 0 (cycle)
+print(has_cycle_directed({0: [1], 1: [2], 2: [0]}, [0, 1, 2]))       # True
+# 0 -&gt; 1, 0 -&gt; 2 (DAG - no cycle)
+print(has_cycle_directed({0: [1, 2], 1: [], 2: []}, [0, 1, 2]))       # False
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function hasCycleDirected(graph, nodes) {  // O(V + E) time, O(V) space
+  // 0 = unvisited, 1 = visiting (on call stack), 2 = finished
+  const state = new Map(nodes.map((n) =&gt; [n, 0]));
+
+  function dfs(node) {
+    state.set(node, 1);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (state.get(neighbour) === 1) return true;  // back edge
+      if (state.get(neighbour) === 0 &amp;&amp; dfs(neighbour)) return true;
+    }
+    state.set(node, 2);
+    return false;
+  }
+
+  for (const node of nodes) {
+    if (state.get(node) === 0) {
+      if (dfs(node)) return true;
+    }
+  }
+  return false;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="bipartite-graph">Bipartite graph verification<a class="headerlink" href="#bipartite-graph"
+                    title="Permanent link">#</a></h3>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">How do you determine if a graph is bipartite (2-colorable) using traversal?</p>
+                <p>A graph is <strong>bipartite</strong> if vertices can be split into two sets such that no two
+                    adjacent nodes share the same set — which is mathematically equivalent to the graph having
+                    <strong>no
+                        odd-length cycles</strong>. We 2-color the graph during BFS: assign color 0 to the source, and
+                    for every neighbour, assign color <code>1 - color[u]</code>. If an adjacent neighbour already has
+                    the <em>same</em> color, the graph cannot be bipartite.
+                </p>
+
+                <div class="code-tabs" data-label="Bipartite graph verification (2-coloring)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def is_bipartite(graph, nodes):
+    """2-coloring via BFS. O(V + E) time, O(V) space."""
+    color = {}                          # node -&gt; 0 or 1
+
+    for start in nodes:
+        if start in color:
+            continue
+        color[start] = 0
+        q = deque([start])
+
+        while q:
+            node = q.popleft()
+            for neighbour in graph[node]:
+                if neighbour not in color:
+                    color[neighbour] = 1 - color[node]
+                    q.append(neighbour)
+                elif color[neighbour] == color[node]:
+                    return False        # same color on adjacent nodes -&gt; odd cycle!
+
+    return True
+
+
+# Triangle: 3 nodes all connected (odd cycle of length 3)
+print(is_bipartite({"A": ["B", "C"], "B": ["A", "C"], "C": ["A", "B"]}, ["A", "B", "C"]))  # False
+# Square: A-B-C-D-A (even cycle of length 4)
+print(is_bipartite({"A": ["B", "D"], "B": ["A", "C"], "C": ["B", "D"], "D": ["A", "C"]}, ["A", "B", "C", "D"]))  # True
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function isBipartite(graph, nodes) {    // O(V + E) time, O(V) space
+  const color = new Map();              // node -&gt; 0 or 1
+
+  for (const start of nodes) {
+    if (color.has(start)) continue;
+    color.set(start, 0);
+    const queue = [start];
+    let head = 0;
+
+    while (head &lt; queue.length) {
+      const node = queue[head++];
+      const nextColor = 1 - color.get(node);
+      for (const neighbour of graph.get(node) ?? []) {
+        if (!color.has(neighbour)) {
+          color.set(neighbour, nextColor);
+          queue.push(neighbour);
+        } else if (color.get(neighbour) === color.get(node)) {
+          return false;                 // adjacent vertices share color
+        }
+      }
+    }
+  }
+  return true;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="all-paths">All paths from source to target<a class="headerlink" href="#all-paths"
+                    title="Permanent link">#</a></h3>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">How do you find all simple paths between two nodes using DFS with backtracking?</p>
+                <p>Standard graph traversal marks a vertex as visited permanently. To find <strong>all distinct
+                        paths</strong> from source to target, we use <strong>backtracking</strong>: add the node to the
+                    current path, mark it visited, recursively explore all unvisited neighbours, and upon return,
+                    <em>unmark</em> (backtrack) the node so alternative routes can traverse through it.
+                </p>
+
+                <div class="code-tabs" data-label="All paths from source to target (backtracking)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def all_paths_source_target(graph, source, target):
+    """DFS with backtracking to find every simple path. O(2^V * V)."""
+    results = []
+    path = [source]
+    visited = {source}
+
+    def dfs(node):
+        if node == target:
+            results.append(list(path))
+            return
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                visited.add(neighbour)
+                path.append(neighbour)
+                dfs(neighbour)
+                path.pop()                  # backtrack path
+                visited.remove(neighbour)   # backtrack visited set
+
+    dfs(source)
+    return results
+
+
+# Paths from 0 to 3 in graph 0-&gt;1-&gt;3, 0-&gt;2-&gt;3
+print(all_paths_source_target({0: [1, 2], 1: [3], 2: [3], 3: []}, 0, 3))
+# [[0, 1, 3], [0, 2, 3]]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function allPathsSourceTarget(graph, source, target) {
+  const results = [];
+  const path = [source];
+  const visited = new Set([source]);
+
+  function dfs(node) {
+    if (node === target) {
+      results.push([...path]);
+      return;
+    }
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!visited.has(neighbour)) {
+        visited.add(neighbour);
+        path.push(neighbour);
+        dfs(neighbour);
+        path.pop();                     // backtrack path
+        visited.delete(neighbour);      // backtrack visited set
+      }
+    }
+  }
+
+  dfs(source);
+  return results;
+}
+
+const graph = new Map([
+  [0, [1, 2]],
+  [1, [3]],
+  [2, [3]],
+  [3, []],
+]);
+console.log(allPathsSourceTarget(graph, 0, 3));  // [[0, 1, 3], [0, 2, 3]]
 </code></pre>
                     </div>
                 </div>

@@ -1156,6 +1156,193 @@ console.log(countIslands([["1","1","0","0"],
             <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
             <div class="viz" data-viz="traversal" data-option="level"></div>
 
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you implement the three depth-first tree traversals (in-order, pre-order, and
+                    post-order)?</p>
+                <p>All three depth-first tree walks visit the left and right subtrees recursively; they differ solely in
+                    <em>when</em> the parent node itself is visited relative to its children:
+                </p>
+                <ol>
+                    <li><strong>In-order (Left &rarr; Root &rarr; Right)</strong>: Processes left child, visits the
+                        current
+                        node, then processes right child. On a BST, this yields keys in strictly ascending sorted order.
+                    </li>
+                    <li><strong>Pre-order (Root &rarr; Left &rarr; Right)</strong>: Visits the node before traversing
+                        either
+                        child. Used for cloning, serializing trees, or inspecting root decisions first.</li>
+                    <li><strong>Post-order (Left &rarr; Right &rarr; Root)</strong>: Traverses both children before
+                        processing
+                        the node. Essential for bottom-up aggregations (height, diameter, subtree sums) and safe node
+                        deletion.</li>
+                </ol>
+
+                <div class="code-tabs" data-label="Binary tree depth-first traversals">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+
+def inorder(node):
+    """Left -&gt; Root -&gt; Right. Sorted on a BST. O(n) time, O(h) space."""
+    return inorder(node.left) + [node.value] + inorder(node.right) if node else []
+
+
+def preorder(node):
+    """Root -&gt; Left -&gt; Right. Serialisation / cloning. O(n) time, O(h) space."""
+    return [node.value] + preorder(node.left) + preorder(node.right) if node else []
+
+
+def postorder(node):
+    """Left -&gt; Right -&gt; Root. Bottom-up evaluation. O(n) time, O(h) space."""
+    return postorder(node.left) + postorder(node.right) + [node.value] if node else []
+
+
+#         4
+#       /   \
+#      2     6
+#     / \   / \
+#    1   3 5   7
+tree = TreeNode(4,
+    TreeNode(2, TreeNode(1), TreeNode(3)),
+    TreeNode(6, TreeNode(5), TreeNode(7)))
+
+print("In-order:  ", inorder(tree))     # [1, 2, 3, 4, 5, 6, 7]
+print("Pre-order: ", preorder(tree))    # [4, 2, 1, 3, 6, 5, 7]
+print("Post-order:", postorder(tree))   # [1, 3, 2, 5, 7, 6, 4]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+function inorder(node) {                // Left -&gt; Root -&gt; Right
+  if (!node) return [];
+  return [...inorder(node.left), node.value, ...inorder(node.right)];
+}
+
+function preorder(node) {               // Root -&gt; Left -&gt; Right
+  if (!node) return [];
+  return [node.value, ...preorder(node.left), ...preorder(node.right)];
+}
+
+function postorder(node) {              // Left -&gt; Right -&gt; Root
+  if (!node) return [];
+  return [...postorder(node.left), ...postorder(node.right), node.value];
+}
+
+const tree = new TreeNode(4,
+  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+  new TreeNode(6, new TreeNode(5), new TreeNode(7))
+);
+
+console.log("In-order:  ", inorder(tree));    // [1, 2, 3, 4, 5, 6, 7]
+console.log("Pre-order: ", preorder(tree));   // [4, 2, 1, 3, 6, 5, 7]
+console.log("Post-order:", postorder(tree));  // [1, 3, 2, 5, 7, 6, 4]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you traverse a binary tree level-by-level using Breadth-First Search
+                    (Level-Order)?</p>
+                <p>Level-order traversal visits nodes row-by-row from top to bottom using a FIFO queue. By capturing the
+                    number of items in the queue at the start of each round, we process exactly one complete level at a
+                    time before appending children for the next level.</p>
+
+                <div class="code-tabs" data-label="Level-order traversal (BFS)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def level_order(root):
+    """Row-by-row level-order traversal. O(n) time, O(w) space."""
+    if not root:
+        return []
+    levels = []
+    q = deque([root])
+
+    while q:
+        level = []
+        for _ in range(len(q)):         # snapshot level size
+            node = q.popleft()
+            level.append(node.value)
+            if node.left:
+                q.append(node.left)
+            if node.right:
+                q.append(node.right)
+        levels.append(level)
+
+    return levels
+
+
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+
+tree = TreeNode(4,
+    TreeNode(2, TreeNode(1), TreeNode(3)),
+    TreeNode(6, TreeNode(5), TreeNode(7)))
+
+# [[4], [2, 6], [1, 3, 5, 7]]
+print("Level-order:", level_order(tree))
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function levelOrder(root) {             // O(n) time, O(w) space
+  if (!root) return [];
+  const levels = [];
+  const queue = [root];
+  let head = 0;
+
+  while (head &lt; queue.length) {
+    const levelSize = queue.length - head;
+    const currentLevel = [];
+
+    for (let i = 0; i &lt; levelSize; i++) {
+      const node = queue[head++];
+      currentLevel.push(node.value);
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+    levels.push(currentLevel);
+  }
+
+  return levels;
+}
+
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+const tree = new TreeNode(4,
+  new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+  new TreeNode(6, new TreeNode(5), new TreeNode(7))
+);
+
+console.log("Level-order:", levelOrder(tree));
+// [[4], [2, 6], [1, 3, 5, 7]]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <div class="callout callout-warn">
                 <p>The one thing you must not forget on a graph — as opposed to a tree — is the <strong>visited
                         set</strong>. Graphs contain cycles, and without it your traversal loops forever.</p>
@@ -1218,48 +1405,298 @@ function bfs(graph, start) {            // queue -&gt; level by level
             </div>
 
             <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you find the shortest path between two nodes in an unweighted graph using
+                    BFS?</p>
+                <p>Because BFS visits nodes in order of increasing distance from the start, the first time the
+                    destination
+                    is reached is guaranteed to be via the fewest edges. By storing a <code>parent</code> pointer when
+                    each
+                    node is first discovered, we backtrack from the goal to reconstruct the optimal route.</p>
+
+                <div class="code-tabs" data-label="Shortest path with BFS (unweighted)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+def shortest_path_bfs(graph, start, goal):
+    """BFS shortest path on unweighted graph. O(V + E) time, O(V) space."""
+    if start == goal:
+        return [start]
+    parent = {start: None}
+    q = deque([start])
+
+    while q:
+        node = q.popleft()
+        for neighbour in graph[node]:
+            if neighbour not in parent:
+                parent[neighbour] = node
+                if neighbour == goal:       # first sighting = shortest path!
+                    path = [goal]
+                    while parent[path[-1]] is not None:
+                        path.append(parent[path[-1]])
+                    return path[::-1]
+                q.append(neighbour)
+
+    return None                             # unreachable
+
+
+g = {"A": ["B", "C"], "B": ["A", "D"], "C": ["A", "D"], "D": ["B", "C"]}
+print(shortest_path_bfs(g, "A", "D"))      # ['A', 'B', 'D']
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function shortestPathBfs(graph, start, goal) {
+  if (start === goal) return [start];
+  const parent = new Map([[start, null]]);
+  const queue = [start];
+  let head = 0;
+
+  while (head &lt; queue.length) {
+    const node = queue[head++];
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!parent.has(neighbour)) {
+        parent.set(neighbour, node);
+        if (neighbour === goal) {           // first time seen = shortest!
+          const path = [goal];
+          while (parent.get(path.at(-1)) !== null) {
+            path.push(parent.get(path.at(-1)));
+          }
+          return path.reverse();
+        }
+        queue.push(neighbour);
+      }
+    }
+  }
+  return null;                              // unreachable
+}
+
+const g = new Map([
+  ["A", ["B", "C"]],
+  ["B", ["A", "D"]],
+  ["C", ["A", "D"]],
+  ["D", ["B", "C"]],
+]);
+console.log(shortestPathBfs(g, "A", "D"));  // ['A', 'B', 'D']
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you traverse deep into a graph using recursive depth-first search (DFS)?</p>
+                <p>Depth-first search dives deep down one branch until it hits a dead end, then backtracks to explore
+                    alternatives. The call stack acts as the frontier, while the <code>visited</code> set prevents
+                    infinite loops in cyclic graphs.</p>
+
+                <div class="code-tabs" data-label="Depth-first search (recursive)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def dfs_recursive(graph, start):
+    """Recursive DFS: uses call stack. O(V + E) time, O(V) space."""
+    visited = set()
+    order = []
+
+    def dfs(node):
+        visited.add(node)
+        order.append(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                dfs(neighbour)
+
+    dfs(start)
+    return order
+
+
+g = {"A": ["B", "C"], "B": ["A", "D"], "C": ["A", "D"], "D": ["B", "C"]}
+print(dfs_recursive(g, "A"))                # ['A', 'B', 'D', 'C']
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function dfsRecursive(graph, start) {       // O(V + E) time, O(V) space
+  const visited = new Set();
+  const order = [];
+
+  function dfs(node) {
+    visited.add(node);
+    order.push(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!visited.has(neighbour)) dfs(neighbour);
+    }
+  }
+
+  dfs(start);
+  return order;
+}
+
+const g = new Map([
+  ["A", ["B", "C"]],
+  ["B", ["A", "D"]],
+  ["C", ["A", "D"]],
+  ["D", ["B", "C"]],
+]);
+console.log(dfsRecursive(g, "A"));          // ['A', 'B', 'D', 'C']
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
                 <b>Question</b>
-                <p class="worked-q">How do you traverse deep into a graph using depth-first search (DFS)?</p>
+                <p class="worked-q">How do you traverse deep into a graph iteratively using a stack (DFS)?</p>
                 <p>Swap the BFS queue
-                    for a LIFO stack (or use recursion) — by taking the <em>newest</em> item instead of the oldest,
-                    the same loop dives down a single branch instead of spreading in rings. Nothing else differs.</p>
+                    for a LIFO stack. By taking the <em>newest</em> item instead of the oldest,
+                    the same loop dives down a single branch instead of spreading in rings. Pushing neighbours in
+                    reverse
+                    ensures they pop in identical order to the recursive walk.</p>
 
                 <div class="viz" data-viz="graph-traversal" data-option="dfs"></div>
 
-                <div class="code-tabs" data-label="Depth-first search">
+                <div class="code-tabs" data-label="Depth-first search (iterative)">
                     <div class="tab-pane" data-lang="python">
                         <pre><code data-lang="python">
-def dfs(graph, start):
+def dfs_iterative(graph, start):
     """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
     visited = set()
     stack = [start]
     order = []
 
     while stack:
-        node = stack.pop()              # NEWEST first
+        node = stack.pop()                  # NEWEST first
         if node in visited:
             continue
         visited.add(node)
         order.append(node)
-        stack.extend(graph[node])
+        for neighbour in reversed(graph[node]):
+            if neighbour not in visited:
+                stack.append(neighbour)
     return order
 </code></pre>
                     </div>
                     <div class="tab-pane" data-lang="javascript">
                         <pre><code data-lang="javascript">
-function dfs(graph, start) {            // stack -&gt; dive deep
+function dfsIterative(graph, start) {       // stack -&gt; dive deep
   const visited = new Set();
   const stack = [start];
   const order = [];
 
   while (stack.length) {
-    const node = stack.pop();           // NEWEST first
+    const node = stack.pop();               // NEWEST first
     if (visited.has(node)) continue;
     visited.add(node);
     order.push(node);
-    stack.push(...(graph.get(node) ?? []));
+    const neighbours = graph.get(node) ?? [];
+    for (let i = neighbours.length - 1; i &gt;= 0; i--) {
+      if (!visited.has(neighbours[i])) stack.push(neighbours[i]);
+    }
   }
   return order;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you detect a cycle in a graph using depth-first search (DFS)?</p>
+                <p>In an <strong>undirected</strong> graph, a cycle exists if DFS reaches any already-visited neighbour
+                    that is <em>not</em> the immediate parent node we just stepped from. In a <strong>directed</strong>
+                    graph, a cycle exists if and only if an edge points back to a node currently active on the recursion
+                    call stack (a back edge).</p>
+
+                <div class="code-tabs" data-label="Cycle detection with DFS">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def has_cycle_undirected(graph, nodes):
+    """Undirected: visited neighbour that is not our parent = cycle."""
+    visited = set()
+
+    def dfs(node, parent):
+        visited.add(node)
+        for neighbour in graph[node]:
+            if neighbour not in visited:
+                if dfs(neighbour, node):
+                    return True
+            elif neighbour != parent:
+                return True                 # back edge in undirected graph
+        return False
+
+    for node in nodes:
+        if node not in visited and dfs(node, None):
+            return True
+    return False
+
+
+def has_cycle_directed(graph, nodes):
+    """Directed: back edge to node on active recursion stack = cycle."""
+    # 0 = unvisited, 1 = visiting (on call stack), 2 = finished
+    state = {n: 0 for n in nodes}
+
+    def dfs(node):
+        state[node] = 1                     # push onto call stack
+        for neighbour in graph[node]:
+            if state[neighbour] == 1:       # back edge -&gt; cycle!
+                return True
+            if state[neighbour] == 0 and dfs(neighbour):
+                return True
+        state[node] = 2                     # pop from call stack
+        return False
+
+    for node in nodes:
+        if state[node] == 0 and dfs(node):
+            return True
+    return False
+
+
+print(has_cycle_undirected({"A": ["B", "C"], "B": ["A", "C"], "C": ["A", "B"]}, ["A", "B", "C"]))  # True
+print(has_cycle_directed({0: [1], 1: [2], 2: [0]}, [0, 1, 2]))                                       # True
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function hasCycleUndirected(graph, nodes) {
+  const visited = new Set();
+
+  function dfs(node, parent) {
+    visited.add(node);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (!visited.has(neighbour)) {
+        if (dfs(neighbour, node)) return true;
+      } else if (neighbour !== parent) {
+        return true;                        // visited and not parent -&gt; cycle
+      }
+    }
+    return false;
+  }
+
+  for (const node of nodes) {
+    if (!visited.has(node) && dfs(node, null)) return true;
+  }
+  return false;
+}
+
+function hasCycleDirected(graph, nodes) {
+  // 0 = unvisited, 1 = visiting (on call stack), 2 = finished
+  const state = new Map(nodes.map((n) =&gt; [n, 0]));
+
+  function dfs(node) {
+    state.set(node, 1);
+    for (const neighbour of graph.get(node) ?? []) {
+      if (state.get(neighbour) === 1) return true;  // back edge
+      if (state.get(neighbour) === 0 &amp;&amp; dfs(neighbour)) return true;
+    }
+    state.set(node, 2);
+    return false;
+  }
+
+  for (const node of nodes) {
+    if (state.get(node) === 0 &amp;&amp; dfs(node)) return true;
+  }
+  return false;
 }
 </code></pre>
                     </div>
@@ -1280,6 +1717,93 @@ function dfs(graph, start) {            // stack -&gt; dive deep
                 <p>Dijkstra only works because every weight is <strong>non-negative</strong> — that guarantees a settled
                     node can never be improved later, since a detour only ever adds cost. With negative edges the logic
                     collapses and you need Bellman-Ford instead.</p>
+            </div>
+
+            <div class="worked">
+                <b>Interview Question</b>
+                <p class="worked-q">How do you compute the shortest paths from a source node in a weighted graph using
+                    Dijkstra's algorithm?</p>
+                <p>Initialize the source distance to <code>0</code> and all other distances to infinity. Using a
+                    min-priority
+                    queue ordered by tentative distance, repeatedly extract the unsettled node with the smallest
+                    distance,
+                    mark it visited, and relax each outgoing edge. Because edge weights are non-negative, the first time
+                    a node is settled its distance is final.</p>
+
+                <div class="code-tabs" data-label="Dijkstra's shortest path">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import heapq
+from collections import defaultdict
+
+def dijkstra(edges, start):
+    """Shortest distances from start in non-negative weighted graph. O((V + E) log V)."""
+    graph = defaultdict(list)
+    for u, v, w in edges:
+        graph[u].append((v, w))
+        graph[v].append((u, w))              # undirected
+
+    dist = {start: 0}
+    pq = [(0, start)]                        # (distance, vertex)
+    visited = set()
+
+    while pq:
+        d, u = heapq.heappop(pq)
+        if u in visited:
+            continue
+        visited.add(u)                       # distance is now finalised
+
+        for v, w in graph[u]:
+            if d + w &lt; dist.get(v, float("inf")):
+                dist[v] = d + w
+                heapq.heappush(pq, (d + w, v))
+
+    return dist
+
+
+edges = [("A", "B", 4), ("A", "C", 2), ("B", "C", 1), ("B", "D", 5),
+         ("C", "D", 8), ("C", "F", 10), ("D", "E", 2), ("D", "F", 6), ("E", "F", 3)]
+print(dijkstra(edges, "A"))                  # {'A': 0, 'C': 2, 'B': 3, 'D': 8, 'E': 10, 'F': 12}
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function dijkstra(edges, start) {            // O((V + E) log V) with min-heap
+  const graph = new Map();
+  for (const [u, v, w] of edges) {
+    if (!graph.has(u)) graph.set(u, []);
+    if (!graph.has(v)) graph.set(v, []);
+    graph.get(u).push([v, w]);
+    graph.get(v).push([u, w]);
+  }
+
+  const dist = new Map([[start, 0]]);
+  const visited = new Set();
+  const pq = [[0, start]];                   // [distance, node]
+
+  while (pq.length) {
+    pq.sort((a, b) =&gt; a[0] - b[0]);          // min-priority queue
+    const [d, u] = pq.shift();
+    if (visited.has(u)) continue;
+    visited.add(u);                          // distance is now finalised
+
+    for (const [v, w] of graph.get(u) ?? []) {
+      const candidate = d + w;
+      if (candidate &lt; (dist.get(v) ?? Infinity)) {
+        dist.set(v, candidate);
+        pq.push([candidate, v]);
+      }
+    }
+  }
+  return Object.fromEntries(dist);
+}
+
+const edges = [["A", "B", 4], ["A", "C", 2], ["B", "C", 1], ["B", "D", 5],
+               ["C", "D", 8], ["C", "F", 10], ["D", "E", 2], ["D", "F", 6], ["E", "F", 3]];
+console.log(dijkstra(edges, "A"));           // { A: 0, C: 2, B: 3, D: 8, E: 10, F: 12 }
+</code></pre>
+                    </div>
+                </div>
             </div>
 
             <hr />
