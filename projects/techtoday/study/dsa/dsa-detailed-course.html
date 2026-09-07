@@ -2197,18 +2197,18 @@ console.log(largestRectangle([2, 1, 5, 6, 2, 3]));   // 10
                     capacity</code> — giving genuinely constant memory. This is what audio buffers, network packet
                 queues and streaming windows are built on.</p>
 
-            <div class="ascii">capacity 6, head=4, tail=1, size=3      (tail is the next free slot)
+            <div class="ascii">capacity 6, head=4, tail=1, size=3 (tail is the next free slot)
 
-  index:   0     1     2     3     4     5
-         [ E  |     |     |     |  C  |  D  ]
-           ^tail                   ^head
-                                   &lsquo;-- oldest item          E wrapped around
-                                                             into the space C
-  dequeue -&gt; C,  head = (4 + 1) % 6 = 5                      and D left behind
-  enqueue F -&gt; slot 1,  tail = (1 + 1) % 6 = 2
+                index: 0 1 2 3 4 5
+                [ E | | | | C | D ]
+                ^tail ^head
+                &lsquo;-- oldest item E wrapped around
+                into the space C
+                dequeue -&gt; C, head = (4 + 1) % 6 = 5 and D left behind
+                enqueue F -&gt; slot 1, tail = (1 + 1) % 6 = 2
 
-  full  when  size == capacity          &larr; track size explicitly; head == tail
-  empty when  size == 0                    is ambiguous otherwise</div>
+                full when size == capacity &larr; track size explicitly; head == tail
+                empty when size == 0 is ambiguous otherwise</div>
 
             <div class="code-tabs" data-label="Circular queue in fixed memory">
                 <div class="tab-pane" data-lang="python">
