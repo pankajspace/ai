@@ -14,7 +14,7 @@ Create or adapt a container project named `${input:projectName}` under `projects
 Read before editing:
 
 1. [projects/ADD_PROJECT.md](../../projects/ADD_PROJECT.md) — `Pick Project Values` and the final documentation steps.
-2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md) — `Shared Runtime Conventions`.
+2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
 3. [projects/template/README.md](../../projects/template/README.md) and [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
 4. A neighboring project ([basic](../../projects/basic), [langchain](../../projects/langchain), or [rag](../../projects/rag)) when its structure helps.
 5. The matching `study/` file, if one exists, for feature context and source material.

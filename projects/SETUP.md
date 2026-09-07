@@ -972,16 +972,12 @@ Docker image:
 1. Secret name: `techtoday/secrets`
 2. Contents: JSON key/value pairs for the API keys documented in project `README.md` files.
 
-#### 2.12.3. Docker Compose Environment Variables
+#### 2.12.3. Docker Compose Environment Variables and Paths
 
-Set in `~/docker-compose.yml` on the EC2 instance (not secret — safe to commit):
+Set in each project's Compose file on the EC2 instance (in `~/apps/<project-name>/docker-compose.yml` for modern self-provisioning projects, or `~/docker-compose.yml` for shared-host projects):
 
-1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/<project-name>` — tells Flask which prefix Nginx forwards under
-
-The same production service block must also use `command: python src/python/app.py`
-for every container app. If it still points at the old `python src/app.py` path,
-the container will restart and Nginx will return `502 Bad Gateway` for that
-project URL.
+1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/<project-name>` — tells Flask which prefix Nginx forwards under.
+2. `command: python src/python/app.py` — every production Flask container must execute this entrypoint. If it points at `python src/app.py` or another obsolete path, the container will exit/restart continuously and Nginx will return `502 Bad Gateway` for that project URL.
 
 #### 2.12.4. Per-Project Secrets
 

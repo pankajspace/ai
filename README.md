@@ -23,8 +23,10 @@
 3. [LangChain Lab](projects/langchain/README.md)
 4. [RAG Lab](projects/rag/README.md)
 5. [Docker Demo Lab](projects/docker/README.md)
-6. [InterviewIQ](projects/interviewiq/README.md)
-7. [Container App Template](projects/template/README.md)
+6. [AWS Strands Lab](projects/aws-strands/README.md)
+7. [InterviewIQ](projects/interviewiq/README.md)
+8. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
+9. [Container App Template](projects/template/README.md)
 
 # Learn
 
