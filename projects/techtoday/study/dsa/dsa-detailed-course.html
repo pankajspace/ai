@@ -150,6 +150,12 @@
                     memory of writing a binary search correctly is worth more than reading ten of them.</p>
             </div>
 
+            <div class="callout callout-key">
+                <p>New to the subject, or short on time? Start with the <a href="dsa-crash-course.html">DSA Crash
+                        Course</a> — the same structures explained through everyday mental models in about a tenth of
+                    the reading, then come back here for the implementations, proofs and edge cases.</p>
+            </div>
+
             <h3 id="a-note-on-the-two-languages">A note on the two languages<a class="headerlink"
                     href="#a-note-on-the-two-languages" title="Permanent link">#</a></h3>
             <p>Python and JavaScript were chosen because they are the two languages most people already have. They are
@@ -590,6 +596,17 @@ console.log(depth());               // ~10,000-15,000 depending on engine
                 address of element <code>i</code> is pure arithmetic: <code>base + i × element_size</code>. That single
                 fact gives you <code>O(1)</code> random access and is the reason arrays are the default container in
                 every language.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎬</span>
+                <div class="analogy-body">
+                    <b>Picture it — cinema seats</b>
+                    <p>Seats in a row, numbered in order. With a ticket for Seat 5 you do not ask everyone in seats 1 to
+                        4 where it is — you walk straight there. But adding a seat between 3 and 4 means everyone from 4
+                        onward shuffles right. Instant access, expensive insertion: the whole personality of an array.
+                    </p>
+                </div>
+            </div>
 
             <p>The cost is rigidity. Inserting into the middle means every later element must shift right one slot, and
                 deleting means they all shift left. Both are <code>O(n)</code>. A <strong>dynamic array</strong>
@@ -1410,6 +1427,16 @@ console.log(applyRanges(5, [[0, 2, 10], [1, 4, 20], [3, 3, 5]]));
                 is the entire idea; everything else is damage control for the fact that two different keys can land in
                 the same bucket.</p>
 
+            <div class="analogy">
+                <span class="analogy-icon">📱</span>
+                <div class="analogy-body">
+                    <b>Picture it — your phone's contacts</b>
+                    <p>You do not scroll through 1,000 names. You type "Alice" and the phone computes exactly which
+                        drawer that record lives in and opens it. A name goes in, a slot number comes out — and how many
+                        contacts you have stored makes no difference to how long it takes.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="hash-table"></div>
 
             <h3 id="collisions">Collisions and how they are handled<a class="headerlink" href="#collisions"
@@ -1660,6 +1687,16 @@ class HashMap {
                 can
                 live anywhere in memory. You lose <code>O(1)</code> indexing and cache locality; you gain the ability to
                 splice elements in and out without moving anything else.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🗺️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a treasure hunt</b>
+                    <p>You start with one clue. It says "under the mango tree". At the mango tree is a note pointing to
+                        "the old well". You follow the chain of addresses to the treasure — and you cannot skip ahead to
+                        clue seven, because the only thing that knows where it is, is clue six.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="linked-list"></div>
 
@@ -1954,6 +1991,16 @@ console.log(cache.get(2));            // -1
                 closed. Function calls, brackets, HTML tags, undo history, and depth-first search are all nesting
                 problems, which is why the stack appears everywhere.</p>
 
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a pile of plates</b>
+                    <p>You stack washed plates one on another. The last one down is the first one up. Pull from the
+                        bottom and the pile comes down — which is exactly why a function cannot return before the
+                        functions it called have returned.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="stack-queue"></div>
 
             <div class="code-tabs" data-label="Balanced brackets - the canonical stack problem">
@@ -2115,8 +2162,134 @@ console.log(largestRectangle([2, 1, 5, 6, 2, 3]));   // 10
                 breadth-first search. Because BFS explores in arrival order, it visits nodes in order of distance from
                 the source, which is why it finds shortest paths in unweighted graphs.</p>
 
+            <div class="analogy">
+                <span class="analogy-icon">🎟️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a ticket counter</b>
+                    <p>People queue for cinema tickets. First to arrive, first served; new arrivals join the back.
+                        Nobody jumps the line — and that fairness is precisely what makes BFS visit nodes in order of
+                        distance from the source.</p>
+                </div>
+            </div>
+
             <p>A <strong>deque</strong> (double-ended queue) allows push and pop at both ends in <code>O(1)</code>. It
                 subsumes both stack and queue and enables the monotonic-deque trick below.</p>
+
+            <h3 id="queue-variants">The three variants<a class="headerlink" href="#queue-variants"
+                    title="Permanent link">#</a></h3>
+            <ol>
+                <li><strong>Circular queue (ring buffer)</strong> — a fixed-size array whose end wraps around to its
+                    start, so the slots vacated at the front get reused instead of abandoned.</li>
+                <li><strong>Deque</strong> — add and remove at both ends. Python's <code>collections.deque</code> is
+                    itself a doubly linked list of fixed-size blocks.</li>
+                <li><strong>Priority queue</strong> — items leave by importance rather than arrival time. Think an
+                    <strong>emergency room</strong>: the heart-attack patient is seen before the mild headache who
+                    arrived an hour earlier. Covered properly in <a href="#19-heaps-and-priority-queues">section 19</a>,
+                    because the interesting part is the heap underneath.
+                </li>
+            </ol>
+
+            <h4 id="why-circular">Why the wrap-around matters<a class="headerlink" href="#why-circular"
+                    title="Permanent link">#</a></h4>
+            <p>Implement a queue naively on an array and every <code>dequeue</code> leaves a dead slot at the front.
+                The head index marches rightwards forever and the array grows without bound even though the queue
+                itself may hold three items. A circular queue fixes this with modular arithmetic — <code>(index + 1) %
+                    capacity</code> — giving genuinely constant memory. This is what audio buffers, network packet
+                queues and streaming windows are built on.</p>
+
+            <div class="ascii">capacity 6, head=4, tail=1, size=3      (tail is the next free slot)
+
+  index:   0     1     2     3     4     5
+         [ E  |     |     |     |  C  |  D  ]
+           ^tail                   ^head
+                                   &lsquo;-- oldest item          E wrapped around
+                                                             into the space C
+  dequeue -&gt; C,  head = (4 + 1) % 6 = 5                      and D left behind
+  enqueue F -&gt; slot 1,  tail = (1 + 1) % 6 = 2
+
+  full  when  size == capacity          &larr; track size explicitly; head == tail
+  empty when  size == 0                    is ambiguous otherwise</div>
+
+            <div class="code-tabs" data-label="Circular queue in fixed memory">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+class CircularQueue:
+    """Fixed-capacity FIFO. Every operation O(1), memory never grows."""
+
+    def __init__(self, capacity):
+        self.data = [None] * capacity
+        self.head = 0           # index of the oldest item
+        self.size = 0           # tracked explicitly - see the note below
+
+    def enqueue(self, value):
+        if self.size == len(self.data):
+            raise OverflowError("queue is full")
+        tail = (self.head + self.size) % len(self.data)  # wrap around
+        self.data[tail] = value
+        self.size += 1
+
+    def dequeue(self):
+        if self.size == 0:
+            raise IndexError("queue is empty")
+        value = self.data[self.head]
+        self.data[self.head] = None                 # release the reference
+        self.head = (self.head + 1) % len(self.data)
+        self.size -= 1
+        return value
+
+    def __len__(self):
+        return self.size
+
+
+q = CircularQueue(3)
+q.enqueue("a"); q.enqueue("b"); q.enqueue("c")
+print(q.dequeue())          # 'a'  - slot 0 is now free again
+q.enqueue("d")              # reuses slot 0 instead of growing
+print(len(q))               # 3
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+class CircularQueue {
+  constructor(capacity) {
+    this.data = new Array(capacity).fill(null);
+    this.head = 0;                    // oldest item
+    this.size = 0;                    // tracked explicitly
+  }
+
+  enqueue(value) {
+    if (this.size === this.data.length) throw new RangeError("queue is full");
+    const tail = (this.head + this.size) % this.data.length;   // wrap around
+    this.data[tail] = value;
+    this.size++;
+  }
+
+  dequeue() {
+    if (this.size === 0) return undefined;
+    const value = this.data[this.head];
+    this.data[this.head] = null;      // release the reference for the GC
+    this.head = (this.head + 1) % this.data.length;
+    this.size--;
+    return value;
+  }
+}
+
+const q = new CircularQueue(3);
+q.enqueue("a"); q.enqueue("b"); q.enqueue("c");
+console.log(q.dequeue());             // 'a' - slot 0 is free again
+q.enqueue("d");                       // reuses slot 0, no growth
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>Track <code>size</code> explicitly rather than inferring emptiness from the indices. With only
+                    <code>head</code> and <code>tail</code>, the condition <code>head == tail</code> means
+                    <em>both</em> completely empty and completely full, and the two are indistinguishable. The usual
+                    alternatives are a separate counter, as above, or deliberately wasting one slot so the two states
+                    can never coincide.
+                </p>
+            </div>
 
             <div class="code-tabs" data-label="Queues, done correctly">
                 <div class="tab-pane" data-lang="python">
@@ -2851,6 +3024,16 @@ console.log(minShipCapacity([1,2,3,4,5,6,7,8,9,10], 5));   // 15
             <p>A tree is a connected graph with no cycles: <code>n</code> nodes and exactly <code>n − 1</code> edges,
                 with one node designated the root. The defining property is that there is exactly one path between any
                 two nodes, which is what makes recursion on trees so clean — no cycle detection is needed.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">👴</span>
+                <div class="analogy-body">
+                    <b>Picture it — a family tree</b>
+                    <p>The grandfather is the root; his children branch off him, their children off them. Everyone has
+                        exactly one parent, so there is exactly one route from the root to any person — which is the
+                        reason tree code never has to worry about walking in circles.</p>
+                </div>
+            </div>
 
             <figure class="figure">
                 <svg viewBox="0 0 620 250" width="620" role="img" aria-label="Anatomy of a binary tree">
@@ -4202,6 +4385,17 @@ function* gridNeighbours(grid, r, c) {
                 <code>O(V + E)</code>.
             </p>
 
+            <div class="analogy">
+                <span class="analogy-icon">💧</span>
+                <div class="analogy-body">
+                    <b>Picture it — a pebble dropped in a pond</b>
+                    <p>BFS spreads outward in expanding rings, finishing every point one step away before touching
+                        anything two steps away. That is why the first time it reaches your target it has necessarily
+                        arrived by the shortest route. DFS is the opposite instinct: pick a direction and run until you
+                        hit a wall.</p>
+                </div>
+            </div>
+
             <p>The single thing you must not forget on a graph — as opposed to a tree — is the <strong>visited
                     set</strong>. Graphs have cycles; without it you loop forever.</p>
 
@@ -5446,6 +5640,16 @@ console.log(solveNQueens(8));                 // 92
                 it
                 is. The reputation for difficulty comes from the modelling step — deciding what a "state" is — not from
                 the technique.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📔</span>
+                <div class="analogy-body">
+                    <b>Picture it — keeping a diary</b>
+                    <p>Every time you finish a calculation you write the answer down. When the same question comes up
+                        again — and in recursive problems it comes up relentlessly — you look it up instead of redoing
+                        the work. That is the entire difference between <code>O(2ⁿ)</code> and <code>O(n)</code>.</p>
+                </div>
+            </div>
 
             <p>Two conditions must hold. <strong>Optimal substructure</strong>: the best solution is built from best
                 solutions to subproblems. <strong>Overlapping subproblems</strong>: the same subproblem is reached
