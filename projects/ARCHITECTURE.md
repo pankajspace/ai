@@ -215,38 +215,42 @@ The infrastructure runs inside the AWS global cloud backbone with resources conf
 
 ### 3.1. Route 53 DNS Configuration
 
-The authoritative public hosted zone `techtoday.click` manages all incoming domain queries. Three DNS A-records are configured with a Time-To-Live (TTL) of 300 seconds:
+The authoritative public hosted zone `techtoday.click` (Hosted Zone ID: `Z0212905113FFTTMPB9AC`) manages all incoming domain queries. Three DNS A-records are configured with a Time-To-Live (TTL) of 300 seconds, verified live against AWS:
 
 1. **`techtoday.click` (Apex Domain):**
    - Type: `A`
-   - Target Value: Elastic IP address (`$ELASTIC_IP`)
+   - Target Value: `44.193.134.238` (Elastic IP)
+   - TTL: `300` seconds
    - Purpose: Routes public users to the static portfolio homepage.
 2. **`www.techtoday.click` (Canonical WWW Subdomain):**
    - Type: `A`
-   - Target Value: Elastic IP address (`$ELASTIC_IP`)
+   - Target Value: `44.193.134.238` (Elastic IP)
+   - TTL: `300` seconds
    - Purpose: Directs legacy browser traffic to the apex domain via Nginx 301 redirection.
 3. **`app.techtoday.click` (Application Subdomain):**
    - Type: `A`
-   - Target Value: Elastic IP address (`$ELASTIC_IP`)
+   - Target Value: `44.193.134.238` (Elastic IP)
+   - TTL: `300` seconds
    - Purpose: Routes all containerized interactive applications through path-based routing.
 
 ### 3.2. Virtual Private Cloud (VPC) and Subnets
 
-1. **VPC:** Standard AWS Default VPC with IPv4 CIDR block `172.31.0.0/16`.
+1. **VPC:** AWS Default VPC `vpc-0b7f0542d027e78f6` in Region `us-east-1` with IPv4 CIDR block `172.31.0.0/16`.
 2. **Subnets:** Public default subnets distributed across availability zones in Region `us-east-1` (for example, `us-east-1a`, `us-east-1b`, `us-east-1c`).
 3. **Subnet Routing:** Subnet route tables contain a local route for `172.31.0.0/16` and a default route `0.0.0.0/0` targeting the AWS Internet Gateway (`igw-*`).
 4. **IP Assignment:** `Auto-assign public IPv4 address` is enabled on the target subnet, ensuring instance connectivity prior to Elastic IP association.
 
 ### 3.3. Elastic IP (Static IPv4)
 
-1. **Allocation:** Allocated from Amazon's pool of public IPv4 addresses (`aws ec2 allocate-address --domain vpc`).
-2. **Association:** Permanently bound to the primary network interface of the EC2 app server (`techtoday-server`).
-3. **Lifecycle Benefit:** Ensures that instance reboots, stops, or replacements do not change the public IP address, preventing DNS propagation delays in Route 53.
-4. **Cost:** Incurring $0 cost while continuously attached to a running EC2 instance.
+1. **Allocation:** Allocated from Amazon's pool of public IPv4 addresses (`eipalloc-0f36744b1927a622e`), tagged `Name: Techtoday Elastic IP`.
+2. **Public IPv4 Address:** `44.193.134.238`.
+3. **Association:** Permanently bound via association ID `eipassoc-005dbb1195133f3c5` to network interface `eni-0676b0fe2cba8b774` on instance `i-047b208deef5652d2`.
+4. **Lifecycle Benefit:** Ensures that instance reboots, stops, or replacements do not change the public IP address, preventing DNS propagation delays in Route 53.
+5. **Cost:** Incurs $0 cost while continuously attached to a running EC2 instance.
 
-### 3.4. Security Group Rules (`techtoday-server-sg`)
+### 3.4. Security Group Rules (`sg-062457d188e85b864`)
 
-The security group acts as a stateful firewall controlling inbound and outbound network packets at the hypervisor level.
+The security group (`sg-062457d188e85b864` in VPC `vpc-0b7f0542d027e78f6`) acts as a stateful firewall controlling inbound and outbound network packets at the hypervisor level.
 
 Inbound Rules:
 
@@ -259,6 +263,9 @@ Inbound Rules:
 3. **HTTPS (TCP Port 443):**
    - Source: `0.0.0.0/0` (Public Internet).
    - Purpose: Encrypted TLS transport for all web and API traffic.
+4. **Self Reference (All Traffic):**
+   - Source: `sg-062457d188e85b864`.
+   - Purpose: Allows inter-resource communication within the default security group.
 
 Outbound Rules:
 
@@ -274,11 +281,13 @@ Loopback Isolation:
 
 ### 3.5. EC2 Compute Specification
 
-1. **Server Name:** `techtoday-server`.
+1. **Server Name:** `techtoday-server` (Instance ID: `i-047b208deef5652d2`).
 2. **Operating System:** Amazon Linux 2023 (`al2023-ami-*-x86_64`).
-3. **Instance Type:** `t2.micro` (1 vCPU, 1 GiB RAM) for baseline operations, eligible for the AWS Free Tier. Can scale vertically to `t3.small` (2 vCPUs, 2 GiB RAM) when running multiple concurrent memory-intensive vector databases or embedding models.
-4. **Storage:** 30 GB gp3 root EBS volume configured with baseline 3,000 IOPS and 125 MB/s throughput.
-5. **Authentication:** RSA 2048-bit key pair (`techtoday.pem`) restricted to owner read-only permissions (`chmod 400`). Default login user is `ec2-user`.
+3. **Instance Type:** `t3.medium` (2 vCPUs, 4 GiB RAM) in production, providing sufficient headroom for concurrent vector embeddings, ChromaDB, and Redis operations alongside Flask apps. (Baseline starter instances can run on `t2.micro` with Free Tier).
+4. **Networking:** Private IP `172.31.43.213`, Public Elastic IP `44.193.134.238` in Region `us-east-1`.
+5. **IAM Instance Profile:** `arn:aws:iam::090232461741:instance-profile/ec2-techtoday-server-profile` (Role: `ec2-techtoday-server-role`).
+6. **Storage:** 30 GB gp3 root EBS volume configured with baseline 3,000 IOPS and 125 MB/s throughput.
+7. **Authentication:** RSA 2048-bit key pair (`techtoday.pem`) restricted to owner read-only permissions (`chmod 400`). Default login user is `ec2-user`.
 
 ---
 
@@ -621,21 +630,21 @@ flowchart TD
     "Statement": [{
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+        "Federated": "arn:aws:iam::090232461741:oidc-provider/token.actions.githubusercontent.com"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
-        "StringLike": { "token.actions.githubusercontent.com:sub": "repo:GITHUB_ORG/ai:ref:refs/heads/main" }
+        "StringLike": { "token.actions.githubusercontent.com:sub": "repo:pankajspace/*" }
       }
     }]
   }
   ```
 - Permissions Policy (`ECRPushAndSSH`):
   - Grants `ecr:GetAuthorizationToken` on `*`.
-  - Grants `ecr:CreateRepository` and `ecr:DescribeRepositories` on `arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*`.
-  - Grants `ecr:PutImage`, `ecr:InitiateLayerUpload`, `ecr:UploadLayerPart`, `ecr:CompleteLayerUpload` on `arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*`.
-  - Grants `ecr:BatchCheckLayerAvailability`, `ecr:BatchGetImage`, `ecr:GetDownloadUrlForLayer` on `arn:aws:ecr:*:ACCOUNT_ID:repository/techtoday/*`.
+  - Grants `ecr:CreateRepository` and `ecr:DescribeRepositories` on `arn:aws:ecr:*:090232461741:repository/techtoday/*`.
+  - Grants `ecr:PutImage`, `ecr:InitiateLayerUpload`, `ecr:UploadLayerPart`, `ecr:CompleteLayerUpload` on `arn:aws:ecr:*:090232461741:repository/techtoday/*`.
+  - Grants `ecr:BatchCheckLayerAvailability`, `ecr:BatchGetImage`, `ecr:GetDownloadUrlForLayer` on `arn:aws:ecr:*:090232461741:repository/techtoday/*`.
 - Critical Design Note: Docker Buildx / BuildKit performs a `HEAD` request against the target ECR repository manifest before pushing to verify which layers can be skipped. If read permissions (`BatchGetImage`, `GetDownloadUrlForLayer`) are missing, ECR responds with `403 Forbidden` and the push aborts.
 
 #### 6.1.3. EC2 Instance IAM Role (`ec2-techtoday-server-role`)
