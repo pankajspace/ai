@@ -286,7 +286,7 @@ const wrong = new Array(3).fill(new Array(4).fill(0));              // one row
                 </li>
             </ol>
 
-            <div class="code-tabs" data-label="Build one, then reverse it">
+            <div class="code-tabs" data-label="Defining a node and walking the chain">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 class Node:
@@ -301,15 +301,6 @@ def walk(head):
     while head:                 # the treasure hunt, one clue at a time
         print(head.value)
         head = head.next
-
-def reverse(head):
-    """The classic interview question. O(n) time, O(1) space."""
-    prev = None
-    while head:
-        nxt = head.next         # remember where we were going
-        head.next = prev        # flip this link backwards
-        prev, head = head, nxt  # step both pointers forward
-    return prev                 # the old tail is the new head
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -330,7 +321,29 @@ function walk(node) {
     node = node.next;
   }
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Reversing a list is the single most asked linked-list question. The trick is that you need three
+                pointers at once — you must save <code>next</code> before you overwrite it, or you lose the rest of the
+                chain.</p>
+
+            <div class="code-tabs" data-label="Reversing a list in place">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def reverse(head):
+    """The classic interview question. O(n) time, O(1) space."""
+    prev = None
+    while head:
+        nxt = head.next         # remember where we were going
+        head.next = prev        # flip this link backwards
+        prev, head = head, nxt  # step both pointers forward
+    return prev                 # the old tail is the new head
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function reverse(head) {        // O(n) time, O(1) space
   let prev = null;
   let cur = head;
@@ -902,7 +915,7 @@ console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
                 </p>
             </div>
 
-            <div class="code-tabs" data-label="Merge sort and quicksort">
+            <div class="code-tabs" data-label="Merge sort">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def merge_sort(nums):
@@ -922,19 +935,7 @@ def merge_sort(nums):
     return out + left[i:] + right[j:]
 
 
-def quicksort(nums):
-    """Pick a pivot, split around it, repeat. Average O(n log n)."""
-    if len(nums) &lt;= 1:
-        return nums
-    pivot = nums[len(nums) // 2]
-    smaller = [x for x in nums if x &lt; pivot]
-    equal = [x for x in nums if x == pivot]
-    larger = [x for x in nums if x &gt; pivot]
-    return quicksort(smaller) + equal + quicksort(larger)
-
-
 print(merge_sort([38, 12, 47, 5, 29]))    # [5, 12, 29, 38, 47]
-print(quicksort([38, 12, 47, 5, 29]))     # [5, 12, 29, 38, 47]
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
@@ -955,6 +956,33 @@ function mergeSort(nums) {              // O(n log n) always
   return [...out, ...left.slice(i), ...right.slice(j)];
 }
 
+console.log(mergeSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+            </div>
+
+            <p>Quicksort inverts the effort: instead of doing the work while merging, it does it while splitting. The
+                version below allocates new lists to stay readable — real implementations partition in place.</p>
+
+            <div class="code-tabs" data-label="Quicksort">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def quicksort(nums):
+    """Pick a pivot, split around it, repeat. Average O(n log n)."""
+    if len(nums) &lt;= 1:
+        return nums
+    pivot = nums[len(nums) // 2]
+    smaller = [x for x in nums if x &lt; pivot]
+    equal = [x for x in nums if x == pivot]
+    larger = [x for x in nums if x &gt; pivot]
+    return quicksort(smaller) + equal + quicksort(larger)
+
+
+print(quicksort([38, 12, 47, 5, 29]))     # [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function quicksort(nums) {              // average O(n log n)
   if (nums.length &lt;= 1) return nums;
   const pivot = nums[nums.length &gt;&gt; 1];
@@ -964,7 +992,6 @@ function quicksort(nums) {              // average O(n log n)
   return [...quicksort(smaller), ...equal, ...quicksort(larger)];
 }
 
-console.log(mergeSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
 console.log(quicksort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
 </code></pre>
                 </div>
@@ -1009,7 +1036,7 @@ console.log(quicksort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
                         set</strong>. Graphs contain cycles, and without it your traversal loops forever.</p>
             </div>
 
-            <div class="code-tabs" data-label="BFS and DFS — same shape, different container">
+            <div class="code-tabs" data-label="Breadth-first search">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 from collections import deque
@@ -1027,22 +1054,6 @@ def bfs(graph, start):
             if neighbour not in visited:
                 visited.add(neighbour)  # mark on ENQUEUE, or it enters twice
                 q.append(neighbour)
-    return order
-
-
-def dfs(graph, start):
-    """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
-    visited = set()
-    stack = [start]
-    order = []
-
-    while stack:
-        node = stack.pop()              # NEWEST first
-        if node in visited:
-            continue
-        visited.add(node)
-        order.append(node)
-        stack.extend(graph[node])
     return order
 </code></pre>
                 </div>
@@ -1065,7 +1076,34 @@ function bfs(graph, start) {            // queue -&gt; level by level
   }
   return order;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Now change one word. Swap the queue for a stack — take the <em>newest</em> item instead of the oldest —
+                and the same loop dives down a single branch instead of spreading in rings. Nothing else differs.</p>
+
+            <div class="code-tabs" data-label="Depth-first search">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def dfs(graph, start):
+    """Stack -&gt; newest first -&gt; dives down one branch. O(V + E)."""
+    visited = set()
+    stack = [start]
+    order = []
+
+    while stack:
+        node = stack.pop()              # NEWEST first
+        if node in visited:
+            continue
+        visited.add(node)
+        order.append(node)
+        stack.extend(graph[node])
+    return order
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function dfs(graph, start) {            // stack -&gt; dive deep
   const visited = new Set();
   const stack = [start];
@@ -1175,17 +1213,33 @@ function dfs(graph, start) {            // stack -&gt; dive deep
 
             <div class="viz" data-viz="recursion"></div>
 
-            <div class="code-tabs" data-label="One line of caching, exponential → linear">
+            <div class="code-tabs" data-label="The naive version — exponential">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
-from functools import lru_cache
-
 def fib_slow(n):
     """O(2^n) - recomputes the same subproblems over and over."""
     if n &lt;= 1:
         return n
     return fib_slow(n - 1) + fib_slow(n - 2)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function fibSlow(n) {                   // O(2^n)
+  if (n &lt;= 1) return n;
+  return fibSlow(n - 1) + fibSlow(n - 2);
+}
+</code></pre>
+                </div>
+            </div>
 
+            <p>Now add the diary. The logic is untouched — the only change is that finished answers get written down,
+                and that alone collapses <code>O(2ⁿ)</code> to <code>O(n)</code>.</p>
+
+            <div class="code-tabs" data-label="With memoisation — linear">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from functools import lru_cache
 
 @lru_cache(maxsize=None)
 def fib_fast(n):
@@ -1195,23 +1249,11 @@ def fib_fast(n):
     return fib_fast(n - 1) + fib_fast(n - 2)
 
 
-def fib_iterative(n):
-    """O(n) time, O(1) space - no recursion at all."""
-    a, b = 0, 1
-    for _ in range(n):
-        a, b = b, a + b
-    return a
-
 print(fib_fast(300))        # instant
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function fibSlow(n) {                   // O(2^n)
-  if (n &lt;= 1) return n;
-  return fibSlow(n - 1) + fibSlow(n - 2);
-}
-
 const memo = new Map();
 function fibFast(n) {                   // O(n) - the Map is the diary
   if (n &lt;= 1) return n;
@@ -1221,13 +1263,37 @@ function fibFast(n) {                   // O(n) - the Map is the diary
   return value;
 }
 
+console.log(fibFast(90));               // use BigInt past 2^53 - 1
+</code></pre>
+                </div>
+            </div>
+
+            <p>Once you see that each answer depends only on the two before it, you can drop the recursion entirely and
+                sweep forward with two variables — same result, no stack frames, constant memory.</p>
+
+            <div class="code-tabs" data-label="Bottom-up — linear time, constant space">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def fib_iterative(n):
+    """O(n) time, O(1) space - no recursion at all."""
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+
+
+print(fib_iterative(90))    # 2880067194370816120
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function fibIterative(n) {              // O(n) time, O(1) space
   let [a, b] = [0, 1];
   for (let i = 0; i &lt; n; i++) [a, b] = [b, a + b];
   return a;
 }
 
-console.log(fibFast(90));               // use BigInt past 2^53 - 1
+console.log(fibIterative(90));          // use BigInt past 2^53 - 1
 </code></pre>
                 </div>
             </div>

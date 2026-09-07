@@ -2605,7 +2605,7 @@ function dfsIterative(root, visit) {    // our stack lives on the heap
             <h3 id="the-implementations">The implementations<a class="headerlink" href="#the-implementations"
                     title="Permanent link">#</a></h3>
 
-            <div class="code-tabs" data-label="Merge sort, quicksort, counting sort">
+            <div class="code-tabs" data-label="Merge sort">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
 def merge_sort(nums):
@@ -2632,6 +2632,45 @@ def merge(left, right):
     return out
 
 
+print(merge_sort([38, 12, 47, 5, 29]))          # [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function mergeSort(nums) {              // O(n log n) always, stable
+  if (nums.length &lt;= 1) return nums;
+  const mid = nums.length &gt;&gt; 1;
+  return merge(mergeSort(nums.slice(0, mid)), mergeSort(nums.slice(mid)));
+}
+
+function merge(left, right) {           // O(n + m) two-pointer merge
+  const out = [];
+  let i = 0;
+  let j = 0;
+  while (i &lt; left.length &amp;&amp; j &lt; right.length) {
+    // &lt;= keeps it STABLE: ties come from the left run.
+    if (left[i] &lt;= right[j]) out.push(left[i++]);
+    else out.push(right[j++]);
+  }
+  while (i &lt; left.length) out.push(left[i++]);
+  while (j &lt; right.length) out.push(right[j++]);
+  return out;
+}
+
+console.log(mergeSort([38, 12, 47, 5, 29]));       // [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+            </div>
+
+            <p>Quicksort does its work while <em>splitting</em> rather than while merging, which is why it needs no
+                second array. Two details make this version production-grade: a median-of-three pivot to avoid the
+                <code>O(n²)</code> worst case on sorted input, and recursing into the smaller partition while looping on
+                the larger, which caps stack depth at <code>O(log n)</code>.
+            </p>
+
+            <div class="code-tabs" data-label="Quicksort with Lomuto partitioning">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
 def quicksort(nums, lo=0, hi=None):
     """Average O(n log n), worst O(n^2). In place, not stable."""
     if hi is None:
@@ -2669,43 +2708,13 @@ def partition(nums, lo, hi):
     return store
 
 
-def counting_sort(nums, max_value):
-    """O(n + k) - beats the n log n bound by never comparing."""
-    counts = [0] * (max_value + 1)
-    for x in nums:
-        counts[x] += 1
-    out = []
-    for value, count in enumerate(counts):
-        out.extend([value] * count)
-    return out
-
-
-print(merge_sort([38, 12, 47, 5, 29]))          # [5, 12, 29, 38, 47]
-print(counting_sort([4, 1, 3, 1, 4, 0], 4))     # [0, 1, 1, 3, 4, 4]
+data = [38, 12, 47, 5, 29]
+quicksort(data)
+print(data)                                     # [5, 12, 29, 38, 47]
 </code></pre>
                 </div>
                 <div class="tab-pane" data-lang="javascript">
                     <pre><code data-lang="javascript">
-function mergeSort(nums) {              // O(n log n) always, stable
-  if (nums.length &lt;= 1) return nums;
-  const mid = nums.length &gt;&gt; 1;
-  return merge(mergeSort(nums.slice(0, mid)), mergeSort(nums.slice(mid)));
-}
-
-function merge(left, right) {           // O(n + m) two-pointer merge
-  const out = [];
-  let i = 0;
-  let j = 0;
-  while (i &lt; left.length &amp;&amp; j &lt; right.length) {
-    // &lt;= keeps it STABLE: ties come from the left run.
-    if (left[i] &lt;= right[j]) out.push(left[i++]);
-    else out.push(right[j++]);
-  }
-  while (i &lt; left.length) out.push(left[i++]);
-  while (j &lt; right.length) out.push(right[j++]);
-  return out;
-}
-
 function quicksort(nums, lo = 0, hi = nums.length - 1) {
   while (lo &lt; hi) {
     const p = partition(nums, lo, hi);
@@ -2735,6 +2744,33 @@ function partition(nums, lo, hi) {      // Lomuto, median-of-three pivot
   return store;
 }
 
+console.log(quicksort([38, 12, 47, 5, 29]));       // [5, 12, 29, 38, 47]
+</code></pre>
+                </div>
+            </div>
+
+            <p>Both of the above compare elements, so both are stuck behind the <code>n log n</code> barrier. Counting
+                sort escapes it by not comparing at all — it uses the values themselves as array indices.</p>
+
+            <div class="code-tabs" data-label="Counting sort">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def counting_sort(nums, max_value):
+    """O(n + k) - beats the n log n bound by never comparing."""
+    counts = [0] * (max_value + 1)
+    for x in nums:
+        counts[x] += 1
+    out = []
+    for value, count in enumerate(counts):
+        out.extend([value] * count)
+    return out
+
+
+print(counting_sort([4, 1, 3, 1, 4, 0], 4))     # [0, 1, 1, 3, 4, 4]
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function countingSort(nums, maxValue) { // O(n + k), no comparisons at all
   const counts = new Array(maxValue + 1).fill(0);
   for (const x of nums) counts[x]++;
@@ -2745,7 +2781,6 @@ function countingSort(nums, maxValue) { // O(n + k), no comparisons at all
   return out;
 }
 
-console.log(mergeSort([38, 12, 47, 5, 29]));       // [5, 12, 29, 38, 47]
 console.log(countingSort([4, 1, 3, 1, 4, 0], 4));  // [0, 1, 1, 3, 4, 4]
 </code></pre>
                 </div>
@@ -3088,11 +3123,9 @@ console.log(minShipCapacity([1,2,3,4,5,6,7,8,9,10], 5));   // 15
 
             <div class="viz" data-viz="traversal"></div>
 
-            <div class="code-tabs" data-label="All four traversals">
+            <div class="code-tabs" data-label="The node, and the three depth-first orders">
                 <div class="tab-pane" data-lang="python">
                     <pre><code data-lang="python">
-from collections import deque
-
 class TreeNode:
     def __init__(self, value, left=None, right=None):
         self.value, self.left, self.right = value, left, right
@@ -3125,37 +3158,6 @@ def postorder(node, out=None):
         postorder(node.left, out)
         postorder(node.right, out)
         out.append(node.value)
-    return out
-
-
-def level_order(root):
-    """BFS with a queue. Returns one list per level."""
-    if not root:
-        return []
-    levels, q = [], deque([root])
-    while q:
-        level = []
-        for _ in range(len(q)):         # snapshot the size = this level
-            node = q.popleft()
-            level.append(node.value)
-            if node.left:
-                q.append(node.left)
-            if node.right:
-                q.append(node.right)
-        levels.append(level)
-    return levels
-
-
-def inorder_iterative(root):
-    """The same walk without recursion, using an explicit stack."""
-    out, stack, cur = [], [], root
-    while cur or stack:
-        while cur:                      # go as far left as possible
-            stack.append(cur)
-            cur = cur.left
-        cur = stack.pop()               # backtrack one node
-        out.append(cur.value)
-        cur = cur.right                 # then explore its right subtree
     return out
 </code></pre>
                 </div>
@@ -3192,7 +3194,39 @@ function postorder(node, out = []) {    // left, right, node
   out.push(node.value);
   return out;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Level-order is the odd one out: it is not depth-first at all, so it uses a queue rather than the call
+                stack. Snapshotting the queue length at the top of each round is what lets you emit one list per level
+                instead of one flat sequence.</p>
+
+            <div class="code-tabs" data-label="Level-order (BFS)">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+from collections import deque
+
+def level_order(root):
+    """BFS with a queue. Returns one list per level."""
+    if not root:
+        return []
+    levels, q = [], deque([root])
+    while q:
+        level = []
+        for _ in range(len(q)):         # snapshot the size = this level
+            node = q.popleft()
+            level.append(node.value)
+            if node.left:
+                q.append(node.left)
+            if node.right:
+                q.append(node.right)
+        levels.append(level)
+    return levels
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function levelOrder(root) {             // BFS, one array per level
   if (!root) return [];
   const levels = [];
@@ -3208,7 +3242,31 @@ function levelOrder(root) {             // BFS, one array per level
   }
   return levels;
 }
+</code></pre>
+                </div>
+            </div>
 
+            <p>Finally, the same in-order walk with the recursion removed. Worth knowing because it is what you reach
+                for when a tree is deep enough to overflow the call stack.</p>
+
+            <div class="code-tabs" data-label="In-order without recursion">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def inorder_iterative(root):
+    """The same walk without recursion, using an explicit stack."""
+    out, stack, cur = [], [], root
+    while cur or stack:
+        while cur:                      # go as far left as possible
+            stack.append(cur)
+            cur = cur.left
+        cur = stack.pop()               # backtrack one node
+        out.append(cur.value)
+        cur = cur.right                 # then explore its right subtree
+    return out
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
 function inorderIterative(root) {       // explicit stack, no recursion
   const out = [];
   const stack = [];
