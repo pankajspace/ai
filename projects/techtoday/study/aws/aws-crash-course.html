@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>AWS Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual, fast-paced guide to essential AWS cloud services: EC2, S3, Lambda, IAM, VPC, RDS, API Gateway, SQS, and CloudWatch." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="aws-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../../aws-guides.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to AWS
+                Guides</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="aws-crash-course">AWS Crash Course<a class="headerlink" href="#aws-crash-course"
+                    title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-aws-global-infrastructure">1. AWS Global Infrastructure: Regions &amp; AZs</a></li>
+                <li><a href="#2-iam-security-and-roles">2. IAM: Users, Roles, Policies &amp; Least Privilege</a></li>
+                <li><a href="#3-ec2-virtual-servers">3. Amazon EC2: Virtual Compute Instances</a></li>
+                <li><a href="#4-aws-lambda-serverless">4. AWS Lambda: Serverless Event-Driven Functions</a></li>
+                <li><a href="#5-s3-object-storage">5. Amazon S3: Object Storage &amp; Presigned URLs</a></li>
+                <li><a href="#6-vpc-cloud-networking">6. Amazon VPC: Subnets, NAT &amp; Security Groups</a></li>
+                <li><a href="#7-rds-and-relational-databases">7. Amazon RDS &amp; Aurora Relational Databases</a></li>
+                <li><a href="#8-api-gateway">8. Amazon API Gateway: REST &amp; HTTP APIs</a></li>
+                <li><a href="#9-sqs-and-sns-messaging">9. Asynchronous Messaging: SQS &amp; SNS</a></li>
+                <li><a href="#10-secrets-and-config">10. AWS Secrets Manager &amp; SSM Parameter Store</a></li>
+                <li><a href="#11-cloudwatch-observability">11. Amazon CloudWatch: Logs, Metrics &amp; Alarms</a></li>
+                <li><a href="#12-aws-cheat-sheet">12. Developer AWS Quick Reference &amp; CLI</a></li>
+            </ol>
+
+            <h2 id="1-aws-global-infrastructure">1. AWS Global Infrastructure: Regions &amp; AZs<a class="headerlink"
+                    href="#1-aws-global-infrastructure" title="Permanent link">#</a></h2>
+            <p>Amazon Web Services (AWS) powers cloud infrastructure globally across three geographic tiers:</p>
+
+            <div class="concept-card">
+                <h3>The 3 Tiers of AWS Infrastructure</h3>
+                <ul>
+                    <li><strong>Region:</strong> A distinct physical location around the globe (e.g.
+                        <code>us-east-1</code> in N. Virginia, <code>eu-west-1</code> in Ireland,
+                        <code>ap-south-1</code> in Mumbai). Data never leaves a region unless you explicitly configure
+                        replication.</li>
+                    <li><strong>Availability Zone (AZ):</strong> One or more discrete data centers within a region,
+                        isolated from failures in other AZs and connected by ultra-low-latency fiber (e.g.
+                        <code>us-east-1a</code>, <code>us-east-1b</code>). Running in multi-AZ ensures high
+                        availability.</li>
+                    <li><strong>Edge Locations:</strong> Points of Presence (PoPs) worldwide that power Amazon
+                        CloudFront CDN and Route 53 DNS for fast local caching.</li>
+                </ul>
+            </div>
+
+            <h2 id="2-iam-security-and-roles">2. IAM: Users, Roles, Policies &amp; Least Privilege<a class="headerlink"
+                    href="#2-iam-security-and-roles" title="Permanent link">#</a></h2>
+            <p><strong>AWS Identity and Access Management (IAM)</strong> controls authentication (who you are) and
+                authorization (what you can do) across all AWS services. The foundational rule for software developers
+                is the <strong>Principle of Least Privilege</strong>.</p>
+
+            <pre><code>// Example IAM Policy: Read-only access to a specific S3 bucket
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::techtoday-uploads",
+        "arn:aws:s3:::techtoday-uploads/*"
+      ]
+    }
+  ]
+}</code></pre>
+
+            <blockquote>
+                <p><strong>Never Hardcode AWS Keys:</strong> Do not bake <code>AWS_ACCESS_KEY_ID</code> and
+                    <code>AWS_SECRET_ACCESS_KEY</code> into source code or Docker images! Instead, attach an <strong>IAM
+                        Role</strong> (Instance Profile) to your EC2 instance, ECS task, or Lambda function. The AWS SDK
+                    retrieves temporary rotating credentials automatically.</p>
+            </blockquote>
+
+            <h2 id="3-ec2-virtual-servers">3. Amazon EC2: Virtual Compute Instances<a class="headerlink"
+                    href="#3-ec2-virtual-servers" title="Permanent link">#</a></h2>
+            <p><strong>Amazon Elastic Compute Cloud (EC2)</strong> provides resizable virtual machine compute capacity
+                in the cloud.</p>
+
+            <ul>
+                <li><strong>Instance Types:</strong> Categorized by workload profile (e.g. <code>t4g.micro</code> /
+                    <code>t3.medium</code> for general dev, <code>c7i</code> for compute-heavy APIs, <code>r7g</code>
+                    for memory-heavy Redis/databases).</li>
+                <li><strong>AMI (Amazon Machine Image):</strong> Pre-configured OS templates (Amazon Linux 2023, Ubuntu
+                    24.04).</li>
+                <li><strong>Security Groups:</strong> Virtual stateful firewalls controlling inbound/outbound ports
+                    (e.g. Port 22 SSH, Port 80 HTTP, Port 443 HTTPS).</li>
+                <li><strong>User Data:</strong> Bootstrap bash shell scripts executed once on initial instance boot to
+                    install Docker, clone code, and start services.</li>
+            </ul>
+
+            <h2 id="4-aws-lambda-serverless">4. AWS Lambda: Serverless Event-Driven Functions<a class="headerlink"
+                    href="#4-aws-lambda-serverless" title="Permanent link">#</a></h2>
+            <p><strong>AWS Lambda</strong> executes code without provisioning or managing servers. You pay strictly for
+                execution duration (billed per millisecond) and number of requests.</p>
+
+            <pre><code>// Modern Node.js Lambda Handler
+export const handler = async (event) => {
+  console.log("Received event:", JSON.stringify(event));
+
+  const body = JSON.parse(event.body || "{}");
+  const userId = body.userId;
+
+  return {
+    statusCode: 200,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: "Processing completed successfully",
+      userId
+    })
+  };
+};</code></pre>
+
+            <div class="concept-card">
+                <h3>Lambda Developer Key Concepts</h3>
+                <ul>
+                    <li><strong>Cold Start:</strong> When a function is called after idle time, AWS boots a container
+                        runtime (adds 100ms–1s). Minimize dependencies and keep database connections outside the handler
+                        function for connection reuse!</li>
+                    <li><strong>Execution Limits:</strong> Maximum timeout is 15 minutes; maximum memory is 10 GB;
+                        ephemeral storage (<code>/tmp</code>) up to 10 GB.</li>
+                    <li><strong>Event Triggers:</strong> Invoked synchronously (API Gateway) or asynchronously (S3
+                        uploads, SQS messages, EventBridge events).</li>
+                </ul>
+            </div>
+
+            <h2 id="5-s3-object-storage">5. Amazon S3: Object Storage &amp; Presigned URLs<a class="headerlink"
+                    href="#5-s3-object-storage" title="Permanent link">#</a></h2>
+            <p><strong>Amazon Simple Storage Service (S3)</strong> is scalable, durable (99.999999999% 11 9's),
+                high-availability object storage for files, media assets, backups, and static websites.</p>
+
+            <h3>Generating Presigned URLs (Secure Direct Uploads)</h3>
+            <p>Instead of streaming large video or PDF uploads through your backend web server (which exhausts server
+                memory and network connections), generate an S3 <strong>Presigned URL</strong> so the browser uploads
+                directly to S3:</p>
+
+            <pre><code>// Node.js AWS SDK v3: Generating Presigned Upload URL
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const s3 = new S3Client({ region: "us-east-1" });
+
+export async function getUploadUrl(filename, contentType) {
+  const command = new PutObjectCommand({
+    Bucket: "my-app-uploads",
+    Key: `avatars/${filename}`,
+    ContentType: contentType
+  });
+
+  // Client has 15 minutes to upload directly to S3
+  return await getSignedUrl(s3, command, { expiresIn: 900 });
+}</code></pre>
+
+            <h2 id="6-vpc-cloud-networking">6. Amazon VPC: Subnets, NAT &amp; Security Groups<a class="headerlink"
+                    href="#6-vpc-cloud-networking" title="Permanent link">#</a></h2>
+            <p>Every cloud application runs within a <strong>Virtual Private Cloud (VPC)</strong>:</p>
+
+            <ol>
+                <li><strong>Public Subnet:</strong> Connected to an <strong>Internet Gateway (IGW)</strong>. Houses
+                    public-facing load balancers (ALB) and public ingress.</li>
+                <li><strong>Private Subnet:</strong> No direct Internet route. Houses application servers, containers,
+                    and databases.</li>
+                <li><strong>NAT Gateway:</strong> Lives in the public subnet; gives private instances outbound-only
+                    Internet access (for security patches or external API calls) while blocking external inbound
+                    connections.</li>
+            </ol>
+
+            <h2 id="7-rds-and-relational-databases">7. Amazon RDS &amp; Aurora Relational Databases<a class="headerlink"
+                    href="#7-rds-and-relational-databases" title="Permanent link">#</a></h2>
+            <p><strong>Amazon Relational Database Service (RDS)</strong> automates hardware provisioning, database
+                setup, patching, and backups for PostgreSQL, MySQL, and MariaDB.</p>
+
+            <ul>
+                <li><strong>Multi-AZ Deployment:</strong> Synchronous replication to a standby instance in another
+                    Availability Zone for automatic failover with zero data loss.</li>
+                <li><strong>Read Replicas:</strong> Asynchronous replicas offloading heavy read traffic (analytics,
+                    dashboards) from the primary writer node.</li>
+                <li><strong>Amazon Aurora:</strong> Cloud-native relational database engineered by AWS. Delivers up to
+                    5x throughput of standard MySQL and 3x of PostgreSQL, with instant storage autoscaling.</li>
+            </ul>
+
+            <h2 id="8-api-gateway">8. Amazon API Gateway: REST &amp; HTTP APIs<a class="headerlink"
+                    href="#8-api-gateway" title="Permanent link">#</a></h2>
+            <p><strong>Amazon API Gateway</strong> is a fully managed service that makes it easy for developers to
+                create, publish, maintain, monitor, and secure APIs at any scale.</p>
+
+            <div class="concept-card">
+                <h3>HTTP API vs REST API</h3>
+                <ul>
+                    <li><strong>HTTP APIs:</strong> Modern, lightweight, optimized for serverless Lambda proxies. 70%
+                        cheaper and lower latency than REST APIs. Ideal for new microservices.</li>
+                    <li><strong>REST APIs:</strong> Supports advanced enterprise features (request transformation, API
+                        keys, usage plans, request validation, WAF integration).</li>
+                </ul>
+            </div>
+
+            <h2 id="9-sqs-and-sns-messaging">9. Asynchronous Messaging: SQS &amp; SNS<a class="headerlink"
+                    href="#9-sqs-and-sns-messaging" title="Permanent link">#</a></h2>
+            <p>Monolithic request-response chains fail when downstream services slow down. Decouple services using
+                asynchronous messaging queues:</p>
+
+            <ol>
+                <li><strong>Amazon SQS (Queue &bull; 1-to-1):</strong> A message queue where worker pools pull jobs.
+                    Features <em>Visibility Timeout</em> (prevents other workers from processing the same job) and
+                    <em>Dead-Letter Queues (DLQ)</em> for jobs that repeatedly fail.</li>
+                <li><strong>Amazon SNS (Pub/Sub &bull; 1-to-Many):</strong> A publisher sends a message to an SNS topic;
+                    SNS fans it out simultaneously to multiple subscribers (SQS queues, HTTP webhooks, Lambda functions,
+                    emails).</li>
+            </ol>
+
+            <h2 id="10-secrets-and-config">10. AWS Secrets Manager &amp; SSM Parameter Store<a class="headerlink"
+                    href="#10-secrets-and-config" title="Permanent link">#</a></h2>
+            <p>Decouple secrets and configuration values from source code:</p>
+
+            <ul>
+                <li><strong>SSM Parameter Store:</strong> Hierarchical storage for non-sensitive configuration keys
+                    (e.g. <code>/app/production/api_url</code>) with free standard parameters.</li>
+                <li><strong>AWS Secrets Manager:</strong> Encrypted key-value store for passwords, API tokens, and
+                    database credentials with automated credential rotation.</li>
+            </ul>
+
+            <h2 id="11-cloudwatch-observability">11. Amazon CloudWatch: Logs, Metrics &amp; Alarms<a class="headerlink"
+                    href="#11-cloudwatch-observability" title="Permanent link">#</a></h2>
+            <p><strong>Amazon CloudWatch</strong> collects monitoring and operational data in the form of logs, metrics,
+                and events:</p>
+
+            <pre><code># CloudWatch Logs Insights Query: Find top 10 error traces in the last hour
+fields @timestamp, @message
+| filter @message like /ERROR/ or @message like /Exception/
+| sort @timestamp desc
+| limit 10</code></pre>
+
+            <h2 id="12-aws-cheat-sheet">12. Developer AWS Quick Reference &amp; CLI<a class="headerlink"
+                    href="#12-aws-cheat-sheet" title="Permanent link">#</a></h2>
+            <div class="concept-card">
+                <h3>Daily Essential AWS CLI Commands</h3>
+                <pre><code># Check current authenticated caller identity
+aws sts get-caller-identity
+
+# S3 File Operations
+aws s3 ls
+aws s3 cp app.zip s3://my-bucket/builds/app.zip
+aws s3 sync ./dist s3://my-static-website --delete
+
+# Lambda Operations
+aws lambda list-functions
+aws lambda invoke --function-name process-payment response.json
+
+# Retrieve Secret Value
+aws secretsmanager get-secret-value --secret-id app/prod/db</code></pre>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Advance to production architectures, DynamoDB single-table design, and
+                    ECS Fargate in the <a href="aws-detailed-course.html">AWS Detailed Course</a>. Return to the <a
+                        href="../../index.html">TechToday Homepage</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; AWS Cloud Study Guides &bull; <a href="../../index.html">Home</a> &bull; <a
+                    href="../../aws-guides.html">AWS Guides</a></p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="aws-study.js"></script>
+</body>
+
+</html>

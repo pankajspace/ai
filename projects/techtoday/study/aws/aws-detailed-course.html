@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>AWS Detailed Course | TechToday</title>
+    <meta name="description"
+        content="In-depth AWS architecture guide: ECS Fargate containers, DynamoDB single-table design, EventBridge, ElastiCache Redis, RDS Proxy, and CDK." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="aws-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../../aws-guides.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to AWS
+                Guides</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="aws-detailed-course">AWS Detailed Course<a class="headerlink" href="#aws-detailed-course"
+                    title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#1-well-architected-framework">AWS Well-Architected Framework</a></li>
+                <li><a href="#2-containers-ecs-fargate">Containers on AWS: Amazon ECS &amp; AWS Fargate</a></li>
+                <li><a href="#3-dynamodb-single-table-design">Amazon DynamoDB &amp; Single-Table Design</a></li>
+                <li><a href="#4-event-driven-eventbridge-step-functions">Event-Driven Architecture: EventBridge &amp;
+                        Step Functions</a></li>
+                <li><a href="#5-caching-elasticache-cloudfront">Caching: Amazon ElastiCache (Redis) &amp; CloudFront</a>
+                </li>
+                <li><a href="#6-high-availability-and-disaster-recovery">High Availability, RTO/RPO &amp; Route 53</a>
+                </li>
+                <li><a href="#7-database-scaling-rds-proxy">Database Scaling &amp; Amazon RDS Proxy</a></li>
+                <li><a href="#8-security-privatelink-kms-waf">Cloud Security: PrivateLink, KMS &amp; AWS WAF</a></li>
+                <li><a href="#9-infrastructure-as-code-cdk-terraform">Infrastructure as Code: AWS CDK vs Terraform</a>
+                </li>
+                <li><a href="#10-cost-optimization-interview-questions">Cost Optimization &amp; System Design Deep
+                        Dive</a></li>
+            </ol>
+
+            <h2 id="1-well-architected-framework">1. AWS Well-Architected Framework<a class="headerlink"
+                    href="#1-well-architected-framework" title="Permanent link">#</a></h2>
+            <p>The <strong>AWS Well-Architected Framework</strong> defines architectural best practices organized across
+                six core pillars:</p>
+
+            <div class="concept-card">
+                <h3>The 6 Pillars of Well-Architected Systems</h3>
+                <ol>
+                    <li><strong>Operational Excellence:</strong> Automating releases, running workloads as code,
+                        handling failures incrementally.</li>
+                    <li><strong>Security:</strong> Applying defense-in-depth, least-privilege IAM, automated secret
+                        rotation, encryption at rest (KMS) and in transit (TLS 1.3).</li>
+                    <li><strong>Reliability:</strong> Graceful degradation, automated self-healing, multi-AZ deployment,
+                        and load testing.</li>
+                    <li><strong>Performance Efficiency:</strong> Choosing the right compute type (serverless vs
+                        container), offloading static content to CDNs, and caching frequently queried data.</li>
+                    <li><strong>Cost Optimization:</strong> Right-sizing instances, adopting Graviton ARM processors
+                        (20% cheaper, 40% better performance), leveraging auto-scaling down during off-hours.</li>
+                    <li><strong>Sustainability:</strong> Maximizing server utilization and eliminating idle compute.
+                    </li>
+                </ol>
+            </div>
+
+            <h2 id="2-containers-ecs-fargate">2. Containers on AWS: Amazon ECS &amp; AWS Fargate<a class="headerlink"
+                    href="#2-containers-ecs-fargate" title="Permanent link">#</a></h2>
+            <p><strong>Amazon Elastic Container Service (ECS)</strong> is a fully managed container orchestration
+                service. With <strong>AWS Fargate</strong>, you do not manage EC2 worker nodes; AWS provisions and
+                scales the underlying compute automatically:</p>
+
+            <ul>
+                <li><strong>Task Definition:</strong> JSON blueprint specifying Docker image, CPU/memory units (e.g. 0.5
+                    vCPU, 1024 MiB), environment variables, port mappings, and logging to CloudWatch.</li>
+                <li><strong>Service:</strong> Maintains desired task count (e.g. 5 replicas), integrates with
+                    Application Load Balancer (ALB), and manages rolling update deployments.</li>
+                <li><strong>Task Execution Role vs Task Role:</strong> The <em>Execution Role</em> allows ECS agent to
+                    pull images from ECR and write logs; the <em>Task Role</em> grants permissions to the application
+                    code running inside the container.</li>
+            </ul>
+
+            <h2 id="3-dynamodb-single-table-design">3. Amazon DynamoDB &amp; Single-Table Design<a class="headerlink"
+                    href="#3-dynamodb-single-table-design" title="Permanent link">#</a></h2>
+            <p><strong>Amazon DynamoDB</strong> is a serverless NoSQL database delivering consistent single-digit
+                millisecond latency at any scale with zero server management.</p>
+
+            <pre><code>// DynamoDB Primary Key Concepts:
+// 1. Simple Primary Key: Partition Key (PK) -> e.g., userId
+// 2. Composite Primary Key: Partition Key (PK) + Sort Key (SK) -> e.g., userId + orderId
+
+// Example: Single-Table Schema for Users and Orders in one table
+[
+  { "PK": "USER#101", "SK": "METADATA", "name": "Pankaj", "email": "pankaj@corp.com" },
+  { "PK": "USER#101", "SK": "ORDER#2026-001", "amount": 89.99, "status": "SHIPPED" },
+  { "PK": "USER#101", "SK": "ORDER#2026-002", "amount": 14.50, "status": "PENDING" }
+]
+
+// Single Query fetches the user profile AND their recent orders in ONE network request!
+// KeyConditionExpression: PK = "USER#101" AND SK begins_with("ORDER#")</code></pre>
+
+            <h2 id="4-event-driven-eventbridge-step-functions">4. Event-Driven Architecture: EventBridge &amp; Step
+                Functions<a class="headerlink" href="#4-event-driven-eventbridge-step-functions"
+                    title="Permanent link">#</a></h2>
+            <p>Building resilient, decoupled microservices relies on events and distributed orchestration:</p>
+
+            <div class="concept-card">
+                <h3>Event Choreography vs Orchestration</h3>
+                <ul>
+                    <li><strong>Amazon EventBridge (Choreography):</strong> Serverless event bus. Microservices emit
+                        domain events (e.g. <code>OrderCreated</code>); EventBridge evaluates rules and routes the event
+                        to downstream consumers with zero point-to-point coupling.</li>
+                    <li><strong>AWS Step Functions (Orchestration):</strong> Visual state machine for complex,
+                        multi-step business workflows requiring retries, error catchers, human approvals, and parallel
+                        branches (e.g. payment processing &rarr; fraud check &rarr; shipment).</li>
+                </ul>
+            </div>
+
+            <h2 id="5-caching-elasticache-cloudfront">5. Caching: Amazon ElastiCache (Redis) &amp; CloudFront<a
+                    class="headerlink" href="#5-caching-elasticache-cloudfront" title="Permanent link">#</a></h2>
+            <p>A multi-tiered caching architecture drastically cuts database load and latency:</p>
+
+            <ol>
+                <li><strong>Edge Caching (Amazon CloudFront):</strong> Caches HTML, images, and API responses at 600+
+                    edge locations globally. Reduces origin server requests by up to 90%.</li>
+                <li><strong>In-Memory Application Cache (Amazon ElastiCache Redis):</strong> Sub-millisecond data store
+                    for session states, rate limiting, and frequently read database queries (Cache-Aside pattern).</li>
+            </ol>
+
+            <h2 id="6-high-availability-and-disaster-recovery">6. High Availability, RTO/RPO &amp; Route 53<a
+                    class="headerlink" href="#6-high-availability-and-disaster-recovery" title="Permanent link">#</a>
+            </h2>
+            <p>Disaster recovery (DR) is governed by two metrics:</p>
+            <ul>
+                <li><strong>RPO (Recovery Point Objective):</strong> Acceptable data loss measured in time (e.g.
+                    database transactions in the last 5 minutes).</li>
+                <li><strong>RTO (Recovery Time Objective):</strong> Acceptable downtime before the service is fully
+                    restored.</li>
+                <li><strong>Amazon Route 53:</strong> Cloud DNS supporting latency-based routing, weighted round-robin,
+                    and automated DNS failover based on health checks.</li>
+            </ul>
+
+            <h2 id="7-database-scaling-rds-proxy">7. Database Scaling &amp; Amazon RDS Proxy<a class="headerlink"
+                    href="#7-database-scaling-rds-proxy" title="Permanent link">#</a></h2>
+            <p>Serverless applications (like Lambda) can spin up thousands of concurrent containers in seconds.
+                Traditional databases like PostgreSQL or MySQL cannot handle 10,000 open connection sockets.</p>
+
+            <blockquote>
+                <p><strong>The Solution: Amazon RDS Proxy.</strong> Sits between your Lambda functions and RDS database,
+                    maintaining an efficient pool of established database connections and multiplexing thousands of
+                    serverless requests across a small connection pool.</p>
+            </blockquote>
+
+            <h2 id="8-security-privatelink-kms-waf">8. Cloud Security: PrivateLink, KMS &amp; AWS WAF<a
+                    class="headerlink" href="#8-security-privatelink-kms-waf" title="Permanent link">#</a></h2>
+            <ul>
+                <li><strong>VPC Endpoints (AWS PrivateLink):</strong> Allows private EC2 instances or Lambda functions
+                    to connect securely to S3, DynamoDB, or Secrets Manager over the internal AWS network without
+                    traversing the public Internet or requiring a NAT Gateway!</li>
+                <li><strong>AWS Key Management Service (KMS):</strong> Securely creates and manages encryption keys used
+                    to encrypt S3 buckets, RDS databases, and EBS storage volumes.</li>
+                <li><strong>AWS WAF (Web Application Firewall):</strong> Protects web applications against common web
+                    exploits (SQL injection, Cross-Site Scripting XSS, and rate limiting brute-force attacks).</li>
+            </ul>
+
+            <h2 id="9-infrastructure-as-code-cdk-terraform">9. Infrastructure as Code: AWS CDK vs Terraform<a
+                    class="headerlink" href="#9-infrastructure-as-code-cdk-terraform" title="Permanent link">#</a></h2>
+            <p>Never configure production cloud resources manually in the AWS web console ("click-ops"). Use
+                <strong>Infrastructure as Code (IaC)</strong>:</p>
+
+            <pre><code>// AWS Cloud Development Kit (CDK) in TypeScript
+import * as cdk from 'aws-cdk-lib';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+
+export class AppStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    // Creates S3 bucket with encryption and blocking public access
+    const bucket = new s3.Bucket(this, 'DocumentBucket', {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.RETAIN
+    });
+  }
+}</code></pre>
+
+            <h2 id="10-cost-optimization-interview-questions">10. Cost Optimization &amp; System Design Deep Dive<a
+                    class="headerlink" href="#10-cost-optimization-interview-questions" title="Permanent link">#</a>
+            </h2>
+            <div class="concept-card">
+                <h3>High-Frequency Cloud Architecture Interview Questions</h3>
+                <ol>
+                    <li><strong>How do you design an image upload service for millions of users?</strong> Use
+                        client-side direct uploads to S3 via Presigned URLs, trigger an asynchronous S3 Event to an SQS
+                        queue, and have a Lambda worker resize the image and store metadata in DynamoDB.</li>
+                    <li><strong>How do you handle sudden 100x traffic spikes on an API?</strong> Place an Application
+                        Load Balancer in front of ECS Fargate tasks with Target Tracking Auto Scaling, backed by Amazon
+                        ElastiCache (Redis) for read-heavy operations, and RDS Proxy for database connection throttling.
+                    </li>
+                    <li><strong>How do you cut AWS cloud costs by 30%?</strong> Adopt AWS Graviton (ARM64) instances,
+                        replace underutilized NAT Gateways with VPC Endpoints for S3/DynamoDB, set S3 Lifecycle
+                        transition rules to Intelligent-Tiering, and delete unattached EBS storage volumes.</li>
+                </ol>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Review quick fundamentals in the <a href="aws-crash-course.html">AWS
+                        Crash Course</a>, explore container orchestration in the <a
+                        href="../devops/kubernetes-guide.html">Kubernetes Guide</a>, or return to the <a
+                        href="../../index.html">TechToday Homepage</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; AWS Cloud Study Guides &bull; <a href="../../index.html">Home</a> &bull; <a
+                    href="../../aws-guides.html">AWS Guides</a></p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="aws-study.js"></script>
+</body>
+
+</html>
