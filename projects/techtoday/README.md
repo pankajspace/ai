@@ -121,7 +121,7 @@ projects/techtoday/
 ├── README.md
 ├── index.html                   ← Software and AI Engineering homepage (hub tiles)
 ├── ai-projects.html             ← AI Projects catalog (7 project cards)
-├── os-courses.html              ← Operating Systems & Linux catalog (6 course cards)
+├── os-courses.html              ← Operating Systems & Linux catalog (4 course cards)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
