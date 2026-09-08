@@ -35,6 +35,69 @@ The platform is split into two distinct hosting tiers on the same physical insta
    - Each application binds to a distinct EC2 host port in the `500x` range (`127.0.0.1:500x`).
    - Nginx terminates SSL and reverse-proxies requests based on the URL path prefix.
 
+### 1.3. High-Level Fundamental Architecture
+
+The following diagram illustrates the fundamental building blocks of the platform—client routing, host-level dual-tier services, cloud dependencies, CI/CD automation, and external AI integrations—before examining the granular nine-tier infrastructure topology in Section 2:
+
+```mermaid
+flowchart TD
+    %% INGRESS & CLIENTS
+    subgraph Ingress["1. Ingress & DNS Layer"]
+        direction TB
+        Client["Users / Web Browsers"]
+        Route53["AWS Route 53 (DNS Service)"]
+        ElasticIP["AWS Elastic IP & Security Group Firewall"]
+        Client -->|"HTTPS (Port 443)"| Route53
+        Route53 -->|"Resolves IP"| ElasticIP
+    end
+
+    %% EC2 HOST INSTANCE
+    subgraph Host["2. AWS EC2 Host Instance (Amazon Linux 2023)"]
+        direction TB
+        Nginx["Nginx Reverse Proxy & SSL (Let's Encrypt TLS)"]
+        StaticTier["Static Hosting Tier: techtoday.click (/var/www/techtoday)"]
+        DockerTier["Container Application Tier: app.techtoday.click (Docker Compose AI Apps)"]
+        LocalSecrets["Host Secrets Cache (~/secrets/*.env)"]
+
+        Nginx -->|"Apex / WWW Domain (sendfile)"| StaticTier
+        Nginx -->|"Path-Based /app/* Proxy"| DockerTier
+        LocalSecrets -.->|"Injected on Container Startup"| DockerTier
+    end
+
+    %% AWS CLOUD SERVICES & CI/CD
+    subgraph CloudInfra["3. AWS Cloud Services & CI/CD"]
+        direction TB
+        GitHubActions["GitHub Actions (CI/CD Workflows)"]
+        ECR["Amazon ECR (Private Docker Repositories)"]
+        SecretsMgr["AWS Secrets Manager (techtoday/secrets)"]
+
+        GitHubActions -->|"1. Build & Push Images (OIDC)"| ECR
+        GitHubActions -->|"2. Deploy via SSH (Port 22)"| Host
+        ECR -->|"Pull Container Images"| DockerTier
+        SecretsMgr -->|"Sync Secrets at Deploy"| LocalSecrets
+    end
+
+    %% EXTERNAL AI PROVIDERS
+    subgraph ExternalAI["4. External AI Foundation Models"]
+        direction TB
+        LLMs["AI Model APIs (OpenAI, Groq, Amazon Bedrock)"]
+    end
+
+    %% INTER-COMPONENT CONNECTIONS
+    ElasticIP -->|"Forward Ingress Traffic (80/443)"| Nginx
+    DockerTier -->|"Outbound HTTPS Inference"| LLMs
+```
+
+#### Fundamental Architecture Components
+1. **Client & Ingress Layer:** End-user browsers connect securely over HTTPS via AWS Route 53 DNS records, pointing directly to a single static AWS Elastic IP shielded by an EC2 Security Group hypervisor firewall.
+2. **Edge Reverse Proxy & TLS (Nginx + Certbot):** Nginx runs natively on the EC2 host as the single entry point, managing automated Let's Encrypt SSL/TLS certificates and routing traffic by domain name and URL path prefix.
+3. **Static File Serving Tier (`/var/www/techtoday/`):** High-performance, zero-runtime filesystem delivery for the apex domain landing page, stylesheets, and study guides without Python or database overhead.
+4. **Containerized Application Tier (Docker Compose):** Dynamic AI applications, agents, and microservices running inside Docker containers listening on internal loopback ports (`127.0.0.1:500x`) under `app.techtoday.click`.
+5. **Secrets Management (AWS Secrets Manager):** Centralized, encrypted store for all production API keys and credentials under `techtoday/secrets`. Secrets are synchronized into isolated host `.env` files during deployment with zero exposure in Git or Docker images.
+6. **Container Image Registry (Amazon ECR):** Private ECR repositories storing versioned, production-ready container images for each microservice and AI application.
+7. **CI/CD Automation (GitHub Actions):** Workflows authenticating securely via AWS OIDC federation to build images, push to ECR, and execute automated SSH deployments to the host.
+8. **External AI Foundation Models:** Containerized AI agents communicate outbound over HTTPS with external LLM APIs (OpenAI, Groq, and Amazon Bedrock).
+
 ---
 
 ## 2. End-to-End System Topology
