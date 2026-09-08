@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/ai')) {
+      const base = document.createElement('base');
+      let path = window.location.pathname.replace(/\/ai\/?$/, '');
+      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+      document.head.appendChild(base);
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>JavaScript Crash Course | TechToday</title>
+  <meta name="description"
+    content="A visual, fast-paced guide to modern JavaScript: ES6+ syntax, functions, closures, promises, async/await, array methods, and modules." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+  <link rel="stylesheet" href="javascript-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html">
+        <span class="tt-site-logo" aria-hidden="true">⚡</span>
+        <span>TechToday</span>
+      </a>
+      <a href="../../programming-languages.html" class="nav-back-link"
+        style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Language
+        Courses</a>
+    </nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main>
+    <article class="study">
+      <h1 id="javascript-crash-course">JavaScript Crash Course<a class="headerlink" href="#javascript-crash-course"
+          title="Permanent link">#</a></h1>
+      <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+          title="Permanent link">#</a></h2>
+      <ol class="table-of-contents">
+        <li><a href="#1-modern-javascript--environments">1. Modern JavaScript &amp; Environments</a></li>
+        <li><a href="#2-variables-and-data-types">2. Variables, Let, Const &amp; Data Types</a></li>
+        <li><a href="#3-equality-and-type-coercion">3. Operators, Equality &amp; Type Coercion</a></li>
+        <li><a href="#4-objects-and-arrays">4. Objects, Arrays &amp; Destructuring</a></li>
+        <li><a href="#5-functions-and-arrow-functions">5. Functions, Arrow Functions &amp; this</a></li>
+        <li><a href="#6-scope-hoisting-and-closures">6. Scope, Hoisting &amp; Closures</a></li>
+        <li><a href="#7-async-promises-and-asyncawait">7. Async JS: Promises &amp; Async/Await</a></li>
+        <li><a href="#8-higher-order-array-methods">8. Array Higher-Order Methods</a></li>
+        <li><a href="#9-modern-es6-features">9. Modern ES6+ Features (Nullish, Optional Chaining)</a></li>
+        <li><a href="#10-modules-esm-vs-commonjs">10. Modules: ESM vs CommonJS</a></li>
+        <li><a href="#11-error-handling">11. Error Handling &amp; Custom Errors</a></li>
+        <li><a href="#12-javascript-cheat-sheet">12. JavaScript Quick Reference</a></li>
+      </ol>
+
+      <h2 id="1-modern-javascript--environments">1. Modern JavaScript &amp; Environments<a class="headerlink"
+          href="#1-modern-javascript--environments" title="Permanent link">#</a></h2>
+      <p>JavaScript (ECMAScript) is a dynamic, multi-paradigm, prototype-based scripting language. Originally built for
+        web browsers, it now runs everywhere — from backend servers (Node.js, Deno, Bun) to edge workers (Cloudflare
+        Workers, Vercel Edge).</p>
+
+      <div class="concept-card">
+        <h3>JavaScript Runtime Components</h3>
+        <ul>
+          <li><strong>Engine (e.g. V8 in Chrome/Node):</strong> Compiles JavaScript into machine code using a JIT
+            (Just-In-Time) compiler. Contains the Call Stack and Memory Heap.</li>
+          <li><strong>Web APIs / C++ Bindings:</strong> Features provided by the environment (DOM, <code>fetch()</code>,
+            <code>setTimeout</code>, file system in Node).</li>
+          <li><strong>Event Loop:</strong> Coordinates asynchronous execution by moving callbacks from task queues into
+            the call stack when the stack is empty.</li>
+        </ul>
+      </div>
+
+      <h2 id="2-variables-and-data-types">2. Variables, Let, Const &amp; Data Types<a class="headerlink"
+          href="#2-variables-and-data-types" title="Permanent link">#</a></h2>
+      <p>Always declare variables with <code>const</code> by default, and <code>let</code> only when the variable will
+        be reassigned. Avoid legacy <code>var</code> due to its lack of block scoping.</p>
+
+      <pre><code>// 1. Declaration
+const PI = 3.14159;    // Cannot be reassigned
+let score = 0;         // Block-scoped, mutable
+score += 10;
+
+// 2. JavaScript Primitives (Immutable, passed by value)
+const str = "TechToday";         // String
+const num = 42;                  // Number (64-bit float IEEE 754)
+const big = 9007199254740991n;   // BigInt
+const bool = true;               // Boolean
+const undef = undefined;         // Unassigned variable
+const empty = null;              // Intentional absence of value
+const sym = Symbol("id");        // Unique primitive identifier
+
+// 3. Complex Objects (Passed by reference)
+const user = { name: "Alice", role: "Engineer" };
+const tags = ["frontend", "v8", "async"];</code></pre>
+
+      <h2 id="3-equality-and-type-coercion">3. Operators, Equality &amp; Type Coercion<a class="headerlink"
+          href="#3-equality-and-type-coercion" title="Permanent link">#</a></h2>
+      <p>Always use strict equality (<code>===</code>) rather than loose equality (<code>==</code>) to prevent silent
+        bugs caused by automatic type coercion:</p>
+
+      <pre><code>// Loose Equality (==) -> Performs implicit coercion (AVOID)
+"5" == 5;       // true (string coerced to number)
+0 == false;     // true
+null == undefined; // true
+
+// Strict Equality (===) -> Checks both value and type (ALWAYS PREFER)
+"5" === 5;      // false
+0 === false;    // false
+null === undefined; // false
+
+// Falsy values in JavaScript:
+// false, 0, -0, 0n, "", null, undefined, NaN
+// Everything else is truthy (including empty arrays [] and objects {})!</code></pre>
+
+      <h2 id="4-objects-and-arrays">4. Objects, Arrays &amp; Destructuring<a class="headerlink"
+          href="#4-objects-and-arrays" title="Permanent link">#</a></h2>
+      <p>Modern JavaScript provides clean object and array literals, destructuring, and spread/rest operators:</p>
+
+      <pre><code>// Object & Array Creation
+const user = {
+  id: 101,
+  username: "pankaj",
+  profile: { city: "San Francisco", verified: true },
+  skills: ["Python", "JavaScript", "Docker"]
+};
+
+// Destructuring with default values and renaming
+const { username: handle, profile: { city }, age = 28 } = user;
+console.log(handle, city, age); // "pankaj", "San Francisco", 28
+
+// Array Destructuring
+const [primarySkill, secondarySkill, ...restSkills] = user.skills;
+console.log(primarySkill); // "Python"
+console.log(restSkills);   // ["Docker"]
+
+// Object Cloning and Merging (Shallow Copy)
+const updatedUser = { ...user, active: true, username: "pankaj_updated" };</code></pre>
+
+      <h2 id="5-functions-and-arrow-functions">5. Functions, Arrow Functions &amp; this<a class="headerlink"
+          href="#5-functions-and-arrow-functions" title="Permanent link">#</a></h2>
+      <p>JavaScript functions are first-class citizens: they can be passed as arguments, returned from other functions,
+        and assigned to variables.</p>
+
+      <pre><code>// 1. Function Declaration (Hoisted)
+function calculateTotal(price, taxRate = 0.08) {
+  return price + (price * taxRate);
+}
+
+// 2. Arrow Function (Lexical `this`, concise)
+const double = (x) => x * 2;
+
+// 3. Arrow function lexical `this` difference:
+const timer = {
+  seconds: 0,
+  start() {
+    // Arrow function captures `this` from the outer `start()` scope
+    setInterval(() => {
+      this.seconds++;
+    }, 1000);
+  }
+};</code></pre>
+
+      <h2 id="6-scope-hoisting-and-closures">6. Scope, Hoisting &amp; Closures<a class="headerlink"
+          href="#6-scope-hoisting-and-closures" title="Permanent link">#</a></h2>
+      <p>A <strong>closure</strong> is the combination of a function bundled together with references to its surrounding
+        state (the lexical environment). Closures give functions access to an outer function's scope even after the
+        outer function has returned.</p>
+
+      <pre><code>function createCounter(initialValue = 0) {
+  let count = initialValue; // Private variable enclosed in closure
+
+  return {
+    increment() { count++; return count; },
+    decrement() { count--; return count; },
+    getCount() { return count; }
+  };
+}
+
+const counter = createCounter(10);
+console.log(counter.increment()); // 11
+console.log(counter.increment()); // 12
+console.log(counter.getCount());  // 12
+// count variable is fully private and inaccessible from the outside!</code></pre>
+
+      <h2 id="7-async-promises-and-asyncawait">7. Async JS: Promises &amp; Async/Await<a class="headerlink"
+          href="#7-async-promises-and-asyncawait" title="Permanent link">#</a></h2>
+      <p>JavaScript is single-threaded. Non-blocking asynchronous I/O is managed using Promises and
+        <code>async</code>/<code>await</code> syntax:</p>
+
+      <pre><code>// 1. A Promise represents a value that will resolve or reject in the future
+function fetchUserData(userId) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (userId > 0) resolve({ id: userId, name: "Alice" });
+      else reject(new Error("Invalid User ID"));
+    }, 500);
+  });
+}
+
+// 2. Modern Async/Await with error handling
+async function loadDashboard() {
+  try {
+    const user = await fetchUserData(42);
+    console.log("Loaded user:", user.name);
+    return user;
+  } catch (error) {
+    console.error("Failed to load user:", error.message);
+  } finally {
+    console.log("Fetch attempt completed");
+  }
+}
+
+// 3. Parallel Async Operations with Promise.all
+const [orders, products] = await Promise.all([
+  fetch("/api/orders").then(r => r.json()),
+  fetch("/api/products").then(r => r.json())
+]);</code></pre>
+
+      <h2 id="8-higher-order-array-methods">8. Array Higher-Order Methods<a class="headerlink"
+          href="#8-higher-order-array-methods" title="Permanent link">#</a></h2>
+      <p>Functional array operations produce clean, immutable code transformations without manual <code>for</code>
+        loops:</p>
+
+      <pre><code>const items = [
+  { id: 1, name: "Keyboard", price: 80, inStock: true },
+  { id: 2, name: "Mouse", price: 40, inStock: false },
+  { id: 3, name: "Monitor", price: 300, inStock: true }
+];
+
+// map: Transform every element
+const names = items.map(item => item.name); // ["Keyboard", "Mouse", "Monitor"]
+
+// filter: Keep elements that match predicate
+const available = items.filter(item => item.inStock); // Keyboard, Monitor
+
+// reduce: Accumulate into a single value
+const totalInventoryValue = items
+  .filter(item => item.inStock)
+  .reduce((sum, item) => sum + item.price, 0); // 380
+
+// find & some & every
+const monitor = items.find(item => item.id === 3);
+const hasExpensive = items.some(item => item.price > 200); // true
+const allInStock = items.every(item => item.inStock);      // false</code></pre>
+
+      <h2 id="9-modern-es6-features">9. Modern ES6+ Features (Nullish, Optional Chaining)<a class="headerlink"
+          href="#9-modern-es6-features" title="Permanent link">#</a></h2>
+      <p>Modern ECMAScript provides concise operators for safely handling deep objects and default values:</p>
+
+      <pre><code>// 1. Optional Chaining (?.)
+const user = { profile: null };
+// Safely returns undefined instead of throwing TypeError: Cannot read property of null
+const avatar = user?.profile?.avatarUrl;
+
+// 2. Nullish Coalescing (??)
+// Returns right side ONLY if left is null or undefined (preserves 0 and false!)
+const port = process.env.PORT ?? 3000;
+const count = 0 ?? 10; // 0 (with || it would evaluate to 10!)
+
+// 3. Logical Assignment Operators
+let a = null;
+a ??= "default"; // Assigns only if a is null or undefined
+let b = 1;
+b &&= 2;         // Assigns if truthy</code></pre>
+
+      <h2 id="10-modules-esm-vs-commonjs">10. Modules: ESM vs CommonJS<a class="headerlink"
+          href="#10-modules-esm-vs-commonjs" title="Permanent link">#</a></h2>
+      <p>JavaScript supports two module standards: standard <strong>ECMAScript Modules (ESM)</strong> and legacy
+        <strong>CommonJS (CJS)</strong>:</p>
+
+      <pre><code>// --- ECMAScript Modules (ESM - Standard) ---
+// math.js
+export const add = (a, b) => a + b;
+export default function multiply(a, b) { return a * b; }
+
+// app.js
+import multiply, { add } from './math.js';
+
+// --- CommonJS (CJS - Node.js legacy) ---
+// math.cjs
+module.exports = { add: (a, b) => a + b };
+
+// app.cjs
+const { add } = require('./math.cjs');</code></pre>
+
+      <h2 id="11-error-handling">11. Error Handling &amp; Custom Errors<a class="headerlink" href="#11-error-handling"
+          title="Permanent link">#</a></h2>
+      <p>Robust applications use structured error handling and sub-classed error types:</p>
+
+      <pre><code>class APIError extends Error {
+  constructor(message, statusCode) {
+    super(message);
+    this.name = "APIError";
+    this.statusCode = statusCode;
+  }
+}
+
+function processPayment(amount) {
+  if (amount &lt;= 0) {
+    throw new APIError("Payment amount must be greater than zero", 400);
+  }
+}
+
+try {
+  processPayment(-10);
+} catch (err) {
+  if (err instanceof APIError) {
+    console.error(`API Error [${err.statusCode}]: ${err.message}`);
+  } else {
+    console.error("Unknown internal error:", err);
+  }
+}</code></pre>
+
+      <h2 id="12-javascript-cheat-sheet">12. JavaScript Quick Reference<a class="headerlink"
+          href="#12-javascript-cheat-sheet" title="Permanent link">#</a></h2>
+      <div class="concept-card">
+        <h3>Core Rules of Thumb</h3>
+        <ul>
+          <li>Use <code>const</code> by default; use <code>let</code> only when reassigning; never use <code>var</code>.
+          </li>
+          <li>Always use <code>===</code> and <code>!==</code> to avoid implicit type conversions.</li>
+          <li>Use <code>??</code> instead of <code>||</code> for default values when <code>0</code> or
+            <code>false</code> are valid inputs.</li>
+          <li>Handle asynchronous errors using <code>try...catch</code> around <code>await</code> expressions.</li>
+          <li>Prefer pure array methods (<code>map</code>, <code>filter</code>, <code>reduce</code>) over stateful
+            loops.</li>
+        </ul>
+      </div>
+
+      <blockquote>
+        <p><strong>Next Steps:</strong> Dive into the V8 engine, the event loop, microtask queues, and prototypal
+          inheritance in the <a href="javascript-detailed-course.html">JavaScript Detailed Course</a>. Return to the <a
+            href="../../index.html">TechToday Homepage</a>.</p>
+      </blockquote>
+    </article>
+  </main>
+
+  <footer class="study-footer">
+    <div class="container">
+      <p>&copy; 2026 TechToday &bull; JavaScript Study Guides &bull; <a href="../../index.html">Home</a> &bull; <a
+          href="../../programming-languages.html">Language Courses</a></p>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+  <script src="javascript-study.js"></script>
+</body>
+
+</html>

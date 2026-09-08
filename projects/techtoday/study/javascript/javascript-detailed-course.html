@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/ai')) {
+      const base = document.createElement('base');
+      let path = window.location.pathname.replace(/\/ai\/?$/, '');
+      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+      document.head.appendChild(base);
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>JavaScript Detailed Course | TechToday</title>
+  <meta name="description"
+    content="In-depth JavaScript guide: V8 engine internals, Event Loop microtasks/macrotasks, memory management, closures, prototypal inheritance, Proxies, and performance tuning." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+  <link rel="stylesheet" href="javascript-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html">
+        <span class="tt-site-logo" aria-hidden="true">⚡</span>
+        <span>TechToday</span>
+      </a>
+      <a href="../../programming-languages.html" class="nav-back-link"
+        style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Language
+        Courses</a>
+    </nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main>
+    <article class="study">
+      <h1 id="javascript-detailed-course">JavaScript Detailed Course<a class="headerlink"
+          href="#javascript-detailed-course" title="Permanent link">#</a></h1>
+      <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+          title="Permanent link">#</a></h2>
+      <ol class="table-of-contents table-of-contents-numbered">
+        <li><a href="#1-v8-engine-architecture">V8 Engine Architecture &amp; JIT Compilation</a></li>
+        <li><a href="#2-event-loop-microtasks-macrotasks">The Event Loop, Microtasks &amp; Macrotasks</a></li>
+        <li><a href="#3-memory-management-and-gc">Memory Management &amp; Garbage Collection</a></li>
+        <li><a href="#4-prototypes-and-inheritance">Prototypes &amp; Prototypal Inheritance</a></li>
+        <li><a href="#5-execution-contexts-and-scope">Execution Contexts &amp; Lexical Scope</a></li>
+        <li><a href="#6-the-this-keyword-mastery">The 'this' Keyword: All 4 Binding Rules</a></li>
+        <li><a href="#7-async-generators-and-workers">Async Generators &amp; Web Workers</a></li>
+        <li><a href="#8-metaprogramming-proxy-and-reflect">Metaprogramming: Proxy, Reflect &amp; Symbols</a></li>
+        <li><a href="#9-browser-rendering-and-events">Browser Pipeline &amp; Event Bubbling/Capturing</a></li>
+        <li><a href="#10-performance-and-interview-deep-dive">Performance Optimization &amp; Interview Deep Dive</a>
+        </li>
+      </ol>
+
+      <h2 id="1-v8-engine-architecture">1. V8 Engine Architecture &amp; JIT Compilation<a class="headerlink"
+          href="#1-v8-engine-architecture" title="Permanent link">#</a></h2>
+      <p>Modern JavaScript engines (Google V8, JavaScriptCore in WebKit, SpiderMonkey in Firefox) are hybrid
+        compiler/interpreters that convert raw source code into high-speed machine instructions:</p>
+
+      <div class="concept-card">
+        <h3>V8 Pipeline Stages</h3>
+        <ol>
+          <li><strong>Parser:</strong> Reads JavaScript characters, verifies syntax, and generates an <strong>Abstract
+              Syntax Tree (AST)</strong>.</li>
+          <li><strong>Ignition (Interpreter):</strong> Generates compact bytecodes from the AST and executes them
+            immediately with fast startup time. While executing, it collects type feedback profiling data.</li>
+          <li><strong>TurboFan (Optimizing JIT Compiler):</strong> Functions that are called repeatedly ("hot
+            functions") with stable parameter types are compiled by TurboFan directly into optimized native machine
+            code.</li>
+          <li><strong>Deoptimization (Bailout):</strong> If a hot function receives an unexpected type (e.g. passing a
+            string to a function that previously only saw integers), TurboFan discards the optimized code and bails back
+            to Ignition bytecode.</li>
+        </ol>
+      </div>
+
+      <h2 id="2-event-loop-microtasks-macrotasks">2. The Event Loop, Microtasks &amp; Macrotasks<a class="headerlink"
+          href="#2-event-loop-microtasks-macrotasks" title="Permanent link">#</a></h2>
+      <p>JavaScript executes synchronously on a single thread. Asynchrony is orchestrated via queues coordinated by the
+        <strong>Event Loop</strong>:</p>
+
+      <ol>
+        <li><strong>Call Stack:</strong> Executes current synchronous stack frames (LIFO).</li>
+        <li><strong>Microtask Queue:</strong> <code>Promise.then</code> / <code>catch</code> / <code>finally</code>
+          callbacks, <code>queueMicrotask()</code>, <code>MutationObserver</code>, and <code>process.nextTick</code>
+          (Node). <em>Every single microtask in this queue is drained to completion before the browser renders or moves
+            to any macrotask!</em></li>
+        <li><strong>Macrotask (Task) Queue:</strong> <code>setTimeout</code>, <code>setInterval</code>,
+          <code>setImmediate</code>, I/O events, and UI rendering tasks. Only <em>one</em> macrotask is processed per
+          loop tick.</li>
+      </ol>
+
+      <pre><code>console.log("1. Synchronous");
+
+setTimeout(() => {
+  console.log("4. Macrotask (setTimeout)");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("2. Microtask 1");
+}).then(() => {
+  console.log("3. Microtask 2");
+});
+
+console.log("Synchronous end");
+
+// Output Order:
+// 1. Synchronous
+// Synchronous end
+// 2. Microtask 1
+// 3. Microtask 2
+// 4. Macrotask (setTimeout)</code></pre>
+
+      <h2 id="3-memory-management-and-gc">3. Memory Management &amp; Garbage Collection<a class="headerlink"
+          href="#3-memory-management-and-gc" title="Permanent link">#</a></h2>
+      <p>JavaScript manages memory automatically via garbage collection, allocating primitive values on the stack and
+        objects on the memory heap:</p>
+
+      <ul>
+        <li><strong>Mark-and-Sweep Algorithm:</strong> The GC starts from "roots" (global object, local variables in
+          current call stack) and marks all reachable references. Unreachable objects are swept and reclaimed.</li>
+        <li><strong>Generational Collection:</strong> The heap is partitioned into <em>New Space</em> (short-lived
+          objects, collected frequently via Scavenge) and <em>Old Space</em> (objects that survived multiple GC cycles).
+        </li>
+      </ul>
+
+      <div class="concept-card">
+        <h3>Top Causes of Memory Leaks in JavaScript</h3>
+        <ol>
+          <li><strong>Accidental Globals:</strong> Assigning to undeclared variables attaches them to the
+            <code>window</code> / <code>global</code> root.</li>
+          <li><strong>Forgotten Timers / Callbacks:</strong> Running <code>setInterval</code> that captures closures
+            without calling <code>clearInterval</code>.</li>
+          <li><strong>Detached DOM Elements:</strong> Holding JavaScript references in an array or map to DOM elements
+            that have already been removed from the document.</li>
+          <li><strong>Closures Capturing Large Scopes:</strong> An unused inner function keeping large objects in memory
+            because it shares the parent lexical environment.</li>
+        </ol>
+      </div>
+
+      <h2 id="4-prototypes-and-inheritance">4. Prototypes &amp; Prototypal Inheritance<a class="headerlink"
+          href="#4-prototypes-and-inheritance" title="Permanent link">#</a></h2>
+      <p>Every object in JavaScript has an internal link to another object called its <strong>prototype</strong>. When
+        querying a property, JavaScript searches the object itself; if not found, it traverses up the prototype chain
+        until reaching <code>Object.prototype</code> or <code>null</code>.</p>
+
+      <pre><code>// Pure Prototypal Inheritance
+const animal = {
+  makeSound() {
+    return `${this.name} makes a sound.`;
+  }
+};
+
+const dog = Object.create(animal);
+dog.name = "Rex";
+dog.bark = function() { return "Woof!"; };
+
+console.log(dog.makeSound()); // "Rex makes a sound." (found on prototype!)
+console.log(Object.getPrototypeOf(dog) === animal); // true
+
+// Modern ES6 Class syntax is syntactic sugar over prototype chains:
+class Animal {
+  constructor(name) { this.name = name; }
+  makeSound() { return `${this.name} speaks.`; }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);
+    this.breed = breed;
+  }
+}
+const myDog = new Dog("Buddy", "Golden Retriever");
+console.log(myDog instanceof Animal); // true</code></pre>
+
+      <h2 id="5-execution-contexts-and-scope">5. Execution Contexts &amp; Lexical Scope<a class="headerlink"
+          href="#5-execution-contexts-and-scope" title="Permanent link">#</a></h2>
+      <p>An <strong>Execution Context</strong> is the environment in which JavaScript code is evaluated. Each context
+        contains:</p>
+      <ul>
+        <li><strong>Variable Environment:</strong> Stores <code>var</code> declarations and function declarations.</li>
+        <li><strong>Lexical Environment:</strong> Stores <code>let</code> and <code>const</code> bindings, and an outer
+          reference link pointing to its parent scope.</li>
+        <li><strong>Temporal Dead Zone (TDZ):</strong> The time between entering a scope and when a <code>let</code> or
+          <code>const</code> variable is formally declared. Accessing the variable in the TDZ throws a
+          <code>ReferenceError</code>.</li>
+      </ul>
+
+      <h2 id="6-the-this-keyword-mastery">6. The 'this' Keyword: All 4 Binding Rules<a class="headerlink"
+          href="#6-the-this-keyword-mastery" title="Permanent link">#</a></h2>
+      <p>The value of <code>this</code> depends entirely on <em>how a function is invoked</em>, determined by 4
+        precedence rules:</p>
+
+      <ol>
+        <li><strong>Default Binding:</strong> Standalone invocation <code>fn()</code> binds to the global object (or
+          <code>undefined</code> in strict mode).</li>
+        <li><strong>Implicit Binding:</strong> Invoked as a method <code>obj.fn()</code> binds <code>this</code> to
+          <code>obj</code>.</li>
+        <li><strong>Explicit Binding:</strong> <code>fn.call(context, ...args)</code>,
+          <code>fn.apply(context, [args])</code>, or <code>fn.bind(context)</code> explicitly sets <code>this</code>.
+        </li>
+        <li><strong>New Binding:</strong> When called with <code>new fn()</code>, a fresh object is created, linked to
+          <code>fn.prototype</code>, and bound to <code>this</code>.</li>
+      </ol>
+
+      <blockquote>
+        <p><strong>Note on Arrow Functions:</strong> Arrow functions do <em>not</em> have their own <code>this</code>
+          binding. They resolve <code>this</code> lexically from their enclosing scope.</p>
+      </blockquote>
+
+      <h2 id="7-async-generators-and-workers">7. Async Generators &amp; Web Workers<a class="headerlink"
+          href="#7-async-generators-and-workers" title="Permanent link">#</a></h2>
+      <p>For high-performance data streaming and CPU-intensive workloads:</p>
+
+      <pre><code>// Async Generator: Yields items over time (e.g. streaming LLM responses)
+async function* fetchStream(url) {
+  const response = await fetch(url);
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    yield decoder.decode(value);
+  }
+}
+
+// Consuming with for-await-of
+for await (const chunk of fetchStream("/api/llm-stream")) {
+  process.stdout.write(chunk);
+}</code></pre>
+
+      <h2 id="8-metaprogramming-proxy-and-reflect">8. Metaprogramming: Proxy, Reflect &amp; Symbols<a class="headerlink"
+          href="#8-metaprogramming-proxy-and-reflect" title="Permanent link">#</a></h2>
+      <p><strong>Proxy</strong> enables intercepting and customizing fundamental language operations (property lookup,
+        assignment, enumeration, function invocation):</p>
+
+      <pre><code>const state = { count: 0 };
+
+const reactiveState = new Proxy(state, {
+  get(target, prop, receiver) {
+    console.log(`[Read] property: ${String(prop)}`);
+    return Reflect.get(target, prop, receiver);
+  },
+  set(target, prop, value, receiver) {
+    console.log(`[Mutation] ${String(prop)} = ${value}`);
+    // Trigger reactive UI re-render here (Vue 3 reactivity core model)
+    return Reflect.set(target, prop, value, receiver);
+  }
+});
+
+reactiveState.count = 5; // Triggers [Mutation] count = 5</code></pre>
+
+      <h2 id="9-browser-rendering-and-events">9. Browser Pipeline &amp; Event Bubbling/Capturing<a class="headerlink"
+          href="#9-browser-rendering-and-events" title="Permanent link">#</a></h2>
+      <p>When an event occurs in the DOM, it travels in two phases:</p>
+      <ol>
+        <li><strong>Capturing Phase (Trickle down):</strong> Travels from <code>window</code> &rarr;
+          <code>document</code> &rarr; <code>&lt;html&gt;</code> down to the target element.</li>
+        <li><strong>Target Phase:</strong> Triggers listeners registered directly on the element.</li>
+        <li><strong>Bubbling Phase (Bubble up):</strong> Travels back up from the target to ancestors.</li>
+      </ol>
+
+      <p><strong>Event Delegation Pattern:</strong> Rather than attaching 1,000 click listeners to individual table
+        rows, attach a single listener on the parent container using <code>event.target.closest('tr')</code>.</p>
+
+      <h2 id="10-performance-and-interview-deep-dive">10. Performance Optimization &amp; Interview Deep Dive<a
+          class="headerlink" href="#10-performance-and-interview-deep-dive" title="Permanent link">#</a></h2>
+
+      <div class="concept-card">
+        <h3>Debounce vs Throttle</h3>
+        <pre><code>// Debounce: Executes once after N milliseconds of inactivity (Search input)
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// Throttle: Executes at most once every N milliseconds (Scroll/Resize)
+function throttle(fn, limit) {
+  let inThrottle = false;
+  return function(...args) {
+    if (!inThrottle) {
+      fn.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}</code></pre>
+      </div>
+
+      <blockquote>
+        <p><strong>Next Steps:</strong> Review quick syntax and collections in the <a
+            href="javascript-crash-course.html">JavaScript Crash Course</a>, explore algorithms in <a
+            href="../dsa/dsa-detailed-course.html">DSA Detailed Course</a>, or return to the <a
+            href="../../index.html">TechToday Homepage</a>.</p>
+      </blockquote>
+    </article>
+  </main>
+
+  <footer class="study-footer">
+    <div class="container">
+      <p>&copy; 2026 TechToday &bull; JavaScript Study Guides &bull; <a href="../../index.html">Home</a> &bull; <a
+          href="../../programming-languages.html">Language Courses</a></p>
+    </div>
+  </footer>
+
+  <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+  <script src="javascript-study.js"></script>
+</body>
+
+</html>
