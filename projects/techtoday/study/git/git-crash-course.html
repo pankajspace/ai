@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Git Crash Course | TechToday</title>
+    <meta name="description"
+        content="A developer-first fast-paced crash course in Git: the three trees, staging, commits, branch management, merge vs rebase, conflict resolution, and remote workflows." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="git-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../../git-guides.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Git
+                Guides</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="git-crash-course">Git Crash Course<a class="headerlink" href="#git-crash-course"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">Git does not store diffs or file deltas — it records snapshots of your entire repository
+                over time. Once you understand the three areas (working directory, staging area, repository) and how
+                pointers move, Git commands become intuitive instead of a series of incantations.</p>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-mental-model-the-three-trees">1. Mental Model: The Three Areas</a></li>
+                <li><a href="#2-setup-and-configuration">2. Setup &amp; Configuration</a></li>
+                <li><a href="#3-the-snapshot-cycle">3. The Core Snapshot Cycle</a></li>
+                <li><a href="#4-branching-and-switching">4. Branching &amp; Switching</a></li>
+                <li><a href="#5-merging-vs-rebasing">5. Merging vs. Rebasing</a></li>
+                <li><a href="#6-resolving-conflicts">6. Resolving Merge Conflicts</a></li>
+                <li><a href="#7-cherry-picking-commits">7. Cherry-Picking Commits (git cherry-pick)</a></li>
+                <li><a href="#8-remote-workflows">8. Remote Workflows (Fetch, Pull, Push)</a></li>
+                <li><a href="#9-undoing-mistakes-safely">9. Undoing Mistakes Safely</a></li>
+                <li><a href="#10-stashing-work">10. Stashing Work</a></li>
+                <li><a href="#11-git-cheat-sheet">11. Quick Reference &amp; Cheat Sheet</a></li>
+            </ol>
+
+            <h2 id="1-mental-model-the-three-trees">1. Mental Model: The Three Areas<a class="headerlink"
+                    href="#1-mental-model-the-three-trees" title="Permanent link">#</a></h2>
+            <p>Every Git repository operates with three local states:</p>
+            <ol>
+                <li><strong>Working Directory:</strong> The sandbox on your local disk containing actual files currently
+                    unpacked and editable.</li>
+                <li><strong>Staging Area (Index):</strong> A staging buffer where you craft the exact contents of your
+                    next commit. You can stage individual files, lines, or hunks.</li>
+                <li><strong>Repository (.git directory / HEAD):</strong> The permanent content-addressable database of
+                    immutable commit snapshots.</li>
+            </ol>
+
+            <blockquote>
+                <p><strong>Mental Model:</strong> Think of Git like an artist's photography studio. The <em>working
+                        directory</em> is the messy room where props change. The <em>staging area</em> is the stage
+                    where you place only what should appear in the shot. The <em>commit</em> is snapping the photo and
+                    archiving it in the photo album.</p>
+            </blockquote>
+
+            <h2 id="2-setup-and-configuration">2. Setup &amp; Configuration<a class="headerlink"
+                    href="#2-setup-and-configuration" title="Permanent link">#</a></h2>
+            <p>Before making commits, configure your global identity and default branch:</p>
+            <pre><code># Set global identity
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Set default branch name to main
+git config --global init.defaultBranch main
+
+# Enable colored CLI output and sensible pull defaults
+git config --global color.ui auto
+git config --global pull.rebase false
+
+# Inspect all configurations
+git config --list --show-origin</code></pre>
+
+            <h2 id="3-the-snapshot-cycle">3. The Core Snapshot Cycle<a class="headerlink" href="#3-the-snapshot-cycle"
+                    title="Permanent link">#</a></h2>
+            <p>Moving changes through the snapshot cycle:</p>
+            <pre><code># Check current repository status
+git status
+
+# Stage specific files or entire directory
+git add path/to/file.js
+git add .
+
+# Stage interactively hunk by hunk
+git add -p
+
+# Inspect unstaged vs staged changes
+git diff            # Working tree vs Staging area
+git diff --staged   # Staging area vs HEAD commit
+
+# Record the snapshot
+git commit -m "feat(auth): implement JWT token verification"</code></pre>
+
+            <h2 id="4-branching-and-switching">4. Branching &amp; Switching<a class="headerlink"
+                    href="#4-branching-and-switching" title="Permanent link">#</a></h2>
+            <p>In Git, a branch is just a 41-byte movable pointer pointing to a commit SHA-1/SHA-256 hash. Creating or
+                deleting a branch is instantaneous and costs zero storage overhead.</p>
+            <pre><code># Create and switch to a new branch (modern syntax)
+git switch -c feat/user-profile
+
+# Switch between existing branches
+git switch main
+git switch feat/user-profile
+
+# List all local and remote branches
+git branch -a
+
+# Delete a branch that has been merged
+git branch -d feat/user-profile</code></pre>
+
+            <h2 id="5-merging-vs-rebasing">5. Merging vs. Rebasing<a class="headerlink" href="#5-merging-vs-rebasing"
+                    title="Permanent link">#</a></h2>
+            <p>There are two primary ways to integrate changes from one branch into another:</p>
+            <ol>
+                <li><strong>Fast-Forward Merge:</strong> If target branch hasn't diverged, Git simply slides the branch
+                    pointer forward to match the incoming tip.</li>
+                <li><strong>3-Way Merge (<code>git merge</code>):</strong> Creates a new merge commit with two parents,
+                    preserving the complete branching history and timeline.</li>
+                <li><strong>Rebase (<code>git rebase</code>):</strong> Replays your branch commits one by one on top of
+                    the target branch, producing a completely linear commit history.</li>
+            </ol>
+            <pre><code># Option A: Merge feature branch into main
+git switch main
+git merge feat/user-profile
+
+# Option B: Rebase feature branch on top of latest main
+git switch feat/user-profile
+git fetch origin
+git rebase origin/main</code></pre>
+
+            <h2 id="6-resolving-conflicts">6. Resolving Merge Conflicts<a class="headerlink"
+                    href="#6-resolving-conflicts" title="Permanent link">#</a></h2>
+            <p>When Git cannot automatically resolve differing edits to the same lines, it flags a conflict and embeds
+                markers directly in the file:</p>
+            <pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+const API_URL = "https://api.internal.net/v1";
+=======
+const API_URL = "https://api.production.com/v2";
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feat/update-api</code></pre>
+            <p>Resolution steps:</p>
+            <ol>
+                <li>Open the conflicted files and edit them to the desired final state, removing marker lines.</li>
+                <li>Stage the resolved files: <code>git add &lt;filename&gt;</code>.</li>
+                <li>Finalize: <code>git commit</code> (for merge) or <code>git rebase --continue</code> (for rebase).
+                </li>
+                <li>To abort at any time: <code>git merge --abort</code> or <code>git rebase --abort</code>.</li>
+            </ol>
+
+            <h2 id="7-cherry-picking-commits">7. Cherry-Picking Commits (git cherry-pick)<a class="headerlink"
+                    href="#7-cherry-picking-commits" title="Permanent link">#</a></h2>
+            <p><strong>Cherry-picking</strong> allows you to copy an individual commit from any branch and replay its
+                exact diff as a brand new commit on your currently checked-out branch, without performing a full merge.
+            </p>
+            <blockquote>
+                <p><strong>Mental Model:</strong> Imagine a colleague has five commits on an experimental branch, but
+                    only one of them fixes a critical bug. Instead of merging the unfinished branch or manually copying
+                    code, you "cherry-pick" just that specific commit hash directly into your production branch.</p>
+            </blockquote>
+            <p>Common real-world use cases:</p>
+            <ol>
+                <li><strong>Hotfixing Production:</strong> Port a fix from your active development branch directly into
+                    a <code>release-v1.2</code> hotfix branch without releasing unfinished features.</li>
+                <li><strong>Salvaging Stale Work:</strong> Extract a useful helper module or test suite from a branch
+                    that was otherwise abandoned.</li>
+                <li><strong>Recovering Misplaced Commits:</strong> If you accidentally committed directly onto
+                    <code>main</code>, switch to your feature branch, cherry-pick the commit, and reset
+                    <code>main</code>.</li>
+            </ol>
+            <pre><code># 1. Locate the commit SHA on the source branch
+git log --oneline feat/experiments
+
+# 2. Switch to the target destination branch
+git switch main
+
+# 3. Apply the commit to current HEAD
+git cherry-pick a1b2c3d
+
+# 4. Cherry-pick a range of commits (from A to B, exclusive of A)
+git cherry-pick a1b2c3d..e4f5g6h
+
+# 5. Apply changes to staging without auto-committing
+git cherry-pick -n &lt;commit-sha&gt;   # -n / --no-commit</code></pre>
+            <p>Handling cherry-pick conflicts:</p>
+            <pre><code># If changes conflict, edit files, stage resolutions, and continue:
+git add &lt;resolved-files&gt;
+git cherry-pick --continue
+
+# Or cancel completely and return to your original state:
+git cherry-pick --abort</code></pre>
+
+            <h2 id="8-remote-workflows">8. Remote Workflows (Fetch, Pull, Push)<a class="headerlink"
+                    href="#8-remote-workflows" title="Permanent link">#</a></h2>
+            <p>Working with centralized remotes like GitHub or GitLab:</p>
+            <pre><code># Add or inspect remote servers
+git remote -v
+git remote add origin git@github.com:user/repo.git
+
+# Download remote refs without modifying local files
+git fetch origin
+
+# Fetch and integrate into current branch
+git pull origin main
+
+# Push branch to remote and track upstream
+git push -u origin feat/user-profile</code></pre>
+
+            <h2 id="9-undoing-mistakes-safely">9. Undoing Mistakes Safely<a class="headerlink"
+                    href="#9-undoing-mistakes-safely" title="Permanent link">#</a></h2>
+            <p>Choose the right undo command based on which state the change is in:</p>
+            <pre><code># 1. Discard uncommitted changes in working directory
+git restore path/to/file.js
+
+# 2. Unstage a file from the staging area back to working directory
+git restore --staged path/to/file.js
+
+# 3. Amend the most recent commit (add missed files or fix message)
+git commit --amend --no-edit
+
+# 4. Revert a published commit safely by appending an inverted commit
+git revert &lt;commit-sha&gt;
+
+# 5. Soft reset: rewind commit pointer, keep staged edits
+git reset --soft HEAD~1
+
+# 6. Hard reset: discard commit, stage, and local changes (destructive)
+git reset --hard HEAD~1</code></pre>
+
+            <h2 id="10-stashing-work">10. Stashing Work<a class="headerlink" href="#10-stashing-work"
+                    title="Permanent link">#</a></h2>
+            <p>Save uncommitted changes temporarily to switch branches cleanly without committing:</p>
+            <pre><code># Stash current tracked changes with a descriptive label
+git stash push -m "wip: experimental redis cache"
+
+# Include untracked files in the stash
+git stash push -u -m "wip: new files included"
+
+# List stored stashes
+git stash list
+
+# Re-apply the most recent stash and remove it from stash list
+git stash pop
+
+# Inspect what's inside a stash without applying
+git stash show -p stash@{0}</code></pre>
+
+            <h2 id="11-git-cheat-sheet">11. Quick Reference &amp; Cheat Sheet<a class="headerlink"
+                    href="#11-git-cheat-sheet" title="Permanent link">#</a></h2>
+            <pre><code># Inspection
+git log --oneline --graph --decorate --all
+git show &lt;commit-sha&gt;
+git blame path/to/file.js
+
+# Daily Workflow
+git switch -c feat/my-feature
+git add .
+git commit -m "feat: description"
+git push -u origin feat/my-feature
+
+# Integration &amp; Cherry-Picking
+git merge feat/my-feature
+git rebase main
+git cherry-pick &lt;commit-sha&gt;
+
+# Emergency recovery
+git reflog
+git reset --hard HEAD@{n}</code></pre>
+
+            <footer>
+                <p>&copy; 2026 TechToday &bull; Git Version Control &bull; <a href="../../index.html">Home</a> &bull;
+                    <a href="../../git-guides.html">Git Guides</a>
+                </p>
+            </footer>
+        </article>
+    </main>
+    <script src="git-study.js"></script>
+</body>
+
+</html>

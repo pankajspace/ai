@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Git Detailed Architecture &amp; Internals | TechToday</title>
+    <meta name="description"
+        content="Deep-dive architectural study of Git: DAG object store, blobs, trees, commits, packfiles, reflog recovery, interactive rebasing, git rerere, and git bisect." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="git-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../../git-guides.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Git Guides</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="git-detailed-course">Git Detailed Course: Internals &amp; Architecture<a class="headerlink"
+                    href="#git-detailed-course" title="Permanent link">#</a></h1>
+
+            <p class="lede">Git is fundamentally a content-addressable key-value datastore with a Directed Acyclic Graph (DAG) filesystem layered on top. In this in-depth guide, we demystify the internal plumbing of Git, from low-level objects in <code>.git/objects</code> to interactive rebasing, automated conflict reuse (<code>rerere</code>), and automated bisect regression hunting.</p>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-content-addressable-storage">1. Content-Addressable Storage &amp; Hash Keys</a></li>
+                <li><a href="#2-the-four-core-objects">2. The 4 Core Git Objects: Blobs, Trees, Commits, Tags</a></li>
+                <li><a href="#3-inside-the-dot-git-directory">3. Anatomical Tour of the .git Directory</a></li>
+                <li><a href="#4-the-index-file-format">4. The Index (Staging) Binary Format &amp; Hashing</a></li>
+                <li><a href="#5-packfiles-and-garbage-collection">5. Packfiles, Delta Compression &amp; git gc</a></li>
+                <li><a href="#6-interactive-rebase-internals">6. Interactive Rebase Masterclass</a></li>
+                <li><a href="#7-reflog-and-data-recovery">7. The Reflog &amp; Dangling Object Recovery</a></li>
+                <li><a href="#8-reuse-recorded-resolution">8. Reusing Merge Resolutions (git rerere)</a></li>
+                <li><a href="#9-automated-bisect-debugging">9. Binary Search Bug Hunting with git bisect</a></li>
+                <li><a href="#10-git-internals-plumbing-cheat-sheet">10. Low-Level Plumbing Command Reference</a></li>
+            </ol>
+
+            <h2 id="1-content-addressable-storage">1. Content-Addressable Storage &amp; Hash Keys<a class="headerlink"
+                    href="#1-content-addressable-storage" title="Permanent link">#</a></h2>
+            <p>Git does not store files by filename or directory path in its object database. Instead, it computes the cryptographic SHA-1 (or SHA-256) checksum of the object type, size, null byte, and payload content.</p>
+            <p>The hash is a 40-character hexadecimal string. Git splits the hash into:</p>
+            <ol>
+                <li>First 2 characters: directory name under <code>.git/objects/</code></li>
+                <li>Remaining 38 characters: filename inside that directory (compressed with zlib)</li>
+            </ol>
+            <pre><code># Calculate Git object hash manually from standard input
+echo "hello world" | git hash-object --stdin
+# Output: 3b18e512dba79e4c8300dd08aeb37f8e728b8dad
+
+# Store the object directly into .git/objects
+echo "hello world" | git hash-object -w --stdin</code></pre>
+
+            <h2 id="2-the-four-core-objects">2. The 4 Core Git Objects: Blobs, Trees, Commits, Tags<a class="headerlink"
+                    href="#2-the-four-core-objects" title="Permanent link">#</a></h2>
+            <p>Every commit in a Git repository decomposes into four fundamental immutable object types:</p>
+            <ol>
+                <li><strong>Blob (Binary Large Object):</strong> Stores pure file content byte-for-byte. A blob contains no filename, directory path, or permissions. Identical file contents across different folders or commits share the exact same blob.</li>
+                <li><strong>Tree:</strong> Represents a directory listing. Maps filenames and permissions (e.g. 100644 for files, 040000 for subdirectories) to their corresponding child blob or tree SHA-1 hashes.</li>
+                <li><strong>Commit:</strong> Stores metadata pointing to a top-level root tree hash, parent commit hash(es), author timestamp, committer timestamp, and the commit log message.</li>
+                <li><strong>Annotated Tag:</strong> An immutable reference object pointing to a specific commit with a message, tagger identity, and optional GPG signature.</li>
+            </ol>
+            <pre><code># Inspect the type of any Git object
+git cat-file -t &lt;object-sha&gt;
+
+# Inspect the raw contents of any Git object
+git cat-file -p &lt;object-sha&gt;
+
+# View tree contents formatting
+git ls-tree HEAD</code></pre>
+
+            <h2 id="3-inside-the-dot-git-directory">3. Anatomical Tour of the .git Directory<a class="headerlink"
+                    href="#3-inside-the-dot-git-directory" title="Permanent link">#</a></h2>
+            <pre><code>.git/
+├── HEAD            # Symbolically points to the currently checked-out ref (e.g., ref: refs/heads/main)
+├── config          # Repository-specific configuration options
+├── description     # Used by GitWeb or Git daemon
+├── hooks/          # Client-side and server-side automation hook scripts
+├── info/exclude    # Local ignore patterns not committed to shared repository
+├── index           # Binary file containing the staging area cache and file stat signatures
+├── objects/        # Content-addressable object store (blobs, trees, commits, packfiles)
+└── refs/
+    ├── heads/      # Local branch pointers (each file contains a commit SHA)
+    ├── tags/       # Tag pointers
+    └── remotes/    # Remote-tracking branch pointers (e.g., origin/main)</code></pre>
+
+            <h2 id="4-the-index-file-format">4. The Index (Staging) Binary Format &amp; Hashing<a class="headerlink"
+                    href="#4-the-index-file-format" title="Permanent link">#</a></h2>
+            <p>The <code>.git/index</code> file is a high-performance binary cache that acts as a bridge between your working filesystem and the commit history. It contains sorted records of every tracked file:</p>
+            <ol>
+                <li>Filesystem metadata: ctime, mtime, device, inode, file mode (permissions), UID, GID, and file size.</li>
+                <li>The SHA-1 object ID of the file content currently staged.</li>
+                <li>Conflict stage markers (0 = normal, 1 = ancestor, 2 = target HEAD, 3 = incoming branch).</li>
+            </ol>
+            <p>When running <code>git status</code>, Git compares the file's disk <code>mtime</code> and size against the index cache. If they match, Git skips reading the file content entirely, allowing sub-millisecond status checks on repositories with hundreds of thousands of files.</p>
+
+            <h2 id="5-packfiles-and-garbage-collection">5. Packfiles, Delta Compression &amp; git gc<a class="headerlink"
+                    href="#5-packfiles-and-garbage-collection" title="Permanent link">#</a></h2>
+            <p>Loose objects (individual compressed files in <code>.git/objects/xx/</code>) consume inodes and storage. Periodically, or during <code>git push</code> / <code>git gc</code>, Git packs loose objects into a single <code>.pack</code> file accompanied by a <code>.idx</code> index file.</p>
+            <p>Git uses <strong>sliding-window delta compression</strong>: instead of storing whole files repeatedly, it stores a baseline version and compressed binary deltas (insertions, deletions, copies) between related versions. This frequently reduces repository size by 80% to 95%.</p>
+            <pre><code># Run aggressive garbage collection and packfile optimization
+git gc --aggressive --prune=now
+
+# Verify object database integrity
+git fsck --full</code></pre>
+
+            <h2 id="6-interactive-rebase-internals">6. Interactive Rebase Masterclass<a class="headerlink"
+                    href="#6-interactive-rebase-internals" title="Permanent link">#</a></h2>
+            <p>Interactive rebase (<code>git rebase -i</code>) allows reshaping local commits before sharing them upstream. Git generates an instruction sheet in a temporary file and replays commits in sequence:</p>
+            <pre><code>git rebase -i HEAD~4</code></pre>
+            <p>Commands available in the todo list:</p>
+            <ol>
+                <li><code>pick</code> (p): Keep commit as is.</li>
+                <li><code>reword</code> (r): Keep commit content but rewrite commit message.</li>
+                <li><code>edit</code> (e): Pause rebase at this commit to amend files or split into smaller commits.</li>
+                <li><code>squash</code> (s): Meld this commit into the previous commit and combine commit logs.</li>
+                <li><code>fixup</code> (f): Meld into previous commit, discarding this commit's message.</li>
+                <li><code>drop</code> (d): Delete this commit entirely.</li>
+            </ol>
+
+            <h2 id="7-reflog-and-data-recovery">7. The Reflog &amp; Dangling Object Recovery<a class="headerlink"
+                    href="#7-reflog-and-data-recovery" title="Permanent link">#</a></h2>
+            <p>The Reference Log (<code>reflog</code>) records every time HEAD or any local branch pointer changes position (e.g. commit, checkout, rebase, reset). Commits discarded by <code>git reset --hard</code> are not deleted immediately; they remain in the object store for at least 30 to 90 days.</p>
+            <pre><code># Inspect HEAD movement history
+git reflog
+
+# Recover from an accidental hard reset
+git reset --hard HEAD@{1}
+
+# Find unreachable commits that are no longer referenced by any branch
+git fsck --lost-found</code></pre>
+
+            <h2 id="8-reuse-recorded-resolution">8. Reusing Merge Resolutions (git rerere)<a class="headerlink"
+                    href="#8-reuse-recorded-resolution" title="Permanent link">#</a></h2>
+            <p><code>git rerere</code> stands for <em>"Reuse Recorded Resolution"</em>. When enabled, Git records conflict pre-images and your manual resolution. If you rebase frequently or maintain long-lived integration branches, Git will automatically resolve repeated conflicts identically without asking you again.</p>
+            <pre><code># Enable rerere globally
+git config --global rerere.enabled true
+
+# Automatically stage resolved conflicts when recognized
+git config --global rerere.autoUpdate true</code></pre>
+
+            <h2 id="9-automated-bisect-debugging">9. Binary Search Bug Hunting with git bisect<a class="headerlink"
+                    href="#9-automated-bisect-debugging" title="Permanent link">#</a></h2>
+            <p>When a bug is introduced across hundreds of commits, <code>git bisect</code> uses binary search in <code>O(log N)</code> steps to isolate the exact commit that introduced the regression.</p>
+            <pre><code># Start bisect session
+git bisect start
+git bisect bad                 # Current commit is broken
+git bisect good v1.4.0         # v1.4.0 is known good
+
+# Git automatically checks out middle commit. Run test:
+# If broken: git bisect bad
+# If working: git bisect good
+
+# Automated bisect with a test script or command:
+git bisect run npm test
+
+# Reset back to original branch when complete
+git bisect reset</code></pre>
+
+            <h2 id="10-git-internals-plumbing-cheat-sheet">10. Low-Level Plumbing Command Reference<a class="headerlink"
+                    href="#10-git-internals-plumbing-cheat-sheet" title="Permanent link">#</a></h2>
+            <pre><code># Write index to a tree object
+git write-tree
+
+# Create commit object from tree
+git commit-tree &lt;tree-sha&gt; -m "Manual commit" -p &lt;parent-sha&gt;
+
+# Update branch pointer ref directly
+git update-ref refs/heads/main &lt;commit-sha&gt;
+
+# View raw object payload
+git cat-file -p &lt;object-sha&gt;</code></pre>
+
+            <footer>
+                <p>&copy; 2026 TechToday &bull; Git Version Control &bull; <a href="../../index.html">Home</a> &bull;
+                    <a href="../../git-guides.html">Git Guides</a></p>
+            </footer>
+        </article>
+    </main>
+    <script src="git-study.js"></script>
+</body>
+
+</html>

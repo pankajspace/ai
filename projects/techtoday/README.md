@@ -119,11 +119,12 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── index.html                   ← Software and AI Engineering homepage (7 hub tiles)
+├── index.html                   ← Software and AI Engineering homepage (8 hub tiles)
 ├── ai-projects.html             ← AI Projects catalog (7 project cards)
 ├── aws-guides.html              ← AWS Cloud for Developers catalog (2 course cards)
 ├── devops-guides.html           ← DevOps for Developers catalog (3 guide cards)
 ├── dsa-courses.html             ← Data Structures & Algorithms catalog (2 course cards)
+├── git-guides.html              ← Git Version Control catalog (2 course cards)
 ├── networking-courses.html      ← Computer Networking catalog (2 course cards)
 ├── os-courses.html              ← Operating Systems & Linux catalog (4 course cards)
 ├── programming-languages.html   ← Programming Languages catalog (4 course cards)
@@ -141,6 +142,7 @@ projects/techtoday/
     ├── aws/                     ← AWS crash course & detailed architecture
     ├── devops/                  ← Docker, Kubernetes, CI/CD guides
     ├── dsa/                     ← crash course + detailed course
+    ├── git/                     ← crash course + detailed course
     ├── javascript/              ← crash course + detailed course
     ├── networking/              ← crash course + full course
     ├── os/                      ← crash course + full course
@@ -153,7 +155,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 7 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, DevOps, AWS, AI Projects) organizing all learning guides and interactive demos with 2 items per tile and a consistent bottom Explore All link.
+3. **Hub Tile Grid** — 8 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Git, DevOps, AWS, AI Projects) organizing all learning guides and interactive demos with 2 items per tile and a consistent bottom Explore All link.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
