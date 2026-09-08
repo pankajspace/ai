@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Networking Detailed Course | TechToday</title>
+    <meta name="description"
+        content="In-depth computer networking: TCP congestion control (BBR/CUBIC), BGP routing, Layer 4 vs 7 load balancing, QUIC architecture, and Linux kernel socket tuning." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="networking-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="networking-detailed-course">Networking Detailed Course<a class="headerlink"
+                    href="#networking-detailed-course" title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-autonomous-systems-and-bgp">1. Autonomous Systems &amp; BGP Routing</a></li>
+                <li><a href="#2-tcp-congestion-control-algorithms">2. TCP Congestion Control: CUBIC &amp; BBR</a></li>
+                <li><a href="#3-flow-control-and-window-scaling">3. Flow Control &amp; Sliding Window Scaling</a></li>
+                <li><a href="#4-linux-socket-lifecycle-and-buffers">4. Linux Socket Lifecycle &amp; Ring Buffers</a>
+                </li>
+                <li><a href="#5-zero-copy-data-transfers">5. Zero-Copy I/O: sendfile &amp; splice</a></li>
+                <li><a href="#6-quic-and-http3-internals">6. QUIC Protocol Architecture &amp; Multiplexing</a></li>
+                <li><a href="#7-load-balancing-layer4-vs-layer7">7. Load Balancing: Layer 4 vs Layer 7</a></li>
+                <li><a href="#8-anycast-routing-and-cdns">8. Anycast Routing &amp; Edge CDNs</a></li>
+                <li><a href="#9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies</a></li>
+                <li><a href="#10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning</a></li>
+                <li><a href="#11-networking-interview-deep-dive">11. Top Networking Engineering Questions</a></li>
+            </ol>
+
+            <h2 id="1-autonomous-systems-and-bgp">1. Autonomous Systems &amp; BGP Routing<a class="headerlink"
+                    href="#1-autonomous-systems-and-bgp" title="Permanent link">#</a></h2>
+            <p>The global Internet is not a single mesh; it is a network of networks called <strong>Autonomous Systems
+                    (ASes)</strong> operated by ISPs, cloud giants (AWS, Google, Cloudflare), and telecommunications
+                providers, each identified by an Autonomous System Number (ASN).</p>
+            <ul>
+                <li><strong>Border Gateway Protocol (BGP):</strong> The routing protocol that glues the Internet
+                    together.
+                    BGP is a <strong>path-vector protocol</strong> where routers advertise the list of ASes a packet
+                    must
+                    traverse to reach a destination prefix.</li>
+                <li><strong>Peering vs Transit:</strong> In <em>peering</em>, two networks exchange traffic between
+                    their
+                    respective customers for free. In <em>transit</em>, a smaller network pays an upstream Tier-1 ISP
+                    for
+                    access to the entire global routing table.</li>
+            </ul>
+
+            <h2 id="2-tcp-congestion-control-algorithms">2. TCP Congestion Control: CUBIC &amp; BBR<a class="headerlink"
+                    href="#2-tcp-congestion-control-algorithms" title="Permanent link">#</a></h2>
+            <p>While Flow Control prevents a fast sender from overwhelming a slow receiver, <strong>Congestion
+                    Control</strong>
+                prevents senders from overwhelming the shared intermediate routers on the network:</p>
+            <ol>
+                <li><strong>Loss-Based (TCP Reno / CUBIC):</strong> Assumes packet loss indicates network congestion.
+                    Sends data exponentially (Slow Start), then linearly (Congestion Avoidance). When a packet drops,
+                    CUBIC
+                    slashes the Congestion Window (cwnd) by a multiplicative factor and uses a cubic growth curve.
+                    <em>Weakness:</em> Suffers from <strong>Bufferbloat</strong> on modern high-speed links with massive
+                    router queues.
+                </li>
+                <li><strong>Model-Based (Google BBR - Bottleneck Bandwidth and RTT):</strong> Rather than waiting for
+                    packet
+                    drops, BBR measures the maximum delivery rate (bandwidth) and minimum round-trip time (RTprop). It
+                    paces
+                    packet transmission exactly at the pipe's capacity, eliminating queue build-up and latency spikes.
+                </li>
+            </ol>
+
+            <h2 id="3-flow-control-and-window-scaling">3. Flow Control &amp; Sliding Window Scaling<a class="headerlink"
+                    href="#3-flow-control-and-window-scaling" title="Permanent link">#</a></h2>
+            <p>TCP Flow Control coordinates delivery speeds using the <strong>Receive Window (rwnd)</strong>:</p>
+            <ul>
+                <li>The receiver advertises how many free bytes remain in its kernel socket buffer
+                    (<code>SO_RCVBUF</code>).</li>
+                <li>The sender never transmits more unacknowledged bytes than <code>min(cwnd, rwnd)</code>.</li>
+                <li><strong>TCP Window Scale Option (RFC 1323):</strong> The original 16-bit TCP header only allowed a
+                    maximum
+                    window size of 64 KB (insufficient for gigabit bandwidth-delay products). Window Scaling adds a
+                    shift
+                    multiplier allowing windows up to 1 GB.</li>
+            </ul>
+
+            <h2 id="4-linux-socket-lifecycle-and-buffers">4. Linux Socket Lifecycle &amp; Ring Buffers<a
+                    class="headerlink" href="#4-linux-socket-lifecycle-and-buffers" title="Permanent link">#</a></h2>
+            <p>Tracing data from a physical Ethernet wire into an application process:</p>
+            <ol>
+                <li><strong>NIC &amp; DMA:</strong> Network Interface Card receives optical/electrical pulses,
+                    reconstructs the
+                    Ethernet frame, and writes it directly into host RAM ring buffers via Direct Memory Access (DMA).
+                </li>
+                <li><strong>Hard IRQ &amp; SoftIRQ (NAPI):</strong> The NIC raises a hardware interrupt to the CPU. The
+                    kernel
+                    schedules a software interrupt (NAPI softirq) to poll the ring buffer in batches, avoiding interrupt
+                    storms.</li>
+                <li><strong>TCP Stack:</strong> Kernel strips the Ethernet header, validates IP checksum, decodes TCP
+                    sequence
+                    numbers, reassembles packets, and deposits data into the socket's receive queue.</li>
+                <li><strong>Application Read:</strong> Process calls <code>read()</code> or <code>recv()</code>, copying
+                    data
+                    from kernel space into the user application buffer.</li>
+            </ol>
+
+            <h2 id="5-zero-copy-data-transfers">5. Zero-Copy I/O: sendfile &amp; splice<a class="headerlink"
+                    href="#5-zero-copy-data-transfers" title="Permanent link">#</a></h2>
+            <p>Traditional file serving requires 4 context switches and 4 data copies (Disk &rarr; Kernel &rarr; User
+                space &rarr; Kernel &rarr; NIC).
+                Linux <strong><code>sendfile()</code></strong> achieves Zero-Copy:</p>
+            <pre><code>// Traditional approach: 4 copies, 4 context switches
+read(file_fd, buffer, len);
+write(socket_fd, buffer, len);
+
+// Zero-Copy approach: 2 context switches, 0 user-space copies
+sendfile(socket_fd, file_fd, NULL, len);
+// The kernel streams data directly from page cache to the NIC DMA buffer!</code></pre>
+
+            <h2 id="6-quic-and-http3-internals">6. QUIC Protocol Architecture &amp; Multiplexing<a class="headerlink"
+                    href="#6-quic-and-http3-internals" title="Permanent link">#</a></h2>
+            <p>QUIC (RFC 9000) reinvents transport layer semantics by embedding reliable multiplexing directly on top of
+                UDP:</p>
+            <ul>
+                <li><strong>Independent Stream Frames:</strong> In HTTP/2 over TCP, if one packet drops, all multiplexed
+                    streams stall until that single packet is retransmitted. In QUIC, each stream is tracked
+                    independently; a
+                    dropped packet on Stream A never delays Streams B or C.</li>
+                <li><strong>Built-in TLS 1.3:</strong> Encryption is not a layer on top of QUIC; the transport handshake
+                    and
+                    cryptographic key exchange are unified into a single 0-RTT / 1-RTT round-trip.</li>
+                <li><strong>Connection IDs:</strong> Connections are identified by a 64-bit Connection ID rather than an
+                    IP:Port 4-tuple. If your phone switches from home Wi-Fi to cellular LTE, existing file transfers and
+                    calls
+                    continue without dropping.</li>
+            </ul>
+
+            <h2 id="7-load-balancing-layer4-vs-layer7">7. Load Balancing: Layer 4 vs Layer 7<a class="headerlink"
+                    href="#7-load-balancing-layer4-vs-layer7" title="Permanent link">#</a></h2>
+            <ol>
+                <li><strong>Layer 4 Load Balancers (HAProxy in TCP mode, AWS NLB, IPVS):</strong>
+                    <ul>
+                        <li>Operates at the transport layer (IP and Port only).</li>
+                        <li>Does not decrypt TLS or parse HTTP headers.</li>
+                        <li>Delivers millions of packets per second with ultra-low latency and minimal memory overhead.
+                        </li>
+                    </ul>
+                </li>
+                <li><strong>Layer 7 Load Balancers (Nginx, Envoy, AWS ALB):</strong>
+                    <ul>
+                        <li>Operates at the application layer (terminates TLS, parses HTTP headers, cookies, URL paths).
+                        </li>
+                        <li>Can route <code>/api/*</code> to Service A and <code>/static/*</code> to S3.</li>
+                        <li>Supports intelligent retry policies, gRPC stream routing, and rate-limiting.</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h2 id="8-anycast-routing-and-cdns">8. Anycast Routing &amp; Edge CDNs<a class="headerlink"
+                    href="#8-anycast-routing-and-cdns" title="Permanent link">#</a></h2>
+            <p>Traditional hosting uses <strong>Unicast</strong> (one IP address belongs to exactly one physical
+                server).
+                Modern networks (Cloudflare, Google, AWS CloudFront) use <strong>BGP Anycast</strong>:</p>
+            <ul>
+                <li>The exact same IP address (e.g. <code>1.1.1.1</code>) is advertised by BGP routers in 300+ data
+                    centers
+                    around the world simultaneously.</li>
+                <li>When a user in Tokyo sends a packet, global BGP routing sends it to the Tokyo POP. When a user in
+                    London sends a packet to the same IP, it routes to London.</li>
+                <li>Minimizes latency, optimizes DNS resolution times, and naturally disperses DDoS attacks across the
+                    globe.</li>
+            </ul>
+
+            <h2 id="9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies<a class="headerlink"
+                    href="#9-ddos-mitigation-and-syn-cookies" title="Permanent link">#</a></h2>
+            <p>In a <strong>SYN Flood Attack</strong>, an attacker sends millions of spoofed TCP SYN packets without
+                ever
+                sending the final ACK, overflowing the kernel's connection backlog and freezing the server.</p>
+            <p><strong>SYN Cookies (Linux solution):</strong> When the backlog queue fills, the kernel stops allocating
+                memory for incoming connections. Instead, it encodes the client's IP, port, and a cryptographic
+                timestamp
+                into the initial 32-bit sequence number (<code>Y</code>). When the client responds with ACK (containing
+                <code>Y + 1</code>), the server validates the signature and establishes the socket without ever having
+                held state.
+            </p>
+
+            <h2 id="10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning<a class="headerlink"
+                    href="#10-linux-network-sysctl-tuning" title="Permanent link">#</a></h2>
+            <div class="highlight">
+                <pre><code># /etc/sysctl.d/99-networking.conf
+# Increase maximum listen queue backlog for high-concurrency servers
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+
+# Enable BBR congestion control
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+
+# Expand TCP socket buffer sizes for 10GbE+ links
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+
+# Accelerate socket recycling
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_fin_timeout = 15</code></pre>
+            </div>
+
+            <h2 id="11-networking-interview-deep-dive">11. Top Networking Engineering Questions<a class="headerlink"
+                    href="#11-networking-interview-deep-dive" title="Permanent link">#</a></h2>
+            <div class="concept-card">
+                <h3>High-Frequency Systems Questions</h3>
+                <ol>
+                    <li><strong>What happens when you type https://example.com into a browser?</strong>
+                        DNS resolution (cache &rarr; recursive &rarr; authoritative) &rarr; TCP 3-way handshake &rarr;
+                        TLS 1.3
+                        ECDHE key negotiation &rarr; HTTP GET request &rarr; Server process &rarr; Response stream
+                        &rarr; Browser DOM rendering.
+                    </li>
+                    <li><strong>Why does HTTP/3 run on UDP instead of TCP?</strong> To eliminate transport-layer
+                        head-of-line
+                        blocking caused by TCP's strict in-order packet byte delivery, enable instant 0-RTT handshakes,
+                        and
+                        support connection migration across networks.</li>
+                    <li><strong>What is MTU and Path MTU Discovery?</strong> The maximum packet size supported without
+                        fragmentation (usually 1500 bytes). PMTUD sends packets with the DF (Don't Fragment) bit set; if
+                        a
+                        packet is too large, the intermediate router drops it and replies with ICMP "Fragmentation
+                        Needed"
+                        specifying its MTU.</li>
+                </ol>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Review quick mental models in the <a
+                        href="networking-crash-course.html">Networking Crash Course</a>, or explore OS kernel internals
+                    in
+                    the <a href="../os/os-detailed-course.html">OS Detailed Course</a>. Return to the <a
+                        href="../../index.html">TechToday Homepage</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; Computer Networking Study Guides</p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="networking-study.js"></script>
+</body>
+
+</html>
