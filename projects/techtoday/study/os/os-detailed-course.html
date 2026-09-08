@@ -122,8 +122,8 @@
                             to kernel</text>
 
                         <!-- Privilege Barrier -->
-                        <line x1="25" y1="154" x2="300" y2="154" stroke="#ef4444" stroke-width="2"
-                            stroke-dasharray="4 4" />
+                        <line x1="25" y1="154" x2="300" y2="154" stroke="#ef4444" stroke-width="2.5"
+                            stroke-dasharray="6 4" class="dash-animated" />
                         <text x="162" y="167" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
                             text-anchor="middle">SYSCALL TRAP (Ring 3 &rarr; Ring 0)</text>
 
@@ -181,11 +181,11 @@
                         <text x="362" y="214" fill="#cbd5e1" font-size="12" font-family="sans-serif">Isolated Drivers
                             (Crash-safe)</text>
                         <text x="480" y="245" fill="#fbbf24" font-size="12" font-weight="600" font-family="monospace"
-                            text-anchor="middle" class="node-glow">&harr; IPC Message Passing Bus &harr;</text>
+                            text-anchor="middle">&harr; IPC Message Passing Bus &harr;</text>
 
                         <!-- Privilege Barrier -->
-                        <line x1="340" y1="268" x2="620" y2="268" stroke="#ef4444" stroke-width="2"
-                            stroke-dasharray="4 4" />
+                        <line x1="340" y1="268" x2="620" y2="268" stroke="#ef4444" stroke-width="2.5"
+                            stroke-dasharray="6 4" class="dash-animated" />
                         <text x="480" y="282" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
                             text-anchor="middle">IPC CONTEXT SWITCH BOUNDARY</text>
 
@@ -222,8 +222,8 @@
                             &amp; APIs</text>
 
                         <!-- Privilege Barrier -->
-                        <line x1="660" y1="184" x2="935" y2="184" stroke="#ef4444" stroke-width="2"
-                            stroke-dasharray="4 4" />
+                        <line x1="660" y1="184" x2="935" y2="184" stroke="#ef4444" stroke-width="2.5"
+                            stroke-dasharray="6 4" class="dash-animated" />
                         <text x="797" y="198" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
                             text-anchor="middle">MACH MESSAGE / SYSCALL TRAP</text>
 
@@ -635,40 +635,38 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                         <!-- Mutex -->
                         <rect x="25" y="70" width="435" height="85" rx="6" fill="#1e293b" stroke="#38bdf8"
                             stroke-width="1.2" />
-                        <text x="38" y="92" fill="#38bdf8" font-size="13.5" font-weight="700" font-family="monospace">1.
+                        <text x="38" y="92" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace">1.
                             MUTEX (Mutual Exclusion Sleep-Lock)</text>
-                        <text x="38" y="112" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Binary
-                            ownership: Only the thread that acquired the lock can release it.</text>
-                        <text x="38" y="130" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Uses
-                            <strong>Linux futex</strong>: Atomic CAS in user space; sleeps in kernel only on
-                            contention.</text>
-                        <text x="38" y="147" fill="#34d399" font-size="12" font-family="monospace">Best for: Protecting
-                            long critical sections &amp; shared state</text>
+                        <text x="38" y="112" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Binary lock:
+                            Only owning thread can release it</text>
+                        <text x="38" y="130" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Uses futex:
+                            Atomic CAS in user space, sleeps on contention</text>
+                        <text x="38" y="147" fill="#34d399" font-size="11" font-family="monospace">Best for: Long
+                            critical sections &amp; shared state</text>
 
                         <!-- Counting Semaphore -->
                         <rect x="25" y="165" width="435" height="85" rx="6" fill="#1e293b" stroke="#10b981"
                             stroke-width="1.2" />
-                        <text x="38" y="187" fill="#34d399" font-size="13.5" font-weight="700"
+                        <text x="38" y="187" fill="#34d399" font-size="12.5" font-weight="700"
                             font-family="monospace">2. COUNTING SEMAPHORE (Resource Permits)</text>
-                        <text x="38" y="207" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Initialized
-                            with count <em>N</em>; <code>wait()</code> decrements, <code>post()</code>
-                            increments.</text>
-                        <text x="38" y="225" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; No strict
-                            ownership: One thread can signal/wake another waiting thread.</text>
-                        <text x="38" y="242" fill="#38bdf8" font-size="12" font-family="monospace">Best for:
-                            Rate-limiting pools (DB connections, worker queues)</text>
+                        <text x="38" y="207" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Count N:
+                            wait() decrements, post() increments</text>
+                        <text x="38" y="225" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Cross-thread
+                            signaling: Thread A wakes Thread B</text>
+                        <text x="38" y="242" fill="#38bdf8" font-size="11" font-family="monospace">Best for:
+                            Rate-limiting pools (DB pools, workers)</text>
 
                         <!-- Spinlock -->
                         <rect x="25" y="260" width="435" height="95" rx="6" fill="#1e293b" stroke="#f59e0b"
                             stroke-width="1.2" />
-                        <text x="38" y="282" fill="#fbbf24" font-size="13.5" font-weight="700"
+                        <text x="38" y="282" fill="#fbbf24" font-size="12.5" font-weight="700"
                             font-family="monospace">3. SPINLOCK (Busy-Waiting Loop)</text>
-                        <text x="38" y="302" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull;
-                            Continuously polls atomic flag (<code>PAUSE / test-and-set</code>) without sleeping.</text>
-                        <text x="38" y="320" fill="#f87171" font-size="12.5" font-family="sans-serif">&bull; Zero
-                            context switch overhead, but consumes 100% CPU on that core.</text>
-                        <text x="38" y="339" fill="#fbbf24" font-size="12" font-family="monospace">Best for: Kernel
-                            interrupt handlers (cannot sleep) &amp; sub-microsecond locks</text>
+                        <text x="38" y="302" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Polls atomic
+                            flag (PAUSE/test-and-set) without sleeping</text>
+                        <text x="38" y="320" fill="#f87171" font-size="11" font-family="sans-serif">&bull; 0 context
+                            switch cost, but burns 100% CPU on that core</text>
+                        <text x="38" y="339" fill="#fbbf24" font-size="11" font-family="monospace">Best for: Interrupt
+                            handlers &amp; sub-microsec locks</text>
 
                         <!-- Right Panel: Deadlock Conditions & Resource Allocation Graph -->
                         <rect x="490" y="15" width="455" height="355" rx="10" fill="#0d1117" stroke="#334155"
@@ -742,11 +740,11 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
 
                         <rect x="500" y="305" width="435" height="50" rx="6" fill="#450a0a" stroke="#ef4444"
                             stroke-width="1.2" />
-                        <text x="717" y="324" fill="#fca5a5" font-size="12.5" font-weight="700" font-family="monospace"
+                        <text x="717" y="324" fill="#fca5a5" font-size="12" font-weight="700" font-family="monospace"
                             text-anchor="middle">&cross; DEADLOCK CYCLE: Both threads sleep forever</text>
-                        <text x="717" y="342" fill="#fecaca" font-size="11.5" font-family="sans-serif"
-                            text-anchor="middle">Prevention Solution: Enforce global lock acquisition hierarchy (Always
-                            acquire Lock A before B)</text>
+                        <text x="717" y="342" fill="#fecaca" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">Fix: Enforce global lock ordering (Always acquire Lock A before
+                            B)</text>
                     </svg>
                 </div>
                 <div class="study-diagram-caption">
@@ -856,27 +854,21 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                         <!-- Fast Path: TLB -->
                         <rect x="30" y="165" width="380" height="85" rx="8" fill="url(#tlbHitGrad)" stroke="#34d399"
                             stroke-width="1.8" class="node-glow" />
-                        <text x="45" y="188" fill="#34d399" font-size="13.5" font-weight="700"
-                            font-family="monospace">&starf; TLB FAST PATH (Translation Lookaside Buffer)</text>
-                        <text x="45" y="210" fill="#f8fafc" font-size="12.5" font-family="sans-serif">&bull; Hardware
-                            associative L1/L2 CAM cache on CPU core.</text>
-                        <text x="45" y="230" fill="#a7f3d0" font-size="12.5" font-weight="600"
-                            font-family="monospace">TLB HIT Latency: ~1 to 2 cycles (~0.5 - 1 ns) &rarr; Frame in
-                            RAM</text>
+                        <text x="45" y="188" fill="#34d399" font-size="12" font-weight="700"
+                            font-family="monospace">&starf; TLB FAST PATH (Hardware CAM)</text>
+                        <text x="45" y="210" fill="#f8fafc" font-size="11.5" font-family="sans-serif">&bull; Associative L1/L2 CAM cache on CPU core</text>
+                        <text x="45" y="230" fill="#a7f3d0" font-size="11.5" font-weight="600"
+                            font-family="monospace">TLB HIT: ~1-2 cycles (~0.5-1ns) &rarr; Frame</text>
 
                         <!-- Slow Path: Page Walk -->
                         <rect x="30" y="265" width="380" height="115" rx="8" fill="#1f183d" stroke="#ef4444"
                             stroke-width="1.5" />
-                        <text x="45" y="288" fill="#fca5a5" font-size="13.5" font-weight="700"
-                            font-family="monospace">&cross; TLB MISS: 4-LEVEL HARDWARE PAGE WALK</text>
-                        <text x="45" y="310" fill="#cbd5e1" font-size="12" font-family="sans-serif">1. Reads <strong>CR3
-                                register</strong> for PML4 base physical address in RAM.</text>
-                        <text x="45" y="328" fill="#cbd5e1" font-size="12" font-family="sans-serif">2. Follows 4
-                            pointers in DRAM: PML4 &rarr; PDPT &rarr; PD &rarr; PTE.</text>
-                        <text x="45" y="348" fill="#f87171" font-size="12" font-family="monospace">TLB MISS Penalty: ~60
-                            to 100 ns (4 sequential DRAM accesses!)</text>
-                        <text x="45" y="367" fill="#fbbf24" font-size="11.5" font-family="sans-serif">Result cached into
-                            TLB for subsequent instructions.</text>
+                        <text x="45" y="288" fill="#fca5a5" font-size="12" font-weight="700"
+                            font-family="monospace">&cross; TLB MISS: 4-LEVEL PAGE WALK</text>
+                        <text x="45" y="310" fill="#cbd5e1" font-size="11" font-family="sans-serif">1. Reads CR3 register for PML4 base in RAM</text>
+                        <text x="45" y="328" fill="#cbd5e1" font-size="11" font-family="sans-serif">2. Walks 4 DRAM pointers: PML4&rarr;PDPT&rarr;PD&rarr;PTE</text>
+                        <text x="45" y="348" fill="#f87171" font-size="11" font-family="monospace">MISS Penalty: ~60-100ns (4 DRAM hops)</text>
+                        <text x="45" y="367" fill="#fbbf24" font-size="11" font-family="sans-serif">Cached in TLB for next instructions</text>
 
                         <!-- Middle Right: 4-Level Page Table Hierarchy -->
                         <rect x="445" y="125" width="500" height="270" rx="10" fill="#0d1117" stroke="#334155"
@@ -935,22 +927,20 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                             stroke-width="1" />
                         <text x="478" y="246" fill="#38bdf8" font-size="12" font-weight="700"
                             font-family="monospace">PTE BIT FLAGS (64-bit Entry):</text>
-                        <text x="478" y="266" fill="#cbd5e1" font-size="11.5" font-family="sans-serif"><span
-                                style="color: #34d399; font-weight: 700;">[P] Present</span> &bull; <span
-                                style="color: #f59e0b;">[R/W] Read/Write</span> &bull; [U/S] User/Supervisor &bull; [D]
-                            Dirty &bull; <span style="color: #ef4444;">[NX] No-Execute</span></text>
-                        <text x="478" y="284" fill="#fca5a5" font-size="11" font-family="monospace">If Present Bit P = 0
-                            &rarr; Page Fault Exception (Interrupt 14) &rarr; Demand Paging / COW</text>
+                        <text x="478" y="266" fill="#cbd5e1" font-size="10.5" font-family="monospace">[P] Present &bull;
+                            [R/W] Read/Write &bull; [U/S] &bull; [NX] No-Exec</text>
+                        <text x="478" y="284" fill="#fca5a5" font-size="10.5" font-family="monospace">If P = 0 &rarr;
+                            Page Fault (Int 14) &rarr; Demand Paging / COW</text>
 
                         <!-- Physical Frame in RAM -->
                         <rect x="465" y="310" width="465" height="70" rx="6" fill="#064e3b" stroke="#34d399"
                             stroke-width="1.8" />
-                        <text x="478" y="333" fill="#34d399" font-size="13" font-weight="700"
+                        <text x="478" y="333" fill="#34d399" font-size="12" font-weight="700"
                             font-family="monospace">PHYSICAL FRAME IN HARDWARE DRAM</text>
-                        <text x="478" y="352" fill="#f8fafc" font-size="12" font-family="sans-serif">Physical Address =
-                            (Physical Page Frame Base &lt;&lt; 12) | 12-bit Offset</text>
-                        <text x="478" y="369" fill="#a7f3d0" font-size="11.5" font-family="monospace">&check; Zero
-                            memory fragmentation: 4 KB pages mapped non-contiguously in RAM</text>
+                        <text x="478" y="352" fill="#f8fafc" font-size="11.5" font-family="sans-serif">Physical Addr =
+                            (Page Frame Base &lt;&lt; 12) | 12-bit Offset</text>
+                        <text x="478" y="369" fill="#a7f3d0" font-size="10.5" font-family="monospace">&check; 4 KB pages
+                            mapped non-contiguously in DRAM</text>
                     </svg>
                 </div>
                 <div class="study-diagram-caption">
@@ -1158,10 +1148,9 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                             stroke-width="1.2" />
                         <text x="35" y="362" fill="#38bdf8" font-size="12.5" font-weight="700"
                             font-family="monospace">KEY DISTINCTION &mdash; HARD LINK VS SYMLINK:</text>
-                        <text x="35" y="380" fill="#e2e8f0" font-size="12" font-family="sans-serif"><strong>Hard
-                                Link:</strong> New directory entry pointing to the SAME inode number (deleting original
-                            file preserves data). <strong>Symlink:</strong> New inode containing a string path to
-                            target.</text>
+                        <text x="35" y="380" fill="#e2e8f0" font-size="11" font-family="sans-serif">Hard Link: Directory
+                            entry points to same inode &bull; Symlink: Distinct inode holding path string to
+                            target</text>
                     </svg>
                 </div>
                 <div class="study-diagram-caption">
@@ -1262,12 +1251,9 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
 
                         <rect x="35" y="295" width="415" height="68" rx="6" fill="#1e2430" stroke="#334155"
                             stroke-width="1" />
-                        <text x="48" y="316" fill="#cbd5e1" font-size="12" font-family="sans-serif">&bull; Readiness
-                            only: Signals when FD is ready to read/write.</text>
-                        <text x="48" y="335" fill="#f59e0b" font-size="12" font-family="sans-serif">&bull; Requires
-                            subsequent read()/write() syscalls per connection.</text>
-                        <text x="48" y="352" fill="#f87171" font-size="11.5" font-family="monospace">Context switch cost
-                            scales with connection throughput.</text>
+                        <text x="48" y="316" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">&bull; Readiness only: signals when FD is ready</text>
+                        <text x="48" y="335" fill="#f59e0b" font-size="11.5" font-family="sans-serif">&bull; Requires read()/write() syscall per event</text>
+                        <text x="48" y="352" fill="#f87171" font-size="11" font-family="monospace">Context switches scale with active sockets</text>
 
                         <!-- Right Panel: io_uring (Completion) -->
                         <rect x="490" y="15" width="455" height="375" rx="10" fill="#0d1117" stroke="#334155"
@@ -1279,16 +1265,16 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
 
                         <!-- Shared Memory Region -->
                         <rect x="500" y="70" width="435" height="175" rx="6" fill="#17122b" stroke="#8b5cf6"
-                            stroke-width="1.5" />
-                        <text x="515" y="92" fill="#c084fc" font-size="13" font-weight="700"
-                            font-family="monospace">SHARED MEMORY (mmap'd SQ &amp; CQ Ring Buffers)</text>
+                            stroke-width="1.2" />
+                        <text x="717" y="93" fill="#e9d5ff" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">mmap() Shared Memory Kernel &harr; User Space</text>
 
                         <!-- Submission Queue -->
-                        <rect x="515" y="105" width="195" height="85" rx="6" fill="#1f183d" stroke="#a78bfa"
+                        <rect x="515" y="105" width="195" height="85" rx="6" fill="#1f183d" stroke="#8b5cf6"
                             stroke-width="1.2" />
-                        <text x="528" y="127" fill="#e9d5ff" font-size="13" font-weight="700"
+                        <text x="528" y="127" fill="#c084fc" font-size="13" font-weight="700"
                             font-family="sans-serif">Submission Queue (SQ)</text>
-                        <text x="528" y="147" fill="#cbd5e1" font-size="12" font-family="sans-serif">App writes SQEs
+                        <text x="528" y="147" fill="#cbd5e1" font-size="12" font-family="sans-serif">User writes SQEs
                             directly</text>
                         <text x="528" y="166" fill="#34d399" font-size="11.5" font-weight="600"
                             font-family="monospace">ZERO-SYSCALL SUBMISSION</text>
@@ -1315,15 +1301,14 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                         <!-- Kernel Workers / SQPOLL -->
                         <rect x="500" y="255" width="435" height="120" rx="6" fill="#151226" stroke="#475569"
                             stroke-width="1.2" />
-                        <text x="515" y="278" fill="#fbbf24" font-size="13" font-weight="700"
-                            font-family="monospace">KERNEL ASYNC WORKERS (io_wq &amp; SQPOLL Mode)</text>
-                        <text x="515" y="300" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">Dedicated kernel
+                        <text x="515" y="278" fill="#fbbf24" font-size="12.5" font-weight="700"
+                            font-family="monospace">KERNEL ASYNC WORKERS (io_wq &amp; SQPOLL)</text>
+                        <text x="515" y="300" fill="#cbd5e1" font-size="12" font-family="sans-serif">Dedicated kernel
                             worker harvests SQ entries with 0 syscalls.</text>
-                        <text x="515" y="322" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">Performs true
+                        <text x="515" y="322" fill="#cbd5e1" font-size="12" font-family="sans-serif">Performs true
                             asynchronous DMA and delivers CQE completions.</text>
-                        <text x="515" y="347" fill="#34d399" font-size="12.5" font-weight="600"
-                            font-family="monospace">&check; &gt; 1.7 Million IOPS per core with zero syscall
-                            traps!</text>
+                        <text x="515" y="347" fill="#34d399" font-size="11.5" font-weight="600"
+                            font-family="monospace">&check; &gt; 1.7M IOPS per core (0 syscall traps)</text>
                     </svg>
                 </div>
                 <div class="study-diagram-caption">
