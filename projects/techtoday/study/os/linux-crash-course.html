@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Linux Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual and fast-paced Linux crash course: CLI navigation, pipelines, file permissions, process management, networking, and bash scripting." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="os-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="linux-crash-course">Linux Crash Course<a class="headerlink" href="#linux-crash-course"
+                    title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-the-unix-philosophy">1. The UNIX Philosophy</a></li>
+                <li><a href="#2-filesystem-navigation">2. Essential Navigation &amp; File Ops</a></li>
+                <li><a href="#3-text-processing">3. Text Inspection &amp; Stream Tools</a></li>
+                <li><a href="#4-pipes-and-redirection">4. Pipelines &amp; I/O Redirection</a></li>
+                <li><a href="#5-file-permissions-and-modes">5. Permissions, Ownership &amp; Modes</a></li>
+                <li><a href="#6-process-management-and-signals">6. Processes, Jobs &amp; Signals</a></li>
+                <li><a href="#7-users-groups-and-sudo">7. Users, Groups &amp; Privilege Escalation</a></li>
+                <li><a href="#8-networking-and-ssh">8. Networking, Ports &amp; SSH</a></li>
+                <li><a href="#9-package-management">9. Package Management</a></li>
+                <li><a href="#10-bash-scripting-essentials">10. Bash Scripting Essentials</a></li>
+                <li><a href="#11-linux-cheat-sheet">11. Linux Command Cheat Sheet</a></li>
+            </ol>
+
+            <h2 id="1-the-unix-philosophy">1. The UNIX Philosophy<a class="headerlink" href="#1-the-unix-philosophy"
+                    title="Permanent link">#</a></h2>
+            <p>Linux is built on core principles articulated by Doug McIlroy and Ken Thompson:</p>
+            <ol>
+                <li><strong>Write programs that do one thing and do it well.</strong></li>
+                <li><strong>Write programs to work together.</strong> Standard input, standard output, and standard
+                    error
+                    unify tools into composable chains.</li>
+                <li><strong>Write programs to handle text streams, because that is a universal interface.</strong></li>
+                <li><strong>Everything is a file:</strong> Disks, terminals, network sockets, system memory metrics, and
+                    hardware devices are all represented as byte streams accessible through standard read/write calls.
+                </li>
+            </ol>
+
+            <h2 id="2-filesystem-navigation">2. Essential Navigation &amp; File Ops<a class="headerlink"
+                    href="#2-filesystem-navigation" title="Permanent link">#</a></h2>
+            <p>The Linux filesystem is a single inverted tree rooted at <code>/</code>. Key commands:</p>
+            <div class="highlight">
+                <pre><code>pwd                       # Print working directory
+cd /var/log               # Change to absolute directory
+cd ../                    # Move up one directory level
+cd ~                      # Jump to user home directory ($HOME)
+
+ls -la                    # List all files (including hidden .files) with permissions &amp; sizes
+mkdir -p project/src/api  # Create directory tree recursively
+cp -r src/ dist/          # Copy directory recursively
+mv old_name.txt new.txt   # Rename or move file
+rm -rf temp/              # Forcefully remove directory without prompting (use with care!)
+touch app.py              # Create empty file or update timestamp</code></pre>
+            </div>
+
+            <h2 id="3-text-processing">3. Text Inspection &amp; Stream Tools<a class="headerlink"
+                    href="#3-text-processing" title="Permanent link">#</a></h2>
+            <p>Linux includes industrial-grade text processors designed for massive log files and tabular data:</p>
+            <div class="highlight">
+                <pre><code>cat file.txt              # Print entire file content to stdout
+less large_log.log        # Interactive pager (search with '/', navigate with 'q', 'g', 'G')
+head -n 20 data.csv       # View first 20 lines
+tail -f /var/log/syslog   # Follow live appends to file in real-time
+grep -rn "ERROR" ./src    # Recursively search for 'ERROR' with line numbers
+wc -l access.log          # Count total lines in a file
+sort -u users.txt         # Sort lines alphabetically and deduplicate</code></pre>
+            </div>
+
+            <h2 id="4-pipes-and-redirection">4. Pipelines &amp; I/O Redirection<a class="headerlink"
+                    href="#4-pipes-and-redirection" title="Permanent link">#</a></h2>
+            <p>Every process starts with three default file descriptors:</p>
+            <ul>
+                <li><code>0: stdin</code> (Standard Input)</li>
+                <li><code>1: stdout</code> (Standard Output)</li>
+                <li><code>2: stderr</code> (Standard Error)</li>
+            </ul>
+            <div class="highlight">
+                <pre><code># Output redirection
+echo "Starting build" > build.log     # Overwrite file with stdout
+echo "Step completed" >> build.log    # Append stdout to file
+python app.py 2> error.log            # Redirect stderr only
+python app.py > output.log 2>&1       # Combine stdout and stderr into one file
+python app.py > /dev/null 2>&1        # Discard all output completely
+
+# Pipelines: Connect stdout of left command to stdin of right command
+cat access.log | grep " 404 " | awk '{print $7}' | sort | uniq -c | sort -nr | head -n 10</code></pre>
+            </div>
+
+            <h2 id="5-file-permissions-and-modes">5. Permissions, Ownership &amp; Modes<a class="headerlink"
+                    href="#5-file-permissions-and-modes" title="Permanent link">#</a></h2>
+            <p>Every file and directory tracks 3 sets of permissions: <strong>User (Owner)</strong>,
+                <strong>Group</strong>,
+                and <strong>Others</strong>:
+            </p>
+            <ul>
+                <li><code>r (read) = 4</code></li>
+                <li><code>w (write) = 2</code></li>
+                <li><code>x (execute) = 1</code></li>
+            </ul>
+            <div class="highlight">
+                <pre><code>chmod 755 script.sh       # rwxr-xr-x (Owner: read/write/exec, Group/Others: read/exec)
+chmod 600 id_rsa          # rw------- (Owner: read/write only, Private SSH key requirement)
+chmod +x deploy.sh        # Add execute permission for everyone
+chown ec2-user:www-data site/ # Change owner to ec2-user and group to www-data
+chown -R ec2-user:ec2-user .  # Recursively change ownership for current directory</code></pre>
+            </div>
+
+            <h2 id="6-process-management-and-signals">6. Processes, Jobs &amp; Signals<a class="headerlink"
+                    href="#6-process-management-and-signals" title="Permanent link">#</a></h2>
+            <p>Programs run as OS processes assigned a unique PID. You can inspect, prioritize, and terminate them:</p>
+            <div class="highlight">
+                <pre><code>ps aux                    # Snapshot of all running processes on the system
+top                       # Real-time task manager (press 'q' to exit, 'M' to sort by RAM)
+pgrep -l python           # Find PIDs matching name 'python'
+kill -15 &lt;PID&gt;            # SIGTERM: Polite shutdown request (allows cleanup)
+kill -9 &lt;PID&gt;             # SIGKILL: Immediate hardware termination by kernel (cannot be caught)
+
+# Backgrounding and Job Control
+python server.py &         # Launch process directly in background
+jobs                      # List background jobs in current shell
+fg %1                     # Bring job 1 to foreground
+# Press Ctrl+Z to pause foreground job, then run:
+bg %1                     # Resume paused job in background</code></pre>
+            </div>
+
+            <h2 id="7-users-groups-and-sudo">7. Users, Groups &amp; Privilege Escalation<a class="headerlink"
+                    href="#7-users-groups-and-sudo" title="Permanent link">#</a></h2>
+            <p>Linux is multi-user by design. The superuser <code>root</code> has UID 0 and unlimited access:</p>
+            <div class="highlight">
+                <pre><code>whoami                    # Print current active username
+id                        # Show UID, GID, and supplementary group memberships
+sudo command              # Execute a single command with root privileges
+sudo -i                   # Open interactive root shell
+useradd -m -s /bin/bash devops # Create new user with home directory and default bash shell
+passwd devops             # Set or update password
+usermod -aG sudo devops   # Add user to sudoers group (Debian/Ubuntu)
+usermod -aG wheel devops  # Add user to wheel group (RHEL/Fedora/Amazon Linux)</code></pre>
+            </div>
+
+            <h2 id="8-networking-and-ssh">8. Networking, Ports &amp; SSH<a class="headerlink"
+                    href="#8-networking-and-ssh" title="Permanent link">#</a></h2>
+            <p>Inspecting connections, transferring files, and managing remote cloud servers:</p>
+            <div class="highlight">
+                <pre><code>ip addr show              # Display IP addresses on all network interfaces
+ss -tulpn                 # Show listening TCP/UDP ports and the process using each
+curl -I https://example.com # Fetch HTTP response headers
+ping -c 4 8.8.8.8         # Test network round-trip latency to Google DNS
+
+# SSH and Remote File Copy
+ssh -i key.pem ec2-user@44.193.134.238
+scp -i key.pem file.tar.gz ec2-user@remote:/tmp/
+rsync -avz -e "ssh -i key.pem" dist/ ec2-user@remote:/var/www/site/</code></pre>
+            </div>
+
+            <h2 id="9-package-management">9. Package Management<a class="headerlink" href="#9-package-management"
+                    title="Permanent link">#</a></h2>
+            <p>Installing software across major Linux distributions:</p>
+            <ul>
+                <li><strong>Debian / Ubuntu (APT):</strong>
+                    <pre><code>sudo apt update &amp;&amp; sudo apt install -y nginx htop git</code></pre>
+                </li>
+                <li><strong>Amazon Linux / RHEL / Fedora (DNF / YUM):</strong>
+                    <pre><code>sudo dnf install -y nginx htop git</code></pre>
+                </li>
+            </ul>
+
+            <h2 id="10-bash-scripting-essentials">10. Bash Scripting Essentials<a class="headerlink"
+                    href="#10-bash-scripting-essentials" title="Permanent link">#</a></h2>
+            <p>A production-ready bash automation script template:</p>
+            <div class="highlight">
+                <pre><code>#!/usr/bin/env bash
+set -euo pipefail # Strict mode: exit immediately on error, unset vars, or pipe failure
+
+APP_NAME="techtoday-worker"
+TARGET_DIR="/var/www/${APP_NAME}"
+
+echo "Deploying ${APP_NAME} to ${TARGET_DIR}..."
+
+if [ ! -d "${TARGET_DIR}" ]; then
+    echo "Directory does not exist. Creating..."
+    sudo mkdir -p "${TARGET_DIR}"
+fi
+
+for file in *.html *.css; do
+    if [ -f "$file" ]; then
+        echo "Validating $file..."
+    fi
+done
+
+echo "Deployment successful! Exit code: $?"</code></pre>
+            </div>
+
+            <h2 id="11-linux-cheat-sheet">11. Linux Command Cheat Sheet<a class="headerlink"
+                    href="#11-linux-cheat-sheet" title="Permanent link">#</a></h2>
+            <div class="concept-card">
+                <h3>Top Commands &amp; Mental Models</h3>
+                <ul>
+                    <li><code>grep -rn "pattern" .</code>: Search string recursively across codebase with line numbers.
+                    </li>
+                    <li><code>find . -name "*.log" -mtime +7 -delete</code>: Clean up log files older than 7 days.</li>
+                    <li><code>tar -czvf archive.tar.gz dir/</code>: Compress folder into gzip tarball.</li>
+                    <li><code>tar -xzvf archive.tar.gz</code>: Extract gzip tarball.</li>
+                    <li><code>df -h</code>: Check disk space consumption across mount points.</li>
+                    <li><code>du -sh * | sort -h</code>: List folders in current directory sorted by disk usage.</li>
+                    <li><code>free -h</code>: Inspect available, used, and cached RAM and swap.</li>
+                </ul>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Advance to enterprise Linux administration in the <a
+                        href="linux-detailed-course.html">Linux Detailed Course</a>, or review low-level operating
+                    system
+                    internals in the <a href="os-crash-course.html">OS Crash Course</a>. Explore all courses at <a
+                        href="../../os-courses.html">All OS Courses</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; Operating Systems &amp; Linux Study Guides</p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="os-study.js"></script>
+</body>
+
+</html>

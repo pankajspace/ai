@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Operating Systems Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual, fast-paced guide to Operating Systems fundamentals: kernel architecture, processes, threads, virtual memory, scheduling, and system calls." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="os-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="os-crash-course">Operating Systems Crash Course<a class="headerlink" href="#os-crash-course"
+                    title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-what-is-an-operating-system">1. What is an Operating System?</a></li>
+                <li><a href="#2-kernel-vs-user-mode">2. Kernel vs User Mode &amp; Syscalls</a></li>
+                <li><a href="#3-processes-and-the-pcb">3. Processes &amp; Process Control Block</a></li>
+                <li><a href="#4-threads-and-concurrency">4. Threads &amp; Concurrency</a></li>
+                <li><a href="#5-cpu-scheduling">5. CPU Scheduling</a></li>
+                <li><a href="#6-inter-process-communication">6. Inter-Process Communication (IPC)</a></li>
+                <li><a href="#7-synchronization-mutexes-semaphores">7. Synchronization &amp; Locks</a></li>
+                <li><a href="#8-deadlocks">8. Deadlocks &amp; Prevention</a></li>
+                <li><a href="#9-memory-management-paging">9. Memory Management &amp; Paging</a></li>
+                <li><a href="#10-virtual-memory-page-faults">10. Virtual Memory &amp; Page Faults</a></li>
+                <li><a href="#11-file-systems-inodes">11. File Systems &amp; Inodes</a></li>
+                <li><a href="#12-os-cheat-sheet">12. Quick Reference &amp; Cheat Sheet</a></li>
+            </ol>
+
+            <h2 id="1-what-is-an-operating-system">1. What is an Operating System?<a class="headerlink"
+                    href="#1-what-is-an-operating-system" title="Permanent link">#</a></h2>
+            <p>An <strong>Operating System (OS)</strong> is software that acts as an intermediary between computer
+                hardware
+                and user applications. Without an OS, every program would have to write its own disk drivers, manage raw
+                RAM addresses directly, and schedule its own hardware access without safety checks.</p>
+            <p>The primary responsibilities of an OS break down into two roles:</p>
+            <ol>
+                <li><strong>Resource Manager:</strong> Coordinates the allocation of CPU time, memory space, network
+                    bandwidth, and I/O devices among competing programs.</li>
+                <li><strong>Extended Machine (Abstraction Layer):</strong> Replaces complex, low-level hardware details
+                    (disk sectors, memory voltages, CPU interrupts) with clean abstractions like files, sockets,
+                    processes, and virtual memory.</li>
+            </ol>
+            <blockquote>
+                <p><strong>Mental Model:</strong> Think of the OS as the head referee in a busy sports arena. Players
+                    (applications) cannot run onto the field whenever they please or claim ownership of the stadium
+                    seats
+                    (RAM). The referee enforces time slices, boundaries, and prevents players from colliding or
+                    sabotaging
+                    each other.</p>
+            </blockquote>
+
+            <h2 id="2-kernel-vs-user-mode">2. Kernel vs User Mode &amp; Syscalls<a class="headerlink"
+                    href="#2-kernel-vs-user-mode" title="Permanent link">#</a></h2>
+            <p>To prevent malicious or buggy code from crashing the hardware or snooping on other programs, modern CPUs
+                provide hardware-enforced execution rings:</p>
+            <ol>
+                <li><strong>User Mode (Ring 3):</strong> Applications run with restricted privileges. They cannot
+                    directly
+                    access hardware, modify page tables, or disable interrupts.</li>
+                <li><strong>Kernel Mode (Ring 0):</strong> The core of the OS runs with unrestricted hardware access. It
+                    can
+                    execute privileged CPU instructions and read/write any memory address.</li>
+            </ol>
+            <p>When user applications need hardware services (such as reading a file from SSD or sending a packet over
+                the
+                network), they must transition into kernel space using a <strong>System Call (syscall)</strong> via a
+                software
+                interrupt or CPU instruction like <code>syscall</code> (x86-64) or <code>svc</code> (ARM).</p>
+            <pre><code>// User Program makes a request
+ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
+
+// 1. Trap / Syscall instruction triggers CPU mode switch (Ring 3 -> Ring 0)
+// 2. Kernel looks up Syscall table (e.g., sys_read)
+// 3. Kernel verifies memory pointers and reads data from device driver
+// 4. Kernel copies data to user buffer and returns to User Mode (Ring 0 -> Ring 3)</code></pre>
+
+            <h2 id="3-processes-and-the-pcb">3. Processes &amp; Process Control Block<a class="headerlink"
+                    href="#3-processes-and-the-pcb" title="Permanent link">#</a></h2>
+            <p>A <strong>process</strong> is an active, running instance of a program. While a program is passive code
+                sitting on disk, a process is an active execution context containing:</p>
+            <ol>
+                <li><strong>Code Segment (Text):</strong> The compiled machine instructions.</li>
+                <li><strong>Data &amp; BSS Segments:</strong> Global and static variables.</li>
+                <li><strong>Heap:</strong> Dynamically allocated memory at runtime (e.g. <code>malloc</code>,
+                    <code>new</code>).
+                </li>
+                <li><strong>Stack:</strong> Local variables, function call frames, and return addresses.</li>
+            </ol>
+            <p>The kernel tracks every process using a <strong>Process Control Block (PCB)</strong>, which preserves:
+            </p>
+            <ul>
+                <li><strong>Process ID (PID)</strong> and Parent PID (PPID).</li>
+                <li><strong>Process State:</strong> New, Ready, Running, Waiting (Blocked), or Terminated.</li>
+                <li><strong>CPU Registers:</strong> Program counter (PC), stack pointer (SP), and general-purpose
+                    registers.</li>
+                <li><strong>Memory Management Info:</strong> Page table pointers and segment limits.</li>
+                <li><strong>Open File Descriptors:</strong> References to active files, pipes, and sockets.</li>
+            </ul>
+
+            <h2 id="4-threads-and-concurrency">4. Threads &amp; Concurrency<a class="headerlink"
+                    href="#4-threads-and-concurrency" title="Permanent link">#</a></h2>
+            <p>A <strong>thread</strong> is the smallest unit of execution scheduled by the OS. A single process can
+                contain
+                multiple threads that share:</p>
+            <ul>
+                <li>Virtual address space (code, global data, and heap).</li>
+                <li>Open file descriptors and OS resources.</li>
+            </ul>
+            <p>However, each thread maintains its own private:</p>
+            <ul>
+                <li><strong>Thread ID (TID)</strong>.</li>
+                <li><strong>Program Counter (PC)</strong> and CPU register state.</li>
+                <li><strong>Call Stack:</strong> Local variables for functions executed by that thread.</li>
+            </ul>
+            <blockquote>
+                <p><strong>Context Switch Overhead:</strong> Switching between two threads of the <em>same process</em>
+                    is
+                    much faster than switching between two <em>distinct processes</em> because the OS does not have to
+                    flush or swap the virtual memory page tables (TLB).</p>
+            </blockquote>
+
+            <h2 id="5-cpu-scheduling">5. CPU Scheduling<a class="headerlink" href="#5-cpu-scheduling"
+                    title="Permanent link">#</a></h2>
+            <p>The CPU scheduler selects which ready process or thread executes on an available CPU core. Key scheduling
+                strategies include:</p>
+            <ol>
+                <li><strong>First-Come, First-Served (FCFS):</strong> Simple queue; suffers from the "convoy effect"
+                    where
+                    short tasks wait behind huge CPU-bound tasks.</li>
+                <li><strong>Shortest Job First (SJF):</strong> Minimizes average waiting time; requires predicting burst
+                    durations.</li>
+                <li><strong>Round Robin (RR):</strong> Preemptive scheduling using a fixed time quantum (slice). Ensures
+                    fair
+                    sharing and low response times for interactive applications.</li>
+                <li><strong>Multi-Level Feedback Queue (MLFQ):</strong> Adaptive priorities; I/O-bound jobs stay at high
+                    priority for quick response, while CPU-bound compute jobs sink to lower priority with longer quanta.
+                </li>
+            </ol>
+
+            <h2 id="6-inter-process-communication">6. Inter-Process Communication (IPC)<a class="headerlink"
+                    href="#6-inter-process-communication" title="Permanent link">#</a></h2>
+            <p>Because processes run in isolated address spaces, they cannot read each other's memory directly. The OS
+                provides IPC mechanisms:</p>
+            <ol>
+                <li><strong>Pipes &amp; FIFOs:</strong> Unidirectional byte streams between related processes.</li>
+                <li><strong>Shared Memory:</strong> Multiple processes map the exact same physical memory frames into
+                    their
+                    address space. The fastest IPC mechanism since it avoids kernel copy buffers.</li>
+                <li><strong>Message Queues:</strong> Discrete structured messages delivered asynchronously.</li>
+                <li><strong>Sockets:</strong> Bidirectional stream/datagram communication across process boundaries or
+                    over a
+                    network.</li>
+            </ol>
+
+            <h2 id="7-synchronization-mutexes-semaphores">7. Synchronization &amp; Locks<a class="headerlink"
+                    href="#7-synchronization-mutexes-semaphores" title="Permanent link">#</a></h2>
+            <p>When multiple threads concurrently read and write shared data without coordination, a <strong>race
+                    condition</strong> occurs, leading to corrupted data.</p>
+            <p>A <strong>Critical Section</strong> is a block of code accessing shared resources that must execute
+                atomically. OS primitives used to enforce mutual exclusion include:</p>
+            <ul>
+                <li><strong>Mutex (Mutual Exclusion):</strong> A binary lock owned by at most one thread at a time. Only
+                    the
+                    thread that acquired the mutex may unlock it.</li>
+                <li><strong>Semaphore:</strong> An integer counter initialized to <em>N</em>. Threads wait (decrement)
+                    and
+                    post (increment). Used for managing resource pools.</li>
+                <li><strong>Condition Variables:</strong> Allows threads to sleep until a specific application condition
+                    becomes true, avoiding busy-waiting (spinlocks).</li>
+            </ul>
+
+            <h2 id="8-deadlocks">8. Deadlocks &amp; Prevention<a class="headerlink" href="#8-deadlocks"
+                    title="Permanent link">#</a></h2>
+            <p>A <strong>deadlock</strong> is a state where two or more processes are permanently blocked because each
+                is
+                holding a resource the other needs. All 4 <strong>Coffman Conditions</strong> must hold simultaneously
+                for a
+                deadlock to occur:</p>
+            <ol>
+                <li><strong>Mutual Exclusion:</strong> At least one resource cannot be shared.</li>
+                <li><strong>Hold and Wait:</strong> A process holds resources while requesting additional ones.</li>
+                <li><strong>No Preemption:</strong> Resources cannot be forcibly taken from a process.</li>
+                <li><strong>Circular Wait:</strong> A closed chain of processes exists where each process waits for a
+                    resource held by the next.</li>
+            </ol>
+            <blockquote>
+                <p><strong>Prevention Tip:</strong> The simplest way to prevent deadlocks in software is <strong>Lock
+                        Ordering</strong>: always acquire multiple locks in the exact same predefined global order
+                    across
+                    every thread.</p>
+            </blockquote>
+
+            <h2 id="9-memory-management-paging">9. Memory Management &amp; Paging<a class="headerlink"
+                    href="#9-memory-management-paging" title="Permanent link">#</a></h2>
+            <p>Programs do not interact with physical RAM addresses. Instead, the CPU's <strong>Memory Management Unit
+                    (MMU)</strong> translates <strong>Virtual Addresses</strong> to <strong>Physical Addresses</strong>
+                using <strong>Paging</strong>.</p>
+            <ul>
+                <li><strong>Pages:</strong> Fixed-size blocks of virtual memory (typically 4 KB).</li>
+                <li><strong>Frames:</strong> Fixed-size blocks of physical RAM corresponding to page size.</li>
+                <li><strong>Page Table:</strong> Data structure mapping virtual page numbers (VPN) to physical frame
+                    numbers
+                    (PFN).</li>
+                <li><strong>Translation Lookaside Buffer (TLB):</strong> High-speed hardware CPU cache that stores
+                    recent page
+                    table translations to avoid slow multi-level memory lookups.</li>
+            </ul>
+
+            <h2 id="10-virtual-memory-page-faults">10. Virtual Memory &amp; Page Faults<a class="headerlink"
+                    href="#10-virtual-memory-page-faults" title="Permanent link">#</a></h2>
+            <p>Virtual memory allows a computer to run programs that exceed the size of physical RAM by storing inactive
+                pages on disk (swap/pagefile).</p>
+            <ol>
+                <li>When a program accesses a virtual page that is not currently loaded in physical RAM, the MMU
+                    triggers a
+                    hardware trap called a <strong>Page Fault</strong>.</li>
+                <li>The kernel intercepts the trap, locates the requested page in swap space or executable file on disk.
+                </li>
+                <li>The OS finds a free physical frame (or evicts an existing page using algorithms like
+                    <strong>LRU</strong>
+                    or Clock).
+                </li>
+                <li>The page is read from disk into RAM, the page table entry is updated, and the CPU instruction is
+                    retried.</li>
+            </ol>
+
+            <h2 id="11-file-systems-inodes">11. File Systems &amp; Inodes<a class="headerlink"
+                    href="#11-file-systems-inodes" title="Permanent link">#</a></h2>
+            <p>A file system structures raw disk blocks into files and directories. In Unix/Linux file systems (e.g.
+                ext4):</p>
+            <ul>
+                <li><strong>Inode (Index Node):</strong> A metadata record storing file permissions, owner, file size,
+                    timestamps,
+                    and disk block pointers. Importantly, inodes <em>do not</em> store the file name!</li>
+                <li><strong>Directory:</strong> A special file containing a list of mappings between human-readable file
+                    names
+                    and their corresponding inode numbers.</li>
+                <li><strong>File Descriptor (FD):</strong> An integer index in the per-process file table pointing to an
+                    open
+                    file description in the kernel. Standard streams are <code>0 (stdin)</code>,
+                    <code>1 (stdout)</code>, and
+                    <code>2 (stderr)</code>.
+                </li>
+            </ul>
+
+            <h2 id="12-os-cheat-sheet">12. Quick Reference &amp; Cheat Sheet<a class="headerlink"
+                    href="#12-os-cheat-sheet" title="Permanent link">#</a></h2>
+            <div class="concept-card">
+                <h3>Core Concepts at a Glance</h3>
+                <ul>
+                    <li><strong>Kernel:</strong> Core program running in Ring 0 with hardware control.</li>
+                    <li><strong>Process:</strong> Isolated address space with text, data, heap, stack, and PCB.</li>
+                    <li><strong>Thread:</strong> Lightweight execution unit within a process sharing heap and file
+                        descriptors.</li>
+                    <li><strong>Context Switch:</strong> Saving and restoring CPU registers between tasks.</li>
+                    <li><strong>TLB:</strong> Hardware cache for virtual-to-physical address translation.</li>
+                    <li><strong>Page Fault:</strong> Trap triggered when accessing an unmapped or swapped page.</li>
+                    <li><strong>Deadlock:</strong> Four conditions (Mutual Exclusion, Hold &amp; Wait, No Preemption,
+                        Circular Wait).</li>
+                </ul>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Dive deeper into Linux CFS, futexes, and copy-on-write with the <a
+                        href="os-detailed-course.html">OS Detailed Course</a>, or explore practical command-line and
+                    systems
+                    skills in the <a href="linux-crash-course.html">Linux Crash Course</a>. View the full catalog at <a
+                        href="../../os-courses.html">All OS Courses</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; Operating Systems Study Guides</p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="os-study.js"></script>
+</body>
+
+</html>

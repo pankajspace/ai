@@ -1,0 +1,490 @@
+:root {
+    --page: #0b0d10;
+    --surface: #11151a;
+    --surface-raised: #171c22;
+    --line: #28303a;
+    --text: #dce4ec;
+    --muted: #94a0ad;
+    --accent: #38bdf8;
+    --accent-bright: #7dd3fc;
+    --blue: #a5b4fc;
+    --code: #080a0d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    color: var(--text);
+    background:
+        linear-gradient(rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.035) 1px, transparent 1px),
+        var(--page);
+    background-size: 32px 32px;
+    font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 100;
+    width: 0;
+    height: 3px;
+    background: var(--accent);
+}
+
+.study-layout {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    justify-content: center;
+    gap: 28px;
+    width: 90%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 24px 0 96px;
+}
+
+.study-layout .study {
+    width: auto;
+    margin: 0;
+    padding: 40px 0 0;
+}
+
+.study-layout .study>#table-of-contents,
+.study-layout .study>.table-of-contents {
+    display: none;
+}
+
+.topic-menu {
+    position: sticky;
+    top: 53px;
+    z-index: 40;
+    align-self: start;
+    max-height: calc(100vh - 53px);
+    overflow: auto;
+    padding: 28px 14px 28px 0;
+    border-right: 1px solid var(--line);
+}
+
+.topic-menu-title,
+.topic-menu-panel>summary {
+    margin: 0 0 12px;
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.topic-menu-panel>summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.topic-menu-panel>summary::-webkit-details-marker {
+    display: none;
+}
+
+.topic-menu .table-of-contents {
+    display: block;
+}
+
+.topic-menu .table-of-contents a {
+    padding: 4px 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.topic-menu .table-of-contents a.is-active {
+    color: var(--accent-bright);
+    background: rgba(56, 189, 248, 0.08);
+    border-left-color: var(--accent);
+}
+
+.study {
+    width: 90%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 64px 0 96px;
+}
+
+.study>h1:first-child {
+    margin: 0 0 48px;
+    color: #f3f8fc;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(38px, 7vw, 68px);
+    font-weight: 700;
+    line-height: 1.05;
+}
+
+.study>h1:first-child::before {
+    content: "Operating Systems study guide";
+    display: block;
+    margin-bottom: 14px;
+    color: var(--accent);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+h2,
+h3,
+h4 {
+    color: #f3f8fc;
+    line-height: 1.25;
+    scroll-margin-top: 76px;
+}
+
+h2 {
+    margin: 64px 0 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(26px, 4vw, 36px);
+}
+
+h3 {
+    margin: 38px 0 14px;
+    font-size: 21px;
+}
+
+h4 {
+    margin: 28px 0 10px;
+    font-size: 16px;
+}
+
+.headerlink {
+    margin-left: 8px;
+    color: var(--line);
+    font-family: sans-serif;
+    font-size: 0.65em;
+    text-decoration: none;
+}
+
+h2:hover .headerlink,
+h3:hover .headerlink,
+h4:hover .headerlink {
+    color: var(--accent);
+}
+
+p,
+ul,
+ol {
+    margin: 0 0 18px;
+}
+
+li+li {
+    margin-top: 5px;
+}
+
+.table-of-contents {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px 28px;
+    padding-left: 0;
+    list-style: none;
+}
+
+.table-of-contents li,
+.table-of-contents li+li {
+    margin: 0;
+}
+
+.table-of-contents-numbered {
+    counter-reset: toc-item;
+}
+
+.table-of-contents-numbered li {
+    counter-increment: toc-item;
+}
+
+.table-of-contents-numbered a::before {
+    content: counter(toc-item) ". ";
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.table-of-contents a {
+    display: block;
+    padding: 5px 8px;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+}
+
+.table-of-contents a:hover,
+.table-of-contents a:focus-visible {
+    color: var(--accent-bright);
+    background: rgba(56, 189, 248, 0.06);
+    border-left-color: var(--accent);
+}
+
+a {
+    color: var(--blue);
+    text-underline-offset: 3px;
+}
+
+strong {
+    color: #f3f8fc;
+}
+
+blockquote {
+    margin: 24px 0;
+    padding: 14px 18px;
+    color: #c6d1dc;
+    background: rgba(56, 189, 248, 0.08);
+    border-left: 3px solid var(--accent);
+}
+
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+code {
+    padding: 2px 6px;
+    color: var(--accent-bright);
+    background: var(--surface-raised);
+    border-radius: 4px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88em;
+}
+
+pre {
+    position: relative;
+    margin: 22px 0;
+    padding: 20px;
+    overflow: hidden;
+    background: var(--code);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+}
+
+pre::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+pre code {
+    display: block;
+    overflow-x: auto;
+    white-space: pre;
+    padding: 0;
+    color: #d8e2eb;
+    background: transparent;
+    border-radius: 0;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.copy-code {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    padding: 5px 8px;
+    color: var(--muted);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+    font: 600 11px "Avenir Next", Avenir, sans-serif;
+}
+
+.copy-code:hover {
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.table-wrap {
+    margin: 24px 0;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    font-size: 14px;
+}
+
+th,
+td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    color: var(--accent-bright);
+    background: var(--surface-raised);
+}
+
+tr:last-child td {
+    border-bottom: 0;
+}
+
+hr {
+    margin: 48px 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+}
+
+.study-footer {
+    padding: 26px 20px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 12px;
+}
+
+.back-to-top {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 38px;
+    height: 38px;
+    color: var(--page);
+    background: var(--accent);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 800;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.concept-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.concept-card h3 {
+    margin-top: 0;
+    color: var(--accent-bright);
+}
+
+@media (max-width: 960px) {
+    .study-layout {
+        display: block;
+        width: 90%;
+        max-width: 1500px;
+        padding-top: 0;
+    }
+
+    .topic-menu {
+        position: sticky;
+        top: 53px;
+        max-height: none;
+        margin: 0 -20px 8px;
+        padding: 0 20px;
+        overflow: visible;
+        background: var(--page);
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .topic-menu-panel[open] {
+        padding-bottom: 12px;
+    }
+
+    .topic-menu-panel>summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+        padding: 14px 0;
+    }
+
+    .topic-menu-panel>summary::after {
+        content: "\25BE";
+        color: var(--accent);
+        font-size: 14px;
+    }
+
+    .topic-menu-panel[open]>summary::after {
+        transform: rotate(180deg);
+    }
+
+    .topic-menu .table-of-contents {
+        max-height: min(60vh, 420px);
+        overflow: auto;
+        padding-bottom: 8px;
+    }
+}
+
+@media (min-width: 961px) {
+    .topic-menu-panel>summary {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .study,
+    .study-layout {
+        width: 90%;
+        max-width: 1500px;
+        padding-top: 44px;
+    }
+
+    .study-layout {
+        padding-top: 0;
+    }
+
+    .study>h1:first-child {
+        margin-bottom: 36px;
+    }
+
+    .table-of-contents {
+        grid-template-columns: 1fr;
+    }
+
+    pre {
+        padding: 18px 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    * {
+        transition: none !important;
+    }
+}

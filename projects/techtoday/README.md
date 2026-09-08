@@ -121,6 +121,7 @@ projects/techtoday/
 ├── README.md
 ├── index.html                   ← Software and AI Engineering homepage (hub tiles)
 ├── ai-projects.html             ← AI Projects catalog (7 project cards)
+├── os-courses.html              ← Operating Systems & Linux catalog (6 course cards)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -131,6 +132,7 @@ projects/techtoday/
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
+    ├── os/                      ← crash course + full course
     ├── python/                  ← crash course + full course
     ├── dsa/                     ← crash course + full course
     └── ai/                      ← LLM, RAG, Docker, Strands guides
@@ -142,8 +144,8 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 3 category tiles on the homepage (Python, DSA, AI Projects) organizing all learning guides and interactive demos with 2 items per tile.
-4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 1 column on mobile devices.
+3. **Hub Tile Grid** — 4 category tiles on the homepage (Operating Systems, Python, DSA, AI Projects) organizing all learning guides and interactive demos with 2 items per tile.
+4. **Responsive** — grid reorganizes cleanly from 4 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
 ---

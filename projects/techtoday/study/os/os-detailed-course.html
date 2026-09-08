@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Operating Systems Detailed Course | TechToday</title>
+    <meta name="description"
+        content="In-depth walkthrough of Operating Systems: kernel architecture, CFS scheduling, lockless synchronization, multi-level paging, journaling file systems, and container internals." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="os-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="os-detailed-course">Operating Systems Detailed Course<a class="headerlink"
+                    href="#os-detailed-course" title="Permanent link">#</a></h1>
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents">
+                <li><a href="#1-kernel-architectures">1. Kernel Architectures</a></li>
+                <li><a href="#2-process-state-machine">2. Process State Machine &amp; Lifecycle</a></li>
+                <li><a href="#3-thread-models--goroutines">3. Thread Models &amp; User vs Kernel Threads</a></li>
+                <li><a href="#4-advanced-cpu-scheduling--cfs">4. Advanced CPU Scheduling &amp; Linux CFS</a></li>
+                <li><a href="#5-low-level-concurrency--futexes">5. Synchronization Internals &amp; Futexes</a></li>
+                <li><a href="#6-deadlock-detection--bankers-algorithm">6. Deadlocks &amp; Banker's Algorithm</a></li>
+                <li><a href="#7-multi-level-paging--tlb-shootdowns">7. Multi-Level Paging &amp; TLB Shootdown</a></li>
+                <li><a href="#8-virtual-memory-internals--cow">8. Copy-On-Write (COW) &amp; Page Swapping</a></li>
+                <li><a href="#9-file-system-internals--journaling">9. File System Internals &amp; Journaling</a></li>
+                <li><a href="#10-io-multiplexing--epoll-and-iouring">10. I/O Multiplexing: epoll &amp; io_uring</a></li>
+                <li><a href="#11-container-internals-namespaces-cgroups">11. Linux Container Internals</a></li>
+                <li><a href="#12-interview-questions-and-deep-dive">12. Core OS Interview Questions</a></li>
+            </ol>
+
+            <h2 id="1-kernel-architectures">1. Kernel Architectures<a class="headerlink" href="#1-kernel-architectures"
+                    title="Permanent link">#</a></h2>
+            <p>Operating systems differ fundamentally in how much code runs in privileged kernel mode:</p>
+            <ol>
+                <li><strong>Monolithic Kernels (Linux, FreeBSD):</strong> All core services — scheduling, virtual
+                    memory, file systems, IPC, and device drivers — run within Ring 0. <em>Pros:</em> Maximum
+                    performance
+                    due to zero context-switch overhead between subsystem function calls. <em>Cons:</em> A bug or crash
+                    in
+                    any third-party device driver can bring down the entire system.</li>
+                <li><strong>Microkernels (Mach, seL4, QNX):</strong> Only the bare minimum runs in Ring 0: basic thread
+                    scheduling, low-level memory mapping, and IPC. Drivers, file systems, and network stacks run as
+                    isolated
+                    user-space servers. <em>Pros:</em> Extreme fault-tolerance and formal verification capabilities.
+                    <em>Cons:</em> High IPC messaging and context-switch overhead across subsystem boundaries.
+                </li>
+                <li><strong>Hybrid Kernels (macOS XNU, Windows NT):</strong> Pragmatic compromise combining
+                    microkernel-like
+                    message passing structures with performance-critical subsystems running in kernel address space.
+                </li>
+            </ol>
+
+            <h2 id="2-process-state-machine">2. Process State Machine &amp; Lifecycle<a class="headerlink"
+                    href="#2-process-state-machine" title="Permanent link">#</a></h2>
+            <p>From creation to termination, a process transitions through a deterministic state machine:</p>
+            <ul>
+                <li><strong>New (Created):</strong> Process is being instantiated by <code>fork()</code> or
+                    <code>clone()</code>; PCB is initialized.
+                </li>
+                <li><strong>Ready:</strong> Loaded into RAM and waiting in the run-queue for CPU core assignment by the
+                    scheduler.</li>
+                <li><strong>Running:</strong> Instructions are actively being executed on a hardware CPU core.</li>
+                <li><strong>Waiting (Blocked):</strong> Paused awaiting an external event (e.g. disk read, socket
+                    packet, timer, or lock).</li>
+                <li><strong>Terminated (Zombie):</strong> Process has called <code>exit()</code>, but its return code
+                    remains in the PCB until the parent process calls <code>wait()</code> / <code>waitpid()</code>.</li>
+            </ul>
+            <blockquote>
+                <p><strong>Orphan vs Zombie:</strong> An <strong>orphan</strong> process is one whose parent died before
+                    it;
+                    it is adopted by PID 1 (<code>systemd</code> or <code>init</code>). A <strong>zombie</strong>
+                    process is
+                    dead but waiting for its parent to read its exit status so its PCB can be freed.</p>
+            </blockquote>
+
+            <h2 id="3-thread-models--goroutines">3. Thread Models &amp; User vs Kernel Threads<a class="headerlink"
+                    href="#3-thread-models--goroutines" title="Permanent link">#</a></h2>
+            <p>How application threads map to kernel execution contexts:</p>
+            <ol>
+                <li><strong>1:1 Model (Kernel Threads):</strong> Each application thread maps directly to an OS thread
+                    (POSIX <code>pthread</code> on Linux via <code>clone(CLONE_VM | CLONE_FS | ...)</code>). The OS
+                    handles
+                    scheduling across all CPU cores. High fidelity, but thread creation and stack memory (typically 1-8
+                    MB)
+                    are relatively heavy.</li>
+                <li><strong>N:1 Model (Green Threads / Fiber):</strong> Many user-space threads multiplexed on one
+                    kernel
+                    thread. Ultra-fast switching with tiny stacks, but cannot utilize multi-core CPUs and one blocking
+                    syscall blocks the entire process.</li>
+                <li><strong>M:N Model (Go Goroutines, Erlang BEAM):</strong> <em>M</em> application coroutines scheduled
+                    dynamically across <em>N</em> OS kernel threads by a runtime scheduler. Delivers the best of both
+                    worlds:
+                    sub-microsecond context switches, tiny 2 KB initial stacks, and multi-core parallelism.</li>
+            </ol>
+
+            <h2 id="4-advanced-cpu-scheduling--cfs">4. Advanced CPU Scheduling &amp; Linux CFS<a class="headerlink"
+                    href="#4-advanced-cpu-scheduling--cfs" title="Permanent link">#</a></h2>
+            <p>The Linux <strong>Completely Fair Scheduler (CFS)</strong> models an ideal multi-tasking CPU where every
+                task receives an equal share of compute time proportional to its nice priority:</p>
+            <ul>
+                <li><strong>Virtual Runtime (<code>vruntime</code>):</strong> Represents the normalized amount of CPU
+                    time a
+                    task has consumed. A higher-priority task (lower nice value) accumulates <code>vruntime</code> at a
+                    slower rate.</li>
+                <li><strong>Red-Black Tree:</strong> The CFS runqueue is organized as a self-balancing binary search
+                    tree
+                    keyed by <code>vruntime</code>. The scheduler always picks the leftmost node (the task with the
+                    lowest
+                    accumulated <code>vruntime</code>) in <strong>O(log N)</strong> time (and <strong>O(1)</strong>
+                    cached lookup).</li>
+            </ul>
+
+            <h2 id="5-low-level-concurrency--futexes">5. Synchronization Internals &amp; Futexes<a class="headerlink"
+                    href="#5-low-level-concurrency--futexes" title="Permanent link">#</a></h2>
+            <p>Naive locks either waste CPU cycles spinning in user mode or waste hundreds of nanoseconds in syscalls.
+                Linux solved this with <strong>Futexes (Fast Userspace Mutexes)</strong>:</p>
+            <ol>
+                <li><strong>Fast Path (Uncontended):</strong> The lock is acquired entirely in user space with a single
+                    atomic
+                    hardware instruction (e.g. <code>compare-and-swap</code> / <code>CMPXCHG</code>) with <em>zero
+                        system call
+                        overhead</em>.</li>
+                <li><strong>Slow Path (Contended):</strong> If the lock is already held, the thread issues the
+                    <code>futex()</code> syscall to put itself to sleep in the kernel's wait-queue until the holder
+                    unlocks
+                    it.
+                </li>
+            </ol>
+
+            <h2 id="6-deadlock-detection--bankers-algorithm">6. Deadlocks &amp; Banker's Algorithm<a class="headerlink"
+                    href="#6-deadlock-detection--bankers-algorithm" title="Permanent link">#</a></h2>
+            <p>Dijkstra's <strong>Banker's Algorithm</strong> evaluates resource allocation requests by simulating
+                whether
+                granting the request leaves the system in a <strong>Safe State</strong> (a state where a sequence exists
+                allowing all processes to eventually complete):</p>
+            <pre><code>// Safety Algorithm check
+Available[m]: Available instances of resource type m
+Max[n][m]: Max demand of process n
+Allocation[n][m]: Currently allocated instances
+Need[n][m] = Max[n][m] - Allocation[n][m]
+
+// A state is safe if there exists a sequence <P0, P1, ... Pn-1>
+// such that for each Pi, Need[i] <= Available + Sum(Allocation[j]) for j < i</code></pre>
+
+            <h2 id="7-multi-level-paging--tlb-shootdowns">7. Multi-Level Paging &amp; TLB Shootdown<a class="headerlink"
+                    href="#7-multi-level-paging--tlb-shootdowns" title="Permanent link">#</a></h2>
+            <p>A flat 64-bit page table would require millions of gigabytes just to store page mappings. Modern OSes use
+                hierarchical <strong>4-Level or 5-Level Paging</strong> (PML4 / PML5 on x86-64):</p>
+            <ul>
+                <li>The virtual address is partitioned into offsets pointing through:
+                    <code>PGD (Page Global Directory) &rarr; P4D &rarr; PUD (Page Upper Directory) &rarr; PMD (Page Middle Directory) &rarr; PTE (Page Table Entry) &rarr; Physical Page Offset</code>.
+                </li>
+                <li>Tables for unused address regions never need to be allocated in RAM, keeping the memory overhead
+                    tiny.</li>
+                <li><strong>TLB Shootdown:</strong> When a page mapping is modified or unmapped on a multi-core machine,
+                    the
+                    initiating CPU must send an Inter-Processor Interrupt (IPI) to all other cores to flush their local
+                    TLB
+                    entries for that address.</li>
+            </ul>
+
+            <h2 id="8-virtual-memory-internals--cow">8. Copy-On-Write (COW) &amp; Page Swapping<a class="headerlink"
+                    href="#8-virtual-memory-internals--cow" title="Permanent link">#</a></h2>
+            <p>When <code>fork()</code> is called, copying gigabytes of memory from parent to child would be
+                prohibitively
+                slow. Instead, the OS uses <strong>Copy-On-Write (COW)</strong>:</p>
+            <ol>
+                <li>Both parent and child page tables point to the <em>exact same physical frames</em>.</li>
+                <li>The OS marks all shared pages as <strong>Read-Only</strong> in both page tables.</li>
+                <li>When either process attempts to write to a page, a CPU memory protection fault is raised.</li>
+                <li>The OS kernel catches the fault, allocates a new physical frame, copies only that single 4 KB page,
+                    marks it writable, and points the writing process's page table entry to the new duplicate.</li>
+            </ol>
+
+            <h2 id="9-file-system-internals--journaling">9. File System Internals &amp; Journaling<a class="headerlink"
+                    href="#9-file-system-internals--journaling" title="Permanent link">#</a></h2>
+            <p>If power is cut while writing a file, metadata and data can fall out of sync, destroying the file system.
+                <strong>Journaling (ext4, NTFS, XFS)</strong> ensures crash-consistency:
+            </p>
+            <ol>
+                <li><strong>Journal Write:</strong> The intended metadata updates are sequentially written to a
+                    dedicated
+                    on-disk circular log (the journal) along with a checksum.</li>
+                <li><strong>Commit:</strong> A commit block is written to disk, marking the transaction as sealed and
+                    durable.</li>
+                <li><strong>Checkpointing:</strong> The updates are written to their permanent locations in the inode
+                    and data
+                    block tables.</li>
+                <li><strong>Recovery:</strong> On reboot after a crash, the OS replays the committed journal
+                    transactions in
+                    seconds without needing a full-disk <code>fsck</code> scan.</li>
+            </ol>
+
+            <h2 id="10-io-multiplexing--epoll-and-iouring">10. I/O Multiplexing: epoll &amp; io_uring<a
+                    class="headerlink" href="#10-io-multiplexing--epoll-and-iouring" title="Permanent link">#</a></h2>
+            <p>Scalable networking requires managing tens of thousands of connections per server (the C10K / C1000K
+                problem):</p>
+            <ul>
+                <li><strong><code>select()</code> / <code>poll()</code> (O(N)):</strong> The application passes an array
+                    of
+                    thousands of file descriptors into the kernel on every call; the kernel scans every single one,
+                    yielding poor performance under high connection counts.</li>
+                <li><strong><code>epoll</code> (Linux) / <code>kqueue</code> (BSD/macOS) (O(1)):</strong> The kernel
+                    maintains
+                    an interest list in a red-black tree and an event-ready list. When a socket receives network data, a
+                    hardware interrupt triggers a callback placing the FD directly on the ready list.</li>
+                <li><strong><code>io_uring</code> (Modern Linux):</strong> Shared ring-buffers between user space and
+                    kernel
+                    space for true asynchronous submission and completion of I/O operations with zero syscall overhead
+                    per
+                    event.</li>
+            </ul>
+
+            <h2 id="11-container-internals-namespaces-cgroups">11. Linux Container Internals<a class="headerlink"
+                    href="#11-container-internals-namespaces-cgroups" title="Permanent link">#</a></h2>
+            <p>Containers are not virtual machines; there is no hypervisor or guest operating system. A container is
+                simply a standard Linux process isolated using two primary kernel primitives:</p>
+            <ol>
+                <li><strong>Linux Namespaces (What a process can see):</strong>
+                    <ul>
+                        <li><code>PID</code>: Isolates process IDs (container process sees itself as PID 1).</li>
+                        <li><code>NET</code>: Isolates network interfaces, routing tables, and IP addresses.</li>
+                        <li><code>MNT</code>: Isolates file system mount points.</li>
+                        <li><code>IPC</code>: Isolates POSIX message queues and shared memory.</li>
+                        <li><code>UTS</code>: Isolates hostname and domain name.</li>
+                        <li><code>USER</code>: Maps container root (UID 0) to an unprivileged host UID.</li>
+                    </ul>
+                </li>
+                <li><strong>Control Groups (cgroups v2) (What a process can use):</strong> Enforces resource boundaries
+                    and
+                    throttling for CPU shares, memory limits, disk I/O IOPS, and network bandwidth.</li>
+            </ol>
+
+            <h2 id="12-interview-questions-and-deep-dive">12. Core OS Interview Questions<a class="headerlink"
+                    href="#12-interview-questions-and-deep-dive" title="Permanent link">#</a></h2>
+            <div class="concept-card">
+                <h3>Top Engineering Questions</h3>
+                <ol>
+                    <li><strong>What happens during a context switch?</strong> CPU register states (PC, SP, general
+                        registers) are saved to the current PCB/TCB in memory; the page table pointer (CR3 on x86) is
+                        updated to the new process's page table; the new task's registers are restored into hardware CPU
+                        registers; the instruction pointer jumps to the new task.</li>
+                    <li><strong>Why is reading from memory sometimes slower than reading from cache?</strong> A L1 cache
+                        hit
+                        takes ~1 ns (4 cycles), while a main memory DRAM access takes ~60-100 ns (200+ cycles) due to
+                        bus
+                        latency and row address strobe charges.</li>
+                    <li><strong>How does epoll differ from select?</strong> <code>select</code> scans the whole FD array
+                        with
+                        O(N) complexity and copies data back and forth; <code>epoll</code> uses kernel callbacks and
+                        event-ready queues for O(1) event delivery without re-registering FDs.</li>
+                </ol>
+            </div>
+
+            <blockquote>
+                <p><strong>Next Steps:</strong> Review quick mental models in the <a href="os-crash-course.html">OS
+                        Crash
+                        Course</a>, or practice practical Linux systems engineering in the <a
+                        href="linux-detailed-course.html">Linux Detailed Course</a>. Explore all courses at <a
+                        href="../../os-courses.html">All OS Courses</a>.</p>
+            </blockquote>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        <div class="container">
+            <p>&copy; 2026 TechToday &bull; Operating Systems Study Guides</p>
+        </div>
+    </footer>
+
+    <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+    <script src="os-study.js"></script>
+</body>
+
+</html>
