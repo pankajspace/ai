@@ -20,6 +20,86 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
   <link rel="stylesheet" href="devops-study.css" />
   <link rel="stylesheet" href="../../site-header.css" />
+  <style>
+    .study-diagram {
+      margin: 2rem 0;
+      padding: 1.25rem 1.5rem;
+      background: #11151a;
+      border: 1px solid #28303a;
+      border-radius: 10px;
+    }
+
+    .study-diagram-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #1c222b;
+      padding-bottom: 0.6rem;
+    }
+
+    .study-diagram-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #38bdf8;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .study-diagram-caption {
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: #94a0ad;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .study-diagram svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    @keyframes cicdPulse {
+      0% {
+        stroke-dashoffset: 28;
+      }
+
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes syncSpin {
+      0% {
+        stroke-opacity: 0.3;
+      }
+
+      50% {
+        stroke-opacity: 1;
+      }
+    }
+
+    .dash-animated {
+      stroke-dasharray: 7 4;
+      animation: cicdPulse 2s linear infinite;
+    }
+
+    .sync-glow {
+      animation: syncSpin 2.5s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .dash-animated,
+      .sync-glow {
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -53,7 +133,8 @@
           href="#1-shift-left-philosophy" title="Permanent link">#</a></h2>
       <p>Traditionally, developers wrote software and "threw it over the wall" to operations teams to run.
         <strong>DevOps for Developers</strong> is about owning your code from the moment you write your first unit test
-        to when it runs in production, without having to configure bare-metal networks or cloud subnets.</p>
+        to when it runs in production, without having to configure bare-metal networks or cloud subnets.
+      </p>
 
       <div class="concept-card">
         <h3>The Developer's Scope</h3>
@@ -67,6 +148,132 @@
           <li><strong>Application Observability:</strong> Emitting structured JSON logs, trace IDs, and business/runtime
             metrics to diagnose bugs in minutes instead of hours.</li>
         </ol>
+      </div>
+
+      <div class="study-diagram" aria-label="GitOps CI/CD Delivery Lifecycle Diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 1.1: Cloud-Native GitOps &amp; CI/CD Delivery Pipeline</span>
+          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">GitHub Actions &bull; OCI Registry
+            &bull; ArgoCD &bull; Kubernetes</span>
+        </div>
+        <svg viewBox="0 0 840 270" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+          aria-label="Modern Cloud-Native GitOps Delivery Pipeline">
+          <defs>
+            <linearGradient id="devGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+            <linearGradient id="gitopsGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#192823" />
+              <stop offset="100%" stop-color="#0c1813" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background container -->
+          <rect x="15" y="15" width="810" height="240" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+
+          <!-- STAGE 1: LOCAL DEV -->
+          <rect x="30" y="35" width="125" height="135" rx="6" fill="url(#devGrad)" stroke="#38bdf8"
+            stroke-width="1.2" />
+          <rect x="38" y="45" width="109" height="20" rx="3" fill="#0284c7" fill-opacity="0.3" />
+          <text x="92" y="59" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">1. DEVELOPER</text>
+          <text x="92" y="85" fill="#f8fafc" font-size="10" font-weight="600" font-family="sans-serif"
+            text-anchor="middle">Local Coding</text>
+          <text x="92" y="100" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Docker
+            Compose</text>
+          <rect x="38" y="112" width="109" height="42" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
+          <text x="92" y="128" fill="#38bdf8" font-size="8.5" font-family="monospace" text-anchor="middle">git
+            commit</text>
+          <text x="92" y="142" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">git push
+            origin</text>
+
+          <!-- Arrow 1 -> 2 -->
+          <path d="M 155 102 L 185 102" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+          <!-- STAGE 2: CI (GITHUB ACTIONS) -->
+          <rect x="185" y="35" width="155" height="135" rx="6" fill="url(#devGrad)" stroke="#6366f1"
+            stroke-width="1.2" />
+          <rect x="193" y="45" width="139" height="20" rx="3" fill="#4f46e5" fill-opacity="0.3" />
+          <text x="262" y="59" fill="#a5b4fc" font-size="9.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">2. GITHUB ACTIONS</text>
+          <rect x="193" y="73" width="139" height="24" rx="3" fill="#1e1e38" stroke="#4338ca" stroke-width="0.8" />
+          <text x="262" y="89" fill="#cbd5e1" font-size="8.5" font-family="monospace" text-anchor="middle">&check;
+            pytest / eslint</text>
+          <rect x="193" y="102" width="139" height="24" rx="3" fill="#1e1e38" stroke="#4338ca" stroke-width="0.8" />
+          <text x="262" y="118" fill="#cbd5e1" font-size="8.5" font-family="monospace" text-anchor="middle">&check;
+            Trivy SAST Scan</text>
+          <rect x="193" y="131" width="139" height="24" rx="3" fill="#1e1e38" stroke="#34d399" stroke-width="0.8" />
+          <text x="262" y="147" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">Multi-Arch OCI
+            Build</text>
+
+          <!-- Arrow 2 -> 3 -->
+          <path d="M 340 102 L 370 102" stroke="#6366f1" stroke-width="2" class="dash-animated" />
+
+          <!-- STAGE 3: OCI REGISTRY -->
+          <rect x="370" y="35" width="135" height="135" rx="6" fill="url(#devGrad)" stroke="#f59e0b"
+            stroke-width="1.2" />
+          <rect x="378" y="45" width="119" height="20" rx="3" fill="#d97706" fill-opacity="0.3" />
+          <text x="437" y="59" fill="#fbbf24" font-size="9.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">3. OCI REGISTRY</text>
+          <text x="437" y="85" fill="#cbd5e1" font-size="9" font-family="sans-serif" text-anchor="middle">GHCR / ECR /
+            Harbor</text>
+          <rect x="378" y="98" width="119" height="58" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="0.8" />
+          <text x="437" y="115" fill="#f8fafc" font-size="8" font-family="monospace"
+            text-anchor="middle">app:v2.4.0</text>
+          <text x="437" y="130" fill="#94a3b8" font-size="7.5" font-family="monospace"
+            text-anchor="middle">sha256:8f4c...</text>
+          <text x="437" y="145" fill="#34d399" font-size="7.5" font-family="monospace" text-anchor="middle">Signed
+            Cosign</text>
+
+          <!-- Arrow 3 -> 4 -->
+          <path d="M 505 102 L 535 102" stroke="#f59e0b" stroke-width="2" class="dash-animated" />
+
+          <!-- STAGE 4: GITOPS CONTROLLER (ArgoCD) -->
+          <rect x="535" y="35" width="135" height="135" rx="6" fill="url(#gitopsGrad)" stroke="#10b981"
+            stroke-width="1.2" />
+          <rect x="543" y="45" width="119" height="20" rx="3" fill="#059669" fill-opacity="0.3" />
+          <text x="602" y="59" fill="#34d399" font-size="9.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">4. GITOPS (ArgoCD)</text>
+          <text x="602" y="82" fill="#cbd5e1" font-size="9" font-family="sans-serif" text-anchor="middle">Git Repo =
+            Truth</text>
+          <rect x="543" y="95" width="119" height="60" rx="4" fill="#13261e" stroke="#059669" stroke-width="0.8" />
+          <text x="602" y="112" fill="#34d399" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Automated Sync</text>
+          <text x="602" y="128" fill="#a7f3d0" font-size="7.5" font-family="sans-serif" text-anchor="middle">Detects
+            Drift</text>
+          <text x="602" y="143" fill="#38bdf8" font-size="7.5" font-family="monospace" text-anchor="middle">Reconciles
+            Pods</text>
+
+          <!-- Arrow 4 -> 5 -->
+          <path d="M 670 102 L 700 102" stroke="#10b981" stroke-width="2.5" class="dash-animated" />
+
+          <!-- STAGE 5: KUBERNETES PRODUCTION -->
+          <rect x="700" y="35" width="115" height="135" rx="6" fill="#152433" stroke="#0284c7" stroke-width="1.2" />
+          <rect x="708" y="45" width="99" height="20" rx="3" fill="#0284c7" fill-opacity="0.3" />
+          <text x="757" y="59" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">5. K8s CLUSTER</text>
+          <text x="757" y="82" fill="#f8fafc" font-size="9" font-family="sans-serif" text-anchor="middle">Production
+            Nodes</text>
+          <rect x="708" y="95" width="99" height="60" rx="4" fill="#0f1f2e" stroke="#0284c7" stroke-width="0.8" />
+          <text x="757" y="112" fill="#38bdf8" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Rolling Release</text>
+          <text x="757" y="128" fill="#cbd5e1" font-size="8" font-family="sans-serif" text-anchor="middle">Pod-1 &bull;
+            Pod-2 &bull; Pod-3</text>
+          <text x="757" y="143" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">0
+            Downtime</text>
+
+          <!-- OBSERVABILITY RETURN LOOP -->
+          <path d="M 757 170 C 757 235, 92 235, 92 170" stroke="#a855f7" stroke-width="1.8" stroke-dasharray="4 3" />
+          <rect x="310" y="215" width="220" height="24" rx="4" fill="#241433" stroke="#a855f7" stroke-width="0.8" />
+          <text x="420" y="231" fill="#d8b4fe" font-size="8.5" font-family="monospace" text-anchor="middle">&larr;
+            Observability (Prometheus / Grafana / OTel)</text>
+        </svg>
+        <div class="study-diagram-caption">
+          Modern GitOps delivery lifecycle: Developers push commits triggering GitHub Actions CI tests and multi-arch
+          Docker image builds. The image is published to an OCI registry, and ArgoCD reconciles the cluster state
+          against Git manifests with zero downtime.
+        </div>
       </div>
 
       <h2 id="2-cicd-workflows-for-developers">2. CI/CD Workflows: GitHub Actions &amp; Automations<a class="headerlink"
@@ -148,7 +355,8 @@ jobs:
         <li><strong>Codebase:</strong> One codebase tracked in revision control, many deploys (dev, staging, prod).</li>
         <li><strong>Explicit Dependencies:</strong> Explicitly declare and isolate dependencies (e.g.
           <code>package-lock.json</code>, <code>poetry.lock</code>, <code>requirements.txt</code>). Never assume
-          system-wide libraries.</li>
+          system-wide libraries.
+        </li>
         <li><strong>Config in Environment:</strong> Store configuration that varies between deploys (database
           credentials, API endpoints) in environment variables, never hardcoded in source code.</li>
         <li><strong>Backing Services as Attached Resources:</strong> Treat databases, message queues, and SMTP servers
@@ -159,7 +367,8 @@ jobs:
         <li><strong>Port Binding:</strong> The app is completely self-contained and exports HTTP/gRPC by binding to a
           port (e.g. <code>app.listen(8080)</code>).</li>
         <li><strong>Disposability:</strong> Maximize robustness with fast startup and graceful shutdown upon receiving
-          <code>SIGTERM</code>.</li>
+          <code>SIGTERM</code>.
+        </li>
         <li><strong>Dev/Prod Parity:</strong> Keep development, staging, and production as similar as possible using
           containerization.</li>
       </ol>
@@ -186,11 +395,126 @@ jobs:
       <h3>Distributed Tracing &amp; Trace Context</h3>
       <p>In microservices or multi-step agent pipelines, a single user click might touch 4 services. With
         <strong>OpenTelemetry</strong> and W3C trace context, a unique <code>traceparent</code> header is forwarded
-        along every HTTP request, allowing you to see an end-to-end flame graph of execution:</p>
+        along every HTTP request, allowing you to see an end-to-end flame graph of execution:
+      </p>
 
       <pre><code># W3C Traceparent Header Format:
 # version - trace_id (32 hex) - parent_span_id (16 hex) - trace_flags
 traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</code></pre>
+
+      <div class="study-diagram" aria-label="Observability Pillars and Distributed Tracing Diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 4.1: The Three Pillars of Observability &amp; Distributed
+            Tracing</span>
+          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Structured Logs &bull; Prometheus
+            Metrics &bull; OpenTelemetry Spans</span>
+        </div>
+        <svg viewBox="0 0 840 290" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+          aria-label="The Three Pillars of Observability and Distributed Tracing">
+          <defs>
+            <linearGradient id="obsGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+            <linearGradient id="traceGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1b1836" />
+              <stop offset="100%" stop-color="#0f0c24" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background base -->
+          <rect x="15" y="15" width="810" height="260" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+
+          <!-- PILLAR 1: STRUCTURED LOGS (Left) -->
+          <rect x="30" y="30" width="220" height="230" rx="6" fill="url(#obsGrad)" stroke="#38bdf8"
+            stroke-width="1.2" />
+          <rect x="40" y="40" width="200" height="22" rx="3" fill="#0284c7" fill-opacity="0.3" />
+          <text x="140" y="55" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">1. STRUCTURED JSON LOGS</text>
+
+          <rect x="40" y="70" width="200" height="130" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
+          <text x="50" y="88" fill="#cbd5e1" font-size="8.5" font-family="monospace">{</text>
+          <text x="55" y="102" fill="#38bdf8" font-size="8" font-family="monospace">"level": "INFO",</text>
+          <text x="55" y="116" fill="#38bdf8" font-size="8" font-family="monospace">"service": "checkout",</text>
+          <text x="55" y="130" fill="#34d399" font-size="8" font-family="monospace">"trace_id": "4bf92f35...",</text>
+          <text x="55" y="144" fill="#fbbf24" font-size="8" font-family="monospace">"span_id": "00f067aa...",</text>
+          <text x="55" y="158" fill="#cbd5e1" font-size="8" font-family="monospace">"user_id": "usr_99",</text>
+          <text x="55" y="172" fill="#f8fafc" font-size="8" font-family="monospace">"msg": "Order placed"</text>
+          <text x="50" y="186" fill="#cbd5e1" font-size="8.5" font-family="monospace">}</text>
+
+          <text x="140" y="222" fill="#38bdf8" font-size="8.5" font-family="monospace" text-anchor="middle">Loki /
+            OpenSearch / ELK</text>
+          <text x="140" y="240" fill="#94a3b8" font-size="8" font-family="sans-serif" text-anchor="middle">Indexed by
+            trace_id</text>
+
+          <!-- PILLAR 2: DISTRIBUTED TRACING (Center) -->
+          <rect x="265" y="30" width="310" height="230" rx="6" fill="url(#traceGrad)" stroke="#8b5cf6"
+            stroke-width="1.2" />
+          <rect x="275" y="40" width="290" height="22" rx="3" fill="#7c3aed" fill-opacity="0.3" />
+          <text x="420" y="55" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">2. DISTRIBUTED TRACE (OTel SPANS)</text>
+
+          <!-- Span 1: Root Gateway -->
+          <rect x="280" y="72" width="280" height="24" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="0.8" />
+          <text x="290" y="88" fill="#ffffff" font-size="8.5" font-weight="600" font-family="monospace">POST /order
+            &bull; API Gateway (240ms)</text>
+
+          <!-- Span 2: Auth Service -->
+          <rect x="300" y="102" width="110" height="22" rx="3" fill="#4f46e5" stroke="#818cf8" stroke-width="0.8" />
+          <text x="310" y="117" fill="#ffffff" font-size="8" font-family="monospace">Auth JWT (35ms)</text>
+
+          <!-- Span 3: Payment Service -->
+          <rect x="420" y="102" width="130" height="22" rx="3" fill="#f59e0b" stroke="#fbbf24" stroke-width="0.8" />
+          <text x="430" y="117" fill="#000000" font-size="8" font-weight="700" font-family="monospace">Stripe Auth
+            (110ms)</text>
+
+          <!-- Span 4: Database DB -->
+          <rect x="340" y="132" width="160" height="22" rx="3" fill="#059669" stroke="#34d399" stroke-width="0.8" />
+          <text x="350" y="147" fill="#ffffff" font-size="8" font-family="monospace">SQL: INSERT INTO orders
+            (45ms)</text>
+
+          <!-- W3C Header Box -->
+          <rect x="280" y="166" width="280" height="42" rx="4" fill="#151226" stroke="#a78bfa" stroke-width="0.8" />
+          <text x="290" y="182" fill="#c084fc" font-size="8" font-weight="700" font-family="monospace">W3C TRACEPARENT
+            CONTEXT:</text>
+          <text x="290" y="196" fill="#34d399" font-size="7.5"
+            font-family="monospace">00-4bf92f35...-00f067aa...-01</text>
+
+          <text x="420" y="240" fill="#cbd5e1" font-size="8" font-family="sans-serif" text-anchor="middle">End-to-End
+            Latency Flame Graph</text>
+
+          <!-- PILLAR 3: TIME-SERIES METRICS (Right) -->
+          <rect x="590" y="30" width="220" height="230" rx="6" fill="url(#obsGrad)" stroke="#10b981"
+            stroke-width="1.2" />
+          <rect x="600" y="40" width="200" height="22" rx="3" fill="#059669" fill-opacity="0.3" />
+          <text x="700" y="55" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">3. PROMETHEUS METRICS</text>
+
+          <rect x="600" y="70" width="200" height="50" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
+          <text x="610" y="88" fill="#34d399" font-size="8" font-weight="700" font-family="monospace">COUNTER:</text>
+          <text x="610" y="103" fill="#cbd5e1" font-size="7.5"
+            font-family="monospace">http_requests_total{status=500}</text>
+          <text x="610" y="114" fill="#f87171" font-size="7.5" font-family="monospace">rate() alerts on errors</text>
+
+          <rect x="600" y="128" width="200" height="54" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
+          <text x="610" y="146" fill="#fbbf24" font-size="8" font-weight="700" font-family="monospace">HISTOGRAM
+            (SLO):</text>
+          <text x="610" y="161" fill="#cbd5e1" font-size="7.5" font-family="monospace">histogram_quantile(0.99,
+            ...)</text>
+          <text x="610" y="172" fill="#34d399" font-size="7.5" font-family="monospace">P99 latency &lt; 250ms
+            target</text>
+
+          <text x="700" y="222" fill="#34d399" font-size="8.5" font-family="monospace" text-anchor="middle">Prometheus +
+            Grafana</text>
+          <text x="700" y="240" fill="#94a3b8" font-size="8" font-family="sans-serif" text-anchor="middle">Aggregated
+            dashboard alerts</text>
+        </svg>
+        <div class="study-diagram-caption">
+          The Three Pillars of Application Observability: Structured JSON logs provide fine-grained event payloads;
+          OpenTelemetry distributed traces connect spans across microservice boundaries via W3C traceparent headers;
+          Prometheus metrics power high-level SLO alerts.
+        </div>
+      </div>
 
       <h2 id="5-deployment-strategies">5. Deployment Strategies: Rolling, Blue/Green &amp; Canary<a class="headerlink"
           href="#5-deployment-strategies" title="Permanent link">#</a></h2>
@@ -216,6 +540,162 @@ traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</code></pre
         <h3>3. Canary Release</h3>
         <p>A small percentage of real user traffic (e.g. 5%) is routed to the new version (the "canary"). If error rates
           or latency spike, the canary is rolled back automatically before impacting all users.</p>
+      </div>
+
+      <div class="study-diagram" aria-label="Deployment Strategies Comparison Diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 5.1: Deployment Strategies: Rolling vs Blue/Green vs Canary</span>
+          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Zero-Downtime Releases &bull;
+            Traffic Routing &bull; Rollback Safety</span>
+        </div>
+        <svg viewBox="0 0 840 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+          aria-label="Deployment Strategies Comparison Architecture">
+          <defs>
+            <linearGradient id="stratGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+          </defs>
+
+          <!-- Background container -->
+          <rect x="15" y="15" width="810" height="270" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+
+          <!-- STRATEGY 1: ROLLING UPDATE (Left) -->
+          <rect x="30" y="30" width="245" height="240" rx="6" fill="url(#stratGrad)" stroke="#38bdf8"
+            stroke-width="1.2" />
+          <rect x="40" y="40" width="225" height="22" rx="3" fill="#0284c7" fill-opacity="0.3" />
+          <text x="152" y="55" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">1. ROLLING UPDATE</text>
+
+          <rect x="40" y="70" width="225" height="34" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
+          <text x="50" y="86" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Load Balancer (100%
+            Traffic)</text>
+          <text x="50" y="98" fill="#38bdf8" font-size="7.5" font-family="monospace">Traffic spread across mixed
+            pool</text>
+
+          <!-- Pods in rolling state -->
+          <rect x="40" y="112" width="105" height="36" rx="3" fill="#059669" />
+          <text x="92" y="128" fill="#ffffff" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Pod-1: v2 (NEW)</text>
+          <text x="92" y="140" fill="#a7f3d0" font-size="7" font-family="sans-serif" text-anchor="middle">Healthy &bull;
+            Receiving traffic</text>
+
+          <rect x="160" y="112" width="105" height="36" rx="3" fill="#0284c7" />
+          <text x="212" y="128" fill="#ffffff" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Pod-2: v1 (OLD)</text>
+          <text x="212" y="140" fill="#cbd5e1" font-size="7" font-family="sans-serif" text-anchor="middle">Live &bull;
+            Next to terminate</text>
+
+          <rect x="40" y="156" width="105" height="36" rx="3" fill="#059669" />
+          <text x="92" y="172" fill="#ffffff" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Pod-3: v2 (NEW)</text>
+          <text x="92" y="184" fill="#a7f3d0" font-size="7" font-family="sans-serif" text-anchor="middle">Passing
+            readiness probe</text>
+
+          <rect x="160" y="156" width="105" height="36" rx="3" fill="#3f1219" stroke="#ef4444" stroke-width="0.8" />
+          <text x="212" y="172" fill="#fca5a5" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">Pod-4: v1 (DRAIN)</text>
+          <text x="212" y="184" fill="#f87171" font-size="7" font-family="sans-serif" text-anchor="middle">SIGTERM
+            shutdown</text>
+
+          <text x="152" y="215" fill="#fbbf24" font-size="8" font-family="monospace" text-anchor="middle">v1 and v2
+            coexist for 3-5 mins</text>
+          <text x="152" y="235" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">0 Extra
+            Hardware Cost</text>
+          <text x="152" y="252" fill="#94a3b8" font-size="7.5" font-family="sans-serif" text-anchor="middle">Requires
+            backward-compatible DB</text>
+
+          <!-- STRATEGY 2: BLUE / GREEN (Center) -->
+          <rect x="295" y="30" width="250" height="240" rx="6" fill="url(#stratGrad)" stroke="#10b981"
+            stroke-width="1.2" />
+          <rect x="305" y="40" width="230" height="22" rx="3" fill="#059669" fill-opacity="0.3" />
+          <text x="420" y="55" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">2. BLUE / GREEN DEPLOY</text>
+
+          <!-- Router switch -->
+          <rect x="305" y="70" width="230" height="34" rx="4" fill="#15261d" stroke="#059669" stroke-width="0.8" />
+          <text x="420" y="86" fill="#34d399" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">ROUTER SWITCH: 100% CUTOVER</text>
+          <text x="420" y="98" fill="#a7f3d0" font-size="7.5" font-family="sans-serif" text-anchor="middle">Instant DNS
+            / Ingress flip</text>
+
+          <!-- Blue Fleet (Idle/Old) -->
+          <rect x="305" y="112" width="105" height="78" rx="4" fill="#1e293b" stroke="#475569" stroke-width="0.8" />
+          <text x="357" y="130" fill="#94a3b8" font-size="9" font-weight="700" font-family="monospace"
+            text-anchor="middle">BLUE (v1)</text>
+          <text x="357" y="148" fill="#64748b" font-size="8" font-family="monospace" text-anchor="middle">0%
+            Traffic</text>
+          <text x="357" y="165" fill="#94a3b8" font-size="7.5" font-family="sans-serif" text-anchor="middle">Kept on
+            standby</text>
+          <text x="357" y="178" fill="#38bdf8" font-size="7.5" font-family="monospace" text-anchor="middle">Instant
+            Rollback</text>
+
+          <!-- Green Fleet (Live/New) -->
+          <rect x="430" y="112" width="105" height="78" rx="4" fill="#13261e" stroke="#10b981" stroke-width="1.2" />
+          <text x="482" y="130" fill="#34d399" font-size="9" font-weight="700" font-family="monospace"
+            text-anchor="middle">GREEN (v2)</text>
+          <text x="482" y="148" fill="#34d399" font-size="8" font-weight="700" font-family="monospace"
+            text-anchor="middle">100% Traffic</text>
+          <text x="482" y="165" fill="#a7f3d0" font-size="7.5" font-family="sans-serif" text-anchor="middle">Pre-warmed
+            smoke test</text>
+          <text x="482" y="178" fill="#34d399" font-size="7.5" font-family="monospace" text-anchor="middle">ACTIVE
+            LIVE</text>
+
+          <text x="420" y="215" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">Sub-second
+            atomic cutover</text>
+          <text x="420" y="235" fill="#f59e0b" font-size="8" font-family="monospace" text-anchor="middle">2x Compute
+            Fleet Overhead</text>
+          <text x="420" y="252" fill="#94a3b8" font-size="7.5" font-family="sans-serif" text-anchor="middle">Safest
+            rollback mechanism</text>
+
+          <!-- STRATEGY 3: CANARY (Right) -->
+          <rect x="565" y="30" width="245" height="240" rx="6" fill="url(#stratGrad)" stroke="#f59e0b"
+            stroke-width="1.2" />
+          <rect x="575" y="40" width="225" height="22" rx="3" fill="#d97706" fill-opacity="0.3" />
+          <text x="687" y="55" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace"
+            text-anchor="middle">3. CANARY TRAFFIC SPLIT</text>
+
+          <!-- Split Router -->
+          <rect x="575" y="70" width="225" height="34" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="0.8" />
+          <text x="687" y="86" fill="#fbbf24" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">WEIGHTED INGRESS (95% / 5%)</text>
+          <text x="687" y="98" fill="#cbd5e1" font-size="7.5" font-family="sans-serif" text-anchor="middle">Service mesh
+            / ALB weights</text>
+
+          <!-- Main Fleet -->
+          <rect x="575" y="112" width="135" height="78" rx="4" fill="#131e2b" stroke="#0284c7" stroke-width="0.8" />
+          <text x="642" y="130" fill="#38bdf8" font-size="9" font-weight="700" font-family="monospace"
+            text-anchor="middle">STABLE (v1)</text>
+          <text x="642" y="148" fill="#38bdf8" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">95% Traffic</text>
+          <text x="642" y="165" fill="#cbd5e1" font-size="7.5" font-family="sans-serif" text-anchor="middle">Bulk user
+            requests</text>
+          <text x="642" y="178" fill="#38bdf8" font-size="7.5" font-family="monospace" text-anchor="middle">Zero
+            disturbance</text>
+
+          <!-- Canary Pod -->
+          <rect x="718" y="112" width="82" height="78" rx="4" fill="#251810" stroke="#f59e0b" stroke-width="1.2" />
+          <text x="759" y="130" fill="#fbbf24" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">CANARY</text>
+          <text x="759" y="148" fill="#fbbf24" font-size="8.5" font-weight="700" font-family="monospace"
+            text-anchor="middle">5%</text>
+          <text x="759" y="165" fill="#fef08a" font-size="7.5" font-family="sans-serif" text-anchor="middle">Live
+            users</text>
+          <text x="759" y="178" fill="#f87171" font-size="7.5" font-family="monospace"
+            text-anchor="middle">Auto-Abort</text>
+
+          <text x="687" y="215" fill="#fbbf24" font-size="8" font-family="monospace" text-anchor="middle">Automated
+            Prometheus check</text>
+          <text x="687" y="235" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">Minimizes
+            Blast Radius</text>
+          <text x="687" y="252" fill="#94a3b8" font-size="7.5" font-family="sans-serif" text-anchor="middle">Detects
+            runtime bugs on real users</text>
+        </svg>
+        <div class="study-diagram-caption">
+          Production Deployment Strategies: Rolling updates swap containers gradually with zero extra resource cost;
+          Blue/Green provides instant atomic cutover and rollback; Canary routing splits a 5% slice of live traffic to
+          test stability before widespread rollout.
+        </div>
       </div>
 
       <h2 id="6-local-dev-parity">6. Local-to-Production Parity with Docker Compose<a class="headerlink"

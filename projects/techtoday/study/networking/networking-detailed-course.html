@@ -20,6 +20,88 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="networking-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
+    <style>
+        .study-diagram {
+            margin: 2rem 0;
+            padding: 1.25rem 1.5rem;
+            background: #11151a;
+            border: 1px solid #28303a;
+            border-radius: 10px;
+        }
+
+        .study-diagram-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #1c222b;
+            padding-bottom: 0.6rem;
+        }
+
+        .study-diagram-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: ui-monospace, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .study-diagram-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: #94a0ad;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .study-diagram svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        @keyframes packetStream {
+            0% {
+                stroke-dashoffset: 28;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes signalPulse {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .dash-animated {
+            stroke-dasharray: 7 4;
+            animation: packetStream 2s linear infinite;
+        }
+
+        .signal-glow {
+            animation: signalPulse 2.5s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .dash-animated,
+            .signal-glow {
+                animation: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -73,6 +155,120 @@
                     access to the entire global routing table.</li>
             </ul>
 
+            <div class="study-diagram" aria-label="BGP Autonomous Systems Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 1.1: BGP Routing Fabric &amp; Autonomous System
+                        Interconnects</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">eBGP &bull; Tier-1 Transit
+                        &bull; IXP Peering</span>
+                </div>
+                <svg viewBox="0 0 840 310" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="BGP Autonomous Systems and Routing Fabric">
+                    <defs>
+                        <linearGradient id="asGrad1" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="asGrad2" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#141f36" />
+                            <stop offset="100%" stop-color="#0b1324" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Base -->
+                    <rect x="15" y="15" width="810" height="280" rx="8" fill="#0c1015" stroke="#1f2937"
+                        stroke-width="1" />
+
+                    <!-- STUB AS (Consumer/Enterprise ISP) -->
+                    <rect x="30" y="75" width="180" height="170" rx="8" fill="url(#asGrad1)" stroke="#38bdf8"
+                        stroke-width="1.2" />
+                    <rect x="40" y="85" width="160" height="22" rx="4" fill="#0284c7" fill-opacity="0.25" />
+                    <text x="120" y="100" fill="#38bdf8" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AS64512 (Local ISP)</text>
+                    <text x="45" y="125" fill="#f8fafc" font-size="10" font-weight="600"
+                        font-family="sans-serif">Customer Origin</text>
+                    <text x="45" y="140" fill="#94a3b8" font-size="9" font-family="monospace">Prefix:
+                        198.51.100.0/24</text>
+                    <rect x="42" y="155" width="156" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="0.8" />
+                    <text x="50" y="172" fill="#cbd5e1" font-size="9" font-family="sans-serif">BGP Border Router
+                        A</text>
+                    <text x="50" y="186" fill="#34d399" font-size="8" font-family="monospace">iBGP Mesh Enabled</text>
+                    <text x="120" y="225" fill="#94a3b8" font-size="8.5" font-family="sans-serif"
+                        text-anchor="middle">Originate Prefix Route</text>
+
+                    <!-- TIER-1 TRANSIT BACKBONE (Lumen / Cogent) -->
+                    <rect x="300" y="30" width="240" height="110" rx="8" fill="url(#asGrad2)" stroke="#f59e0b"
+                        stroke-width="1.2" />
+                    <rect x="310" y="38" width="220" height="20" rx="4" fill="#d97706" fill-opacity="0.2" />
+                    <text x="420" y="52" fill="#fbbf24" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AS3356 (Tier-1 Transit)</text>
+                    <text x="320" y="75" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Global Default-Free
+                        Zone (DFZ)</text>
+                    <text x="320" y="92" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Over 950,000
+                        global IPv4 routes</text>
+                    <text x="320" y="106" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Trans-oceanic
+                        DWDM fiber mesh</text>
+                    <text x="420" y="128" fill="#fbbf24" font-size="8" font-family="monospace" text-anchor="middle">PAID
+                        TRANSIT CONTRACT</text>
+
+                    <!-- INTERNET EXCHANGE POINT (IXP) PEERING -->
+                    <rect x="300" y="170" width="240" height="110" rx="8" fill="#131c19" stroke="#10b981"
+                        stroke-width="1.2" />
+                    <rect x="310" y="178" width="220" height="20" rx="4" fill="#059669" fill-opacity="0.25" />
+                    <text x="420" y="192" fill="#34d399" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">IXP (Equinix / DE-CIX)</text>
+                    <text x="320" y="215" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Direct Settlement-Free
+                        Peering</text>
+                    <text x="320" y="232" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; 0 transit cost
+                        &bull; 2ms metro latency</text>
+                    <text x="320" y="246" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Route Servers
+                        (BGP RS) broadcast</text>
+                    <text x="420" y="268" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">FREE
+                        PEERING FABRIC</text>
+
+                    <!-- CLOUD PROVIDER AS (AWS / Cloudflare) -->
+                    <rect x="630" y="75" width="180" height="170" rx="8" fill="url(#asGrad1)" stroke="#8b5cf6"
+                        stroke-width="1.2" />
+                    <rect x="640" y="85" width="160" height="22" rx="4" fill="#7c3aed" fill-opacity="0.25" />
+                    <text x="720" y="100" fill="#a78bfa" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AS16509 (AWS Cloud)</text>
+                    <text x="645" y="125" fill="#f8fafc" font-size="10" font-weight="600" font-family="sans-serif">Cloud
+                        Datacenter</text>
+                    <text x="645" y="140" fill="#94a3b8" font-size="9" font-family="monospace">Anycast IP:
+                        13.224.0.0/14</text>
+                    <rect x="642" y="155" width="156" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="0.8" />
+                    <text x="650" y="172" fill="#cbd5e1" font-size="9" font-family="sans-serif">Direct Connect
+                        Gateway</text>
+                    <text x="650" y="186" fill="#38bdf8" font-size="8" font-family="monospace">BGP MED: 100</text>
+                    <text x="720" y="225" fill="#a78bfa" font-size="8.5" font-family="sans-serif"
+                        text-anchor="middle">Destination Service</text>
+
+                    <!-- Connectors & eBGP Links -->
+                    <!-- Stub to Transit -->
+                    <path d="M 210 120 L 300 85" stroke="#f59e0b" stroke-width="2" class="dash-animated" />
+                    <text x="245" y="95" fill="#fbbf24" font-size="8" font-family="monospace">eBGP Transit</text>
+
+                    <!-- Transit to Cloud -->
+                    <path d="M 540 85 L 630 120" stroke="#f59e0b" stroke-width="2" class="dash-animated" />
+                    <text x="595" y="95" fill="#fbbf24" font-size="8" font-family="monospace">eBGP Transit</text>
+
+                    <!-- Stub to IXP -->
+                    <path d="M 210 190 L 300 220" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                    <text x="240" y="218" fill="#34d399" font-size="8" font-family="monospace">eBGP Peering</text>
+
+                    <!-- IXP to Cloud -->
+                    <path d="M 540 220 L 630 190" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                    <text x="590" y="218" fill="#34d399" font-size="8" font-family="monospace">eBGP Peering</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    BGP Autonomous Systems architecture: Networks exchange route prefixes using external BGP (eBGP).
+                    Traffic reaches cloud destinations either via paid upstream Tier-1 transit providers or
+                    settlement-free Internet Exchange Point (IXP) peering fabrics.
+                </div>
+            </div>
+
             <h2 id="2-tcp-congestion-control-algorithms">2. TCP Congestion Control: CUBIC &amp; BBR<a class="headerlink"
                     href="#2-tcp-congestion-control-algorithms" title="Permanent link">#</a></h2>
             <p>While Flow Control prevents a fast sender from overwhelming a slow receiver, <strong>Congestion
@@ -93,6 +289,103 @@
                     packet transmission exactly at the pipe's capacity, eliminating queue build-up and latency spikes.
                 </li>
             </ol>
+
+            <div class="study-diagram" aria-label="TCP Congestion Control Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 2.1: TCP Congestion Control Dynamics: CUBIC vs Google
+                        BBR</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Loss-Based Sawtooth vs
+                        Model-Based BDP Pacing</span>
+                </div>
+                <svg viewBox="0 0 840 310" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="TCP CUBIC vs Google BBR Congestion Control">
+                    <defs>
+                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background -->
+                    <rect x="15" y="15" width="810" height="280" rx="8" fill="#0c1015" stroke="#1f2937"
+                        stroke-width="1" />
+
+                    <!-- Left Card: TCP CUBIC (Sawtooth) -->
+                    <rect x="25" y="25" width="385" height="260" rx="6" fill="#111620" stroke="#334155"
+                        stroke-width="1" />
+                    <rect x="35" y="35" width="365" height="22" rx="3" fill="#ef4444" fill-opacity="0.2" />
+                    <text x="217" y="50" fill="#f87171" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">TCP CUBIC (LOSS-BASED SAWTOOTH)</text>
+
+                    <!-- Chart Grid -->
+                    <line x1="60" y1="75" x2="60" y2="230" stroke="#475569" stroke-width="1" />
+                    <line x1="60" y1="230" x2="380" y2="230" stroke="#475569" stroke-width="1" />
+                    <text x="45" y="85" fill="#94a3b8" font-size="8.5" font-family="monospace">cwnd</text>
+                    <text x="360" y="245" fill="#94a3b8" font-size="8.5" font-family="monospace">time &rarr;</text>
+
+                    <!-- Bufferbloat threshold line -->
+                    <line x1="60" y1="120" x2="380" y2="120" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3" />
+                    <text x="220" y="115" fill="#ef4444" font-size="8" font-family="monospace"
+                        text-anchor="middle">Buffer Overflow &bull; Drop Packet</text>
+
+                    <!-- CUBIC Waveform: Slow start -> cubic curve -> drop -> cubic curve -->
+                    <path
+                        d="M 60 225 Q 90 220, 110 170 Q 140 120, 170 120 L 170 175 Q 210 140, 240 120 L 240 175 Q 280 140, 310 120 L 310 175 Q 345 145, 375 125"
+                        stroke="#f87171" stroke-width="2.2" class="dash-animated" />
+
+                    <!-- Drops indicators -->
+                    <circle cx="170" cy="120" r="3" fill="#ef4444" />
+                    <circle cx="240" cy="120" r="3" fill="#ef4444" />
+                    <circle cx="310" cy="120" r="3" fill="#ef4444" />
+
+                    <rect x="35" y="250" width="365" height="26" rx="3" fill="#1e293b" />
+                    <text x="45" y="267" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Fills router buffers
+                        until drop occurs &rarr; causes high latency jitter.</text>
+
+                    <!-- Right Card: Google BBR (Model-Based Pacing) -->
+                    <rect x="430" y="25" width="385" height="260" rx="6" fill="#111620" stroke="#334155"
+                        stroke-width="1" />
+                    <rect x="440" y="35" width="365" height="22" rx="3" fill="#10b981" fill-opacity="0.2" />
+                    <text x="622" y="50" fill="#34d399" font-size="10.5" font-weight="700" font-family="monospace"
+                        text-anchor="middle">GOOGLE BBR (MODEL-BASED PACING)</text>
+
+                    <!-- Chart Grid -->
+                    <line x1="465" y1="75" x2="465" y2="230" stroke="#475569" stroke-width="1" />
+                    <line x1="465" y1="230" x2="785" y2="230" stroke="#475569" stroke-width="1" />
+                    <text x="450" y="85" fill="#94a3b8" font-size="8.5" font-family="monospace">rate</text>
+                    <text x="765" y="245" fill="#94a3b8" font-size="8.5" font-family="monospace">time &rarr;</text>
+
+                    <!-- BtlBw Max Bandwidth Line -->
+                    <line x1="465" y1="135" x2="785" y2="135" stroke="#38bdf8" stroke-width="1"
+                        stroke-dasharray="3 3" />
+                    <text x="625" y="128" fill="#38bdf8" font-size="8.5" font-family="monospace"
+                        text-anchor="middle">BtlBw (Physical Bottleneck Bandwidth)</text>
+
+                    <!-- BBR Operating Waveform: Startup probe -> smooth steady pacing exactly at BtlBw -->
+                    <path
+                        d="M 465 225 Q 495 210, 520 140 Q 535 125, 550 135 L 590 135 L 610 128 L 625 142 L 640 135 L 700 135 L 715 128 L 730 142 L 745 135 L 780 135"
+                        stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+
+                    <!-- BDP Callout -->
+                    <rect x="475" y="165" width="200" height="48" rx="4" fill="#13231d" stroke="#059669"
+                        stroke-width="0.8" />
+                    <text x="485" y="182" fill="#34d399" font-size="9" font-weight="700" font-family="monospace">BDP =
+                        BtlBw &times; RTprop</text>
+                    <text x="485" y="196" fill="#a7f3d0" font-size="8" font-family="sans-serif">Maintains exact
+                        in-flight bytes in the pipe.</text>
+                    <text x="485" y="206" fill="#cbd5e1" font-size="8" font-family="sans-serif">Zero packet loss
+                        required for pacing.</text>
+
+                    <rect x="440" y="250" width="365" height="26" rx="3" fill="#1e293b" />
+                    <text x="450" y="267" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Operates at the
+                        inflection point: Max throughput &bull; Minimum queue latency.</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    TCP Congestion Control comparison: CUBIC aggressively ramps transmission until intermediate router
+                    buffers overflow (causing bufferbloat and packet drops); Google BBR models the physical network pipe
+                    to pace packets at line rate without queue build-up.
+                </div>
+            </div>
 
             <h2 id="3-flow-control-and-window-scaling">3. Flow Control &amp; Sliding Window Scaling<a class="headerlink"
                     href="#3-flow-control-and-window-scaling" title="Permanent link">#</a></h2>
@@ -128,6 +421,160 @@
                     from kernel space into the user application buffer.</li>
             </ol>
 
+            <div class="study-diagram" aria-label="Linux Socket Ring Buffers Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 4.1: Linux Kernel Ingress: NIC DMA to Socket Ring
+                        Buffer</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">RX Ring Buffer &bull; NAPI
+                        Polling &bull; sk_buff Queue</span>
+                </div>
+                <svg viewBox="0 0 840 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="Linux Kernel Socket Ingress and Ring Buffer Pipeline">
+                    <defs>
+                        <linearGradient id="nicGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="ringGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e1b4b" />
+                            <stop offset="100%" stop-color="#0f1026" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Container -->
+                    <rect x="15" y="15" width="810" height="270" rx="8" fill="#0c1015" stroke="#1f2937"
+                        stroke-width="1" />
+
+                    <!-- STAGE 1: PHYSICAL WIRE & NIC -->
+                    <rect x="30" y="35" width="165" height="230" rx="6" fill="url(#nicGrad)" stroke="#475569"
+                        stroke-width="1.2" />
+                    <rect x="38" y="45" width="149" height="20" rx="3" fill="#334155" />
+                    <text x="112" y="59" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">1. HARDWARE NIC</text>
+
+                    <rect x="42" y="75" width="141" height="50" rx="4" fill="#0f172a" stroke="#334155"
+                        stroke-width="0.8" />
+                    <text x="50" y="93" fill="#38bdf8" font-size="9.5" font-weight="600" font-family="sans-serif">PHY
+                        Transceiver</text>
+                    <text x="50" y="108" fill="#94a3b8" font-size="8.5" font-family="sans-serif">Wire &rarr; MAC
+                        packet</text>
+
+                    <rect x="42" y="135" width="141" height="55" rx="4" fill="#0f172a" stroke="#f59e0b"
+                        stroke-width="0.8" />
+                    <text x="50" y="153" fill="#fbbf24" font-size="9.5" font-weight="600" font-family="sans-serif">DMA
+                        Controller</text>
+                    <text x="50" y="168" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Direct host RAM
+                        write</text>
+                    <text x="50" y="180" fill="#34d399" font-size="8" font-family="monospace">Zero-CPU transfer</text>
+
+                    <text x="112" y="215" fill="#f87171" font-size="8.5" font-family="monospace"
+                        text-anchor="middle">&uarr; Hard IRQ fired</text>
+                    <text x="112" y="240" fill="#94a3b8" font-size="8" font-family="sans-serif"
+                        text-anchor="middle">Triggers CPU core interrupt</text>
+
+                    <!-- Stream Arrow 1 -> 2 -->
+                    <path d="M 195 160 L 235 160" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+                    <!-- STAGE 2: DRIVER RX RING BUFFER & NAPI -->
+                    <rect x="235" y="35" width="190" height="230" rx="6" fill="#121722" stroke="#2563eb"
+                        stroke-width="1.2" />
+                    <rect x="243" y="45" width="174" height="20" rx="3" fill="#1d4ed8" fill-opacity="0.3" />
+                    <text x="330" y="59" fill="#60a5fa" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">2. DRIVER &amp; RX RING</text>
+
+                    <rect x="248" y="75" width="164" height="65" rx="4" fill="#1e293b" stroke="#3b82f6"
+                        stroke-width="0.8" />
+                    <text x="256" y="93" fill="#93c5fd" font-size="9.5" font-weight="600"
+                        font-family="sans-serif">Circular RX Ring</text>
+                    <text x="256" y="108" fill="#cbd5e1" font-size="8.5" font-family="monospace">Descriptor array
+                        (RAM)</text>
+                    <text x="256" y="122" fill="#38bdf8" font-size="8" font-family="monospace">Pointers to packet
+                        frames</text>
+
+                    <rect x="248" y="150" width="164" height="60" rx="4" fill="#1e293b" stroke="#334155"
+                        stroke-width="0.8" />
+                    <text x="256" y="168" fill="#fbbf24" font-size="9.5" font-weight="600" font-family="sans-serif">NAPI
+                        Polling (SoftIRQ)</text>
+                    <text x="256" y="183" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Batched drain: 64
+                        pkts/loop</text>
+                    <text x="256" y="197" fill="#34d399" font-size="8"
+                        font-family="monospace">netif_receive_skb()</text>
+
+                    <text x="330" y="240" fill="#94a3b8" font-size="8" font-family="sans-serif"
+                        text-anchor="middle">Eliminates IRQ flood storms</text>
+
+                    <!-- Stream Arrow 2 -> 3 -->
+                    <path d="M 425 160 L 465 160" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+                    <!-- STAGE 3: KERNEL TCP/IP STACK -->
+                    <rect x="465" y="35" width="170" height="230" rx="6" fill="#15122b" stroke="#8b5cf6"
+                        stroke-width="1.2" />
+                    <rect x="473" y="45" width="154" height="20" rx="3" fill="#7c3aed" fill-opacity="0.3" />
+                    <text x="550" y="59" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">3. KERNEL TCP/IP</text>
+
+                    <rect x="477" y="75" width="146" height="42" rx="4" fill="#1f183d" stroke="#a78bfa"
+                        stroke-width="0.8" />
+                    <text x="485" y="93" fill="#e9d5ff" font-size="9.5" font-weight="600"
+                        font-family="sans-serif">sk_buff Allocation</text>
+                    <text x="485" y="106" fill="#cbd5e1" font-size="8" font-family="sans-serif">IP header &amp;
+                        checksum</text>
+
+                    <rect x="477" y="125" width="146" height="42" rx="4" fill="#1f183d" stroke="#a78bfa"
+                        stroke-width="0.8" />
+                    <text x="485" y="143" fill="#e9d5ff" font-size="9.5" font-weight="600" font-family="sans-serif">TCP
+                        Reassembly</text>
+                    <text x="485" y="156" fill="#cbd5e1" font-size="8" font-family="sans-serif">Seq check &amp; ACK
+                        sender</text>
+
+                    <rect x="477" y="175" width="146" height="52" rx="4" fill="#1f183d" stroke="#34d399"
+                        stroke-width="0.8" />
+                    <text x="485" y="193" fill="#34d399" font-size="9" font-weight="600" font-family="sans-serif">Socket
+                        rcv_queue</text>
+                    <text x="485" y="206" fill="#cbd5e1" font-size="8" font-family="monospace">SO_RCVBUF buffer</text>
+                    <text x="485" y="217" fill="#38bdf8" font-size="7.5" font-family="monospace">Enforces rwnd
+                        window</text>
+
+                    <text x="550" y="250" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">Data
+                        ready in queue</text>
+
+                    <!-- Stream Arrow 3 -> 4 -->
+                    <path d="M 635 160 L 675 160" stroke="#34d399" stroke-width="2" class="dash-animated" />
+
+                    <!-- STAGE 4: USER SPACE APPLICATION -->
+                    <rect x="675" y="35" width="135" height="230" rx="6" fill="#0f172a" stroke="#10b981"
+                        stroke-width="1.2" />
+                    <rect x="683" y="45" width="119" height="20" rx="3" fill="#059669" fill-opacity="0.3" />
+                    <text x="742" y="59" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">4. USER SPACE</text>
+
+                    <rect x="686" y="80" width="113" height="65" rx="4" fill="#162e24" stroke="#059669"
+                        stroke-width="0.8" />
+                    <text x="694" y="98" fill="#f8fafc" font-size="9.5" font-weight="600"
+                        font-family="sans-serif">recv() Syscall</text>
+                    <text x="694" y="113" fill="#cbd5e1" font-size="8" font-family="sans-serif">Kernel &rarr; User
+                        copy</text>
+                    <text x="694" y="128" fill="#34d399" font-size="8" font-family="monospace">App payload memory</text>
+
+                    <rect x="686" y="155" width="113" height="65" rx="4" fill="#1a2332" stroke="#38bdf8"
+                        stroke-width="0.8" />
+                    <text x="694" y="173" fill="#38bdf8" font-size="9.5" font-weight="600"
+                        font-family="sans-serif">Zero-Copy splice</text>
+                    <text x="694" y="188" fill="#cbd5e1" font-size="8" font-family="sans-serif">Pipe buffer page
+                        swap</text>
+                    <text x="694" y="203" fill="#f59e0b" font-size="7.5" font-family="monospace">Zero user copies</text>
+
+                    <text x="742" y="245" fill="#38bdf8" font-size="8" font-family="monospace"
+                        text-anchor="middle">Server Process</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    Linux network packet traversal pipeline: The NIC writes frames into host RAM via Direct Memory
+                    Access (DMA). The NAPI SoftIRQ polls the RX ring buffer in batches, converts frames to <code
+                        style="color: #c084fc;">sk_buff</code> structures, and hands data to the socket queue for user
+                    space consumption.
+                </div>
+            </div>
+
             <h2 id="5-zero-copy-data-transfers">5. Zero-Copy I/O: sendfile &amp; splice<a class="headerlink"
                     href="#5-zero-copy-data-transfers" title="Permanent link">#</a></h2>
             <p>Traditional file serving requires 4 context switches and 4 data copies (Disk &rarr; Kernel &rarr; User
@@ -158,6 +605,129 @@ sendfile(socket_fd, file_fd, NULL, len);
                     calls
                     continue without dropping.</li>
             </ul>
+
+            <div class="study-diagram" aria-label="QUIC Protocol Architecture Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 6.1: Protocol Architecture: HTTP/2 (TCP) vs HTTP/3
+                        (QUIC)</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Head-of-Line Elimination
+                        &bull; 0-RTT &bull; UDP Foundation</span>
+                </div>
+                <svg viewBox="0 0 840 330" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="HTTP/2 over TCP vs HTTP/3 over QUIC Comparison">
+                    <defs>
+                        <linearGradient id="tcpGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="quicGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#191530" />
+                            <stop offset="100%" stop-color="#0e0c1f" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Base -->
+                    <rect x="15" y="15" width="810" height="300" rx="8" fill="#0c1015" stroke="#1f2937"
+                        stroke-width="1" />
+
+                    <!-- LEFT COLUMN: HTTP/2 over TCP -->
+                    <rect x="30" y="25" width="375" height="280" rx="6" fill="url(#tcpGrad)" stroke="#334155"
+                        stroke-width="1.2" />
+                    <rect x="40" y="35" width="355" height="22" rx="3" fill="#0284c7" fill-opacity="0.25" />
+                    <text x="217" y="50" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
+                        text-anchor="middle">HTTP/2 OVER TCP + TLS</text>
+
+                    <!-- HTTP/2 Layer -->
+                    <rect x="40" y="65" width="355" height="42" rx="4" fill="#1e293b" stroke="#38bdf8"
+                        stroke-width="1" />
+                    <text x="50" y="82" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace">HTTP/2
+                        STREAM MULTIPLEXING</text>
+                    <text x="50" y="97" fill="#cbd5e1" font-size="9" font-family="sans-serif">Streams A, B, C share a
+                        single connection pipe</text>
+
+                    <!-- TLS Layer -->
+                    <rect x="40" y="112" width="355" height="36" rx="4" fill="#1e293b" stroke="#f59e0b"
+                        stroke-width="1" />
+                    <text x="50" y="128" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace">TLS 1.2
+                        / 1.3 RECORD LAYER</text>
+                    <text x="50" y="141" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Separate cryptographic
+                        handshake (adds +1 RTT)</text>
+
+                    <!-- TCP Layer (HoL Blocking Box) -->
+                    <rect x="40" y="153" width="355" height="70" rx="4" fill="#3f1219" stroke="#ef4444"
+                        stroke-width="1.2" />
+                    <text x="50" y="171" fill="#f87171" font-size="10" font-weight="700" font-family="monospace">TCP
+                        LAYER: HEAD-OF-LINE BLOCKING</text>
+                    <text x="50" y="187" fill="#fca5a5" font-size="8.5" font-family="sans-serif">Single monotonic byte
+                        stream sequence.</text>
+                    <text x="50" y="202" fill="#fecaca" font-size="8.5" font-family="sans-serif">&bull; Dropped packet
+                        on Stream A blocks Streams B &amp; C!</text>
+                    <text x="50" y="215" fill="#f87171" font-size="8" font-family="monospace">Socket stalls until
+                        retransmission ACK</text>
+
+                    <!-- IP Layer -->
+                    <rect x="40" y="228" width="355" height="34" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="0.8" />
+                    <text x="50" y="244" fill="#94a3b8" font-size="9.5" font-family="monospace">IP PROTOCOL (Bounded by
+                        4-Tuple IP:Port)</text>
+                    <text x="50" y="256" fill="#64748b" font-size="8" font-family="sans-serif">Wi-Fi to Cellular handoff
+                        breaks established socket.</text>
+
+                    <rect x="40" y="268" width="355" height="26" rx="3" fill="#181216" />
+                    <text x="217" y="284" fill="#f87171" font-size="8.5" font-family="monospace"
+                        text-anchor="middle">Handshake: 2-3 RTTs &bull; Connection drops on IP switch</text>
+
+                    <!-- RIGHT COLUMN: HTTP/3 over QUIC -->
+                    <rect x="435" y="25" width="375" height="280" rx="6" fill="url(#quicGrad)" stroke="#8b5cf6"
+                        stroke-width="1.2" />
+                    <rect x="445" y="35" width="355" height="22" rx="3" fill="#7c3aed" fill-opacity="0.3" />
+                    <text x="622" y="50" fill="#c084fc" font-size="11" font-weight="700" font-family="monospace"
+                        text-anchor="middle">HTTP/3 OVER QUIC + UDP</text>
+
+                    <!-- HTTP/3 Layer -->
+                    <rect x="445" y="65" width="355" height="42" rx="4" fill="#1f183d" stroke="#a78bfa"
+                        stroke-width="1" />
+                    <text x="455" y="82" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace">HTTP/3
+                        (QPACK HEADERS)</text>
+                    <text x="455" y="97" fill="#cbd5e1" font-size="9" font-family="sans-serif">Independent
+                        request/response state machines</text>
+
+                    <!-- Unified QUIC Transport Layer -->
+                    <rect x="445" y="112" width="355" height="111" rx="4" fill="#192823" stroke="#34d399"
+                        stroke-width="1.2" />
+                    <text x="455" y="130" fill="#34d399" font-size="10" font-weight="700" font-family="monospace">QUIC
+                        LAYER (INTEGRATED TLS 1.3 + FLOW CONTROL)</text>
+                    <text x="455" y="146" fill="#a7f3d0" font-size="8.5" font-family="sans-serif">&starf; Independent
+                        Stream Offsets: Zero Head-of-Line Blocking!</text>
+                    <text x="455" y="160" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">&bull; Loss on Stream
+                        A does NOT delay Stream B or C.</text>
+                    <text x="455" y="174" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">&bull; Unified
+                        Transport &amp; TLS 1.3 Key Exchange: 0-RTT / 1-RTT</text>
+                    <text x="455" y="188" fill="#38bdf8" font-size="8.5" font-family="monospace">Connection ID: 64-bit
+                        identifier (Independent of IP)</text>
+                    <text x="455" y="202" fill="#38bdf8" font-size="8" font-family="sans-serif">Seamless connection
+                        migration across Wi-Fi &harr; LTE networks.</text>
+                    <text x="455" y="216" fill="#34d399" font-size="8" font-family="monospace">Built-in Loss Recovery
+                        &amp; BBR Congestion Control</text>
+
+                    <!-- UDP Layer -->
+                    <rect x="445" y="228" width="355" height="34" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="0.8" />
+                    <text x="455" y="244" fill="#94a3b8" font-size="9.5" font-family="monospace">UDP DATAGRAMS (OS
+                        Kernel Fast-Path)</text>
+                    <text x="455" y="256" fill="#cbd5e1" font-size="8" font-family="sans-serif">Operates in user space;
+                        bypasses OS kernel TCP ossification.</text>
+
+                    <rect x="445" y="268" width="355" height="26" rx="3" fill="#13231d" />
+                    <text x="622" y="284" fill="#34d399" font-size="8.5" font-family="monospace"
+                        text-anchor="middle">Handshake: 0-1 RTT &bull; Persistent across network shifts</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    Protocol Evolution: HTTP/2 over TCP suffers from head-of-line blocking because all multiplexed
+                    streams share a single sequence number; HTTP/3 over QUIC tracks streams independently over UDP and
+                    unifies TLS 1.3 encryption with 0-RTT connection migration.
+                </div>
+            </div>
 
             <h2 id="7-anycast-routing-and-cdns">7. Anycast Routing &amp; Edge CDNs<a class="headerlink"
                     href="#7-anycast-routing-and-cdns" title="Permanent link">#</a></h2>

@@ -20,6 +20,104 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="os-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
+    <style>
+        .study-diagram {
+            margin: 2rem 0;
+            padding: 1.25rem 1.5rem;
+            background: #11151a;
+            border: 1px solid #28303a;
+            border-radius: 10px;
+        }
+
+        .study-diagram-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #1c222b;
+            padding-bottom: 0.6rem;
+        }
+
+        .study-diagram-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: ui-monospace, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .study-diagram-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: #94a0ad;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .study-diagram svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        @keyframes pulseFlow {
+            0% {
+                stroke-dashoffset: 24;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes dotTravel {
+            0% {
+                transform: translateY(0);
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(50px);
+                opacity: 0.2;
+            }
+        }
+
+        @keyframes growArrow {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .dash-animated {
+            stroke-dasharray: 6 4;
+            animation: pulseFlow 2s linear infinite;
+        }
+
+        .arrow-pulse {
+            animation: growArrow 2s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .dash-animated,
+            .arrow-pulse {
+                animation: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -104,6 +202,91 @@ ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
 // 3. Kernel verifies memory pointers and reads data from device driver
 // 4. Kernel copies data to user buffer and returns to User Mode (Ring 0 -> Ring 3)</code></pre>
 
+            <div class="study-diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 2.1: Dual-Mode Syscall Transition &amp; CPU Trap
+                        Flow</span>
+                    <span style="font-size: 11px; color: #38bdf8; font-family: monospace;">Ring 3 &harr; Ring 0</span>
+                </div>
+                <svg viewBox="0 0 780 230" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="Syscall Transition Diagram">
+                    <!-- User Mode Box -->
+                    <rect x="20" y="20" width="220" height="190" rx="8" fill="#1e293b" stroke="#334155"
+                        stroke-width="1.5" />
+                    <rect x="30" y="30" width="120" height="20" rx="4" fill="#38bdf8" fill-opacity="0.15" />
+                    <text x="36" y="44" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace">USER
+                        SPACE (RING 3)</text>
+
+                    <rect x="35" y="65" width="190" height="42" rx="5" fill="#0f172a" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="45" y="83" fill="#f1f5f9" font-size="11" font-weight="600" font-family="monospace">User
+                        Application</text>
+                    <text x="45" y="97" fill="#94a3b8" font-size="10" font-family="monospace">read(fd, buf, len)</text>
+
+                    <rect x="35" y="125" width="190" height="42" rx="5" fill="#0f172a" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="45" y="143" fill="#f1f5f9" font-size="11" font-weight="600" font-family="monospace">C
+                        Library (glibc)</text>
+                    <text x="45" y="157" fill="#94a3b8" font-size="10" font-family="monospace">sets %rax=0,
+                        %rdi=fd</text>
+
+                    <!-- Trap Gate / CPU Boundary -->
+                    <rect x="280" y="45" width="180" height="140" rx="8" fill="#171e2e" stroke="#e0af68"
+                        stroke-width="1.5" />
+                    <text x="295" y="72" fill="#e0af68" font-size="11" font-weight="700" font-family="monospace">CPU
+                        HARDWARE TRAP</text>
+                    <line x1="290" y1="82" x2="450" y2="82" stroke="#e0af68" stroke-opacity="0.3" />
+                    <text x="295" y="105" fill="#cbd5e1" font-size="10" font-family="sans-serif">Instruction:
+                        <code>syscall</code></text>
+                    <text x="295" y="125" fill="#f59e0b" font-size="10" font-family="monospace">&bull; Saves User %RIP
+                        &amp; %RSP</text>
+                    <text x="295" y="142" fill="#38bdf8" font-size="10" font-family="monospace">&bull; Flips CPU Mode:
+                        0</text>
+                    <text x="295" y="160" fill="#34d399" font-size="10" font-family="monospace">&bull; Jumps to Kernel
+                        Entry</text>
+
+                    <!-- Kernel Mode Box -->
+                    <rect x="500" y="20" width="260" height="190" rx="8" fill="#0b172a" stroke="#1d4ed8"
+                        stroke-width="1.5" />
+                    <rect x="510" y="30" width="130" height="20" rx="4" fill="#3b82f6" fill-opacity="0.15" />
+                    <text x="516" y="44" fill="#60a5fa" font-size="10" font-weight="700" font-family="monospace">KERNEL
+                        SPACE (RING 0)</text>
+
+                    <rect x="515" y="60" width="230" height="36" rx="5" fill="#1e293b" stroke="#3b82f6"
+                        stroke-width="1" />
+                    <text x="525" y="78" fill="#93c5fd" font-size="11" font-weight="600" font-family="monospace">Syscall
+                        Dispatch Table</text>
+                    <text x="525" y="90" fill="#cbd5e1" font-size="9" font-family="monospace">Entry #0 &rarr;
+                        sys_read()</text>
+
+                    <rect x="515" y="105" width="230" height="36" rx="5" fill="#1e293b" stroke="#3b82f6"
+                        stroke-width="1" />
+                    <text x="525" y="123" fill="#93c5fd" font-size="11" font-weight="600" font-family="monospace">VFS
+                        &amp; Device Driver</text>
+                    <text x="525" y="135" fill="#cbd5e1" font-size="9" font-family="sans-serif">Reads blocks into page
+                        cache</text>
+
+                    <rect x="515" y="150" width="230" height="36" rx="5" fill="#1e293b" stroke="#3b82f6"
+                        stroke-width="1" />
+                    <text x="525" y="168" fill="#93c5fd" font-size="11" font-weight="600" font-family="monospace">Copy
+                        to User Buffer</text>
+                    <text x="525" y="180" fill="#34d399" font-size="9" font-family="monospace">sysret &rarr; Mode flips
+                        back to Ring 3</text>
+
+                    <!-- Forward Flow (Syscall) -->
+                    <path d="M 225 145 L 280 145" stroke="#38bdf8" stroke-width="2" class="dash-animated"
+                        marker-end="url(#arrow)" />
+                    <path d="M 460 78 L 515 78" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+                    <!-- Return Flow (Sysret) -->
+                    <path d="M 515 168 L 460 168" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                    <path d="M 280 168 L 225 168" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                </svg>
+                <div class="study-diagram-caption">The transition between unprivileged user code and kernel space is
+                    strictly guarded by the CPU trap gate, ensuring user applications cannot forge hardware operations.
+                </div>
+            </div>
+
             <h2 id="3-processes-and-the-pcb">3. Processes &amp; Process Control Block<a class="headerlink"
                     href="#3-processes-and-the-pcb" title="Permanent link">#</a></h2>
             <p>A <strong>process</strong> is an active, running instance of a program. While a program is passive code
@@ -126,6 +309,99 @@ ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
                 <li><strong>Memory Management Info:</strong> Page table pointers and segment limits.</li>
                 <li><strong>Open File Descriptors:</strong> References to active files, pipes, and sockets.</li>
             </ul>
+
+            <div class="study-diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 3.1: Linux Process Virtual Address Space Layout</span>
+                    <span style="font-size: 11px; color: #a5b4fc; font-family: monospace;">Virtual Memory Map</span>
+                </div>
+                <svg viewBox="0 0 780 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="Process Memory Anatomy Diagram">
+                    <!-- High Address -->
+                    <text x="30" y="25" fill="#f43f5e" font-size="10" font-family="monospace">0xFFFFFFFFFFFFFFFF (High
+                        Memory)</text>
+
+                    <!-- Kernel Space -->
+                    <rect x="30" y="35" width="460" height="32" rx="4" fill="#450a0a" stroke="#dc2626"
+                        stroke-width="1.2" />
+                    <text x="140" y="55" fill="#fca5a5" font-size="11" font-weight="700" font-family="sans-serif">Kernel
+                        Space (Privileged &bull; Ring 0 Map)</text>
+
+                    <!-- User Stack -->
+                    <rect x="30" y="73" width="460" height="36" rx="4" fill="#1e1b4b" stroke="#6366f1"
+                        stroke-width="1.2" />
+                    <text x="135" y="93" fill="#c7d2fe" font-size="11" font-weight="600" font-family="sans-serif">User
+                        Stack (Local variables, call frames)</text>
+                    <!-- Stack downward arrow -->
+                    <text x="440" y="95" fill="#818cf8" font-size="14" font-weight="bold"
+                        class="arrow-pulse">&darr;</text>
+
+                    <!-- Memory Mapping Segment -->
+                    <rect x="30" y="115" width="460" height="28" rx="4" fill="#0f2838" stroke="#0284c7"
+                        stroke-width="1.2" />
+                    <text x="110" y="133" fill="#7dd3fc" font-size="10" font-weight="600"
+                        font-family="sans-serif">Memory Mapping Segment (mmap &bull; Shared Libraries like
+                        libc.so)</text>
+
+                    <!-- Run-time Heap -->
+                    <rect x="30" y="149" width="460" height="36" rx="4" fill="#064e3b" stroke="#059669"
+                        stroke-width="1.2" />
+                    <text x="145" y="169" fill="#6ee7b7" font-size="11" font-weight="600"
+                        font-family="sans-serif">Run-time Heap (malloc / new dynamic allocation)</text>
+                    <!-- Heap upward arrow -->
+                    <text x="440" y="172" fill="#34d399" font-size="14" font-weight="bold"
+                        class="arrow-pulse">&uarr;</text>
+
+                    <!-- BSS & Data -->
+                    <rect x="30" y="191" width="225" height="28" rx="4" fill="#292524" stroke="#78716c"
+                        stroke-width="1.2" />
+                    <text x="60" y="209" fill="#d6d3d1" font-size="10" font-weight="600" font-family="monospace">.bss
+                        (Uninitialized data)</text>
+
+                    <rect x="265" y="191" width="225" height="28" rx="4" fill="#292524" stroke="#78716c"
+                        stroke-width="1.2" />
+                    <text x="295" y="209" fill="#d6d3d1" font-size="10" font-weight="600" font-family="monospace">.data
+                        (Initialized globals)</text>
+
+                    <!-- Text / Code Segment -->
+                    <rect x="30" y="225" width="460" height="24" rx="4" fill="#18181b" stroke="#52525b"
+                        stroke-width="1.2" />
+                    <text x="145" y="241" fill="#e4e4e7" font-size="10" font-weight="600" font-family="monospace">.text
+                        (Machine instructions &bull; Read-Only)</text>
+
+                    <!-- Low Address -->
+                    <text x="30" y="258" fill="#94a0ad" font-size="9" font-family="monospace">0x0000000000000000</text>
+
+                    <!-- Right Legend / Explanations -->
+                    <rect x="520" y="35" width="235" height="214" rx="8" fill="#131922" stroke="#253244"
+                        stroke-width="1" />
+                    <text x="535" y="58" fill="#38bdf8" font-size="11" font-weight="700" font-family="sans-serif">Memory
+                        Dynamics</text>
+                    <line x1="535" y1="67" x2="740" y2="67" stroke="#253244" />
+
+                    <text x="535" y="88" fill="#c7d2fe" font-size="10" font-weight="600" font-family="sans-serif">&bull;
+                        Stack Grows Downward:</text>
+                    <text x="545" y="103" fill="#94a3b8" font-size="9" font-family="sans-serif">Each function call
+                        pushes frame down.</text>
+
+                    <text x="535" y="125" fill="#6ee7b7" font-size="10" font-weight="600"
+                        font-family="sans-serif">&bull; Heap Grows Upward:</text>
+                    <text x="545" y="140" fill="#94a3b8" font-size="9" font-family="sans-serif">brk/sbrk expands heap
+                        towards stack.</text>
+
+                    <text x="535" y="162" fill="#f59e0b" font-size="10" font-weight="600"
+                        font-family="sans-serif">&bull; Guard Gap:</text>
+                    <text x="545" y="177" fill="#94a3b8" font-size="9" font-family="sans-serif">Unmapped virtual space
+                        prevents collisions.</text>
+
+                    <text x="535" y="198" fill="#e4e4e7" font-size="10" font-weight="600"
+                        font-family="sans-serif">&bull; Text Protection:</text>
+                    <text x="545" y="213" fill="#94a3b8" font-size="9" font-family="sans-serif">Read+Execute only;
+                        writes trigger segfault.</text>
+                </svg>
+                <div class="study-diagram-caption">Every Linux process receives an isolated, canonical virtual address
+                    space. Stack and heap grow toward each other from opposite directions.</div>
+            </div>
 
             <h2 id="4-threads-and-concurrency">4. Threads &amp; Concurrency<a class="headerlink"
                     href="#4-threads-and-concurrency" title="Permanent link">#</a></h2>
@@ -253,6 +529,97 @@ ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
                 <li>The page is read from disk into RAM, the page table entry is updated, and the CPU instruction is
                     retried.</li>
             </ol>
+
+            <div class="study-diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 10.1: MMU Virtual Address Translation &amp; Page Fault
+                        Pipeline</span>
+                    <span style="font-size: 11px; color: #34d399; font-family: monospace;">VPN &rarr; MMU &rarr; PFN /
+                        Trap</span>
+                </div>
+                <svg viewBox="0 0 780 230" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="Paging and Page Fault Diagram">
+                    <!-- Virtual Address Register -->
+                    <rect x="20" y="25" width="200" height="60" rx="6" fill="#1e293b" stroke="#475569"
+                        stroke-width="1.2" />
+                    <text x="35" y="45" fill="#94a3b8" font-size="10" font-weight="700" font-family="monospace">VIRTUAL
+                        ADDRESS (CPU)</text>
+                    <rect x="30" y="52" width="105" height="24" rx="3" fill="#0f172a" stroke="#38bdf8"
+                        stroke-width="1" />
+                    <text x="38" y="68" fill="#38bdf8" font-size="10" font-family="monospace">VPN (Page #)</text>
+                    <rect x="140" y="52" width="70" height="24" rx="3" fill="#0f172a" stroke="#a5b4fc"
+                        stroke-width="1" />
+                    <text x="148" y="68" fill="#a5b4fc" font-size="10" font-family="monospace">Offset</text>
+
+                    <!-- Arrow to MMU -->
+                    <path d="M 220 55 L 265 55" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+                    <!-- MMU Box -->
+                    <rect x="265" y="20" width="220" height="190" rx="8" fill="#0f172a" stroke="#38bdf8"
+                        stroke-width="1.5" />
+                    <rect x="275" y="30" width="130" height="20" rx="4" fill="#38bdf8" fill-opacity="0.15" />
+                    <text x="282" y="44" fill="#38bdf8" font-size="10" font-weight="700"
+                        font-family="monospace">HARDWARE MMU</text>
+
+                    <!-- TLB -->
+                    <rect x="280" y="60" width="190" height="38" rx="5" fill="#1e293b" stroke="#60a5fa"
+                        stroke-width="1" />
+                    <text x="290" y="78" fill="#93c5fd" font-size="10" font-weight="700" font-family="monospace">1. TLB
+                        Cache (L1/L2)</text>
+                    <text x="290" y="91" fill="#cbd5e1" font-size="9" font-family="sans-serif">&bull; Hit &rarr; Instant
+                        PFN lookup (&lt;1ns)</text>
+
+                    <!-- Page Table Walker -->
+                    <rect x="280" y="110" width="190" height="42" rx="5" fill="#1e293b" stroke="#e0af68"
+                        stroke-width="1" />
+                    <text x="290" y="128" fill="#f59e0b" font-size="10" font-weight="700" font-family="monospace">2.
+                        Page Table Walk</text>
+                    <text x="290" y="142" fill="#cbd5e1" font-size="9" font-family="sans-serif">Reads CR3 register
+                        multi-level tree</text>
+
+                    <!-- Present Bit Check -->
+                    <rect x="280" y="162" width="190" height="38" rx="5" fill="#1e293b" stroke="#f43f5e"
+                        stroke-width="1" />
+                    <text x="290" y="179" fill="#fda4af" font-size="10" font-weight="700" font-family="monospace">3.
+                        Present Bit Check</text>
+                    <text x="290" y="192" fill="#cbd5e1" font-size="9" font-family="sans-serif">Bit=1 (In RAM) | Bit=0
+                        (Fault!)</text>
+
+                    <!-- Arrow to Physical RAM (Hit) -->
+                    <path d="M 485 80 L 540 80" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                    <text x="495" y="74" fill="#34d399" font-size="9" font-family="monospace">Hit</text>
+
+                    <!-- Physical RAM -->
+                    <rect x="540" y="25" width="220" height="90" rx="8" fill="#064e3b" stroke="#059669"
+                        stroke-width="1.5" />
+                    <text x="555" y="47" fill="#6ee7b7" font-size="11" font-weight="700"
+                        font-family="monospace">PHYSICAL RAM FRAME</text>
+                    <rect x="555" y="58" width="190" height="42" rx="4" fill="#022c22" stroke="#10b981"
+                        stroke-width="1" />
+                    <text x="565" y="76" fill="#a7f3d0" font-size="10" font-weight="600"
+                        font-family="monospace">Physical Address: [PFN | Offset]</text>
+                    <text x="565" y="90" fill="#6ee7b7" font-size="9" font-family="sans-serif">Direct hardware bus
+                        read/write</text>
+
+                    <!-- Arrow to Page Fault Trap Handler (Miss/Fault) -->
+                    <path d="M 485 180 L 540 180" stroke="#f43f5e" stroke-width="2" class="dash-animated" />
+                    <text x="492" y="174" fill="#f43f5e" font-size="9" font-family="monospace">Fault</text>
+
+                    <!-- Page Fault Trap / Disk Swap -->
+                    <rect x="540" y="135" width="220" height="85" rx="8" fill="#450a0a" stroke="#dc2626"
+                        stroke-width="1.5" />
+                    <text x="555" y="157" fill="#fca5a5" font-size="10" font-weight="700" font-family="monospace">PAGE
+                        FAULT HANDLER (OS)</text>
+                    <text x="555" y="174" fill="#cbd5e1" font-size="9" font-family="sans-serif">&bull; Traps to kernel
+                        interrupt vector 14</text>
+                    <text x="555" y="189" fill="#cbd5e1" font-size="9" font-family="sans-serif">&bull; Swaps 4KB frame
+                        from SSD into RAM</text>
+                    <text x="555" y="204" fill="#facc15" font-size="9" font-family="sans-serif">&bull; Updates Page
+                        Table &amp; retries instruction</text>
+                </svg>
+                <div class="study-diagram-caption">The MMU maps every virtual memory access through TLB caches and
+                    multi-level page tables, dynamically faulting missing pages in from disk transparently.</div>
+            </div>
 
             <h2 id="11-file-systems-inodes">11. File Systems &amp; Inodes<a class="headerlink"
                     href="#11-file-systems-inodes" title="Permanent link">#</a></h2>

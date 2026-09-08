@@ -20,6 +20,88 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="aws-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
+    <style>
+        .study-diagram {
+            margin: 2rem 0;
+            padding: 1.25rem 1.5rem;
+            background: #11151a;
+            border: 1px solid #28303a;
+            border-radius: 10px;
+        }
+
+        .study-diagram-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #1c222b;
+            padding-bottom: 0.6rem;
+        }
+
+        .study-diagram-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-family: ui-monospace, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .study-diagram-caption {
+            margin-top: 0.75rem;
+            font-size: 0.8125rem;
+            color: #94a0ad;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .study-diagram svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        @keyframes pulseTraffic {
+            0% {
+                stroke-dashoffset: 24;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes azGlow {
+
+            0%,
+            100% {
+                stroke-opacity: 0.3;
+            }
+
+            50% {
+                stroke-opacity: 1;
+            }
+        }
+
+        .dash-animated {
+            stroke-dasharray: 6 4;
+            animation: pulseTraffic 2s linear infinite;
+        }
+
+        .az-border {
+            animation: azGlow 3s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .dash-animated,
+            .az-border {
+                animation: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -77,6 +159,145 @@
                     <li><strong>Edge Locations:</strong> Points of Presence (PoPs) worldwide that power Amazon
                         CloudFront CDN and Route 53 DNS for fast local caching.</li>
                 </ul>
+            </div>
+
+            <div class="study-diagram" aria-label="AWS Global Infrastructure Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 1.1: AWS Global Infrastructure Topology</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Global Edge Network &bull;
+                        Multi-AZ Isolation</span>
+                </div>
+                <svg viewBox="0 0 840 250" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="AWS Global Infrastructure: Edge Locations, Backbone, and Multi-AZ Region">
+                    <defs>
+                        <linearGradient id="edgeGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#141a23" />
+                            <stop offset="100%" stop-color="#0d1117" />
+                        </linearGradient>
+                        <linearGradient id="azGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1c2430" />
+                            <stop offset="100%" stop-color="#121820" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Edge Tier -->
+                    <rect x="15" y="25" width="200" height="210" rx="8" fill="url(#edgeGrad)" stroke="#334155"
+                        stroke-width="1.5" />
+                    <rect x="25" y="35" width="180" height="24" rx="4" fill="#0284c7" fill-opacity="0.2"
+                        stroke="#0284c7" stroke-width="1" />
+                    <text x="115" y="51" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
+                        text-anchor="middle">EDGE NETWORK (600+ PoPs)</text>
+
+                    <rect x="25" y="68" width="180" height="42" rx="6" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="35" y="86" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">Amazon
+                        CloudFront</text>
+                    <text x="35" y="100" fill="#94a3b8" font-size="9.5" font-family="sans-serif">Global low-latency edge
+                        caching</text>
+
+                    <rect x="25" y="118" width="180" height="42" rx="6" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="35" y="136" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">Amazon
+                        Route 53</text>
+                    <text x="35" y="150" fill="#94a3b8" font-size="9.5" font-family="sans-serif">Anycast DNS &amp;
+                        latency routing</text>
+
+                    <rect x="25" y="168" width="180" height="52" rx="6" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="35" y="186" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">AWS
+                        Shield &amp; WAF</text>
+                    <text x="35" y="200" fill="#94a3b8" font-size="9.5" font-family="sans-serif">Perimeter DDoS
+                        protection</text>
+                    <text x="35" y="211" fill="#64748b" font-size="8.5" font-family="sans-serif">Layer 3/4 flood &amp;
+                        L7 inspection</text>
+
+                    <!-- AWS Private Backbone Connector -->
+                    <path d="M 215 130 L 265 130" stroke="#f59e0b" stroke-width="2.5" class="dash-animated" />
+                    <text x="240" y="120" fill="#fbbf24" font-size="9" font-family="monospace" font-weight="700"
+                        text-anchor="middle">AWS FIBER</text>
+                    <text x="240" y="145" fill="#94a3b8" font-size="8" font-family="sans-serif"
+                        text-anchor="middle">400Gbps</text>
+
+                    <!-- Region Boundary -->
+                    <rect x="265" y="25" width="560" height="210" rx="8" fill="url(#regGrad)" stroke="#f59e0b"
+                        stroke-width="1.5" stroke-dasharray="4 2" />
+                    <rect x="275" y="35" width="540" height="24" rx="4" fill="#d97706" fill-opacity="0.15"
+                        stroke="#f59e0b" stroke-width="1" />
+                    <text x="545" y="51" fill="#fbbf24" font-size="11" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AWS REGION: us-east-1 (N. Virginia) &bull; Autonomous Failure Domain</text>
+
+                    <!-- AZ 1 -->
+                    <rect x="280" y="68" width="165" height="110" rx="6" fill="url(#azGrad)" stroke="#38bdf8"
+                        stroke-width="1.2" class="az-border" />
+                    <rect x="288" y="74" width="149" height="20" rx="3" fill="#0284c7" fill-opacity="0.25" />
+                    <text x="362" y="88" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AZ: us-east-1a</text>
+                    <text x="290" y="110" fill="#cbd5e1" font-size="9" font-family="sans-serif">🏢 Data Center Facility
+                        A</text>
+                    <text x="290" y="125" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Independent
+                        Substation</text>
+                    <text x="290" y="139" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; EC2 / EKS
+                        Compute Pods</text>
+                    <text x="290" y="153" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; EBS Volume
+                        Availability</text>
+                    <text x="290" y="167" fill="#34d399" font-size="8.5" font-family="monospace">Status: HEALTHY</text>
+
+                    <!-- AZ 2 -->
+                    <rect x="460" y="68" width="165" height="110" rx="6" fill="url(#azGrad)" stroke="#38bdf8"
+                        stroke-width="1.2" class="az-border" />
+                    <rect x="468" y="74" width="149" height="20" rx="3" fill="#0284c7" fill-opacity="0.25" />
+                    <text x="542" y="88" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AZ: us-east-1b</text>
+                    <text x="470" y="110" fill="#cbd5e1" font-size="9" font-family="sans-serif">🏢 Data Center Facility
+                        B</text>
+                    <text x="470" y="125" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Backup Diesel
+                        Generators</text>
+                    <text x="470" y="139" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Multi-AZ
+                        Standby Nodes</text>
+                    <text x="470" y="153" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Isolated Flood
+                        Plain</text>
+                    <text x="470" y="167" fill="#34d399" font-size="8.5" font-family="monospace">Status: HEALTHY</text>
+
+                    <!-- AZ 3 -->
+                    <rect x="640" y="68" width="175" height="110" rx="6" fill="url(#azGrad)" stroke="#38bdf8"
+                        stroke-width="1.2" class="az-border" />
+                    <rect x="648" y="74" width="159" height="20" rx="3" fill="#0284c7" fill-opacity="0.25" />
+                    <text x="727" y="88" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AZ: us-east-1c</text>
+                    <text x="650" y="110" fill="#cbd5e1" font-size="9" font-family="sans-serif">🏢 Data Center Facility
+                        C</text>
+                    <text x="650" y="125" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Redundant
+                        Cooling Loop</text>
+                    <text x="650" y="139" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Raft Quorum /
+                        Witness</text>
+                    <text x="650" y="153" fill="#94a3b8" font-size="8.5" font-family="sans-serif">&bull; Disaster
+                        Failover Target</text>
+                    <text x="650" y="167" fill="#34d399" font-size="8.5" font-family="monospace">Status: HEALTHY</text>
+
+                    <!-- Intra-AZ Low-Latency Optical Mesh -->
+                    <line x1="445" y1="123" x2="460" y2="123" stroke="#38bdf8" stroke-width="2"
+                        stroke-dasharray="2 2" />
+                    <line x1="625" y1="123" x2="640" y2="123" stroke="#38bdf8" stroke-width="2"
+                        stroke-dasharray="2 2" />
+
+                    <!-- Regional Multi-AZ Services Strip -->
+                    <rect x="280" y="188" width="535" height="35" rx="5" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="292" y="210" fill="#fbbf24" font-size="10" font-weight="700"
+                        font-family="monospace">REGIONAL DATA PLANE:</text>
+                    <text x="445" y="210" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Amazon S3 &bull; IAM
+                        &bull; DynamoDB &bull; AWS KMS &bull; Route 53 Resolver</text>
+                    <text x="735" y="210" fill="#34d399" font-size="9" font-family="monospace">99.999999999%</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    AWS regions contain 3 or more isolated Availability Zones interconnected via redundant, dedicated
+                    metro dark fiber (&lt;1-2ms latency). Regions maintain complete operational autonomy from one
+                    another.
+                </div>
             </div>
 
             <h2 id="2-iam-security-and-roles">2. IAM: Users, Roles, Policies &amp; Least Privilege<a class="headerlink"
@@ -252,7 +473,8 @@ export const handler = async (event) => {
                 </li>
                 <li><strong>EKS Pod Identity &amp; IRSA:</strong> Connect AWS IAM roles directly to Kubernetes
                     <code>ServiceAccount</code> resources so microservice pods access AWS resources (S3, DynamoDB)
-                    without requiring node-level permissions.</li>
+                    without requiring node-level permissions.
+                </li>
             </ul>
 
             <div class="concept-card">
@@ -307,6 +529,179 @@ export async function getUploadUrl(filename, contentType) {
                     Internet access (for security patches or external API calls) while blocking external inbound
                     connections.</li>
             </ol>
+
+            <div class="study-diagram" aria-label="Multi-AZ VPC Architecture Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 7.1: Multi-AZ VPC Network Topology &amp; Security
+                        Segmentation</span>
+                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Public Subnet &bull; NAT
+                        Gateway &bull; Private DB Isolation</span>
+                </div>
+                <svg viewBox="0 0 840 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="AWS Multi-AZ VPC Topology Diagram">
+                    <defs>
+                        <linearGradient id="vpcGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#151b23" />
+                            <stop offset="100%" stop-color="#0d1117" />
+                        </linearGradient>
+                        <linearGradient id="pubGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#1e293b" />
+                            <stop offset="100%" stop-color="#101726" />
+                        </linearGradient>
+                        <linearGradient id="privGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#132437" />
+                            <stop offset="100%" stop-color="#0a1724" />
+                        </linearGradient>
+                        <linearGradient id="dbGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#14261d" />
+                            <stop offset="100%" stop-color="#0c1813" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Internet & IGW Header -->
+                    <rect x="290" y="8" width="260" height="32" rx="6" fill="#1e293b" stroke="#38bdf8"
+                        stroke-width="1.2" />
+                    <text x="420" y="28" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
+                        text-anchor="middle">INTERNET GATEWAY (IGW: 0.0.0.0/0)</text>
+
+                    <!-- VPC Outer Boundary -->
+                    <rect x="15" y="48" width="810" height="360" rx="8" fill="url(#vpcGrad)" stroke="#64748b"
+                        stroke-width="1.5" stroke-dasharray="5 3" />
+                    <text x="35" y="68" fill="#cbd5e1" font-size="11" font-weight="700" font-family="monospace">AWS VPC:
+                        10.0.0.0/16 (Production)</text>
+                    <text x="805" y="68" fill="#94a3b8" font-size="10" font-family="monospace" text-anchor="end">Region:
+                        us-east-1</text>
+
+                    <!-- Traffic Ingress Line from IGW -->
+                    <path d="M 420 40 L 420 85" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+                    <!-- AZ-A Container -->
+                    <rect x="25" y="80" width="385" height="315" rx="6" fill="#0f141c" stroke="#334155"
+                        stroke-width="1" />
+                    <rect x="33" y="86" width="140" height="20" rx="3" fill="#0284c7" fill-opacity="0.2" />
+                    <text x="103" y="100" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AZ-A (us-east-1a)</text>
+
+                    <!-- AZ-A Public Subnet -->
+                    <rect x="35" y="112" width="365" height="78" rx="5" fill="url(#pubGrad)" stroke="#38bdf8"
+                        stroke-width="1" />
+                    <text x="45" y="127" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace">PUBLIC
+                        SUBNET (10.0.1.0/24) &bull; Route: 0.0.0.0/0 &rarr; IGW</text>
+
+                    <rect x="45" y="135" width="165" height="46" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="55" y="152" fill="#f8fafc" font-size="10" font-weight="600" font-family="sans-serif">ALB
+                        Ingress Node A</text>
+                    <text x="55" y="168" fill="#94a3b8" font-size="8.5" font-family="monospace">SG: Allow 80/443
+                        (Any)</text>
+
+                    <rect x="220" y="135" width="170" height="46" rx="4" fill="#1e293b" stroke="#f59e0b"
+                        stroke-width="1" />
+                    <text x="230" y="152" fill="#fbbf24" font-size="10" font-weight="600" font-family="sans-serif">NAT
+                        Gateway A</text>
+                    <text x="230" y="168" fill="#94a3b8" font-size="8.5" font-family="monospace">Elastic IP:
+                        54.210.12.5</text>
+
+                    <!-- AZ-A Private App Subnet -->
+                    <rect x="35" y="200" width="365" height="88" rx="5" fill="url(#privGrad)" stroke="#0284c7"
+                        stroke-width="1" />
+                    <text x="45" y="215" fill="#38bdf8" font-size="9.5" font-weight="700"
+                        font-family="monospace">PRIVATE APP SUBNET (10.0.10.0/24) &bull; Route: 0.0.0.0/0 &rarr;
+                        NAT-A</text>
+
+                    <rect x="45" y="224" width="345" height="54" rx="4" fill="#152433" stroke="#0284c7"
+                        stroke-width="1" />
+                    <text x="55" y="242" fill="#f8fafc" font-size="10.5" font-weight="600" font-family="sans-serif">ECS
+                        Fargate / EC2 App Task A</text>
+                    <text x="55" y="257" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Security Group: Inbound
+                        TCP 8080 ONLY from ALB-SG</text>
+                    <text x="55" y="270" fill="#34d399" font-size="8" font-family="monospace">Outbound to internet
+                        routes via NAT Gateway A</text>
+
+                    <!-- AZ-A Isolated DB Subnet -->
+                    <rect x="35" y="298" width="365" height="86" rx="5" fill="url(#dbGrad)" stroke="#059669"
+                        stroke-width="1" />
+                    <text x="45" y="313" fill="#34d399" font-size="9.5" font-weight="700"
+                        font-family="monospace">ISOLATED DB SUBNET (10.0.100.0/24) &bull; No IGW/NAT Route</text>
+
+                    <rect x="45" y="322" width="345" height="52" rx="4" fill="#0f261b" stroke="#059669"
+                        stroke-width="1" />
+                    <text x="55" y="340" fill="#f8fafc" font-size="10.5" font-weight="600"
+                        font-family="sans-serif">Amazon Aurora PostgreSQL (Primary Writer)</text>
+                    <text x="55" y="354" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Security Group: Inbound
+                        TCP 5432 ONLY from App-SG</text>
+                    <text x="55" y="367" fill="#34d399" font-size="8" font-family="monospace">Zero External
+                        Ingress/Egress &bull; Local 10.0.0.0/16 only</text>
+
+                    <!-- AZ-B Container -->
+                    <rect x="430" y="80" width="385" height="315" rx="6" fill="#0f141c" stroke="#334155"
+                        stroke-width="1" />
+                    <rect x="438" y="86" width="140" height="20" rx="3" fill="#0284c7" fill-opacity="0.2" />
+                    <text x="508" y="100" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
+                        text-anchor="middle">AZ-B (us-east-1b)</text>
+
+                    <!-- AZ-B Public Subnet -->
+                    <rect x="440" y="112" width="365" height="78" rx="5" fill="url(#pubGrad)" stroke="#38bdf8"
+                        stroke-width="1" />
+                    <text x="450" y="127" fill="#38bdf8" font-size="9.5" font-weight="700"
+                        font-family="monospace">PUBLIC SUBNET (10.0.2.0/24) &bull; Route: 0.0.0.0/0 &rarr; IGW</text>
+
+                    <rect x="450" y="135" width="165" height="46" rx="4" fill="#1e293b" stroke="#475569"
+                        stroke-width="1" />
+                    <text x="460" y="152" fill="#f8fafc" font-size="10" font-weight="600" font-family="sans-serif">ALB
+                        Ingress Node B</text>
+                    <text x="460" y="168" fill="#94a3b8" font-size="8.5" font-family="monospace">SG: Allow 80/443
+                        (Any)</text>
+
+                    <rect x="625" y="135" width="170" height="46" rx="4" fill="#1e293b" stroke="#f59e0b"
+                        stroke-width="1" />
+                    <text x="635" y="152" fill="#fbbf24" font-size="10" font-weight="600" font-family="sans-serif">NAT
+                        Gateway B</text>
+                    <text x="635" y="168" fill="#94a3b8" font-size="8.5" font-family="monospace">Elastic IP:
+                        54.211.89.3</text>
+
+                    <!-- AZ-B Private App Subnet -->
+                    <rect x="440" y="200" width="365" height="88" rx="5" fill="url(#privGrad)" stroke="#0284c7"
+                        stroke-width="1" />
+                    <text x="450" y="215" fill="#38bdf8" font-size="9.5" font-weight="700"
+                        font-family="monospace">PRIVATE APP SUBNET (10.0.20.0/24) &bull; Route: 0.0.0.0/0 &rarr;
+                        NAT-B</text>
+
+                    <rect x="450" y="224" width="345" height="54" rx="4" fill="#152433" stroke="#0284c7"
+                        stroke-width="1" />
+                    <text x="460" y="242" fill="#f8fafc" font-size="10.5" font-weight="600" font-family="sans-serif">ECS
+                        Fargate / EC2 App Task B</text>
+                    <text x="460" y="257" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Security Group:
+                        Inbound TCP 8080 ONLY from ALB-SG</text>
+                    <text x="460" y="270" fill="#34d399" font-size="8" font-family="monospace">Outbound to internet
+                        routes via NAT Gateway B</text>
+
+                    <!-- AZ-B Isolated DB Subnet -->
+                    <rect x="440" y="298" width="365" height="86" rx="5" fill="url(#dbGrad)" stroke="#059669"
+                        stroke-width="1" />
+                    <text x="450" y="313" fill="#34d399" font-size="9.5" font-weight="700"
+                        font-family="monospace">ISOLATED DB SUBNET (10.0.200.0/24) &bull; No IGW/NAT Route</text>
+
+                    <rect x="450" y="322" width="345" height="52" rx="4" fill="#0f261b" stroke="#059669"
+                        stroke-width="1" />
+                    <text x="460" y="340" fill="#f8fafc" font-size="10.5" font-weight="600"
+                        font-family="sans-serif">Amazon Aurora Standby (Hot Replica)</text>
+                    <text x="460" y="354" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Security Group:
+                        Inbound TCP 5432 ONLY from App-SG</text>
+                    <text x="460" y="367" fill="#34d399" font-size="8" font-family="monospace">Zero External
+                        Ingress/Egress &bull; Local 10.0.0.0/16 only</text>
+
+                    <!-- Inter-AZ Aurora Replication Link -->
+                    <path d="M 390 348 L 450 348" stroke="#34d399" stroke-width="2" class="dash-animated" />
+                    <text x="420" y="342" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">SYNC
+                        REPL</text>
+                </svg>
+                <div class="study-diagram-caption">
+                    Defense-in-depth VPC architecture: Public subnets expose ALBs and NAT Gateways. Application
+                    containers run in private subnets with no public IPs, and databases reside in strictly isolated
+                    subnets without route access to the Internet.
+                </div>
+            </div>
 
             <h2 id="8-rds-and-relational-databases">8. Amazon RDS &amp; Aurora Relational Databases<a class="headerlink"
                     href="#8-rds-and-relational-databases" title="Permanent link">#</a></h2>

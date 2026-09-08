@@ -20,6 +20,87 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
   <link rel="stylesheet" href="javascript-study.css" />
   <link rel="stylesheet" href="../../site-header.css" />
+  <style>
+    .study-diagram {
+      margin: 2rem 0;
+      padding: 1.25rem 1.5rem;
+      background: #11151a;
+      border: 1px solid #28303a;
+      border-radius: 10px;
+    }
+
+    .study-diagram-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #1c222b;
+      padding-bottom: 0.6rem;
+    }
+
+    .study-diagram-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fbbf24;
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .study-diagram-caption {
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: #94a0ad;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .study-diagram svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    @keyframes rotateLoop {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes queueFlow {
+      0% {
+        stroke-dashoffset: 24;
+      }
+
+      100% {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    .loop-spin {
+      transform-origin: 430px 145px;
+      animation: rotateLoop 6s linear infinite;
+    }
+
+    .dash-animated {
+      stroke-dasharray: 6 4;
+      animation: queueFlow 2s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .loop-spin,
+      .dash-animated {
+        animation: none !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -68,10 +149,96 @@
           <li><strong>Engine (e.g. V8 in Chrome/Node):</strong> Compiles JavaScript into machine code using a JIT
             (Just-In-Time) compiler. Contains the Call Stack and Memory Heap.</li>
           <li><strong>Web APIs / C++ Bindings:</strong> Features provided by the environment (DOM, <code>fetch()</code>,
-            <code>setTimeout</code>, file system in Node).</li>
+            <code>setTimeout</code>, file system in Node).
+          </li>
           <li><strong>Event Loop:</strong> Coordinates asynchronous execution by moving callbacks from task queues into
             the call stack when the stack is empty.</li>
         </ul>
+      </div>
+
+      <div class="study-diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 1.1: V8 Engine &amp; Asynchronous Event Loop Pipeline</span>
+          <span style="font-size: 11px; color: #facc15; font-family: monospace;">Call Stack &harr; Event Loop &harr;
+            Queues</span>
+        </div>
+        <svg viewBox="0 0 780 260" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+          aria-label="JavaScript Event Loop Diagram">
+          <!-- V8 Engine Box -->
+          <rect x="20" y="20" width="280" height="225" rx="8" fill="#1e293b" stroke="#eab308" stroke-width="1.2" />
+          <rect x="30" y="30" width="125" height="20" rx="3" fill="#eab308" fill-opacity="0.15" />
+          <text x="36" y="44" fill="#facc15" font-size="10" font-weight="700" font-family="monospace">V8 JAVASCRIPT
+            ENGINE</text>
+
+          <!-- Memory Heap -->
+          <rect x="35" y="60" width="115" height="170" rx="5" fill="#0f172a" stroke="#475569" />
+          <text x="45" y="78" fill="#94a3b8" font-size="10" font-weight="700" font-family="monospace">MEMORY HEAP</text>
+          <rect x="42" y="90" width="100" height="30" rx="3" fill="#1e293b" stroke="#334155" />
+          <text x="50" y="109" fill="#cbd5e1" font-size="9" font-family="monospace">{ user: "Alice" }</text>
+          <rect x="42" y="128" width="100" height="30" rx="3" fill="#1e293b" stroke="#334155" />
+          <text x="50" y="147" fill="#cbd5e1" font-size="9" font-family="monospace">[1, 2, 3, 4]</text>
+
+          <!-- Call Stack -->
+          <rect x="165" y="60" width="125" height="170" rx="5" fill="#0f172a" stroke="#eab308" />
+          <text x="175" y="78" fill="#fef08a" font-size="10" font-weight="700" font-family="monospace">CALL STACK
+            (1x)</text>
+          <rect x="172" y="90" width="110" height="28" rx="3" fill="#422006" stroke="#eab308" />
+          <text x="180" y="108" fill="#fef08a" font-size="9" font-family="monospace">fetchData()</text>
+          <rect x="172" y="124" width="110" height="28" rx="3" fill="#1e293b" stroke="#475569" />
+          <text x="180" y="142" fill="#cbd5e1" font-size="9" font-family="monospace">loadDashboard()</text>
+          <rect x="172" y="158" width="110" height="28" rx="3" fill="#1e293b" stroke="#475569" />
+          <text x="180" y="176" fill="#cbd5e1" font-size="9" font-family="monospace">main()</text>
+
+          <!-- Arrow Call Stack -> Web API -->
+          <path d="M 290 100 L 490 50" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+          <!-- Web APIs Box -->
+          <rect x="490" y="20" width="270" height="75" rx="8" fill="#0c4a6e" fill-opacity="0.3" stroke="#0284c7"
+            stroke-width="1.2" />
+          <text x="505" y="38" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace">WEB APIS / C++
+            WORKERS</text>
+          <rect x="500" y="46" width="75" height="38" rx="4" fill="#0f172a" stroke="#0284c7" />
+          <text x="508" y="68" fill="#7dd3fc" font-size="9" font-family="monospace">DOM API</text>
+          <rect x="585" y="46" width="85" height="38" rx="4" fill="#0f172a" stroke="#0284c7" />
+          <text x="593" y="68" fill="#7dd3fc" font-size="9" font-family="monospace">fetch() / HTTP</text>
+          <rect x="680" y="46" width="70" height="38" rx="4" fill="#0f172a" stroke="#0284c7" />
+          <text x="687" y="68" fill="#7dd3fc" font-size="9" font-family="monospace">setTimeout</text>
+
+          <!-- Arrow Web API -> Queues -->
+          <path d="M 625 95 L 625 125" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+
+          <!-- Event Loop Spinner & Text (Center) -->
+          <g>
+            <circle cx="410" cy="145" r="28" stroke="#334155" stroke-width="2" fill="#11151a" />
+            <path d="M 410 119 A 26 26 0 0 1 436 145" stroke="#facc15" stroke-width="3" fill="none"
+              stroke-linecap="round" class="loop-spin" />
+            <text x="390" y="148" fill="#facc15" font-size="9" font-weight="700" font-family="monospace">EVENT</text>
+            <text x="393" y="160" fill="#facc15" font-size="9" font-weight="700" font-family="monospace">LOOP</text>
+          </g>
+
+          <!-- Arrow from Event Loop -> Call Stack -->
+          <path d="M 382 145 L 290 145" stroke="#34d399" stroke-width="2" class="dash-animated" />
+          <text x="305" y="140" fill="#34d399" font-size="9" font-family="monospace">push when empty</text>
+
+          <!-- Task Queues Box -->
+          <rect x="490" y="115" width="270" height="130" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.2" />
+
+          <!-- Microtask Queue -->
+          <rect x="500" y="130" width="250" height="46" rx="5" fill="#4c0519" stroke="#f43f5e" stroke-width="1" />
+          <text x="510" y="147" fill="#fda4af" font-size="10" font-weight="700" font-family="monospace">Microtask Queue
+            (HIGH PRIORITY)</text>
+          <text x="510" y="163" fill="#cbd5e1" font-size="9" font-family="monospace">Promise callbacks &bull;
+            queueMicrotask</text>
+
+          <!-- Macrotask / Callback Queue -->
+          <rect x="500" y="185" width="250" height="46" rx="5" fill="#3b0764" stroke="#a855f7" stroke-width="1" />
+          <text x="510" y="202" fill="#d8b4fe" font-size="10" font-weight="700" font-family="monospace">Callback Queue
+            (Tasks)</text>
+          <text x="510" y="218" fill="#cbd5e1" font-size="9" font-family="monospace">setTimeout &bull; setInterval
+            &bull; I/O events</text>
+        </svg>
+        <div class="study-diagram-caption">The single-threaded V8 engine offloads I/O to background workers. The Event
+          Loop continually prioritizes microtasks (Promises) before advancing to standard task callbacks.</div>
       </div>
 
       <h2 id="2-variables-and-data-types">2. Variables, Let, Const &amp; Data Types<a class="headerlink"
@@ -189,7 +356,8 @@ console.log(counter.getCount());  // 12
       <h2 id="7-async-promises-and-asyncawait">7. Async JS: Promises &amp; Async/Await<a class="headerlink"
           href="#7-async-promises-and-asyncawait" title="Permanent link">#</a></h2>
       <p>JavaScript is single-threaded. Non-blocking asynchronous I/O is managed using Promises and
-        <code>async</code>/<code>await</code> syntax:</p>
+        <code>async</code>/<code>await</code> syntax:
+      </p>
 
       <pre><code>// 1. A Promise represents a value that will resolve or reject in the future
 function fetchUserData(userId) {
@@ -270,7 +438,8 @@ b &&= 2;         // Assigns if truthy</code></pre>
       <h2 id="10-modules-esm-vs-commonjs">10. Modules: ESM vs CommonJS<a class="headerlink"
           href="#10-modules-esm-vs-commonjs" title="Permanent link">#</a></h2>
       <p>JavaScript supports two module standards: standard <strong>ECMAScript Modules (ESM)</strong> and legacy
-        <strong>CommonJS (CJS)</strong>:</p>
+        <strong>CommonJS (CJS)</strong>:
+      </p>
 
       <pre><code>// --- ECMAScript Modules (ESM - Standard) ---
 // math.js
@@ -324,7 +493,8 @@ try {
           </li>
           <li>Always use <code>===</code> and <code>!==</code> to avoid implicit type conversions.</li>
           <li>Use <code>??</code> instead of <code>||</code> for default values when <code>0</code> or
-            <code>false</code> are valid inputs.</li>
+            <code>false</code> are valid inputs.
+          </li>
           <li>Handle asynchronous errors using <code>try...catch</code> around <code>await</code> expressions.</li>
           <li>Prefer pure array methods (<code>map</code>, <code>filter</code>, <code>reduce</code>) over stateful
             loops.</li>
