@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/ai')) {
+      const base = document.createElement('base');
+      let path = window.location.pathname.replace(/\/ai\/?$/, '');
+      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+      document.head.appendChild(base);
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>Developer DevOps &amp; CI/CD Guide | TechToday</title>
+  <meta name="description"
+    content="Practical DevOps concepts for software developers: GitHub Actions CI/CD pipelines, the 12-Factor App, structured logging, distributed tracing, and local dev parity." />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+  <link rel="stylesheet" href="devops-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html">
+        <span class="tt-site-logo" aria-hidden="true">⚡</span>
+        <span>TechToday</span>
+      </a>
+      <a href="../../devops-guides.html" class="nav-back-link"
+        style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to DevOps Guides</a>
+    </nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main>
+    <article class="study">
+      <h1 id="developer-devops-guide">Developer DevOps &amp; CI/CD Guide<a class="headerlink"
+          href="#developer-devops-guide" title="Permanent link">#</a></h1>
+      <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+          title="Permanent link">#</a></h2>
+      <ol class="table-of-contents">
+        <li><a href="#1-shift-left-philosophy">1. Shift-Left Philosophy: Dev vs SRE/Platform</a></li>
+        <li><a href="#2-cicd-workflows-for-developers">2. CI/CD Workflows: GitHub Actions &amp; Automations</a></li>
+        <li><a href="#3-the-12-factor-app-in-practice">3. The 12-Factor App in Practice</a></li>
+        <li><a href="#4-developer-observability">4. Developer Observability: Logs, Traces &amp; Metrics</a></li>
+        <li><a href="#5-deployment-strategies">5. Deployment Strategies: Rolling, Blue/Green &amp; Canary</a></li>
+        <li><a href="#6-local-dev-parity">6. Local-to-Production Parity with Docker Compose</a></li>
+      </ol>
+
+      <h2 id="1-shift-left-philosophy">1. Shift-Left Philosophy: Dev vs SRE/Platform<a class="headerlink"
+          href="#1-shift-left-philosophy" title="Permanent link">#</a></h2>
+      <p>Traditionally, developers wrote software and "threw it over the wall" to operations teams to run.
+        <strong>DevOps for Developers</strong> is about owning your code from the moment you write your first unit test
+        to when it runs in production, without having to configure bare-metal networks or cloud subnets.</p>
+
+      <div class="concept-card">
+        <h3>The Developer's Scope</h3>
+        <ol>
+          <li><strong>Continuous Integration:</strong> Automated test suites, linting, security audits on every pull
+            request.</li>
+          <li><strong>Containerized Packaging:</strong> Creating fast, reproducible, and minimal container images with
+            multi-stage Docker builds.</li>
+          <li><strong>Environment Parity:</strong> Running identical dependencies locally in Docker Compose as in cloud
+            staging/production.</li>
+          <li><strong>Application Observability:</strong> Emitting structured JSON logs, trace IDs, and business/runtime
+            metrics to diagnose bugs in minutes instead of hours.</li>
+        </ol>
+      </div>
+
+      <h2 id="2-cicd-workflows-for-developers">2. CI/CD Workflows: GitHub Actions &amp; Automations<a class="headerlink"
+          href="#2-cicd-workflows-for-developers" title="Permanent link">#</a></h2>
+      <p>Continuous Integration (CI) guarantees that code committed to a repository builds cleanly and passes all tests
+        before merging. Continuous Delivery/Deployment (CD) automatically packages and deploys merged code to staging or
+        production.</p>
+
+      <p>Below is a production-grade <strong>GitHub Actions</strong> workflow that runs linting, tests, builds a
+        multi-stage Docker image, and publishes it to a container registry:</p>
+
+      <pre><code>name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest ruff
+
+      - name: Lint Code
+        run: ruff check .
+
+      - name: Run Unit Tests
+        run: pytest tests/ -v
+
+  build-and-push:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max</code></pre>
+
+      <h2 id="3-the-12-factor-app-in-practice">3. The 12-Factor App in Practice<a class="headerlink"
+          href="#3-the-12-factor-app-in-practice" title="Permanent link">#</a></h2>
+      <p>The <strong>12-Factor App</strong> methodology is the blueprint for modern, cloud-native applications. Here are
+        the core factors developers interact with daily:</p>
+
+      <ol>
+        <li><strong>Codebase:</strong> One codebase tracked in revision control, many deploys (dev, staging, prod).</li>
+        <li><strong>Explicit Dependencies:</strong> Explicitly declare and isolate dependencies (e.g.
+          <code>package-lock.json</code>, <code>poetry.lock</code>, <code>requirements.txt</code>). Never assume
+          system-wide libraries.</li>
+        <li><strong>Config in Environment:</strong> Store configuration that varies between deploys (database
+          credentials, API endpoints) in environment variables, never hardcoded in source code.</li>
+        <li><strong>Backing Services as Attached Resources:</strong> Treat databases, message queues, and SMTP servers
+          as attached resources accessed via URLs/credentials.</li>
+        <li><strong>Stateless Processes:</strong> Execute the app as one or more stateless processes. Never store
+          session state on the local filesystem (use Redis or database). Any container can be destroyed or recreated at
+          any moment without data loss.</li>
+        <li><strong>Port Binding:</strong> The app is completely self-contained and exports HTTP/gRPC by binding to a
+          port (e.g. <code>app.listen(8080)</code>).</li>
+        <li><strong>Disposability:</strong> Maximize robustness with fast startup and graceful shutdown upon receiving
+          <code>SIGTERM</code>.</li>
+        <li><strong>Dev/Prod Parity:</strong> Keep development, staging, and production as similar as possible using
+          containerization.</li>
+      </ol>
+
+      <h2 id="4-developer-observability">4. Developer Observability: Logs, Traces &amp; Metrics<a class="headerlink"
+          href="#4-developer-observability" title="Permanent link">#</a></h2>
+      <p>Platform engineers care about server CPU and disk space. Developers care about <strong>application
+          observability</strong>: understanding why a request failed or took 4 seconds.</p>
+
+      <h3>Structured JSON Logging</h3>
+      <p>Never emit unformatted plain text strings like <code>print("User logged in")</code>. Modern log aggregation
+        engines (Datadog, Loki, CloudWatch) parse structured JSON:</p>
+
+      <pre><code>{
+  "timestamp": "2026-09-08T06:15:00.123Z",
+  "level": "INFO",
+  "message": "Processed payment transaction",
+  "requestId": "req-98f2-4bc1",
+  "userId": "usr-10492",
+  "durationMs": 42.8,
+  "service": "payment-api"
+}</code></pre>
+
+      <h3>Distributed Tracing &amp; Trace Context</h3>
+      <p>In microservices or multi-step agent pipelines, a single user click might touch 4 services. With
+        <strong>OpenTelemetry</strong> and W3C trace context, a unique <code>traceparent</code> header is forwarded
+        along every HTTP request, allowing you to see an end-to-end flame graph of execution:</p>
+
+      <pre><code># W3C Traceparent Header Format:
+# version - trace_id (32 hex) - parent_span_id (16 hex) - trace_flags
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</code></pre>
+
+      <h2 id="5-deployment-strategies">5. Deployment Strategies: Rolling, Blue/Green &amp; Canary<a class="headerlink"
+          href="#5-deployment-strategies" title="Permanent link">#</a></h2>
+      <p>How your application updates in production directly affects code design, database migrations, and backward
+        compatibility:</p>
+
+      <div class="concept-card">
+        <h3>1. Rolling Update</h3>
+        <p>New pods/containers are started gradually while old ones are terminated. <strong>Developer
+            requirement:</strong> Version N and Version N+1 of your code will run concurrently for a few minutes. All
+          database schema migrations must be backward-compatible (e.g. never drop a database column in the same release
+          you stop using it).</p>
+      </div>
+
+      <div class="concept-card">
+        <h3>2. Blue / Green Deployment</h3>
+        <p>Two identical production environments exist. Blue runs live traffic (v1). Green is deployed with v2 and
+          verified with smoke tests. Once verified, the router/load balancer instantly flips 100% of traffic from Blue
+          to Green. Rollback is an instantaneous flip back.</p>
+      </div>
+
+      <div class="concept-card">
+        <h3>3. Canary Release</h3>
+        <p>A small percentage of real user traffic (e.g. 5%) is routed to the new version (the "canary"). If error rates
+          or latency spike, the canary is rolled back automatically before impacting all users.</p>
+      </div>
+
+      <h2 id="6-local-dev-parity">6. Local-to-Production Parity with Docker Compose<a class="headerlink"
+          href="#6-local-dev-parity" title="Permanent link">#</a></h2>
+      <p>The "it works on my machine" problem is solved with <strong>Docker Compose</strong>. A developer can spin up
+        their application, database, Redis cache, and mock APIs with one command: <code>docker compose up</code>.</p>
+
+      <pre><code>version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app               # Hot-reloading: changes in code reflect immediately!
+      - /app/node_modules     # Prevent local host modules from overriding container
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://dev:secret@postgres:5432/appdb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d appdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:</code></pre>
+
+      <div class="study-footer">
+        <p>&copy; 2026 TechToday &bull; DevOps for Developers &bull; <a href="../../index.html">Home</a> &bull; <a
+            href="../../devops-guides.html">DevOps Guides</a></p>
+      </div>
+    </article>
+  </main>
+
+  <button class="back-to-top" aria-label="Back to top">&uarr;</button>
+  <script src="devops-study.js"></script>
+</body>
+
+</html>

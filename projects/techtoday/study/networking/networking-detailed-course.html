@@ -46,11 +46,10 @@
                 </li>
                 <li><a href="#5-zero-copy-data-transfers">5. Zero-Copy I/O: sendfile &amp; splice</a></li>
                 <li><a href="#6-quic-and-http3-internals">6. QUIC Protocol Architecture &amp; Multiplexing</a></li>
-                <li><a href="#7-load-balancing-layer4-vs-layer7">7. Load Balancing: Layer 4 vs Layer 7</a></li>
-                <li><a href="#8-anycast-routing-and-cdns">8. Anycast Routing &amp; Edge CDNs</a></li>
-                <li><a href="#9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies</a></li>
-                <li><a href="#10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning</a></li>
-                <li><a href="#11-networking-interview-deep-dive">11. Top Networking Engineering Questions</a></li>
+                <li><a href="#7-anycast-routing-and-cdns">7. Anycast Routing &amp; Edge CDNs</a></li>
+                <li><a href="#8-ddos-mitigation-and-syn-cookies">8. DDoS Mitigation &amp; SYN Cookies</a></li>
+                <li><a href="#9-linux-network-sysctl-tuning">9. High-Throughput Linux sysctl Tuning</a></li>
+                <li><a href="#10-networking-interview-deep-dive">10. Top Networking Engineering Questions</a></li>
             </ol>
 
             <h2 id="1-autonomous-systems-and-bgp">1. Autonomous Systems &amp; BGP Routing<a class="headerlink"
@@ -157,29 +156,8 @@ sendfile(socket_fd, file_fd, NULL, len);
                     continue without dropping.</li>
             </ul>
 
-            <h2 id="7-load-balancing-layer4-vs-layer7">7. Load Balancing: Layer 4 vs Layer 7<a class="headerlink"
-                    href="#7-load-balancing-layer4-vs-layer7" title="Permanent link">#</a></h2>
-            <ol>
-                <li><strong>Layer 4 Load Balancers (HAProxy in TCP mode, AWS NLB, IPVS):</strong>
-                    <ul>
-                        <li>Operates at the transport layer (IP and Port only).</li>
-                        <li>Does not decrypt TLS or parse HTTP headers.</li>
-                        <li>Delivers millions of packets per second with ultra-low latency and minimal memory overhead.
-                        </li>
-                    </ul>
-                </li>
-                <li><strong>Layer 7 Load Balancers (Nginx, Envoy, AWS ALB):</strong>
-                    <ul>
-                        <li>Operates at the application layer (terminates TLS, parses HTTP headers, cookies, URL paths).
-                        </li>
-                        <li>Can route <code>/api/*</code> to Service A and <code>/static/*</code> to S3.</li>
-                        <li>Supports intelligent retry policies, gRPC stream routing, and rate-limiting.</li>
-                    </ul>
-                </li>
-            </ol>
-
-            <h2 id="8-anycast-routing-and-cdns">8. Anycast Routing &amp; Edge CDNs<a class="headerlink"
-                    href="#8-anycast-routing-and-cdns" title="Permanent link">#</a></h2>
+            <h2 id="7-anycast-routing-and-cdns">7. Anycast Routing &amp; Edge CDNs<a class="headerlink"
+                    href="#7-anycast-routing-and-cdns" title="Permanent link">#</a></h2>
             <p>Traditional hosting uses <strong>Unicast</strong> (one IP address belongs to exactly one physical
                 server).
                 Modern networks (Cloudflare, Google, AWS CloudFront) use <strong>BGP Anycast</strong>:</p>
@@ -193,8 +171,8 @@ sendfile(socket_fd, file_fd, NULL, len);
                     globe.</li>
             </ul>
 
-            <h2 id="9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies<a class="headerlink"
-                    href="#9-ddos-mitigation-and-syn-cookies" title="Permanent link">#</a></h2>
+            <h2 id="8-ddos-mitigation-and-syn-cookies">8. DDoS Mitigation &amp; SYN Cookies<a class="headerlink"
+                    href="#8-ddos-mitigation-and-syn-cookies" title="Permanent link">#</a></h2>
             <p>In a <strong>SYN Flood Attack</strong>, an attacker sends millions of spoofed TCP SYN packets without
                 ever
                 sending the final ACK, overflowing the kernel's connection backlog and freezing the server.</p>
@@ -206,8 +184,8 @@ sendfile(socket_fd, file_fd, NULL, len);
                 held state.
             </p>
 
-            <h2 id="10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning<a class="headerlink"
-                    href="#10-linux-network-sysctl-tuning" title="Permanent link">#</a></h2>
+            <h2 id="9-linux-network-sysctl-tuning">9. High-Throughput Linux sysctl Tuning<a class="headerlink"
+                    href="#9-linux-network-sysctl-tuning" title="Permanent link">#</a></h2>
             <div class="highlight">
                 <pre><code># /etc/sysctl.d/99-networking.conf
 # Increase maximum listen queue backlog for high-concurrency servers
@@ -229,8 +207,8 @@ net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_fin_timeout = 15</code></pre>
             </div>
 
-            <h2 id="11-networking-interview-deep-dive">11. Top Networking Engineering Questions<a class="headerlink"
-                    href="#11-networking-interview-deep-dive" title="Permanent link">#</a></h2>
+            <h2 id="10-networking-interview-deep-dive">10. Top Networking Engineering Questions<a class="headerlink"
+                    href="#10-networking-interview-deep-dive" title="Permanent link">#</a></h2>
             <div class="concept-card">
                 <h3>High-Frequency Systems Questions</h3>
                 <ol>
