@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>AWS Crash Course | TechToday</title>
     <meta name="description"
-        content="A visual, fast-paced guide to essential AWS cloud services: EC2, S3, Lambda, IAM, VPC, RDS, API Gateway, SQS, and CloudWatch." />
+        content="A visual, fast-paced guide to essential AWS cloud services: EC2, Containers (ECS &amp; EKS), S3, Lambda, IAM, VPC, RDS, API Gateway, SQS, and CloudWatch." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="aws-study.css" />
@@ -46,14 +46,15 @@
                 <li><a href="#2-iam-security-and-roles">2. IAM: Users, Roles, Policies &amp; Least Privilege</a></li>
                 <li><a href="#3-ec2-virtual-servers">3. Amazon EC2: Virtual Compute Instances</a></li>
                 <li><a href="#4-aws-lambda-serverless">4. AWS Lambda: Serverless Event-Driven Functions</a></li>
-                <li><a href="#5-s3-object-storage">5. Amazon S3: Object Storage &amp; Presigned URLs</a></li>
-                <li><a href="#6-vpc-cloud-networking">6. Amazon VPC: Subnets, NAT &amp; Security Groups</a></li>
-                <li><a href="#7-rds-and-relational-databases">7. Amazon RDS &amp; Aurora Relational Databases</a></li>
-                <li><a href="#8-api-gateway">8. Amazon API Gateway: REST &amp; HTTP APIs</a></li>
-                <li><a href="#9-sqs-and-sns-messaging">9. Asynchronous Messaging: SQS &amp; SNS</a></li>
-                <li><a href="#10-secrets-and-config">10. AWS Secrets Manager &amp; SSM Parameter Store</a></li>
-                <li><a href="#11-cloudwatch-observability">11. Amazon CloudWatch: Logs, Metrics &amp; Alarms</a></li>
-                <li><a href="#12-aws-cheat-sheet">12. Developer AWS Quick Reference &amp; CLI</a></li>
+                <li><a href="#5-containers-ecs-eks">5. Containers on AWS: Amazon ECS &amp; Amazon EKS</a></li>
+                <li><a href="#6-s3-object-storage">6. Amazon S3: Object Storage &amp; Presigned URLs</a></li>
+                <li><a href="#7-vpc-cloud-networking">7. Amazon VPC: Subnets, NAT &amp; Security Groups</a></li>
+                <li><a href="#8-rds-and-relational-databases">8. Amazon RDS &amp; Aurora Relational Databases</a></li>
+                <li><a href="#9-api-gateway">9. Amazon API Gateway: REST &amp; HTTP APIs</a></li>
+                <li><a href="#10-sqs-and-sns-messaging">10. Asynchronous Messaging: SQS &amp; SNS</a></li>
+                <li><a href="#11-secrets-and-config">11. AWS Secrets Manager &amp; SSM Parameter Store</a></li>
+                <li><a href="#12-cloudwatch-observability">12. Amazon CloudWatch: Logs, Metrics &amp; Alarms</a></li>
+                <li><a href="#13-aws-cheat-sheet">13. Developer AWS Quick Reference &amp; CLI</a></li>
             </ol>
 
             <h2 id="1-aws-global-infrastructure">1. AWS Global Infrastructure: Regions &amp; AZs<a class="headerlink"
@@ -66,11 +67,13 @@
                     <li><strong>Region:</strong> A distinct physical location around the globe (e.g.
                         <code>us-east-1</code> in N. Virginia, <code>eu-west-1</code> in Ireland,
                         <code>ap-south-1</code> in Mumbai). Data never leaves a region unless you explicitly configure
-                        replication.</li>
+                        replication.
+                    </li>
                     <li><strong>Availability Zone (AZ):</strong> One or more discrete data centers within a region,
                         isolated from failures in other AZs and connected by ultra-low-latency fiber (e.g.
                         <code>us-east-1a</code>, <code>us-east-1b</code>). Running in multi-AZ ensures high
-                        availability.</li>
+                        availability.
+                    </li>
                     <li><strong>Edge Locations:</strong> Points of Presence (PoPs) worldwide that power Amazon
                         CloudFront CDN and Route 53 DNS for fast local caching.</li>
                 </ul>
@@ -104,7 +107,8 @@
                 <p><strong>Never Hardcode AWS Keys:</strong> Do not bake <code>AWS_ACCESS_KEY_ID</code> and
                     <code>AWS_SECRET_ACCESS_KEY</code> into source code or Docker images! Instead, attach an <strong>IAM
                         Role</strong> (Instance Profile) to your EC2 instance, ECS task, or Lambda function. The AWS SDK
-                    retrieves temporary rotating credentials automatically.</p>
+                    retrieves temporary rotating credentials automatically.
+                </p>
             </blockquote>
 
             <h2 id="3-ec2-virtual-servers">3. Amazon EC2: Virtual Compute Instances<a class="headerlink"
@@ -115,7 +119,8 @@
             <ul>
                 <li><strong>Instance Types:</strong> Categorized by workload profile (e.g. <code>t4g.micro</code> /
                     <code>t3.medium</code> for general dev, <code>c7i</code> for compute-heavy APIs, <code>r7g</code>
-                    for memory-heavy Redis/databases).</li>
+                    for memory-heavy Redis/databases).
+                </li>
                 <li><strong>AMI (Amazon Machine Image):</strong> Pre-configured OS templates (Amazon Linux 2023, Ubuntu
                     24.04).</li>
                 <li><strong>Security Groups:</strong> Virtual stateful firewalls controlling inbound/outbound ports
@@ -159,8 +164,111 @@ export const handler = async (event) => {
                 </ul>
             </div>
 
-            <h2 id="5-s3-object-storage">5. Amazon S3: Object Storage &amp; Presigned URLs<a class="headerlink"
-                    href="#5-s3-object-storage" title="Permanent link">#</a></h2>
+            <h2 id="5-containers-ecs-eks">5. Containers on AWS: Amazon ECS &amp; Amazon EKS<a class="headerlink"
+                    href="#5-containers-ecs-eks" title="Permanent link">#</a></h2>
+            <p>Containers bridge the gap between virtual machines (Amazon EC2) and serverless functions (AWS Lambda).
+                They package your application code, system binaries, and runtime dependencies together, ensuring
+                consistent behavior from local development to production without the 15-minute runtime ceiling of
+                Lambda.</p>
+
+            <div class="concept-card">
+                <h3>Container Registry: Amazon ECR</h3>
+                <p><strong>Amazon Elastic Container Registry (ECR)</strong> is a fully managed, high-performance Docker
+                    and OCI container registry. It integrates natively with IAM permissions, supports automatic
+                    vulnerability scanning, and caches container layers inside your VPC for rapid task boot times.</p>
+            </div>
+
+            <h3>1. Amazon ECS (Elastic Container Service)</h3>
+            <p><strong>Amazon ECS</strong> is AWS's native, highly scalable container orchestration service. It is
+                designed for operational simplicity and deep integration with AWS primitives (Application Load Balancer,
+                CloudWatch, IAM, and Secrets Manager).</p>
+
+            <ul>
+                <li><strong>Task Definition:</strong> A declarative JSON blueprint describing one or more containers
+                    (Docker image, vCPU, memory limits, port mappings, environment variables, and log configuration).
+                </li>
+                <li><strong>Task:</strong> An individual running instantiation of a Task Definition.</li>
+                <li><strong>Service:</strong> A manager that runs and maintains a specified number of task instances,
+                    orchestrates rolling updates with zero downtime, and handles dynamic registration with an
+                    Application Load Balancer (ALB).</li>
+                <li><strong>Launch Types:</strong>
+                    <ul>
+                        <li><strong>AWS Fargate (Serverless):</strong> Run containers on demand without provisioning,
+                            configuring, or scaling EC2 worker instances. You pay strictly for the vCPU and memory
+                            allocated per second.</li>
+                        <li><strong>EC2 Launch Type:</strong> Manage your own cluster of EC2 instances with the ECS
+                            container agent. Best for GPU acceleration, predictable baselines, and optimizing costs with
+                            EC2 Spot instances.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <pre><code>// Example: Minimal Amazon ECS Task Definition (JSON)
+{
+  "family": "api-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/ecsTaskAppRole",
+  "containerDefinitions": [
+    {
+      "name": "web-api",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/web-api:v1.0.0",
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp" }],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/web-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}</code></pre>
+
+            <h3>2. Amazon EKS (Elastic Kubernetes Service)</h3>
+            <p><strong>Amazon EKS</strong> provides managed upstream Kubernetes across multiple Availability Zones. AWS
+                manages the availability, scalability, and security of the Kubernetes control plane (API server, etcd),
+                while you deploy standard Kubernetes workloads.</p>
+
+            <ul>
+                <li><strong>Open Standards &amp; Portability:</strong> Deploy with standard Kubernetes manifests, Helm
+                    charts, Ingress controllers, and GitOps tools (ArgoCD, Flux). Perfect for multi-cloud or hybrid
+                    enterprise architectures.</li>
+                <li><strong>Worker Compute Options:</strong>
+                    <ul>
+                        <li><strong>Managed Node Groups:</strong> AWS automatically provisions, updates, and scales EC2
+                            worker nodes in an Auto Scaling Group.</li>
+                        <li><strong>Karpenter Autoscaling:</strong> Fast, open-source node autoscaler designed for
+                            Kubernetes that dynamically provisions right-sized compute nodes in seconds based on pending
+                            pod workload requests.</li>
+                        <li><strong>AWS Fargate for EKS:</strong> Serverless execution of Kubernetes pods with pod-level
+                            isolation and zero node management.</li>
+                    </ul>
+                </li>
+                <li><strong>EKS Pod Identity &amp; IRSA:</strong> Connect AWS IAM roles directly to Kubernetes
+                    <code>ServiceAccount</code> resources so microservice pods access AWS resources (S3, DynamoDB)
+                    without requiring node-level permissions.</li>
+            </ul>
+
+            <div class="concept-card">
+                <h3>Decision Guide: Amazon ECS vs. Amazon EKS</h3>
+                <ul>
+                    <li><strong>Choose Amazon ECS if:</strong> You want a straightforward, AWS-native container platform
+                        with minimal operational overhead, standard microservices or web APIs, and direct integration
+                        into AWS IAM, ALB, and CloudWatch.</li>
+                    <li><strong>Choose Amazon EKS if:</strong> You already have a Kubernetes ecosystem (Helm, CRDs,
+                        service meshes like Istio), require multi-cloud or hybrid portability, or run complex
+                        distributed systems requiring advanced Kubernetes operators and tooling.</li>
+                </ul>
+            </div>
+
+            <h2 id="6-s3-object-storage"><a id="5-s3-object-storage"></a>6. Amazon S3: Object Storage &amp; Presigned
+                URLs<a class="headerlink" href="#6-s3-object-storage" title="Permanent link">#</a></h2>
             <p><strong>Amazon Simple Storage Service (S3)</strong> is scalable, durable (99.999999999% 11 9's),
                 high-availability object storage for files, media assets, backups, and static websites.</p>
 
@@ -186,8 +294,8 @@ export async function getUploadUrl(filename, contentType) {
   return await getSignedUrl(s3, command, { expiresIn: 900 });
 }</code></pre>
 
-            <h2 id="6-vpc-cloud-networking">6. Amazon VPC: Subnets, NAT &amp; Security Groups<a class="headerlink"
-                    href="#6-vpc-cloud-networking" title="Permanent link">#</a></h2>
+            <h2 id="7-vpc-cloud-networking">7. Amazon VPC: Subnets, NAT &amp; Security Groups<a class="headerlink"
+                    href="#7-vpc-cloud-networking" title="Permanent link">#</a></h2>
             <p>Every cloud application runs within a <strong>Virtual Private Cloud (VPC)</strong>:</p>
 
             <ol>
@@ -200,8 +308,8 @@ export async function getUploadUrl(filename, contentType) {
                     connections.</li>
             </ol>
 
-            <h2 id="7-rds-and-relational-databases">7. Amazon RDS &amp; Aurora Relational Databases<a class="headerlink"
-                    href="#7-rds-and-relational-databases" title="Permanent link">#</a></h2>
+            <h2 id="8-rds-and-relational-databases">8. Amazon RDS &amp; Aurora Relational Databases<a class="headerlink"
+                    href="#8-rds-and-relational-databases" title="Permanent link">#</a></h2>
             <p><strong>Amazon Relational Database Service (RDS)</strong> automates hardware provisioning, database
                 setup, patching, and backups for PostgreSQL, MySQL, and MariaDB.</p>
 
@@ -214,8 +322,8 @@ export async function getUploadUrl(filename, contentType) {
                     5x throughput of standard MySQL and 3x of PostgreSQL, with instant storage autoscaling.</li>
             </ul>
 
-            <h2 id="8-api-gateway">8. Amazon API Gateway: REST &amp; HTTP APIs<a class="headerlink"
-                    href="#8-api-gateway" title="Permanent link">#</a></h2>
+            <h2 id="9-api-gateway">9. Amazon API Gateway: REST &amp; HTTP APIs<a class="headerlink"
+                    href="#9-api-gateway" title="Permanent link">#</a></h2>
             <p><strong>Amazon API Gateway</strong> is a fully managed service that makes it easy for developers to
                 create, publish, maintain, monitor, and secure APIs at any scale.</p>
 
@@ -229,22 +337,23 @@ export async function getUploadUrl(filename, contentType) {
                 </ul>
             </div>
 
-            <h2 id="9-sqs-and-sns-messaging">9. Asynchronous Messaging: SQS &amp; SNS<a class="headerlink"
-                    href="#9-sqs-and-sns-messaging" title="Permanent link">#</a></h2>
+            <h2 id="10-sqs-and-sns-messaging">10. Asynchronous Messaging: SQS &amp; SNS<a class="headerlink"
+                    href="#10-sqs-and-sns-messaging" title="Permanent link">#</a></h2>
             <p>Monolithic request-response chains fail when downstream services slow down. Decouple services using
                 asynchronous messaging queues:</p>
 
             <ol>
                 <li><strong>Amazon SQS (Queue &bull; 1-to-1):</strong> A message queue where worker pools pull jobs.
                     Features <em>Visibility Timeout</em> (prevents other workers from processing the same job) and
-                    <em>Dead-Letter Queues (DLQ)</em> for jobs that repeatedly fail.</li>
+                    <em>Dead-Letter Queues (DLQ)</em> for jobs that repeatedly fail.
+                </li>
                 <li><strong>Amazon SNS (Pub/Sub &bull; 1-to-Many):</strong> A publisher sends a message to an SNS topic;
                     SNS fans it out simultaneously to multiple subscribers (SQS queues, HTTP webhooks, Lambda functions,
                     emails).</li>
             </ol>
 
-            <h2 id="10-secrets-and-config">10. AWS Secrets Manager &amp; SSM Parameter Store<a class="headerlink"
-                    href="#10-secrets-and-config" title="Permanent link">#</a></h2>
+            <h2 id="11-secrets-and-config">11. AWS Secrets Manager &amp; SSM Parameter Store<a class="headerlink"
+                    href="#11-secrets-and-config" title="Permanent link">#</a></h2>
             <p>Decouple secrets and configuration values from source code:</p>
 
             <ul>
@@ -254,8 +363,8 @@ export async function getUploadUrl(filename, contentType) {
                     database credentials with automated credential rotation.</li>
             </ul>
 
-            <h2 id="11-cloudwatch-observability">11. Amazon CloudWatch: Logs, Metrics &amp; Alarms<a class="headerlink"
-                    href="#11-cloudwatch-observability" title="Permanent link">#</a></h2>
+            <h2 id="12-cloudwatch-observability">12. Amazon CloudWatch: Logs, Metrics &amp; Alarms<a class="headerlink"
+                    href="#12-cloudwatch-observability" title="Permanent link">#</a></h2>
             <p><strong>Amazon CloudWatch</strong> collects monitoring and operational data in the form of logs, metrics,
                 and events:</p>
 
@@ -265,12 +374,28 @@ fields @timestamp, @message
 | sort @timestamp desc
 | limit 10</code></pre>
 
-            <h2 id="12-aws-cheat-sheet">12. Developer AWS Quick Reference &amp; CLI<a class="headerlink"
-                    href="#12-aws-cheat-sheet" title="Permanent link">#</a></h2>
+            <h2 id="13-aws-cheat-sheet">13. Developer AWS Quick Reference &amp; CLI<a class="headerlink"
+                    href="#13-aws-cheat-sheet" title="Permanent link">#</a></h2>
             <div class="concept-card">
                 <h3>Daily Essential AWS CLI Commands</h3>
                 <pre><code># Check current authenticated caller identity
 aws sts get-caller-identity
+
+# ECR &amp; Container Push
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+docker build -t web-api .
+docker tag web-api:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/web-api:v1.0.0
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/web-api:v1.0.0
+
+# ECS Operations
+aws ecs list-clusters
+aws ecs list-tasks --cluster production
+aws ecs update-service --cluster production --service web-api --force-new-deployment
+
+# EKS Operations
+aws eks update-kubeconfig --region us-east-1 --name production-cluster
+kubectl get nodes
+kubectl get pods -A
 
 # S3 File Operations
 aws s3 ls
@@ -287,8 +412,8 @@ aws secretsmanager get-secret-value --secret-id app/prod/db</code></pre>
 
             <blockquote>
                 <p><strong>Next Steps:</strong> Advance to production architectures, DynamoDB single-table design, and
-                    ECS Fargate in the <a href="aws-detailed-course.html">AWS Detailed Course</a>. Return to the <a
-                        href="../../index.html">TechToday Homepage</a>.</p>
+                    advanced ECS &amp; EKS patterns in the <a href="aws-detailed-course.html">AWS Detailed Course</a>.
+                    Return to the <a href="../../index.html">TechToday Homepage</a>.</p>
             </blockquote>
         </article>
     </main>
