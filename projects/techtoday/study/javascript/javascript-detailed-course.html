@@ -20,6 +20,7 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
   <link rel="stylesheet" href="javascript-study.css" />
   <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="stylesheet" href="../diagram-style.css" />
   <style>
     .study-diagram {
       margin: 2rem 0;
@@ -160,112 +161,145 @@
       <div class="study-diagram" aria-label="V8 Engine Compilation Pipeline Diagram">
         <div class="study-diagram-header">
           <span class="study-diagram-title">Figure 1.1: Google V8 Engine JIT Pipeline &amp; Deoptimization</span>
-          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Parser &bull; Ignition Bytecode
-            &bull; TurboFan JIT &bull; Bailout</span>
+          <div class="diagram-actions">
+            <span class="study-diagram-badge"><span class="badge-pulse"></span>V8 INTERNALS</span>
+            <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 1.1">⛶ Expand</button>
+          </div>
         </div>
-        <svg viewBox="0 0 840 270" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-          aria-label="V8 Engine Compilation and JIT Pipeline">
-          <defs>
-            <linearGradient id="v8Grad1" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1e293b" />
-              <stop offset="100%" stop-color="#0f172a" />
-            </linearGradient>
-            <linearGradient id="turboGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1e1b4b" />
-              <stop offset="100%" stop-color="#0f1026" />
-            </linearGradient>
-          </defs>
+        <div class="study-diagram-svg-wrap">
+          <svg viewBox="0 0 960 380" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="V8 Engine Compilation and JIT Pipeline">
+            <defs>
+              <linearGradient id="v8Grad1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1e293b" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+              <linearGradient id="turboGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1e1b4b" />
+                <stop offset="100%" stop-color="#0f1026" />
+              </linearGradient>
+            </defs>
 
-          <!-- Background container -->
-          <rect x="15" y="15" width="810" height="240" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+            <!-- Background container -->
+            <rect x="15" y="15" width="930" height="350" rx="10" fill="#0c1015" stroke="#1f2937" stroke-width="1.5" />
 
-          <!-- STEP 1: JS Source -->
-          <rect x="30" y="35" width="105" height="120" rx="6" fill="url(#v8Grad1)" stroke="#f7df1e"
-            stroke-width="1.2" />
-          <text x="82" y="58" fill="#f7df1e" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">JS SOURCE</text>
-          <text x="82" y="80" fill="#f8fafc" font-size="10" font-family="monospace" text-anchor="middle">function
-            add(a,b)</text>
-          <text x="82" y="95" fill="#f8fafc" font-size="10" font-family="monospace" text-anchor="middle">{ return a + b
-            }</text>
-          <text x="82" y="125" fill="#94a3b8" font-size="8.5" font-family="sans-serif" text-anchor="middle">UTF-16
-            stream</text>
+            <!-- STEP 1: JS Source -->
+            <rect x="30" y="35" width="135" height="175" rx="8" fill="url(#v8Grad1)" stroke="#f7df1e"
+              stroke-width="1.5" />
+            <rect x="40" y="45" width="115" height="26" rx="4" fill="#854d0e" fill-opacity="0.3" stroke="#eab308"
+              stroke-width="0.8" />
+            <text x="97" y="63" fill="#facc15" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">1. JS SOURCE</text>
+            <rect x="40" y="80" width="115" height="70" rx="4" fill="#0b0f17" />
+            <text x="48" y="100" fill="#cbd5e1" font-size="11.5" font-family="monospace">function</text>
+            <text x="48" y="118" fill="#facc15" font-size="11.5" font-family="monospace">add(a, b) {</text>
+            <text x="48" y="136" fill="#38bdf8" font-size="11.5" font-family="monospace"> return a + b;</text>
+            <text x="48" y="150" fill="#cbd5e1" font-size="11.5" font-family="monospace">}</text>
+            <text x="97" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif" text-anchor="middle">UTF-16 Char
+              Stream</text>
 
-          <!-- Arrow 1 -> 2 -->
-          <path d="M 135 95 L 165 95" stroke="#f7df1e" stroke-width="2" class="dash-animated" />
+            <!-- Arrow 1 -> 2 -->
+            <path d="M 165 120 L 195 120" stroke="#f7df1e" stroke-width="2.5" class="dash-animated" />
 
-          <!-- STEP 2: Parser & AST -->
-          <rect x="165" y="35" width="125" height="120" rx="6" fill="url(#v8Grad1)" stroke="#38bdf8"
-            stroke-width="1.2" />
-          <text x="227" y="58" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">PARSER &amp; AST</text>
-          <text x="227" y="80" fill="#cbd5e1" font-size="9" font-family="sans-serif" text-anchor="middle">Syntax
-            validation</text>
-          <rect x="175" y="92" width="105" height="42" rx="4" fill="#0f172a" stroke="#334155" stroke-width="0.8" />
-          <text x="227" y="108" fill="#38bdf8" font-size="8.5" font-family="monospace" text-anchor="middle">AST Tree
-            Node</text>
-          <text x="227" y="122" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">BinaryOp:
-            '+'</text>
+            <!-- STEP 2: Parser & AST -->
+            <rect x="195" y="35" width="155" height="175" rx="8" fill="url(#v8Grad1)" stroke="#38bdf8"
+              stroke-width="1.5" />
+            <rect x="205" y="45" width="135" height="26" rx="4" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8"
+              stroke-width="0.8" />
+            <text x="272" y="63" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">2. PARSER &amp; AST</text>
+            <rect x="205" y="80" width="135" height="85" rx="4" fill="#0b0f17" stroke="#334155" stroke-width="0.8" />
+            <text x="215" y="100" fill="#38bdf8" font-size="11.5" font-weight="700" font-family="monospace">AST
+              BinaryOp</text>
+            <text x="215" y="118" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Operator: '+'</text>
+            <text x="215" y="136" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Left:
+              Identifier(a)</text>
+            <text x="215" y="154" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Right:
+              Identifier(b)</text>
+            <text x="272" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif" text-anchor="middle">Syntax
+              Validation</text>
 
-          <!-- Arrow 2 -> 3 -->
-          <path d="M 290 95 L 320 95" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+            <!-- Arrow 2 -> 3 -->
+            <path d="M 350 120 L 380 120" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
 
-          <!-- STEP 3: Ignition Interpreter -->
-          <rect x="320" y="35" width="150" height="120" rx="6" fill="url(#v8Grad1)" stroke="#f59e0b"
-            stroke-width="1.2" />
-          <text x="395" y="58" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">IGNITION (BYTECODE)</text>
-          <text x="395" y="78" fill="#fef08a" font-size="8.5" font-family="monospace" text-anchor="middle">Ldar a1 / Add
-            a0, [0]</text>
-          <text x="395" y="95" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Fast startup
-            execution</text>
-          <rect x="330" y="105" width="130" height="36" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="0.8" />
-          <text x="395" y="120" fill="#fbbf24" font-size="8" font-weight="700" font-family="monospace"
-            text-anchor="middle">Feedback Vector (IC)</text>
-          <text x="395" y="132" fill="#94a3b8" font-size="7.5" font-family="monospace" text-anchor="middle">Type: Smi
-            (Int32)</text>
+            <!-- STEP 3: Ignition Interpreter -->
+            <rect x="380" y="35" width="180" height="175" rx="8" fill="url(#v8Grad1)" stroke="#f59e0b"
+              stroke-width="1.5" />
+            <rect x="390" y="45" width="160" height="26" rx="4" fill="#d97706" fill-opacity="0.3" stroke="#f59e0b"
+              stroke-width="0.8" />
+            <text x="470" y="63" fill="#fbbf24" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">3. IGNITION BYTECODE</text>
+            <rect x="390" y="80" width="160" height="50" rx="4" fill="#1e2430" stroke="#f59e0b" stroke-width="0.8" />
+            <text x="400" y="100" fill="#fef08a" font-size="11" font-family="monospace">Ldar a1</text>
+            <text x="400" y="118" fill="#fef08a" font-size="11" font-family="monospace">Add a0, [feedback_idx]</text>
+            <rect x="390" y="135" width="160" height="42" rx="4" fill="#2d1b06" stroke="#f59e0b" stroke-width="0.8" />
+            <text x="470" y="153" fill="#fbbf24" font-size="11" font-weight="700" font-family="monospace"
+              text-anchor="middle">Feedback Vector (IC)</text>
+            <text x="470" y="169" fill="#cbd5e1" font-size="10.5" font-family="monospace" text-anchor="middle">Observed
+              Types: Smi (Int32)</text>
+            <text x="470" y="198" fill="#34d399" font-size="11" font-family="monospace" text-anchor="middle">&check;
+              Fast Instant Startup</text>
 
-          <!-- Arrow 3 -> 4: Hot function check -->
-          <path d="M 470 95 L 500 95" stroke="#fbbf24" stroke-width="2" class="dash-animated" />
-          <text x="485" y="88" fill="#fbbf24" font-size="8" font-family="monospace" text-anchor="middle">Hot?</text>
+            <!-- Arrow 3 -> 4: Hot function check -->
+            <path d="M 560 120 L 595 120" stroke="#fbbf24" stroke-width="2.5" class="dash-animated" />
+            <text x="577" y="110" fill="#fbbf24" font-size="11" font-weight="700" font-family="monospace"
+              text-anchor="middle">Hot?</text>
 
-          <!-- STEP 4: TurboFan JIT Compiler -->
-          <rect x="500" y="35" width="145" height="120" rx="6" fill="url(#turboGrad)" stroke="#8b5cf6"
-            stroke-width="1.2" />
-          <text x="572" y="58" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">TURBOFAN JIT</text>
-          <text x="572" y="78" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Sea-of-Nodes
-            IR</text>
-          <text x="572" y="93" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Inline
-            functions</text>
-          <text x="572" y="108" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Speculative
-            opt: Smi</text>
-          <text x="572" y="128" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">Compile to
-            ASM</text>
+            <!-- STEP 4: TurboFan JIT Compiler -->
+            <rect x="595" y="35" width="170" height="175" rx="8" fill="url(#turboGrad)" stroke="#8b5cf6"
+              stroke-width="1.5" />
+            <rect x="605" y="45" width="150" height="26" rx="4" fill="#7c3aed" fill-opacity="0.3" stroke="#8b5cf6"
+              stroke-width="0.8" />
+            <text x="680" y="63" fill="#c084fc" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">4. TURBOFAN JIT</text>
+            <rect x="605" y="80" width="150" height="85" rx="4" fill="#14112e" stroke="#8b5cf6" stroke-width="0.8" />
+            <text x="615" y="100" fill="#e9d5ff" font-size="11.5" font-family="sans-serif">&bull; Sea-of-Nodes IR
+              Graph</text>
+            <text x="615" y="120" fill="#e9d5ff" font-size="11.5" font-family="sans-serif">&bull; Dead code
+              elimination</text>
+            <text x="615" y="140" fill="#e9d5ff" font-size="11.5" font-family="sans-serif">&bull; Speculative
+              Inlining</text>
+            <text x="615" y="158" fill="#34d399" font-size="11" font-family="monospace">Assumes: Smi + Smi</text>
+            <text x="680" y="195" fill="#a78bfa" font-size="11" font-family="sans-serif" text-anchor="middle">Multi-Tier
+              Compilation</text>
 
-          <!-- Arrow 4 -> 5 -->
-          <path d="M 645 95 L 675 95" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+            <!-- Arrow 4 -> 5 -->
+            <path d="M 765 120 L 795 120" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
 
-          <!-- STEP 5: Optimized Machine Code -->
-          <rect x="675" y="35" width="135" height="120" rx="6" fill="#0f1d19" stroke="#10b981" stroke-width="1.5" />
-          <text x="742" y="58" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">NATIVE MACHINE CODE</text>
-          <text x="742" y="80" fill="#a7f3d0" font-size="8.5" font-family="monospace" text-anchor="middle">add %edi,
-            %esi</text>
-          <text x="742" y="95" fill="#a7f3d0" font-size="8.5" font-family="monospace" text-anchor="middle">mov %esi,
-            %eax</text>
-          <text x="742" y="110" fill="#a7f3d0" font-size="8.5" font-family="monospace" text-anchor="middle">ret</text>
-          <text x="742" y="135" fill="#34d399" font-size="8.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">NEAR-C SPEED</text>
+            <!-- STEP 5: Optimized Native Machine Code -->
+            <rect x="795" y="35" width="140" height="175" rx="8" fill="#0d211a" stroke="#10b981" stroke-width="1.8" />
+            <rect x="805" y="45" width="120" height="26" rx="4" fill="#059669" fill-opacity="0.3" stroke="#10b981"
+              stroke-width="0.8" />
+            <text x="865" y="63" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">5. NATIVE ASM</text>
+            <rect x="805" y="80" width="120" height="85" rx="4" fill="#071813" />
+            <text x="815" y="100" fill="#a7f3d0" font-size="11" font-family="monospace">add %edi, %esi</text>
+            <text x="815" y="120" fill="#a7f3d0" font-size="11" font-family="monospace">mov %esi, %eax</text>
+            <text x="815" y="140" fill="#a7f3d0" font-size="11" font-family="monospace">retq</text>
+            <text x="815" y="158" fill="#38bdf8" font-size="10.5" font-family="monospace">Zero overhead</text>
+            <text x="865" y="195" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">NEAR-C SPEED</text>
 
-          <!-- DEOPTIMIZATION BAILOUT PATH (Curved return from Native to Ignition) -->
-          <path d="M 742 155 C 742 225, 395 225, 395 160" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="4 3" />
-          <rect x="510" y="205" width="170" height="24" rx="4" fill="#3b1216" stroke="#ef4444" stroke-width="0.8" />
-          <text x="595" y="221" fill="#fca5a5" font-size="8.5" font-family="monospace" text-anchor="middle">&larr;
-            DEOPTIMIZATION (BAILOUT)</text>
-          <text x="595" y="243" fill="#f87171" font-size="8" font-family="sans-serif" text-anchor="middle">Occurs when
-            parameter type changes (e.g. add("foo", "bar"))</text>
-        </svg>
+            <!-- DEOPTIMIZATION BAILOUT PATH (Curved return from Native to Ignition) -->
+            <path d="M 865 210 C 865 305, 470 305, 470 215" stroke="#ef4444" stroke-width="2.2"
+              stroke-dasharray="6 4" />
+            <polygon points="470,210 464,222 476,222" fill="#ef4444" />
+
+            <rect x="520" y="270" width="310" height="50" rx="6" fill="#3b1216" stroke="#ef4444" stroke-width="1.2" />
+            <text x="675" y="291" fill="#fca5a5" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">&larr; DEOPTIMIZATION / BAILOUT TRIGGER</text>
+            <text x="675" y="308" fill="#fecaca" font-size="11" font-family="sans-serif" text-anchor="middle">Type
+              polymorphism violated: e.g. caller passes add("foo", "bar")</text>
+
+            <rect x="35" y="270" width="380" height="75" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1" />
+            <text x="45" y="291" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace">&bull; Inline
+              Caches (IC) &amp; Polymorphism:</text>
+            <text x="45" y="311" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Monomorphic calls (&le;1 type)
+              achieve peak JIT inline speed.</text>
+            <text x="45" y="329" fill="#f59e0b" font-size="11.5" font-family="sans-serif">Megamorphic calls (&gt;4
+              hidden classes) drop to slow dictionary lookups.</text>
+          </svg>
+        </div>
         <div class="study-diagram-caption">
           Google V8 JIT Compilation Pipeline: Ignition starts quickly by executing bytecode and collecting type
           profiles. Hot functions are compiled by TurboFan into optimized native machine code. If type assumptions fail
@@ -315,118 +349,142 @@ console.log("Synchronous end");
       <div class="study-diagram" aria-label="Event Loop Execution Sequence Diagram">
         <div class="study-diagram-header">
           <span class="study-diagram-title">Figure 2.1: JavaScript Event Loop Execution &amp; Queue Draining</span>
-          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Call Stack &bull; Microtasks &bull;
-            Render &bull; Macrotasks</span>
+          <div class="diagram-actions">
+            <span class="study-diagram-badge"><span class="badge-pulse"></span>EVENT LOOP</span>
+            <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 2.1">⛶ Expand</button>
+          </div>
         </div>
-        <svg viewBox="0 0 840 310" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-          aria-label="Event Loop Queue Draining and Execution Flow">
-          <defs>
-            <linearGradient id="stackGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1e293b" />
-              <stop offset="100%" stop-color="#0f172a" />
-            </linearGradient>
-            <linearGradient id="microGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#192823" />
-              <stop offset="100%" stop-color="#0c1813" />
-            </linearGradient>
-            <linearGradient id="macroGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2a1f14" />
-              <stop offset="100%" stop-color="#17100b" />
-            </linearGradient>
-          </defs>
+        <div class="study-diagram-svg-wrap">
+          <svg viewBox="0 0 960 390" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="Event Loop Queue Draining and Execution Flow">
+            <defs>
+              <linearGradient id="stackGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1e293b" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+              <linearGradient id="microGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#192823" />
+                <stop offset="100%" stop-color="#0c1813" />
+              </linearGradient>
+              <linearGradient id="macroGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2a1f14" />
+                <stop offset="100%" stop-color="#17100b" />
+              </linearGradient>
+            </defs>
 
-          <!-- Background container -->
-          <rect x="15" y="15" width="810" height="280" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+            <!-- Background container -->
+            <rect x="15" y="15" width="930" height="360" rx="10" fill="#0c1015" stroke="#1f2937" stroke-width="1.5" />
 
-          <!-- CALL STACK (Left) -->
-          <rect x="30" y="30" width="165" height="250" rx="6" fill="url(#stackGrad)" stroke="#38bdf8"
-            stroke-width="1.2" />
-          <rect x="38" y="40" width="149" height="22" rx="3" fill="#0284c7" fill-opacity="0.3" />
-          <text x="112" y="55" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">CALL STACK (LIFO)</text>
+            <!-- CALL STACK (Left) -->
+            <rect x="30" y="30" width="190" height="330" rx="8" fill="url(#stackGrad)" stroke="#38bdf8"
+              stroke-width="1.6" />
+            <rect x="40" y="40" width="170" height="28" rx="4" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8"
+              stroke-width="0.8" />
+            <text x="125" y="59" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">1. CALL STACK (LIFO)</text>
 
-          <rect x="40" y="70" width="145" height="34" rx="4" fill="#0284c7" stroke="#38bdf8" stroke-width="1" />
-          <text x="112" y="91" fill="#ffffff" font-size="10" font-weight="600" font-family="monospace"
-            text-anchor="middle">console.log()</text>
+            <rect x="42" y="78" width="166" height="42" rx="4" fill="#0284c7" stroke="#38bdf8" stroke-width="1" />
+            <text x="125" y="104" fill="#ffffff" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">console.log()</text>
 
-          <rect x="40" y="112" width="145" height="34" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
-          <text x="112" y="133" fill="#cbd5e1" font-size="10" font-weight="600" font-family="monospace"
-            text-anchor="middle">fetchUserData()</text>
+            <rect x="42" y="128" width="166" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <text x="125" y="154" fill="#cbd5e1" font-size="12" font-weight="600" font-family="monospace"
+              text-anchor="middle">fetchUserData()</text>
 
-          <rect x="40" y="154" width="145" height="34" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
-          <text x="112" y="175" fill="#cbd5e1" font-size="10" font-weight="600" font-family="monospace"
-            text-anchor="middle">anonymous (main)</text>
+            <rect x="42" y="178" width="166" height="42" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <text x="125" y="204" fill="#cbd5e1" font-size="12" font-weight="600" font-family="monospace"
+              text-anchor="middle">anonymous (main)</text>
 
-          <text x="112" y="215" fill="#94a3b8" font-size="8.5" font-family="sans-serif" text-anchor="middle">Synchronous
-            Thread</text>
-          <text x="112" y="235" fill="#34d399" font-size="8" font-family="monospace" text-anchor="middle">1. Run until
-            empty</text>
+            <rect x="42" y="235" width="166" height="75" rx="4" fill="#0b0f17" stroke="#334155" stroke-width="0.8" />
+            <text x="125" y="255" fill="#f8fafc" font-size="11.5" font-weight="600" font-family="sans-serif"
+              text-anchor="middle">Synchronous Thread</text>
+            <text x="125" y="275" fill="#34d399" font-size="11.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">&check; Runs to Completion</text>
+            <text x="125" y="295" fill="#94a3b8" font-size="11" font-family="sans-serif"
+              text-anchor="middle">Single-threaded execution</text>
 
-          <!-- FLOW: Stack to Event Loop -->
-          <path d="M 195 155 L 245 155" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+            <text x="125" y="342" fill="#38bdf8" font-size="11.5" font-family="monospace" text-anchor="middle">&darr;
+              Stack becomes empty</text>
 
-          <!-- EVENT LOOP COORDINATOR (Center) -->
-          <rect x="245" y="65" width="160" height="175" rx="8" fill="#151b24" stroke="#f7df1e" stroke-width="1.5" />
-          <text x="325" y="90" fill="#f7df1e" font-size="11" font-weight="700" font-family="monospace"
-            text-anchor="middle">EVENT LOOP</text>
+            <!-- FLOW: Stack to Event Loop -->
+            <path d="M 220 195 L 260 195" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
 
-          <!-- Rotating Loop Glyphs -->
-          <circle cx="325" cy="140" r="36" stroke="#f7df1e" stroke-width="2" stroke-dasharray="8 4" fill="none"
-            class="loop-indicator" />
-          <text x="325" y="144" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">TICK</text>
+            <!-- EVENT LOOP COORDINATOR (Center) -->
+            <rect x="260" y="70" width="190" height="250" rx="8" fill="#151b24" stroke="#f7df1e" stroke-width="1.8" />
+            <rect x="270" y="80" width="170" height="28" rx="4" fill="#854d0e" fill-opacity="0.3" stroke="#eab308"
+              stroke-width="0.8" />
+            <text x="355" y="99" fill="#facc15" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">EVENT LOOP</text>
 
-          <text x="325" y="198" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Continuous
-            Arbiter</text>
-          <text x="325" y="215" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Never blocks
-            main</text>
+            <!-- Rotating Loop Glyphs -->
+            <circle cx="355" cy="165" r="44" stroke="#f7df1e" stroke-width="2.5" stroke-dasharray="10 5" fill="none"
+              class="loop-indicator" />
+            <text x="355" y="171" fill="#f8fafc" font-size="13" font-weight="700" font-family="monospace"
+              text-anchor="middle">TICK</text>
 
-          <!-- QUEUES CONTAINER (Right) -->
-          <!-- 1. MICROTASKS (High Priority) -->
-          <rect x="435" y="30" width="375" height="110" rx="6" fill="url(#microGrad)" stroke="#10b981"
-            stroke-width="1.2" />
-          <rect x="445" y="40" width="355" height="22" rx="3" fill="#059669" fill-opacity="0.3" />
-          <text x="622" y="55" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">2. MICROTASKS (DRAINED COMPLETELY BEFORE RENDER)</text>
+            <text x="355" y="235" fill="#cbd5e1" font-size="12" font-weight="600" font-family="sans-serif"
+              text-anchor="middle">Continuous Arbiter</text>
+            <text x="355" y="255" fill="#facc15" font-size="11.5" font-family="monospace"
+              text-anchor="middle">Coordinates Queues</text>
+            <text x="355" y="275" fill="#94a3b8" font-size="11" font-family="sans-serif"
+              text-anchor="middle">Non-blocking dispatch</text>
+            <text x="355" y="298" fill="#34d399" font-size="11" font-family="monospace" text-anchor="middle">Microtasks
+              &gt; Render &gt; Tasks</text>
 
-          <rect x="445" y="70" width="170" height="58" rx="4" fill="#13261e" stroke="#059669" stroke-width="0.8" />
-          <text x="455" y="88" fill="#34d399" font-size="9" font-weight="700" font-family="monospace">Promise.then /
-            catch</text>
-          <text x="455" y="103" fill="#a7f3d0" font-size="8" font-family="sans-serif">Resolved promise chain</text>
-          <text x="455" y="117" fill="#cbd5e1" font-size="8" font-family="monospace">Pushed immediately</text>
+            <!-- QUEUES CONTAINER (Right) -->
+            <!-- 1. MICROTASKS (High Priority) -->
+            <rect x="480" y="30" width="450" height="135" rx="8" fill="url(#microGrad)" stroke="#10b981"
+              stroke-width="1.6" />
+            <rect x="490" y="40" width="430" height="28" rx="4" fill="#059669" fill-opacity="0.3" stroke="#10b981"
+              stroke-width="0.8" />
+            <text x="705" y="59" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">2. MICROTASK QUEUE (DRAINED UNTIL COMPLETELY EMPTY)</text>
 
-          <rect x="625" y="70" width="175" height="58" rx="4" fill="#13261e" stroke="#059669" stroke-width="0.8" />
-          <text x="635" y="88" fill="#34d399" font-size="9" font-weight="700"
-            font-family="monospace">queueMicrotask()</text>
-          <text x="635" y="103" fill="#a7f3d0" font-size="8" font-family="sans-serif">process.nextTick (Node.js)</text>
-          <text x="635" y="117" fill="#38bdf8" font-size="8" font-family="monospace">PRIORITY: HIGHEST</text>
+            <rect x="495" y="78" width="205" height="75" rx="5" fill="#13261e" stroke="#059669" stroke-width="1" />
+            <text x="505" y="100" fill="#34d399" font-size="12" font-weight="700" font-family="monospace">Promise.then /
+              catch</text>
+            <text x="505" y="120" fill="#a7f3d0" font-size="11.5" font-family="sans-serif">Resolved promise
+              reactions</text>
+            <text x="505" y="138" fill="#cbd5e1" font-size="11" font-family="monospace">queueMicrotask(cb)</text>
 
-          <!-- 2. MACROTASKS (1 per tick) -->
-          <rect x="435" y="150" width="375" height="85" rx="6" fill="url(#macroGrad)" stroke="#f59e0b"
-            stroke-width="1.2" />
-          <rect x="445" y="160" width="355" height="20" rx="3" fill="#d97706" fill-opacity="0.3" />
-          <text x="622" y="174" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">3. MACROTASKS / TASKS (ONE PROCESSED PER TICK)</text>
+            <rect x="710" y="78" width="210" height="75" rx="5" fill="#13261e" stroke="#059669" stroke-width="1" />
+            <text x="720" y="100" fill="#34d399" font-size="12" font-weight="700"
+              font-family="monospace">process.nextTick (Node)</text>
+            <text x="720" y="120" fill="#a7f3d0" font-size="11.5" font-family="sans-serif">MutationObserver (DOM)</text>
+            <text x="720" y="138" fill="#38bdf8" font-size="11.5" font-weight="700" font-family="monospace">PRIORITY:
+              MAXIMUM</text>
 
-          <rect x="445" y="186" width="110" height="40" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="0.8" />
-          <text x="455" y="202" fill="#fbbf24" font-size="8.5" font-family="monospace">setTimeout()</text>
-          <text x="455" y="216" fill="#94a3b8" font-size="7.5" font-family="sans-serif">Timer expiration</text>
+            <!-- 2. MACROTASKS (1 per tick) -->
+            <rect x="480" y="175" width="450" height="115" rx="8" fill="url(#macroGrad)" stroke="#f59e0b"
+              stroke-width="1.6" />
+            <rect x="490" y="185" width="430" height="26" rx="4" fill="#d97706" fill-opacity="0.3" stroke="#f59e0b"
+              stroke-width="0.8" />
+            <text x="705" y="203" fill="#fbbf24" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">3. MACROTASKS / TASK QUEUE (EXACTLY ONE PER TICK)</text>
 
-          <rect x="565" y="186" width="110" height="40" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="0.8" />
-          <text x="575" y="202" fill="#fbbf24" font-size="8.5" font-family="monospace">setInterval()</text>
-          <text x="575" y="216" fill="#94a3b8" font-size="7.5" font-family="sans-serif">Interval callback</text>
+            <rect x="495" y="220" width="135" height="58" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="1" />
+            <text x="505" y="240" fill="#fbbf24" font-size="11.5" font-weight="700"
+              font-family="monospace">setTimeout()</text>
+            <text x="505" y="260" fill="#cbd5e1" font-size="11" font-family="sans-serif">Timer callbacks</text>
 
-          <rect x="685" y="186" width="115" height="40" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="0.8" />
-          <text x="695" y="202" fill="#fbbf24" font-size="8.5" font-family="monospace">I/O &bull; UI Events</text>
-          <text x="695" y="216" fill="#94a3b8" font-size="7.5" font-family="sans-serif">Click &bull; Network</text>
+            <rect x="640" y="220" width="135" height="58" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="1" />
+            <text x="650" y="240" fill="#fbbf24" font-size="11.5" font-weight="700"
+              font-family="monospace">setInterval()</text>
+            <text x="650" y="260" fill="#cbd5e1" font-size="11" font-family="sans-serif">Periodic loops</text>
 
-          <!-- 3. RENDER PHASE (Bottom) -->
-          <rect x="435" y="243" width="375" height="37" rx="5" fill="#1e1e38" stroke="#8b5cf6" stroke-width="1" />
-          <text x="450" y="266" fill="#c084fc" font-size="9.5" font-weight="700" font-family="monospace">BROWSER RENDER
-            PHASE:</text>
-          <text x="615" y="266" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">requestAnimationFrame &rarr;
-            Style Recalc &rarr; Layout &rarr; Paint</text>
-        </svg>
+            <rect x="785" y="220" width="135" height="58" rx="4" fill="#251a10" stroke="#f59e0b" stroke-width="1" />
+            <text x="795" y="240" fill="#fbbf24" font-size="11.5" font-weight="700" font-family="monospace">I/O &amp;
+              Events</text>
+            <text x="795" y="260" fill="#cbd5e1" font-size="11" font-family="sans-serif">Click, Network</text>
+
+            <!-- 3. RENDER PHASE (Bottom) -->
+            <rect x="480" y="300" width="450" height="60" rx="6" fill="#1e1e38" stroke="#8b5cf6" stroke-width="1.4" />
+            <text x="495" y="324" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace">BROWSER RENDER
+              PHASE (60Hz / 120Hz V-Sync):</text>
+            <text x="495" y="344" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">requestAnimationFrame()
+              &rarr; Style Recalculation &rarr; Layout (Reflow) &rarr; Paint</text>
+          </svg>
+        </div>
         <div class="study-diagram-caption">
           Event Loop execution sequence: Synchronous code runs on the Call Stack until empty. The Event Loop then drains
           the entire Microtask Queue (<code style="color: #34d399;">Promise.then</code>) before optionally triggering
@@ -451,113 +509,142 @@ console.log("Synchronous end");
         <div class="study-diagram-header">
           <span class="study-diagram-title">Figure 3.1: V8 Generational Heap Architecture &amp; Garbage
             Collection</span>
-          <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Young Generation &bull; Cheney
-            Scavenge &bull; Mark-Sweep Old Space</span>
+          <div class="diagram-actions">
+            <span class="study-diagram-badge"><span class="badge-pulse"></span>V8 HEAP &amp; GC</span>
+            <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 3.1">⛶ Expand</button>
+          </div>
         </div>
-        <svg viewBox="0 0 840 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-          aria-label="V8 Heap Architecture and Generational GC">
-          <defs>
-            <linearGradient id="newGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#14261d" />
-              <stop offset="100%" stop-color="#0c1813" />
-            </linearGradient>
-            <linearGradient id="oldGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#1e1b4b" />
-              <stop offset="100%" stop-color="#0f1026" />
-            </linearGradient>
-          </defs>
+        <div class="study-diagram-svg-wrap">
+          <svg viewBox="0 0 960 390" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="V8 Heap Architecture and Generational GC">
+            <defs>
+              <linearGradient id="newGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#14261d" />
+                <stop offset="100%" stop-color="#0c1813" />
+              </linearGradient>
+              <linearGradient id="oldGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1e1b4b" />
+                <stop offset="100%" stop-color="#0f1026" />
+              </linearGradient>
+            </defs>
 
-          <!-- Background container -->
-          <rect x="15" y="15" width="810" height="250" rx="8" fill="#0c1015" stroke="#1f2937" stroke-width="1" />
+            <!-- Background container -->
+            <rect x="15" y="15" width="930" height="360" rx="10" fill="#0c1015" stroke="#1f2937" stroke-width="1.5" />
 
-          <!-- NEW SPACE (Young Generation) -->
-          <rect x="30" y="30" width="350" height="220" rx="6" fill="url(#newGrad)" stroke="#10b981"
-            stroke-width="1.2" />
-          <rect x="40" y="40" width="330" height="22" rx="3" fill="#059669" fill-opacity="0.3" />
-          <text x="205" y="55" fill="#34d399" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">NEW SPACE / YOUNG GENERATION (1 - 64 MB)</text>
+            <!-- NEW SPACE (Young Generation) -->
+            <rect x="30" y="30" width="410" height="330" rx="8" fill="url(#newGrad)" stroke="#10b981"
+              stroke-width="1.6" />
+            <rect x="40" y="40" width="390" height="28" rx="4" fill="#059669" fill-opacity="0.3" stroke="#10b981"
+              stroke-width="0.8" />
+            <text x="235" y="59" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">NEW SPACE / YOUNG GENERATION (1 - 64 MB)</text>
 
-          <!-- From Space -->
-          <rect x="45" y="72" width="150" height="110" rx="4" fill="#132a20" stroke="#059669" stroke-width="0.8" />
-          <text x="120" y="90" fill="#34d399" font-size="9.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">Semi-Space: FROM</text>
-          <rect x="55" y="100" width="60" height="22" rx="3" fill="#059669" />
-          <text x="85" y="115" fill="#ffffff" font-size="8.5" font-family="monospace" text-anchor="middle">Live
-            Obj</text>
-          <rect x="125" y="100" width="60" height="22" rx="3" fill="#334155" />
-          <text x="155" y="115" fill="#94a3b8" font-size="8.5" font-family="monospace" text-anchor="middle">Dead
-            Obj</text>
-          <rect x="55" y="130" width="60" height="22" rx="3" fill="#059669" />
-          <text x="85" y="145" fill="#ffffff" font-size="8.5" font-family="monospace" text-anchor="middle">Live
-            Obj</text>
-          <text x="120" y="172" fill="#a7f3d0" font-size="8" font-family="sans-serif" text-anchor="middle">New objects
-            land here</text>
+            <!-- From Space -->
+            <rect x="45" y="80" width="180" height="155" rx="6" fill="#132a20" stroke="#059669" stroke-width="1" />
+            <text x="135" y="103" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Semi-Space: FROM</text>
+            <rect x="55" y="115" width="75" height="26" rx="4" fill="#059669" />
+            <text x="92" y="132" fill="#ffffff" font-size="11" font-weight="600" font-family="monospace"
+              text-anchor="middle">Live Obj A</text>
+            <rect x="140" y="115" width="75" height="26" rx="4" fill="#334155" />
+            <text x="177" y="132" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Dead
+              Obj</text>
+            <rect x="55" y="150" width="75" height="26" rx="4" fill="#059669" />
+            <text x="92" y="167" fill="#ffffff" font-size="11" font-weight="600" font-family="monospace"
+              text-anchor="middle">Live Obj B</text>
+            <rect x="140" y="150" width="75" height="26" rx="4" fill="#334155" />
+            <text x="177" y="167" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">Dead
+              Obj</text>
+            <text x="135" y="210" fill="#a7f3d0" font-size="11" font-family="sans-serif" text-anchor="middle">All new
+              allocations land here</text>
+            <text x="135" y="226" fill="#6ee7b7" font-size="10.5" font-family="monospace"
+              text-anchor="middle">Pointer-bump: O(1)</text>
 
-          <!-- To Space -->
-          <rect x="215" y="72" width="150" height="110" rx="4" fill="#132a20" stroke="#059669" stroke-width="0.8" />
-          <text x="290" y="90" fill="#34d399" font-size="9.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">Semi-Space: TO</text>
-          <rect x="225" y="100" width="60" height="22" rx="3" fill="#059669" />
-          <text x="255" y="115" fill="#ffffff" font-size="8.5" font-family="monospace"
-            text-anchor="middle">Copied</text>
-          <rect x="225" y="130" width="60" height="22" rx="3" fill="#059669" />
-          <text x="255" y="145" fill="#ffffff" font-size="8.5" font-family="monospace"
-            text-anchor="middle">Copied</text>
-          <text x="290" y="172" fill="#a7f3d0" font-size="8" font-family="sans-serif" text-anchor="middle">Dead memory
-            wiped bulk</text>
+            <!-- To Space -->
+            <rect x="245" y="80" width="180" height="155" rx="6" fill="#132a20" stroke="#059669" stroke-width="1" />
+            <text x="335" y="103" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Semi-Space: TO</text>
+            <rect x="255" y="115" width="75" height="26" rx="4" fill="#059669" />
+            <text x="292" y="132" fill="#ffffff" font-size="11" font-weight="600" font-family="monospace"
+              text-anchor="middle">Copied A</text>
+            <rect x="255" y="150" width="75" height="26" rx="4" fill="#059669" />
+            <text x="292" y="167" fill="#ffffff" font-size="11" font-weight="600" font-family="monospace"
+              text-anchor="middle">Copied B</text>
+            <rect x="340" y="115" width="75" height="61" rx="4" fill="#111c16" stroke="#059669" stroke-width="0.8"
+              stroke-dasharray="3 3" />
+            <text x="377" y="150" fill="#34d399" font-size="11" font-family="monospace" text-anchor="middle">Free
+              RAM</text>
+            <text x="335" y="210" fill="#a7f3d0" font-size="11" font-family="sans-serif" text-anchor="middle">Compacts
+              live memory</text>
+            <text x="335" y="226" fill="#6ee7b7" font-size="10.5" font-family="monospace" text-anchor="middle">Dead
+              space wiped bulk</text>
 
-          <text x="205" y="202" fill="#34d399" font-size="8.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">SCAVENGER (CHENEY'S ALGORITHM)</text>
-          <text x="205" y="222" fill="#cbd5e1" font-size="8" font-family="sans-serif" text-anchor="middle">Fast pointer
-            bump allocation &bull; 1-2ms pause</text>
-          <text x="205" y="238" fill="#94a3b8" font-size="8" font-family="sans-serif" text-anchor="middle">Survive 2
-            cycles &rarr; Promoted to Old Space</text>
+            <rect x="45" y="248" width="380" height="98" rx="6" fill="#0d1f17" stroke="#059669" stroke-width="1" />
+            <text x="235" y="270" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">SCAVENGER (CHENEY'S ALGORITHM)</text>
+            <text x="235" y="292" fill="#cbd5e1" font-size="11.5" font-family="sans-serif" text-anchor="middle">Fast
+              pointer-bump allocation &bull; 1-2ms minor pause</text>
+            <text x="235" y="312" fill="#a7f3d0" font-size="11.5" font-family="sans-serif" text-anchor="middle">Survives
+              2 GC cycles &rarr; Promoted (tenured) to Old Space</text>
+            <text x="235" y="332" fill="#facc15" font-size="11" font-family="monospace" text-anchor="middle">Role swap:
+              FROM &harr; TO spaces alternate</text>
 
-          <!-- PROMOTION STREAM ARROW -->
-          <path d="M 380 140 L 440 140" stroke="#f59e0b" stroke-width="2.5" class="dash-animated" />
-          <text x="410" y="130" fill="#fbbf24" font-size="8.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">TENURE</text>
+            <!-- PROMOTION STREAM ARROW -->
+            <path d="M 440 155 L 485 155" stroke="#f59e0b" stroke-width="3" class="dash-animated" />
+            <polygon points="485,155 473,149 473,161" fill="#f59e0b" />
+            <text x="462" y="142" fill="#fbbf24" font-size="11.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">TENURE</text>
 
-          <!-- OLD SPACE (Old Generation) -->
-          <rect x="440" y="30" width="370" height="220" rx="6" fill="url(#oldGrad)" stroke="#8b5cf6"
-            stroke-width="1.2" />
-          <rect x="450" y="40" width="350" height="22" rx="3" fill="#7c3aed" fill-opacity="0.3" />
-          <text x="625" y="55" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace"
-            text-anchor="middle">OLD SPACE / OLD GENERATION (UP TO MULTI-GB)</text>
+            <!-- OLD SPACE (Old Generation) -->
+            <rect x="485" y="30" width="460" height="330" rx="8" fill="url(#oldGrad)" stroke="#8b5cf6"
+              stroke-width="1.6" />
+            <rect x="495" y="40" width="440" height="28" rx="4" fill="#7c3aed" fill-opacity="0.3" stroke="#8b5cf6"
+              stroke-width="0.8" />
+            <text x="715" y="59" fill="#c084fc" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">OLD SPACE / OLD GENERATION (UP TO MULTI-GB)</text>
 
-          <!-- Old Pointer Space -->
-          <rect x="455" y="72" width="165" height="110" rx="4" fill="#1b1836" stroke="#8b5cf6" stroke-width="0.8" />
-          <text x="537" y="90" fill="#c084fc" font-size="9.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">Old Pointer Space</text>
-          <text x="537" y="110" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Objects
-            with references</text>
-          <text x="537" y="125" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Closures
-            &bull; Object Trees</text>
-          <text x="537" y="140" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">DOM
-            references</text>
-          <text x="537" y="165" fill="#34d399" font-size="8" font-family="sans-serif" text-anchor="middle">Tri-color
-            marking</text>
+            <!-- Old Pointer Space -->
+            <rect x="500" y="80" width="205" height="155" rx="6" fill="#1b1836" stroke="#8b5cf6" stroke-width="1" />
+            <text x="602" y="103" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Old Pointer Space</text>
+            <text x="602" y="125" fill="#cbd5e1" font-size="11.5" font-family="sans-serif" text-anchor="middle">Objects
+              with outgoing pointers</text>
+            <text x="602" y="145" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Closures &amp; Lexical Scopes</text>
+            <text x="602" y="165" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Prototype inheritance chains</text>
+            <text x="602" y="185" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Detached DOM node trees</text>
+            <text x="602" y="215" fill="#34d399" font-size="11" font-weight="600" font-family="sans-serif"
+              text-anchor="middle">&check; Tri-color marking traversal</text>
 
-          <!-- Old Data Space & Large Objects -->
-          <rect x="630" y="72" width="170" height="110" rx="4" fill="#1b1836" stroke="#8b5cf6" stroke-width="0.8" />
-          <text x="715" y="90" fill="#c084fc" font-size="9.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">Old Data &amp; Large Obj</text>
-          <text x="715" y="110" fill="#cbd5e1" font-size="8.5" font-family="sans-serif" text-anchor="middle">Raw
-            payloads</text>
-          <text x="715" y="125" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Strings &bull;
-            TypedArrays</text>
-          <text x="715" y="140" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Large Object
-            Space (&gt;512KB)</text>
-          <text x="715" y="165" fill="#38bdf8" font-size="8" font-family="sans-serif" text-anchor="middle">Never moved
-            in memory</text>
+            <!-- Old Data Space & Large Objects -->
+            <rect x="720" y="80" width="215" height="155" rx="6" fill="#1b1836" stroke="#8b5cf6" stroke-width="1" />
+            <text x="827" y="103" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Old Data &amp; Large Obj</text>
+            <text x="827" y="125" fill="#cbd5e1" font-size="11.5" font-family="sans-serif" text-anchor="middle">Raw
+              unboxed payloads</text>
+            <text x="827" y="145" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Strings &amp; Text Buffers</text>
+            <text x="827" y="165" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Float64Array / TypedArray</text>
+            <text x="827" y="185" fill="#e9d5ff" font-size="11" font-family="monospace" text-anchor="middle">&bull;
+              Large Objects (&gt;512 KB)</text>
+            <text x="827" y="215" fill="#38bdf8" font-size="11" font-family="sans-serif" text-anchor="middle">Dedicated
+              non-moved virtual memory</text>
 
-          <text x="625" y="202" fill="#c084fc" font-size="8.5" font-weight="700" font-family="monospace"
-            text-anchor="middle">MAJOR GC: MARK-SWEEP-COMPACT</text>
-          <text x="625" y="222" fill="#cbd5e1" font-size="8" font-family="sans-serif" text-anchor="middle">Concurrent
-            background marking threads &bull; Parallel sweeping</text>
-          <text x="625" y="238" fill="#a78bfa" font-size="8" font-family="sans-serif" text-anchor="middle">Compacts
-            fragmented memory holes without long pauses</text>
-        </svg>
+            <!-- Major GC Box -->
+            <rect x="500" y="248" width="435" height="98" rx="6" fill="#15122e" stroke="#8b5cf6" stroke-width="1" />
+            <text x="717" y="270" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">MAJOR GC: MARK-SWEEP-COMPACT</text>
+            <text x="717" y="292" fill="#cbd5e1" font-size="11.5" font-family="sans-serif"
+              text-anchor="middle">Concurrent background marking threads &bull; Parallel sweeping</text>
+            <text x="717" y="312" fill="#a78bfa" font-size="11.5" font-family="sans-serif" text-anchor="middle">Compacts
+              fragmented heap holes without locking UI thread</text>
+            <text x="717" y="332" fill="#34d399" font-size="11" font-family="monospace" text-anchor="middle">&check;
+              Incremental marking avoids multi-second stop-the-world pauses</text>
+          </svg>
+        </div>
         <div class="study-diagram-caption">
           V8 Heap Memory partitioning: Ephemeral objects start in New Space and are cleaned in milliseconds by Cheney's
           Scavenge algorithm. Long-lived objects are tenured into Old Space, where a concurrent Mark-Sweep-Compact major
@@ -615,6 +702,126 @@ class Dog extends Animal {
 const myDog = new Dog("Buddy", "Golden Retriever");
 console.log(myDog instanceof Animal); // true</code></pre>
 
+      <!-- Figure 4.1: JavaScript Prototype Chain & Prototypal Inheritance -->
+      <div class="study-diagram" aria-label="JavaScript Prototype Chain and Inheritance Diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 4.1: JavaScript Prototype Chain &amp; Prototypal Inheritance</span>
+          <div class="diagram-actions">
+            <span class="study-diagram-badge"><span class="badge-pulse"></span>PROTOTYPE CHAIN</span>
+            <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 4.1">⛶ Expand</button>
+          </div>
+        </div>
+        <div class="study-diagram-svg-wrap">
+          <svg viewBox="0 0 960 410" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="JavaScript Prototype Chain Traversal and Property Shadowing">
+            <!-- Background Container -->
+            <rect x="15" y="15" width="930" height="380" rx="10" fill="#0c1015" stroke="#1f2937" stroke-width="1.5" />
+
+            <!-- Title Header -->
+            <rect x="25" y="25" width="910" height="30" rx="5" fill="#1e2430" stroke="#334155" stroke-width="1" />
+            <text x="480" y="45" fill="#facc15" font-size="13" font-weight="700" font-family="monospace"
+              text-anchor="middle">RUNTIME PROPERTY LOOKUP TRAVERSAL &bull; [[Prototype]] INTERNAL CHAIN</text>
+
+            <!-- Node 1: Instance (myDog) -->
+            <rect x="35" y="75" width="200" height="210" rx="8" fill="#131e2b" stroke="#38bdf8" stroke-width="1.8" />
+            <rect x="45" y="85" width="180" height="26" rx="4" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8"
+              stroke-width="0.8" />
+            <text x="135" y="103" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">INSTANCE: myDog</text>
+            <rect x="45" y="120" width="180" height="75" rx="4" fill="#091420" />
+            <text x="55" y="140" fill="#f8fafc" font-size="11.5" font-weight="600" font-family="monospace">Own
+              Properties:</text>
+            <text x="55" y="160" fill="#cbd5e1" font-size="11" font-family="monospace">name: "Buddy"</text>
+            <text x="55" y="180" fill="#cbd5e1" font-size="11" font-family="monospace">breed: "Golden Retr."</text>
+            <rect x="45" y="205" width="180" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+            <text x="55" y="225" fill="#facc15" font-size="11" font-weight="700"
+              font-family="monospace">[[Prototype]]:</text>
+            <text x="55" y="243" fill="#38bdf8" font-size="10.5" font-family="monospace">&rarr; Dog.prototype</text>
+            <text x="55" y="258" fill="#94a3b8" font-size="10" font-family="sans-serif">Object.getPrototypeOf()</text>
+
+            <!-- Arrow 1 -> 2 -->
+            <path d="M 235 235 L 270 235" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
+            <polygon points="270,235 260,230 260,240" fill="#38bdf8" />
+
+            <!-- Node 2: Dog.prototype -->
+            <rect x="270" y="75" width="200" height="210" rx="8" fill="#141926" stroke="#60a5fa" stroke-width="1.6" />
+            <rect x="280" y="85" width="180" height="26" rx="4" fill="#2563eb" fill-opacity="0.3" stroke="#60a5fa"
+              stroke-width="0.8" />
+            <text x="370" y="103" fill="#93c5fd" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Dog.prototype</text>
+            <rect x="280" y="120" width="180" height="75" rx="4" fill="#0b101c" />
+            <text x="290" y="140" fill="#f8fafc" font-size="11.5" font-weight="600" font-family="monospace">Prototype
+              Methods:</text>
+            <text x="290" y="160" fill="#34d399" font-size="11" font-family="monospace">bark() { ... }</text>
+            <text x="290" y="180" fill="#cbd5e1" font-size="11" font-family="monospace">constructor: Dog</text>
+            <rect x="280" y="205" width="180" height="65" rx="4" fill="#1e293b" stroke="#60a5fa" stroke-width="1" />
+            <text x="290" y="225" fill="#facc15" font-size="11" font-weight="700"
+              font-family="monospace">[[Prototype]]:</text>
+            <text x="290" y="243" fill="#60a5fa" font-size="10.5" font-family="monospace">&rarr; Animal.prototype</text>
+            <text x="290" y="258" fill="#94a3b8" font-size="10" font-family="sans-serif">Inherits Animal class</text>
+
+            <!-- Arrow 2 -> 3 -->
+            <path d="M 470 235 L 505 235" stroke="#60a5fa" stroke-width="2.5" class="dash-animated" />
+            <polygon points="505,235 495,230 495,240" fill="#60a5fa" />
+
+            <!-- Node 3: Animal.prototype -->
+            <rect x="505" y="75" width="200" height="210" rx="8" fill="#1a1528" stroke="#a78bfa" stroke-width="1.6" />
+            <rect x="515" y="85" width="180" height="26" rx="4" fill="#7c3aed" fill-opacity="0.3" stroke="#a78bfa"
+              stroke-width="0.8" />
+            <text x="605" y="103" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Animal.prototype</text>
+            <rect x="515" y="120" width="180" height="75" rx="4" fill="#100c1e" />
+            <text x="525" y="140" fill="#f8fafc" font-size="11.5" font-weight="600" font-family="monospace">Inherited
+              Methods:</text>
+            <text x="525" y="160" fill="#34d399" font-size="11" font-weight="700" font-family="monospace">makeSound() {
+              ... }</text>
+            <text x="525" y="180" fill="#cbd5e1" font-size="11" font-family="monospace">constructor: Animal</text>
+            <rect x="515" y="205" width="180" height="65" rx="4" fill="#1e293b" stroke="#a78bfa" stroke-width="1" />
+            <text x="525" y="225" fill="#facc15" font-size="11" font-weight="700"
+              font-family="monospace">[[Prototype]]:</text>
+            <text x="525" y="243" fill="#c084fc" font-size="10.5" font-family="monospace">&rarr; Object.prototype</text>
+            <text x="525" y="258" fill="#94a3b8" font-size="10" font-family="sans-serif">Root prototype object</text>
+
+            <!-- Arrow 3 -> 4 -->
+            <path d="M 705 235 L 740 235" stroke="#a78bfa" stroke-width="2.5" class="dash-animated" />
+            <polygon points="740,235 730,230 730,240" fill="#a78bfa" />
+
+            <!-- Node 4: Object.prototype & null -->
+            <rect x="740" y="75" width="200" height="210" rx="8" fill="#14211a" stroke="#34d399" stroke-width="1.6" />
+            <rect x="750" y="85" width="180" height="26" rx="4" fill="#059669" fill-opacity="0.3" stroke="#34d399"
+              stroke-width="0.8" />
+            <text x="840" y="103" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">Object.prototype</text>
+            <rect x="750" y="120" width="180" height="75" rx="4" fill="#0a1711" />
+            <text x="760" y="140" fill="#f8fafc" font-size="11" font-family="monospace">toString() / valueOf()</text>
+            <text x="760" y="160" fill="#cbd5e1" font-size="11" font-family="monospace">hasOwnProperty()</text>
+            <text x="760" y="180" fill="#cbd5e1" font-size="11" font-family="monospace">isPrototypeOf()</text>
+            <rect x="750" y="205" width="180" height="65" rx="4" fill="#3f1219" stroke="#ef4444" stroke-width="1" />
+            <text x="760" y="225" fill="#fca5a5" font-size="11" font-weight="700" font-family="monospace">[[Prototype]]:
+              null</text>
+            <text x="760" y="245" fill="#f87171" font-size="10.5" font-family="monospace">End of Chain</text>
+            <text x="760" y="260" fill="#fecaca" font-size="10" font-family="sans-serif">Returns undefined if
+              unfound</text>
+
+            <!-- Bottom Explanation Banner -->
+            <rect x="35" y="300" width="905" height="80" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1" />
+            <text x="50" y="322" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace">&bull; Property
+              Shadowing &amp; Traversal Dynamics:</text>
+            <text x="50" y="342" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">When calling
+              <code>myDog.makeSound()</code>, the engine checks <code>myDog</code> (miss), then
+              <code>Dog.prototype</code> (miss), then finds it on <code>Animal.prototype</code> (hit!).</text>
+            <text x="50" y="362" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">If you assign
+              <code>myDog.makeSound = fn</code>, it creates an own property on <code>myDog</code>, shadowing the
+              prototype without modifying parent classes.</text>
+          </svg>
+        </div>
+        <div class="study-diagram-caption">
+          Prototypal Inheritance and Property Lookup: Objects maintain an internal <code
+            style="color: #facc15;">[[Prototype]]</code> slot linking to their parent prototype. Property lookups
+          traverse upward until found or until terminating at <code style="color: #ef4444;">null</code>.
+        </div>
+      </div>
+
       <h2 id="5-execution-contexts-and-scope">5. Execution Contexts &amp; Lexical Scope<a class="headerlink"
           href="#5-execution-contexts-and-scope" title="Permanent link">#</a></h2>
       <p>An <strong>Execution Context</strong> is the environment in which JavaScript code is evaluated. Each context
@@ -628,6 +835,109 @@ console.log(myDog instanceof Animal); // true</code></pre>
           <code>ReferenceError</code>.
         </li>
       </ul>
+
+      <!-- Figure 5.1: Execution Context, Lexical Scope & Closures in Memory -->
+      <div class="study-diagram" aria-label="Execution Context and Closures Diagram">
+        <div class="study-diagram-header">
+          <span class="study-diagram-title">Figure 5.1: Execution Context, Lexical Scope &amp; Closures in Memory</span>
+          <div class="diagram-actions">
+            <span class="study-diagram-badge"><span class="badge-pulse"></span>CLOSURES &amp; SCOPE</span>
+            <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 5.1">⛶ Expand</button>
+          </div>
+        </div>
+        <div class="study-diagram-svg-wrap">
+          <svg viewBox="0 0 960 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="JavaScript Execution Context Stack and Heap Retained Closures">
+            <!-- Background Container -->
+            <rect x="15" y="15" width="930" height="390" rx="10" fill="#0c1015" stroke="#1f2937" stroke-width="1.5" />
+
+            <!-- Left Panel: Call Stack (Ephemeral Execution Frames) -->
+            <rect x="30" y="30" width="370" height="360" rx="8" fill="#111622" stroke="#38bdf8" stroke-width="1.6" />
+            <rect x="40" y="40" width="350" height="28" rx="4" fill="#0284c7" fill-opacity="0.3" stroke="#38bdf8"
+              stroke-width="0.8" />
+            <text x="215" y="59" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">CALL STACK (LIFO EXECUTION FRAMES)</text>
+
+            <!-- Top frame: inner() -->
+            <rect x="42" y="80" width="346" height="85" rx="5" fill="#1e293b" stroke="#34d399" stroke-width="1.2" />
+            <text x="55" y="102" fill="#34d399" font-size="12" font-weight="700" font-family="monospace">inner()
+              Execution Context (Active)</text>
+            <text x="55" y="122" fill="#cbd5e1" font-size="11" font-family="monospace">LexicalEnv: { y: 10 }</text>
+            <text x="55" y="140" fill="#a7f3d0" font-size="11" font-family="monospace">[[Scope]] Link &rarr; outer()
+              Closure Scope (Heap)</text>
+            <text x="55" y="156" fill="#38bdf8" font-size="10.5" font-family="monospace">this: undefined / window</text>
+
+            <!-- Middle frame: outer() popped -->
+            <rect x="42" y="175" width="346" height="85" rx="5" fill="#2d1218" stroke="#ef4444" stroke-width="1.2"
+              stroke-dasharray="4 4" />
+            <text x="55" y="197" fill="#f87171" font-size="12" font-weight="700" font-family="monospace">outer()
+              Execution Context (POPPED!)</text>
+            <text x="55" y="217" fill="#fca5a5" font-size="11" font-family="sans-serif">&bull; Function finished running
+              and returned inner</text>
+            <text x="55" y="235" fill="#fca5a5" font-size="11" font-family="sans-serif">&bull; Stack frame destroyed
+              from CPU call stack</text>
+            <text x="55" y="251" fill="#fbbf24" font-size="10.5" font-family="monospace">&starf; Lexical Environment
+              preserved on Heap!</text>
+
+            <!-- Bottom frame: Global Context -->
+            <rect x="42" y="270" width="346" height="105" rx="5" fill="#171e2e" stroke="#60a5fa" stroke-width="1" />
+            <text x="55" y="292" fill="#93c5fd" font-size="12" font-weight="700" font-family="monospace">Global
+              Execution Context (Base)</text>
+            <text x="55" y="312" fill="#cbd5e1" font-size="11" font-family="monospace">VariableEnv: { fn: outer, fn:
+              inner }</text>
+            <text x="55" y="330" fill="#cbd5e1" font-size="11" font-family="monospace">LexicalEnv: { config: "prod",
+              appName: "Tech" }</text>
+            <text x="55" y="348" fill="#60a5fa" font-size="11" font-family="monospace">[[Scope]]: null (Root of Scope
+              Chain)</text>
+            <text x="55" y="366" fill="#cbd5e1" font-size="10.5" font-family="monospace">this: globalThis (window /
+              global)</text>
+
+            <!-- Right Panel: V8 Memory Heap (Retained Closures & Objects) -->
+            <rect x="420" y="30" width="525" height="360" rx="8" fill="#131722" stroke="#8b5cf6" stroke-width="1.6" />
+            <rect x="430" y="40" width="505" height="28" rx="4" fill="#7c3aed" fill-opacity="0.3" stroke="#8b5cf6"
+              stroke-width="0.8" />
+            <text x="682" y="59" fill="#c084fc" font-size="12.5" font-weight="700" font-family="monospace"
+              text-anchor="middle">V8 MEMORY HEAP (RETAINED CLOSURE SCOPES)</text>
+
+            <!-- Closure Object on Heap -->
+            <rect x="440" y="80" width="485" height="135" rx="6" fill="#1c1633" stroke="#a78bfa" stroke-width="1.4" />
+            <rect x="450" y="90" width="465" height="24" rx="4" fill="#7c3aed" fill-opacity="0.2" />
+            <text x="682" y="107" fill="#e9d5ff" font-size="12" font-weight="700" font-family="monospace"
+              text-anchor="middle">outer() Lexical Environment (Retained Closure Scope)</text>
+            <text x="460" y="132" fill="#cbd5e1" font-size="11.5" font-family="monospace">let secretCounter = 42;</text>
+            <text x="460" y="152" fill="#cbd5e1" font-size="11.5" font-family="monospace">const apiKey =
+              "sk-live-987654";</text>
+            <text x="460" y="172" fill="#34d399" font-size="11.5" font-weight="600" font-family="sans-serif">&check;
+              Retained in RAM because inner.[[Scope]] holds a live reference!</text>
+            <text x="460" y="195" fill="#facc15" font-size="11" font-family="monospace">GC cannot reclaim this memory
+              while inner reference is alive.</text>
+
+            <!-- Connection Arrow from inner stack to Heap Closure -->
+            <path d="M 388 120 C 420 120, 420 145, 440 145" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+            <polygon points="440,145 428,140 428,150" fill="#34d399" />
+
+            <!-- Scope Chain Resolution Box -->
+            <rect x="440" y="230" width="485" height="145" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1" />
+            <text x="455" y="252" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace">&bull; Scope
+              Chain Resolution Walk (Identifier Lookup):</text>
+            <text x="455" y="274" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">When <code>inner()</code>
+              evaluates <code>secretCounter</code>:</text>
+            <text x="455" y="294" fill="#cbd5e1" font-size="11.5" font-family="monospace">1. Check inner Lexical
+              Environment &rarr; Not found</text>
+            <text x="455" y="314" fill="#cbd5e1" font-size="11.5" font-family="monospace">2. Traverse [[Scope]] to outer
+              Closure Scope &rarr; FOUND (42)!</text>
+            <text x="455" y="334" fill="#cbd5e1" font-size="11.5" font-family="monospace">3. (If not found) Traverse to
+              Global &rarr; ReferenceError if missing</text>
+            <text x="455" y="358" fill="#fb7185" font-size="11" font-family="sans-serif">&cross; Memory Leaks: Forgotten
+              timers retaining large closures block GC.</text>
+          </svg>
+        </div>
+        <div class="study-diagram-caption">
+          Execution Context and Closures: When <code style="color: #f87171;">outer()</code> finishes and pops from the
+          call stack, its lexical scope is not deallocated if <code style="color: #34d399;">inner()</code> maintains a
+          <code style="color: #facc15;">[[Scope]]</code> reference, preserving the closure in the V8 memory heap.
+        </div>
+      </div>
 
       <h2 id="6-the-this-keyword-mastery">6. The 'this' Keyword: All 4 Binding Rules<a class="headerlink"
           href="#6-the-this-keyword-mastery" title="Permanent link">#</a></h2>
@@ -756,6 +1066,7 @@ function throttle(fn, limit) {
 
   <button class="back-to-top" aria-label="Back to top">&uarr;</button>
   <script src="javascript-study.js"></script>
+  <script src="../diagram-modal.js"></script>
 </body>
 
 </html>

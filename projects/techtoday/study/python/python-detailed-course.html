@@ -18,6 +18,7 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="python-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
+    <link rel="stylesheet" href="../diagram-style.css" />
     <style>
         .study-diagram {
             margin: 2rem 0;
@@ -187,117 +188,143 @@
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 1.1: CPython Compilation &amp; Virtual Machine (PVM)
                         Architecture</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">AST &bull; Bytecode (.pyc)
-                        &bull; Evaluation Loop &bull; GIL</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>CPYTHON RUNTIME</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 1.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="CPython Compilation and Virtual Machine Execution Pipeline">
-                    <defs>
-                        <linearGradient id="pyGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="pvmGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e1b4b" />
-                            <stop offset="100%" stop-color="#0f1026" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 380" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="CPython Compilation and Virtual Machine Execution Pipeline">
+                        <defs>
+                            <linearGradient id="pyGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="pvmGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e1b4b" />
+                                <stop offset="100%" stop-color="#0f1026" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Background Base -->
-                    <rect x="15" y="15" width="810" height="250" rx="8" fill="#0c1015" stroke="#1f2937"
-                        stroke-width="1" />
+                        <!-- Background Base -->
+                        <rect x="15" y="15" width="930" height="350" rx="10" fill="#0c1015" stroke="#1f2937"
+                            stroke-width="1.5" />
 
-                    <!-- STAGE 1: SOURCE CODE -->
-                    <rect x="30" y="35" width="115" height="130" rx="6" fill="url(#pyGrad)" stroke="#38bdf8"
-                        stroke-width="1.2" />
-                    <text x="87" y="58" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">SOURCE (.py)</text>
-                    <text x="87" y="80" fill="#f8fafc" font-size="9.5" font-family="monospace" text-anchor="middle">def
-                        calc(x):</text>
-                    <text x="87" y="95" fill="#f8fafc" font-size="9.5" font-family="monospace" text-anchor="middle">
-                        return x * 2</text>
-                    <text x="87" y="125" fill="#94a3b8" font-size="8.5" font-family="sans-serif"
-                        text-anchor="middle">Human readable</text>
+                        <!-- STAGE 1: SOURCE CODE -->
+                        <rect x="30" y="35" width="145" height="175" rx="8" fill="url(#pyGrad)" stroke="#38bdf8"
+                            stroke-width="1.5" />
+                        <rect x="40" y="45" width="125" height="26" rx="4" fill="#0284c7" fill-opacity="0.3"
+                            stroke="#38bdf8" stroke-width="0.8" />
+                        <text x="102" y="63" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">1. SOURCE (.py)</text>
+                        <rect x="40" y="80" width="125" height="70" rx="4" fill="#0b0f17" />
+                        <text x="48" y="102" fill="#cbd5e1" font-size="11.5" font-family="monospace">def calc(x):</text>
+                        <text x="48" y="122" fill="#38bdf8" font-size="11.5" font-family="monospace"> return x *
+                            2</text>
+                        <text x="48" y="140" fill="#94a3b8" font-size="10.5" font-family="monospace"># utf-8
+                            script</text>
+                        <text x="102" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">Human-Readable Code</text>
 
-                    <!-- Arrow 1 -> 2 -->
-                    <path d="M 145 100 L 175 100" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+                        <!-- Arrow 1 -> 2 -->
+                        <path d="M 175 122 L 205 122" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
 
-                    <!-- STAGE 2: PARSER & AST -->
-                    <rect x="175" y="35" width="130" height="130" rx="6" fill="url(#pyGrad)" stroke="#38bdf8"
-                        stroke-width="1.2" />
-                    <text x="240" y="58" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PARSER &amp; AST</text>
-                    <text x="240" y="78" fill="#cbd5e1" font-size="9" font-family="sans-serif"
-                        text-anchor="middle">Tokenizer / Lexer</text>
-                    <rect x="185" y="90" width="110" height="42" rx="4" fill="#0f172a" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="240" y="106" fill="#38bdf8" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">ast.FunctionDef</text>
-                    <text x="240" y="120" fill="#94a3b8" font-size="8" font-family="monospace"
-                        text-anchor="middle">BinOp (Mult)</text>
-                    <text x="240" y="152" fill="#94a3b8" font-size="8" font-family="sans-serif"
-                        text-anchor="middle">Syntax validated</text>
+                        <!-- STAGE 2: PARSER & AST -->
+                        <rect x="205" y="35" width="165" height="175" rx="8" fill="url(#pyGrad)" stroke="#38bdf8"
+                            stroke-width="1.5" />
+                        <rect x="215" y="45" width="145" height="26" rx="4" fill="#0284c7" fill-opacity="0.3"
+                            stroke="#38bdf8" stroke-width="0.8" />
+                        <text x="287" y="63" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">2. PARSER &amp; AST</text>
+                        <rect x="215" y="80" width="145" height="85" rx="4" fill="#0b0f17" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="225" y="100" fill="#38bdf8" font-size="11.5" font-weight="700"
+                            font-family="monospace">ast.FunctionDef</text>
+                        <text x="225" y="118" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; Name:
+                            'calc'</text>
+                        <text x="225" y="136" fill="#cbd5e1" font-size="11" font-family="sans-serif">&bull; BinOp(Mult,
+                            x, 2)</text>
+                        <text x="225" y="154" fill="#a7f3d0" font-size="10.5" font-family="monospace">PEG Parser (Python
+                            3.9+)</text>
+                        <text x="287" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">Syntax Validation</text>
 
-                    <!-- Arrow 2 -> 3 -->
-                    <path d="M 305 100 L 335 100" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
+                        <!-- Arrow 2 -> 3 -->
+                        <path d="M 370 122 L 400 122" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
 
-                    <!-- STAGE 3: BYTECODE COMPILER (.pyc) -->
-                    <rect x="335" y="35" width="145" height="130" rx="6" fill="url(#pyGrad)" stroke="#f59e0b"
-                        stroke-width="1.2" />
-                    <text x="407" y="58" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">BYTECODE (.pyc)</text>
-                    <text x="407" y="76" fill="#cbd5e1" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">__pycache__ cache</text>
-                    <rect x="345" y="85" width="125" height="52" rx="4" fill="#1e293b" stroke="#f59e0b"
-                        stroke-width="0.8" />
-                    <text x="355" y="101" fill="#fbbf24" font-size="8.5" font-family="monospace">LOAD_FAST 0 (x)</text>
-                    <text x="355" y="115" fill="#fbbf24" font-size="8.5" font-family="monospace">LOAD_CONST 1 (2)</text>
-                    <text x="355" y="128" fill="#fbbf24" font-size="8.5" font-family="monospace">BINARY_OP 5 (*)</text>
-                    <text x="407" y="154" fill="#94a3b8" font-size="8" font-family="sans-serif"
-                        text-anchor="middle">PyCodeObject</text>
+                        <!-- STAGE 3: BYTECODE COMPILER (.pyc) -->
+                        <rect x="400" y="35" width="180" height="175" rx="8" fill="url(#pyGrad)" stroke="#f59e0b"
+                            stroke-width="1.5" />
+                        <rect x="410" y="45" width="160" height="26" rx="4" fill="#d97706" fill-opacity="0.3"
+                            stroke="#f59e0b" stroke-width="0.8" />
+                        <text x="490" y="63" fill="#fbbf24" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">3. BYTECODE (.pyc)</text>
+                        <rect x="410" y="80" width="160" height="70" rx="4" fill="#1e2430" stroke="#f59e0b"
+                            stroke-width="0.8" />
+                        <text x="420" y="100" fill="#fbbf24" font-size="11" font-family="monospace">LOAD_FAST 0
+                            (x)</text>
+                        <text x="420" y="118" fill="#fbbf24" font-size="11" font-family="monospace">LOAD_CONST 1
+                            (2)</text>
+                        <text x="420" y="136" fill="#fbbf24" font-size="11" font-family="monospace">BINARY_OP 5
+                            (*)</text>
+                        <text x="490" y="175" fill="#fef08a" font-size="11" font-family="monospace"
+                            text-anchor="middle">__pycache__ on disk</text>
+                        <text x="490" y="195" fill="#94a3b8" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">PyCodeObject in RAM</text>
 
-                    <!-- Arrow 3 -> 4 -->
-                    <path d="M 480 100 L 515 100" stroke="#fbbf24" stroke-width="2.5" class="dash-animated" />
+                        <!-- Arrow 3 -> 4 -->
+                        <path d="M 580 122 L 610 122" stroke="#fbbf24" stroke-width="2.5" class="dash-animated" />
 
-                    <!-- STAGE 4: PYTHON VIRTUAL MACHINE (PVM) -->
-                    <rect x="515" y="30" width="295" height="220" rx="6" fill="url(#pvmGrad)" stroke="#8b5cf6"
-                        stroke-width="1.2" />
-                    <rect x="525" y="38" width="275" height="22" rx="3" fill="#7c3aed" fill-opacity="0.3" />
-                    <text x="662" y="53" fill="#c084fc" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">CPYTHON VIRTUAL MACHINE (PVM)</text>
+                        <!-- STAGE 4: PYTHON VIRTUAL MACHINE (PVM) -->
+                        <rect x="610" y="30" width="325" height="235" rx="8" fill="url(#pvmGrad)" stroke="#8b5cf6"
+                            stroke-width="1.6" />
+                        <rect x="620" y="40" width="305" height="28" rx="4" fill="#7c3aed" fill-opacity="0.3"
+                            stroke="#8b5cf6" stroke-width="0.8" />
+                        <text x="772" y="59" fill="#c084fc" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">4. CPYTHON VIRTUAL MACHINE (PVM)</text>
 
-                    <!-- PVM Eval Frame Loop -->
-                    <rect x="525" y="68" width="275" height="60" rx="4" fill="#1b1836" stroke="#8b5cf6"
-                        stroke-width="0.8" />
-                    <text x="535" y="85" fill="#e9d5ff" font-size="9.5" font-weight="700"
-                        font-family="monospace">_PyEval_EvalFrameDefault()</text>
-                    <text x="535" y="100" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Central C-switch loop
-                        dispatching opcodes.</text>
-                    <text x="535" y="115" fill="#38bdf8" font-size="8" font-family="monospace">Value Stack &bull; Frame
-                        Object (f_locals, f_globals)</text>
+                        <!-- PVM Eval Frame Loop -->
+                        <rect x="620" y="78" width="305" height="70" rx="4" fill="#1b1836" stroke="#8b5cf6"
+                            stroke-width="0.8" />
+                        <text x="630" y="98" fill="#e9d5ff" font-size="11.5" font-weight="700"
+                            font-family="monospace">_PyEval_EvalFrameDefault()</text>
+                        <text x="630" y="116" fill="#cbd5e1" font-size="11" font-family="sans-serif">Central C dispatch
+                            loop: pops &amp; pushes value stack</text>
+                        <text x="630" y="134" fill="#38bdf8" font-size="11" font-family="monospace">PyFrameObject &bull;
+                            f_locals, f_globals</text>
 
-                    <!-- GIL Barrier Strip -->
-                    <rect x="525" y="138" width="275" height="42" rx="4" fill="#3b1216" stroke="#ef4444"
-                        stroke-width="1.2" class="gil-border" />
-                    <text x="662" y="155" fill="#fca5a5" font-size="9" font-weight="700" font-family="monospace"
-                        text-anchor="middle">GLOBAL INTERPRETER LOCK (GIL)</text>
-                    <text x="662" y="170" fill="#fecaca" font-size="8" font-family="sans-serif" text-anchor="middle">One
-                        thread executes Python bytecode at any instant</text>
+                        <!-- GIL Barrier Strip -->
+                        <rect x="620" y="155" width="305" height="48" rx="4" fill="#3b1216" stroke="#ef4444"
+                            stroke-width="1.2" />
+                        <text x="772" y="174" fill="#fca5a5" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">GLOBAL INTERPRETER LOCK (GIL)</text>
+                        <text x="772" y="191" fill="#fecaca" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">Mutex ensuring only 1 native OS thread executes bytecode</text>
 
-                    <!-- OS Threads and C extensions -->
-                    <rect x="525" y="188" width="275" height="52" rx="4" fill="#131b26" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="535" y="205" fill="#34d399" font-size="9" font-weight="700"
-                        font-family="monospace">Py_BEGIN_ALLOW_THREADS</text>
-                    <text x="535" y="220" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">I/O operations
-                        (network, disk) &amp; NumPy release GIL</text>
-                    <text x="535" y="232" fill="#94a3b8" font-size="8" font-family="sans-serif">True multi-core
-                        parallelism for C extensions &amp; I/O.</text>
+                        <!-- OS Threads & C extensions -->
+                        <rect x="620" y="210" width="305" height="45" rx="4" fill="#131b26" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="630" y="228" fill="#34d399" font-size="11" font-weight="700"
+                            font-family="monospace">Py_BEGIN_ALLOW_THREADS</text>
+                        <text x="630" y="244" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Releases GIL
+                            during blocking I/O (network/disk) &amp; NumPy C-loops</text>
 
-                    <!-- Summary footer -->
-                    <text x="240" y="235" fill="#cbd5e1" font-size="9" font-family="sans-serif">Compilation is
-                        transparent &amp; automatic &bull; Execution is stack-based</text>
-                </svg>
+                        <!-- Bottom Summary Card -->
+                        <rect x="30" y="280" width="905" height="75" rx="6" fill="#161b22" stroke="#30363d"
+                            stroke-width="1" />
+                        <text x="45" y="302" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">&bull; CPython Execution Dynamics &amp; Specialization (PEP
+                            659):</text>
+                        <text x="45" y="322" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Python is an
+                            interpreted language that compiles to bytecode automatically. In Python 3.11+, the
+                            Specializing Adaptive Interpreter</text>
+                        <text x="45" y="340" fill="#34d399" font-size="11" font-family="monospace">dynamically rewrites
+                            generic bytecodes into specialized fast opcodes (e.g. BINARY_OP_MULTIPLY_INT) based on
+                            runtime types.</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     CPython execution lifecycle: Source code is tokenized and parsed into an AST, then compiled into
                     stack-based bytecode instructions cached in <code style="color: #fbbf24;">.pyc</code> files. The PVM
@@ -444,6 +471,157 @@ python<span class="w"> </span>my_script.py
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">=</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>           <span class="c1"># all point to 0</span>
 </code></pre>
+            </div>
+
+            <!-- Figure 2.1: Python Memory Model: PyObject, Reference Counting & Cyclic GC Generations -->
+            <div class="study-diagram" aria-label="Python Memory Model and Garbage Collection Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 2.1: Python Memory Model: PyObject, Reference Counting
+                        &amp; Cyclic GC</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>MEMORY &amp; GC</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 2.1">⛶
+                            Expand</button>
+                    </div>
+                </div>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Python PyObject Anatomy, Reference Counting Lifecycle, and Generational Cyclic Garbage Collection">
+                        <!-- Background Container -->
+                        <rect x="15" y="15" width="930" height="390" rx="10" fill="#0c1015" stroke="#1f2937"
+                            stroke-width="1.5" />
+
+                        <!-- Title Header -->
+                        <rect x="25" y="25" width="910" height="30" rx="5" fill="#1e2430" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="480" y="45" fill="#38bdf8" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PYOBJECT ANATOMY &bull; IMMEDIATE REFCOUNT DEALLOCATION &bull;
+                            3-GENERATION CYCLIC GC</text>
+
+                        <!-- Panel 1: PyObject & Name Binding (Left) -->
+                        <rect x="30" y="70" width="280" height="230" rx="8" fill="#121a24" stroke="#38bdf8"
+                            stroke-width="1.6" />
+                        <rect x="40" y="80" width="260" height="26" rx="4" fill="#0284c7" fill-opacity="0.3"
+                            stroke="#38bdf8" stroke-width="0.8" />
+                        <text x="170" y="98" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">1. PyObject &amp; NAME BINDING</text>
+
+                        <!-- Names in namespace -->
+                        <rect x="42" y="118" width="65" height="30" rx="4" fill="#1e293b" stroke="#facc15"
+                            stroke-width="1" />
+                        <text x="74" y="138" fill="#facc15" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">a</text>
+                        <rect x="42" y="160" width="65" height="30" rx="4" fill="#1e293b" stroke="#facc15"
+                            stroke-width="1" />
+                        <text x="74" y="180" fill="#facc15" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">b</text>
+
+                        <!-- Arrows from names to object -->
+                        <path d="M 107 133 L 130 148" stroke="#facc15" stroke-width="2" class="dash-animated" />
+                        <path d="M 107 175 L 130 162" stroke="#facc15" stroke-width="2" class="dash-animated" />
+
+                        <!-- PyObject struct box -->
+                        <rect x="130" y="115" width="168" height="135" rx="5" fill="#0b131d" stroke="#38bdf8"
+                            stroke-width="1.2" />
+                        <text x="214" y="134" fill="#38bdf8" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PyListObject (Heap)</text>
+                        <rect x="138" y="142" width="152" height="24" rx="3" fill="#1e293b" />
+                        <text x="145" y="158" fill="#fca5a5" font-size="10.5" font-family="monospace">ob_refcnt:
+                            2</text>
+                        <rect x="138" y="170" width="152" height="24" rx="3" fill="#1e293b" />
+                        <text x="145" y="186" fill="#93c5fd" font-size="10.5" font-family="monospace">ob_type:
+                            &amp;PyList_Type</text>
+                        <rect x="138" y="198" width="152" height="42" rx="3" fill="#1e293b" />
+                        <text x="145" y="214" fill="#34d399" font-size="10.5" font-family="monospace">ob_item: [ &bull;,
+                            &bull; ]</text>
+                        <text x="145" y="230" fill="#cbd5e1" font-size="10" font-family="monospace">&rarr; [1, 2] in
+                            memory</text>
+
+                        <text x="170" y="280" fill="#cbd5e1" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">"Variables are sticky notes, not boxes"</text>
+
+                        <!-- Panel 2: Reference Counting (Center) -->
+                        <rect x="325" y="70" width="300" height="230" rx="8" fill="#161528" stroke="#8b5cf6"
+                            stroke-width="1.6" />
+                        <rect x="335" y="80" width="280" height="26" rx="4" fill="#7c3aed" fill-opacity="0.3"
+                            stroke="#8b5cf6" stroke-width="0.8" />
+                        <text x="475" y="98" fill="#c084fc" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">2. REFCOUNT LIFECYCLE &amp; DEALLOC</text>
+
+                        <rect x="338" y="115" width="274" height="45" rx="4" fill="#1e183d" stroke="#8b5cf6"
+                            stroke-width="0.8" />
+                        <text x="348" y="133" fill="#fbbf24" font-size="11" font-weight="700"
+                            font-family="monospace">Py_INCREF(op):</text>
+                        <text x="348" y="149" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Triggered by
+                            assignment: <code>b = a</code>, passing to func</text>
+
+                        <rect x="338" y="165" width="274" height="45" rx="4" fill="#1e183d" stroke="#8b5cf6"
+                            stroke-width="0.8" />
+                        <text x="348" y="183" fill="#fb7185" font-size="11" font-weight="700"
+                            font-family="monospace">Py_DECREF(op):</text>
+                        <text x="348" y="199" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Triggered by:
+                            <code>del a</code>, scope exit, reassignment</text>
+
+                        <rect x="338" y="215" width="274" height="75" rx="4" fill="#091f16" stroke="#10b981"
+                            stroke-width="1.2" />
+                        <text x="475" y="235" fill="#34d399" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">ob_refcnt == 0 &rarr; INSTANT FREE</text>
+                        <text x="348" y="255" fill="#a7f3d0" font-size="11" font-family="sans-serif">&bull; Calls
+                            tp_dealloc &bull; PyObject_Free()</text>
+                        <text x="348" y="272" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">&bull; Handed
+                            back to pymalloc arena (zero latency)</text>
+
+                        <!-- Panel 3: Cyclic GC & Generations (Right) -->
+                        <rect x="640" y="70" width="295" height="230" rx="8" fill="#1c1619" stroke="#ef4444"
+                            stroke-width="1.6" />
+                        <rect x="650" y="80" width="275" height="26" rx="4" fill="#b91c1c" fill-opacity="0.3"
+                            stroke="#ef4444" stroke-width="0.8" />
+                        <text x="787" y="98" fill="#fca5a5" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">3. REFERENCE CYCLES &amp; GENERATIONAL GC</text>
+
+                        <rect x="650" y="115" width="275" height="50" rx="4" fill="#361217" stroke="#ef4444"
+                            stroke-width="0.8" />
+                        <text x="660" y="133" fill="#f87171" font-size="11" font-weight="700"
+                            font-family="monospace">Cycle: nodeA &harr; nodeB</text>
+                        <text x="660" y="150" fill="#fca5a5" font-size="10.5" font-family="sans-serif">del nodeA, nodeB
+                            &rarr; refcount stays 1! (Leak)</text>
+
+                        <!-- 3 Generations Box -->
+                        <rect x="650" y="170" width="275" height="120" rx="4" fill="#0d1117" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="660" y="190" fill="#facc15" font-size="11" font-weight="700"
+                            font-family="monospace">Gen 0: New Objects (threshold: 700)</text>
+                        <text x="660" y="206" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Scanned
+                            frequently on alloc delta</text>
+
+                        <text x="660" y="228" fill="#38bdf8" font-size="11" font-weight="700"
+                            font-family="monospace">Gen 1: Survivors of Gen 0 (threshold: 10)</text>
+                        <text x="660" y="244" fill="#cbd5e1" font-size="10.5" font-family="sans-serif">Intermediate
+                            persistence</text>
+
+                        <text x="660" y="266" fill="#a78bfa" font-size="11" font-weight="700"
+                            font-family="monospace">Gen 2: Long-lived (threshold: 10)</text>
+                        <text x="660" y="282" fill="#34d399" font-size="10.5" font-family="monospace">Full collection
+                            &bull; Trial deletion walk</text>
+
+                        <!-- Bottom Summary Card -->
+                        <rect x="30" y="315" width="905" height="75" rx="6" fill="#161b22" stroke="#30363d"
+                            stroke-width="1" />
+                        <text x="45" y="337" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">&bull; How Python Manages Memory Under the Hood:</text>
+                        <text x="45" y="357" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">99% of objects die
+                            via reference counting immediately without GC pauses. The cyclic garbage collector
+                            (<code>gc</code> module)</text>
+                        <text x="45" y="375" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">only steps in to
+                            break circular references across its 3 generations using double-linked
+                            <code>PyGC_Head</code> headers.</text>
+                    </svg>
+                </div>
+                <div class="study-diagram-caption">
+                    Python Memory Management: Variables are pointers to <code style="color: #38bdf8;">PyObject</code>
+                    heap structures. Reference counting reclaims memory the exact moment a count drops to 0. A
+                    3-generation cyclic garbage collector resolves isolated circular references.
+                </div>
             </div>
 
             <h3 id="core-data-types">Core Data Types<a class="headerlink" href="#core-data-types"
@@ -4225,118 +4403,139 @@ python<span class="w"> </span>my_script.py
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 29.1: Python Asyncio Event Loop &amp; Coroutine
                         Scheduling</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">async/await &bull; Task
-                        Suspension &bull; epoll/kqueue Selectors</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>ASYNCIO ENGINE</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 29.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="Python Asyncio Event Loop and Coroutine Scheduling Architecture">
-                    <defs>
-                        <linearGradient id="asyncGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="loopGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e1b4b" />
-                            <stop offset="100%" stop-color="#0f1026" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 390" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Python Asyncio Event Loop and Coroutine Scheduling Architecture">
+                        <defs>
+                            <linearGradient id="asyncGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="loopGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e1b4b" />
+                                <stop offset="100%" stop-color="#0f1026" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Background -->
-                    <rect x="15" y="15" width="810" height="250" rx="8" fill="#0c1015" stroke="#1f2937"
-                        stroke-width="1" />
+                        <!-- Background Base -->
+                        <rect x="15" y="15" width="930" height="360" rx="10" fill="#0c1015" stroke="#1f2937"
+                            stroke-width="1.5" />
 
-                    <!-- RUNNABLE TASKS (Left) -->
-                    <rect x="30" y="30" width="180" height="220" rx="6" fill="url(#asyncGrad)" stroke="#38bdf8"
-                        stroke-width="1.2" />
-                    <rect x="38" y="40" width="164" height="22" rx="3" fill="#0284c7" fill-opacity="0.3" />
-                    <text x="120" y="55" fill="#38bdf8" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">ASYNCIO READY QUEUE</text>
+                        <!-- RUNNABLE TASKS QUEUE (Left) -->
+                        <rect x="30" y="30" width="220" height="260" rx="8" fill="url(#asyncGrad)" stroke="#38bdf8"
+                            stroke-width="1.6" />
+                        <rect x="40" y="40" width="200" height="28" rx="4" fill="#0284c7" fill-opacity="0.3"
+                            stroke="#38bdf8" stroke-width="0.8" />
+                        <text x="140" y="59" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">ASYNCIO READY QUEUE</text>
 
-                    <rect x="42" y="70" width="156" height="42" rx="4" fill="#0f172a" stroke="#34d399"
-                        stroke-width="1" />
-                    <text x="52" y="87" fill="#34d399" font-size="9.5" font-weight="700" font-family="monospace">Task-1:
-                        fetch_data()</text>
-                    <text x="52" y="101" fill="#cbd5e1" font-size="8" font-family="sans-serif">Active Coroutine
-                        Frame</text>
+                        <rect x="42" y="78" width="196" height="50" rx="5" fill="#0f172a" stroke="#34d399"
+                            stroke-width="1.2" />
+                        <text x="52" y="98" fill="#34d399" font-size="12" font-weight="700"
+                            font-family="monospace">Task-1: fetch_data()</text>
+                        <text x="52" y="116" fill="#a7f3d0" font-size="11" font-family="sans-serif">Active coroutine
+                            frame</text>
 
-                    <rect x="42" y="120" width="156" height="42" rx="4" fill="#0f172a" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="52" y="137" fill="#cbd5e1" font-size="9.5" font-weight="700"
-                        font-family="monospace">Task-2: process_order()</text>
-                    <text x="52" y="151" fill="#94a3b8" font-size="8" font-family="sans-serif">Runnable &bull;
-                        Scheduled</text>
+                        <rect x="42" y="135" width="196" height="50" rx="5" fill="#0f172a" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="52" y="155" fill="#cbd5e1" font-size="12" font-weight="600"
+                            font-family="monospace">Task-2: process_order()</text>
+                        <text x="52" y="173" fill="#94a3b8" font-size="11" font-family="sans-serif">Runnable &bull;
+                            Scheduled</text>
 
-                    <rect x="42" y="170" width="156" height="42" rx="4" fill="#0f172a" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="52" y="187" fill="#cbd5e1" font-size="9.5" font-weight="700"
-                        font-family="monospace">Task-3: write_audit()</text>
-                    <text x="52" y="201" fill="#94a3b8" font-size="8" font-family="sans-serif">Runnable &bull;
-                        Scheduled</text>
+                        <rect x="42" y="192" width="196" height="50" rx="5" fill="#0f172a" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="52" y="212" fill="#cbd5e1" font-size="12" font-weight="600"
+                            font-family="monospace">Task-3: write_audit()</text>
+                        <text x="52" y="230" fill="#94a3b8" font-size="11" font-family="sans-serif">Runnable &bull;
+                            Scheduled</text>
 
-                    <text x="120" y="235" fill="#34d399" font-size="8" font-family="monospace"
-                        text-anchor="middle">Single OS Thread (0 Lock overhead)</text>
+                        <text x="140" y="272" fill="#34d399" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">&check; Single OS Thread (0 Locks)</text>
 
-                    <!-- Arrow Ready -> Event Loop -->
-                    <path d="M 210 140 L 255 140" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+                        <!-- Arrow Ready -> Event Loop -->
+                        <path d="M 250 160 L 290 160" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
 
-                    <!-- EVENT LOOP (Center) -->
-                    <rect x="255" y="30" width="280" height="220" rx="6" fill="url(#loopGrad)" stroke="#8b5cf6"
-                        stroke-width="1.2" />
-                    <rect x="265" y="40" width="260" height="22" rx="3" fill="#7c3aed" fill-opacity="0.3" />
-                    <text x="395" y="55" fill="#c084fc" font-size="10.5" font-weight="700" font-family="monospace"
-                        text-anchor="middle">ASYNCIO EVENT LOOP</text>
+                        <!-- ASYNCIO EVENT LOOP (Center) -->
+                        <rect x="290" y="30" width="340" height="260" rx="8" fill="url(#loopGrad)" stroke="#8b5cf6"
+                            stroke-width="1.6" />
+                        <rect x="300" y="40" width="320" height="28" rx="4" fill="#7c3aed" fill-opacity="0.3"
+                            stroke="#8b5cf6" stroke-width="0.8" />
+                        <text x="460" y="59" fill="#c084fc" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">ASYNCIO EVENT LOOP</text>
 
-                    <rect x="270" y="72" width="250" height="60" rx="4" fill="#1b1836" stroke="#8b5cf6"
-                        stroke-width="0.8" />
-                    <text x="280" y="89" fill="#e9d5ff" font-size="9.5" font-weight="700"
-                        font-family="monospace">coro.send(None) Execution</text>
-                    <text x="280" y="104" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Executes bytecode
-                        until encountering</text>
-                    <text x="280" y="118" fill="#fbbf24" font-size="8.5" font-family="monospace">await sock.recv()
-                        &rarr; Yields control!</text>
+                        <rect x="305" y="78" width="310" height="75" rx="5" fill="#1b1836" stroke="#8b5cf6"
+                            stroke-width="1" />
+                        <text x="315" y="98" fill="#e9d5ff" font-size="12" font-weight="700"
+                            font-family="monospace">coro.send(None) Execution</text>
+                        <text x="315" y="118" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Runs python
+                            bytecode synchronously until:</text>
+                        <text x="315" y="138" fill="#facc15" font-size="11.5" font-weight="700"
+                            font-family="monospace">await sock.recv() &rarr; Yields control!</text>
 
-                    <rect x="270" y="142" width="250" height="60" rx="4" fill="#1b1836" stroke="#f59e0b"
-                        stroke-width="0.8" />
-                    <text x="280" y="159" fill="#fbbf24" font-size="9.5" font-weight="700"
-                        font-family="monospace">Future / Suspension Handler</text>
-                    <text x="280" y="174" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Preserves stack frame
-                        (locals &amp; PC)</text>
-                    <text x="280" y="188" fill="#38bdf8" font-size="8" font-family="monospace">Registers socket FD with
-                        I/O selector</text>
+                        <rect x="305" y="160" width="310" height="85" rx="5" fill="#1b1836" stroke="#f59e0b"
+                            stroke-width="1" />
+                        <text x="315" y="180" fill="#fbbf24" font-size="12" font-weight="700"
+                            font-family="monospace">Future &amp; Suspension Handler</text>
+                        <text x="315" y="200" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Freezes generator
+                            frame (locals &amp; PC stored in RAM)</text>
+                        <text x="315" y="218" fill="#38bdf8" font-size="11" font-family="monospace">Registers socket FD
+                            with OS kernel I/O selector</text>
+                        <text x="315" y="234" fill="#93c5fd" font-size="10.5" font-family="sans-serif">Loop immediately
+                            picks next ready task!</text>
 
-                    <text x="395" y="230" fill="#a78bfa" font-size="8.5" font-family="sans-serif"
-                        text-anchor="middle">100,000+ coroutines on a single core</text>
+                        <text x="460" y="275" fill="#a78bfa" font-size="11.5" font-family="sans-serif"
+                            text-anchor="middle">100,000+ coroutines multiplexed on 1 CPU thread</text>
 
-                    <!-- Arrow Loop -> Selector -->
-                    <path d="M 535 140 L 575 140" stroke="#fbbf24" stroke-width="2" class="dash-animated" />
+                        <!-- Arrow Loop -> OS Selector -->
+                        <path d="M 630 160 L 670 160" stroke="#f59e0b" stroke-width="2.5" class="dash-animated" />
 
-                    <!-- I/O SELECTORS (Right) -->
-                    <rect x="575" y="30" width="230" height="220" rx="6" fill="url(#asyncGrad)" stroke="#f59e0b"
-                        stroke-width="1.2" />
-                    <rect x="585" y="40" width="210" height="22" rx="3" fill="#d97706" fill-opacity="0.3" />
-                    <text x="690" y="55" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">OS SELECTOR (epoll / kqueue)</text>
+                        <!-- OS SELECTOR (Right) -->
+                        <rect x="670" y="30" width="265" height="260" rx="8" fill="url(#asyncGrad)" stroke="#f59e0b"
+                            stroke-width="1.6" />
+                        <rect x="680" y="40" width="245" height="28" rx="4" fill="#d97706" fill-opacity="0.3"
+                            stroke="#f59e0b" stroke-width="0.8" />
+                        <text x="802" y="59" fill="#fbbf24" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">OS SELECTOR (epoll / kqueue)</text>
 
-                    <rect x="590" y="75" width="200" height="46" rx="4" fill="#1e293b" stroke="#475569"
-                        stroke-width="0.8" />
-                    <text x="600" y="93" fill="#cbd5e1" font-size="9" font-family="sans-serif">Socket FD: 14
-                        (api.example)</text>
-                    <text x="600" y="108" fill="#38bdf8" font-size="8" font-family="monospace">Waiting for READABLE
-                        event</text>
+                        <rect x="685" y="80" width="235" height="55" rx="5" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="695" y="102" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Socket FD: 14
+                            (api.example.com)</text>
+                        <text x="695" y="122" fill="#38bdf8" font-size="11" font-weight="700"
+                            font-family="monospace">EPOLLIN &bull; Waiting for packets</text>
 
-                    <rect x="590" y="130" width="200" height="46" rx="4" fill="#1e293b" stroke="#475569"
-                        stroke-width="0.8" />
-                    <text x="600" y="148" fill="#cbd5e1" font-size="9" font-family="sans-serif">Timer FD:
-                        sleep(2.0s)</text>
-                    <text x="600" y="163" fill="#fbbf24" font-size="8" font-family="monospace">Expires in 1.42s</text>
+                        <rect x="685" y="145" width="235" height="55" rx="5" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="695" y="167" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Timer FD:
+                            sleep(2.0s)</text>
+                        <text x="695" y="187" fill="#fbbf24" font-size="11" font-weight="700"
+                            font-family="monospace">timerfd_create &bull; 0.82s left</text>
 
-                    <!-- WAKE CALLBACK ARROW: Returns Task to Ready Queue -->
-                    <path d="M 690 185 C 690 265, 120 265, 120 215" stroke="#34d399" stroke-width="1.8"
-                        stroke-dasharray="4 3" />
-                    <text x="407" y="270" fill="#34d399" font-size="8" font-family="monospace"
-                        text-anchor="middle">&larr; Socket Ready &bull; Future.set_result() re-enqueues Task to Ready
-                        Queue</text>
-                </svg>
+                        <text x="802" y="235" fill="#34d399" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">&check; Kernel Hardware Wait</text>
+                        <text x="802" y="255" fill="#cbd5e1" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">Zero CPU wasted polling</text>
+
+                        <!-- Bottom Summary Bar -->
+                        <rect x="30" y="300" width="905" height="65" rx="6" fill="#161e2e" stroke="#1d4ed8"
+                            stroke-width="1.2" />
+                        <text x="45" y="322" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">&bull; Cooperative Multitasking Flow:</text>
+                        <text x="45" y="342" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">When the kernel
+                            signals an FD is readable via <code>epoll_wait()</code>, the Event Loop wakes the Future,
+                            restores the coroutine frame,</text>
+                        <text x="45" y="357" fill="#34d399" font-size="11" font-family="monospace">and re-enqueues it on
+                            the Ready Queue &mdash; achieving high-throughput concurrency with minimal memory
+                            overhead.</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     Python Asyncio event loop architecture: Coroutines execute cooperatively on a single thread until an
                     <code style="color: #fbbf24;">await</code> expression suspends their generator frame and registers
@@ -4445,6 +4644,147 @@ python<span class="w"> </span>my_script.py
                 are amazing for network downloads (I/O-bound tasks).</p>
             <p>So the golden rule is: <strong>If you are waiting for data, use Async or Threads. If you are doing heavy
                     math or processing, use Processes.</strong></p>
+
+            <!-- Figure 30.1: Python Concurrency Models: Threading vs Multiprocessing vs Asyncio -->
+            <div class="study-diagram" aria-label="Python Concurrency Models Comparison Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 30.1: Python Concurrency: Threading (GIL) vs
+                        Multiprocessing vs Asyncio</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>CONCURRENCY
+                            ARCHITECTURE</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 30.1">⛶
+                            Expand</button>
+                    </div>
+                </div>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 430" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Python Concurrency Comparison: Threading with GIL, Multiprocessing, and Asyncio Event Loop">
+                        <!-- Background Base -->
+                        <rect x="15" y="15" width="930" height="400" rx="10" fill="#0c1015" stroke="#1f2937"
+                            stroke-width="1.5" />
+
+                        <!-- Title Header -->
+                        <rect x="25" y="25" width="910" height="30" rx="5" fill="#1e2430" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="480" y="45" fill="#facc15" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PARADIGM COMPARISON: MEMORY FOOTPRINT &bull; CPU PARALLELISM &bull;
+                            SCHEDULING</text>
+
+                        <!-- COLUMN 1: THREADING (GIL) -->
+                        <rect x="30" y="70" width="295" height="255" rx="8" fill="#151221" stroke="#ef4444"
+                            stroke-width="1.5" />
+                        <rect x="40" y="80" width="275" height="28" rx="4" fill="#7f1d1d" fill-opacity="0.3"
+                            stroke="#ef4444" stroke-width="0.8" />
+                        <text x="177" y="99" fill="#f87171" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">1. THREADING (GIL BOUND)</text>
+
+                        <rect x="42" y="118" width="271" height="50" rx="4" fill="#2d1218" stroke="#ef4444"
+                            stroke-width="0.8" />
+                        <text x="52" y="138" fill="#fca5a5" font-size="11.5" font-weight="700" font-family="monospace">1
+                            Process &bull; 1 Memory Heap</text>
+                        <text x="52" y="156" fill="#fecaca" font-size="11" font-family="sans-serif">Threads share state
+                            &bull; Race conditions!</text>
+
+                        <!-- GIL Gate visualization -->
+                        <rect x="42" y="176" width="271" height="48" rx="4" fill="#3b1216" stroke="#ef4444"
+                            stroke-width="1.2" />
+                        <text x="177" y="195" fill="#f87171" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">GIL BOTTLENECK (MUTEX)</text>
+                        <text x="177" y="212" fill="#fca5a5" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">1 active thread running bytecode at a time</text>
+
+                        <rect x="42" y="232" width="271" height="82" rx="4" fill="#0d1117" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="52" y="252" fill="#34d399" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&check; Great for: I/O waiting (Socket, Disk)</text>
+                        <text x="52" y="272" fill="#ef4444" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&cross; Bad for: CPU math (GIL lock contention)</text>
+                        <text x="52" y="292" fill="#f59e0b" font-size="11" font-family="monospace">Requires:
+                            threading.Lock / RLock</text>
+
+                        <!-- COLUMN 2: MULTIPROCESSING -->
+                        <rect x="340" y="70" width="295" height="255" rx="8" fill="#0f1f18" stroke="#10b981"
+                            stroke-width="1.5" />
+                        <rect x="350" y="80" width="275" height="28" rx="4" fill="#064e3b" fill-opacity="0.3"
+                            stroke="#10b981" stroke-width="0.8" />
+                        <text x="487" y="99" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">2. MULTIPROCESSING</text>
+
+                        <rect x="352" y="118" width="271" height="50" rx="4" fill="#09261a" stroke="#059669"
+                            stroke-width="0.8" />
+                        <text x="362" y="138" fill="#a7f3d0" font-size="11.5" font-weight="700"
+                            font-family="monospace">N Processes &bull; N Distinct GILs</text>
+                        <text x="362" y="156" fill="#cbd5e1" font-size="11" font-family="sans-serif">Complete memory
+                            isolation per process</text>
+
+                        <rect x="352" y="176" width="271" height="48" rx="4" fill="#064e3b" stroke="#10b981"
+                            stroke-width="1.2" />
+                        <text x="487" y="195" fill="#34d399" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">TRUE MULTI-CORE PARALLELISM</text>
+                        <text x="487" y="212" fill="#a7f3d0" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">100% CPU utilization across all cores</text>
+
+                        <rect x="352" y="232" width="271" height="82" rx="4" fill="#0d1117" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="362" y="252" fill="#34d399" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&check; Great for: CPU math, ML, image encoding</text>
+                        <text x="362" y="272" fill="#ef4444" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&cross; High RAM overhead &amp; fork/spawn cost</text>
+                        <text x="362" y="292" fill="#f59e0b" font-size="11" font-family="monospace">IPC: Pickle
+                            serializing over Queues/Pipes</text>
+
+                        <!-- COLUMN 3: ASYNCIO -->
+                        <rect x="650" y="70" width="285" height="255" rx="8" fill="#121a28" stroke="#38bdf8"
+                            stroke-width="1.5" />
+                        <rect x="660" y="80" width="265" height="28" rx="4" fill="#0284c7" fill-opacity="0.3"
+                            stroke="#38bdf8" stroke-width="0.8" />
+                        <text x="792" y="99" fill="#38bdf8" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">3. ASYNCIO (EVENT LOOP)</text>
+
+                        <rect x="660" y="118" width="265" height="50" rx="4" fill="#0c1d2e" stroke="#0284c7"
+                            stroke-width="0.8" />
+                        <text x="670" y="138" fill="#93c5fd" font-size="11.5" font-weight="700"
+                            font-family="monospace">1 Process &bull; 1 Thread &bull; 1 Loop</text>
+                        <text x="670" y="156" fill="#cbd5e1" font-size="11" font-family="sans-serif">Cooperative
+                            multitasking via <code>await</code></text>
+
+                        <rect x="660" y="176" width="265" height="48" rx="4" fill="#082f49" stroke="#38bdf8"
+                            stroke-width="1.2" />
+                        <text x="792" y="195" fill="#38bdf8" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">SINGLE-THREAD MULTIPLEXING</text>
+                        <text x="792" y="212" fill="#a5f3fc" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">epoll/kqueue kernel hardware interrupts</text>
+
+                        <rect x="660" y="232" width="265" height="82" rx="4" fill="#0d1117" stroke="#334155"
+                            stroke-width="0.8" />
+                        <text x="670" y="252" fill="#34d399" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&check; 100,000+ connections per GB RAM</text>
+                        <text x="670" y="272" fill="#ef4444" font-size="11.5" font-weight="600"
+                            font-family="sans-serif">&cross; Blocked if code does sync CPU work</text>
+                        <text x="670" y="292" fill="#34d399" font-size="11" font-family="monospace">Zero locks:
+                            synchronous interleaving</text>
+
+                        <!-- Bottom Summary Card: Selection Decision Matrix -->
+                        <rect x="30" y="335" width="905" height="68" rx="6" fill="#161b22" stroke="#30363d"
+                            stroke-width="1" />
+                        <text x="45" y="356" fill="#facc15" font-size="12" font-weight="700"
+                            font-family="monospace">&bull; Architecture Decision Rule:</text>
+                        <text x="45" y="375" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">Choose
+                            <strong>Asyncio</strong> for high-concurrency web microservices/crawlers &bull; Choose
+                            <strong>Threading</strong> when legacy blocking libraries lack async APIs &bull;</text>
+                        <text x="45" y="392" fill="#34d399" font-size="11.5" font-family="monospace">Choose
+                            Multiprocessing (ProcessPoolExecutor) for CPU-heavy number crunching to escape the
+                            GIL.</text>
+                    </svg>
+                </div>
+                <div class="study-diagram-caption">
+                    Python Concurrency Tradeoffs: Threading shares memory under the GIL; Multiprocessing bypasses the
+                    GIL by launching independent OS processes; Asyncio cooperatively multiplexes thousands of I/O tasks
+                    on a single OS thread.
+                </div>
+            </div>
+
             <h3 id="threading--for-io-bound-tasks">Threading — For I/O-bound Tasks<a class="headerlink"
                     href="#threading--for-io-bound-tasks" title="Permanent link">#</a></h3>
             <p>Use a <code>Thread</code> when you need to run background tasks that spend a lot of time waiting on the
@@ -5283,6 +5623,7 @@ pytest<span class="w"> </span>--tb<span class="o">=</span>short<span class="w"> 
     <footer class="study-footer">TechToday Python Study Library</footer>
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
     <script src="python-study.js"></script>
+    <script src="../diagram-modal.js"></script>
 </body>
 
 </html>

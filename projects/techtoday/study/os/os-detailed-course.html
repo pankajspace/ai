@@ -20,88 +20,7 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
     <link rel="stylesheet" href="os-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
-    <style>
-        .study-diagram {
-            margin: 2rem 0;
-            padding: 1.25rem 1.5rem;
-            background: #11151a;
-            border: 1px solid #28303a;
-            border-radius: 10px;
-        }
-
-        .study-diagram-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #1c222b;
-            padding-bottom: 0.6rem;
-        }
-
-        .study-diagram-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #38bdf8;
-            font-family: ui-monospace, monospace;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .study-diagram-caption {
-            margin-top: 0.75rem;
-            font-size: 0.8125rem;
-            color: #94a0ad;
-            line-height: 1.5;
-            text-align: center;
-        }
-
-        .study-diagram svg {
-            display: block;
-            width: 100%;
-            height: auto;
-            max-width: 820px;
-            margin: 0 auto;
-        }
-
-        @keyframes pulseFlow {
-            0% {
-                stroke-dashoffset: 24;
-            }
-
-            100% {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        @keyframes nodePulse {
-
-            0%,
-            100% {
-                fill-opacity: 0.2;
-            }
-
-            50% {
-                fill-opacity: 0.5;
-            }
-        }
-
-        .dash-animated {
-            stroke-dasharray: 6 4;
-            animation: pulseFlow 2s linear infinite;
-        }
-
-        .node-glow {
-            animation: nodePulse 2.5s ease-in-out infinite;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-
-            .dash-animated,
-            .node-glow {
-                animation: none !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../diagram-style.css" />
 </head>
 
 <body>
@@ -164,163 +83,171 @@
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 1.1: Kernel Architecture Paradigms &amp; Privilege
                         Separation</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Monolithic &bull;
-                        Microkernel &bull; Hybrid</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>KERNEL ARCHITECTURE</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 1.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 330" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="Monolithic vs Microkernel vs Hybrid Architecture">
-                    <defs>
-                        <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="kernGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e1b4b" />
-                            <stop offset="100%" stop-color="#0f1026" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 410" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Monolithic vs Microkernel vs Hybrid Architecture">
+                        <defs>
+                            <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="kernGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e1b4b" />
+                                <stop offset="100%" stop-color="#0f1026" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Column 1: Monolithic Kernel -->
-                    <rect x="15" y="15" width="255" height="300" rx="8" fill="#0d1117" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="25" y="25" width="235" height="24" rx="4" fill="#0284c7" fill-opacity="0.2" />
-                    <text x="142" y="41" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">MONOLITHIC (Linux)</text>
+                        <!-- Column 1: Monolithic Kernel -->
+                        <rect x="15" y="15" width="295" height="375" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="25" y="25" width="275" height="32" rx="6" fill="#0284c7" fill-opacity="0.25"
+                            stroke="#0284c7" stroke-width="1" />
+                        <text x="162" y="46" fill="#38bdf8" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">MONOLITHIC (Linux)</text>
 
-                    <!-- User Space -->
-                    <rect x="25" y="58" width="235" height="60" rx="6" fill="url(#userGrad)" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="35" y="76" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace">RING 3:
-                        USER SPACE</text>
-                    <text x="35" y="93" fill="#f8fafc" font-size="11" font-weight="600" font-family="sans-serif">User
-                        Applications &amp; libc</text>
-                    <text x="35" y="107" fill="#94a3b8" font-size="9" font-family="sans-serif">Direct syscall boundary
-                        traps</text>
+                        <!-- User Space -->
+                        <rect x="25" y="68" width="275" height="74" rx="6" fill="url(#userGrad)" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="38" y="90" fill="#38bdf8" font-size="12" font-weight="700" font-family="monospace">RING
+                            3: USER SPACE</text>
+                        <text x="38" y="110" fill="#f8fafc" font-size="13" font-weight="600"
+                            font-family="sans-serif">User Applications &amp; libc</text>
+                        <text x="38" y="128" fill="#94a3b8" font-size="12" font-family="sans-serif">Direct syscall traps
+                            to kernel</text>
 
-                    <!-- Privilege Barrier -->
-                    <line x1="25" y1="128" x2="260" y2="128" stroke="#ef4444" stroke-width="1.5"
-                        stroke-dasharray="3 3" />
-                    <text x="142" y="138" fill="#ef4444" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">SYSCALL TRAP (Ring 3 &rarr; Ring 0)</text>
+                        <!-- Privilege Barrier -->
+                        <line x1="25" y1="154" x2="300" y2="154" stroke="#ef4444" stroke-width="2"
+                            stroke-dasharray="4 4" />
+                        <text x="162" y="167" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
+                            text-anchor="middle">SYSCALL TRAP (Ring 3 &rarr; Ring 0)</text>
 
-                    <!-- Kernel Space -->
-                    <rect x="25" y="145" width="235" height="155" rx="6" fill="url(#kernGrad)" stroke="#6366f1"
-                        stroke-width="1.2" />
-                    <text x="35" y="163" fill="#a5b4fc" font-size="9.5" font-weight="700" font-family="monospace">RING
-                        0: KERNEL SPACE</text>
-                    <rect x="35" y="172" width="215" height="24" rx="4" fill="#1e1e38" stroke="#4338ca"
-                        stroke-width="0.8" />
-                    <text x="45" y="188" fill="#cbd5e1" font-size="10" font-family="sans-serif">VFS &bull; ext4/xfs
-                        &bull; Page Cache</text>
-                    <rect x="35" y="201" width="215" height="24" rx="4" fill="#1e1e38" stroke="#4338ca"
-                        stroke-width="0.8" />
-                    <text x="45" y="217" fill="#cbd5e1" font-size="10" font-family="sans-serif">CFS Scheduler &bull; IPC
-                        &bull; Signals</text>
-                    <rect x="35" y="230" width="215" height="24" rx="4" fill="#1e1e38" stroke="#4338ca"
-                        stroke-width="0.8" />
-                    <text x="45" y="246" fill="#cbd5e1" font-size="10" font-family="sans-serif">TCP/IP Network Stack
-                        &bull; Netfilter</text>
-                    <rect x="35" y="259" width="215" height="24" rx="4" fill="#1e1e38" stroke="#4338ca"
-                        stroke-width="0.8" />
-                    <text x="45" y="275" fill="#cbd5e1" font-size="10" font-family="sans-serif">Device Drivers &bull;
-                        Block/Char HAL</text>
-                    <text x="142" y="293" fill="#34d399" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">Zero-overhead direct in-memory calls</text>
+                        <!-- Kernel Space -->
+                        <rect x="25" y="178" width="275" height="195" rx="6" fill="url(#kernGrad)" stroke="#6366f1"
+                            stroke-width="1.5" />
+                        <text x="38" y="200" fill="#a5b4fc" font-size="12.5" font-weight="700"
+                            font-family="monospace">RING 0: KERNEL SPACE</text>
+                        <rect x="35" y="210" width="255" height="28" rx="4" fill="#1e1e38" stroke="#4338ca"
+                            stroke-width="1" />
+                        <text x="48" y="229" fill="#e2e8f0" font-size="12.5" font-family="sans-serif">VFS &bull;
+                            ext4/xfs &bull; Page Cache</text>
+                        <rect x="35" y="244" width="255" height="28" rx="4" fill="#1e1e38" stroke="#4338ca"
+                            stroke-width="1" />
+                        <text x="48" y="263" fill="#e2e8f0" font-size="12.5" font-family="sans-serif">CFS Scheduler
+                            &bull; IPC &bull; Signals</text>
+                        <rect x="35" y="278" width="255" height="28" rx="4" fill="#1e1e38" stroke="#4338ca"
+                            stroke-width="1" />
+                        <text x="48" y="297" fill="#e2e8f0" font-size="12.5" font-family="sans-serif">TCP/IP Network
+                            Stack &bull; Netfilter</text>
+                        <rect x="35" y="312" width="255" height="28" rx="4" fill="#1e1e38" stroke="#4338ca"
+                            stroke-width="1" />
+                        <text x="48" y="331" fill="#e2e8f0" font-size="12.5" font-family="sans-serif">Device Drivers
+                            &bull; Block/Char HAL</text>
+                        <text x="162" y="360" fill="#34d399" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle">&check; Zero-overhead in-memory calls</text>
 
-                    <!-- Column 2: Microkernel -->
-                    <rect x="290" y="15" width="260" height="300" rx="8" fill="#0d1117" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="300" y="25" width="240" height="24" rx="4" fill="#8b5cf6" fill-opacity="0.2" />
-                    <text x="420" y="41" fill="#c084fc" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">MICROKERNEL (seL4 / Mach)</text>
+                        <!-- Column 2: Microkernel -->
+                        <rect x="330" y="15" width="300" height="375" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="340" y="25" width="280" height="32" rx="6" fill="#8b5cf6" fill-opacity="0.25"
+                            stroke="#8b5cf6" stroke-width="1" />
+                        <text x="480" y="46" fill="#c084fc" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">MICROKERNEL (seL4 / Mach)</text>
 
-                    <!-- User Space -->
-                    <rect x="300" y="58" width="240" height="150" rx="6" fill="url(#userGrad)" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="310" y="76" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace">RING
-                        3: USER SERVERS</text>
-                    <rect x="310" y="85" width="220" height="20" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="320" y="99" fill="#f8fafc" font-size="9.5" font-family="sans-serif">User
-                        Applications</text>
-                    <rect x="310" y="110" width="220" height="20" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="320" y="124" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">File System Server
-                        (User-space)</text>
-                    <rect x="310" y="135" width="220" height="20" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="320" y="149" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Network Protocol
-                        Server</text>
-                    <rect x="310" y="160" width="220" height="20" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="320" y="174" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Isolated Device
-                        Drivers (Crash-safe)</text>
-                    <text x="420" y="198" fill="#f59e0b" font-size="8.5" font-family="monospace" text-anchor="middle"
-                        class="node-glow">&harr; IPC Message Passing Bus &harr;</text>
+                        <!-- User Space -->
+                        <rect x="340" y="68" width="280" height="190" rx="6" fill="url(#userGrad)" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="352" y="90" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">RING 3: USER SERVERS</text>
+                        <rect x="350" y="100" width="260" height="26" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="362" y="118" fill="#f8fafc" font-size="12" font-weight="600"
+                            font-family="sans-serif">User Applications</text>
+                        <rect x="350" y="132" width="260" height="26" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="362" y="150" fill="#cbd5e1" font-size="12" font-family="sans-serif">File System Server
+                            (User Space)</text>
+                        <rect x="350" y="164" width="260" height="26" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="362" y="182" fill="#cbd5e1" font-size="12" font-family="sans-serif">Network Protocol
+                            Server</text>
+                        <rect x="350" y="196" width="260" height="26" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="362" y="214" fill="#cbd5e1" font-size="12" font-family="sans-serif">Isolated Drivers
+                            (Crash-safe)</text>
+                        <text x="480" y="245" fill="#fbbf24" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle" class="node-glow">&harr; IPC Message Passing Bus &harr;</text>
 
-                    <!-- Privilege Barrier -->
-                    <line x1="300" y1="216" x2="540" y2="216" stroke="#ef4444" stroke-width="1.5"
-                        stroke-dasharray="3 3" />
-                    <text x="420" y="226" fill="#ef4444" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">IPC CONTEXT SWITCH BOUNDARY</text>
+                        <!-- Privilege Barrier -->
+                        <line x1="340" y1="268" x2="620" y2="268" stroke="#ef4444" stroke-width="2"
+                            stroke-dasharray="4 4" />
+                        <text x="480" y="282" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
+                            text-anchor="middle">IPC CONTEXT SWITCH BOUNDARY</text>
 
-                    <!-- Kernel Space -->
-                    <rect x="300" y="235" width="240" height="65" rx="6" fill="url(#kernGrad)" stroke="#8b5cf6"
-                        stroke-width="1.2" />
-                    <text x="310" y="253" fill="#c084fc" font-size="9.5" font-weight="700" font-family="monospace">RING
-                        0: MINIMAL KERNEL</text>
-                    <text x="310" y="271" fill="#cbd5e1" font-size="10" font-family="sans-serif">&bull; Thread
-                        Scheduling &bull; Virtual Memory</text>
-                    <text x="310" y="286" fill="#cbd5e1" font-size="10" font-family="sans-serif">&bull; Hardware IPC
-                        Primitives (Verified)</text>
+                        <!-- Kernel Space -->
+                        <rect x="340" y="294" width="280" height="79" rx="6" fill="url(#kernGrad)" stroke="#8b5cf6"
+                            stroke-width="1.5" />
+                        <text x="352" y="314" fill="#c084fc" font-size="12.5" font-weight="700"
+                            font-family="monospace">RING 0: MINIMAL KERNEL</text>
+                        <text x="352" y="336" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Thread
+                            Scheduling &bull; Virtual Memory</text>
+                        <text x="352" y="356" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Fast IPC
+                            Primitives (Formally Verified)</text>
 
-                    <!-- Column 3: Hybrid Kernel -->
-                    <rect x="570" y="15" width="255" height="300" rx="8" fill="#0d1117" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="580" y="25" width="235" height="24" rx="4" fill="#10b981" fill-opacity="0.2" />
-                    <text x="697" y="41" fill="#34d399" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">HYBRID (macOS XNU / Windows)</text>
+                        <!-- Column 3: Hybrid Kernel -->
+                        <rect x="650" y="15" width="295" height="375" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="660" y="25" width="275" height="32" rx="6" fill="#10b981" fill-opacity="0.25"
+                            stroke="#10b981" stroke-width="1" />
+                        <text x="797" y="46" fill="#34d399" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">HYBRID (macOS XNU / Windows)</text>
 
-                    <!-- User Space -->
-                    <rect x="580" y="58" width="235" height="85" rx="6" fill="url(#userGrad)" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="590" y="76" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace">RING
-                        3: USER SUBSYSTEMS</text>
-                    <rect x="590" y="85" width="215" height="22" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="600" y="100" fill="#f8fafc" font-size="9.5" font-family="sans-serif">User Applications
-                        (Cocoa / Win32)</text>
-                    <rect x="590" y="112" width="215" height="22" rx="3" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="600" y="127" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Environment Subsystem
-                        APIs</text>
+                        <!-- User Space -->
+                        <rect x="660" y="68" width="275" height="105" rx="6" fill="url(#userGrad)" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="672" y="90" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">RING 3: USER SUBSYSTEMS</text>
+                        <rect x="670" y="100" width="255" height="28" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="682" y="119" fill="#f8fafc" font-size="12" font-weight="600"
+                            font-family="sans-serif">User Apps (Cocoa / Win32 / POSIX)</text>
+                        <rect x="670" y="134" width="255" height="28" rx="4" fill="#1e293b" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="682" y="153" fill="#cbd5e1" font-size="12" font-family="sans-serif">Subsystem DLLs
+                            &amp; APIs</text>
 
-                    <!-- Privilege Barrier -->
-                    <line x1="580" y1="152" x2="815" y2="152" stroke="#ef4444" stroke-width="1.5"
-                        stroke-dasharray="3 3" />
-                    <text x="697" y="162" fill="#ef4444" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">MACH MESSAGE / SYSCALL</text>
+                        <!-- Privilege Barrier -->
+                        <line x1="660" y1="184" x2="935" y2="184" stroke="#ef4444" stroke-width="2"
+                            stroke-dasharray="4 4" />
+                        <text x="797" y="198" fill="#ef4444" font-size="11.5" font-weight="600" font-family="monospace"
+                            text-anchor="middle">MACH MESSAGE / SYSCALL TRAP</text>
 
-                    <!-- Kernel Space -->
-                    <rect x="580" y="172" width="235" height="128" rx="6" fill="url(#kernGrad)" stroke="#10b981"
-                        stroke-width="1.2" />
-                    <text x="590" y="190" fill="#34d399" font-size="9.5" font-weight="700" font-family="monospace">RING
-                        0: HYBRID KERNEL</text>
-                    <rect x="590" y="198" width="215" height="24" rx="4" fill="#13241b" stroke="#059669"
-                        stroke-width="0.8" />
-                    <text x="600" y="214" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Mach Microkernel Core
-                        (Threads/IPC)</text>
-                    <rect x="590" y="227" width="215" height="24" rx="4" fill="#13241b" stroke="#059669"
-                        stroke-width="0.8" />
-                    <text x="600" y="243" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">BSD Layer (VFS, POSIX,
-                        Networking)</text>
-                    <rect x="590" y="256" width="215" height="24" rx="4" fill="#13241b" stroke="#059669"
-                        stroke-width="0.8" />
-                    <text x="600" y="272" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">IOKit / Driver
-                        Frameworks in Kernel</text>
-                    <text x="697" y="291" fill="#34d399" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">Balance of isolation &amp; raw speed</text>
-                </svg>
+                        <!-- Kernel Space -->
+                        <rect x="660" y="210" width="275" height="163" rx="6" fill="url(#kernGrad)" stroke="#10b981"
+                            stroke-width="1.5" />
+                        <text x="672" y="230" fill="#34d399" font-size="12.5" font-weight="700"
+                            font-family="monospace">RING 0: HYBRID KERNEL</text>
+                        <rect x="670" y="240" width="255" height="28" rx="4" fill="#13241b" stroke="#059669"
+                            stroke-width="1" />
+                        <text x="682" y="259" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">Mach Microkernel
+                            (Threads &amp; IPC)</text>
+                        <rect x="670" y="274" width="255" height="28" rx="4" fill="#13241b" stroke="#059669"
+                            stroke-width="1" />
+                        <text x="682" y="293" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">BSD Layer (VFS,
+                            POSIX, TCP/IP)</text>
+                        <rect x="670" y="308" width="255" height="28" rx="4" fill="#13241b" stroke="#059669"
+                            stroke-width="1" />
+                        <text x="682" y="327" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">IOKit / Driver
+                            Frameworks in Kernel</text>
+                        <text x="797" y="358" fill="#34d399" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle">&check; Balance of isolation &amp; raw speed</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     Architectural comparison of operating system kernels: Monolithic places all OS services in Ring 0
                     for raw performance; Microkernels push drivers and file systems to isolated user servers for fault
@@ -354,109 +281,118 @@
             <div class="study-diagram" aria-label="Process State Machine Diagram">
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 2.1: Operating System Process State Transitions</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Lifecycle &bull; Scheduler
-                        Preemption &bull; I/O Wait</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>PROCESS SCHEDULING</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 2.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 280" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="Process Lifecycle and State Machine Transitions">
-                    <defs>
-                        <linearGradient id="stateGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="runGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e3a8a" />
-                            <stop offset="100%" stop-color="#0c2340" />
-                        </linearGradient>
-                        <linearGradient id="termGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#3f1219" />
-                            <stop offset="100%" stop-color="#23080e" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 380" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Process Lifecycle and State Machine Transitions">
+                        <defs>
+                            <linearGradient id="stateGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="runGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e3a8a" />
+                                <stop offset="100%" stop-color="#0c2340" />
+                            </linearGradient>
+                            <linearGradient id="termGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#3f1219" />
+                                <stop offset="100%" stop-color="#23080e" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Background guides -->
-                    <rect x="15" y="15" width="810" height="255" rx="8" fill="#0c1015" stroke="#1f2937"
-                        stroke-width="1" />
+                        <!-- Background container -->
+                        <rect x="15" y="15" width="930" height="350" rx="10" fill="#0c1015" stroke="#1f2937"
+                            stroke-width="1.5" />
 
-                    <!-- STATE: NEW -->
-                    <rect x="35" y="105" width="115" height="60" rx="8" fill="url(#stateGrad)" stroke="#475569"
-                        stroke-width="1.2" />
-                    <text x="92" y="128" fill="#94a3b8" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">NEW</text>
-                    <text x="92" y="145" fill="#cbd5e1" font-size="9" font-family="sans-serif"
-                        text-anchor="middle">fork() / clone()</text>
-                    <text x="92" y="157" fill="#64748b" font-size="8" font-family="monospace" text-anchor="middle">PCB
-                        Created</text>
+                        <!-- STATE: NEW -->
+                        <rect x="35" y="125" width="135" height="85" rx="8" fill="url(#stateGrad)" stroke="#475569"
+                            stroke-width="1.8" />
+                        <text x="102" y="155" fill="#cbd5e1" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">NEW</text>
+                        <text x="102" y="177" fill="#f8fafc" font-size="12.5" font-family="sans-serif"
+                            text-anchor="middle">fork() / clone()</text>
+                        <text x="102" y="195" fill="#94a3b8" font-size="12" font-family="monospace"
+                            text-anchor="middle">PCB Allocated</text>
 
-                    <!-- Arrow: NEW -> READY -->
-                    <path d="M 150 135 L 215 135" stroke="#38bdf8" stroke-width="2" class="dash-animated" />
-                    <text x="182" y="127" fill="#38bdf8" font-size="8" font-family="monospace"
-                        text-anchor="middle">Admit</text>
+                        <!-- Arrow: NEW -> READY -->
+                        <path d="M 170 167 L 235 167" stroke="#38bdf8" stroke-width="2.5" class="dash-animated" />
+                        <text x="202" y="157" fill="#38bdf8" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle">Admit</text>
 
-                    <!-- STATE: READY -->
-                    <rect x="220" y="105" width="130" height="60" rx="8" fill="url(#stateGrad)" stroke="#38bdf8"
-                        stroke-width="1.5" />
-                    <text x="285" y="128" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">READY</text>
-                    <text x="285" y="145" fill="#cbd5e1" font-size="9" font-family="sans-serif" text-anchor="middle">CFS
-                        Runqueue</text>
-                    <text x="285" y="157" fill="#94a3b8" font-size="8" font-family="monospace"
-                        text-anchor="middle">Waiting for Core</text>
+                        <!-- STATE: READY -->
+                        <rect x="235" y="125" width="165" height="85" rx="8" fill="url(#stateGrad)" stroke="#38bdf8"
+                            stroke-width="2" />
+                        <text x="317" y="155" fill="#38bdf8" font-size="15" font-weight="700" font-family="monospace"
+                            text-anchor="middle">READY</text>
+                        <text x="317" y="177" fill="#f8fafc" font-size="13" font-family="sans-serif"
+                            text-anchor="middle">CFS Runqueue</text>
+                        <text x="317" y="195" fill="#94a3b8" font-size="12" font-family="monospace"
+                            text-anchor="middle">Awaiting Core Dispatch</text>
 
-                    <!-- Arrow: READY -> RUNNING (Dispatch) -->
-                    <path d="M 350 125 L 435 125" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
-                    <text x="392" y="117" fill="#34d399" font-size="8.5" font-weight="700" font-family="monospace"
-                        text-anchor="middle">Dispatch &rarr;</text>
+                        <!-- Arrow: READY -> RUNNING (Dispatch) -->
+                        <path d="M 400 167 L 475 167" stroke="#34d399" stroke-width="3" class="dash-animated" />
+                        <text x="437" y="157" fill="#34d399" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Dispatch &rarr;</text>
 
-                    <!-- Arrow: RUNNING -> READY (Preempted / Time slice expired) -->
-                    <path d="M 440 105 C 410 55, 330 55, 295 105" stroke="#f59e0b" stroke-width="1.5"
-                        stroke-dasharray="4 3" />
-                    <text x="365" y="52" fill="#fbbf24" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">Quantum Expired / Preempted</text>
+                        <!-- Arrow: RUNNING -> READY (Preempted / Time slice expired) -->
+                        <path d="M 530 110 C 490 40, 360 40, 317 125" fill="none" stroke="#f59e0b" stroke-width="2"
+                            stroke-dasharray="5 4" />
+                        <text x="420" y="45" fill="#fbbf24" font-size="12.5" font-weight="600" font-family="monospace"
+                            text-anchor="middle">Preemption / Quantum Expired</text>
 
-                    <!-- STATE: RUNNING -->
-                    <rect x="440" y="95" width="135" height="80" rx="8" fill="url(#runGrad)" stroke="#60a5fa"
-                        stroke-width="2" class="node-glow" />
-                    <text x="507" y="122" fill="#60a5fa" font-size="12" font-weight="700" font-family="monospace"
-                        text-anchor="middle">RUNNING</text>
-                    <text x="507" y="141" fill="#f8fafc" font-size="9.5" font-family="sans-serif"
-                        text-anchor="middle">Active on CPU Core</text>
-                    <text x="507" y="156" fill="#93c5fd" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">executing instructions</text>
+                        <!-- STATE: RUNNING -->
+                        <rect x="475" y="110" width="180" height="115" rx="10" fill="url(#runGrad)" stroke="#60a5fa"
+                            stroke-width="2.5" class="node-glow" />
+                        <text x="565" y="145" fill="#60a5fa" font-size="16" font-weight="700" font-family="monospace"
+                            text-anchor="middle">RUNNING</text>
+                        <text x="565" y="170" fill="#f8fafc" font-size="13.5" font-weight="600" font-family="sans-serif"
+                            text-anchor="middle">Active on CPU Core</text>
+                        <text x="565" y="192" fill="#93c5fd" font-size="12" font-family="monospace"
+                            text-anchor="middle">Executing instructions</text>
+                        <circle cx="635" cy="130" r="4.5" fill="#60a5fa" class="diagram-pulse-fast" />
 
-                    <!-- Arrow: RUNNING -> TERMINATED -->
-                    <path d="M 575 135 L 665 135" stroke="#ef4444" stroke-width="2" class="dash-animated" />
-                    <text x="620" y="127" fill="#ef4444" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">exit() / SIGKILL</text>
+                        <!-- Arrow: RUNNING -> TERMINATED -->
+                        <path d="M 655 167 L 735 167" stroke="#ef4444" stroke-width="2.5" class="dash-animated" />
+                        <text x="695" y="157" fill="#ef4444" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle">exit() / SIGKILL</text>
 
-                    <!-- STATE: TERMINATED / ZOMBIE -->
-                    <rect x="670" y="105" width="135" height="60" rx="8" fill="url(#termGrad)" stroke="#ef4444"
-                        stroke-width="1.2" />
-                    <text x="737" y="128" fill="#f87171" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">TERMINATED</text>
-                    <text x="737" y="145" fill="#fca5a5" font-size="9" font-family="sans-serif"
-                        text-anchor="middle">Zombie in PCB</text>
-                    <text x="737" y="157" fill="#991b1b" font-size="8" font-family="monospace"
-                        text-anchor="middle">Awaiting waitpid()</text>
+                        <!-- STATE: TERMINATED / ZOMBIE -->
+                        <rect x="735" y="125" width="180" height="85" rx="8" fill="url(#termGrad)" stroke="#ef4444"
+                            stroke-width="1.8" />
+                        <text x="825" y="155" fill="#f87171" font-size="15" font-weight="700" font-family="monospace"
+                            text-anchor="middle">TERMINATED</text>
+                        <text x="825" y="177" fill="#fca5a5" font-size="13" font-family="sans-serif"
+                            text-anchor="middle">Zombie in PCB</text>
+                        <text x="825" y="195" fill="#f87171" font-size="12" font-family="monospace"
+                            text-anchor="middle">Awaiting waitpid()</text>
 
-                    <!-- Arrow: RUNNING -> WAITING (I/O Wait) -->
-                    <path d="M 480 175 C 480 205, 450 215, 430 215" stroke="#cbd5e1" stroke-width="1.5" />
-                    <text x="495" y="200" fill="#94a3b8" font-size="8" font-family="monospace">I/O or Event Wait</text>
+                        <!-- Arrow: RUNNING -> WAITING (I/O Wait) -->
+                        <path d="M 565 225 C 565 275, 520 295, 490 295" fill="none" stroke="#cbd5e1" stroke-width="2" />
+                        <text x="575" y="270" fill="#cbd5e1" font-size="12" font-family="monospace">I/O or Lock
+                            Wait</text>
 
-                    <!-- STATE: WAITING (BLOCKED) -->
-                    <rect x="290" y="195" width="140" height="60" rx="8" fill="url(#stateGrad)" stroke="#64748b"
-                        stroke-width="1.2" />
-                    <text x="360" y="218" fill="#cbd5e1" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">WAITING (BLOCKED)</text>
-                    <text x="360" y="234" fill="#94a3b8" font-size="9" font-family="sans-serif"
-                        text-anchor="middle">Disk &bull; Network &bull; Mutex</text>
-                    <text x="360" y="247" fill="#64748b" font-size="8" font-family="monospace"
-                        text-anchor="middle">Sleep state (TASK_INTERRUPTIBLE)</text>
+                        <!-- STATE: WAITING (BLOCKED) -->
+                        <rect x="270" y="250" width="220" height="90" rx="8" fill="url(#stateGrad)" stroke="#64748b"
+                            stroke-width="1.8" />
+                        <text x="380" y="280" fill="#cbd5e1" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">WAITING (BLOCKED)</text>
+                        <text x="380" y="302" fill="#94a3b8" font-size="12.5" font-family="sans-serif"
+                            text-anchor="middle">Disk &bull; Socket &bull; Mutex</text>
+                        <text x="380" y="322" fill="#64748b" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">TASK_INTERRUPTIBLE (Sleep)</text>
 
-                    <!-- Arrow: WAITING -> READY (I/O Complete) -->
-                    <path d="M 290 225 C 255 225, 255 190, 255 165" stroke="#34d399" stroke-width="1.5" />
-                    <text x="210" y="205" fill="#34d399" font-size="8" font-family="monospace">I/O Done &uarr;</text>
-                </svg>
+                        <!-- Arrow: WAITING -> READY (I/O Complete) -->
+                        <path d="M 270 295 C 210 295, 210 230, 235 185" fill="none" stroke="#34d399" stroke-width="2"
+                            stroke-dasharray="4 3" />
+                        <text x="175" y="260" fill="#34d399" font-size="12" font-weight="600"
+                            font-family="monospace">I/O Done &uarr;</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     Process life-cycle state transitions: The CPU scheduler picks ready processes via CFS dispatch.
                     Blocking for I/O moves processes to sleep without consuming CPU cycles until hardware interrupts
@@ -505,125 +441,135 @@
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 4.1: Linux CFS Runqueue &amp; Red-Black Tree
                         Architecture</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">vruntime &bull;
-                        rb_leftmost Cache &bull; O(1) Task Selection</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>CFS SCHEDULER</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 4.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 310" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="Linux CFS Runqueue and Red-Black Tree Architecture">
-                    <defs>
-                        <linearGradient id="rbGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="leftmostGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#064e3b" />
-                            <stop offset="100%" stop-color="#022c22" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 400" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Linux CFS Runqueue and Red-Black Tree Architecture">
+                        <defs>
+                            <linearGradient id="rbGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="leftmostGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#064e3b" />
+                                <stop offset="100%" stop-color="#022c22" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Left Card: CFS Scheduling Math & Mechanics -->
-                    <rect x="15" y="15" width="280" height="280" rx="8" fill="#0e1318" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="25" y="25" width="260" height="24" rx="4" fill="#0284c7" fill-opacity="0.2" />
-                    <text x="155" y="41" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">CFS SCHEDULER LOGIC</text>
+                        <!-- Left Panel: CFS Scheduling Math & Mechanics -->
+                        <rect x="15" y="15" width="340" height="370" rx="10" fill="#0e1318" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="25" y="25" width="320" height="32" rx="6" fill="#0284c7" fill-opacity="0.25"
+                            stroke="#0284c7" stroke-width="1" />
+                        <text x="185" y="46" fill="#38bdf8" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">CFS SCHEDULER LOGIC</text>
 
-                    <rect x="25" y="60" width="260" height="60" rx="5" fill="#1e293b" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="35" y="78" fill="#fbbf24" font-size="10" font-weight="700" font-family="monospace">vruntime
-                        FORMULA:</text>
-                    <text x="35" y="96" fill="#cbd5e1" font-size="10" font-family="monospace">vruntime += &Delta;exec *
-                        (1024 / weight)</text>
-                    <text x="35" y="110" fill="#94a3b8" font-size="8.5" font-family="sans-serif">Lower nice (-20) &rarr;
-                        higher weight &rarr; slower vruntime</text>
+                        <rect x="25" y="70" width="320" height="75" rx="6" fill="#1e293b" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="40" y="92" fill="#fbbf24" font-size="13" font-weight="700"
+                            font-family="monospace">vruntime FORMULA:</text>
+                        <text x="40" y="114" fill="#cbd5e1" font-size="12.5" font-family="monospace">vruntime +=
+                            &Delta;exec * (1024 / weight)</text>
+                        <text x="40" y="132" fill="#94a3b8" font-size="12" font-family="sans-serif">Lower nice (-20)
+                            &rarr; higher weight &rarr; slower vruntime</text>
 
-                    <rect x="25" y="130" width="260" height="50" rx="5" fill="#1e293b" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="35" y="148" fill="#34d399" font-size="10" font-weight="700"
-                        font-family="monospace">SELECTION COMPLEXITY:</text>
-                    <text x="35" y="167" fill="#cbd5e1" font-size="9.5" font-family="sans-serif">Pick Next Task: <strong
-                            style="color: #34d399;">O(1)</strong> via rb_leftmost</text>
-                    <text x="35" y="178" fill="#94a3b8" font-size="8.5" font-family="sans-serif">Re-insert Task:
-                        <strong>O(log N)</strong> Red-Black tree</text>
+                        <rect x="25" y="155" width="320" height="75" rx="6" fill="#1e293b" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="40" y="177" fill="#34d399" font-size="13" font-weight="700"
+                            font-family="monospace">SELECTION COMPLEXITY:</text>
+                        <text x="40" y="199" fill="#f8fafc" font-size="13" font-family="sans-serif">Pick Next Task:
+                            <strong style="color: #34d399;">O(1)</strong> via rb_leftmost cache</text>
+                        <text x="40" y="217" fill="#94a3b8" font-size="12" font-family="sans-serif">Re-insert Task:
+                            <strong>O(log N)</strong> Red-Black tree</text>
 
-                    <rect x="25" y="190" width="260" height="90" rx="5" fill="#131b26" stroke="#2563eb"
-                        stroke-width="1" />
-                    <text x="35" y="208" fill="#60a5fa" font-size="10" font-weight="700"
-                        font-family="monospace">EXECUTION CYCLE:</text>
-                    <text x="35" y="226" fill="#cbd5e1" font-size="9" font-family="sans-serif">1. CPU core grabs task at
-                        rb_leftmost</text>
-                    <text x="35" y="241" fill="#cbd5e1" font-size="9" font-family="sans-serif">2. Runs until timeslice /
-                        quantum ends</text>
-                    <text x="35" y="256" fill="#cbd5e1" font-size="9" font-family="sans-serif">3. Computes accumulated
-                        runtime</text>
-                    <text x="35" y="271" fill="#38bdf8" font-size="9" font-family="sans-serif">4. Re-inserts into tree
-                        &amp; balances</text>
+                        <rect x="25" y="240" width="320" height="130" rx="6" fill="#131b26" stroke="#2563eb"
+                            stroke-width="1.2" />
+                        <text x="40" y="263" fill="#60a5fa" font-size="13" font-weight="700"
+                            font-family="monospace">EXECUTION CYCLE:</text>
+                        <text x="40" y="287" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">1. CPU core
+                            dequeues task at rb_leftmost</text>
+                        <text x="40" y="307" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">2. Runs task until
+                            timeslice / quantum expires</text>
+                        <text x="40" y="327" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">3. Updates
+                            accumulated task vruntime</text>
+                        <text x="40" y="347" fill="#38bdf8" font-size="12.5" font-family="sans-serif">4. Re-inserts into
+                            RB-Tree &amp; balances tree</text>
 
-                    <!-- Right Container: Red-Black Tree Visualization -->
-                    <rect x="310" y="15" width="515" height="280" rx="8" fill="#0b0f14" stroke="#334155"
-                        stroke-width="1.2" />
-                    <text x="567" y="38" fill="#cbd5e1" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">cfs_rq &bull; struct rb_root_cached</text>
+                        <!-- Right Panel: Red-Black Tree Visualization -->
+                        <rect x="375" y="15" width="570" height="370" rx="10" fill="#0b0f14" stroke="#334155"
+                            stroke-width="1.8" />
+                        <text x="660" y="44" fill="#e2e8f0" font-size="13.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">cfs_rq &bull; struct rb_root_cached (Self-Balancing RB-Tree)</text>
 
-                    <!-- Tree Branches (Lines) -->
-                    <line x1="567" y1="85" x2="455" y2="140" stroke="#475569" stroke-width="2" />
-                    <line x1="567" y1="85" x2="685" y2="140" stroke="#475569" stroke-width="2" />
-                    <line x1="455" y1="170" x2="380" y2="225" stroke="#34d399" stroke-width="2.5"
-                        class="dash-animated" />
-                    <line x1="455" y1="170" x2="520" y2="225" stroke="#475569" stroke-width="1.5" />
-                    <line x1="685" y1="170" x2="760" y2="225" stroke="#475569" stroke-width="1.5" />
+                        <!-- Tree Branches (Lines) -->
+                        <line x1="660" y1="105" x2="530" y2="175" stroke="#475569" stroke-width="2.5" />
+                        <line x1="660" y1="105" x2="790" y2="175" stroke="#475569" stroke-width="2.5" />
+                        <line x1="530" y1="210" x2="445" y2="280" stroke="#34d399" stroke-width="3"
+                            class="dash-animated" />
+                        <line x1="530" y1="210" x2="610" y2="280" stroke="#475569" stroke-width="2" />
+                        <line x1="790" y1="210" x2="875" y2="280" stroke="#475569" stroke-width="2" />
 
-                    <!-- ROOT NODE: Black -->
-                    <rect x="507" y="55" width="120" height="46" rx="6" fill="#020617" stroke="#94a3b8"
-                        stroke-width="2" />
-                    <text x="567" y="73" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 4012 (Root)</text>
-                    <text x="567" y="88" fill="#38bdf8" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 142ms</text>
+                        <!-- ROOT NODE: Black -->
+                        <rect x="590" y="65" width="140" height="55" rx="8" fill="#020617" stroke="#94a3b8"
+                            stroke-width="2" />
+                        <text x="660" y="88" fill="#f8fafc" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 4012 (Root)</text>
+                        <text x="660" y="106" fill="#38bdf8" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 142ms</text>
 
-                    <!-- LEFT CHILD: Red -->
-                    <rect x="395" y="130" width="120" height="46" rx="6" fill="#450a0a" stroke="#ef4444"
-                        stroke-width="1.5" />
-                    <text x="455" y="148" fill="#fca5a5" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 1024</text>
-                    <text x="455" y="163" fill="#cbd5e1" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 88ms</text>
+                        <!-- LEFT CHILD: Red -->
+                        <rect x="460" y="160" width="140" height="55" rx="8" fill="#450a0a" stroke="#ef4444"
+                            stroke-width="2" />
+                        <text x="530" y="183" fill="#fca5a5" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 1024</text>
+                        <text x="530" y="201" fill="#cbd5e1" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 88ms</text>
 
-                    <!-- RIGHT CHILD: Black -->
-                    <rect x="625" y="130" width="120" height="46" rx="6" fill="#020617" stroke="#94a3b8"
-                        stroke-width="1.5" />
-                    <text x="685" y="148" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 8096</text>
-                    <text x="685" y="163" fill="#cbd5e1" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 195ms</text>
+                        <!-- RIGHT CHILD: Black -->
+                        <rect x="720" y="160" width="140" height="55" rx="8" fill="#020617" stroke="#94a3b8"
+                            stroke-width="2" />
+                        <text x="790" y="183" fill="#f8fafc" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 8096</text>
+                        <text x="790" y="201" fill="#cbd5e1" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 195ms</text>
 
-                    <!-- LEFTMOST NODE: Next To Run (Green Glow) -->
-                    <rect x="320" y="215" width="125" height="56" rx="6" fill="url(#leftmostGrad)" stroke="#34d399"
-                        stroke-width="2" class="node-glow" />
-                    <rect x="325" y="220" width="115" height="15" rx="3" fill="#10b981" fill-opacity="0.3" />
-                    <text x="382" y="231" fill="#34d399" font-size="8" font-weight="700" font-family="monospace"
-                        text-anchor="middle">&starf; rb_leftmost &starf;</text>
-                    <text x="382" y="248" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 2048 [NEXT]</text>
-                    <text x="382" y="262" fill="#a7f3d0" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 45ms</text>
+                        <!-- LEFTMOST NODE: Next To Run (Green Glow) -->
+                        <rect x="385" y="265" width="145" height="70" rx="8" fill="url(#leftmostGrad)" stroke="#34d399"
+                            stroke-width="2.5" class="node-glow" />
+                        <rect x="395" y="272" width="125" height="18" rx="4" fill="#10b981" fill-opacity="0.3" />
+                        <text x="457" y="285" fill="#34d399" font-size="10.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">&starf; rb_leftmost &starf;</text>
+                        <text x="457" y="306" fill="#f8fafc" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 2048 [NEXT]</text>
+                        <text x="457" y="324" fill="#a7f3d0" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 45ms</text>
 
-                    <!-- MIDDLE CHILD: Black -->
-                    <rect x="465" y="220" width="110" height="46" rx="6" fill="#020617" stroke="#94a3b8"
-                        stroke-width="1.5" />
-                    <text x="520" y="238" fill="#f8fafc" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 5120</text>
-                    <text x="520" y="253" fill="#cbd5e1" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 112ms</text>
+                        <!-- MIDDLE CHILD: Black -->
+                        <rect x="545" y="275" width="130" height="55" rx="8" fill="#020617" stroke="#94a3b8"
+                            stroke-width="1.8" />
+                        <text x="610" y="298" fill="#f8fafc" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 5120</text>
+                        <text x="610" y="316" fill="#cbd5e1" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 112ms</text>
 
-                    <!-- FAR RIGHT CHILD: Red -->
-                    <rect x="705" y="220" width="110" height="46" rx="6" fill="#450a0a" stroke="#ef4444"
-                        stroke-width="1.5" />
-                    <text x="760" y="238" fill="#fca5a5" font-size="10" font-weight="700" font-family="monospace"
-                        text-anchor="middle">PID: 9110</text>
-                    <text x="760" y="253" fill="#cbd5e1" font-size="9" font-family="monospace"
-                        text-anchor="middle">vruntime: 280ms</text>
-                </svg>
+                        <!-- FAR RIGHT CHILD: Red -->
+                        <rect x="810" y="275" width="130" height="55" rx="8" fill="#450a0a" stroke="#ef4444"
+                            stroke-width="1.8" />
+                        <text x="875" y="298" fill="#fca5a5" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PID: 9110</text>
+                        <text x="875" y="316" fill="#cbd5e1" font-size="12" font-family="monospace"
+                            text-anchor="middle">vruntime: 280ms</text>
+
+                        <text x="660" y="365" fill="#94a3b8" font-size="12" font-family="monospace"
+                            text-anchor="middle">Lowest vruntime is always cached at leftmost node &rarr; O(1)
+                            pick</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     The Linux Completely Fair Scheduler (CFS) maintains all runnable tasks in a Red-Black Tree ordered
                     by virtual runtime (<code style="color: #38bdf8;">vruntime</code>). The task with the least CPU
@@ -660,8 +606,155 @@ Max[n][m]: Max demand of process n
 Allocation[n][m]: Currently allocated instances
 Need[n][m] = Max[n][m] - Allocation[n][m]
 
-// A state is safe if there exists a sequence <P0, P1, ... Pn-1>
-// such that for each Pi, Need[i] <= Available + Sum(Allocation[j]) for j < i</code></pre>
+// A state is safe if there exists a sequence &lt;P0, P1, ... Pn-1&gt;
+// such that for each Pi, Need[i] &lt;= Available + Sum(Allocation[j]) for j &lt; i</code></pre>
+
+            <!-- New Architecture Diagram: Synchronization Primitives & Deadlock Graph -->
+            <div class="study-diagram" aria-label="Synchronization Primitives and Deadlock Graph">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 6.1: Synchronization Primitives &amp; Deadlock
+                        Dynamics</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>CONCURRENCY &amp;
+                            LOCKS</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 6.1">⛶
+                            Expand</button>
+                    </div>
+                </div>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 390" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Synchronization Primitives and Coffman Deadlock Cycle Diagram">
+                        <!-- Left Panel: Synchronization Primitives -->
+                        <rect x="15" y="15" width="455" height="355" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="25" y="25" width="435" height="32" rx="6" fill="#0284c7" fill-opacity="0.25"
+                            stroke="#0284c7" stroke-width="1" />
+                        <text x="242" y="46" fill="#38bdf8" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">SYNCHRONIZATION PRIMITIVES COMPARED</text>
+
+                        <!-- Mutex -->
+                        <rect x="25" y="70" width="435" height="85" rx="6" fill="#1e293b" stroke="#38bdf8"
+                            stroke-width="1.2" />
+                        <text x="38" y="92" fill="#38bdf8" font-size="13.5" font-weight="700" font-family="monospace">1.
+                            MUTEX (Mutual Exclusion Sleep-Lock)</text>
+                        <text x="38" y="112" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Binary
+                            ownership: Only the thread that acquired the lock can release it.</text>
+                        <text x="38" y="130" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Uses
+                            <strong>Linux futex</strong>: Atomic CAS in user space; sleeps in kernel only on
+                            contention.</text>
+                        <text x="38" y="147" fill="#34d399" font-size="12" font-family="monospace">Best for: Protecting
+                            long critical sections &amp; shared state</text>
+
+                        <!-- Counting Semaphore -->
+                        <rect x="25" y="165" width="435" height="85" rx="6" fill="#1e293b" stroke="#10b981"
+                            stroke-width="1.2" />
+                        <text x="38" y="187" fill="#34d399" font-size="13.5" font-weight="700"
+                            font-family="monospace">2. COUNTING SEMAPHORE (Resource Permits)</text>
+                        <text x="38" y="207" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; Initialized
+                            with count <em>N</em>; <code>wait()</code> decrements, <code>post()</code>
+                            increments.</text>
+                        <text x="38" y="225" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull; No strict
+                            ownership: One thread can signal/wake another waiting thread.</text>
+                        <text x="38" y="242" fill="#38bdf8" font-size="12" font-family="monospace">Best for:
+                            Rate-limiting pools (DB connections, worker queues)</text>
+
+                        <!-- Spinlock -->
+                        <rect x="25" y="260" width="435" height="95" rx="6" fill="#1e293b" stroke="#f59e0b"
+                            stroke-width="1.2" />
+                        <text x="38" y="282" fill="#fbbf24" font-size="13.5" font-weight="700"
+                            font-family="monospace">3. SPINLOCK (Busy-Waiting Loop)</text>
+                        <text x="38" y="302" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">&bull;
+                            Continuously polls atomic flag (<code>PAUSE / test-and-set</code>) without sleeping.</text>
+                        <text x="38" y="320" fill="#f87171" font-size="12.5" font-family="sans-serif">&bull; Zero
+                            context switch overhead, but consumes 100% CPU on that core.</text>
+                        <text x="38" y="339" fill="#fbbf24" font-size="12" font-family="monospace">Best for: Kernel
+                            interrupt handlers (cannot sleep) &amp; sub-microsecond locks</text>
+
+                        <!-- Right Panel: Deadlock Conditions & Resource Allocation Graph -->
+                        <rect x="490" y="15" width="455" height="355" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="500" y="25" width="435" height="32" rx="6" fill="#ef4444" fill-opacity="0.25"
+                            stroke="#ef4444" stroke-width="1" />
+                        <text x="717" y="46" fill="#f87171" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">THE 4 COFFMAN CONDITIONS &amp; DEADLOCK</text>
+
+                        <!-- 4 Coffman Badges -->
+                        <rect x="500" y="68" width="205" height="26" rx="4" fill="#1f183d" stroke="#6366f1"
+                            stroke-width="1" />
+                        <text x="602" y="85" fill="#cbd5e1" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">1. Mutual Exclusion</text>
+                        <rect x="730" y="68" width="205" height="26" rx="4" fill="#1f183d" stroke="#6366f1"
+                            stroke-width="1" />
+                        <text x="832" y="85" fill="#cbd5e1" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">2. Hold &amp; Wait</text>
+                        <rect x="500" y="100" width="205" height="26" rx="4" fill="#1f183d" stroke="#6366f1"
+                            stroke-width="1" />
+                        <text x="602" y="117" fill="#cbd5e1" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">3. No Preemption</text>
+                        <rect x="730" y="100" width="205" height="26" rx="4" fill="#450a0a" stroke="#ef4444"
+                            stroke-width="1" />
+                        <text x="832" y="117" fill="#fca5a5" font-size="11.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">4. Circular Wait &starf;</text>
+
+                        <!-- Circular Dependency Graph -->
+                        <!-- Thread 1 -->
+                        <circle cx="585" cy="180" r="32" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
+                        <text x="585" y="178" fill="#38bdf8" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Thread 1</text>
+                        <text x="585" y="194" fill="#94a3b8" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">(Holding A)</text>
+
+                        <!-- Lock A -->
+                        <rect x="545" y="245" width="80" height="42" rx="6" fill="#1e3a8a" stroke="#60a5fa"
+                            stroke-width="1.8" />
+                        <text x="585" y="265" fill="#93c5fd" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Mutex A</text>
+                        <text x="585" y="278" fill="#cbd5e1" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">Held by T1</text>
+
+                        <!-- Thread 2 -->
+                        <circle cx="850" cy="180" r="32" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />
+                        <text x="850" y="178" fill="#38bdf8" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Thread 2</text>
+                        <text x="850" y="194" fill="#94a3b8" font-size="10.5" font-family="sans-serif"
+                            text-anchor="middle">(Holding B)</text>
+
+                        <!-- Lock B -->
+                        <rect x="810" y="245" width="80" height="42" rx="6" fill="#1e3a8a" stroke="#60a5fa"
+                            stroke-width="1.8" />
+                        <text x="850" y="265" fill="#93c5fd" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Mutex B</text>
+                        <text x="850" y="278" fill="#cbd5e1" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">Held by T2</text>
+
+                        <!-- Dependency Arrows (Cycle) -->
+                        <!-- T1 requests Mutex B -->
+                        <path d="M 617 180 L 810 250" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"
+                            class="dash-animated" />
+                        <text x="700" y="205" fill="#f87171" font-size="12" font-weight="700" font-family="monospace">T1
+                            waits for B &rarr;</text>
+
+                        <!-- T2 requests Mutex A -->
+                        <path d="M 818 180 L 625 250" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"
+                            class="dash-animated" />
+                        <text x="700" y="235" fill="#f87171" font-size="12" font-weight="700"
+                            font-family="monospace">&larr; T2 waits for A</text>
+
+                        <rect x="500" y="305" width="435" height="50" rx="6" fill="#450a0a" stroke="#ef4444"
+                            stroke-width="1.2" />
+                        <text x="717" y="324" fill="#fca5a5" font-size="12.5" font-weight="700" font-family="monospace"
+                            text-anchor="middle">&cross; DEADLOCK CYCLE: Both threads sleep forever</text>
+                        <text x="717" y="342" fill="#fecaca" font-size="11.5" font-family="sans-serif"
+                            text-anchor="middle">Prevention Solution: Enforce global lock acquisition hierarchy (Always
+                            acquire Lock A before B)</text>
+                    </svg>
+                </div>
+                <div class="study-diagram-caption">
+                    Synchronization and Deadlock Mechanics: Mutexes, Semaphores, and Spinlocks offer different
+                    trade-offs between context switches and CPU consumption. When concurrent threads violate lock
+                    hierarchy, a circular wait cycle forms the 4th Coffman condition, causing unrecoverable deadlock.
+                </div>
+            </div>
 
             <h2 id="7-multi-level-paging--tlb-shootdowns">7. Multi-Level Paging &amp; TLB Shootdown<a class="headerlink"
                     href="#7-multi-level-paging--tlb-shootdowns" title="Permanent link">#</a></h2>
@@ -679,6 +772,193 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                     TLB
                     entries for that address.</li>
             </ul>
+
+            <!-- New Architecture Diagram: Multi-Level Paging, MMU & TLB Translation -->
+            <div class="study-diagram" aria-label="Virtual Memory Multi-Level Paging and TLB Translation Diagram">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 7.1: Virtual Memory Architecture: Multi-Level Paging, MMU
+                        &amp; TLB Translation</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>MEMORY MANAGEMENT</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 7.1">⛶
+                            Expand</button>
+                    </div>
+                </div>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 410" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="x86-64 Multi-Level Paging and Hardware MMU Address Translation">
+                        <defs>
+                            <linearGradient id="vaGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="tlbHitGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#064e3b" />
+                                <stop offset="100%" stop-color="#022c22" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- Top Section: 64-Bit Virtual Address Breakdown -->
+                        <rect x="15" y="15" width="930" height="95" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <text x="35" y="38" fill="#38bdf8" font-size="13" font-weight="700"
+                            font-family="monospace">x86-64 48-BIT CANONICAL VIRTUAL ADDRESS DECOMPOSITION</text>
+
+                        <!-- Address Bit Slices -->
+                        <rect x="35" y="52" width="130" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="100" y="70" fill="#cbd5e1" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Bits [47:39]</text>
+                        <text x="100" y="86" fill="#38bdf8" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">PML4 Index (9b)</text>
+
+                        <rect x="175" y="52" width="130" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="240" y="70" fill="#cbd5e1" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Bits [38:30]</text>
+                        <text x="240" y="86" fill="#818cf8" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">PDPT Index (9b)</text>
+
+                        <rect x="315" y="52" width="130" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="380" y="70" fill="#cbd5e1" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Bits [29:21]</text>
+                        <text x="380" y="86" fill="#a78bfa" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">PD Index (9b)</text>
+
+                        <rect x="455" y="52" width="130" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="520" y="70" fill="#cbd5e1" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Bits [20:12]</text>
+                        <text x="520" y="86" fill="#f59e0b" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">PT Index (9b)</text>
+
+                        <rect x="595" y="52" width="180" height="42" rx="4" fill="#1e293b" stroke="#34d399"
+                            stroke-width="1.2" />
+                        <text x="685" y="70" fill="#34d399" font-size="12" font-weight="700" font-family="monospace"
+                            text-anchor="middle">Bits [11:0] (12 bits)</text>
+                        <text x="685" y="86" fill="#a7f3d0" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">Page Offset (4 KB align)</text>
+
+                        <rect x="785" y="52" width="145" height="42" rx="4" fill="#141a24" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="857" y="70" fill="#94a3b8" font-size="11.5" font-family="monospace"
+                            text-anchor="middle">Sign Extension</text>
+                        <text x="857" y="86" fill="#64748b" font-size="11" font-family="monospace"
+                            text-anchor="middle">[63:48] Canonical</text>
+
+                        <!-- Middle Left: MMU & TLB Hardware -->
+                        <rect x="15" y="125" width="410" height="270" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <text x="35" y="148" fill="#34d399" font-size="13" font-weight="700"
+                            font-family="monospace">HARDWARE MMU &amp; TRANSLATION CACHE</text>
+
+                        <!-- Fast Path: TLB -->
+                        <rect x="30" y="165" width="380" height="85" rx="8" fill="url(#tlbHitGrad)" stroke="#34d399"
+                            stroke-width="1.8" class="node-glow" />
+                        <text x="45" y="188" fill="#34d399" font-size="13.5" font-weight="700"
+                            font-family="monospace">&starf; TLB FAST PATH (Translation Lookaside Buffer)</text>
+                        <text x="45" y="210" fill="#f8fafc" font-size="12.5" font-family="sans-serif">&bull; Hardware
+                            associative L1/L2 CAM cache on CPU core.</text>
+                        <text x="45" y="230" fill="#a7f3d0" font-size="12.5" font-weight="600"
+                            font-family="monospace">TLB HIT Latency: ~1 to 2 cycles (~0.5 - 1 ns) &rarr; Frame in
+                            RAM</text>
+
+                        <!-- Slow Path: Page Walk -->
+                        <rect x="30" y="265" width="380" height="115" rx="8" fill="#1f183d" stroke="#ef4444"
+                            stroke-width="1.5" />
+                        <text x="45" y="288" fill="#fca5a5" font-size="13.5" font-weight="700"
+                            font-family="monospace">&cross; TLB MISS: 4-LEVEL HARDWARE PAGE WALK</text>
+                        <text x="45" y="310" fill="#cbd5e1" font-size="12" font-family="sans-serif">1. Reads <strong>CR3
+                                register</strong> for PML4 base physical address in RAM.</text>
+                        <text x="45" y="328" fill="#cbd5e1" font-size="12" font-family="sans-serif">2. Follows 4
+                            pointers in DRAM: PML4 &rarr; PDPT &rarr; PD &rarr; PTE.</text>
+                        <text x="45" y="348" fill="#f87171" font-size="12" font-family="monospace">TLB MISS Penalty: ~60
+                            to 100 ns (4 sequential DRAM accesses!)</text>
+                        <text x="45" y="367" fill="#fbbf24" font-size="11.5" font-family="sans-serif">Result cached into
+                            TLB for subsequent instructions.</text>
+
+                        <!-- Middle Right: 4-Level Page Table Hierarchy -->
+                        <rect x="445" y="125" width="500" height="270" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <text x="465" y="148" fill="#818cf8" font-size="13" font-weight="700"
+                            font-family="monospace">4-LEVEL HIERARCHY &amp; PHYSICAL RAM FRAME</text>
+
+                        <!-- CR3 Register -->
+                        <rect x="465" y="165" width="90" height="42" rx="4" fill="#1e1e38" stroke="#818cf8"
+                            stroke-width="1.2" />
+                        <text x="510" y="183" fill="#a5b4fc" font-size="11" font-weight="700" font-family="monospace"
+                            text-anchor="middle">CR3 Reg</text>
+                        <text x="510" y="198" fill="#cbd5e1" font-size="10" font-family="monospace"
+                            text-anchor="middle">PML4 Base</text>
+
+                        <!-- Step lines -->
+                        <path d="M 555 186 L 585 186" stroke="#818cf8" stroke-width="2" class="dash-animated" />
+
+                        <!-- Tables Column -->
+                        <rect x="585" y="165" width="75" height="42" rx="4" fill="#0f172a" stroke="#38bdf8"
+                            stroke-width="1" />
+                        <text x="622" y="183" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PML4</text>
+                        <text x="622" y="198" fill="#94a3b8" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">512 entries</text>
+
+                        <path d="M 660 186 L 685 186" stroke="#818cf8" stroke-width="2" class="dash-animated" />
+
+                        <rect x="685" y="165" width="75" height="42" rx="4" fill="#0f172a" stroke="#818cf8"
+                            stroke-width="1" />
+                        <text x="722" y="183" fill="#818cf8" font-size="11" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PDPT</text>
+                        <text x="722" y="198" fill="#94a3b8" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">512 entries</text>
+
+                        <path d="M 760 186 L 785 186" stroke="#818cf8" stroke-width="2" class="dash-animated" />
+
+                        <rect x="785" y="165" width="70" height="42" rx="4" fill="#0f172a" stroke="#a78bfa"
+                            stroke-width="1" />
+                        <text x="820" y="183" fill="#a78bfa" font-size="11" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PD</text>
+                        <text x="820" y="198" fill="#94a3b8" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">512 entries</text>
+
+                        <path d="M 855 186 L 880 186" stroke="#818cf8" stroke-width="2" class="dash-animated" />
+
+                        <rect x="880" y="165" width="55" height="42" rx="4" fill="#0f172a" stroke="#f59e0b"
+                            stroke-width="1" />
+                        <text x="907" y="183" fill="#f59e0b" font-size="11" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PTE</text>
+                        <text x="907" y="198" fill="#94a3b8" font-size="10" font-family="sans-serif"
+                            text-anchor="middle">Flags</text>
+
+                        <!-- Page Table Entry Detail -->
+                        <rect x="465" y="225" width="465" height="70" rx="6" fill="#1e2430" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="478" y="246" fill="#38bdf8" font-size="12" font-weight="700"
+                            font-family="monospace">PTE BIT FLAGS (64-bit Entry):</text>
+                        <text x="478" y="266" fill="#cbd5e1" font-size="11.5" font-family="sans-serif"><span
+                                style="color: #34d399; font-weight: 700;">[P] Present</span> &bull; <span
+                                style="color: #f59e0b;">[R/W] Read/Write</span> &bull; [U/S] User/Supervisor &bull; [D]
+                            Dirty &bull; <span style="color: #ef4444;">[NX] No-Execute</span></text>
+                        <text x="478" y="284" fill="#fca5a5" font-size="11" font-family="monospace">If Present Bit P = 0
+                            &rarr; Page Fault Exception (Interrupt 14) &rarr; Demand Paging / COW</text>
+
+                        <!-- Physical Frame in RAM -->
+                        <rect x="465" y="310" width="465" height="70" rx="6" fill="#064e3b" stroke="#34d399"
+                            stroke-width="1.8" />
+                        <text x="478" y="333" fill="#34d399" font-size="13" font-weight="700"
+                            font-family="monospace">PHYSICAL FRAME IN HARDWARE DRAM</text>
+                        <text x="478" y="352" fill="#f8fafc" font-size="12" font-family="sans-serif">Physical Address =
+                            (Physical Page Frame Base &lt;&lt; 12) | 12-bit Offset</text>
+                        <text x="478" y="369" fill="#a7f3d0" font-size="11.5" font-family="monospace">&check; Zero
+                            memory fragmentation: 4 KB pages mapped non-contiguously in RAM</text>
+                    </svg>
+                </div>
+                <div class="study-diagram-caption">
+                    Virtual Memory and Multi-Level Paging Architecture: Hardware MMU translates 48-bit canonical virtual
+                    addresses to physical RAM frames. The TLB provides sub-nanosecond cache hits; on a TLB miss, the MMU
+                    executes a 4-level page table walk using CR3 before caching the translation.
+                </div>
+            </div>
 
             <h2 id="8-virtual-memory-internals--cow">8. Copy-On-Write (COW) &amp; Page Swapping<a class="headerlink"
                     href="#8-virtual-memory-internals--cow" title="Permanent link">#</a></h2>
@@ -712,6 +992,185 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
                     seconds without needing a full-disk <code>fsck</code> scan.</li>
             </ol>
 
+            <!-- New Architecture Diagram: Linux VFS, Inodes & Storage Block Allocation -->
+            <div class="study-diagram" aria-label="Linux VFS and Inode Filesystem Architecture">
+                <div class="study-diagram-header">
+                    <span class="study-diagram-title">Figure 9.1: Linux VFS &amp; Inode Architecture: File Descriptors,
+                        Inodes &amp; ext4 Blocks</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>FILE SYSTEMS</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 9.1">⛶
+                            Expand</button>
+                    </div>
+                </div>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 410" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Linux Virtual File System VFS Inode and Storage Block Architecture">
+                        <!-- Col 1: User Space Process FD Table -->
+                        <rect x="15" y="15" width="200" height="310" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="25" y="25" width="180" height="32" rx="6" fill="#0284c7" fill-opacity="0.25"
+                            stroke="#0284c7" stroke-width="1" />
+                        <text x="115" y="46" fill="#38bdf8" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PROCESS FD TABLE</text>
+
+                        <rect x="25" y="68" width="180" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="35" y="86" fill="#94a3b8" font-size="11.5" font-family="monospace">fd[0]: stdin</text>
+                        <text x="35" y="100" fill="#64748b" font-size="10" font-family="sans-serif">Terminal
+                            keyboard</text>
+
+                        <rect x="25" y="118" width="180" height="42" rx="4" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="35" y="136" fill="#94a3b8" font-size="11.5" font-family="monospace">fd[1]:
+                            stdout</text>
+                        <text x="35" y="150" fill="#64748b" font-size="10" font-family="sans-serif">Terminal
+                            display</text>
+
+                        <!-- Active File Descriptor fd[3] -->
+                        <rect x="25" y="170" width="180" height="70" rx="6" fill="#064e3b" stroke="#34d399"
+                            stroke-width="1.8" class="node-glow" />
+                        <text x="35" y="193" fill="#34d399" font-size="13" font-weight="700"
+                            font-family="monospace">fd[3]: Active File</text>
+                        <text x="35" y="211" fill="#f8fafc" font-size="12" font-family="sans-serif">open("data.log",
+                            O_RDWR)</text>
+                        <text x="35" y="228" fill="#a7f3d0" font-size="11" font-family="monospace">Index in struct
+                            task_struct</text>
+
+                        <text x="115" y="275" fill="#94a3b8" font-size="11" font-family="sans-serif"
+                            text-anchor="middle">Per-process integer handle</text>
+                        <text x="115" y="295" fill="#64748b" font-size="11" font-family="monospace"
+                            text-anchor="middle">dup2() &bull; close()</text>
+
+                        <!-- Arrow Col 1 -> Col 2 -->
+                        <path d="M 205 205 L 240 205" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+
+                        <!-- Col 2: System-Wide Open File Table -->
+                        <rect x="240" y="15" width="220" height="310" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="250" y="25" width="200" height="32" rx="6" fill="#818cf8" fill-opacity="0.25"
+                            stroke="#818cf8" stroke-width="1" />
+                        <text x="350" y="46" fill="#a5b4fc" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">OPEN FILE TABLE</text>
+
+                        <rect x="250" y="68" width="200" height="175" rx="6" fill="#17122b" stroke="#818cf8"
+                            stroke-width="1.2" />
+                        <text x="262" y="90" fill="#c084fc" font-size="12.5" font-weight="700"
+                            font-family="monospace">struct file (Kernel)</text>
+                        <text x="262" y="112" fill="#cbd5e1" font-size="12" font-family="sans-serif">&bull;
+                            <strong>f_pos:</strong> 8192 (seek byte)</text>
+                        <text x="262" y="132" fill="#cbd5e1" font-size="12" font-family="sans-serif">&bull;
+                            <strong>f_flags:</strong> O_RDWR | O_APPEND</text>
+                        <text x="262" y="152" fill="#cbd5e1" font-size="12" font-family="sans-serif">&bull;
+                            <strong>f_count:</strong> 2 (ref count)</text>
+                        <text x="262" y="172" fill="#34d399" font-size="12" font-family="sans-serif">&bull;
+                            <strong>f_op:</strong> ext4_file_ops</text>
+                        <text x="262" y="195" fill="#38bdf8" font-size="11.5" font-family="monospace">&bull; Pointer to
+                            dentry &amp; inode</text>
+
+                        <text x="350" y="270" fill="#94a3b8" font-size="11.5" font-family="sans-serif"
+                            text-anchor="middle">Shared across fork()</text>
+                        <text x="350" y="290" fill="#cbd5e1" font-size="11" font-family="monospace"
+                            text-anchor="middle">Independent lseek() states</text>
+
+                        <!-- Arrow Col 2 -> Col 3 -->
+                        <path d="M 460 205 L 485 205" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+
+                        <!-- Col 3: Inode Table -->
+                        <rect x="485" y="15" width="245" height="310" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="495" y="25" width="225" height="32" rx="6" fill="#f59e0b" fill-opacity="0.25"
+                            stroke="#f59e0b" stroke-width="1" />
+                        <text x="607" y="46" fill="#fbbf24" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">INODE (struct inode)</text>
+
+                        <rect x="495" y="68" width="225" height="235" rx="6" fill="#1f183d" stroke="#f59e0b"
+                            stroke-width="1.2" />
+                        <text x="508" y="90" fill="#fde68a" font-size="12" font-weight="700"
+                            font-family="monospace">Inode #284192 (Metadata)</text>
+                        <text x="508" y="110" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">&bull; File Mode:
+                            -rw-r--r-- (0644)</text>
+                        <text x="508" y="128" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">&bull; UID: 1000
+                            | GID: 1000</text>
+                        <text x="508" y="146" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">&bull; Size: 32.4
+                            KB (8 blocks)</text>
+                        <text x="508" y="164" fill="#cbd5e1" font-size="11.5" font-family="sans-serif">&bull; Link
+                            Count: 1 (hard links)</text>
+
+                        <rect x="505" y="178" width="205" height="110" rx="4" fill="#0f172a" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="515" y="196" fill="#38bdf8" font-size="11" font-weight="700"
+                            font-family="monospace">BLOCK POINTERS / EXTENTS:</text>
+                        <text x="515" y="214" fill="#34d399" font-size="11" font-family="monospace">Direct [0..11]: Blk
+                            #501..512</text>
+                        <text x="515" y="232" fill="#818cf8" font-size="11" font-family="monospace">Single Indirect
+                            &rarr; Table</text>
+                        <text x="515" y="250" fill="#a78bfa" font-size="11" font-family="monospace">Double Indirect
+                            &rarr; Tables</text>
+                        <text x="515" y="268" fill="#f59e0b" font-size="11" font-family="monospace">ext4 Extents:
+                            {start, len}</text>
+
+                        <!-- Arrow Col 3 -> Col 4 -->
+                        <path d="M 730 205 L 755 205" stroke="#34d399" stroke-width="2.5" class="dash-animated" />
+
+                        <!-- Col 4: Storage Blocks & Page Cache -->
+                        <rect x="755" y="15" width="190" height="310" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="765" y="25" width="170" height="32" rx="6" fill="#10b981" fill-opacity="0.25"
+                            stroke="#10b981" stroke-width="1" />
+                        <text x="850" y="46" fill="#34d399" font-size="13" font-weight="700" font-family="monospace"
+                            text-anchor="middle">PHYSICAL STORAGE</text>
+
+                        <!-- Page Cache -->
+                        <rect x="765" y="68" width="170" height="95" rx="6" fill="#13241b" stroke="#059669"
+                            stroke-width="1.2" />
+                        <text x="775" y="88" fill="#34d399" font-size="12" font-weight="700"
+                            font-family="monospace">LINUX PAGE CACHE</text>
+                        <text x="775" y="106" fill="#cbd5e1" font-size="11" font-family="sans-serif">DRAM Buffer
+                            (Dirty)</text>
+                        <text x="775" y="124" fill="#a7f3d0" font-size="11" font-family="monospace">Sub-microsecond
+                            read</text>
+                        <text x="775" y="142" fill="#fde68a" font-size="10.5" font-family="monospace">writeback sync to
+                            disk</text>
+
+                        <!-- Disk Blocks -->
+                        <rect x="765" y="175" width="170" height="135" rx="6" fill="#1e293b" stroke="#475569"
+                            stroke-width="1" />
+                        <text x="775" y="195" fill="#f8fafc" font-size="12" font-weight="700"
+                            font-family="monospace">ext4 DATA BLOCKS</text>
+                        <rect x="775" y="208" width="150" height="22" rx="3" fill="#0f172a" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="850" y="223" fill="#cbd5e1" font-size="10.5" font-family="monospace"
+                            text-anchor="middle">Block #501 (4 KB Data)</text>
+                        <rect x="775" y="235" width="150" height="22" rx="3" fill="#0f172a" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="850" y="250" fill="#cbd5e1" font-size="10.5" font-family="monospace"
+                            text-anchor="middle">Block #502 (4 KB Data)</text>
+                        <rect x="775" y="262" width="150" height="22" rx="3" fill="#0f172a" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="850" y="277" fill="#cbd5e1" font-size="10.5" font-family="monospace"
+                            text-anchor="middle">Block #503 (4 KB Data)</text>
+                        <text x="850" y="298" fill="#94a3b8" font-size="10" font-family="monospace"
+                            text-anchor="middle">NVMe / SSD Flash Sectors</text>
+
+                        <!-- Bottom Banner: Hard Link vs Soft Link callout -->
+                        <rect x="15" y="340" width="930" height="55" rx="8" fill="#1e2430" stroke="#38bdf8"
+                            stroke-width="1.2" />
+                        <text x="35" y="362" fill="#38bdf8" font-size="12.5" font-weight="700"
+                            font-family="monospace">KEY DISTINCTION &mdash; HARD LINK VS SYMLINK:</text>
+                        <text x="35" y="380" fill="#e2e8f0" font-size="12" font-family="sans-serif"><strong>Hard
+                                Link:</strong> New directory entry pointing to the SAME inode number (deleting original
+                            file preserves data). <strong>Symlink:</strong> New inode containing a string path to
+                            target.</text>
+                    </svg>
+                </div>
+                <div class="study-diagram-caption">
+                    Linux VFS and Inode Filesystem Architecture: Decouples user-space integer file descriptors from
+                    physical disk storage through the system-wide open file table and inode metadata tree, seamlessly
+                    accelerated by the in-memory Linux Page Cache.
+                </div>
+            </div>
+
             <h2 id="10-io-multiplexing--epoll-and-iouring">10. I/O Multiplexing: epoll &amp; io_uring<a
                     class="headerlink" href="#10-io-multiplexing--epoll-and-iouring" title="Permanent link">#</a></h2>
             <p>Scalable networking requires managing tens of thousands of connections per server (the C10K / C1000K
@@ -735,125 +1194,138 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
             <div class="study-diagram" aria-label="Linux epoll vs io_uring Diagram">
                 <div class="study-diagram-header">
                     <span class="study-diagram-title">Figure 10.1: High-Performance Linux I/O: epoll vs io_uring</span>
-                    <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">Readiness Polling &bull;
-                        Zero-Syscall Ring Buffers</span>
+                    <div class="diagram-actions">
+                        <span class="study-diagram-badge"><span class="badge-pulse"></span>HIGH-PERF I/O</span>
+                        <button class="diagram-btn-expand" type="button" aria-label="Expand Figure 10.1">⛶
+                            Expand</button>
+                    </div>
                 </div>
-                <svg viewBox="0 0 840 330" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
-                    aria-label="Linux I/O Multiplexing epoll vs io_uring Architecture">
-                    <defs>
-                        <linearGradient id="epollGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e293b" />
-                            <stop offset="100%" stop-color="#0f172a" />
-                        </linearGradient>
-                        <linearGradient id="uringGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#1e1b4b" />
-                            <stop offset="100%" stop-color="#0f1026" />
-                        </linearGradient>
-                    </defs>
+                <div class="study-diagram-svg-wrap">
+                    <svg viewBox="0 0 960 410" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+                        aria-label="Linux I/O Multiplexing epoll vs io_uring Architecture">
+                        <defs>
+                            <linearGradient id="epollGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e293b" />
+                                <stop offset="100%" stop-color="#0f172a" />
+                            </linearGradient>
+                            <linearGradient id="uringGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#1e1b4b" />
+                                <stop offset="100%" stop-color="#0f1026" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Left Card: epoll (Readiness) -->
-                    <rect x="15" y="15" width="395" height="300" rx="8" fill="#0d1117" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="25" y="25" width="375" height="24" rx="4" fill="#0284c7" fill-opacity="0.2" />
-                    <text x="212" y="41" fill="#38bdf8" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">TRADITIONAL epoll (READINESS NOTIFICATION)</text>
+                        <!-- Left Panel: epoll (Readiness) -->
+                        <rect x="15" y="15" width="455" height="375" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="25" y="25" width="435" height="32" rx="6" fill="#0284c7" fill-opacity="0.25"
+                            stroke="#0284c7" stroke-width="1" />
+                        <text x="242" y="46" fill="#38bdf8" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">TRADITIONAL epoll (READINESS NOTIFICATION)</text>
 
-                    <!-- User Space -->
-                    <rect x="25" y="58" width="375" height="52" rx="5" fill="#1e293b" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="35" y="75" fill="#38bdf8" font-size="9.5" font-weight="700" font-family="monospace">USER
-                        SPACE (App Event Loop)</text>
-                    <text x="35" y="94" fill="#cbd5e1" font-size="9.5" font-family="monospace">epoll_wait(epfd, events,
-                        MAX, timeout)</text>
+                        <!-- User Space -->
+                        <rect x="25" y="70" width="435" height="65" rx="6" fill="#1e293b" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="40" y="93" fill="#38bdf8" font-size="13" font-weight="700" font-family="monospace">USER
+                            SPACE (App Event Loop)</text>
+                        <text x="40" y="117" fill="#cbd5e1" font-size="13" font-family="monospace">epoll_wait(epfd,
+                            events, MAX_EVENTS, -1)</text>
 
-                    <!-- Syscall Boundary -->
-                    <path d="M 212 110 L 212 135" stroke="#ef4444" stroke-width="2" class="dash-animated" />
-                    <text x="225" y="125" fill="#ef4444" font-size="8" font-family="monospace">Syscall Trap</text>
+                        <!-- Syscall Trap Line -->
+                        <line x1="242" y1="135" x2="242" y2="170" stroke="#ef4444" stroke-width="2.5"
+                            class="dash-animated" />
+                        <text x="255" y="156" fill="#ef4444" font-size="12" font-weight="600"
+                            font-family="monospace">Syscall Trap Overhead</text>
 
-                    <!-- Kernel Space -->
-                    <rect x="25" y="138" width="375" height="165" rx="5" fill="#141a24" stroke="#2563eb"
-                        stroke-width="1" />
-                    <text x="35" y="156" fill="#60a5fa" font-size="9.5" font-weight="700" font-family="monospace">KERNEL
-                        SPACE (epoll instance)</text>
+                        <!-- Kernel Space -->
+                        <rect x="25" y="175" width="435" height="200" rx="6" fill="#141a24" stroke="#2563eb"
+                            stroke-width="1.5" />
+                        <text x="40" y="198" fill="#60a5fa" font-size="13" font-weight="700"
+                            font-family="monospace">KERNEL SPACE (epoll Subsystem)</text>
 
-                    <rect x="35" y="165" width="175" height="60" rx="4" fill="#1e293b" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="45" y="181" fill="#f8fafc" font-size="9.5" font-weight="600"
-                        font-family="sans-serif">Interest RB-Tree</text>
-                    <text x="45" y="196" fill="#94a3b8" font-size="8.5" font-family="sans-serif">Stores monitored
-                        FDs</text>
-                    <text x="45" y="210" fill="#38bdf8" font-size="8"
-                        font-family="monospace">epoll_ctl(ADD/MOD/DEL)</text>
+                        <rect x="35" y="210" width="200" height="75" rx="6" fill="#1e293b" stroke="#334155"
+                            stroke-width="1.2" />
+                        <text x="48" y="232" fill="#f8fafc" font-size="13" font-weight="600"
+                            font-family="sans-serif">Interest RB-Tree</text>
+                        <text x="48" y="252" fill="#94a3b8" font-size="12" font-family="sans-serif">O(1) monitored
+                            sockets</text>
+                        <text x="48" y="271" fill="#38bdf8" font-size="12"
+                            font-family="monospace">epoll_ctl(ADD/MOD/DEL)</text>
 
-                    <rect x="220" y="165" width="170" height="60" rx="4" fill="#1e293b" stroke="#10b981"
-                        stroke-width="0.8" />
-                    <text x="230" y="181" fill="#34d399" font-size="9.5" font-weight="600"
-                        font-family="sans-serif">Ready List (rdllist)</text>
-                    <text x="230" y="196" fill="#94a3b8" font-size="8.5" font-family="sans-serif">Double-linked active
-                        FDs</text>
-                    <text x="230" y="210" fill="#34d399" font-size="8" font-family="monospace">IRQ callback
-                        populates</text>
+                        <rect x="250" y="210" width="200" height="75" rx="6" fill="#1e293b" stroke="#10b981"
+                            stroke-width="1.2" />
+                        <text x="262" y="232" fill="#34d399" font-size="13" font-weight="600"
+                            font-family="sans-serif">Ready List (rdllist)</text>
+                        <text x="262" y="252" fill="#94a3b8" font-size="12" font-family="sans-serif">Active ready
+                            descriptors</text>
+                        <text x="262" y="271" fill="#34d399" font-size="12" font-family="monospace">IRQ callback
+                            linked</text>
 
-                    <rect x="35" y="235" width="355" height="55" rx="4" fill="#1e2430" stroke="#334155"
-                        stroke-width="0.8" />
-                    <text x="45" y="253" fill="#cbd5e1" font-size="9" font-family="sans-serif">Workflow: When socket
-                        receives data, interrupt fires callback.</text>
-                    <text x="45" y="268" fill="#f59e0b" font-size="8.5" font-family="sans-serif">&bull; Must issue
-                        subsequent read() / write() syscalls per ready FD.</text>
+                        <rect x="35" y="295" width="415" height="68" rx="6" fill="#1e2430" stroke="#334155"
+                            stroke-width="1" />
+                        <text x="48" y="316" fill="#cbd5e1" font-size="12" font-family="sans-serif">&bull; Readiness
+                            only: Signals when FD is ready to read/write.</text>
+                        <text x="48" y="335" fill="#f59e0b" font-size="12" font-family="sans-serif">&bull; Requires
+                            subsequent read()/write() syscalls per connection.</text>
+                        <text x="48" y="352" fill="#f87171" font-size="11.5" font-family="monospace">Context switch cost
+                            scales with connection throughput.</text>
 
-                    <!-- Right Card: io_uring (Completion) -->
-                    <rect x="430" y="15" width="395" height="300" rx="8" fill="#0d1117" stroke="#334155"
-                        stroke-width="1.2" />
-                    <rect x="440" y="25" width="375" height="24" rx="4" fill="#8b5cf6" fill-opacity="0.2" />
-                    <text x="627" y="41" fill="#c084fc" font-size="11" font-weight="700" font-family="monospace"
-                        text-anchor="middle">MODERN io_uring (SHARED RING BUFFERS)</text>
+                        <!-- Right Panel: io_uring (Completion) -->
+                        <rect x="490" y="15" width="455" height="375" rx="10" fill="#0d1117" stroke="#334155"
+                            stroke-width="1.8" />
+                        <rect x="500" y="25" width="435" height="32" rx="6" fill="#8b5cf6" fill-opacity="0.25"
+                            stroke="#8b5cf6" stroke-width="1" />
+                        <text x="717" y="46" fill="#c084fc" font-size="14" font-weight="700" font-family="monospace"
+                            text-anchor="middle">MODERN io_uring (SHARED RING BUFFERS)</text>
 
-                    <!-- Shared Memory Region (mmap) -->
-                    <rect x="440" y="58" width="375" height="150" rx="5" fill="#17122b" stroke="#8b5cf6"
-                        stroke-width="1.2" />
-                    <text x="450" y="75" fill="#c084fc" font-size="9.5" font-weight="700" font-family="monospace">SHARED
-                        MEMORY REGION (mmap'd SQ &amp; CQ Rings)</text>
+                        <!-- Shared Memory Region -->
+                        <rect x="500" y="70" width="435" height="175" rx="6" fill="#17122b" stroke="#8b5cf6"
+                            stroke-width="1.5" />
+                        <text x="515" y="92" fill="#c084fc" font-size="13" font-weight="700"
+                            font-family="monospace">SHARED MEMORY (mmap'd SQ &amp; CQ Ring Buffers)</text>
 
-                    <!-- Submission Queue -->
-                    <rect x="450" y="85" width="170" height="75" rx="4" fill="#1f183d" stroke="#a78bfa"
-                        stroke-width="1" />
-                    <text x="460" y="103" fill="#e9d5ff" font-size="10" font-weight="700"
-                        font-family="sans-serif">Submission Queue (SQ)</text>
-                    <text x="460" y="119" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">App writes SQEs
-                        directly</text>
-                    <text x="460" y="133" fill="#34d399" font-size="8.5" font-family="monospace">ZERO-SYSCALL
-                        PUSH</text>
-                    <text x="460" y="147" fill="#a78bfa" font-size="8" font-family="monospace">SQE: READ / WRITE /
-                        ACCEPT</text>
+                        <!-- Submission Queue -->
+                        <rect x="515" y="105" width="195" height="85" rx="6" fill="#1f183d" stroke="#a78bfa"
+                            stroke-width="1.2" />
+                        <text x="528" y="127" fill="#e9d5ff" font-size="13" font-weight="700"
+                            font-family="sans-serif">Submission Queue (SQ)</text>
+                        <text x="528" y="147" fill="#cbd5e1" font-size="12" font-family="sans-serif">App writes SQEs
+                            directly</text>
+                        <text x="528" y="166" fill="#34d399" font-size="11.5" font-weight="600"
+                            font-family="monospace">ZERO-SYSCALL SUBMISSION</text>
+                        <text x="528" y="182" fill="#a78bfa" font-size="11.5" font-family="monospace">SQE: READ / WRITE
+                            / ACCEPT</text>
 
-                    <!-- Completion Queue -->
-                    <rect x="635" y="85" width="170" height="75" rx="4" fill="#1f183d" stroke="#34d399"
-                        stroke-width="1" />
-                    <text x="645" y="103" fill="#34d399" font-size="10" font-weight="700"
-                        font-family="sans-serif">Completion Queue (CQ)</text>
-                    <text x="645" y="119" fill="#cbd5e1" font-size="8.5" font-family="sans-serif">Kernel writes CQEs
-                        back</text>
-                    <text x="645" y="133" fill="#38bdf8" font-size="8.5" font-family="monospace">ZERO-SYSCALL POP</text>
-                    <text x="645" y="147" fill="#a78bfa" font-size="8" font-family="monospace">CQE: res=bytes_read,
-                        flags</text>
+                        <!-- Completion Queue -->
+                        <rect x="725" y="105" width="195" height="85" rx="6" fill="#1f183d" stroke="#34d399"
+                            stroke-width="1.2" />
+                        <text x="738" y="127" fill="#34d399" font-size="13" font-weight="700"
+                            font-family="sans-serif">Completion Queue (CQ)</text>
+                        <text x="738" y="147" fill="#cbd5e1" font-size="12" font-family="sans-serif">Kernel writes CQEs
+                            back</text>
+                        <text x="738" y="166" fill="#38bdf8" font-size="11.5" font-weight="600"
+                            font-family="monospace">ZERO-SYSCALL CONSUMPTION</text>
+                        <text x="738" y="182" fill="#a78bfa" font-size="11.5" font-family="monospace">CQE:
+                            res=bytes_read, flags</text>
 
-                    <!-- Circular Flow indicator -->
-                    <path d="M 535 165 L 720 165" stroke="#a78bfa" stroke-width="2" class="dash-animated" />
-                    <text x="627" y="180" fill="#c084fc" font-size="8.5" font-family="monospace"
-                        text-anchor="middle">Lockless Head/Tail Ring Pointer Updates</text>
+                        <!-- Lockless Pointer Update -->
+                        <path d="M 612 202 L 822 202" stroke="#a78bfa" stroke-width="2.5" class="dash-animated" />
+                        <text x="717" y="222" fill="#c084fc" font-size="12" font-weight="600" font-family="monospace"
+                            text-anchor="middle">Lockless Head / Tail Atomic Updates</text>
 
-                    <!-- Kernel Workers / SQPOLL -->
-                    <rect x="440" y="218" width="375" height="85" rx="5" fill="#151226" stroke="#475569"
-                        stroke-width="1" />
-                    <text x="450" y="236" fill="#fbbf24" font-size="9.5" font-weight="700"
-                        font-family="monospace">KERNEL ASYNC WORKERS (io_wq &amp; IORING_SETUP_SQPOLL)</text>
-                    <text x="450" y="254" fill="#cbd5e1" font-size="9" font-family="sans-serif">Dedicated kernel polling
-                        thread harvests SQEs without any syscall.</text>
-                    <text x="450" y="270" fill="#cbd5e1" font-size="9" font-family="sans-serif">Performs true
-                        asynchronous reads/writes and pushes CQEs directly.</text>
-                    <text x="450" y="286" fill="#34d399" font-size="8.5" font-family="monospace">&gt; 1.5M IOPS per CPU
-                        core with zero context-switch overhead.</text>
-                </svg>
+                        <!-- Kernel Workers / SQPOLL -->
+                        <rect x="500" y="255" width="435" height="120" rx="6" fill="#151226" stroke="#475569"
+                            stroke-width="1.2" />
+                        <text x="515" y="278" fill="#fbbf24" font-size="13" font-weight="700"
+                            font-family="monospace">KERNEL ASYNC WORKERS (io_wq &amp; SQPOLL Mode)</text>
+                        <text x="515" y="300" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">Dedicated kernel
+                            worker harvests SQ entries with 0 syscalls.</text>
+                        <text x="515" y="322" fill="#cbd5e1" font-size="12.5" font-family="sans-serif">Performs true
+                            asynchronous DMA and delivers CQE completions.</text>
+                        <text x="515" y="347" fill="#34d399" font-size="12.5" font-weight="600"
+                            font-family="monospace">&check; &gt; 1.7 Million IOPS per core with zero syscall
+                            traps!</text>
+                    </svg>
+                </div>
                 <div class="study-diagram-caption">
                     Linux I/O Evolution: Traditional <code style="color: #38bdf8;">epoll</code> requires repeated
                     syscall transitions and delivers readiness notification; Modern <code
@@ -921,6 +1393,7 @@ Need[n][m] = Max[n][m] - Allocation[n][m]
 
     <button class="back-to-top" aria-label="Back to top">&uarr;</button>
     <script src="os-study.js"></script>
+    <script src="../diagram-modal.js"></script>
 </body>
 
 </html>
