@@ -119,9 +119,14 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── index.html                   ← Software and AI Engineering homepage (hub tiles)
+├── index.html                   ← Software and AI Engineering homepage (7 hub tiles)
 ├── ai-projects.html             ← AI Projects catalog (7 project cards)
+├── aws-guides.html              ← AWS Cloud for Developers catalog (2 course cards)
+├── devops-guides.html           ← DevOps for Developers catalog (3 guide cards)
+├── dsa-courses.html             ← Data Structures & Algorithms catalog (2 course cards)
+├── networking-courses.html      ← Computer Networking catalog (2 course cards)
 ├── os-courses.html              ← Operating Systems & Linux catalog (4 course cards)
+├── programming-languages.html   ← Programming Languages catalog (4 course cards)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -132,11 +137,14 @@ projects/techtoday/
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
-    ├── os/                      ← crash course + full course
+    ├── ai/                      ← LLM, RAG, Docker, Strands guides
+    ├── aws/                     ← AWS crash course & detailed architecture
+    ├── devops/                  ← Docker, Kubernetes, CI/CD guides
+    ├── dsa/                     ← crash course + detailed course
+    ├── javascript/              ← crash course + detailed course
     ├── networking/              ← crash course + full course
-    ├── python/                  ← crash course + full course
-    ├── dsa/                     ← crash course + full course
-    └── ai/                      ← LLM, RAG, Docker, Strands guides
+    ├── os/                      ← crash course + full course
+    └── python/                  ← crash course + full course
 ```
 
 ---
@@ -145,7 +153,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 5 category tiles on the homepage (Operating Systems, Networking Concepts, Python, DSA, AI Projects) organizing all learning guides and interactive demos with 2 items per tile.
+3. **Hub Tile Grid** — 7 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, DevOps, AWS, AI Projects) organizing all learning guides and interactive demos with 2 items per tile and a consistent bottom Explore All link.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
