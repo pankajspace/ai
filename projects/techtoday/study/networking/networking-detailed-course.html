@@ -48,9 +48,11 @@
                 <li><a href="#6-quic-and-http3-internals">6. QUIC Protocol Architecture &amp; Multiplexing</a></li>
                 <li><a href="#7-load-balancing-layer4-vs-layer7">7. Load Balancing: Layer 4 vs Layer 7</a></li>
                 <li><a href="#8-anycast-routing-and-cdns">8. Anycast Routing &amp; Edge CDNs</a></li>
-                <li><a href="#9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies</a></li>
-                <li><a href="#10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning</a></li>
-                <li><a href="#11-networking-interview-deep-dive">11. Top Networking Engineering Questions</a></li>
+                <li><a href="#9-aws-networking-vpc-security-groups-nacls">9. AWS Networking: VPC, Security Groups &amp;
+                        NACLs</a></li>
+                <li><a href="#10-ddos-mitigation-and-syn-cookies">10. DDoS Mitigation &amp; SYN Cookies</a></li>
+                <li><a href="#11-linux-network-sysctl-tuning">11. High-Throughput Linux sysctl Tuning</a></li>
+                <li><a href="#12-networking-interview-deep-dive">12. Top Networking Engineering Questions</a></li>
             </ol>
 
             <h2 id="1-autonomous-systems-and-bgp">1. Autonomous Systems &amp; BGP Routing<a class="headerlink"
@@ -193,8 +195,116 @@ sendfile(socket_fd, file_fd, NULL, len);
                     globe.</li>
             </ul>
 
-            <h2 id="9-ddos-mitigation-and-syn-cookies">9. DDoS Mitigation &amp; SYN Cookies<a class="headerlink"
-                    href="#9-ddos-mitigation-and-syn-cookies" title="Permanent link">#</a></h2>
+            <h2 id="9-aws-networking-vpc-security-groups-nacls">9. AWS Networking: VPC, Security Groups &amp; NACLs<a
+                    class="headerlink" href="#9-aws-networking-vpc-security-groups-nacls" title="Permanent link">#</a>
+            </h2>
+            <p>Cloud networking in AWS provides a virtualized software-defined network that isolates resources, controls
+                traffic flow, and secures communication boundaries:</p>
+
+            <h3>1. VPC &amp; Subnets: The Foundation</h3>
+            <ul>
+                <li><strong>VPC (Virtual Private Cloud):</strong> Your own isolated virtual network within an AWS
+                    region,
+                    defined by a private CIDR block (e.g. <code>10.0.0.0/16</code>, providing 65,536 private IP
+                    addresses).</li>
+                <li><strong>Public Subnet:</strong> A subnet whose route table has an explicit route to an
+                    <strong>Internet
+                        Gateway (IGW)</strong>: <code>0.0.0.0/0 &rarr; igw-xxxx</code>. EC2 instances here can be
+                    assigned
+                    public IPs and receive direct traffic from the public Internet (ideal for public web servers or load
+                    balancers).</li>
+                <li><strong>Private Subnet:</strong> A subnet with no direct route to the Internet. Instances only have
+                    private IPs (e.g. <code>10.0.2.15</code>), shielding databases, internal microservices, and backend
+                    workers from direct public scans or attacks.</li>
+                <li><strong>NAT Gateway (Network Address Translation):</strong> Placed in a <em>public</em> subnet so
+                    instances in <em>private</em> subnets can initiate outbound requests (e.g. downloading OS security
+                    updates or calling external APIs) while preventing unauthorized external clients from initiating
+                    inbound
+                    connections to them.</li>
+            </ul>
+
+            <h3>2. Security Groups (Instance-Level Firewall &bull; Stateful)</h3>
+            <p>A <strong>Security Group</strong> acts as a virtual firewall controlling traffic directly at the
+                <strong>Elastic Network Interface (ENI)</strong> level of an EC2 instance or container:
+            </p>
+            <ul>
+                <li><strong>Stateful:</strong> If an inbound request is permitted (e.g. port 443 HTTPS), the
+                    return/response
+                    traffic is <em>automatically allowed back out</em>, regardless of outbound rules.</li>
+                <li><strong>Default Behavior:</strong> Denies all inbound traffic by default; allows all outbound
+                    traffic by
+                    default.</li>
+                <li><strong>Allow Rules Only:</strong> You can only write <em>Allow</em> rules (you cannot write
+                    explicit Deny
+                    rules in a Security Group).</li>
+                <li><strong>Security Group Referencing:</strong> Instead of hardcoding IP addresses, rules can reference
+                    another Security Group ID (e.g. <em>"Allow port 5432 PostgreSQL only from instances attached to
+                        sg-web-backend"</em>).</li>
+            </ul>
+
+            <h3>3. Network ACLs (Subnet-Level Firewall &bull; Stateless)</h3>
+            <p>A <strong>Network Access Control List (NACL)</strong> acts as an outer perimeter firewall controlling
+                traffic entering and exiting an entire <strong>subnet</strong>:</p>
+            <ul>
+                <li><strong>Stateless:</strong> Inbound and outbound rules are evaluated completely independently. If
+                    you
+                    allow inbound traffic on port 80/443, you <em>must also explicitly allow outbound traffic on
+                        ephemeral
+                        ports (1024–65535)</em> so the server can send the response packet back!</li>
+                <li><strong>Rule Numbering &amp; Order:</strong> Rules are processed in strict numerical order (e.g.
+                    rule 100,
+                    200, 300). The first rule that matches the packet determines the outcome. The final catch-all rule
+                    is
+                    an implicit <code>* Deny All</code>.</li>
+                <li><strong>Supports Allow and Deny:</strong> Unlike Security Groups, NACLs can explicitly block abusive
+                    or
+                    malicious IP addresses (e.g. <code>Rule 50: Deny 198.51.100.42/32</code>).</li>
+            </ul>
+
+            <div class="concept-card">
+                <h3>Mental Model: Security Groups vs Network ACLs</h3>
+                <ul>
+                    <li><strong>Analogy:</strong> The <strong>NACL</strong> is the security guard stationed at the
+                        building
+                        entrance checking the visitor log (subnet perimeter). The <strong>Security Group</strong> is the
+                        deadbolt lock on your personal apartment door (instance level).</li>
+                    <li><strong>Order of Traffic Flow:</strong>
+                        Inbound:
+                        <code>Internet &rarr; Route Table &rarr; NACL (Subnet) &rarr; Security Group (Instance) &rarr; Application</code>.
+                    </li>
+                    <li><strong>State:</strong> Security Groups track connection state automatically (stateful); NACLs
+                        evaluate
+                        every packet from scratch in both directions (stateless).</li>
+                </ul>
+            </div>
+
+            <h3>4. Secure Access: AWS VPN &amp; Bastion Hosts</h3>
+            <p>How developers and operators securely connect into private subnets without exposing servers to the public
+                Internet:</p>
+            <ul>
+                <li><strong>AWS Client VPN:</strong> A managed software VPN endpoint. Remote engineers install an
+                    OpenVPN
+                    client on their laptops, authenticate via corporate SSO (or certificates), and receive an internal
+                    IP
+                    address that routes directly into the private VPC subnets.</li>
+                <li><strong>AWS Site-to-Site VPN:</strong> Encrypted IPsec tunnel connecting an entire corporate office
+                    or
+                    data center network to your AWS VPC via a Virtual Private Gateway (VGW) or Transit Gateway (TGW).
+                </li>
+                <li><strong>Bastion Host (Jump Box):</strong> A hardened EC2 instance placed in the public subnet with
+                    an
+                    extremely strict Security Group (allowing SSH only from your specific office IP). Administrators SSH
+                    into
+                    the bastion, and from there jump to private instances.</li>
+                <li><strong>AWS Systems Manager (SSM) Session Manager:</strong> Modern cloud-native alternative to
+                    bastions.
+                    Allows one-click shell access to private EC2 instances through IAM authentication without needing
+                    any
+                    open inbound ports or public IPs.</li>
+            </ul>
+
+            <h2 id="10-ddos-mitigation-and-syn-cookies">10. DDoS Mitigation &amp; SYN Cookies<a class="headerlink"
+                    href="#10-ddos-mitigation-and-syn-cookies" title="Permanent link">#</a></h2>
             <p>In a <strong>SYN Flood Attack</strong>, an attacker sends millions of spoofed TCP SYN packets without
                 ever
                 sending the final ACK, overflowing the kernel's connection backlog and freezing the server.</p>
@@ -206,8 +316,8 @@ sendfile(socket_fd, file_fd, NULL, len);
                 held state.
             </p>
 
-            <h2 id="10-linux-network-sysctl-tuning">10. High-Throughput Linux sysctl Tuning<a class="headerlink"
-                    href="#10-linux-network-sysctl-tuning" title="Permanent link">#</a></h2>
+            <h2 id="11-linux-network-sysctl-tuning">11. High-Throughput Linux sysctl Tuning<a class="headerlink"
+                    href="#11-linux-network-sysctl-tuning" title="Permanent link">#</a></h2>
             <div class="highlight">
                 <pre><code># /etc/sysctl.d/99-networking.conf
 # Increase maximum listen queue backlog for high-concurrency servers
@@ -229,8 +339,8 @@ net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_fin_timeout = 15</code></pre>
             </div>
 
-            <h2 id="11-networking-interview-deep-dive">11. Top Networking Engineering Questions<a class="headerlink"
-                    href="#11-networking-interview-deep-dive" title="Permanent link">#</a></h2>
+            <h2 id="12-networking-interview-deep-dive">12. Top Networking Engineering Questions<a class="headerlink"
+                    href="#12-networking-interview-deep-dive" title="Permanent link">#</a></h2>
             <div class="concept-card">
                 <h3>High-Frequency Systems Questions</h3>
                 <ol>
@@ -251,6 +361,13 @@ net.ipv4.tcp_fin_timeout = 15</code></pre>
                         packet is too large, the intermediate router drops it and replies with ICMP "Fragmentation
                         Needed"
                         specifying its MTU.</li>
+                    <li><strong>How do AWS Security Groups differ from Network ACLs (NACLs)?</strong> Security Groups
+                        operate at the instance/ENI level and are <em>stateful</em> (outbound return traffic is
+                        automatically allowed for permitted inbound requests; supports allow rules only). NACLs operate
+                        at
+                        the subnet perimeter and are <em>stateless</em> (inbound and outbound traffic are evaluated
+                        independently, requiring explicit outbound rules for ephemeral return ports 1024–65535; supports
+                        both allow and deny rules in numbered order).</li>
                 </ol>
             </div>
 
