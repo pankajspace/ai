@@ -50,6 +50,10 @@
 1. [Networking Crash Course](projects/techtoday/study/networking/networking-crash-course.html)
 2. [Networking Detailed Course](projects/techtoday/study/networking/networking-detailed-course.html)
 
+## AWS
+1. [AWS Crash Course](projects/techtoday/study/aws/aws-crash-course.html)
+2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
+
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 

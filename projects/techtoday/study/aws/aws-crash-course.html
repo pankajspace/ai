@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>AWS Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in AWS — Regions and Availability Zones, IAM policy evaluation, VPCs and security groups, S3, EC2 and Lambda, RDS and DynamoDB, load balancing, SQS and EventBridge, CloudWatch, KMS and infrastructure as code, each explained with a step-by-step animation." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="aws-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../aws-courses.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to AWS
+                Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="aws-crash-course">Amazon Web Services<a class="headerlink" href="#aws-crash-course"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">AWS has over two hundred services and you need about fifteen of them. This page teaches
+                those fifteen &mdash; not as a feature list, but as a set of mechanisms: how a request is authorised,
+                where a packet actually goes, what happens when an Availability Zone dies, why your bill has a line
+                item you cannot explain. Every non-obvious process here is an animation. Press <strong>Play</strong>,
+                then step through it with the arrows; the language tabs switch the same example between boto3, the
+                AWS CLI, the JavaScript SDK and CloudFormation.</p>
+
+            <div class="callout callout-key">
+                <p>Four ideas carry almost all of AWS. <strong>Everything is an API call</strong> &mdash; the console
+                    is just a client, and so is Terraform. <strong>Every API call is authorised the same way</strong>,
+                    by the IAM evaluation you will see in section 2. <strong>Everything fails</strong>, so capacity is
+                    spread across Availability Zones and you design for one being gone. And <strong>you pay for what
+                        is running, not what is used</strong> &mdash; which is why an idle NAT Gateway costs more than
+                    a busy Lambda function. Learn those four and the two hundred services become variations.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#1-regions-and-azs">Regions, Availability Zones &amp; the Shape of AWS</a></li>
+                <li><a href="#2-iam">IAM &mdash; Who Can Do What</a></li>
+                <li><a href="#3-vpc">The VPC &mdash; Where Your Resources Live</a></li>
+                <li><a href="#4-cost">What You Are Actually Paying For</a></li>
+                <li><a href="#5-s3">S3 &mdash; The Default Place to Put Things</a></li>
+                <li><a href="#6-compute">Compute &mdash; Lambda, Containers &amp; EC2</a></li>
+                <li><a href="#7-databases">Databases &mdash; Choosing and Not Regretting It</a></li>
+                <li><a href="#8-traffic">Getting Traffic In &mdash; ALB, Route 53 &amp; CloudFront</a></li>
+                <li><a href="#9-messaging">Decoupling &mdash; SQS, SNS &amp; EventBridge</a></li>
+                <li><a href="#10-observability">Observability &mdash; Knowing Before Your Users Do</a></li>
+                <li><a href="#11-security">Security Beyond IAM &mdash; KMS, Secrets &amp; Blast Radius</a></li>
+                <li><a href="#12-iac">Infrastructure as Code &amp; Deployment</a></li>
+                <li><a href="#13-resilience">Building Things That Survive</a></li>
+                <li><a href="#14-one-page">The Whole Thing on One Page</a></li>
+            </ol>
+
+            <h2 id="unit-1">Unit 1 &mdash; The Four Foundations<a class="headerlink" href="#unit-1"
+                    title="Permanent link">#</a></h2>
+
+            <p>Four sections that sit underneath everything else: <em>where</em> your resources physically are,
+                <em>who</em> is allowed to touch them, <em>what network</em> they live in, and <em>how the meter
+                    runs</em>. Every service in Unit 2 is an application of these four. If you skip them, AWS feels
+                like an arbitrary pile of products; if you learn them, most services become predictable before you
+                read their documentation.
+            </p>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-regions-and-azs">1. Regions, Availability Zones &amp; the Shape of AWS<a class="headerlink"
+                    href="#1-regions-and-azs" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Regions</b> <code class="big-o o-good">36+</code></li>
+                <li><b>AZs per Region</b> <code class="big-o o-great">3+</code></li>
+                <li><b>Inter-AZ latency</b> <code class="big-o o-great">&lt; 2 ms</code></li>
+                <li><b>Cross-AZ data</b> <code class="big-o o-bad">$0.01/GB each way</code></li>
+            </ul>
+
+            <p>AWS is not one computer somewhere. It is a hierarchy: <strong>Regions</strong> are geographic areas
+                (<code>us-east-1</code>, <code>eu-west-1</code>, <code>ap-south-1</code>), each containing several
+                <strong>Availability Zones</strong>, each of which is one or more physically separate datacentres.
+                Regions are isolated from each other by design &mdash; separate API endpoints, separate control
+                planes, separate copies of your data. Nothing replicates across a Region boundary unless you
+                deliberately set it up, and that isolation is a feature: it is what stops a bad day in Virginia from
+                being a bad day everywhere.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏢</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a company with offices in several cities</b>
+                    <p>A <b>Region</b> is a city. Each city has several <b>office buildings</b> a few kilometres
+                        apart &mdash; those are the Availability Zones. The buildings have separate power supplies and
+                        separate flood risk, but a dedicated fibre link between them, so staff in different buildings
+                        can work on the same document in real time. If a building loses power, work continues in the
+                        other two. If the whole city floods, that is a different kind of event and you need an office
+                        in another city &mdash; which costs a great deal more to keep staffed, which is exactly why
+                        multi-Region is a decision and multi-AZ is a default.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="regions-az"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; independent failure is engineered, not hoped for</b> AZs are
+                    far enough apart to fail separately and close enough to replicate synchronously. That combination
+                    is difficult and expensive to build yourself, and it is why "spread across three AZs" is a
+                    checkbox on AWS and a project on-premises.</li>
+                <li class="is-bad"><b>Weakness &mdash; the boundaries are invisible until they bill you</b> Traffic
+                    between AZs costs a cent per gigabyte in each direction. A chatty microservice mesh spread evenly
+                    across three AZs can spend more on cross-AZ transfer than on the instances doing the work, and
+                    nothing in the console warns you.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your application runs on three EC2 instances behind a load balancer, all in
+                    <code>us-east-1a</code>. Someone asks you to "make it highly available". What do you change, and
+                    what does it cost?
+                </p>
+                <p>The instructive part of this question is that the answer is not "add more instances" &mdash; you
+                    already have three. The answer is that all three share a single failure domain, so three
+                    instances give you exactly the availability of one datacentre. You move them to
+                    <code>1a</code>, <code>1b</code> and <code>1c</code>, enable the load balancer in all three
+                    subnets, and make sure the Auto Scaling group is set to balance across them. The cost is
+                    cross-AZ traffic between the load balancer and the targets, plus any chatter between your own
+                    instances &mdash; usually small, but worth measuring before you spread a database tier the same
+                    way.
+                </p>
+                <div class="code-tabs" data-label="Where am I running? — list your AZs and check the spread">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# which AZs exist in this Region, and are any constrained?
+aws ec2 describe-availability-zones \
+  --query 'AvailabilityZones[].{AZ:ZoneName,State:State,ID:ZoneId}' \
+  --output table
+
+# how are my running instances actually spread?
+aws ec2 describe-instances \
+  --filters Name=instance-state-name,Values=running \
+  --query 'Reservations[].Instances[].Placement.AvailabilityZone' \
+  --output text | tr '\t' '\n' | sort | uniq -c
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import boto3
+from collections import Counter
+
+ec2 = boto3.client("ec2", region_name="us-east-1")
+
+# AZ names are per-account aliases; ZoneId is the stable physical identifier.
+# Two accounts' "us-east-1a" are usually different datacentres.
+for az in ec2.describe_availability_zones()["AvailabilityZones"]:
+    print(az["ZoneName"], az["ZoneId"], az["State"])
+
+spread = Counter()
+for page in ec2.get_paginator("describe_instances").paginate(
+    Filters=[{"Name": "instance-state-name", "Values": ["running"]}]
+):
+    for res in page["Reservations"]:
+        for inst in res["Instances"]:
+            spread[inst["Placement"]["AvailabilityZone"]] += 1
+
+print(spread)          # Counter({'us-east-1a': 3}) is the finding
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The AZ name is a lie, and knowing that will save you an argument.</b> <code>us-east-1a</code> in
+                    your account and <code>us-east-1a</code> in a colleague's account are almost certainly different
+                    physical datacentres &mdash; AWS randomises the mapping per account so that everyone does not pile
+                    into "the first one". The stable identifier is the <b>AZ ID</b> (<code>use1-az4</code>). If you
+                    are coordinating placement across accounts &mdash; for a shared VPC, or to keep a workload in the
+                    same physical AZ as its data &mdash; use the AZ ID, never the name.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Three edge concepts sit outside this hierarchy and are worth recognising by name.
+                    <b>Local Zones</b> put compute in a metro area far from the parent Region for single-digit
+                    latency. <b>Wavelength Zones</b> do the same inside telco 5G networks. <b>Edge locations</b>
+                    (600+ of them) are not for your code at all &mdash; they run CloudFront and Route 53. If a
+                    question mentions "closer to the user", the answer is usually an edge location, not a new Region.
+                </p>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-iam">2. IAM &mdash; Who Can Do What<a class="headerlink" href="#2-iam"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Default</b> <code class="big-o o-bad">deny</code></li>
+                <li><b>Explicit deny</b> <code class="big-o o-bad">always wins</code></li>
+                <li><b>Role session</b> <code class="big-o o-good">15 min – 12 h</code></li>
+                <li><b>Cost</b> <code class="big-o o-great">free</code></li>
+            </ul>
+
+            <p>Every single thing that happens on AWS is an API call, and every API call passes through IAM. That is
+                worth sitting with for a moment: clicking a button in the console, running <code>terraform apply</code>,
+                a Lambda function reading from DynamoDB, one service calling another &mdash; all of them are signed
+                requests evaluated by the same engine against the same rules. There is no side door. Which means
+                that once you understand how IAM reaches a decision, you can debug <em>any</em> permission problem on
+                AWS with the same procedure.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🛂</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a building with several security desks in a row</b>
+                    <p>You walk toward a meeting room. At the first desk they check who you are. At the second, a
+                        supervisor checks a list of people banned from the building today &mdash; and if you are on it,
+                        nothing else matters, you are out, even if you are the CEO. At the third desk they check
+                        whether your <em>company</em> is permitted in this building at all. At the fourth, whether the
+                        room's own booking sheet lists you. At the fifth, whether your badge grants that floor. At the
+                        sixth, whether your contract caps what your badge may ever open. Only after all six do you get
+                        in &mdash; and if <em>nobody</em> ever put you on a list, you are turned away by default,
+                        politely, with no explanation. That is IAM, exactly, in that order.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="iam-evaluation"></div>
+
+            <p>A policy is JSON, and it has four parts worth knowing by sight: the <code>Effect</code>
+                (<code>Allow</code> or <code>Deny</code>), the <code>Action</code> (which API calls), the
+                <code>Resource</code> (which ARNs), and an optional <code>Condition</code> (under what circumstances).
+                The <code>Condition</code> block is where policies stop being crude on/off switches and start being
+                useful &mdash; require MFA, require a specific VPC endpoint, require the request to come from a
+                particular Region.
+            </p>
+
+            <pre><code data-lang="json">
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadTheReportsPrefixOnly",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject"],
+      "Resource": "arn:aws:s3:::acme-reports/2026/*",
+      "Condition": {
+        "Bool": { "aws:SecureTransport": "true" },
+        "StringEquals": { "aws:PrincipalTag/team": "analytics" }
+      }
+    },
+    {
+      "Sid": "ListingNeedsTheBucketArnNotTheObjectArn",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::acme-reports",
+      "Condition": { "StringLike": { "s3:prefix": "2026/*" } }
+    }
+  ]
+}
+</code></pre>
+
+            <p>The second half of IAM is <strong>roles</strong>, and roles are the part that separates people who are
+                comfortable on AWS from people who are not. A role is a set of permissions with no permanent
+                credentials attached. You do not log in as a role; you <em>assume</em> it, and STS hands you
+                credentials that expire. Every runtime on AWS has a way to receive a role automatically, which means
+                that in a well-built account there is no long-lived access key anywhere at all.</p>
+
+            <div class="viz" data-viz="assume-role"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; temporary by construction</b> A leaked role session is worth
+                    an hour. A leaked IAM user access key is worth however long it takes someone to notice, which
+                    historically is measured in months. Roles turn the worst-case credential leak from a catastrophe
+                    into an incident.</li>
+                <li class="is-bad"><b>Weakness &mdash; the error messages are deliberately vague</b>
+                    <code>AccessDenied</code> rarely tells you which of the six gates rejected you, because saying so
+                    would leak information to an attacker. You need the procedure below rather than intuition.
+                </li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A Lambda function gets <code>AccessDenied</code> writing to an S3 bucket. You
+                    attach <code>AdministratorAccess</code> to its execution role and it <em>still</em> fails. What is
+                    going on, and how do you find out?</p>
+                <p>This is the one scenario that tells you an explicit <code>Deny</code> is involved, because adding
+                    permissions cannot defeat a Deny &mdash; the deny sweep happens before any Allow is read. There
+                    are only four places it can come from: a service control policy on the account's OU, the bucket's
+                    own resource policy, a permissions boundary on the role, or a VPC endpoint policy if the traffic
+                    goes through one. Check them in that order. In practice the two most common culprits are an SCP
+                    restricting Regions or unencrypted writes, and a bucket policy that denies anything not arriving
+                    through a specific VPC endpoint. The fastest tool is the IAM policy simulator, which will name
+                    the statement that produced the decision.</p>
+                <div class="code-tabs" data-label="Debugging a denial — simulate, then read the actual identity">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# 1. who does AWS think I am right now?
+aws sts get-caller-identity
+
+# 2. simulate the exact call - this names the deciding statement
+aws iam simulate-principal-policy \
+  --policy-source-arn arn:aws:iam::123456789012:role/report-writer \
+  --action-names s3:PutObject \
+  --resource-arns 'arn:aws:s3:::acme-reports/2026/q1.csv'
+
+# 3. if that says allowed but reality says denied, look outward
+aws s3api get-bucket-policy --bucket acme-reports
+aws organizations list-policies-for-target --target-id ou-ab12-cdef3456 \
+  --filter SERVICE_CONTROL_POLICY
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import boto3
+
+sts = boto3.client("sts")
+print(sts.get_caller_identity())     # Arn tells you the assumed-role session
+
+iam = boto3.client("iam")
+result = iam.simulate_principal_policy(
+    PolicySourceArn="arn:aws:iam::123456789012:role/report-writer",
+    ActionNames=["s3:PutObject"],
+    ResourceArns=["arn:aws:s3:::acme-reports/2026/q1.csv"],
+)
+for r in result["EvaluationResults"]:
+    print(r["EvalActionName"], r["EvalDecision"])
+    # "explicitDeny" here means stop looking at identity policies
+    for stmt in r.get("MatchedStatements", []):
+        print("   matched:", stmt["SourcePolicyId"], stmt["SourcePolicyType"])
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The rules, compressed.</b> Deny by default. One explicit <code>Deny</code> anywhere beats every
+                    <code>Allow</code>. Identity policies say what a principal may do; resource policies say who may
+                    touch a resource, and are the only way to grant cross-account access directly. SCPs and
+                    permissions boundaries only ever <em>subtract</em>. And the effective permission is the
+                    intersection of all of them &mdash; never the union.
+                </p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The habits that matter more than the theory.</b> Never create an IAM user with an access key
+                    unless you have exhausted every alternative &mdash; use IAM Identity Center for humans, instance
+                    profiles and execution roles for workloads, and OIDC federation for CI. Turn on MFA for the root
+                    user, put its credentials in a safe, and never use it again. And grant permissions with
+                    <code>Resource</code> ARNs rather than <code>"*"</code>: the difference between
+                    <code>s3:GetObject</code> on one prefix and <code>s3:*</code> on everything is the difference
+                    between an incident and a breach.
+                </p>
+            </div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-vpc">3. The VPC &mdash; Where Your Resources Live<a class="headerlink" href="#3-vpc"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Typical CIDR</b> <code class="big-o o-good">10.0.0.0/16</code></li>
+                <li><b>Subnet</b> <code class="big-o o-ok">1 AZ, always</code></li>
+                <li><b>Reserved per subnet</b> <code class="big-o o-bad">5 IPs</code></li>
+                <li><b>NAT Gateway</b> <code class="big-o o-bad">~$32/mo + data</code></li>
+            </ul>
+
+            <p>A <strong>VPC</strong> is a logically isolated network inside AWS with an IP range you choose. Almost
+                everything with an IP address lives in one: EC2 instances, RDS databases, Fargate tasks, Lambda
+                functions attached to a VPC, load balancers. The three things you configure are the
+                <strong>address space</strong> (the CIDR and its subnets), the <strong>routes</strong> (where packets
+                go), and the <strong>filters</strong> (security groups and network ACLs). Almost every "it cannot
+                connect" problem on AWS is one of those three, and the animation below shows how they compose.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏘️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a gated housing estate</b>
+                    <p>The <b>VPC</b> is the estate wall and its range of house numbers. <b>Subnets</b> are the
+                        streets, and each street is entirely within one part of town (one AZ). The <b>route table</b>
+                        is the signpost at the end of each street: streets with a sign pointing to the main gate are
+                        "public"; streets without one are private, and residents there simply have no way out. The
+                        <b>NAT Gateway</b> is a courier who lives on a public street and will fetch parcels for
+                        private residents &mdash; but will not let strangers in. The <b>security group</b> is the lock
+                        on each individual front door, and the <b>network ACL</b> is a guard at the entrance to the
+                        street who checks everyone, in both directions, with no memory of who they let through a
+                        minute ago.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="vpc-anatomy"></div>
+
+            <p>Now the filters. AWS gives you two and they behave completely differently &mdash; one has memory and
+                one does not. Ninety-five percent of your work happens in security groups; NACLs exist for the
+                blunt, subnet-wide cases. Run both variants of the animation and watch what happens to the
+                <em>response</em> packet.
+            </p>
+
+            <div class="viz" data-viz="sg-vs-nacl"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; security groups reference each other</b> Writing
+                    <code>allow 5432 from sg-app</code> instead of <code>allow 5432 from 10.0.11.0/24</code> means the
+                    rule keeps working as instances scale, get replaced and change IP. It also documents your
+                    architecture: reading the security groups tells you which tier talks to which.
+                </li>
+                <li class="is-bad"><b>Weakness &mdash; a private subnet is not free</b> The moment private resources
+                    need to reach the internet you are paying for NAT Gateways, one per AZ for real availability,
+                    plus a per-gigabyte processing charge. This is the most common six-figure surprise in a growing
+                    AWS bill, and VPC endpoints remove most of it.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">An EC2 instance in a private subnet cannot reach the internet. Walk through
+                    your diagnosis.</p>
+                <p>Work outward from the instance, because that is the order the packet experiences things and each
+                    step rules out a whole class of cause. First, the <b>route table</b> associated with that
+                    subnet &mdash; is there a <code>0.0.0.0/0</code> route, and does it point at a NAT Gateway rather
+                    than an Internet Gateway? A private subnet routed to an IGW cannot work, because the instance has
+                    no public IP for return traffic. Second, the <b>NAT Gateway itself</b> &mdash; is it in a
+                    <em>public</em> subnet, and does <em>that</em> subnet route to the IGW? A NAT Gateway placed in a
+                    private subnet is a common and silent mistake. Third, the <b>security group</b> &mdash; outbound
+                    rules are usually wide open by default, but a hardened one may not allow 443. Fourth, the
+                    <b>NACL</b> &mdash; check both directions, including the ephemeral port range for return traffic.
+                    Finally DNS: <code>enableDnsSupport</code> and <code>enableDnsHostnames</code> on the VPC. VPC
+                    Reachability Analyzer will do this whole walk for you and name the blocking component.
+                </p>
+                <div class="code-tabs" data-label="Let AWS trace the path instead of guessing">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# ask AWS to prove whether a path exists, and where it breaks
+aws ec2 create-network-insights-path \
+  --source i-0abc123 --destination-port 443 \
+  --destination igw-0def456 --protocol tcp
+
+aws ec2 start-network-insights-analysis \
+  --network-insights-path-id nip-0123456789
+
+aws ec2 describe-network-insights-analyses \
+  --network-insights-analysis-ids nia-0123456789 \
+  --query 'NetworkInsightsAnalyses[0].{Reachable:NetworkPathFound,Blocked:Explanations[0]}'
+
+# the manual version: what does this subnet's route table say?
+aws ec2 describe-route-tables \
+  --filters Name=association.subnet-id,Values=subnet-0abc123 \
+  --query 'RouteTables[].Routes'
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+# The shape you want: public subnet routes to the IGW,
+# private subnet routes to a NAT that lives in the public subnet.
+PublicRoute:
+  Type: AWS::EC2::Route
+  Properties:
+    RouteTableId: !Ref PublicRouteTable
+    DestinationCidrBlock: 0.0.0.0/0
+    GatewayId: !Ref InternetGateway
+
+NatGateway:
+  Type: AWS::EC2::NatGateway
+  Properties:
+    SubnetId: !Ref PublicSubnetA        # public, or nothing works
+    AllocationId: !GetAtt NatEip.AllocationId
+
+PrivateRoute:
+  Type: AWS::EC2::Route
+  Properties:
+    RouteTableId: !Ref PrivateRouteTable
+    DestinationCidrBlock: 0.0.0.0/0
+    NatGatewayId: !Ref NatGateway
+
+# and the line that deletes most of your NAT bill:
+S3Endpoint:
+  Type: AWS::EC2::VPCEndpoint
+  Properties:
+    VpcId: !Ref Vpc
+    ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+    VpcEndpointType: Gateway
+    RouteTableIds: [!Ref PrivateRouteTable]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Choose the CIDR as if you will never change it, because you effectively cannot.</b> You can add
+                    secondary ranges to a VPC but you cannot shrink or renumber the primary one, and subnets are
+                    immutable. Two VPCs with overlapping ranges cannot be peered, ever &mdash; which turns a
+                    thoughtless <code>10.0.0.0/16</code> in every account into a migration project the day someone
+                    wants a Transit Gateway. Allocate ranges centrally, leave gaps, and use a <code>/16</code> per
+                    VPC with <code>/20</code> subnets unless you have a reason not to.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Two VPC features punch far above their weight. <b>VPC endpoints</b> let private resources reach
+                    AWS services without a NAT Gateway &mdash; gateway endpoints for S3 and DynamoDB are free and
+                    should be in every VPC you build. <b>VPC Flow Logs</b> record accepted and rejected connections
+                    and are the only way to answer "did the packet arrive and get rejected, or never arrive at
+                    all?" &mdash; a distinction that turns an afternoon of guessing into a two-minute query.</p>
+            </div>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-cost">4. What You Are Actually Paying For<a class="headerlink" href="#4-cost"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Savings Plan</b> <code class="big-o o-good">up to 66% off</code></li>
+                <li><b>Spot</b> <code class="big-o o-great">up to 90% off</code></li>
+                <li><b>Data in</b> <code class="big-o o-great">free</code></li>
+                <li><b>Data out</b> <code class="big-o o-bad">~$0.09/GB</code></li>
+            </ul>
+
+            <p>Cost is not a finance topic on AWS, it is an architecture topic &mdash; because the pricing model is
+                what makes one design better than another. Serverless is attractive partly because it charges
+                nothing when idle. Multi-AZ costs money in cross-zone transfer. A queue is cheaper than the extra
+                instances you would need to absorb the same spike. You cannot design well on AWS while treating the
+                bill as somebody else's problem, and the good news is that the model is simple: you pay for
+                <strong>resources that exist</strong>, <strong>requests that are made</strong>, and <strong>bytes
+                    that move</strong>.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚕</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a taxi meter that runs while parked</b>
+                    <p>On-Demand is hailing a taxi: no commitment, highest rate, and the meter runs whether or not you
+                        are moving. A <b>Savings Plan</b> is a monthly travel pass &mdash; you promise to spend a
+                        certain amount and get a discount on everything, whichever taxi you take. <b>Spot</b> is
+                        riding with a driver heading that way anyway: ninety percent off, and they can drop you at the
+                        next corner with two minutes' notice. And the thing that catches everyone: an <b>idle</b>
+                        resource still runs the meter. A stopped EC2 instance still bills for its EBS volume; an
+                        unattached Elastic IP bills precisely <em>because</em> nothing is using it.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="pricing-models"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; the discount for commitment is enormous and easy</b> A
+                    Compute Savings Plan is one purchase, applies automatically across EC2, Fargate and Lambda in any
+                    Region and family, and needs no changes to your infrastructure. For any workload with a stable
+                    baseline it is close to free money, and the analysis takes twenty minutes in Cost Explorer.</li>
+                <li class="is-bad"><b>Weakness &mdash; the bill hides its own causes</b> The line items are usage
+                    types, not applications. Without a consistent tagging policy applied from day one, "which team
+                    spent this?" is unanswerable, and cost allocation tags cannot be applied retroactively to data
+                    you have already been billed for.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your bill jumped 40% this month with no traffic increase and no deployments.
+                    Where do you look first?</p>
+                <p>Not at instance sizes. Open Cost Explorer, set the granularity to daily, and group by
+                    <b>usage type</b> rather than by service &mdash; grouping by service tells you "EC2 went up",
+                    which you already knew, while usage type tells you <em>which meter</em> moved. In practice the
+                    step-change causes cluster into a short list: <code>NatGateway-Bytes</code> (someone routed a
+                    large data flow through NAT instead of a VPC endpoint), <code>DataTransfer-Regional-Bytes</code>
+                    (a service moved and is now chatting across AZs), CloudWatch Logs ingestion (debug logging left
+                    on after an incident), unattached EBS volumes and snapshots accumulating from an autoscaling
+                    group that replaces instances, or a Savings Plan that quietly expired. AWS Cost Anomaly
+                    Detection will find most of these before you do, if you turn it on.
+                </p>
+                <div class="code-tabs" data-label="Find the meter that moved">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import boto3
+
+ce = boto3.client("ce", region_name="us-east-1")   # Cost Explorer is global-ish
+
+resp = ce.get_cost_and_usage(
+    TimePeriod={"Start": "2026-02-01", "End": "2026-03-01"},
+    Granularity="DAILY",
+    Metrics=["UnblendedCost"],
+    # USAGE_TYPE is the useful dimension: it names the meter, not the product
+    GroupBy=[{"Type": "DIMENSION", "Key": "USAGE_TYPE"}],
+)
+
+for day in resp["ResultsByTime"]:
+    rows = sorted(
+        day["Groups"],
+        key=lambda g: float(g["Metrics"]["UnblendedCost"]["Amount"]),
+        reverse=True,
+    )[:3]
+    top = ", ".join(f"{r['Keys'][0]} ${float(r['Metrics']['UnblendedCost']['Amount']):.2f}"
+                    for r in rows)
+    print(day["TimePeriod"]["Start"], top)
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# the five things worth checking on any account, right now
+
+# 1. unattached EBS volumes - billed at full price for nothing
+aws ec2 describe-volumes --filters Name=status,Values=available \
+  --query 'Volumes[].{Id:VolumeId,GB:Size,Created:CreateTime}' --output table
+
+# 2. unassociated Elastic IPs - charged precisely because they are idle
+aws ec2 describe-addresses \
+  --query 'Addresses[?AssociationId==`null`].PublicIp'
+
+# 3. log groups with no retention set - they keep data forever
+aws logs describe-log-groups \
+  --query 'logGroups[?retentionInDays==`null`].logGroupName'
+
+# 4. how much NAT is actually costing
+aws ce get-cost-and-usage --time-period Start=2026-02-01,End=2026-03-01 \
+  --granularity MONTHLY --metrics UnblendedCost \
+  --filter '{"Dimensions":{"Key":"USAGE_TYPE","Values":["NatGateway-Bytes"]}}'
+
+# 5. old snapshots nobody owns
+aws ec2 describe-snapshots --owner-ids self \
+  --query 'length(Snapshots)'
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>The five-minute setup every account should have.</b> A budget with an email alert at 80% of
+                    expected spend. Cost Anomaly Detection enabled. Log group retention set to something finite
+                    &mdash; the default is "forever", and CloudWatch Logs storage quietly becomes a top-five line
+                    item. A tagging policy with at least <code>owner</code>, <code>env</code> and <code>service</code>,
+                    activated as cost allocation tags. And S3 lifecycle rules that abort incomplete multipart uploads
+                    after seven days.</p>
+            </div>
+
+            <h2 id="unit-2">Unit 2 &mdash; The Services You Touch Every Week<a class="headerlink" href="#unit-2"
+                    title="Permanent link">#</a></h2>
+
+            <p>Five sections covering the services that make up almost every application on AWS: somewhere to put
+                objects, somewhere to run code, somewhere to put records, a way to get traffic in, and a way to keep
+                the pieces from depending on each other. Each one has a decision at its heart &mdash; which storage
+                class, which compute model, which database, which load balancer, which messaging service &mdash; and
+                each section is built around making that decision well rather than listing features.</p>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-s3">5. S3 &mdash; The Default Place to Put Things<a class="headerlink" href="#5-s3"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Durability</b> <code class="big-o o-great">11 nines</code></li>
+                <li><b>Max object</b> <code class="big-o o-good">5 TB</code></li>
+                <li><b>Standard</b> <code class="big-o o-good">$0.023/GB-mo</code></li>
+                <li><b>Deep Archive</b> <code class="big-o o-great">$0.00099/GB-mo</code></li>
+            </ul>
+
+            <p>S3 is object storage: a flat namespace of keys mapped to blobs, reachable over HTTP, with no
+                filesystem semantics underneath. There are no directories &mdash; <code>reports/2026/q1.csv</code> is
+                a single key that happens to contain slashes, and the console's folder view is a convenience
+                built from key prefixes. There is no partial write and no append; you replace the whole object or you
+                do not. Accepting that S3 is not a disk is the difference between using it well and fighting it.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏛️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a coat check, not a wardrobe</b>
+                    <p>You hand over a coat and get a ticket. You cannot reach into the back and adjust a sleeve; you
+                        can only hand in a whole coat and get a whole coat back. The attendant will keep it
+                        essentially forever, will copy it into three separate buildings so a fire cannot destroy it,
+                        and will charge you almost nothing per day. But if you want to change a button, you take the
+                        whole coat out, change it, and hand the whole thing back &mdash; which is exactly why S3 is a
+                        superb place for logs, images, backups and data lakes, and a poor place for anything you
+                        want to edit in place.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="s3-durability"></div>
+
+            <p>The second half of S3 is cost management, and it is almost entirely automatic once configured. An
+                object's access pattern nearly always decays over time, and <strong>lifecycle rules</strong> move it
+                down the storage-class ladder as it does &mdash; each step cheaper to store and slower or dearer to
+                retrieve.</p>
+
+            <div class="viz" data-viz="s3-lifecycle"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; it scales without you thinking about it</b> There is no
+                    capacity to provision, no filesystem to grow, no sharding to plan. A bucket holding four objects
+                    and a bucket holding four billion are operated identically, and S3 will happily serve tens of
+                    thousands of requests per second per prefix.</li>
+                <li class="is-bad"><b>Weakness &mdash; every request is a network round trip</b> Listing a million
+                    keys means a thousand paginated API calls. Reading ten thousand small files is ten thousand round
+                    trips, which is why analytics on S3 uses columnar formats and large files &mdash; and why "just
+                    put the small files in S3" is a performance trap.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">How do you let a browser upload a 2 GB video directly to S3 without the file
+                    passing through your server, and without making the bucket public?</p>
+                <p>A <b>presigned URL</b>. Your backend, which holds credentials, generates a URL that embeds a
+                    signature and an expiry; the browser <code>PUT</code>s straight to S3 using it. Your server never
+                    handles the bytes, so it needs no bandwidth and no large request limits, and the bucket stays
+                    private because the signature carries the authorisation. For a file this size you would use a
+                    <b>multipart upload</b> &mdash; presign each part, upload them in parallel with retries per part,
+                    then complete. The subtleties worth mentioning: the URL inherits the permissions of whoever
+                    signed it, so sign with a narrowly scoped role; set a short expiry; and pin the content type and
+                    a maximum size in the signed conditions so nobody uploads a 40 GB file to the key you offered.
+                </p>
+                <div class="code-tabs" data-label="Presigned upload — generate on the server, use in the browser">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import boto3
+
+s3 = boto3.client("s3")
+
+# Simple case: one PUT, expires in 15 minutes.
+url = s3.generate_presigned_url(
+    "put_object",
+    Params={
+        "Bucket": "acme-uploads",
+        "Key": "raw/user-42/clip.mp4",
+        "ContentType": "video/mp4",
+        # forces server-side encryption; the client must send the header too
+        "ServerSideEncryption": "aws:kms",
+    },
+    ExpiresIn=900,
+)
+
+# Better for browsers: a POST policy can cap the size, which a PUT URL cannot.
+post = s3.generate_presigned_post(
+    Bucket="acme-uploads",
+    Key="raw/user-42/${filename}",
+    Fields={"Content-Type": "video/mp4"},
+    Conditions=[
+        {"Content-Type": "video/mp4"},
+        ["content-length-range", 1, 2_147_483_648],   # 1 byte .. 2 GB
+    ],
+    ExpiresIn=900,
+)
+print(post["url"], post["fields"])
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const s3 = new S3Client({ region: "us-east-1" });
+
+// server side
+const url = await getSignedUrl(
+  s3,
+  new PutObjectCommand({
+    Bucket: "acme-uploads",
+    Key: "raw/user-42/clip.mp4",
+    ContentType: "video/mp4",
+  }),
+  { expiresIn: 900 }
+);
+
+// browser side - no credentials involved, the signature is the authorisation
+await fetch(url, {
+  method: "PUT",
+  headers: { "Content-Type": "video/mp4" },  // must match exactly, or 403
+  body: file,
+});
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The four settings that prevent the headline.</b> Leave <b>Block Public Access</b> on at the
+                    account level &mdash; every "company leaks data in S3 bucket" story is this setting turned off.
+                    Turn on <b>versioning</b>, because it is the only thing that survives an overwrite or a delete.
+                    Turn on <b>default encryption</b> (it is on by default for new buckets now, but verify).
+                    And serve public content through <b>CloudFront with an Origin Access Control</b> rather than by
+                    making the bucket readable &mdash; you get caching, a WAF, and logs, and the bucket stays
+                    private.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Three S3 features that solve problems people usually solve with code. <b>S3 Select</b> and
+                    <b>Athena</b> run SQL against objects in place, so you do not download a 5 GB CSV to count rows.
+                    <b>Event notifications</b> fire a Lambda, SQS or EventBridge event on upload, which is the
+                    backbone of most ingestion pipelines. And <b>Storage Lens</b> tells you, for free, which prefixes
+                    are large, cold and costing you money.
+                </p>
+            </div>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-compute">6. Compute &mdash; Lambda, Containers &amp; EC2<a class="headerlink" href="#6-compute"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Lambda max</b> <code class="big-o o-ok">15 min, 10 GB</code></li>
+                <li><b>Fargate start</b> <code class="big-o o-ok">~30–60 s</code></li>
+                <li><b>Graviton</b> <code class="big-o o-great">~20% cheaper</code></li>
+                <li><b>Spot</b> <code class="big-o o-great">up to 90% off</code></li>
+            </ul>
+
+            <p>AWS gives you a ladder of compute options that trade operational burden against control. At the top
+                you write a function and AWS does everything else; at the bottom you get a virtual machine and a
+                bill. The mistake is to pick by familiarity rather than by constraint &mdash; teams reach for
+                Kubernetes because it is what they know, and inherit a platform to operate that their workload never
+                required. The useful method is elimination, not comparison.</p>
+
+            <div class="viz" data-viz="compute-choice"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; catering</b>
+                    <p><b>Lambda</b> is a vending machine: you press a button, food appears, you pay per item, and
+                        there is nothing to clean. <b>Fargate</b> is a food truck that you stock &mdash; you decide
+                        the menu and the recipes, someone else owns and maintains the truck. <b>EC2</b> is a kitchen
+                        you rent: total control over the ovens, and every gas inspection, cleaning rota and broken
+                        extractor fan is yours. All three feed people. The question is never which is best, it is how
+                        much kitchen your meal actually needs.</p>
+                </div>
+            </div>
+
+            <p>Lambda deserves its own mental model, because its performance characteristics are unlike a server's.
+                The unit is not a machine but a <strong>sandbox</strong>, one request at a time, created on demand
+                and reused while traffic continues. Everything people find surprising about Lambda &mdash; cold
+                starts, why globals are shared, why concurrency limits matter more than CPU &mdash; falls out of that
+                one fact.</p>
+
+            <div class="viz" data-viz="lambda-lifecycle"></div>
+
+            <p>At the other end of the ladder, EC2's answer to variable load is the <strong>Auto Scaling
+                    group</strong>: a launch template, a minimum, a maximum, and a policy that adds and removes
+                instances to hold a metric at a target. It is a control loop, and like any control loop it is only as
+                good as its feedback and its response time.</p>
+
+            <div class="viz" data-viz="autoscaling"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; serverless removes an entire job</b> No patching, no capacity
+                    planning, no scaling policy, no bill when idle. For event-driven and spiky workloads the
+                    operational saving dwarfs any compute-price comparison, and it is available to a team of one.
+                </li>
+                <li class="is-bad"><b>Weakness &mdash; the limits are hard, not soft</b> Fifteen minutes is fifteen
+                    minutes. No GPU is no GPU. A 250 MB unzipped package is a real ceiling. And a Lambda in a VPC
+                    talking to an RDS instance will exhaust the connection pool long before it exhausts the database
+                    &mdash; which is what RDS Proxy exists to fix.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A Lambda function processes S3 uploads. It works fine normally, but during a
+                    nightly batch of 5,000 files it starts timing out and the downstream API returns
+                    <code>ThrottlingException</code>. What is happening and how do you fix it?
+                </p>
+                <p>Two separate problems that look like one. First, 5,000 near-simultaneous S3 events mean Lambda
+                    creates thousands of concurrent sandboxes &mdash; most of them cold, all of them hammering the
+                    downstream API at once. Lambda scales <em>faster</em> than your dependencies, which is a
+                    liability as often as it is a feature. The fix is a buffer and a brake: put an SQS queue between
+                    S3 and the function so events are absorbed rather than amplified, then set the event source
+                    mapping's batch size and, critically, set <b>reserved concurrency</b> on the function to a number
+                    the downstream API can survive. Second, the timeouts: check whether the function is retrying
+                    internally without a total time budget, and whether the visibility timeout on the queue is at
+                    least six times the function timeout &mdash; if it is not, you are also doing duplicate work.
+                </p>
+                <div class="code-tabs" data-label="Buffer the spike, then cap the concurrency">
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+Resources:
+  # S3 -> SQS -> Lambda, so a burst becomes a backlog instead of a stampede
+  UploadQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 180              # >= 6x the function timeout
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt UploadDlq.Arn
+        maxReceiveCount: 3
+
+  UploadDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600     # 14 days to investigate
+
+  Processor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Handler: app.handler
+      Timeout: 30
+      MemorySize: 1024                    # more memory = more CPU = shorter run
+      Architectures: [arm64]              # Graviton: ~20% cheaper
+      ReservedConcurrentExecutions: 20    # the brake on the downstream API
+      Events:
+        Batch:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt UploadQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes: [ReportBatchItemFailures]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import json
+import os
+import boto3
+
+# Module scope: created once per sandbox, reused by every later invocation.
+# Putting this inside the handler is the most common Lambda performance bug.
+ddb = boto3.resource("dynamodb")
+table = ddb.Table(os.environ["TABLE"])
+
+
+def handler(event, context):
+    failures = []
+    for record in event["Records"]:
+        try:
+            body = json.loads(record["body"])
+            # Conditional write makes a redelivery harmless - SQS is
+            # at-least-once, so this WILL be called twice eventually.
+            table.put_item(
+                Item={"pk": body["key"], "size": body["size"]},
+                ConditionExpression="attribute_not_exists(pk)",
+            )
+        except table.meta.client.exceptions.ConditionalCheckFailedException:
+            pass                                  # already processed, fine
+        except Exception:
+            # Report only the failed messages; the rest are deleted.
+            failures.append({"itemIdentifier": record["messageId"]})
+
+    return {"batchItemFailures": failures}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The lever nobody expects on Lambda is memory.</b> CPU is allocated in proportion to memory, so
+                    going from 512 MB to 1,024 MB often halves the duration &mdash; and since you are billed in
+                    GB-seconds, the cost stays flat while latency improves. The smallest memory setting is almost
+                    never the cheapest. Measure with AWS Lambda Power Tuning before you assume.</p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Two things that silently break autoscaling.</b> A health check that hits <code>/</code> instead
+                    of a real readiness endpoint will keep a broken instance in service forever. And any state on
+                    local disk &mdash; sessions, uploaded files, a SQLite database &mdash; means scaling in destroys
+                    user data. Autoscaling assumes instances are interchangeable and disposable; if yours are not,
+                    the group will still add capacity, it will just also lose things.</p>
+            </div>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-databases">7. Databases &mdash; Choosing and Not Regretting It<a class="headerlink"
+                    href="#7-databases" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>RDS failover</b> <code class="big-o o-ok">60–120 s</code></li>
+                <li><b>Aurora replicas</b> <code class="big-o o-good">up to 15</code></li>
+                <li><b>DynamoDB latency</b> <code class="big-o o-great">single-digit ms</code></li>
+                <li><b>Partition ceiling</b> <code class="big-o o-bad">3k RCU / 1k WCU</code></li>
+            </ul>
+
+            <p>The database decision is the hardest one to reverse, so it deserves more thought than the compute
+                decision that usually gets it. The honest default is <strong>a relational database</strong> &mdash;
+                RDS or Aurora running PostgreSQL &mdash; because SQL, joins, transactions and ad-hoc queries are
+                worth a great deal and you rarely know your access patterns on day one. Choose DynamoDB when you
+                <em>do</em> know them, when they are simple and stable, and when you need scale or latency that a
+                single writer cannot give you.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📚</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a library versus a left-luggage locker room</b>
+                    <p>A <b>relational database</b> is a library with a catalogue. You can ask questions nobody
+                        anticipated &mdash; every book by this author published before 1990, cross-referenced with
+                        loans &mdash; and the librarian will work it out, slowly if necessary. A <b>key-value
+                            store</b> is a room of numbered lockers. Give the number, get the contents, instantly,
+                        for any number of lockers and any number of people. Ask "which lockers contain something
+                        red?" and there is no answer except opening all of them. DynamoDB is spectacular when you
+                        always know the locker number and a liability when you do not.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="rds-failover"></div>
+
+            <p>If you do choose DynamoDB, everything depends on the <strong>partition key</strong>. It is not an
+                index you can add later &mdash; it determines the physical placement of every item, and a key with
+                poor cardinality produces a table that throttles at a fraction of its provisioned capacity.</p>
+
+            <div class="viz" data-viz="dynamodb-partition"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; Aurora gives you relational without the operational
+                        cliff</b> A storage layer spread across three AZs, up to fifteen read replicas sharing it,
+                    failover in seconds rather than minutes, and backups that do not touch performance. It is
+                    PostgreSQL or MySQL compatible, so the migration is usually a connection string.</li>
+                <li class="is-bad"><b>Weakness &mdash; DynamoDB punishes late requirements</b> A new access pattern
+                    means a new global secondary index, a backfill, and often a rethink of the key design. In SQL the
+                    same request is <code>CREATE INDEX</code> and an afternoon. The scale is real, but you buy it
+                    with flexibility.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your PostgreSQL database on RDS is at 90% CPU. Reads are slow, writes are fine.
+                    List your options in order.</p>
+                <p>Cheapest and most reversible first. <b>Find the query</b> &mdash; turn on Performance Insights,
+                    look at the top statements by total time, and check for a missing index or an accidental
+                    sequential scan; a single index has resolved more of these than every other option combined.
+                    <b>Add a cache</b> &mdash; if the same rows are read repeatedly, ElastiCache in front of the
+                    database removes the load entirely rather than absorbing it. <b>Add a read replica</b> and point
+                    reporting and analytics traffic at it, accepting that replica lag means it is eventually
+                    consistent. <b>Scale up</b> the instance class, which is a ten-minute failover and buys time but
+                    not a solution. And only then consider <b>sharding or moving to Aurora</b>, which are projects.
+                    Notice that "the database is too small" is the last hypothesis, not the first &mdash; it usually
+                    is not.
+                </p>
+                <div class="code-tabs" data-label="Read the pressure before you spend money on it">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# what is the database actually spending its time on?
+aws pi get-resource-metrics \
+  --service-type RDS \
+  --identifier db-ABCDEFGHIJKLMNOP \
+  --metric-queries '[{"Metric":"db.load.avg","GroupBy":{"Group":"db.sql_tokenized"}}]' \
+  --start-time 2026-02-10T00:00:00Z --end-time 2026-02-10T06:00:00Z \
+  --period-in-seconds 300
+
+# connections, not CPU, is often the real ceiling
+aws cloudwatch get-metric-statistics \
+  --namespace AWS/RDS --metric-name DatabaseConnections \
+  --dimensions Name=DBInstanceIdentifier,Value=prod-pg \
+  --start-time 2026-02-10T00:00:00Z --end-time 2026-02-10T06:00:00Z \
+  --period 300 --statistics Maximum
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import boto3
+
+# DynamoDB's equivalent question: is one partition hot?
+# Enable CloudWatch Contributor Insights on the table, then read the top keys.
+ddb = boto3.client("dynamodb")
+ddb.update_contributor_insights(
+    TableName="orders",
+    ContributorInsightsAction="ENABLE",
+)
+
+# And the query shape that matters: Query, never Scan.
+res = boto3.resource("dynamodb").Table("orders").query(
+    KeyConditionExpression=(
+        boto3.dynamodb.conditions.Key("pk").eq("USER#42")
+        & boto3.dynamodb.conditions.Key("sk").begins_with("ORDER#2026-02")
+    ),
+    # ask for what you need; RCUs are charged on bytes read, not returned
+    ProjectionExpression="sk, #t, #s",
+    ExpressionAttributeNames={"#t": "total", "#s": "status"},
+)
+print(res["Count"], res["ConsumedCapacity"] if "ConsumedCapacity" in res else "")
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>A rough map of the rest.</b> <code>ElastiCache</code> (Redis or Valkey) for caching and
+                    sessions. <code>DocumentDB</code> for MongoDB workloads you are migrating. <code>Neptune</code>
+                    for graphs. <code>Timestream</code> for time series. <code>OpenSearch</code> for full-text
+                    search and log analytics. <code>Redshift</code> for a warehouse; <code>Athena</code> when the
+                    data is already in S3 and you want SQL without a cluster. Most applications need exactly one of
+                    these alongside a relational database, and adding a second is a decision worth defending.</p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Multi-AZ is not a backup and a read replica is not a backup.</b> Both replicate your mistakes
+                    perfectly and immediately. Automated backups with a retention period, plus point-in-time
+                    recovery, plus an occasional restore test, are the backup. The restore test is the part that gets
+                    skipped and the part that matters &mdash; an untested backup is a hypothesis.</p>
+            </div>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-traffic">8. Getting Traffic In &mdash; ALB, Route 53 &amp; CloudFront<a class="headerlink"
+                    href="#8-traffic" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>ALB</b> <code class="big-o o-good">layer 7</code></li>
+                <li><b>NLB</b> <code class="big-o o-great">layer 4, µs</code></li>
+                <li><b>Edge locations</b> <code class="big-o o-great">600+</code></li>
+                <li><b>DNS failover</b> <code class="big-o o-bad">90–150 s</code></li>
+            </ul>
+
+            <p>Three services sit between a user and your code, and they operate at different layers of the stack:
+                <strong>Route 53</strong> answers the DNS question, <strong>CloudFront</strong> terminates the
+                connection near the user and may answer from cache, and a <strong>load balancer</strong> distributes
+                what is left across your targets. Understanding which one to reach for is mostly a matter of knowing
+                where in the request each one gets involved.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🗺️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; finding a shop</b>
+                    <p><b>Route 53</b> is directory enquiries: you ask for the address and get one back &mdash; and a
+                        clever operator gives you the <em>nearest branch</em>, or skips the one that is closed today.
+                        <b>CloudFront</b> is the local pickup point that already has the popular items in stock, so
+                        most people never travel to the warehouse at all. The <b>load balancer</b> is the person at
+                        the warehouse door directing each visitor to whichever counter is free, and quietly closing
+                        the queue at a counter whose till has crashed. Three different decisions, made at three
+                        different moments, by three different systems.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="alb-routing"></div>
+
+            <p>DNS is the earliest decision point and the coarsest. Route 53's <strong>routing policies</strong> turn
+                a name lookup into a decision &mdash; nearest Region, healthy endpoint, weighted split, or a fixed
+                answer per country.</p>
+
+            <div class="viz" data-viz="route53-routing"></div>
+
+            <p>And CloudFront changes the economics of the whole thing, because the cheapest request is the one your
+                origin never sees.</p>
+
+            <div class="viz" data-viz="cloudfront-cache"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; CloudFront helps even when nothing is cacheable</b>
+                    Terminating TLS at an edge a few milliseconds away and carrying the request over AWS's backbone
+                    removes several long round trips. Dynamic APIs routinely get 20&ndash;40% faster with a
+                    zero-percent hit ratio.</li>
+                <li class="is-bad"><b>Weakness &mdash; DNS decisions are cached beyond your control</b> A resolver
+                    that cached your record for an hour will keep sending users to a dead endpoint for an hour,
+                    whatever Route 53 now says. Lower TTLs before a planned change, and never rely on DNS for a
+                    failover with a tight recovery objective.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Design the traffic path for a global web application with an API and a
+                    single-page front end. Where does each piece go?</p>
+                <p>Put the front-end build in <b>S3</b> and serve it through <b>CloudFront</b> with an Origin Access
+                    Control, so the bucket stays private. Give static assets content-hashed filenames and a one-year
+                    <code>max-age</code>, and give <code>index.html</code> a short TTL &mdash; that combination makes
+                    deploys atomic and invalidations unnecessary. Put the API behind the <em>same</em> CloudFront
+                    distribution on a <code>/api/*</code> behaviour pointing at an <b>ALB</b>: one domain, no CORS
+                    preflight, and a single place to attach <b>WAF</b>. Terminate TLS with an <b>ACM</b> certificate
+                    (in <code>us-east-1</code> for CloudFront, which catches everyone once). Use <b>Route 53</b> with
+                    an alias record to the distribution &mdash; alias records are free to query and can point at an
+                    apex domain, which a CNAME cannot. If the API is multi-Region, add latency-based routing with
+                    health checks, and be honest in the interview that failover then takes a couple of minutes.
+                </p>
+                <div class="code-tabs" data-label="One distribution, two origins, one domain">
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+Distribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      Enabled: true
+      Aliases: [app.example.com]
+      ViewerCertificate:
+        AcmCertificateArn: !Ref Cert     # MUST be issued in us-east-1
+        SslSupportMethod: sni-only
+        MinimumProtocolVersion: TLSv1.2_2021
+      Origins:
+        - Id: spa
+          DomainName: !GetAtt SiteBucket.RegionalDomainName
+          S3OriginConfig: {}
+          OriginAccessControlId: !Ref Oac
+        - Id: api
+          DomainName: !GetAtt Alb.DNSName
+          CustomOriginConfig:
+            OriginProtocolPolicy: https-only
+      DefaultCacheBehavior:
+        TargetOriginId: spa
+        ViewerProtocolPolicy: redirect-to-https
+        Compress: true
+        CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # CachingOptimized
+      CacheBehaviors:
+        - PathPattern: /api/*
+          TargetOriginId: api
+          ViewerProtocolPolicy: https-only
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3  # AllViewer
+      CustomErrorResponses:
+        - ErrorCode: 403          # SPA deep links: let the router handle it
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# deploy the SPA: long cache for hashed assets, no cache for the entry point
+aws s3 sync ./dist s3://acme-site --delete \
+  --exclude index.html \
+  --cache-control 'public,max-age=31536000,immutable'
+
+aws s3 cp ./dist/index.html s3://acme-site/index.html \
+  --cache-control 'public,max-age=0,must-revalidate'
+
+# with hashed filenames this is the only path you ever need to invalidate
+aws cloudfront create-invalidation \
+  --distribution-id E1234567890ABC --paths '/index.html'
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Two certificate rules that waste an afternoon each.</b> A certificate used by CloudFront must
+                    be issued in <code>us-east-1</code>, regardless of where anything else lives &mdash; CloudFront's
+                    control plane is global and lives there. A certificate used by an ALB must be in the ALB's own
+                    Region. They are not interchangeable, and the console will not warn you until the certificate
+                    fails to appear in the dropdown.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>Always use an alias record, not a CNAME</b>, when pointing at an AWS endpoint. Alias records
+                    are resolved inside Route 53, cost nothing to query, update automatically when the target's
+                    addresses change, and &mdash; uniquely &mdash; can be created at the zone apex, where the DNS
+                    standard forbids a CNAME. There is no case where a CNAME to an ALB or CloudFront distribution is
+                    the better choice.</p>
+            </div>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-messaging">9. Decoupling &mdash; SQS, SNS &amp; EventBridge<a class="headerlink"
+                    href="#9-messaging" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>SQS retention</b> <code class="big-o o-good">up to 14 days</code></li>
+                <li><b>SQS delivery</b> <code class="big-o o-ok">at-least-once</code></li>
+                <li><b>SNS fan-out</b> <code class="big-o o-great">12.5M subs</code></li>
+                <li><b>EventBridge latency</b> <code class="big-o o-ok">~0.5 s</code></li>
+            </ul>
+
+            <p>Direct calls between services create a chain where every link is a shared failure. If the order
+                service calls the email service synchronously, an email outage becomes an ordering outage, and a slow
+                email service becomes a slow checkout. Messaging breaks the chain: the producer writes somewhere
+                durable and returns, and the consumer works at its own pace. The three AWS services that do this
+                differ in one dimension &mdash; <em>who decides where a message goes</em>.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📮</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; three ways to move a message around an office</b>
+                    <p><b>SQS</b> is an in-tray. Work piles up, someone takes the top item, and if they drop it on
+                        the way to their desk it reappears in the tray a few minutes later. <b>SNS</b> is a
+                        distribution list: whatever you send is copied to everyone on it, immediately, with no tray
+                        and no second chance if someone is out. <b>EventBridge</b> is a mailroom clerk who reads the
+                        subject line and the contents of every message and decides which departments care &mdash;
+                        including departments that were added to the building this morning without telling you.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="sqs-visibility"></div>
+
+            <p>The animation above hides a rule that governs all AWS messaging: delivery is
+                <strong>at-least-once</strong>, so your consumer <em>will</em> see the same message twice eventually
+                &mdash; on a redelivery, a timeout, a retry. Making that harmless is not optional, and it is not
+                hard: key your writes on the message ID, use conditional puts, make the operation naturally
+                idempotent.
+            </p>
+
+            <div class="viz" data-viz="eventbridge-fanout"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; a queue converts a traffic spike into a backlog</b> Ten
+                    thousand orders in a minute do not need ten thousand workers, they need a queue and a consumer
+                    that is a bit behind for a while. This is the cheapest capacity planning there is, and it turns
+                    "we fell over" into "we were slow".</li>
+                <li class="is-bad"><b>Weakness &mdash; asynchrony moves the difficulty rather than removing it</b>
+                    You now have ordering, duplicates, poison messages, partial failures and no single place to see
+                    what happened to a request. Distributed tracing and dead-letter queues are not nice-to-haves
+                    here; without them the system is genuinely hard to reason about.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">An order must trigger an email, a warehouse job and an analytics record. The
+                    email service is flaky. Design it.</p>
+                <p>Publish one <b>OrderPlaced</b> event to EventBridge and stop &mdash; the order service's
+                    responsibility ends there, and it must not know that three consumers exist. Each consumer gets
+                    its own rule, and here is the important part: put an <b>SQS queue between the rule and each
+                        consumer</b> rather than invoking Lambda directly. That gives every consumer independent
+                    retries, independent backlog, and its own dead-letter queue, so the flaky email service builds a
+                    queue while the warehouse and analytics carry on untouched. Set <code>maxReceiveCount</code> so
+                    poison messages land in the DLQ instead of cycling, alarm on DLQ depth, and make each consumer
+                    idempotent on the order ID because redelivery is certain. If someone asks about ordering, that is
+                    the moment for a FIFO queue with the order ID as the message group &mdash; and the moment to ask
+                    whether you truly need global ordering or just per-order ordering, because they cost very
+                    different amounts.</p>
+                <div class="code-tabs" data-label="Publish once; let the rules decide who cares">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import json
+import boto3
+
+events = boto3.client("events")
+
+def place_order(order):
+    # ... write the order to the database first, transactionally ...
+    events.put_events(
+        Entries=[{
+            "Source": "orders.api",
+            "DetailType": "OrderPlaced",
+            "Detail": json.dumps({
+                "orderId": order["id"],
+                "total": order["total"],
+                "tier": order["customer_tier"],
+            }),
+            "EventBusName": "acme-bus",
+        }]
+    )
+    # Returns in milliseconds whether there are zero consumers or fifty.
+    # It does not know, and must not know, who is listening.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+EmailRule:
+  Type: AWS::Events::Rule
+  Properties:
+    EventBusName: acme-bus
+    EventPattern:
+      source: [orders.api]
+      detail-type: [OrderPlaced]
+      detail:
+        total: [{ numeric: [">", 0] }]     # content-based filtering
+    Targets:
+      - Id: email-queue
+        Arn: !GetAtt EmailQueue.Arn        # queue, not the Lambda directly,
+        DeadLetterConfig:                  # so a flaky consumer builds a
+          Arn: !GetAtt RuleDlq.Arn         # backlog instead of losing events
+        RetryPolicy:
+          MaximumRetryAttempts: 4
+          MaximumEventAgeInSeconds: 3600
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The choice, in one line each.</b> <b>SQS</b> when work must survive a slow or absent consumer.
+                    <b>SNS</b> when one message must reach many subscribers as cheaply as possible, and losing it is
+                    acceptable. <b>EventBridge</b> when routing depends on the <em>content</em> of the event, or when
+                    the events come from AWS services or SaaS partners. <b>Step Functions</b> when there is a
+                    multi-step workflow with retries, branches and compensation &mdash; that is orchestration, not
+                    messaging, and hand-rolling it in Lambda is a well-trodden mistake.
+                </p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Set the visibility timeout deliberately.</b> If it is shorter than your processing time, SQS
+                    hands the message to a second consumer while the first is still working &mdash; guaranteed
+                    duplicate work, and it looks exactly like a bug in your code. For Lambda consumers, AWS
+                    recommends the queue's visibility timeout be at least six times the function timeout.</p>
+            </div>
+
+            <h2 id="unit-3">Unit 3 &mdash; Running It Like You Mean It<a class="headerlink" href="#unit-3"
+                    title="Permanent link">#</a></h2>
+
+            <p>The first two units get an application running. This one is about the difference between an
+                application that runs and a system a team can operate: knowing when it breaks, limiting what a
+                breach can reach, being able to rebuild it from a file, and surviving the failures that are
+                guaranteed to happen. This is also, not coincidentally, the material that separates a good AWS
+                interview from a mediocre one.</p>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-observability">10. Observability &mdash; Knowing Before Your Users Do<a class="headerlink"
+                    href="#10-observability" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Metric resolution</b> <code class="big-o o-good">1 s – 1 min</code></li>
+                <li><b>Alarm states</b> <code class="big-o o-ok">OK / ALARM / no data</code></li>
+                <li><b>Logs default retention</b> <code class="big-o o-bad">forever</code></li>
+                <li><b>CloudTrail history</b> <code class="big-o o-good">90 days free</code></li>
+            </ul>
+
+            <p>There are five different questions you might ask about a production system, and AWS answers each with
+                a different service. <strong>What happened inside this request?</strong> Logs. <strong>How is the
+                    system behaving over time?</strong> Metrics. <strong>Where did the latency go across five
+                    services?</strong> Traces, via X-Ray. <strong>Who called what, and when?</strong> CloudTrail.
+                <strong>What changed?</strong> AWS Config. Reaching for logs when the question is really "what
+                changed at 14:02" is how debugging sessions turn into all-nighters.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🩺</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a hospital</b>
+                    <p><b>Metrics</b> are the bedside monitor: heart rate, blood pressure, a number every few
+                        seconds. They tell you something is wrong and roughly when, but never why. <b>Logs</b> are
+                        the case notes: everything that happened, in detail, and unreadably long unless you know what
+                        you are searching for. <b>Traces</b> are the patient's journey through the building &mdash;
+                        forty minutes waiting in radiology is invisible in both the monitor and the notes, and
+                        obvious the moment you plot the path. And <b>CloudTrail</b> is the medication chart: who
+                        administered what, at what time, on whose authority.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="cloudwatch-alarm"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; structured logs turn text into a queryable table</b> Emit
+                    JSON with a request ID, a route and a duration, and CloudWatch Logs Insights will aggregate,
+                    filter and percentile it in seconds. The Embedded Metric Format goes further: one log line that
+                    is simultaneously a log entry and a custom metric, with no extra API call.</li>
+                <li class="is-bad"><b>Weakness &mdash; CloudWatch bills for what you emit</b> Log ingestion is
+                    charged per gigabyte, custom metrics are charged per metric per month, and high-cardinality
+                    dimensions (a metric per user ID) explode both. Debug logging left on after an incident is a
+                    genuinely common top-five line item.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Users report the site is "sometimes slow". Your average latency dashboard looks
+                    fine. What do you do?</p>
+                <p>The dashboard is the problem. An average of 120 ms is perfectly consistent with 5% of requests
+                    taking four seconds &mdash; and the 5% is what people report. Switch every latency panel and
+                    alarm to <b>p99</b>, or better, p50/p90/p99 side by side so you can see the spread rather than
+                    the centre. Then find the shape: query Logs Insights for the slow requests specifically and
+                    group by route, customer and time of day, because "sometimes" is usually a pattern &mdash; a
+                    particular endpoint, a particular tenant with more data, a cold start, a cron job contending for
+                    the database. If the request crosses services, turn on <b>X-Ray</b> and look at the service map:
+                    a trace showing 3.6 seconds waiting on one downstream call is an answer, and no amount of log
+                    reading gets you there as fast.</p>
+                <div class="code-tabs" data-label="Percentiles first, then the shape of the slowness">
+                    <div class="tab-pane" data-lang="logs">
+                        <pre><code data-lang="logs">
+# CloudWatch Logs Insights - where the slow requests actually are
+fields @timestamp, @message
+| filter ispresent(duration_ms)
+| stats count(*) as n,
+        pct(duration_ms, 50) as p50,
+        pct(duration_ms, 90) as p90,
+        pct(duration_ms, 99) as p99
+  by route
+| sort p99 desc
+| limit 20
+
+# and then: is it one tenant, or everyone?
+fields @timestamp, tenant_id, route, duration_ms
+| filter duration_ms > 2000
+| stats count(*) as slow_requests by tenant_id
+| sort slow_requests desc
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import json
+import time
+
+# Embedded Metric Format: this single log line is ALSO a CloudWatch metric.
+# No PutMetricData call, no extra latency, no per-request API cost.
+def log_request(route, tenant, duration_ms, status):
+    print(json.dumps({
+        "_aws": {
+            "Timestamp": int(time.time() * 1000),
+            "CloudWatchMetrics": [{
+                "Namespace": "Acme/Api",
+                # keep dimensions LOW cardinality - never tenant_id here,
+                # or you create one metric per tenant and a large bill
+                "Dimensions": [["Route"]],
+                "Metrics": [{"Name": "Latency", "Unit": "Milliseconds"}],
+            }],
+        },
+        "Route": route,
+        "Latency": duration_ms,
+        # high-cardinality fields are fine as plain log fields -
+        # queryable in Insights, not charged as metrics
+        "tenant_id": tenant,
+        "status": status,
+    }))
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The alarm state that quietly betrays you is <code>INSUFFICIENT_DATA</code>.</b> If the thing
+                    emitting a metric dies completely, no datapoints arrive, and an alarm configured with the default
+                    <code>treatMissingData: missing</code> stays grey rather than firing. Your service is entirely
+                    down and nobody is paged. For any metric whose <em>absence</em> is bad news, set
+                    <code>treatMissingData</code> to <code>breaching</code>.
+                </p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>Alarm on symptoms, dashboard on causes.</b> Page on things users feel &mdash; error rate, p99
+                    latency, the age of the oldest message in a queue, error-budget burn. Put CPU, memory, connection
+                    counts and queue depth on a dashboard where you look at them <em>after</em> being paged. An alarm
+                    on CPU produces pages during harmless batch jobs, and trains people to ignore the channel that
+                    will one day matter.</p>
+            </div>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-security">11. Security Beyond IAM &mdash; KMS, Secrets &amp; Blast Radius<a class="headerlink"
+                    href="#11-security" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>KMS payload limit</b> <code class="big-o o-bad">4 KB</code></li>
+                <li><b>Customer managed key</b> <code class="big-o o-ok">$1/month</code></li>
+                <li><b>Secrets Manager</b> <code class="big-o o-ok">$0.40/secret/mo</code></li>
+                <li><b>Encryption in transit</b> <code class="big-o o-great">always on</code></li>
+            </ul>
+
+            <p>IAM decides who may make a call. This section is about everything else: encrypting data so that
+                access to storage is not access to content, keeping credentials out of code, and arranging accounts
+                so that a compromise is contained. The organising idea is <strong>blast radius</strong> &mdash; not
+                "can this be broken into" but "if it is, how far does the damage reach?"</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🗝️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a safe deposit box with two keys</b>
+                    <p>The bank gives you a box and a small key. The box's contents are locked with <em>your</em>
+                        key, and the key itself is kept in a vault you can never enter &mdash; you can only ask the
+                        vault to use it on your behalf, and every such request is written in a ledger. Steal the box
+                        and you have a locked box. Steal a copy of the building's floor plan and you still cannot get
+                        the key out of the vault. And if you suspect something is wrong, one phone call disables the
+                        key and every box it ever locked becomes unopenable, instantly. That last property &mdash; the
+                        kill switch &mdash; is why customer managed KMS keys are worth the dollar a month.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="kms-envelope"></div>
+
+            <p>The second thing worth internalising is where the responsibility line sits, because it moves with the
+                service. On EC2 you patch the operating system; on Lambda you do not. On both, your data and your IAM
+                configuration are yours. Run the animation for all three services and watch the line rise.</p>
+
+            <div class="viz" data-viz="shared-responsibility"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; encryption is nearly free and nearly automatic</b> S3, EBS,
+                    RDS and DynamoDB all encrypt at rest with a checkbox, TLS is on by default in transit, and
+                    Secrets Manager rotates database credentials without you writing rotation logic. There is very
+                    little reason left to run anything unencrypted.</li>
+                <li class="is-bad"><b>Weakness &mdash; the default account layout has no blast radius at all</b> One
+                    account holding dev, staging and production means one over-broad policy, one leaked credential,
+                    or one <code>terraform apply</code> in the wrong terminal reaches everything. Separate accounts
+                    per environment, under Organizations, is the single highest-leverage security decision available
+                    to a small team.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A database password is in an environment variable in your task definition.
+                    Explain why that is a problem and what you would do instead.</p>
+                <p>It is a problem for four separate reasons, and naming all four is the answer. It is <b>visible</b>
+                    to anyone with <code>ecs:DescribeTaskDefinition</code> &mdash; a read-only permission people hand
+                    out freely. It is <b>durable</b>: task definition revisions are immutable and kept forever, so
+                    the password remains readable in revision 14 long after you change it. It is <b>unrotatable</b>
+                    without a deployment, which in practice means it is never rotated. And it tends to be
+                    <b>duplicated</b> into CI variables, local <code>.env</code> files and someone's shell history.
+                    The replacement is <b>Secrets Manager</b> with the secret ARN in the task definition instead of
+                    the value: ECS fetches it at task start using the task's execution role, so the value never
+                    appears in the definition, access is logged in CloudTrail, and automatic rotation becomes a
+                    configuration rather than a project. For non-secret configuration, SSM Parameter Store does the
+                    same job for free.
+                </p>
+                <div class="code-tabs" data-label="Reference the secret, never the value">
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+TaskDefinition:
+  Type: AWS::ECS::TaskDefinition
+  Properties:
+    ContainerDefinitions:
+      - Name: api
+        Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/api:1.4.2
+        Environment:
+          - Name: LOG_LEVEL          # fine: not a secret
+            Value: info
+        Secrets:                     # fetched at start-up, never stored here
+          - Name: DB_PASSWORD
+            ValueFrom: !Sub '${DbSecret}:password::'
+          - Name: STRIPE_KEY
+            ValueFrom: !Ref StripeSecretArn
+
+DbSecret:
+  Type: AWS::SecretsManager::Secret
+  Properties:
+    GenerateSecretString:            # nobody ever sees the value, including you
+      SecretStringTemplate: '{"username":"app"}'
+      GenerateStringKey: password
+      PasswordLength: 32
+      ExcludeCharacters: '"@/\'
+
+RotationSchedule:
+  Type: AWS::SecretsManager::RotationSchedule
+  Properties:
+    SecretId: !Ref DbSecret
+    RotationRules:
+      AutomaticallyAfterDays: 30
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import json
+import boto3
+from functools import lru_cache
+
+sm = boto3.client("secretsmanager")
+
+
+@lru_cache(maxsize=8)
+def get_secret(name: str) -> dict:
+    """Cache it: Secrets Manager is billed per API call, and a Lambda
+    sandbox may serve thousands of invocations. Cache in module scope,
+    not per request - but do give it a TTL if you enable rotation."""
+    return json.loads(sm.get_secret_value(SecretId=name)["SecretString"])
+
+
+creds = get_secret("prod/db")
+# creds["username"], creds["password"] - and neither ever touched
+# an environment variable, a config file, or your git history.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The account is the blast radius boundary, and it is free.</b> IAM boundaries within an account
+                    are complicated to get right and easy to get subtly wrong; an account boundary is absolute.
+                    Separate accounts for production, staging, development and security tooling, under AWS
+                    Organizations with SCPs setting the ceiling and IAM Identity Center providing human access, is
+                    the standard shape &mdash; and Control Tower will set it up for you.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>The detective controls worth turning on before you need them.</b> <b>GuardDuty</b> reads
+                    CloudTrail, VPC Flow Logs and DNS logs and flags credential exfiltration, crypto-mining and
+                    reconnaissance &mdash; it takes one click and finds real things. <b>Security Hub</b> aggregates
+                    findings against a benchmark. <b>Config</b> records what changed. <b>Access Analyzer</b> tells
+                    you which of your resources can be reached from outside the account, which is the question you
+                    actually want answered.</p>
+            </div>
+
+            <!-- ============================================================ 12 -->
+            <h3 id="12-iac">12. Infrastructure as Code &amp; Deployment<a class="headerlink" href="#12-iac"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Rollback</b> <code class="big-o o-great">automatic</code></li>
+                <li><b>Change set</b> <code class="big-o o-good">dry run</code></li>
+                <li><b>Drift</b> <code class="big-o o-bad">silent</code></li>
+                <li><b>Stack limit</b> <code class="big-o o-ok">500 resources</code></li>
+            </ul>
+
+            <p>Clicking in the console is how you learn a service and a poor way to run one. The problem is not
+                effort but <em>memory</em>: nobody can reconstruct which of forty settings were changed by whom
+                during last quarter's incident. Infrastructure as code makes the environment a reviewable,
+                diffable, reproducible artefact &mdash; and makes "recreate this in another Region" a task rather
+                than an archaeology project.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📐</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a recipe versus a memory of cooking</b>
+                    <p>Console clicking is cooking from memory: it works, the result is fine, and nobody else can
+                        reproduce it &mdash; including you, in six months, at 3am. A template is the written recipe.
+                        It can be reviewed before anyone turns on the oven, followed identically in a different
+                        kitchen, and diffed against last week's version to see exactly what changed. And when a step
+                        fails halfway, CloudFormation does the thing a cook cannot: it puts every ingredient back in
+                        its jar.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="cfn-deploy"></div>
+
+            <p>Deployment of the application on top follows the same principle &mdash; describe the desired revision
+                and let the platform converge, safely, with a way back. Here is what that looks like on ECS, and the
+                shape is the same for CodeDeploy, Lambda aliases and Kubernetes rollouts.</p>
+
+            <div class="viz" data-viz="ecs-deploy"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; CDK gives you a real language without losing the safety
+                        net</b> Write TypeScript or Python, get loops, types and unit tests, and synthesise
+                    CloudFormation &mdash; so you keep change sets, automatic rollback and drift detection. The L2
+                    constructs also encode sensible defaults, which is worth more than the syntax.</li>
+                <li class="is-bad"><b>Weakness &mdash; drift is silent and corrosive</b> One console change during an
+                    incident and your template no longer describes reality. The next deployment either reverts the
+                    fix or fails confusingly. Detect drift on a schedule, and make the emergency console change a
+                    thing you deliberately reconcile afterwards rather than forget.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">You need to deploy a new version of a service with no downtime and a fast way
+                    back. Compare rolling, blue/green and canary.</p>
+                <p><b>Rolling</b> replaces instances or tasks a few at a time. It needs no extra capacity beyond a
+                    small overhead, it is the ECS and Kubernetes default, and its weakness is that during the roll
+                    you are running two versions simultaneously &mdash; so the new version must be backward
+                    compatible with the old one's database schema and message formats. Rollback means rolling
+                    forward to the previous revision, which takes as long again. <b>Blue/green</b> stands up a
+                    complete second environment, tests it, and switches traffic at the load balancer. Rollback is
+                    instantaneous because the old environment is still there, and the cost is double capacity during
+                    the switch plus real difficulty when there is a stateful database behind both. <b>Canary</b>
+                    sends a small percentage to the new version, watches the error rate and latency, and either
+                    proceeds or aborts automatically &mdash; the safest of the three and the only one that catches
+                    problems your tests did not, at the price of needing good enough metrics to make the decision
+                    on. In practice: canary for anything user-facing, rolling for internal services, blue/green when
+                    an instant rollback is worth the duplicate capacity. And in all three, decouple schema changes
+                    from code changes &mdash; expand, migrate, contract &mdash; because no deployment strategy saves
+                    you from a migration that only the new version understands.</p>
+                <div class="code-tabs" data-label="Deployment safety, declared">
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+# ECS: rolling, with the circuit breaker doing the rollback for you
+Service:
+  Type: AWS::ECS::Service
+  Properties:
+    DesiredCount: 3
+    DeploymentConfiguration:
+      MinimumHealthyPercent: 100      # add before removing
+      MaximumPercent: 200
+      DeploymentCircuitBreaker:
+        Enable: true
+        Rollback: true                # failed health checks -> previous revision
+
+# Lambda: canary, with an alarm that aborts the shift
+Function:
+  Type: AWS::Serverless::Function
+  Properties:
+    AutoPublishAlias: live
+    DeploymentPreference:
+      Type: Canary10Percent5Minutes   # 10% for 5 min, then everything
+      Alarms:
+        - !Ref ErrorRateAlarm         # if this fires, traffic snaps back
+      Hooks:
+        PreTraffic: !Ref SmokeTestFunction
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# never run `deploy` blind - look at the diff first
+aws cloudformation deploy \
+  --template-file infra.yaml --stack-name prod-api \
+  --no-execute-changeset            # creates the change set, does not run it
+
+aws cloudformation describe-change-set \
+  --change-set-name arn:aws:cloudformation:... \
+  --query 'Changes[].ResourceChange.{Action:Action,Type:ResourceType,
+           Id:LogicalResourceId,Replace:Replacement}' --output table
+# "Replace: True" on a database is the line that ends careers - read it
+
+# has anyone been clicking in the console?
+aws cloudformation detect-stack-drift --stack-name prod-api
+aws cloudformation describe-stack-resource-drifts --stack-name prod-api \
+  --stack-resource-drift-status-filters MODIFIED DELETED
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><b>Split stacks by rate of change, not by team.</b> Network and DNS change once a year; databases
+                    change a few times a year; the application changes hourly. Putting them in one stack means every
+                    application deploy carries the risk of touching the VPC, and a failed rollback can wedge
+                    everything. Three stacks, with outputs exported between them, makes the blast radius of a
+                    deployment match its actual scope.</p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Put <code>DeletionPolicy: Retain</code> on everything that holds data</b> &mdash; databases,
+                    S3 buckets, EFS filesystems &mdash; before you need it. Renaming a logical ID, changing a
+                    property that requires replacement, or deleting a stack will otherwise take the data with it,
+                    and CloudFormation will do it obediently and quickly. A retained orphan resource is a small
+                    annoyance; a deleted production database is not.</p>
+            </div>
+
+            <!-- ============================================================ 13 -->
+            <h3 id="13-resilience">13. Building Things That Survive<a class="headerlink" href="#13-resilience"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Assume</b> <code class="big-o o-bad">everything fails</code></li>
+                <li><b>Retry</b> <code class="big-o o-good">with jitter</code></li>
+                <li><b>Timeout</b> <code class="big-o o-good">always</code></li>
+                <li><b>Idempotency</b> <code class="big-o o-great">not optional</code></li>
+            </ul>
+
+            <p>Werner Vogels' line &mdash; "everything fails, all the time" &mdash; is not pessimism, it is a design
+                instruction. Instances are terminated without warning, Availability Zones lose power, APIs throttle,
+                networks partition, and DNS caches lie. A resilient system is not one where these do not happen; it
+                is one where they happen and the user does not notice. Four techniques do most of the work, and
+                three of them are in your application code rather than your infrastructure.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚪</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; a queue at a door that has jammed</b>
+                    <p>Everyone pushes at once, which jams it harder. That is a retry storm. If instead each person
+                        waits a random few seconds before trying again, the pressure drops and the door opens. If
+                        someone notices the door is broken and starts directing people to the side entrance without
+                        anyone even touching the handle, that is a <b>circuit breaker</b>. And if the side entrance
+                        leads to a smaller room with fewer facilities but people can still get in, that is
+                        <b>graceful degradation</b> &mdash; which is almost always better than a locked building and
+                        an apology.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="retry-backoff"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; the SDKs already do the hard part</b> Every AWS SDK
+                    implements exponential backoff with jitter and sensible retry classification by default. You
+                    inherit correct behaviour for AWS calls for free &mdash; the work is applying the same discipline
+                    to calls between <em>your own</em> services, where nobody has done it for you.</li>
+                <li class="is-bad"><b>Weakness &mdash; retries without budgets amplify outages</b> A retry at every
+                    layer of a five-service call chain means three attempts each, which is 243 requests hitting the
+                    struggling service at the bottom. Retry at one layer, cap the total time, and shed load rather
+                    than queueing it forever.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Design a payment endpoint that is safe to retry.</p>
+                <p>The requirement is <b>idempotency</b>: the same logical request submitted twice must charge once.
+                    Have the client generate an idempotency key &mdash; a UUID it creates before the first attempt
+                    and reuses for every retry of that same intent. On the server, write that key to DynamoDB with
+                    <code>attribute_not_exists(pk)</code> as a condition <em>before</em> doing any work. If the write
+                    succeeds you are the first attempt: perform the charge, then store the result against the key.
+                    If the write fails with a conditional check exception you are a duplicate: return the stored
+                    result rather than charging again. The details that separate a good answer from a great one are
+                    the failure cases &mdash; put the record in a <code>PENDING</code> state first so a crash
+                    mid-charge does not let a retry double-charge; give the record a TTL so the table does not grow
+                    forever; and make sure the key is scoped per customer so two customers cannot collide. Then
+                    layer the ordinary hygiene on top: a timeout on the downstream call, retries with jitter, a
+                    circuit breaker so a dead payment provider fails fast instead of consuming every worker thread.
+                </p>
+                <div class="code-tabs" data-label="Idempotency key, conditional write, stored result">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import time
+import boto3
+from botocore.exceptions import ClientError
+
+table = boto3.resource("dynamodb").Table("idempotency")
+
+
+def charge(customer_id: str, amount: int, idem_key: str) -> dict:
+    pk = f"{customer_id}#{idem_key}"          # scoped: no cross-customer collision
+    try:
+        table.put_item(
+            Item={
+                "pk": pk,
+                "state": "PENDING",
+                "ttl": int(time.time()) + 86_400,
+            },
+            ConditionExpression="attribute_not_exists(pk)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] != "ConditionalCheckFailedException":
+            raise
+        # Someone got here first. Either it finished, or it is still running.
+        existing = table.get_item(Key={"pk": pk})["Item"]
+        if existing["state"] == "DONE":
+            return existing["result"]         # the whole point: charge once
+        raise RetryLater("charge already in progress")
+
+    result = payment_provider.charge(customer_id, amount, timeout=5)
+
+    table.update_item(
+        Key={"pk": pk},
+        UpdateExpression="SET #s = :done, #r = :res",
+        ExpressionAttributeNames={"#s": "state", "#r": "result"},
+        ExpressionAttributeValues={":done": "DONE", ":res": result},
+    )
+    return result
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, GetCommand }
+  from "@aws-sdk/lib-dynamodb";
+
+// The SDK's own retry behaviour, made explicit. This is already the
+// default - the value of knowing it is applying the same shape to
+// calls to YOUR services, where nobody configured it for you.
+const ddb = DynamoDBDocumentClient.from(
+  new DynamoDBClient({
+    region: "us-east-1",
+    maxAttempts: 3,                 // total attempts, not extra retries
+    requestHandler: { requestTimeout: 3000 },
+  })
+);
+
+export async function charge(customerId, amount, idemKey) {
+  const pk = `${customerId}#${idemKey}`;
+  try {
+    await ddb.send(new PutCommand({
+      TableName: "idempotency",
+      Item: { pk, state: "PENDING", ttl: Math.floor(Date.now() / 1000) + 86400 },
+      ConditionExpression: "attribute_not_exists(pk)",
+    }));
+  } catch (err) {
+    if (err.name !== "ConditionalCheckFailedException") throw err;
+    const { Item } = await ddb.send(
+      new GetCommand({ TableName: "idempotency", Key: { pk } })
+    );
+    if (Item?.state === "DONE") return Item.result;
+    throw new Error("charge already in progress");
+  }
+  // ... perform the charge, then mark DONE ...
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The four habits, in order of value.</b> <b>Timeouts on everything</b> &mdash; a call with no
+                    timeout is a thread you will never get back, and the default in most HTTP clients is
+                    "forever". <b>Retries with jitter</b>, at one layer only, with a total time budget.
+                    <b>Idempotency</b>, because at-least-once delivery and retries both guarantee duplicates.
+                    And <b>graceful degradation</b> &mdash; a page that renders without the recommendations panel
+                    beats a page that does not render.
+                </p>
+            </div>
+
+            <div class="callout callout-interview">
+                <p><b>Say the numbers out loud when you are asked about resilience.</b> <b>RTO</b> is how long you
+                    may be down; <b>RPO</b> is how much data you may lose. They drive the architecture completely:
+                    RPO of zero means synchronous replication and therefore Multi-AZ or Aurora. RTO of minutes rules
+                    out restoring from a snapshot. RTO of seconds across Regions means active/active, which means
+                    conflict resolution, which is a substantial project. Candidates who ask for the RTO and RPO
+                    before proposing a design are immediately distinguishable from candidates who propose multi-Region
+                    for everything.</p>
+            </div>
+
+            <!-- ============================================================ 14 -->
+            <h3 id="14-one-page">14. The Whole Thing on One Page<a class="headerlink" href="#14-one-page"
+                    title="Permanent link">#</a></h3>
+
+            <p>Everything above, compressed to what you would want on a card during an interview or an incident.</p>
+
+            <h4 id="the-services-that-matter">The services that matter, and the one line each<a class="headerlink"
+                    href="#the-services-that-matter" title="Permanent link">#</a></h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Need</th>
+                        <th>Service</th>
+                        <th>The thing to remember</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Store objects</td>
+                        <td>S3</td>
+                        <td>11 nines, flat namespace, lifecycle rules save most of the bill</td>
+                    </tr>
+                    <tr>
+                        <td>Run a function</td>
+                        <td>Lambda</td>
+                        <td>One request per sandbox; memory buys CPU; 15-minute ceiling</td>
+                    </tr>
+                    <tr>
+                        <td>Run a container</td>
+                        <td>ECS Fargate</td>
+                        <td>No instances to patch; circuit breaker rolls back for you</td>
+                    </tr>
+                    <tr>
+                        <td>Run a VM</td>
+                        <td>EC2 + ASG</td>
+                        <td>Spread across 3 AZs; Graviton and Spot are the cheap wins</td>
+                    </tr>
+                    <tr>
+                        <td>Relational data</td>
+                        <td>RDS / Aurora</td>
+                        <td>Multi-AZ for availability, replicas for reads; neither is a backup</td>
+                    </tr>
+                    <tr>
+                        <td>Key-value at scale</td>
+                        <td>DynamoDB</td>
+                        <td>Design keys from access patterns; a hot partition throttles the table</td>
+                    </tr>
+                    <tr>
+                        <td>Cache</td>
+                        <td>ElastiCache</td>
+                        <td>Removes read load rather than absorbing it</td>
+                    </tr>
+                    <tr>
+                        <td>Buffer work</td>
+                        <td>SQS</td>
+                        <td>At-least-once; visibility timeout ≥ 6× handler timeout; always a DLQ</td>
+                    </tr>
+                    <tr>
+                        <td>Route events</td>
+                        <td>EventBridge</td>
+                        <td>Content-based rules; the publisher never learns who listens</td>
+                    </tr>
+                    <tr>
+                        <td>Orchestrate steps</td>
+                        <td>Step Functions</td>
+                        <td>Retries, branches and compensation you do not hand-roll</td>
+                    </tr>
+                    <tr>
+                        <td>Balance traffic</td>
+                        <td>ALB / NLB</td>
+                        <td>ALB reads HTTP; NLB is layer 4 with a static IP</td>
+                    </tr>
+                    <tr>
+                        <td>Serve globally</td>
+                        <td>CloudFront</td>
+                        <td>Helps even at a 0% hit ratio; version filenames instead of invalidating</td>
+                    </tr>
+                    <tr>
+                        <td>Resolve names</td>
+                        <td>Route 53</td>
+                        <td>Alias records, always; failover takes minutes, not seconds</td>
+                    </tr>
+                    <tr>
+                        <td>See what happened</td>
+                        <td>CloudWatch, X-Ray, CloudTrail</td>
+                        <td>Metrics, traces, and who called what &mdash; three different questions</td>
+                    </tr>
+                    <tr>
+                        <td>Encrypt</td>
+                        <td>KMS</td>
+                        <td>Envelope encryption; a customer managed key gives you a kill switch</td>
+                    </tr>
+                    <tr>
+                        <td>Hold secrets</td>
+                        <td>Secrets Manager</td>
+                        <td>Reference the ARN, never the value; rotation is configuration</td>
+                    </tr>
+                    <tr>
+                        <td>Define it all</td>
+                        <td>CloudFormation / CDK</td>
+                        <td>Change sets before deploys; <code>DeletionPolicy: Retain</code> on data</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 id="the-rules">The rules that apply everywhere<a class="headerlink" href="#the-rules"
+                    title="Permanent link">#</a></h4>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Spread across three AZs, always</b> It is the cheapest availability you will
+                    ever buy, and it is the failure AWS actually has.</li>
+                <li class="is-good"><b>Roles, never access keys</b> Every runtime can receive one automatically. A
+                    static key in a config file is a finding waiting to be written up.</li>
+                <li class="is-good"><b>Deny by default; one Deny beats every Allow</b> If adding admin does not fix
+                    it, you are fighting an explicit Deny &mdash; SCP, resource policy, or boundary.</li>
+                <li class="is-good"><b>Everything is retried, so make everything idempotent</b> At-least-once
+                    delivery is the norm, not the exception.</li>
+                <li class="is-bad"><b>Watch data transfer, not just compute</b> NAT Gateway processing and cross-AZ
+                    traffic are where unexplained bills live.</li>
+                <li class="is-bad"><b>Managed is not backed up</b> Multi-AZ, replicas and versioning replicate your
+                    mistakes faithfully. Test a restore.</li>
+                <li class="is-bad"><b>An account is the only real blast-radius boundary</b> Separate environments
+                    into separate accounts before you need to.</li>
+                <li class="is-bad"><b>Console changes create drift</b> The template stops describing reality and the
+                    next deploy surprises you.</li>
+            </ul>
+
+            <h4 id="the-six-pillars">The Well-Architected pillars as questions<a class="headerlink"
+                    href="#the-six-pillars" title="Permanent link">#</a></h4>
+
+            <div class="ascii">Operational excellence → Can we deploy on a Friday? Do we know it broke?
+                Security → If this credential leaks, how far does it reach?
+                Reliability → What happens when one AZ disappears right now?
+                Performance efficiency → Are we using the right service, or the familiar one?
+                Cost optimisation → What are we paying for while nobody is using it?
+                Sustainability → Right-sized, Graviton, and turned off out of hours?</div>
+
+            <div class="callout callout-interview">
+                <p><b>How to use this in a system design interview.</b> Ask for the scale, the RTO and the RPO before
+                    you draw anything. Start with the simplest thing that works &mdash; ALB, Auto Scaling group across
+                    three AZs, RDS Multi-AZ, S3 and CloudFront &mdash; and add complexity only when a stated
+                    requirement forces it. Say out loud where the state lives and how it survives a failure. Name a
+                    trade-off for every choice, because "DynamoDB, since the access pattern is a single lookup by
+                    user ID, and I accept that a new query pattern later means a GSI" is a far better answer than
+                    "DynamoDB, it scales". And when you do not know a service's limit, say so and say how you would
+                    find out.</p>
+            </div>
+
+            <h4 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next"
+                    title="Permanent link">#</a></h4>
+
+            <ol>
+                <li><a href="aws-detailed-course.html"><b>The AWS Detailed Course</b></a> &mdash; the same ground and
+                    a great deal more, in 36 sections: Organizations and account structure, IAM policy evaluation in
+                    full, VPC connectivity including Transit Gateway and PrivateLink, EC2 instance families and
+                    storage, the whole storage line-up, Aurora and DynamoDB modelling, containers and Kubernetes,
+                    Step Functions, streaming and analytics, the security services, CI/CD, and a
+                    pattern-recognition playbook for design interviews.</li>
+                <li><a href="../aws-courses.html"><b>All AWS courses</b></a> on TechToday.</li>
+                <li><a href="https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html"
+                        rel="noopener noreferrer"><b>The AWS Well-Architected Framework</b></a> &mdash; short,
+                    readable, and the source of the questions every AWS design review will ask you.</li>
+                <li><a href="https://aws.amazon.com/builders-library/" rel="noopener noreferrer"><b>The Amazon
+                            Builders' Library</b></a> &mdash; how Amazon actually implements timeouts, retries,
+                    health checks and deployments. The articles on jitter, load shedding and workload isolation are
+                    among the best free distributed-systems writing anywhere.</li>
+                <li><a href="https://docs.aws.amazon.com/whitepapers/latest/aws-overview/introduction.html"
+                        rel="noopener noreferrer"><b>Overview of Amazon Web Services</b></a> &mdash; the official
+                    one-paragraph description of every service, useful for placing the hundred and eighty services
+                    this page deliberately ignored.</li>
+            </ol>
+
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Amazon Web Services</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="aws-study.js"></script>
+</body>
+
+</html>
