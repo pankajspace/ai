@@ -1,0 +1,2949 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Networking Detailed Course | TechToday</title>
+    <meta name="description"
+        content="A 38-section course in computer networking from first principles — Ethernet, ARP, IPv4 and IPv6, subnetting, routing, OSPF and BGP, NAT, DHCP, UDP and TCP internals, DNS, HTTP/1.1 through HTTP/3, TLS, load balancing, CDNs, cloud networking, security and performance debugging." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="networking-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../networking-courses.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Networking
+                Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="networking-detailed-course">Computer Networking<a class="headerlink"
+                    href="#networking-detailed-course" title="Permanent link">#</a></h1>
+
+            <p class="lede">Thirty-eight sections, each depending only on the ones before it, from "why does a signal on
+                a wire need a protocol at all" to "why is the p99 of this API exactly one second". Every mechanism is
+                introduced by the problem it solves, and every trade-off is stated out loud. Press <strong>Play</strong>
+                on the animations, and switch the language tabs to read the code in Python, JavaScript or the shell.</p>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#1-why-layers-exist">Why Layers Exist</a></li>
+                <li><a href="#2-osi-and-tcp-ip">The OSI and TCP/IP Models</a></li>
+                <li><a href="#3-encapsulation">Encapsulation and the Life of a Frame</a></li>
+                <li><a href="#4-latency-and-bandwidth">Latency, Bandwidth and the Bandwidth-Delay Product</a></li>
+                <li><a href="#5-the-link-layer">The Link Layer and Ethernet</a></li>
+                <li><a href="#6-switching-and-vlans">Switching, VLANs and Spanning Tree</a></li>
+                <li><a href="#7-arp">ARP and Neighbour Discovery</a></li>
+                <li><a href="#8-ipv4-addressing">IPv4 Addressing</a></li>
+                <li><a href="#9-subnetting">Subnetting and CIDR Arithmetic</a></li>
+                <li><a href="#10-ipv6">IPv6</a></li>
+                <li><a href="#11-the-ip-header">The IP Header, MTU and Fragmentation</a></li>
+                <li><a href="#12-icmp">ICMP, ping and traceroute</a></li>
+                <li><a href="#13-routing">Routing Fundamentals</a></li>
+                <li><a href="#14-interior-routing">Interior Routing — RIP and OSPF</a></li>
+                <li><a href="#15-bgp">BGP and the Shape of the Internet</a></li>
+                <li><a href="#16-nat">NAT and Private Addressing</a></li>
+                <li><a href="#17-dhcp">DHCP and Autoconfiguration</a></li>
+                <li><a href="#18-sockets">Ports, Sockets and the Socket API</a></li>
+                <li><a href="#19-udp">UDP</a></li>
+                <li><a href="#20-tcp-connections">TCP Connection Management</a></li>
+                <li><a href="#21-tcp-reliability">TCP Reliability</a></li>
+                <li><a href="#22-tcp-flow-control">TCP Flow Control</a></li>
+                <li><a href="#23-tcp-congestion-control">TCP Congestion Control</a></li>
+                <li><a href="#24-tcp-tuning">TCP Performance Tuning</a></li>
+                <li><a href="#25-dns">DNS in Depth</a></li>
+                <li><a href="#26-http11">HTTP/1.1</a></li>
+                <li><a href="#27-http2">HTTP/2</a></li>
+                <li><a href="#28-http3">HTTP/3 and QUIC</a></li>
+                <li><a href="#29-tls">TLS and the PKI</a></li>
+                <li><a href="#30-network-code">Writing Network Code</a></li>
+                <li><a href="#31-proxies">Proxies and Load Balancing</a></li>
+                <li><a href="#32-cdns">CDNs and Anycast</a></li>
+                <li><a href="#33-cloud-networking">Cloud Networking</a></li>
+                <li><a href="#34-security">Network Security</a></li>
+                <li><a href="#35-performance-debugging">Performance Debugging Playbook</a></li>
+                <li><a href="#36-cheat-sheet">Cheat Sheet</a></li>
+                <li><a href="#37-pattern-playbook">Pattern-Recognition Playbook</a></li>
+                <li><a href="#38-practice-roadmap">Practice Roadmap</a></li>
+            </ol>
+
+            <!-- ====== 1 -->
+            <h2 id="1-why-layers-exist">1. Why Layers Exist<a class="headerlink" href="#1-why-layers-exist"
+                    title="Permanent link">#</a></h2>
+
+            <div class="callout callout-key">
+                <p>New to the subject? Start with the <a href="networking-crash-course.html">Networking Crash
+                        Course</a> — the same ideas in fourteen animated sections, sized for an afternoon. This course
+                    assumes you want the reasoning, the edge cases and the numbers.</p>
+            </div>
+
+            <p>Begin with the raw problem, stripped of all vocabulary. You have two computers and something that can
+                carry a signal between them — copper, fibre, radio. You want a program on one to send a message to a
+                program on the other. Between you and that goal sit five independent difficulties, and it is worth
+                stating them separately because each one is eventually solved by a different layer:</p>
+
+            <ol>
+                <li><strong>Signalling.</strong> A voltage on a wire is not a bit. Both ends must agree on how a 1 is
+                    encoded, how fast bits arrive, and where one frame ends and the next begins.</li>
+                <li><strong>Sharing.</strong> More than two devices want the same medium. Something must decide who
+                    transmits and how a receiver knows a message was meant for it.</li>
+                <li><strong>Reaching strangers.</strong> The destination is not on your wire. Some system must forward
+                    messages through machines that have no interest in your conversation.</li>
+                <li><strong>Reliability.</strong> Signals get corrupted, queues overflow, links fail mid-transfer.
+                    Someone must notice and repair it — or explicitly decide not to.</li>
+                <li><strong>Meaning.</strong> Even a perfectly delivered pile of bytes is useless unless both programs
+                    agree what they represent.</li>
+            </ol>
+
+            <p>You could solve all five at once, in one enormous protocol. People tried. The reason nobody does it
+                any more is not elegance — it is <strong>independent evolution</strong>. Ethernet has been replaced by
+                Wi-Fi and fibre; IPv4 is being replaced by IPv6; HTTP has been through four major versions. Each of
+                those changes happened without rewriting the others, because the interface between layers stayed
+                fixed while the implementations churned.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚢</span>
+                <div class="analogy-body">
+                    <b>Picture it — the shipping container</b>
+                    <p>A container's dimensions and lifting points are standardised; what is inside is nobody's
+                        business. That one interface let ships, cranes, trucks and trains all be redesigned
+                        independently over sixty years. The container is the layer boundary, and it is worth
+                        remembering that the standard is <em>deliberately unambitious</em>: it says nothing about
+                        cargo, insurance, or routes.</p>
+                </div>
+            </div>
+
+            <h3 id="1-1-what-a-layer-boundary-guarantees">1.1 What a layer boundary actually guarantees<a
+                    class="headerlink" href="#1-1-what-a-layer-boundary-guarantees" title="Permanent link">#</a></h3>
+
+            <p>The rule that makes layering work is narrower than people assume: <strong>layer N on one machine
+                    communicates only with layer N on the other machine, using services provided by layer N−1</strong>.
+                It does not know how N−1 works, and it must not care.</p>
+
+            <p>The consequence is the one worth internalising: <strong>each layer assumes the layer below is
+                    unreliable and adds only what it needs</strong>. Ethernet detects corruption but does not repair it.
+                IP forwards packets but does not promise they arrive. TCP repairs loss but knows nothing about which
+                bytes mean what. Nobody duplicates work, and nobody trusts anybody.</p>
+
+            <div class="callout callout-warn">
+                <p><strong>Layering is a model, not a law.</strong> Real systems violate it constantly and usefully:
+                    NAT rewrites transport ports inside a network device, load balancers read HTTP at layer 7, QUIC
+                    puts a transport inside UDP inside IP. When a violation surprises you, that is usually where the
+                    bug is — a "transparent" middlebox that is not transparent at all.</p>
+            </div>
+
+            <!-- ====== 2 -->
+            <h2 id="2-osi-and-tcp-ip">2. The OSI and TCP/IP Models<a class="headerlink" href="#2-osi-and-tcp-ip"
+                    title="Permanent link">#</a></h2>
+
+            <p>Two models are in circulation. <strong>OSI</strong> has seven layers and is the vocabulary everyone
+                uses; <strong>TCP/IP</strong> has four and is what actually runs. Learn OSI for the words — "that's a
+                layer 4 load balancer" is a sentence you will hear weekly — and TCP/IP for the reality.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OSI</th>
+                            <th>TCP/IP</th>
+                            <th>Unit</th>
+                            <th>Address</th>
+                            <th>Examples</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>7 Application</td>
+                            <td rowspan="3">Application</td>
+                            <td>message</td>
+                            <td>URL, hostname</td>
+                            <td>HTTP, DNS, SMTP, gRPC</td>
+                        </tr>
+                        <tr>
+                            <td>6 Presentation</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>TLS, JSON, gzip</td>
+                        </tr>
+                        <tr>
+                            <td>5 Session</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>(largely fictional in practice)</td>
+                        </tr>
+                        <tr>
+                            <td>4 Transport</td>
+                            <td>Transport</td>
+                            <td>segment / datagram</td>
+                            <td>port</td>
+                            <td>TCP, UDP, QUIC</td>
+                        </tr>
+                        <tr>
+                            <td>3 Network</td>
+                            <td>Internet</td>
+                            <td>packet</td>
+                            <td>IP address</td>
+                            <td>IP, ICMP, routing protocols</td>
+                        </tr>
+                        <tr>
+                            <td>2 Data link</td>
+                            <td rowspan="2">Link</td>
+                            <td>frame</td>
+                            <td>MAC address</td>
+                            <td>Ethernet, Wi-Fi, ARP</td>
+                        </tr>
+                        <tr>
+                            <td>1 Physical</td>
+                            <td>bit / symbol</td>
+                            <td>—</td>
+                            <td>copper, fibre, radio</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>Layers 5 and 6 are the weakest part of OSI and the reason practitioners quietly ignore it. TLS is the
+                classic embarrassment: it is usually called layer 6, but it runs over TCP and carries HTTP, so by the
+                model's own rules it is simultaneously above and below itself. The TCP/IP model shrugs and calls it
+                application-layer, which is closer to how it is implemented.</p>
+
+            <div class="callout callout-tip">
+                <p>The layer numbers earn their keep in exactly one place: describing middleboxes. A <strong>layer
+                        4</strong> load balancer forwards by four-tuple without reading the payload — fast, protocol
+                    agnostic, and it cannot route by URL. A <strong>layer 7</strong> load balancer terminates the
+                    connection, parses HTTP, and can route by path, header or cookie — and therefore must hold your TLS
+                    keys. That single distinction decides most architecture arguments about proxies.</p>
+            </div>
+
+            <!-- ====== 3 -->
+            <h2 id="3-encapsulation">3. Encapsulation and the Life of a Frame<a class="headerlink"
+                    href="#3-encapsulation" title="Permanent link">#</a></h2>
+
+            <p>Layering is an idea; encapsulation is the mechanism. Each layer takes the unit handed down to it,
+                prepends its own header, and passes the result down as an opaque payload. On the way up, each layer
+                removes exactly the header it added.</p>
+
+            <div class="viz" data-viz="encapsulation"></div>
+
+            <h3 id="3-1-headers-and-overhead">3.1 The cost of all those headers<a class="headerlink"
+                    href="#3-1-headers-and-overhead" title="Permanent link">#</a></h3>
+
+            <p>Overhead is fixed per packet, so it matters enormously for small packets and hardly at all for large
+                ones:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Header</th>
+                            <th>Size</th>
+                            <th>Carries</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ethernet</td>
+                            <td>14 B + 4 B FCS</td>
+                            <td>destination MAC, source MAC, ethertype, checksum</td>
+                        </tr>
+                        <tr>
+                            <td>IPv4</td>
+                            <td>20 B (typical)</td>
+                            <td>source and destination IP, TTL, protocol, fragmentation fields</td>
+                        </tr>
+                        <tr>
+                            <td>IPv6</td>
+                            <td>40 B (fixed)</td>
+                            <td>same idea, bigger addresses, no fragmentation or checksum</td>
+                        </tr>
+                        <tr>
+                            <td>TCP</td>
+                            <td>20 B + options</td>
+                            <td>ports, sequence, acknowledgement, flags, window, checksum</td>
+                        </tr>
+                        <tr>
+                            <td>UDP</td>
+                            <td>8 B</td>
+                            <td>ports, length, checksum — and nothing else</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>A one-byte keystroke over SSH costs 54 bytes of headers to deliver — 98% overhead. A 1460-byte bulk
+                segment costs the same 54 bytes, or 3.6%. This is why <strong>packets per second, not bits per
+                    second, is usually the limiting resource</strong> on routers, firewalls and virtual NICs, and why
+                batching small messages is such a reliable optimisation.</p>
+
+            <div class="callout callout-warn">
+                <p>Encapsulation nests further than the table suggests. A VXLAN-encapsulated packet inside a cloud
+                    network carries Ethernet-in-UDP-in-IP-in-Ethernet, and a VPN adds more. Each wrapper steals bytes
+                    from the payload, which is why <strong>tunnels are where MTU problems live</strong> — see section
+                    11.</p>
+            </div>
+
+            <!-- ====== 4 -->
+            <h2 id="4-latency-and-bandwidth">4. Latency, Bandwidth and the Bandwidth-Delay Product<a class="headerlink"
+                    href="#4-latency-and-bandwidth" title="Permanent link">#</a></h2>
+
+            <p>Before any protocol, get the physics straight, because most performance mistakes are made here.
+                <strong>Bandwidth</strong> is how many bits per second a link can carry. <strong>Latency</strong> is how
+                long one bit takes to arrive. They are almost unrelated, and only one of them is for sale.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚚</span>
+                <div class="analogy-body">
+                    <b>Picture it — a lorry full of hard drives</b>
+                    <p>A van carrying 1,000 disks across a country in six hours has staggering bandwidth — petabits per
+                        second — and appalling latency. A fibre link has modest bandwidth and millisecond latency. For
+                        bulk migration the van wins; for a database query it is useless. Ask which one your workload
+                        actually needs before optimising either.</p>
+                </div>
+            </div>
+
+            <p>Latency has four components, and only one of them is under anyone's control:</p>
+
+            <ul class="card-grid">
+                <li class="is-bad"><b>Propagation delay</b>Distance ÷ speed of light in the medium — about 200 km per
+                    millisecond in fibre. Physics. Unimprovable except by moving the data closer, which is exactly what
+                    a CDN does.</li>
+                <li><b>Transmission delay</b>Packet size ÷ link rate. Real on slow links: 1500 bytes on a 1 Mbit/s
+                    uplink is 12 ms.</li>
+                <li class="is-bad"><b>Queueing delay</b>Time spent waiting in router buffers. Highly variable, and the
+                    main cause of jitter and of bufferbloat.</li>
+                <li><b>Processing delay</b>Routing lookups, checksums, encryption. Usually microseconds on hardware,
+                    but real in virtualised and software paths.</li>
+            </ul>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Path</th>
+                            <th>Typical RTT</th>
+                            <th>What that means</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Same host (loopback)</td>
+                            <td>&lt; 0.1 ms</td>
+                            <td>Why localhost benchmarks lie about everything</td>
+                        </tr>
+                        <tr>
+                            <td>Same rack</td>
+                            <td>0.1–0.5 ms</td>
+                            <td>Chatty service calls are affordable here</td>
+                        </tr>
+                        <tr>
+                            <td>Same region, cross-AZ</td>
+                            <td>0.5–2 ms</td>
+                            <td>Synchronous replication is viable</td>
+                        </tr>
+                        <tr>
+                            <td>Same continent</td>
+                            <td>10–40 ms</td>
+                            <td>Chatty protocols start to hurt badly</td>
+                        </tr>
+                        <tr>
+                            <td>Transatlantic</td>
+                            <td>70–90 ms</td>
+                            <td>Every extra round trip is visible to a human</td>
+                        </tr>
+                        <tr>
+                            <td>Antipodal</td>
+                            <td>250–300 ms</td>
+                            <td>Only round-trip count matters; bandwidth is irrelevant</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="4-1-bandwidth-delay-product">4.1 The bandwidth-delay product<a class="headerlink"
+                    href="#4-1-bandwidth-delay-product" title="Permanent link">#</a></h3>
+
+            <p>The two numbers combine into the single most useful quantity in transport performance:
+                <strong>BDP = bandwidth × round-trip time</strong>. It is the amount of data that must be
+                <em>in flight</em> — sent but not yet acknowledged — to keep the pipe full. Send less and the link
+                idles while you wait for acknowledgements.
+            </p>
+
+            <div class="callout callout-key">
+                <p><strong>Throughput = window ÷ RTT</strong>, capped by bandwidth. A 64 KB window on an 80 ms path
+                    yields 6.5 Mbit/s regardless of a 10 Gbit/s link. Whenever a transfer refuses to speed up, compute
+                    the BDP before blaming anything else — it identifies the bottleneck in ten seconds.</p>
+            </div>
+
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">A backup runs between two regions, 1 Gbit/s available, 90 ms RTT. It sustains
+                    5.8 Mbit/s. Where is the limit, and what are the options?</p>
+                <p>BDP = 125 MB/s × 0.09 s = 11.25 MB in flight to saturate. The measured rate implies a window of
+                    about 65 KB — the classic unscaled TCP maximum. So the sender is window-limited, not
+                    bandwidth-limited. Three fixes, in order of preference: raise the socket buffer ceilings so
+                    auto-tuning can scale the window; run parallel streams so several windows add up; or, if the path
+                    is also lossy, switch congestion control to BBR, since a loss-based algorithm recovers a large
+                    window agonisingly slowly at 90 ms per round trip.</p>
+                <div class="code-tabs" data-label="BDP arithmetic and the fix">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def bdp_bytes(bits_per_second: float, rtt_seconds: float) -&gt; float:
+    return bits_per_second / 8 * rtt_seconds
+
+def throughput_bps(window_bytes: float, rtt_seconds: float) -&gt; float:
+    return window_bytes * 8 / rtt_seconds
+
+link, rtt = 1_000_000_000, 0.090
+print(f"need {bdp_bytes(link, rtt) / 1e6:.1f} MB in flight")     # 11.2 MB
+
+for kb in (64, 512, 4096, 16384):
+    mbps = throughput_bps(kb * 1024, rtt) / 1e6
+    print(f"{kb:&gt;6} KB window -&gt; {mbps:8.1f} Mbit/s")
+
+# 64 KB ->  5.8 Mbit/s  - matches the measurement, so the window is the bottleneck
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# confirm the window really is the limit, live
+ss -ti dst 10.30.0.7 | grep -oE 'rtt:[0-9.]+|cwnd:[0-9]+|send [0-9.]+[MK]bps'
+
+# raise the auto-tuning ceiling (min default max)
+sysctl -w net.ipv4.tcp_rmem="4096 262144 33554432"
+sysctl -w net.ipv4.tcp_wmem="4096 262144 33554432"
+
+# measure with and without parallel streams to separate window from path limits
+iperf3 -c 10.30.0.7 -t 20            # single stream
+iperf3 -c 10.30.0.7 -t 20 -P 8       # eight streams: 8 windows in parallel
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 5 -->
+            <h2 id="5-the-link-layer">5. The Link Layer and Ethernet<a class="headerlink" href="#5-the-link-layer"
+                    title="Permanent link">#</a></h2>
+
+            <p>The link layer moves a frame between two devices that share a medium. Its scope is one hop and no
+                further, and everything about it follows from that limitation.</p>
+
+            <p>An <strong>Ethernet frame</strong> is: destination MAC (6 bytes), source MAC (6), ethertype (2), payload
+                (46–1500), frame check sequence (4). The ethertype says what is inside — <code>0x0800</code> for IPv4,
+                <code>0x86DD</code> for IPv6, <code>0x0806</code> for ARP — which is how the receiver knows which
+                upstairs protocol to hand it to.
+            </p>
+
+            <div class="ascii"> 0 6 12 14 n
+                +-------------------+------------------+-----+---------------------------+-----+
+                | destination MAC | source MAC | typ | payload | FCS |
+                | 6 bytes | 6 bytes | 2 | 46 - 1500 bytes | 4 |
+                +-------------------+------------------+-----+---------------------------+-----+
+                who gets it who sent it what's the IP packet lives here CRC-32
+                (this hop) (this hop) inside detect only
+            </div>
+
+            <p>Three details of that structure are worth dwelling on:</p>
+
+            <ul class="card-grid">
+                <li><b>MAC addresses are flat</b>48 bits, first 24 identifying the manufacturer. No hierarchy at all,
+                    so no aggregation is possible — which is precisely why a global network cannot be built from MAC
+                    addresses alone.</li>
+                <li><b>The FCS detects, it does not correct</b>A corrupted frame is silently discarded. Repair is
+                    somebody else's problem, and that somebody is TCP.</li>
+                <li class="is-bad"><b>Minimum payload of 46 bytes</b>A leftover from collision detection on shared
+                    coax. Small packets are padded, which is one more reason tiny messages are inefficient.</li>
+                <li class="is-good"><b>The broadcast address</b><code>ff:ff:ff:ff:ff:ff</code> reaches every device on
+                    the segment — the escape hatch that makes ARP and DHCP possible.</li>
+            </ul>
+
+            <h3 id="5-1-collision-and-broadcast-domains">5.1 Collision domains and broadcast domains<a
+                    class="headerlink" href="#5-1-collision-and-broadcast-domains" title="Permanent link">#</a></h3>
+
+            <p>Original Ethernet was a shared cable: only one device could transmit at a time, and simultaneous
+                transmissions collided. CSMA/CD — listen, transmit, detect the collision, back off randomly, retry —
+                managed the chaos, and it worked until utilisation rose, at which point throughput collapsed.</p>
+
+            <p>Switches killed collisions by giving every port its own segment, so modern full-duplex Ethernet has no
+                collisions at all. But the second domain survived: <strong>a broadcast still reaches every
+                    port</strong>.
+                One switch, or twenty switches wired together, is a single broadcast domain — and that is the unit that
+                does not scale. Splitting broadcast domains is the entire purpose of VLANs and subnets.</p>
+
+            <div class="callout callout-tip">
+                <p>Wi-Fi reintroduces every problem switches solved. It is half duplex, it is a shared medium with
+                    hidden nodes, it uses collision <em>avoidance</em> plus link-layer retransmission, and the rate
+                    adapts constantly with signal quality. So on Wi-Fi, packet loss is often <strong>not</strong>
+                    congestion — which quietly breaks TCP's central assumption and is a major reason BBR exists.</p>
+            </div>
+
+            <!-- ====== 6 -->
+            <h2 id="6-switching-and-vlans">6. Switching, VLANs and Spanning Tree<a class="headerlink"
+                    href="#6-switching-and-vlans" title="Permanent link">#</a></h2>
+
+            <p>A switch performs one algorithm, and it is short enough to state in full: on receiving a frame, record
+                <em>source MAC → arrival port</em> in the forwarding table; then look up the <em>destination MAC</em>;
+                if it is known, send the frame out of that port only; if it is unknown or is a broadcast, flood it out
+                of every port except the one it came in on.
+            </p>
+
+            <div class="viz" data-viz="switching"></div>
+
+            <p>That is all. There is no configuration, no protocol between switches for learning, and no memory beyond
+                a table with an ageing timer of a few minutes. The elegance is real, and so are the two failure modes
+                it creates.</p>
+
+            <h3 id="6-1-loops-and-spanning-tree">6.1 Loops and spanning tree<a class="headerlink"
+                    href="#6-1-loops-and-spanning-tree" title="Permanent link">#</a></h3>
+
+            <p>Connect two switches with two cables and a broadcast will circulate between them forever. Nothing in
+                the algorithm stops it — <strong>there is no TTL at layer 2</strong>. Worse, each lap re-triggers
+                flooding, so a single broadcast becomes an exponential storm that saturates every link within seconds
+                and takes the segment down completely.</p>
+
+            <p><strong>Spanning Tree Protocol</strong> exists solely to prevent this. Switches elect a root bridge,
+                compute the shortest path to it, and deliberately <em>disable</em> the ports that would create a loop,
+                leaving exactly one active path between any two points. Redundant cables are kept as hot spares,
+                unblocked automatically when a link fails.</p>
+
+            <div class="callout callout-warn">
+                <p>Classic STP takes <strong>30–50 seconds</strong> to reconverge; RSTP cuts that to a few seconds.
+                    Either way it is slow enough to be visible as an outage, which is why data-centre fabrics have
+                    largely abandoned spanning tree in favour of routed (layer 3) designs with ECMP, where loops are
+                    prevented by TTL and multiple paths can be used <em>simultaneously</em> rather than blocked.</p>
+            </div>
+
+            <h3 id="6-2-vlans">6.2 VLANs<a class="headerlink" href="#6-2-vlans" title="Permanent link">#</a></h3>
+
+            <p>A <strong>VLAN</strong> splits one physical switch into several independent virtual switches. Each port
+                is assigned a VLAN ID, and the switch will not forward a frame between VLANs at all — they are separate
+                broadcast domains that happen to share hardware. Traffic between them must be routed, which means it
+                can be filtered and counted.</p>
+
+            <p>Frames crossing between switches carry an <strong>802.1Q tag</strong> — 4 extra bytes holding the VLAN
+                ID — on a link configured as a <em>trunk</em>. Two consequences follow immediately: those 4 bytes eat
+                into the MTU (hence 1504-byte "baby giant" frames), and a misconfigured trunk is a security hole,
+                because VLAN separation is enforced entirely by configuration.</p>
+
+            <div class="callout callout-tip">
+                <p>The mapping to remember: <strong>one VLAN ≈ one subnet ≈ one broadcast domain</strong>. When
+                    someone says "put the printers on their own VLAN", they mean: give them their own broadcast domain
+                    and their own IP prefix, so their noise stays local and a firewall rule can be written about them.
+                </p>
+            </div>
+
+            <!-- ====== 7 -->
+            <h2 id="7-arp">7. ARP and Neighbour Discovery<a class="headerlink" href="#7-arp"
+                    title="Permanent link">#</a></h2>
+
+            <p>Two addressing systems now exist: MAC addresses that identify machines and IP addresses that identify
+                locations. Something must map the second onto the first for the final hop of every delivery, and that
+                something is the <strong>Address Resolution Protocol</strong>.</p>
+
+            <div class="viz" data-viz="arp"></div>
+
+            <p>ARP is deliberately primitive. There is no server, no configuration, and no state beyond a cache: a
+                request is broadcast to the whole segment, and the machine that owns the address answers. Note what it
+                is <em>not</em> — it is not a layer 3 protocol, since ARP frames carry ethertype <code>0x0806</code>
+                and are never routed. ARP works only within one broadcast domain, which is exactly the scope where a
+                MAC address is meaningful.</p>
+
+            <h3 id="7-1-the-decision-before-every-packet">7.1 The decision made before every packet<a class="headerlink"
+                    href="#7-1-the-decision-before-every-packet" title="Permanent link">#</a></h3>
+
+            <p>Before a host transmits anything it performs one test, and the entire behaviour of the stack follows
+                from the answer:</p>
+
+            <div class="ascii"> destination AND my_mask == my_network ?
+                | |
+                yes no
+                | |
+                ARP for the DESTINATION ARP for the DEFAULT GATEWAY
+                frame goes straight to it frame goes to the router,
+                whose MAC replaces the destination's
+                - the IP header is untouched
+            </div>
+
+            <p>This explains two otherwise baffling symptoms. A host with the <strong>wrong mask</strong> may reach
+                some addresses and not others, because it misclassifies part of its own subnet as remote. A host with
+                the <strong>wrong gateway</strong> reaches everything local and nothing else — the local case never
+                consults the gateway at all.</p>
+
+            <h3 id="7-2-gratuitous-arp-and-failover">7.2 Gratuitous ARP, proxy ARP, and how failover works<a
+                    class="headerlink" href="#7-2-gratuitous-arp-and-failover" title="Permanent link">#</a></h3>
+
+            <p>A <strong>gratuitous ARP</strong> is an unsolicited announcement: "this IP is at this MAC". It looks
+                like an oddity until you realise it is the mechanism behind almost every layer-2 failover. A virtual IP
+                moves to a standby machine, the standby broadcasts a gratuitous ARP, every host and switch updates its
+                cache, and traffic follows within a second — no routing protocol involved.</p>
+
+            <p><strong>Proxy ARP</strong> is a router answering on behalf of a machine that is not on the segment.
+                It is mostly a legacy compatibility feature today and a reliable source of confusion when enabled by
+                accident.</p>
+
+            <div class="callout callout-warn">
+                <p>Both mechanisms exist because <strong>ARP believes whatever it is told</strong>. The same property
+                    is ARP spoofing: an attacker on your segment announces the gateway's IP as their own MAC, and every
+                    host obediently sends them all outbound traffic. Defences are switch features — dynamic ARP
+                    inspection, port security — plus the assumption you should hold anyway: <em>the local network is
+                        not trustworthy, so use TLS</em>.</p>
+            </div>
+
+            <p>IPv6 replaces ARP with <strong>Neighbour Discovery</strong>, carried over ICMPv6 and using multicast
+                instead of broadcast, so only the plausible targets are interrupted rather than every device. It also
+                folds in router discovery and address autoconfiguration, which is why IPv6 hosts can configure
+                themselves without DHCP.</p>
+
+            <div class="code-tabs" data-label="Inspecting the neighbour table">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+ip neigh show                       # the modern command (arp -an still works)
+# 10.0.0.1 dev eth0 lladdr ee:aa:00:00:00:01 REACHABLE
+# 10.0.0.9 dev eth0  INCOMPLETE       &lt;- nothing answered: link/VLAN/firewall
+
+ip neigh flush dev eth0             # force fresh resolution for a clean test
+sudo tcpdump -ni eth0 arp           # watch the questions and answers directly
+
+# IPv6 equivalent: neighbour solicitation / advertisement over ICMPv6
+sudo tcpdump -ni eth0 icmp6 and ip6[40] == 135
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import ipaddress, subprocess
+
+def neighbours() -&gt; dict[str, str]:
+    """Parse `ip neigh` into {ip: state} - INCOMPLETE entries are the interesting ones."""
+    out = subprocess.run(["ip", "neigh"], capture_output=True, text=True).stdout
+    table = {}
+    for line in out.splitlines():
+        parts = line.split()
+        if parts:
+            table[parts[0]] = parts[-1]
+    return table
+
+for ip, state in neighbours().items():
+    if state == "INCOMPLETE":
+        print(f"{ip}: no ARP reply - check link, VLAN, or host firewall")
+
+def next_hop(dst: str, my_ip: str, prefix: int, gateway: str) -&gt; str:
+    """Who do we ARP for? The whole of host routing, in three lines."""
+    local = ipaddress.ip_network(f"{my_ip}/{prefix}", strict=False)
+    return dst if ipaddress.ip_address(dst) in local else gateway
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 8 -->
+            <h2 id="8-ipv4-addressing">8. IPv4 Addressing<a class="headerlink" href="#8-ipv4-addressing"
+                    title="Permanent link">#</a></h2>
+
+            <p>An IPv4 address is 32 bits — about 4.3 billion values, of which a large fraction is reserved. Written as
+                four decimal octets purely for human convenience; every operation on it is a bitwise operation.</p>
+
+            <p>The crucial property is <strong>hierarchy</strong>. Addresses are allocated by position in the network,
+                so a router can summarise millions of hosts as one prefix. Without that the global routing table would
+                need billions of entries instead of roughly 950,000, and no hardware could hold it.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Range</th>
+                            <th>Name</th>
+                            <th>Why you meet it</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0.0.0.0/8</code></td>
+                            <td>this network</td>
+                            <td><code>0.0.0.0</code> as a bind address means "every interface"</td>
+                        </tr>
+                        <tr>
+                            <td><code>10.0.0.0/8</code></td>
+                            <td>private</td>
+                            <td>16.7M addresses — the default choice for VPCs and offices</td>
+                        </tr>
+                        <tr>
+                            <td><code>127.0.0.0/8</code></td>
+                            <td>loopback</td>
+                            <td>Never leaves the host; binding here hides a service from the world</td>
+                        </tr>
+                        <tr>
+                            <td><code>169.254.0.0/16</code></td>
+                            <td>link-local</td>
+                            <td>Self-assigned when DHCP fails; also the cloud metadata address</td>
+                        </tr>
+                        <tr>
+                            <td><code>172.16.0.0/12</code></td>
+                            <td>private</td>
+                            <td>1M addresses — Docker's default bridge lives here</td>
+                        </tr>
+                        <tr>
+                            <td><code>192.168.0.0/16</code></td>
+                            <td>private</td>
+                            <td>65k addresses — home routers</td>
+                        </tr>
+                        <tr>
+                            <td><code>100.64.0.0/10</code></td>
+                            <td>carrier-grade NAT</td>
+                            <td>Your "public" IP may be one of these behind an ISP's NAT</td>
+                        </tr>
+                        <tr>
+                            <td><code>224.0.0.0/4</code></td>
+                            <td>multicast</td>
+                            <td>One-to-many; used by routing protocols and mDNS</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-key">
+                <p><strong>Choose private ranges as though you will merge with another company.</strong> Two networks
+                    that both used <code>10.0.0.0/16</code> cannot be peered or VPN-linked without double NAT, which is
+                    painful forever. Pick an unusual block — <code>10.87.0.0/16</code>, not <code>10.0.0.0/16</code> —
+                    and document it. This costs nothing today and saves a migration later.</p>
+            </div>
+
+            <p>Historical note worth knowing because the vocabulary persists: addresses were originally divided into
+                fixed <strong>classes</strong> (A = /8, B = /16, C = /24). The scheme was catastrophically wasteful —
+                an organisation needing 300 addresses was given 65,534 — and was replaced in 1993 by
+                <strong>CIDR</strong>, which made the prefix length arbitrary. When someone says "a class C", they mean
+                a /24, and they are using a term that has been obsolete for three decades.
+            </p>
+
+            <!-- ====== 9 -->
+            <h2 id="9-subnetting">9. Subnetting and CIDR Arithmetic<a class="headerlink" href="#9-subnetting"
+                    title="Permanent link">#</a></h2>
+
+            <p>A subnet mask marks the boundary between the network part and the host part. In CIDR notation the mask
+                is a single number: <code>/24</code> means the first 24 bits are network. Everything else is derived.
+            </p>
+
+            <div class="viz" data-viz="subnetting"></div>
+
+            <h3 id="9-1-the-four-operations">9.1 The four operations<a class="headerlink"
+                    href="#9-1-the-four-operations" title="Permanent link">#</a></h3>
+
+            <ul class="card-grid">
+                <li><b>Network address</b><code>address AND mask</code>. Zero every host bit. This is the single test a
+                    router performs.</li>
+                <li><b>Broadcast address</b><code>network OR NOT mask</code>. Set every host bit. Cannot be assigned to
+                    a machine.</li>
+                <li><b>Usable range</b>network + 1 through broadcast − 1. Two addresses lost per subnet, which is why a
+                    /31 is useless for hosts (and why /31 is specially permitted for point-to-point links).</li>
+                <li><b>Host count</b><code>2^(32 − prefix) − 2</code>. Memorise the ladder: /24 = 254, /25 = 126,
+                    /26 = 62, /27 = 30, /28 = 14, /29 = 6, /30 = 2.</li>
+            </ul>
+
+            <h3 id="9-2-vlsm-and-supernetting">9.2 Variable-length subnetting and aggregation<a class="headerlink"
+                    href="#9-2-vlsm-and-supernetting" title="Permanent link">#</a></h3>
+
+            <p>Prefixes nest, so a block can be split unevenly — a /24 into one /25, one /26 and two /27s — sized to
+                actual need. That is <strong>VLSM</strong>, and it is how any real allocation plan is built.</p>
+
+            <p>The same nesting runs in reverse. Four adjacent /24s that share the first 22 bits can be advertised as
+                one <code>/22</code>. This <strong>aggregation</strong> is what keeps the global routing table
+                manageable — and why address blocks are allocated in contiguous, power-of-two-aligned chunks.</p>
+
+            <div class="worked">
+                <b>Worked example</b>
+                <p class="worked-q">Plan addressing for a VPC in three availability zones, each needing a public
+                    subnet (~500 hosts) and a private subnet (~4000 hosts), with room to double.</p>
+                <p>Take <code>10.42.0.0/16</code> — deliberately not <code>10.0.0.0/16</code>, to survive a future
+                    merger. Private subnets need 4000 usable, so a /20 (4094) is the smallest fit; double that need
+                    means /19 (8190) is the safer choice. Public subnets need 500, so /23 (510) fits but /22 gives
+                    headroom. Allocate the three /19s from the bottom of the range and the three /22s from a separate
+                    region of it, so each group can be summarised in a single firewall or route-table rule. Leave the
+                    upper half of the /16 entirely unallocated: <strong>the most common addressing mistake is packing
+                        subnets tightly</strong>, since a subnet cannot be resized once resources live in it.</p>
+                <div class="code-tabs" data-label="Generate and validate the plan">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import ipaddress
+
+vpc = ipaddress.ip_network("10.42.0.0/16")
+private = list(ipaddress.ip_network("10.42.0.0/18").subnets(new_prefix=19))[:3]
+public = list(ipaddress.ip_network("10.42.128.0/20").subnets(new_prefix=22))[:3]
+
+for zone, net in zip("abc", private):
+    print(f"private-{zone}  {net}  {net.num_addresses - 2:&gt;5} usable")
+for zone, net in zip("abc", public):
+    print(f"public-{zone}   {net}  {net.num_addresses - 2:&gt;5} usable")
+
+# never let two subnets overlap - this assertion belongs in your IaC tests
+allocated = private + public
+for a, b in ((x, y) for x in allocated for y in allocated if x != y):
+    assert not a.overlaps(b), f"{a} overlaps {b}"
+
+# and confirm everything still fits inside the VPC
+assert all(net.subnet_of(vpc) for net in allocated)
+print("free space:", list(vpc.address_exclude(ipaddress.ip_network('10.42.0.0/17'))))
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+const toInt = (ip) =&gt; ip.split(".").reduce((a, o) =&gt; (a &lt;&lt; 8) + Number(o), 0) &gt;&gt;&gt; 0;
+const toIp = (n) =&gt; [24, 16, 8, 0].map((s) =&gt; (n &gt;&gt;&gt; s) &amp; 255).join(".");
+
+function cidrInfo(cidr) {
+    const [base, p] = cidr.split("/");
+    const prefix = Number(p);
+    const mask = prefix === 0 ? 0 : (-1 &lt;&lt; (32 - prefix)) &gt;&gt;&gt; 0;
+    const network = (toInt(base) &amp; mask) &gt;&gt;&gt; 0;
+    const broadcast = (network | (~mask &gt;&gt;&gt; 0)) &gt;&gt;&gt; 0;
+    return {
+        network: toIp(network),
+        firstHost: toIp(network + 1),
+        lastHost: toIp(broadcast - 1),
+        broadcast: toIp(broadcast),
+        usable: broadcast - network - 1,
+    };
+}
+
+const overlaps = (a, b) =&gt; {
+    const ra = cidrInfo(a), rb = cidrInfo(b);
+    return toInt(ra.network) &lt;= toInt(rb.broadcast) &amp;&amp; toInt(rb.network) &lt;= toInt(ra.broadcast);
+};
+
+console.log(cidrInfo("10.42.0.0/19"));
+console.log(overlaps("10.42.0.0/19", "10.42.16.0/20"));   // true - caught before deploy
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 10 -->
+            <h2 id="10-ipv6">10. IPv6<a class="headerlink" href="#10-ipv6" title="Permanent link">#</a></h2>
+
+            <p>IPv6 addresses are 128 bits — 3.4 × 10³⁸ of them, enough to abandon scarcity as a design constraint
+                entirely. Written as eight groups of four hex digits, with one run of zeros collapsible to
+                <code>::</code>, so <code>2001:0db8:0000:0000</code> <code>:0000:0000:0000:0001</code> becomes
+                <code>2001:db8::1</code>.
+            </p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Difference</th>
+                            <th>What changes in practice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Subnets are always /64</td>
+                            <td>Subnetting arithmetic disappears; the lower 64 bits are the interface identifier</td>
+                        </tr>
+                        <tr>
+                            <td>No NAT</td>
+                            <td>Every device is globally addressable — so the firewall, not NAT, is your only boundary
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>No broadcast</td>
+                            <td>Replaced by multicast groups, so only interested devices are interrupted</td>
+                        </tr>
+                        <tr>
+                            <td>No router fragmentation</td>
+                            <td>Path MTU discovery is mandatory; blocking ICMPv6 breaks the protocol outright</td>
+                        </tr>
+                        <tr>
+                            <td>SLAAC</td>
+                            <td>Hosts self-configure from a router advertisement; DHCPv6 is optional</td>
+                        </tr>
+                        <tr>
+                            <td>Fixed 40-byte header</td>
+                            <td>Simpler and faster to parse; options move into extension headers</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>Addresses you will actually meet: <code>::1</code> is loopback; <code>fe80::/10</code> is link-local and
+                exists on every interface whether you asked for it or not; <code>fc00::/7</code> is unique-local (the
+                closest thing to a private range); <code>2000::/3</code> is globally routable. A single interface
+                normally holds several addresses at once, which surprises people used to IPv4.</p>
+
+            <div class="callout callout-warn">
+                <p>The practical trap in dual-stack environments is <strong>silent preference</strong>. Most resolvers
+                    and clients try AAAA before A. If IPv6 is configured but broken — a common state — every connection
+                    stalls until it falls back. Happy Eyeballs (RFC 8305) races both families and picks the winner
+                    after a short head start, which is why browsers hide the problem and your backend service does not.
+                    In code, <strong>always iterate over every result from <code>getaddrinfo</code></strong> rather
+                    than taking the first.</p>
+            </div>
+
+            <!-- ====== 11 -->
+            <h2 id="11-the-ip-header">11. The IP Header, MTU and Fragmentation<a class="headerlink"
+                    href="#11-the-ip-header" title="Permanent link">#</a></h2>
+
+            <p>The IPv4 header is 20 bytes, and only a handful of its fields matter day to day:</p>
+
+            <ul class="card-grid">
+                <li><b>TTL</b>Decremented at every hop; at zero the packet is destroyed and ICMP is returned. Loop
+                    protection — and the mechanism traceroute exploits.</li>
+                <li><b>Protocol</b>Says what is inside: 6 = TCP, 17 = UDP, 1 = ICMP. How the receiving stack knows
+                    which module to call.</li>
+                <li><b>Source / destination</b>The only end-to-end identifiers in the packet. Rewritten only by NAT.
+                </li>
+                <li><b>Identification, flags, offset</b>The fragmentation machinery discussed below.</li>
+                <li><b>DSCP / ECN</b>Quality-of-service marking, and explicit congestion notification — a router can
+                    <em>mark</em> a packet instead of dropping it.
+                </li>
+            </ul>
+
+            <p>Every link imposes a <strong>maximum transmission unit</strong>: 1500 bytes on standard Ethernet, 9000
+                on a jumbo-frame data-centre network, less on tunnels. A packet larger than the next link's MTU must be
+                fragmented or dropped.</p>
+
+            <div class="viz" data-viz="ip-fragmentation"></div>
+
+            <h3 id="11-1-why-fragmentation-is-avoided">11.1 Why fragmentation is avoided<a class="headerlink"
+                    href="#11-1-why-fragmentation-is-avoided" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><strong>Loss is amplified.</strong> Reassembly is all-or-nothing, so losing one fragment discards
+                    the whole datagram. Three fragments turn 1% packet loss into ~3% datagram loss.</li>
+                <li><strong>Reassembly costs memory</strong> at the destination, and only there — fragments are never
+                    reassembled in transit.</li>
+                <li><strong>Middleboxes hate it.</strong> Only the first fragment carries the TCP or UDP ports, so
+                    firewalls and load balancers cannot classify the rest.</li>
+                <li><strong>IPv6 forbids it in routers</strong> outright.</li>
+            </ol>
+
+            <p>So senders set the <strong>don't fragment</strong> bit and rely on <strong>path MTU discovery</strong>:
+                a router that cannot forward the packet drops it and returns ICMP <em>fragmentation needed</em> naming
+                the MTU it can handle. TCP goes further and negotiates a maximum segment size during the handshake, so
+                it rarely produces an oversized packet at all.</p>
+
+            <div class="callout callout-key">
+                <p><strong>The MTU black hole.</strong> If a firewall blocks ICMP, the notification never arrives: the
+                    sender keeps retransmitting a packet that can never fit. The signature is unmistakable — the
+                    <em>handshake succeeds and small requests work, but anything large hangs completely</em>. Suspect it
+                    whenever a VPN, GRE tunnel, VXLAN overlay or PPPoE link is in the path, and test with
+                    <code>ping -M do -s 1472</code>, reducing the size until it passes.
+                </p>
+            </div>
+
+            <div class="code-tabs" data-label="Find the real path MTU">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+# -M do sets don't-fragment; -s is PAYLOAD size (add 28 for ICMP+IP headers)
+ping -M do -s 1472 -c 1 example.com     # 1472 + 28 = 1500 - passes on plain Ethernet
+ping -M do -s 1452 -c 1 example.com     # 1480 - typical over a PPPoE or GRE tunnel
+ping -M do -s 1372 -c 1 example.com     # 1400 - typical over a VPN
+
+# "Frag needed and DF set" = you have exceeded the path MTU; go smaller
+# total silence instead of that message = ICMP is being filtered -> black hole
+
+tracepath example.com                    # reports the discovered PMTU per hop
+ip route get 93.184.216.34               # shows a cached mtu for this destination
+
+# workaround at the edge: clamp TCP MSS so the sender never overshoots
+iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN \
+  -j TCPMSS --clamp-mss-to-pmtu
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import socket
+
+def path_mtu(host: str, port: int = 443) -&gt; int:
+    """Ask the kernel what MTU it discovered for this destination."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # refuse to fragment, so the kernel performs path MTU discovery
+    s.setsockopt(socket.IPPROTO_IP, socket.IP_MTU_DISCOVER, socket.IP_PMTUDISC_DO)
+    s.connect((host, port))
+    mtu = s.getsockopt(socket.IPPROTO_IP, socket.IP_MTU)
+    s.close()
+    return mtu
+
+print(path_mtu("example.com"))   # 1500 normally; 1400-ish through a VPN
+
+# a black hole looks like: handshake fine (small packets), then the first
+# large response never arrives and the socket eventually times out
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 12 -->
+            <h2 id="12-icmp">12. ICMP, ping and traceroute<a class="headerlink" href="#12-icmp"
+                    title="Permanent link">#</a></h2>
+
+            <p><strong>ICMP</strong> is IP's control channel. It carries no user data; it exists so that machines can
+                report problems about other packets. It is not optional plumbing — several protocols depend on it, and
+                blocking it wholesale breaks them.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Message</th>
+                            <th>Meaning</th>
+                            <th>Who relies on it</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Echo request / reply (8 / 0)</td>
+                            <td>"are you there?"</td>
+                            <td><code>ping</code></td>
+                        </tr>
+                        <tr>
+                            <td>Time exceeded (11)</td>
+                            <td>TTL hit zero here</td>
+                            <td><code>traceroute</code>, loop detection</td>
+                        </tr>
+                        <tr>
+                            <td>Destination unreachable (3)</td>
+                            <td>no route, or port closed</td>
+                            <td>fast failure instead of a timeout</td>
+                        </tr>
+                        <tr>
+                            <td>Frag needed, code 3/4</td>
+                            <td>packet too big, MTU is <em>n</em></td>
+                            <td>path MTU discovery — <strong>never block this</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="viz" data-viz="traceroute"></div>
+
+            <div class="callout callout-warn">
+                <p>Three ways people misread traceroute. <strong><code>* * *</code> is usually not loss</strong> —
+                    most routers rate-limit or suppress ICMP while forwarding traffic perfectly. <strong>A high RTT at
+                        one hop is not a slow hop</strong> — it means that router deprioritised your ICMP reply; only a
+                    rise that <em>persists to the final hop</em> is real. And <strong>the path is not one path</strong>
+                    — ECMP hashes each probe onto a different parallel link, so consecutive lines may describe
+                    different routes. Use <code>mtr</code> for a statistical view, and <code>traceroute -T -p 443</code>
+                    to follow the port your application actually uses.</p>
+            </div>
+
+            <!-- ====== 13 -->
+            <h2 id="13-routing">13. Routing Fundamentals<a class="headerlink" href="#13-routing"
+                    title="Permanent link">#</a></h2>
+
+            <p>Routing is the process by which a packet crosses networks it has no relationship with. The mechanism is
+                startlingly minimal: <strong>every router makes one local decision, and the path is what
+                    emerges</strong>.
+            </p>
+
+            <div class="viz" data-viz="routing"></div>
+
+            <h3 id="13-1-the-forwarding-algorithm">13.1 The forwarding algorithm<a class="headerlink"
+                    href="#13-1-the-forwarding-algorithm" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li>Receive a frame; discard the link-layer header.</li>
+                <li>Verify the IP header checksum; drop the packet if it fails.</li>
+                <li>Decrement TTL. If it reaches zero, drop it and send ICMP time exceeded.</li>
+                <li>Find the <strong>longest matching prefix</strong> for the destination in the forwarding table.</li>
+                <li>If the next hop is on a directly connected network, resolve its MAC with ARP; otherwise use the
+                    next-hop router's MAC.</li>
+                <li>Build a fresh link-layer frame and transmit. Forget everything.</li>
+            </ol>
+
+            <p>Step 4 is the interesting one. Prefixes are stored in a structure — historically a trie, today usually
+                TCAM in hardware — that returns the most specific match in constant time, regardless of table size.
+                Order in a configuration file is irrelevant; specificity decides.</p>
+
+            <div class="callout callout-key">
+                <p><strong>Longest prefix match</strong> is why a default route and a specific override can coexist,
+                    why a <code>/32</code> host route always wins, and why announcing a more specific prefix than
+                    somebody else steals their traffic (section 15). It is the single rule that carries the most weight
+                    in the whole subject.</p>
+            </div>
+
+            <h3 id="13-2-reading-a-routing-table">13.2 Reading a real routing table<a class="headerlink"
+                    href="#13-2-reading-a-routing-table" title="Permanent link">#</a></h3>
+
+            <div class="code-tabs" data-label="The routing table, and how to interrogate it">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+ip route
+# default via 10.0.0.1 dev eth0 proto dhcp metric 100
+# 10.0.0.0/24 dev eth0 proto kernel scope link src 10.0.0.7
+# 172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+#
+# 'scope link'  = directly connected, ARP for the destination itself
+# 'via X'       = send to router X, ARP for X
+
+# never guess which entry wins - ask the kernel to run the algorithm for you
+ip route get 93.184.216.34
+ip route get 10.0.0.9
+
+# policy routing: Linux consults several tables in rule order
+ip rule show
+ip route show table all | head -20
+
+# a host route is the most specific override possible
+sudo ip route add 93.184.216.34/32 via 10.0.0.2
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import ipaddress
+
+TABLE = [
+    ("10.0.0.0/24",     "on-link"),
+    ("93.184.0.0/16",   "10.0.0.3"),
+    ("93.184.216.0/24", "10.0.0.2"),
+    ("0.0.0.0/0",       "10.0.0.1"),   # default - matches everything, always loses ties
+]
+
+def longest_prefix_match(destination: str):
+    """Exactly what a router does, minus the hardware."""
+    dst = ipaddress.ip_address(destination)
+    best = None
+    for cidr, next_hop in TABLE:
+        net = ipaddress.ip_network(cidr)
+        if dst in net and (best is None or net.prefixlen &gt; best[0].prefixlen):
+            best = (net, next_hop)
+    return best
+
+print(longest_prefix_match("93.184.216.34"))   # /24 wins over /16 and /0
+print(longest_prefix_match("93.184.9.1"))      # /16 wins over /0
+print(longest_prefix_match("8.8.8.8"))         # only the default matches
+</code></pre>
+                </div>
+            </div>
+
+            <h3 id="13-3-static-versus-dynamic">13.3 Static versus dynamic routing<a class="headerlink"
+                    href="#13-3-static-versus-dynamic" title="Permanent link">#</a></h3>
+
+            <p>Static routes are typed in by a human: predictable, auditable, and completely unable to react to a
+                failure. Dynamic routing protocols exchange reachability information so that routers recompute paths
+                automatically when a link dies. Almost every real network uses static routes at the edges and a
+                dynamic protocol in the core.</p>
+
+            <p>Dynamic protocols split into two families, and the distinction is worth holding onto: <strong>distance
+                    vector</strong> protocols tell their neighbours what they know ("I can reach X in 4 hops"), while
+                <strong>link state</strong> protocols tell everyone what they see ("these are my links"), and each
+                router computes the whole map itself.
+            </p>
+
+            <!-- ====== 14 -->
+            <h2 id="14-interior-routing">14. Interior Routing — RIP and OSPF<a class="headerlink"
+                    href="#14-interior-routing" title="Permanent link">#</a></h2>
+
+            <p>Inside one organisation — an <strong>autonomous system</strong> — the goal is simply to find good paths
+                quickly. Nobody is negotiating money or policy, so the protocols optimise for convergence speed.</p>
+
+            <h3 id="14-1-rip">14.1 RIP, and why simple is not enough<a class="headerlink" href="#14-1-rip"
+                    title="Permanent link">#</a></h3>
+
+            <p><strong>RIP</strong> is distance vector: every 30 seconds each router broadcasts its table, neighbours
+                add one to each metric and keep the best. It is trivially simple, and it fails in an instructive way.
+            </p>
+
+            <p>When a network disappears, the news travels slowly while stale information circulates —
+                <strong>count-to-infinity</strong>. Router A hears from B that X is reachable in 2 hops, not realising
+                B's route <em>goes through A</em>. The metric climbs one hop at a time until it reaches 16, which RIP
+                defines as unreachable. That cap is also RIP's diameter limit: no network more than 15 hops across.
+                Split horizon and poison reverse mitigate it; they do not cure it.
+            </p>
+
+            <h3 id="14-2-ospf">14.2 OSPF<a class="headerlink" href="#14-2-ospf" title="Permanent link">#</a></h3>
+
+            <p><strong>OSPF</strong> takes the opposite approach. Each router floods a description of its own links to
+                every other router, so all of them build an identical map of the topology — the link-state database.
+                Each then runs <strong>Dijkstra's shortest path algorithm</strong> locally to compute its own tree.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Fast convergence</b>A failure is flooded immediately and everyone recomputes.
+                    Seconds, not minutes, and no count-to-infinity because nobody relies on hearsay.</li>
+                <li class="is-good"><b>Cost-based metrics</b>Link cost is derived from bandwidth, so a gigabit path
+                    beats a slow path even if it has more hops. Equal-cost paths can be used simultaneously (ECMP).
+                </li>
+                <li class="is-bad"><b>Heavier</b>Every router holds the full database and runs Dijkstra. Large domains
+                    are split into <strong>areas</strong>, all connecting to a backbone (area 0), so flooding stays
+                    local.</li>
+                <li class="is-bad"><b>Single administration only</b>It assumes every participant is trusted and shares
+                    one goal — which is precisely why it cannot be used between companies.</li>
+            </ul>
+
+            <div class="callout callout-tip">
+                <p>If you know Dijkstra from an algorithms course, you already know the core of OSPF: nodes are
+                    routers, edges are links, weights are costs, and the output is a shortest-path tree rooted at
+                    yourself. The <a href="../dsa/dsa-crash-course.html">DSA crash course</a> has the algorithm
+                    animated; the only addition here is the flooding protocol that keeps every router's copy of the
+                    graph identical.</p>
+            </div>
+
+            <!-- ====== 15 -->
+            <h2 id="15-bgp">15. BGP and the Shape of the Internet<a class="headerlink" href="#15-bgp"
+                    title="Permanent link">#</a></h2>
+
+            <p>Between organisations everything changes. Roughly 75,000 autonomous systems must exchange routes while
+                competing commercially, trusting each other minimally, and honouring contracts. No shortest-path
+                algorithm can express "prefer the transit provider we pay less for" — so <strong>BGP is a path-vector
+                    protocol driven by policy, not by distance</strong>.</p>
+
+            <div class="viz" data-viz="bgp"></div>
+
+            <h3 id="15-1-how-a-route-is-chosen">15.1 How a route is chosen<a class="headerlink"
+                    href="#15-1-how-a-route-is-chosen" title="Permanent link">#</a></h3>
+
+            <p>An announcement carries the prefix plus the list of autonomous systems it has traversed. Each AS
+                prepends itself before passing it on, which prevents loops (an AS seeing its own number discards the
+                route) and gives a crude length metric. Selection then runs down a fixed list:</p>
+
+            <ol>
+                <li><strong>Highest local preference</strong> — a purely local business decision. This is where "send
+                    traffic via the cheap transit" is expressed, and it outranks everything else.</li>
+                <li><strong>Shortest AS path</strong> — the only vaguely topological criterion, and a poor proxy for
+                    latency.</li>
+                <li>Origin type, MED, eBGP over iBGP, lowest IGP cost to the next hop, and finally the lowest router
+                    ID as a tie-break.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p><strong>BGP optimises for money and policy, not speed.</strong> This is why a packet from London to
+                    Paris can travel via New York, and why "the internet routes around damage" is only true on a scale
+                    of minutes. Convergence after a withdrawal is measured in tens of seconds — during which packets
+                    are dropped or loop.</p>
+            </div>
+
+            <h3 id="15-2-hijacks-and-leaks">15.2 Hijacks and route leaks<a class="headerlink"
+                    href="#15-2-hijacks-and-leaks" title="Permanent link">#</a></h3>
+
+            <p>BGP was designed among people who knew each other, and it shows: an announcement is believed because it
+                was made. Two failure classes follow. A <strong>hijack</strong> announces someone else's prefix —
+                usually a more specific one, which wins by longest prefix match and silently attracts their traffic. A
+                <strong>route leak</strong> re-advertises routes learned from one provider to another, turning a small
+                network into an accidental transit for traffic it cannot carry.
+            </p>
+
+            <p>Both have taken large services offline. The mitigations — RPKI origin validation, IRR filtering, maximum
+                prefix limits — are deployed unevenly, so the honest summary is that <strong>the global routing system
+                    still rests substantially on trust</strong>.</p>
+
+            <!-- ====== 16 -->
+            <h2 id="16-nat">16. NAT and Private Addressing<a class="headerlink" href="#16-nat"
+                    title="Permanent link">#</a></h2>
+
+            <p>NAT was an emergency measure to slow IPv4 exhaustion, and it became the most consequential violation of
+                the end-to-end principle in the internet's history.</p>
+
+            <div class="viz" data-viz="nat"></div>
+
+            <p>What is almost always meant by "NAT" is <strong>NAPT</strong> — network address <em>and port</em>
+                translation, sometimes called PAT or masquerading. The router rewrites the source address <em>and</em>
+                the source port, so a single public address can multiplex tens of thousands of internal flows, keyed by
+                port.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th>What it does</th>
+                            <th>Where you meet it</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Source NAT (masquerade)</td>
+                            <td>rewrites the source on the way out</td>
+                            <td>every home router; cloud NAT gateways</td>
+                        </tr>
+                        <tr>
+                            <td>Destination NAT (port forward)</td>
+                            <td>rewrites the destination on the way in</td>
+                            <td>exposing a home server; Kubernetes services</td>
+                        </tr>
+                        <tr>
+                            <td>Full NAT / 1:1</td>
+                            <td>maps one private address to one public</td>
+                            <td>elastic IPs on cloud instances</td>
+                        </tr>
+                        <tr>
+                            <td>Carrier-grade NAT</td>
+                            <td>ISP NATs many customers together</td>
+                            <td>mobile networks; <code>100.64.0.0/10</code> addresses</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="16-1-what-nat-breaks">16.1 What NAT breaks<a class="headerlink" href="#16-1-what-nat-breaks"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="card-grid">
+                <li class="is-bad"><b>Inbound connections</b>No table entry means the packet is dropped. Servers behind
+                    NAT need explicit port forwarding; peer-to-peer needs STUN to learn its public mapping, hole
+                    punching to create one, and TURN to relay when that fails.</li>
+                <li class="is-bad"><b>Long-idle connections</b>Mappings are soft state with idle timeouts — often 350 s
+                    on cloud NAT gateways. Neither endpoint is told, so the connection simply stops working.</li>
+                <li class="is-bad"><b>Embedded addresses</b>Any protocol that puts an IP address inside its payload —
+                    classic FTP, SIP — needs an application-layer gateway to rewrite it, and those gateways are a
+                    reliable source of bizarre bugs.</li>
+                <li class="is-good"><b>...but it does hide the inside</b>Unsolicited inbound traffic is dropped by
+                    default. It is not a real security policy, but it is a genuine reduction in exposure.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>The port exhaustion trap.</strong> A NAT gateway allocates ports per <em>destination</em>
+                    tuple. Thousands of instances all connecting to one popular destination — an S3 endpoint, an
+                    external API — share a single public address and can exhaust its ~64k ports. The symptom is
+                    intermittent connection failures under load that no single instance can reproduce. Fixes: more NAT
+                    addresses, a VPC endpoint that bypasses NAT entirely, or connection reuse so fewer ports are
+                    needed.</p>
+            </div>
+
+            <!-- ====== 17 -->
+            <h2 id="17-dhcp">17. DHCP and Autoconfiguration<a class="headerlink" href="#17-dhcp"
+                    title="Permanent link">#</a></h2>
+
+            <p>A host joining a network needs an address before it can ask for one. DHCP resolves the paradox with
+                broadcast, and delivers the rest of the configuration in the same exchange.</p>
+
+            <div class="viz" data-viz="dhcp"></div>
+
+            <p>The four messages — <strong>D</strong>ISCOVER, <strong>O</strong>FFER, <strong>R</strong>EQUEST,
+                <strong>A</strong>CK — carry more than an address. The ACK typically includes the subnet mask, the
+                default gateway, DNS servers, the domain search list, the lease time, and often an NTP server. Nearly
+                everything a user thinks of as "network settings" arrives here.
+            </p>
+
+            <p>A lease is <em>borrowed</em>. At 50% of the lease time the client renews with a unicast REQUEST directly
+                to the server; at 87.5% it broadcasts, hoping any server will answer. Only if both fail does it give up
+                the address.</p>
+
+            <div class="callout callout-key">
+                <p><code>169.254.x.x</code> means <strong>nobody answered the DISCOVER</strong>. It is a self-assigned
+                    link-local address, and it tells you exactly where to look: the DHCP server, the relay agent, or
+                    the VLAN the port landed in. It never means the network is partially working.</p>
+            </div>
+
+            <p>Because DHCP is broadcast-based, it does not cross routers. Networks that centralise their DHCP server
+                use a <strong>relay agent</strong> on each router, which forwards the broadcast as a unicast to the
+                server and stamps in which subnet it came from so the right pool is used.</p>
+
+            <div class="callout callout-warn">
+                <p>DHCP is unauthenticated, so a <strong>rogue DHCP server</strong> — a misconfigured home router
+                    plugged into an office port is the classic case — can hand out its own address as the gateway and
+                    intercept everything. The switch feature that prevents it is DHCP snooping, which only accepts
+                    offers from designated ports.</p>
+            </div>
+
+            <!-- ====== 18 -->
+            <h2 id="18-sockets">18. Ports, Sockets and the Socket API<a class="headerlink" href="#18-sockets"
+                    title="Permanent link">#</a></h2>
+
+            <p>IP delivers to a machine; the transport layer delivers to a <em>program</em>. The mechanism is a 16-bit
+                port number at each end, and the abstraction your code sees is the <strong>socket</strong> — a file
+                descriptor you can read and write.</p>
+
+            <div class="viz" data-viz="sockets"></div>
+
+            <h3 id="18-1-the-four-tuple">18.1 The four-tuple<a class="headerlink" href="#18-1-the-four-tuple"
+                    title="Permanent link">#</a></h3>
+
+            <p>The kernel demultiplexes arriving segments using <code>(source IP, source port, destination IP,
+                    destination port)</code>. Only one field must differ for two connections to be distinct, which
+                leads to a result that surprises people: <strong>a server is not limited to 65,535 connections on port
+                    443</strong>. Its limit is memory and file descriptors. The <em>client</em> is the constrained
+                side, because for a fixed destination its only free field is the ephemeral source port — roughly
+                28,000 of them by default on Linux.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Range</th>
+                            <th>Name</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>0–1023</td>
+                            <td>well known</td>
+                            <td>Requires root (or <code>CAP_NET_BIND_SERVICE</code>) to bind on Unix</td>
+                        </tr>
+                        <tr>
+                            <td>1024–49151</td>
+                            <td>registered</td>
+                            <td>3306 MySQL, 5432 Postgres, 6379 Redis, 8080 HTTP alt</td>
+                        </tr>
+                        <tr>
+                            <td>32768–60999</td>
+                            <td>ephemeral (Linux default)</td>
+                            <td>Chosen automatically for outbound connections</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="18-2-the-two-queues">18.2 The two queues behind <code>listen()</code><a class="headerlink"
+                    href="#18-2-the-two-queues" title="Permanent link">#</a></h3>
+
+            <p>A listening socket has two kernel queues, and knowing the difference explains a whole family of
+                production incidents. The <strong>SYN queue</strong> holds half-open connections whose handshake is
+                incomplete. The <strong>accept queue</strong> holds fully established connections waiting for your
+                application to call <code>accept()</code>.</p>
+
+            <p>If the accept queue fills — because your application is too slow to accept, not because the network is
+                busy — new connections are dropped or reset. From the client this looks like a random timeout or a
+                connection reset, with the server showing low CPU and healthy logs. <code>ss -lnt</code> shows the
+                queue depths directly, and <code>nstat -az TcpExtListenOverflows</code> counts the drops.</p>
+
+            <div class="code-tabs" data-label="A correct TCP server, and the sockets it creates">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import socket
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# without SO_REUSEADDR a restart fails while old connections sit in TIME_WAIT
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+# 0.0.0.0 = every interface. Bind to 127.0.0.1 and nothing outside the host
+# can reach you - the single most common container networking mistake.
+server.bind(("0.0.0.0", 9000))
+
+# the backlog is the ACCEPT queue depth, not a connection limit
+server.listen(512)
+
+while True:
+    conn, peer = server.accept()      # returns a NEW socket; `server` keeps listening
+    with conn:
+        print("connection from", peer, "->", conn.getsockname())
+        conn.sendall(b"hello\n")
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+# Recv-Q on a LISTEN socket = connections waiting to be accepted
+# Send-Q on a LISTEN socket = the configured backlog
+ss -lnt
+# State   Recv-Q  Send-Q  Local Address:Port
+# LISTEN  0       512     0.0.0.0:9000        &lt;- healthy
+# LISTEN  512     512     0.0.0.0:9000        &lt;- FULL: the app is not accepting
+
+# were connections actually dropped because of it?
+nstat -az | grep -E 'ListenOverflows|ListenDrops'
+
+# the kernel ceiling that silently truncates your listen() backlog
+sysctl net.core.somaxconn
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 19 -->
+            <h2 id="19-udp">19. UDP<a class="headerlink" href="#19-udp" title="Permanent link">#</a></h2>
+
+            <p>UDP adds exactly two things to IP: port numbers, and an optional checksum. Eight bytes of header, no
+                state, no setup, no promises. Its value is not what it provides but <strong>what it refuses to
+                    do</strong> — it never delays your data to repair somebody else's.</p>
+
+            <div class="viz" data-viz="udp-vs-tcp" data-option="udp"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Message boundaries preserved</b>One <code>sendto()</code> is one datagram is one
+                    <code>recvfrom()</code>. No framing code required — the opposite of TCP.
+                </li>
+                <li class="is-good"><b>Zero setup latency</b>The first packet carries data. For a single
+                    request/response like DNS this halves the total time.</li>
+                <li class="is-good"><b>One socket, many peers</b>A single UDP socket can serve thousands of clients,
+                    which is why it suits game servers and multicast.</li>
+                <li class="is-bad"><b>You inherit every hard problem</b>Loss, ordering, duplication, congestion
+                    control, MTU. Skip congestion control and you are the reason a shared link collapses.</li>
+            </ul>
+
+            <p>The right question is never "UDP or TCP?" but <strong>"is late data still valuable?"</strong>. In a
+                voice call a packet 300 ms late is worthless — retransmitting it wastes bandwidth to deliver something
+                that will be discarded. In a bank transfer late is infinitely better than lost. That single question
+                decides it.</p>
+
+            <div class="callout callout-tip">
+                <p>Keep UDP payloads under about <strong>1200 bytes</strong>. Larger datagrams get fragmented at the IP
+                    layer, and a single lost fragment destroys the whole message. This is exactly why DNS responses
+                    above 512 bytes historically fell back to TCP, and why EDNS0 negotiates a larger size explicitly
+                    rather than assuming one. QUIC follows the same rule.</p>
+            </div>
+
+            <div class="code-tabs" data-label="UDP: the whole API, and the reliability you must add">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import socket, struct, time
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.settimeout(0.5)                       # there is NO retransmission - so time out yourself
+
+def request(payload: bytes, addr, attempts: int = 3) -&gt; bytes | None:
+    """Minimum viable reliability over UDP: sequence number, timeout, backoff."""
+    for attempt in range(attempts):
+        seq = int(time.time() * 1000) &amp; 0xFFFF
+        sock.sendto(struct.pack("!H", seq) + payload, addr)
+        try:
+            data, _ = sock.recvfrom(1200)   # keep under the fragmentation threshold
+            if struct.unpack("!H", data[:2])[0] == seq:
+                return data[2:]             # matching sequence - a genuine reply
+            # otherwise it is a late reply to an earlier attempt: ignore and keep waiting
+        except socket.timeout:
+            time.sleep(0.1 * 2 ** attempt)  # exponential backoff, as TCP would do
+    return None
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const dgram = require("dgram");
+const socket = dgram.createSocket("udp4");
+
+// UDP gives you no timers, no retries and no ordering - all of it is yours
+function request(payload, port, host, { attempts = 3, timeout = 500 } = {}) {
+    return new Promise((resolve, reject) =&gt; {
+        let tries = 0;
+        const seq = Math.floor(Math.random() * 65536);
+        const packet = Buffer.concat([Buffer.from([seq &gt;&gt; 8, seq &amp; 255]), payload]);
+
+        const send = () =&gt; {
+            if (tries++ &gt;= attempts) return reject(new Error("no reply after retries"));
+            socket.send(packet, port, host);
+            timer = setTimeout(send, timeout * 2 ** (tries - 1));   // backoff
+        };
+
+        let timer;
+        socket.on("message", (msg) =&gt; {
+            if (msg.readUInt16BE(0) !== seq) return;   // stale reply from an old attempt
+            clearTimeout(timer);
+            resolve(msg.subarray(2));
+        });
+        send();
+    });
+}
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 20 -->
+            <h2 id="20-tcp-connections">20. TCP Connection Management<a class="headerlink" href="#20-tcp-connections"
+                    title="Permanent link">#</a></h2>
+
+            <p>TCP turns an unreliable packet service into a reliable, ordered, full-duplex byte stream. Everything it
+                does rests on one piece of shared fiction: <strong>a connection, which exists only as matching state in
+                    two kernels</strong>.</p>
+
+            <div class="viz" data-viz="tcp-handshake"></div>
+
+            <h3 id="20-1-the-handshake">20.1 Why three messages, not two<a class="headerlink" href="#20-1-the-handshake"
+                    title="Permanent link">#</a></h3>
+
+            <p>Each direction is an independent byte stream, and each needs its initial sequence number acknowledged.
+                That is four messages in principle, but the server's ACK and its own SYN travel together, giving three.
+            </p>
+
+            <p>The initial sequence number is <strong>random</strong>, not zero, and this is a security property rather
+                than an aesthetic one: predictable sequence numbers let an off-path attacker inject data into a
+                connection they cannot see. Randomising them makes blind injection impractical.</p>
+
+            <h3 id="20-2-the-state-machine">20.2 The states you will actually see<a class="headerlink"
+                    href="#20-2-the-state-machine" title="Permanent link">#</a></h3>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>Meaning</th>
+                            <th>Accumulating means</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>LISTEN</code></td>
+                            <td>waiting for connections</td>
+                            <td>normal</td>
+                        </tr>
+                        <tr>
+                            <td><code>SYN_SENT</code></td>
+                            <td>SYN sent, nothing back</td>
+                            <td>packets are being dropped — firewall or wrong address</td>
+                        </tr>
+                        <tr>
+                            <td><code>SYN_RECV</code></td>
+                            <td>half-open on the server</td>
+                            <td>SYN flood, or clients disappearing mid-handshake</td>
+                        </tr>
+                        <tr>
+                            <td><code>ESTABLISHED</code></td>
+                            <td>data can flow</td>
+                            <td>normal — but check idle ones against NAT timeouts</td>
+                        </tr>
+                        <tr>
+                            <td><code>CLOSE_WAIT</code></td>
+                            <td>peer closed, we have not</td>
+                            <td><strong>a bug in your code</strong>: <code>close()</code> is never called</td>
+                        </tr>
+                        <tr>
+                            <td><code>FIN_WAIT_2</code></td>
+                            <td>we closed, peer has not</td>
+                            <td>the bug is on the other side</td>
+                        </tr>
+                        <tr>
+                            <td><code>TIME_WAIT</code></td>
+                            <td>waiting out stray duplicates</td>
+                            <td>churning connections — pool them instead</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="20-3-time-wait">20.3 TIME_WAIT, defended<a class="headerlink" href="#20-3-time-wait"
+                    title="Permanent link">#</a></h3>
+
+            <p>The side that closes first waits roughly 60 seconds (2 × maximum segment lifetime) before releasing the
+                four-tuple. Two reasons, both real. A delayed duplicate from the old connection could otherwise arrive
+                inside a new connection reusing the same ports and corrupt its stream. And if the final ACK is lost,
+                the peer will retransmit its FIN — someone must still be there to answer.</p>
+
+            <div class="callout callout-warn">
+                <p>The tempting "fixes" are traps. <code>tcp_tw_recycle</code> was removed from Linux because it broke
+                    NATed clients outright. <code>tcp_tw_reuse</code> is safe only for outbound connections with
+                    timestamps enabled. <strong>The real fix is to stop creating so many connections</strong> — keep-
+                    alive and connection pooling remove the problem instead of hiding it. And if a server is
+                    accumulating TIME_WAIT, ask why the <em>server</em> is closing first; usually a missing keep-alive
+                    or an aggressively low <code>Connection: close</code> policy.</p>
+            </div>
+
+            <h3 id="20-4-reset">20.4 RST — the abrupt close<a class="headerlink" href="#20-4-reset"
+                    title="Permanent link">#</a></h3>
+
+            <p>A <strong>RST</strong> tears a connection down immediately with no four-way exchange. You get one when
+                connecting to a port with nothing listening (that is "connection refused"), when sending on a
+                connection the peer has already forgotten, or when a firewall rejects rather than drops. In
+                application code it surfaces as <code>ECONNRESET</code> — "connection reset by peer" — which almost
+                always means the other side crashed, timed out, or closed while data was still in flight.</p>
+
+            <!-- ====== 21 -->
+            <h2 id="21-tcp-reliability">21. TCP Reliability<a class="headerlink" href="#21-tcp-reliability"
+                    title="Permanent link">#</a></h2>
+
+            <p>Reliability is built from three ideas: number every byte, acknowledge cumulatively, and retransmit what
+                is not acknowledged. The subtlety is entirely in <em>how fast loss is detected</em>.</p>
+
+            <div class="viz" data-viz="tcp-retransmission" data-option="fast"></div>
+
+            <h3 id="21-1-sequence-numbers">21.1 Sequence numbers count bytes<a class="headerlink"
+                    href="#21-1-sequence-numbers" title="Permanent link">#</a></h3>
+
+            <p>A segment's sequence number is the position of its first byte in the stream, and an ACK number is the
+                next byte expected. Counting bytes rather than packets is what allows a retransmission to be
+                re-segmented differently from the original — the receiver reassembles by position, not by packet
+                identity.</p>
+
+            <h3 id="21-2-two-detection-mechanisms">21.2 Fast retransmit versus timeout<a class="headerlink"
+                    href="#21-2-two-detection-mechanisms" title="Permanent link">#</a></h3>
+
+            <p><strong>Duplicate ACKs</strong> are the fast path. When a segment is missing but later ones arrive, the
+                receiver keeps repeating the same ACK number. Three duplicates are treated as evidence of loss — one or
+                two are more likely to be reordering — and the sender retransmits immediately, costing about one round
+                trip.</p>
+
+            <p>The <strong>retransmission timeout</strong> is the slow path, used when nothing else is in flight to
+                generate duplicate ACKs. It is derived from measurement, not a constant:</p>
+
+            <div class="ascii"> SRTT = (1 - a) * SRTT + a * sample a = 1/8
+                RTTVAR = (1 - b) * RTTVAR + b * |SRTT - sample| b = 1/4
+                RTO = SRTT + 4 * RTTVAR (Linux floor: 200 ms)
+
+                a stable path -> small RTTVAR -> tight RTO, fast recovery
+                a jittery path -> large RTTVAR -> patient RTO, avoids spurious resends
+            </div>
+
+            <p>When the timer fires the reaction is severe: retransmit, collapse the congestion window to one segment,
+                and <strong>double the timer</strong> for the next attempt. Exponential backoff protects a network in
+                trouble, but it is why a two-second glitch can leave a connection frozen for far longer.</p>
+
+            <div class="callout callout-key">
+                <p>A p50 of 5 ms with a p99 of almost exactly <strong>200 ms, 1 s or 3 s</strong> is not slow code — it
+                    is the retransmission timer and its backoff. Confirm with <code>ss -ti</code> (per-connection
+                    <code>retrans</code> counters) or <code>nstat -az TcpRetransSegs</code>. On a wired path anything
+                    above roughly <strong>0.5% retransmissions</strong> means the network is dropping and no
+                    application change will help.
+                </p>
+            </div>
+
+            <h3 id="21-3-sack">21.3 SACK and delayed ACKs<a class="headerlink" href="#21-3-sack"
+                    title="Permanent link">#</a></h3>
+
+            <p>A cumulative ACK cannot express "I have 5 and 7 but not 6". <strong>Selective acknowledgement</strong>
+                adds a TCP option listing the blocks actually received, so only the true gap is resent instead of
+                everything after it. It is enabled by default everywhere and matters enormously on high-BDP paths.</p>
+
+            <p><strong>Delayed ACK</strong> waits up to 40 ms before acknowledging, hoping to piggyback the ACK on
+                outgoing data. Combined with <strong>Nagle's algorithm</strong> — which withholds a small segment until
+                the previous one is acknowledged — it produces a notorious 40 ms stall in request/response protocols
+                that write a header and a body separately. The fix is <code>TCP_NODELAY</code>, or simply writing the
+                whole message in one call.</p>
+
+            <!-- ====== 22 -->
+            <h2 id="22-tcp-flow-control">22. TCP Flow Control<a class="headerlink" href="#22-tcp-flow-control"
+                    title="Permanent link">#</a></h2>
+
+            <p>Flow control protects the <em>receiver</em>. Every ACK carries a <strong>receive window</strong> saying
+                how much buffer space is left, and the sender may never have more than that outstanding.</p>
+
+            <div class="viz" data-viz="tcp-window"></div>
+
+            <p>When the application stops reading, the buffer fills and the advertised window shrinks to zero. The
+                sender must stop — and because a window-opening ACK could itself be lost, it periodically sends a
+                one-byte <strong>window probe</strong> to avoid deadlock. This is how backpressure propagates from a
+                slow consumer all the way back to a producer's <code>send()</code> call.</p>
+
+            <div class="callout callout-key">
+                <p>Two windows constrain every sender: <strong>rwnd</strong> (what the receiver can absorb) and
+                    <strong>cwnd</strong> (what the network can absorb). In-flight data is capped by
+                    <code>min(rwnd, cwnd)</code>. Diagnosing throughput starts with identifying which one is binding —
+                    <code>ss -ti</code> prints both.
+                </p>
+            </div>
+
+            <p>The window field is only 16 bits, capping it at 65,535 bytes — hopeless on modern paths. <strong>Window
+                    scaling</strong> negotiates a shift factor during the handshake, allowing windows up to 1 GB. It
+                is negotiated in the SYN <em>only</em>, so a middlebox that strips the option silently caps the
+                connection at 64 KB for its whole life.</p>
+
+            <div class="callout callout-tip">
+                <p>Reading <code>ss -tim</code>: a large <code>Send-Q</code> with a small <code>cwnd</code> means the
+                    <em>network</em> is the limit; a large <code>Send-Q</code> with a small advertised window means the
+                    <em>receiver</em> is the limit; a large <code>Recv-Q</code> on the receiving side means
+                    <em>your application</em> is too slow to read. Three different bugs, three different fixes,
+                    distinguished in one command.
+                </p>
+            </div>
+
+            <!-- ====== 23 -->
+            <h2 id="23-tcp-congestion-control">23. TCP Congestion Control<a class="headerlink"
+                    href="#23-tcp-congestion-control" title="Permanent link">#</a></h2>
+
+            <p>Nothing tells a sender how fast the network can go. It must discover the limit by probing, and back off
+                when it finds it — forever, because the answer changes constantly as other flows come and go.</p>
+
+            <div class="viz" data-viz="congestion-control" data-option="reno"></div>
+
+            <h3 id="23-1-the-classic-algorithm">23.1 Slow start and congestion avoidance<a class="headerlink"
+                    href="#23-1-the-classic-algorithm" title="Permanent link">#</a></h3>
+
+            <p><strong>Slow start</strong> is exponential despite the name: the congestion window doubles every round
+                trip until loss occurs or a threshold is reached. It is how a new connection reaches full speed in a
+                handful of round trips rather than hundreds.</p>
+
+            <p>After that, <strong>congestion avoidance</strong> adds roughly one segment per round trip and halves the
+                window on loss — <strong>additive increase, multiplicative decrease</strong>. AIMD is the reason
+                independent TCP flows converge on a fair share of a bottleneck without any coordination, and the reason
+                a cwnd graph is a sawtooth.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Signal</th>
+                            <th>Best for</th>
+                            <th>Weakness</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Reno / NewReno</td>
+                            <td>packet loss</td>
+                            <td>historical baseline</td>
+                            <td>recovers far too slowly on high-BDP paths</td>
+                        </tr>
+                        <tr>
+                            <td>CUBIC (Linux default)</td>
+                            <td>packet loss</td>
+                            <td>general purpose, long fat pipes</td>
+                            <td>still fills queues; still confuses loss with congestion</td>
+                        </tr>
+                        <tr>
+                            <td>BBR</td>
+                            <td>bandwidth + RTT model</td>
+                            <td>lossy or bufferbloated paths, CDNs</td>
+                            <td>can be unfair to loss-based flows sharing a link</td>
+                        </tr>
+                        <tr>
+                            <td>DCTCP</td>
+                            <td>ECN marks</td>
+                            <td>data centres with ECN-capable switches</td>
+                            <td>requires switch support end to end</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="23-2-bbr-and-bufferbloat">23.2 Why BBR exists<a class="headerlink" href="#23-2-bbr-and-bufferbloat"
+                    title="Permanent link">#</a></h3>
+
+            <p>Loss-based control rests on an assumption that is no longer safe: <em>loss means congestion</em>. On
+                wireless links, loss is often interference — backing off makes things worse for no reason. And on links
+                with oversized buffers, congestion arrives with <em>no loss at all</em>: the sender keeps filling the
+                buffer, adding hundreds of milliseconds of queueing delay to every flow sharing the link. That is
+                <strong>bufferbloat</strong>, and the classic symptom is a large download destroying video-call quality
+                while packet loss stays at zero.
+            </p>
+
+            <p><strong>BBR</strong> instead models the path — measuring delivery rate and minimum RTT continuously —
+                and paces at the estimated bottleneck bandwidth. It aims to keep the pipe full and the <em>queue
+                    empty</em>, periodically probing for more bandwidth and draining afterwards.</p>
+
+            <div class="code-tabs" data-label="Inspect and change congestion control">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+sysctl net.ipv4.tcp_congestion_control          # cubic on most systems
+sysctl net.ipv4.tcp_available_congestion_control
+
+# switch system-wide (BBR pairs best with the fq queueing discipline)
+sysctl -w net.core.default_qdisc=fq
+sysctl -w net.ipv4.tcp_congestion_control=bbr
+
+# watch cwnd, RTT and retransmissions on a live connection
+watch -n1 "ss -ti state established '( dport = :443 )' | tail -4"
+
+# measure honestly: run before and after, on the real path, several times
+iperf3 -c far.example.com -t 30 -O 3            # -O skips slow start from the average
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import socket
+
+s = socket.create_connection(("far.example.com", 443))
+
+# per-socket congestion control - useful when you cannot change system defaults
+try:
+    s.setsockopt(socket.IPPROTO_TCP, socket.TCP_CONGESTION, b"bbr")
+except OSError:
+    pass                                        # module not loaded; keep the default
+
+# TCP_INFO exposes cwnd, rtt, retransmissions - the same data ss prints
+import struct
+info = s.getsockopt(socket.IPPROTO_TCP, socket.TCP_INFO, 224)
+fields = struct.unpack("BBBBBBBBIIIIIIIIIIIIIIIIIIIIIIII", info[:112])
+print("rtt(us):", fields[23], "cwnd:", fields[26])
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 24 -->
+            <h2 id="24-tcp-tuning">24. TCP Performance Tuning<a class="headerlink" href="#24-tcp-tuning"
+                    title="Permanent link">#</a></h2>
+
+            <p>Tuning follows one rule: <strong>identify the binding constraint first</strong>. Almost every TCP
+                performance problem is one of five, and each has a distinct signature.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symptom</th>
+                            <th>Cause</th>
+                            <th>Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Throughput plateaus far below the link</td>
+                            <td>window &lt; bandwidth-delay product</td>
+                            <td>raise <code>tcp_rmem</code>/<code>tcp_wmem</code>; confirm window scaling</td>
+                        </tr>
+                        <tr>
+                            <td>Sporadic multi-hundred-ms latency</td>
+                            <td>retransmission timeouts</td>
+                            <td>find the loss; enable SACK; consider BBR</td>
+                        </tr>
+                        <tr>
+                            <td>Exactly ~40 ms stalls on small writes</td>
+                            <td>Nagle + delayed ACK</td>
+                            <td><code>TCP_NODELAY</code>, or write the message in one call</td>
+                        </tr>
+                        <tr>
+                            <td>High latency <em>and</em> zero loss</td>
+                            <td>bufferbloat</td>
+                            <td>fq_codel on the bottleneck; BBR on the sender</td>
+                        </tr>
+                        <tr>
+                            <td>Connection setup dominates</td>
+                            <td>too many short connections</td>
+                            <td>keep-alive, pooling, HTTP/2, TLS resumption</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Do not copy sysctl blogs.</strong> Every one of these settings is a trade — bigger buffers
+                    cost memory per connection and can worsen bufferbloat; a wider ephemeral range delays rather than
+                    prevents exhaustion; disabling Nagle increases packet count. Measure the actual constraint, change
+                    one thing, measure again. The most valuable optimisation in this whole section is not a sysctl at
+                    all: it is <strong>reusing connections</strong>.</p>
+            </div>
+
+            <!-- ====== 25 -->
+            <h2 id="25-dns">25. DNS in Depth<a class="headerlink" href="#25-dns" title="Permanent link">#</a></h2>
+
+            <p>DNS is a distributed database with delegated authority and aggressive caching. Every connection begins
+                with it, and a surprising share of "the network is down" incidents end here.</p>
+
+            <div class="viz" data-viz="dns-resolution"></div>
+
+            <h3 id="25-1-the-players">25.1 The four participants<a class="headerlink" href="#25-1-the-players"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="card-grid">
+                <li><b>Stub resolver</b>In your OS or library. Asks one question of one server and expects a full
+                    answer. This is what <code>getaddrinfo()</code> uses — and it has its own cache you cannot see.
+                </li>
+                <li><b>Recursive resolver</b>Does the actual work: walks the delegation chain, caches everything,
+                    serves thousands of clients. Your ISP's, or 8.8.8.8, or 1.1.1.1.</li>
+                <li><b>Root and TLD servers</b>Hold no answers, only referrals. Thirteen root <em>identities</em>,
+                    served by hundreds of anycast instances worldwide.</li>
+                <li><b>Authoritative server</b>Actually holds the zone. Whoever controls it controls the name — which
+                    is why registrar and DNS account security is a top-tier concern.</li>
+            </ul>
+
+            <h3 id="25-2-record-types">25.2 Record types that matter<a class="headerlink" href="#25-2-record-types"
+                    title="Permanent link">#</a></h3>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Maps to</th>
+                            <th>Gotcha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A / AAAA</td>
+                            <td>IPv4 / IPv6 address</td>
+                            <td>Multiple records = crude round robin with no health checking</td>
+                        </tr>
+                        <tr>
+                            <td>CNAME</td>
+                            <td>another name</td>
+                            <td>Cannot coexist with any other record at the same name — so never at the zone apex</td>
+                        </tr>
+                        <tr>
+                            <td>ALIAS / ANAME</td>
+                            <td>another name, resolved server-side</td>
+                            <td>Vendor-specific workaround for the apex problem</td>
+                        </tr>
+                        <tr>
+                            <td>MX</td>
+                            <td>mail servers, with priority</td>
+                            <td>Must point at a name, never an IP address</td>
+                        </tr>
+                        <tr>
+                            <td>TXT</td>
+                            <td>arbitrary text</td>
+                            <td>SPF, DKIM, DMARC, domain verification — deleting one breaks email</td>
+                        </tr>
+                        <tr>
+                            <td>NS</td>
+                            <td>delegation</td>
+                            <td>Must match what the parent zone publishes, or resolution is erratic</td>
+                        </tr>
+                        <tr>
+                            <td>SRV</td>
+                            <td>service + port</td>
+                            <td>Used by service discovery, SIP, Kubernetes headless services</td>
+                        </tr>
+                        <tr>
+                            <td>PTR</td>
+                            <td>reverse lookup</td>
+                            <td>Lives in <code>in-addr.arpa</code>; controlled by whoever owns the address block</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="25-3-caching-and-ttl">25.3 Caching, TTLs and the migration procedure<a class="headerlink"
+                    href="#25-3-caching-and-ttl" title="Permanent link">#</a></h3>
+
+            <p>Caching happens at every level — authoritative TTL, recursive resolver, OS, library, browser, and
+                application runtime. The consequence is absolute: <strong>a record you have already served cannot be
+                    recalled</strong>. "DNS propagation" is a misleading phrase; nothing propagates, entries simply
+                expire at different times because each cache started its countdown at a different moment.</p>
+
+            <div class="callout callout-key">
+                <p>The safe migration procedure: <strong>(1)</strong> lower the TTL to 60 s and wait at least the
+                    <em>old</em> TTL so every cache has picked up the short one; <strong>(2)</strong> make the change;
+                    <strong>(3)</strong> keep the old endpoint serving for hours — some clients ignore TTLs entirely;
+                    <strong>(4)</strong> raise the TTL again once traffic has moved. Skipping step 1 is the classic
+                    cause of a day-long partial outage.
+                </p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>Two client-side traps. Older JVMs cached successful lookups <em>forever</em> by default
+                    (<code>networkaddress.cache.ttl</code>) — always set it explicitly in long-lived services. And
+                    connection pools resolve once at creation: a pool holding connections to a decommissioned IP will
+                    keep using it long after DNS has changed, so pools need max-lifetime settings too.</p>
+            </div>
+
+            <h3 id="25-4-modern-dns">25.4 DNSSEC, DoT and DoH<a class="headerlink" href="#25-4-modern-dns"
+                    title="Permanent link">#</a></h3>
+
+            <p>Plain DNS is unauthenticated and unencrypted — trivially observable and spoofable.
+                <strong>DNSSEC</strong> signs records so a resolver can verify authenticity (but not privacy).
+                <strong>DoT</strong> (DNS over TLS, port 853) and <strong>DoH</strong> (DNS over HTTPS, port 443)
+                encrypt the query between stub and resolver. DoH is contentious precisely because it hides DNS inside
+                normal web traffic — excellent for privacy, awkward for enterprises that relied on DNS visibility for
+                filtering and monitoring.
+            </p>
+
+            <!-- ====== 26 -->
+            <h2 id="26-http11">26. HTTP/1.1<a class="headerlink" href="#26-http11" title="Permanent link">#</a></h2>
+
+            <p>HTTP is a request/response protocol in plain text: a request line, headers, a blank line, and an
+                optional body. Its simplicity is why it took over everything — you can speak it by hand with
+                <code>nc</code>.
+            </p>
+
+            <div class="viz" data-viz="http-versions" data-option="h1"></div>
+
+            <div class="ascii">GET /index.html HTTP/1.1 HTTP/1.1 200 OK
+                Host: example.com Content-Type: text/html
+                User-Agent: curl/8.4.0 Content-Length: 1256
+                Accept: */* Cache-Control: max-age=300
+                Connection: keep-alive
+                &lt;!doctype html&gt;...
+                (blank line ends the headers) (body, exactly 1256 bytes)
+            </div>
+
+            <p>Two design decisions define it. It is <strong>stateless</strong> — every request stands alone, which is
+                what makes horizontal scaling and caching possible, and why cookies and tokens had to be invented to
+                simulate sessions. And it carries <strong>exactly one request per connection at a time</strong>, which
+                is its central performance flaw.</p>
+
+            <h3 id="26-1-framing-and-keep-alive">26.1 Framing and keep-alive<a class="headerlink"
+                    href="#26-1-framing-and-keep-alive" title="Permanent link">#</a></h3>
+
+            <p>Since TCP has no message boundaries, HTTP must declare where a body ends: either
+                <code>Content-Length</code>, or <code>Transfer-Encoding: chunked</code> when the length is not known in
+                advance. Ambiguity between the two is the basis of <strong>request smuggling</strong> attacks, where a
+                proxy and a backend disagree about where one request ends and the next begins.
+            </p>
+
+            <p>HTTP/1.1 made connections persistent by default. Pipelining — sending several requests without waiting —
+                was specified but is effectively dead, because responses still had to return in order, so one slow
+                response blocked the rest. Browsers instead open up to <strong>six connections per host</strong>, and
+                every classic optimisation (domain sharding, sprites, bundling, inlining) exists to work around that
+                limit.</p>
+
+            <h3 id="26-2-methods-and-status">26.2 Methods, status codes and retry safety<a class="headerlink"
+                    href="#26-2-methods-and-status" title="Permanent link">#</a></h3>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Safe and idempotent</b><code>GET</code>, <code>HEAD</code>, <code>OPTIONS</code>
+                    change nothing. <code>PUT</code> and <code>DELETE</code> change something but repeating them is
+                    harmless. All are safe to retry automatically.</li>
+                <li class="is-bad"><b>Not idempotent</b><code>POST</code> and <code>PATCH</code>. A retry may create a
+                    duplicate — and since the network retries whether you plan for it or not, use an
+                    <strong>idempotency key</strong> the server can deduplicate on.
+                </li>
+                <li class="is-good"><b>Retry on 429, 502, 503, 504</b>With exponential backoff <em>and jitter</em>.
+                    Honour <code>Retry-After</code> when present. Without jitter, all your clients retry in lockstep and
+                    create a thundering herd.</li>
+                <li class="is-bad"><b>Never retry a 4xx</b>The request itself is wrong; repeating it wastes capacity
+                    during an incident and hides the real error.</li>
+            </ul>
+
+            <div class="code-tabs" data-label="Speak HTTP by hand, then look at the timings">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+# HTTP/1.1 is simple enough to type. Host: is mandatory - it is how one IP
+# serves many sites (and the plaintext ancestor of TLS SNI).
+printf 'GET / HTTP/1.1\r\nHost: example.com\r\nConnection: close\r\n\r\n' \
+  | nc example.com 80
+
+# headers only, and the negotiated protocol version
+curl -sSI --http1.1 https://example.com
+
+# where did the time actually go?
+curl -sS -o /dev/null -w \
+ 'dns %{time_namelookup}  tcp %{time_connect}  tls %{time_appconnect}
+ttfb %{time_starttransfer}  total %{time_total}  proto %{http_version}\n' \
+ https://example.com
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import random, time
+import requests
+
+session = requests.Session()          # reuse connections - the biggest single win
+
+RETRYABLE = {429, 500, 502, 503, 504}
+
+def get_with_backoff(url: str, attempts: int = 4):
+    for attempt in range(attempts):
+        response = session.get(url, timeout=(3, 10))   # (connect, read) - always both
+        if response.status_code &lt; 400 or response.status_code not in RETRYABLE:
+            return response                            # 4xx: do NOT retry, it is our bug
+
+        wait = float(response.headers.get("Retry-After", 0)) or 2 ** attempt
+        time.sleep(wait + random.uniform(0, 0.5))      # jitter prevents a thundering herd
+    response.raise_for_status()
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 27 -->
+            <h2 id="27-http2">27. HTTP/2<a class="headerlink" href="#27-http2" title="Permanent link">#</a></h2>
+
+            <p>HTTP/2 keeps every semantic of HTTP/1.1 — the same methods, status codes and headers — and replaces the
+                wire format entirely. Text becomes binary frames, and each frame carries a <strong>stream
+                    identifier</strong>.</p>
+
+            <div class="viz" data-viz="http-versions" data-option="h2"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Multiplexing</b>Many concurrent streams on one connection, responses interleaved
+                    in any order. One slow API call no longer blocks a small CSS file behind it.</li>
+                <li class="is-good"><b>HPACK header compression</b>A shared dynamic table means repeated cookies and
+                    user-agent strings stop being resent — often 90% smaller headers on mobile.</li>
+                <li class="is-good"><b>Prioritisation and flow control</b>Per-stream windows, so a large download
+                    cannot starve interactive requests on the same connection.</li>
+                <li class="is-bad"><b>TCP head-of-line blocking</b>All streams share one TCP connection, and TCP
+                    delivers in order — so one lost packet stalls <em>every</em> stream, including the ones whose data
+                    already arrived.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>HTTP/1.1 optimisations become anti-optimisations.</strong> Domain sharding splits the single
+                    connection that multiplexing depends on. Giant bundles defeat granular caching. Inlining prevents
+                    caching entirely. If you moved to HTTP/2 and performance did not improve, the usual reason is that
+                    the old workarounds were left in place.</p>
+            </div>
+
+            <p>Server push — the ability to send resources the client had not requested — was the headline feature and
+                has been removed from Chrome and largely abandoned: it usually pushed things the client already had.
+                <code>103 Early Hints</code> with <code>preload</code> achieves the intent without the waste.
+            </p>
+
+            <!-- ====== 28 -->
+            <h2 id="28-http3">28. HTTP/3 and QUIC<a class="headerlink" href="#28-http3" title="Permanent link">#</a>
+            </h2>
+
+            <p>HTTP/3 fixes head-of-line blocking by abandoning TCP. It runs over <strong>QUIC</strong>: a reliable,
+                encrypted, multiplexed transport implemented in <em>user space</em> on top of UDP.</p>
+
+            <div class="viz" data-viz="http-versions" data-option="h3"></div>
+
+            <p>Why UDP rather than a new protocol number? Because <strong>middleboxes</strong> — NATs, firewalls, load
+                balancers — drop anything that is not TCP or UDP, and would take a decade to update. Building on UDP
+                made QUIC deployable immediately. Putting it in user space means it can be updated with a browser
+                release rather than a kernel release, which is why it has evolved faster in five years than TCP did in
+                twenty.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Per-stream loss recovery</b>A lost packet stalls only its own stream. This is
+                    the fix HTTP/2 could not make.</li>
+                <li class="is-good"><b>1-RTT handshake, 0-RTT resumption</b>Transport and TLS 1.3 handshakes are merged.
+                    0-RTT early data is replayable, so it must be restricted to idempotent requests.</li>
+                <li class="is-good"><b>Connection migration</b>A connection is identified by a connection ID, not the
+                    four-tuple — so switching from Wi-Fi to mobile does not break the download.</li>
+                <li class="is-bad"><b>Costs</b>Higher per-packet CPU than kernel TCP, UDP sometimes throttled or
+                    blocked, and far less operator visibility since almost the entire header is encrypted.</li>
+            </ul>
+
+            <div class="callout callout-tip">
+                <p>Deployment is by negotiation, not switchover: a server advertises HTTP/3 with an
+                    <code>Alt-Svc</code> header (or an HTTPS DNS record), and clients that can use it will, falling
+                    back to HTTP/2 when UDP is blocked. Verify with <code>curl --http3 -sSI</code>, and confirm the
+                    protocol actually used rather than the one offered.
+                </p>
+            </div>
+
+            <!-- ====== 29 -->
+            <h2 id="29-tls">29. TLS and the PKI<a class="headerlink" href="#29-tls" title="Permanent link">#</a></h2>
+
+            <p>TLS provides confidentiality, integrity and <strong>identity</strong>. The third is the one that makes
+                the other two meaningful, and the one most often discarded in a hurry to make an error go away.</p>
+
+            <div class="viz" data-viz="tls-handshake"></div>
+
+            <h3 id="29-1-what-the-handshake-establishes">29.1 What the handshake establishes<a class="headerlink"
+                    href="#29-1-what-the-handshake-establishes" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><strong>A shared secret</strong>, via ephemeral Diffie-Hellman. Both sides derive the same key
+                    without it ever crossing the wire, and it is discarded afterwards — that is <strong>forward
+                        secrecy</strong>: capturing today's traffic and stealing the key tomorrow yields nothing.</li>
+                <li><strong>The server's identity</strong>, via a certificate chaining to a trusted root, plus a
+                    signature over the handshake proving possession of the private key.</li>
+                <li><strong>An agreed cipher suite</strong>, chosen from what both support. TLS 1.3 pruned the list to
+                    a handful of modern AEAD ciphers, which removed an entire generation of downgrade attacks.</li>
+                <li><strong>Transcript integrity</strong>, via the Finished message — tampering anywhere in the
+                    handshake causes both sides to compute different MACs and abort.</li>
+            </ol>
+
+            <h3 id="29-2-certificates">29.2 Certificates and chains<a class="headerlink" href="#29-2-certificates"
+                    title="Permanent link">#</a></h3>
+
+            <p>A certificate binds a public key to a set of names, signed by a certificate authority. Validation checks
+                the name against the <strong>SAN</strong> list (the old Common Name field is ignored by modern
+                clients), the validity dates, the signature chain up to a trusted root, and revocation status.</p>
+
+            <div class="callout callout-key">
+                <p>The most common production TLS bug is a <strong>missing intermediate</strong>. Browsers hide it by
+                    fetching the missing certificate via the AIA extension; libraries do not, so the same site works in
+                    Chrome and fails in your service with "unable to get local issuer certificate". The fix is on the
+                    server: serve the leaf plus every intermediate (never the root).</p>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Error</th>
+                            <th>Real cause</th>
+                            <th>Correct fix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>unable to get local issuer certificate</td>
+                            <td>server omits an intermediate</td>
+                            <td>fix the server's chain file</td>
+                        </tr>
+                        <tr>
+                            <td>hostname mismatch</td>
+                            <td>name not in the SAN list</td>
+                            <td>reissue with the right names, or connect by the right name</td>
+                        </tr>
+                        <tr>
+                            <td>certificate has expired</td>
+                            <td>expiry, or a wrong system clock</td>
+                            <td>renew — and check NTP before assuming</td>
+                        </tr>
+                        <tr>
+                            <td>self-signed certificate in chain</td>
+                            <td>corporate TLS-inspecting proxy</td>
+                            <td>add the corporate root to the trust store, not
+                                <code>verify=False</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>handshake failure</td>
+                            <td>no shared cipher or version</td>
+                            <td>modernise the older side; do not re-enable TLS 1.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="29-3-mtls-and-termination">29.3 mTLS and termination<a class="headerlink"
+                    href="#29-3-mtls-and-termination" title="Permanent link">#</a></h3>
+
+            <p><strong>Mutual TLS</strong> makes the client present a certificate too, so both ends are authenticated
+                cryptographically. It is the foundation of service-to-service authentication in a service mesh, where
+                identity comes from a certificate rather than a shared secret in an environment variable.</p>
+
+            <p><strong>Termination</strong> is where TLS ends. If it ends at the load balancer, everything behind is
+                plaintext unless you re-encrypt. That may be an acceptable decision — but make it deliberately, and
+                remember that the padlock in a browser says nothing whatsoever about your internal network.</p>
+
+            <!-- ====== 30 -->
+            <h2 id="30-network-code">30. Writing Network Code<a class="headerlink" href="#30-network-code"
+                    title="Permanent link">#</a></h2>
+
+            <p>Most networking bugs in application code come from four assumptions that are false on a real network
+                and true on localhost — which is exactly why they survive testing.</p>
+
+            <ul class="card-grid">
+                <li class="is-bad"><b>"One send equals one receive"</b>TCP is a byte stream. Always frame your messages
+                    with a length prefix or a delimiter, and always loop when reading.</li>
+                <li class="is-bad"><b>"It will either work or fail"</b>The third outcome is <em>hanging forever</em>.
+                    Every network call needs a timeout — connect <em>and</em> read, separately.</li>
+                <li class="is-bad"><b>"A retry is harmless"</b>Only for idempotent operations. Otherwise you need an
+                    idempotency key, because the network retries whether you designed for it or not.</li>
+                <li class="is-bad"><b>"Resolve once at startup"</b>Addresses change. Long-lived pools need a maximum
+                    connection lifetime so they pick up DNS changes.</li>
+            </ul>
+
+            <div class="callout callout-key">
+                <p><strong>Timeout budgets must shrink as you go deeper.</strong> If the user-facing request has a 3 s
+                    budget, the service call inside it gets 2 s and the database call inside that gets 1 s. Equal
+                    timeouts at every layer guarantee that an outer call times out while inner work continues — burning
+                    capacity to produce a result nobody will read.</p>
+            </div>
+
+            <div class="code-tabs" data-label="A client that survives a real network">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import random, socket, time
+import requests
+from requests.adapters import HTTPAdapter
+
+def build_session() -&gt; requests.Session:
+    session = requests.Session()
+    adapter = HTTPAdapter(pool_connections=20, pool_maxsize=100, max_retries=0)
+    session.mount("https://", adapter)     # pooling removes handshakes AND TIME_WAIT
+    return session
+
+SESSION = build_session()
+RETRYABLE = {429, 500, 502, 503, 504}
+
+def call(url: str, *, budget_s: float = 2.0, attempts: int = 3):
+    deadline = time.monotonic() + budget_s          # a budget, not a per-try timeout
+    last = None
+    for attempt in range(attempts):
+        remaining = deadline - time.monotonic()
+        if remaining &lt;= 0:
+            break
+        try:
+            # (connect timeout, read timeout) - a connect hang and a slow server
+            # are different failures and deserve different limits
+            response = SESSION.get(url, timeout=(min(1.0, remaining), remaining))
+            if response.status_code not in RETRYABLE:
+                return response
+            last = f"http {response.status_code}"
+        except (requests.Timeout, requests.ConnectionError) as exc:
+            last = repr(exc)
+        time.sleep(min(0.05 * 2 ** attempt, 0.4) + random.uniform(0, 0.05))
+    raise TimeoutError(f"budget exhausted: {last}")
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const https = require("https");
+
+// One agent, reused: keeps connections alive so each call skips TCP + TLS setup
+const agent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 100,
+    keepAliveMsecs: 30_000,     // must stay BELOW any NAT / load-balancer idle timeout
+});
+
+async function call(url, { budgetMs = 2000, attempts = 3 } = {}) {
+    const deadline = Date.now() + budgetMs;
+    let last;
+
+    for (let attempt = 0; attempt &lt; attempts; attempt++) {
+        const remaining = deadline - Date.now();
+        if (remaining &lt;= 0) break;
+
+        // AbortController is the only reliable way to bound a fetch in Node
+        const controller = new AbortController();
+        const timer = setTimeout(() =&gt; controller.abort(), remaining);
+        try {
+            const res = await fetch(url, { agent, signal: controller.signal });
+            if (![429, 500, 502, 503, 504].includes(res.status)) return res;
+            last = `http ${res.status}`;
+        } catch (err) {
+            last = err.message;                     // includes aborts and DNS failures
+        } finally {
+            clearTimeout(timer);
+        }
+        const backoff = Math.min(50 * 2 ** attempt, 400) + Math.random() * 50;
+        await new Promise((r) =&gt; setTimeout(r, backoff));
+    }
+    throw new Error(`budget exhausted: ${last}`);
+}
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 31 -->
+            <h2 id="31-proxies">31. Proxies and Load Balancing<a class="headerlink" href="#31-proxies"
+                    title="Permanent link">#</a></h2>
+
+            <p>A <strong>forward proxy</strong> sits in front of clients (corporate egress filtering, caching). A
+                <strong>reverse proxy</strong> sits in front of servers and is what almost everyone means: TLS
+                termination, load balancing, routing, rate limiting, compression, and a single place to apply policy.
+            </p>
+
+            <div class="viz" data-viz="load-balancing" data-option="rr"></div>
+
+            <h3 id="31-1-l4-versus-l7">31.1 Layer 4 versus layer 7<a class="headerlink" href="#31-1-l4-versus-l7"
+                    title="Permanent link">#</a></h3>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Layer 4</th>
+                            <th>Layer 7</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Decides on</td>
+                            <td>IP addresses and ports</td>
+                            <td>path, headers, cookies, method</td>
+                        </tr>
+                        <tr>
+                            <td>TLS</td>
+                            <td>passes through untouched</td>
+                            <td>must terminate it to read anything</td>
+                        </tr>
+                        <tr>
+                            <td>Cost</td>
+                            <td>very low; can be hardware or kernel-bypass</td>
+                            <td>higher — parses every request</td>
+                        </tr>
+                        <tr>
+                            <td>Can do</td>
+                            <td>any TCP/UDP protocol</td>
+                            <td>retries, rewriting, canaries, per-route limits</td>
+                        </tr>
+                        <tr>
+                            <td>Typical</td>
+                            <td>NLB, IPVS, HAProxy in TCP mode</td>
+                            <td>ALB, nginx, Envoy, Traefik</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 id="31-2-algorithms-and-health">31.2 Algorithms and health checking<a class="headerlink"
+                    href="#31-2-algorithms-and-health" title="Permanent link">#</a></h3>
+
+            <p>Choose by <strong>how variable request cost is</strong>. Uniform work → round robin. Variable work →
+                least connections, so slow backends stop attracting more. Cache locality or sticky sessions →
+                consistent hashing, which moves only the affected keys when a backend leaves, instead of reshuffling
+                everything as <code>hash % n</code> would.</p>
+
+            <p>But the feature that actually keeps you online is <strong>health checking</strong>. Two rules: check
+                something meaningful (an endpoint that touches the dependencies you need, not just an open port), and
+                <strong>never let the health check cascade</strong> — if the shared database hiccups and every backend
+                fails its check simultaneously, the load balancer removes the entire fleet and turns a slow minute into
+                a total outage.
+            </p>
+
+            <div class="callout callout-warn">
+                <p>Size for failure: <strong>when one of three backends dies, the survivors each take 50% more
+                        load</strong>. A pool running at 70% utilisation has no headroom for a single failure, so the
+                    removal of one node cascades into the removal of the rest. This is the single most common shape of
+                    a self-inflicted outage.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Behind any proxy your application sees the <em>proxy's</em> address. The client's real IP arrives in
+                    <code>X-Forwarded-For</code> or the <code>Forwarded</code> header — and you must only trust it when
+                    it comes from your own proxies, otherwise anyone can forge their apparent origin and bypass
+                    IP-based rate limits or allow-lists.
+                </p>
+            </div>
+
+            <!-- ====== 32 -->
+            <h2 id="32-cdns">32. CDNs and Anycast<a class="headerlink" href="#32-cdns" title="Permanent link">#</a>
+            </h2>
+
+            <p>A CDN's real product is not bandwidth — it is the <strong>elimination of distance</strong>, and with it
+                the round trips that dominate page load time.</p>
+
+            <div class="viz" data-viz="cdn"></div>
+
+            <p>Users are steered to a nearby edge by <strong>anycast</strong> (the same IP address announced from many
+                locations, with BGP delivering each user to the topologically nearest one) or by geo-aware DNS. Anycast
+                is elegant for stateless UDP and short connections; for long TCP connections it depends on routing
+                stability, since a mid-connection route change would land packets at a different machine.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Latency</b>TCP and TLS handshakes complete metres away instead of continents
+                    away. This benefits even uncacheable, personalised responses.</li>
+                <li class="is-good"><b>Origin offload</b>A 95% hit ratio means 20× fewer requests reach your servers —
+                    and absorbs traffic spikes you could never provision for.</li>
+                <li class="is-good"><b>Attack absorption</b>A large distributed edge is the practical defence against
+                    volumetric DDoS.</li>
+                <li class="is-bad"><b>Invalidation and correctness</b>Purges take time to reach every edge; a wrong
+                    <code>Vary</code> header or a cached <code>Set-Cookie</code> can serve one user's data to another.
+                </li>
+            </ul>
+
+            <div class="callout callout-key">
+                <p><strong>Content hashing beats invalidation.</strong> Name assets <code>app.9f2a1c.js</code> and
+                    serve them with <code>Cache-Control: public, max-age=31536000, immutable</code>. A deploy is then a
+                    new URL, old objects can be cached forever, and no purge is ever required. Reserve short TTLs for
+                    the HTML that references them.</p>
+            </div>
+
+            <!-- ====== 33 -->
+            <h2 id="33-cloud-networking">33. Cloud Networking<a class="headerlink" href="#33-cloud-networking"
+                    title="Permanent link">#</a></h2>
+
+            <p>Cloud networking is the same set of concepts with new names and one important difference: everything is
+                an API call, and almost everything is <strong>deny by default</strong>.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cloud concept</th>
+                            <th>Is really</th>
+                            <th>Watch out for</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>VPC</td>
+                            <td>a private address space you own</td>
+                            <td>CIDR cannot be shrunk; overlapping ranges block peering forever</td>
+                        </tr>
+                        <tr>
+                            <td>Subnet</td>
+                            <td>a per-AZ slice of the VPC</td>
+                            <td>Cannot be resized; the provider reserves ~5 addresses in each</td>
+                        </tr>
+                        <tr>
+                            <td>Route table</td>
+                            <td>a routing table</td>
+                            <td>"Public subnet" simply means it has a route to the internet gateway</td>
+                        </tr>
+                        <tr>
+                            <td>Security group</td>
+                            <td>a stateful per-instance firewall</td>
+                            <td>Stateful: allow inbound and the reply is automatically permitted</td>
+                        </tr>
+                        <tr>
+                            <td>Network ACL</td>
+                            <td>a stateless per-subnet filter</td>
+                            <td><strong>Stateless</strong>: you must also allow the ephemeral return ports</td>
+                        </tr>
+                        <tr>
+                            <td>NAT gateway</td>
+                            <td>source NAT for private subnets</td>
+                            <td>Per-destination port limits; and you pay per GB processed</td>
+                        </tr>
+                        <tr>
+                            <td>VPC endpoint / PrivateLink</td>
+                            <td>a private path to a managed service</td>
+                            <td>Bypasses NAT entirely — cheaper and removes a shared bottleneck</td>
+                        </tr>
+                        <tr>
+                            <td>Peering / Transit Gateway</td>
+                            <td>routing between VPCs</td>
+                            <td>Peering is not transitive; overlapping CIDRs cannot be peered</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-key">
+                <p>The stateful/stateless distinction causes more cloud debugging time than anything else.
+                    <strong>Security groups are stateful</strong> — allow inbound 443 and responses flow back
+                    automatically. <strong>Network ACLs are stateless</strong> — allow inbound 443 and the reply from
+                    an ephemeral port is still blocked unless you allow 1024–65535 outbound. A connection that
+                    establishes but returns nothing is very often exactly this.
+                </p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Cloud connectivity debugging ladder: is there a <strong>route</strong> to the destination? Does the
+                    <strong>security group</strong> allow it in <em>and</em> the source group allow it out? Does the
+                    <strong>NACL</strong> allow both directions including return ports? Is the instance in a subnet
+                    with an internet or NAT route at all? Managed tools (VPC Reachability Analyzer, flow logs) answer
+                    all four faster than any packet capture.
+                </p>
+            </div>
+
+            <p>Container networking adds one more layer: each pod gets its own address, a <code>Service</code> is a
+                virtual IP implemented with iptables or IPVS rules (this is destination NAT), and cluster DNS resolves
+                service names. When a pod cannot reach a service, the ladder is the same one — DNS, then routing, then
+                the network policy that is quietly denying the traffic.</p>
+
+            <!-- ====== 34 -->
+            <h2 id="34-security">34. Network Security<a class="headerlink" href="#34-security"
+                    title="Permanent link">#</a></h2>
+
+            <p>Every protocol so far was designed for a network of trusted academics. Security has been retrofitted,
+                which is why the assumption to work from is: <strong>the network is hostile, so authenticate and
+                    encrypt at the application layer</strong>.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Attack</th>
+                            <th>Exploits</th>
+                            <th>Defence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ARP spoofing</td>
+                            <td>ARP has no authentication</td>
+                            <td>Dynamic ARP inspection; TLS everywhere</td>
+                        </tr>
+                        <tr>
+                            <td>DNS cache poisoning</td>
+                            <td>UDP is trivially forged</td>
+                            <td>Source-port randomisation, DNSSEC, DoT/DoH</td>
+                        </tr>
+                        <tr>
+                            <td>SYN flood</td>
+                            <td>half-open connections consume state</td>
+                            <td>SYN cookies (state-free handshakes)</td>
+                        </tr>
+                        <tr>
+                            <td>Amplification DDoS</td>
+                            <td>UDP services reply larger than the query</td>
+                            <td>Ingress filtering (BCP 38); do not expose open resolvers</td>
+                        </tr>
+                        <tr>
+                            <td>BGP hijack</td>
+                            <td>announcements are believed</td>
+                            <td>RPKI origin validation, prefix filters</td>
+                        </tr>
+                        <tr>
+                            <td>TLS stripping</td>
+                            <td>the first request is plaintext</td>
+                            <td>HSTS, and preload lists</td>
+                        </tr>
+                        <tr>
+                            <td>Request smuggling</td>
+                            <td>proxy and backend disagree on framing</td>
+                            <td>Reject ambiguous length/chunked combinations</td>
+                        </tr>
+                        <tr>
+                            <td>SSRF</td>
+                            <td>the server will fetch any URL you give it</td>
+                            <td>Allow-list destinations; block link-local metadata addresses</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Firewalls: drop versus reject.</strong> A rejected packet produces an immediate "connection
+                    refused"; a dropped packet produces a timeout. Dropping hides the service from scanners but makes
+                    every client wait out its full timeout — including your own health checks. Choose deliberately, and
+                    remember the diagnostic value: <em>refused means something answered, timeout means silence</em>.
+                </p>
+            </div>
+
+            <p>The direction of travel is <strong>zero trust</strong>: stop treating "inside the network" as an
+                authorisation decision. Authenticate every request with mTLS or a signed token, authorise per
+                identity rather than per subnet, and encrypt internal traffic. Network position becomes one signal
+                among several rather than the whole security model.</p>
+
+            <!-- ====== 35 -->
+            <h2 id="35-performance-debugging">35. Performance Debugging Playbook<a class="headerlink"
+                    href="#35-performance-debugging" title="Permanent link">#</a></h2>
+
+            <p>Start by locating the time. Every request is DNS + connect + TLS + server + transfer, and the answer is
+                usually obvious once those five numbers are separated.</p>
+
+            <div class="viz" data-viz="packet-journey"></div>
+
+            <div class="code-tabs" data-label="The ladder, in order">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+# 1. split the request into phases - do this FIRST, it usually ends the search
+curl -sS -o /dev/null -w \
+ 'dns %{time_namelookup}  tcp %{time_connect}  tls %{time_appconnect}
+ttfb %{time_starttransfer}  total %{time_total}\n' https://api.example.com/health
+
+# 2. is the path lossy? only loss that persists to the FINAL hop counts
+mtr -rwc 100 api.example.com
+
+# 3. is TCP struggling? retransmissions, rtt variance, cwnd
+ss -ti state established '( dport = :443 )'
+nstat -az | grep -E 'TcpRetransSegs|TcpExtTCPLostRetransmit|ListenOverflows'
+
+# 4. is the server even accepting? Recv-Q on a LISTEN socket = unaccepted backlog
+ss -lnt
+
+# 5. interface-level errors: drops and overruns mean the NIC or queue is the problem
+ip -s link show eth0
+
+# 6. when nothing else agrees, look at the wire
+sudo tcpdump -ni any -c 200 'host api.example.com and port 443'
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import socket, ssl, statistics, time
+
+def phase_timings(host: str, port: int = 443, samples: int = 5) -&gt; dict:
+    """Measure each phase separately - an average hides the phase that matters."""
+    results = {"dns": [], "tcp": [], "tls": [], "ttfb": []}
+
+    for _ in range(samples):
+        t0 = time.perf_counter()
+        addr = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)[0][4]
+        t1 = time.perf_counter()
+
+        sock = socket.create_connection(addr, timeout=5)
+        t2 = time.perf_counter()
+
+        tls = ssl.create_default_context().wrap_socket(sock, server_hostname=host)
+        t3 = time.perf_counter()
+
+        tls.sendall(f"GET / HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n".encode())
+        tls.recv(1)
+        t4 = time.perf_counter()
+        tls.close()
+
+        for key, value in zip(results, (t1 - t0, t2 - t1, t3 - t2, t4 - t3)):
+            results[key].append(value * 1000)
+
+    return {k: round(statistics.median(v), 1) for k, v in results.items()}
+
+print(phase_timings("example.com"))   # {'dns': 21.4, 'tcp': 84.2, 'tls': 91.7, 'ttfb': 88.9}
+# tcp ~= tls ~= ttfb ~= one RTT each -> this is a DISTANCE problem, not a server problem
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p>Read the phase numbers as a shape, not as values. <strong>DNS large</strong> → resolver, not your
+                    service. <strong>TCP ≈ TLS ≈ TTFB ≈ one RTT each</strong> → you are paying for distance; add a CDN
+                    or reuse connections. <strong>TTFB large, everything else small</strong> → it really is your
+                    application. <strong>Total large but TTFB small</strong> → transfer, so look at response size, slow
+                    start and window.</p>
+            </div>
+
+            <!-- ====== 36 -->
+            <h2 id="36-cheat-sheet">36. Cheat Sheet<a class="headerlink" href="#36-cheat-sheet"
+                    title="Permanent link">#</a></h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Value</th>
+                            <th>Why it matters</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Speed in fibre</td>
+                            <td>~200 km/ms</td>
+                            <td>The floor on any latency budget</td>
+                        </tr>
+                        <tr>
+                            <td>Ethernet MTU</td>
+                            <td>1500 B (TCP MSS 1460)</td>
+                            <td>Tunnels reduce it; ICMP must not be blocked</td>
+                        </tr>
+                        <tr>
+                            <td>Header overhead</td>
+                            <td>54 B (Eth+IP+TCP)</td>
+                            <td>Why small packets are inefficient</td>
+                        </tr>
+                        <tr>
+                            <td>Initial cwnd</td>
+                            <td>10 segments ≈ 14 KB</td>
+                            <td>First response under 14 KB arrives in one RTT</td>
+                        </tr>
+                        <tr>
+                            <td>Ephemeral ports</td>
+                            <td>~28,000</td>
+                            <td>Client-side connection limit per destination</td>
+                        </tr>
+                        <tr>
+                            <td>TIME_WAIT</td>
+                            <td>~60 s</td>
+                            <td>Held by whoever closes first</td>
+                        </tr>
+                        <tr>
+                            <td>Minimum RTO</td>
+                            <td>200 ms (Linux)</td>
+                            <td>The p99 spike you keep seeing</td>
+                        </tr>
+                        <tr>
+                            <td>Delayed ACK</td>
+                            <td>up to 40 ms</td>
+                            <td>The Nagle interaction stall</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud NAT idle timeout</td>
+                            <td>~350 s</td>
+                            <td>Set keep-alives below it</td>
+                        </tr>
+                        <tr>
+                            <td>TLS 1.3 handshake</td>
+                            <td>1 RTT (0 resumed)</td>
+                            <td>TLS 1.2 costs 2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="code-tabs" data-label="Commands worth memorising">
+                <div class="tab-pane" data-lang="bash">
+                    <pre><code data-lang="bash">
+ip -brief addr ; ip route ; ip neigh          # my address, my routes, my neighbours
+ip route get 1.1.1.1                          # which route actually wins?
+ss -tulpn                                     # what is listening, and as which process
+ss -ti state established                      # per-connection rtt, cwnd, retransmits
+dig +short example.com ; dig +trace example.com
+curl -sS -o /dev/null -w '%{time_connect} %{time_appconnect} %{time_total}\n' URL
+nc -vz host 443                               # refused (RST) vs timeout (dropped)
+mtr -rwc 50 host                              # sustained loss to the FINAL hop only
+ping -M do -s 1472 host                       # path MTU probe
+sudo tcpdump -ni any 'host X and port 443'    # the ground truth
+openssl s_client -connect host:443 -servername host   # certificate chain as served
+</code></pre>
+                </div>
+            </div>
+
+            <!-- ====== 37 -->
+            <h2 id="37-pattern-playbook">37. Pattern-Recognition Playbook<a class="headerlink"
+                    href="#37-pattern-playbook" title="Permanent link">#</a></h2>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symptom</th>
+                            <th>Almost always</th>
+                            <th>Confirm with</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Connection refused, instantly</td>
+                            <td>Nothing listening, or bound to 127.0.0.1</td>
+                            <td><code>ss -tulpn</code> on the target</td>
+                        </tr>
+                        <tr>
+                            <td>Connection timed out</td>
+                            <td>Packets dropped — firewall, security group, wrong route</td>
+                            <td><code>tcpdump</code> at both ends: did it arrive?</td>
+                        </tr>
+                        <tr>
+                            <td>Works by IP, fails by name</td>
+                            <td>DNS only</td>
+                            <td><code>dig</code> authoritative vs resolver</td>
+                        </tr>
+                        <tr>
+                            <td>Handshake fine, big responses hang</td>
+                            <td>MTU black hole (tunnel + ICMP blocked)</td>
+                            <td><code>ping -M do -s ...</code></td>
+                        </tr>
+                        <tr>
+                            <td>p99 = 200 ms / 1 s / 3 s exactly</td>
+                            <td>TCP retransmission timeout and backoff</td>
+                            <td><code>ss -ti</code> retrans counters</td>
+                        </tr>
+                        <tr>
+                            <td>Exactly 40 ms stalls</td>
+                            <td>Nagle + delayed ACK</td>
+                            <td>Two writes per message in the code</td>
+                        </tr>
+                        <tr>
+                            <td>Throughput capped, link idle</td>
+                            <td>Window &lt; bandwidth-delay product</td>
+                            <td>Compute BDP; check window scaling</td>
+                        </tr>
+                        <tr>
+                            <td>Idle connections die overnight</td>
+                            <td>NAT or load-balancer idle timeout</td>
+                            <td>Enable keep-alives below the timeout</td>
+                        </tr>
+                        <tr>
+                            <td>"Cannot assign requested address"</td>
+                            <td>Ephemeral port exhaustion from churn</td>
+                            <td><code>ss -tan | grep -c TIME-WAIT</code></td>
+                        </tr>
+                        <tr>
+                            <td>Random resets under load</td>
+                            <td>Accept queue overflow</td>
+                            <td><code>ss -lnt</code>, <code>ListenOverflows</code></td>
+                        </tr>
+                        <tr>
+                            <td>Cert works in browser, fails in code</td>
+                            <td>Missing intermediate in the served chain</td>
+                            <td><code>openssl s_client -showcerts</code></td>
+                        </tr>
+                        <tr>
+                            <td>Establishes but no data returns</td>
+                            <td>Stateless NACL blocking the return ports</td>
+                            <td>Check ephemeral range outbound</td>
+                        </tr>
+                        <tr>
+                            <td>Fast download destroys call quality</td>
+                            <td>Bufferbloat on the uplink</td>
+                            <td>Latency under load; fq_codel</td>
+                        </tr>
+                        <tr>
+                            <td>Slow only for one region</td>
+                            <td>Distance / no local edge</td>
+                            <td>Phase timings from that region</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ====== 38 -->
+            <h2 id="38-practice-roadmap">38. Practice Roadmap<a class="headerlink" href="#38-practice-roadmap"
+                    title="Permanent link">#</a></h2>
+
+            <p>Reading about networks does not build the intuition; watching your own packets does. In rough order of
+                value:</p>
+
+            <ol>
+                <li><strong>Capture a page load.</strong> Run Wireshark, load a site, and find the DNS query, the TCP
+                    handshake, the TLS handshake and the first HTTP request. Twenty minutes here is worth a chapter.
+                </li>
+                <li><strong>Break something on purpose.</strong> Use <code>tc netem</code> to add 100 ms of delay and
+                    1% loss to your loopback, then watch how your application behaves. Almost every timeout bug you
+                    will ever hit is reproducible this way.</li>
+                <li><strong>Subnet on paper.</strong> Plan a three-AZ VPC without a calculator, then check it with the
+                    <code>ipaddress</code> module. Do it until the /24-to-/30 ladder is automatic.
+                </li>
+                <li><strong>Write a length-prefixed protocol</strong> over raw TCP, and make it survive partial reads,
+                    a peer that disappears, and a message that arrives in three chunks.</li>
+                <li><strong>Measure the bandwidth-delay product</strong> of a real path with <code>iperf3</code>, then
+                    change the window and predict the result before you measure it.</li>
+                <li><strong>Read one production incident report</strong> that involved DNS, BGP or MTU. The public
+                    post-mortems from large providers are the best networking case studies available.</li>
+            </ol>
+
+            <div class="callout callout-interview">
+                <p><strong>If you remember five things:</strong> layering means the outermost header is local and the
+                    innermost is end to end; longest prefix match decides every route; a connection is state in two
+                    kernels identified by a four-tuple; throughput is window ÷ RTT while latency is round trips ×
+                    distance; and when it breaks, debug bottom up — refused and timed out are different bugs.</p>
+            </div>
+
+            <p>Related reading on this site: the <a href="networking-crash-course.html">Networking Crash Course</a>
+                for a faster pass over the same ground, the <a href="../os/os-detailed-course.html">OS Detailed
+                    Course</a> for the kernel side of sockets and interrupts, and the
+                <a href="../networking-courses.html">Networking catalog</a> for everything in this topic.
+            </p>
+
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Computer Networking</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="networking-study.js"></script>
+</body>
+
+</html>

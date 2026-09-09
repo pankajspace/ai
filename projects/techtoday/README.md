@@ -144,7 +144,7 @@ projects/techtoday/
     ├── dsa/                     ← crash course + detailed course
     ├── git/                     ← crash course + detailed course
     ├── javascript/              ← crash course + detailed course
-    ├── networking/              ← crash course + full course
+    ├── networking/              ← crash course + detailed course
     ├── os/                      ← crash course + detailed course
     └── python/                  ← crash course + full course
 ```

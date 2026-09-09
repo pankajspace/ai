@@ -42,6 +42,10 @@
 1. [OS Crash Course](projects/techtoday/study/os/os-crash-course.html)
 2. [OS Detailed Course](projects/techtoday/study/os/os-detailed-course.html)
 
+## Networking
+1. [Networking Crash Course](projects/techtoday/study/networking/networking-crash-course.html)
+2. [Networking Detailed Course](projects/techtoday/study/networking/networking-detailed-course.html)
+
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
