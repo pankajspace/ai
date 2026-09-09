@@ -136,7 +136,7 @@ projects/techtoday/
     ├── dsa-courses.html         ← Data Structures & Algorithms catalog (2 course cards)
     ├── git-guides.html          ← Git Version Control catalog (2 course cards)
     ├── networking-courses.html  ← Computer Networking catalog (2 course cards)
-    ├── os-courses.html          ← Operating Systems & Linux catalog (4 course cards)
+    ├── os-courses.html          ← Operating Systems catalog (2 course cards)
     ├── programming-languages.html ← Programming Languages catalog (4 course cards)
     ├── ai/                      ← LLM, RAG, Docker, Strands guides
     ├── aws/                     ← AWS crash course & detailed architecture
@@ -145,7 +145,7 @@ projects/techtoday/
     ├── git/                     ← crash course + detailed course
     ├── javascript/              ← crash course + detailed course
     ├── networking/              ← crash course + full course
-    ├── os/                      ← crash course + full course
+    ├── os/                      ← crash course + detailed course
     └── python/                  ← crash course + full course
 ```
 

@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Operating Systems Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in operating systems — processes, threads, scheduling, virtual memory, locks, deadlock, file systems and I/O, each explained with a mental model, an animation, and code in Python and C." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="os-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../os-courses.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to OS
+                Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="os-crash-course">Operating Systems<a class="headerlink" href="#os-crash-course"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">An operating system is the program that lies to every other program — and the lies are so
+                consistent that we call them abstractions. This page takes the dozen ideas you actually meet at work,
+                gives each one a picture you already have in your head, and then shows the machinery underneath. Press
+                <strong>Play</strong> on any animation to watch the idea move.
+            </p>
+
+            <div class="callout callout-key">
+                <p>The whole subject answers one question: <strong>how do you let many untrusting programs share one
+                        machine, without any of them noticing, breaking each other, or bringing the machine
+                        down?</strong>
+                    Every mechanism below — processes, virtual memory, scheduling, file systems — is one answer, and
+                    every one costs something. There is no free abstraction; there is only a bill you are willing to
+                    pay.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#0-what-an-os-actually-does">What an OS Actually Does</a></li>
+                <li><a href="#1-processes">Processes</a></li>
+                <li><a href="#2-threads">Threads</a></li>
+                <li><a href="#3-cpu-scheduling">CPU Scheduling</a></li>
+                <li><a href="#4-the-address-space">The Address Space</a></li>
+                <li><a href="#5-virtual-memory">Virtual Memory &amp; Paging</a></li>
+                <li><a href="#6-the-memory-hierarchy">The Memory Hierarchy</a></li>
+                <li><a href="#7-synchronisation">Synchronisation</a></li>
+                <li><a href="#8-deadlock">Deadlock</a></li>
+                <li><a href="#9-talking-between-processes">Talking Between Processes</a></li>
+                <li><a href="#10-files-and-file-systems">Files &amp; File Systems</a></li>
+                <li><a href="#11-io-and-interrupts">I/O &amp; Interrupts</a></li>
+                <li><a href="#12-vms-and-containers">Virtual Machines &amp; Containers</a></li>
+                <li><a href="#13-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+            </ol>
+
+            <!-- ============================================================ 0 -->
+            <h2 id="0-what-an-os-actually-does">What an OS Actually Does<a class="headerlink"
+                    href="#0-what-an-os-actually-does" title="Permanent link">#</a></h2>
+
+            <p>Before anything else you need one idea: <strong>the CPU has two modes, and the boundary between them is
+                    the entire operating system</strong>. In <em>user mode</em> your program can do arithmetic, call
+                functions and touch its own memory. It cannot talk to a disk, map memory, or look at another process.
+                In <em>kernel mode</em> everything is permitted. Your program crosses that boundary thousands of times
+                a second, and every crossing is called a <strong>system call</strong>.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏦</span>
+                <div class="analogy-body">
+                    <b>Picture it — the bank counter</b>
+                    <p>You cannot walk into the vault. You fill in a slip, slide it under the glass, and a teller who
+                        <em>is</em> allowed in does the work and slides the result back. You never touch the money
+                        directly, you cannot see anyone else's account, and the teller checks every slip before acting
+                        on it. Your program is the customer; the kernel is the teller; the syscall is the slip.
+                    </p>
+                </div>
+            </div>
+
+            <p>Two facts follow immediately. First, the kernel is not "always running" — it is a library of handlers
+                that runs <em>on your thread's time</em> when you call it, or on an interrupt when hardware demands it.
+                Second, a program cannot choose where it lands inside the kernel: the <code>syscall</code> instruction
+                jumps to an address the kernel registered at boot. That single restriction is the whole security
+                model.</p>
+
+            <div class="viz" data-viz="syscall"></div>
+
+            <ul class="meta-strip">
+                <li><b>Syscall round trip</b> <code class="big-o o-good">~1–2 µs</code></li>
+                <li><b>Ordinary function call</b> <code class="big-o o-great">~1 ns</code></li>
+                <li><b>Context switch</b> <code class="big-o o-ok">~1–5 µs</code></li>
+                <li><b>Page fault from SSD</b> <code class="big-o o-bad">~100 µs</code></li>
+            </ul>
+
+            <p>Look at those numbers together and most performance advice you have ever read becomes obvious. A syscall
+                is a thousand function calls. That is why buffered I/O exists, why <code>io_uring</code> exists, why
+                logging line-by-line to a file is slow, and why a chatty microservice is slower than a monolith doing
+                the same work.</p>
+
+            <h3 id="what-the-kernel-gives-you">The four abstractions<a class="headerlink"
+                    href="#what-the-kernel-gives-you" title="Permanent link">#</a></h3>
+
+            <p>Everything in this course is one of four illusions, each hiding one scarce physical resource:</p>
+
+            <ul class="card-grid">
+                <li><b>The process</b>Hides the fact that there are only a handful of CPUs. Your program believes it
+                    has one all to itself.</li>
+                <li><b>The address space</b>Hides physical memory. Your program believes it owns a private, contiguous
+                    range of addresses starting near zero.</li>
+                <li><b>The file</b>Hides the disk — and the network, the terminal, the mouse. Everything becomes a
+                    stream of bytes you can <code>read</code> and <code>write</code>.</li>
+                <li><b>The thread</b>Hides waiting. Blocking on I/O stops one thread, not the machine.</li>
+            </ul>
+
+            <div class="callout callout-tip">
+                <p>When you get stuck on an OS question, ask <em>which illusion is leaking?</em> A slow program is
+                    usually the CPU illusion leaking (you are queued behind others) or the memory illusion leaking (you
+                    are faulting to disk). A wrong answer under load is usually the thread illusion leaking (two
+                    threads met on one variable).</p>
+            </div>
+
+            <h3 id="how-the-machine-gets-here">How the machine gets into this state<a class="headerlink"
+                    href="#how-the-machine-gets-here" title="Permanent link">#</a></h3>
+
+            <p>None of the above exists when you press the power button. The CPU starts in a primitive mode with no
+                paging, no protection and no notion of a file. Boot is a relay race in which each stage loads something
+                more capable than itself and then steps aside.</p>
+
+            <div class="viz" data-viz="boot-sequence"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>PID 1 is special.</strong> The kernel starts exactly one user process and everything else on
+                    the machine descends from it by <code>fork()</code>. If PID 1 exits, the kernel panics. This is why
+                    a container whose main process crashes takes the container with it — inside the container, your
+                    process <em>is</em> PID 1.</p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-1">Unit 1 — Running Programs<a class="headerlink" href="#unit-1" title="Permanent link">#</a>
+            </h2>
+            <p>The first illusion: that your program has a CPU to itself. Three ideas build it — the process, the
+                thread, and the scheduler that shuffles them.</p>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-processes">Processes<a class="headerlink" href="#1-processes" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Create (fork)</b> <code class="big-o o-ok">~50–500 µs</code></li>
+                <li><b>Isolation</b> <code class="big-o o-great">total</code></li>
+                <li><b>Communication</b> <code class="big-o o-bad">needs the kernel</code></li>
+            </ul>
+
+            <p>A <strong>program</strong> is a file on disk: dead bytes. A <strong>process</strong> is that program in
+                motion — code plus its memory, its open files, its registers, its place in the queue. The same program
+                run twice is two processes that share nothing.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍰</span>
+                <div class="analogy-body">
+                    <b>Picture it — a recipe and a kitchen</b>
+                    <p>The recipe is the program. Baking it is the process: you have your own bowl, your own oven
+                        shelf, your own half-mixed batter, and your own place in the sequence of steps. Two people
+                        baking the same recipe are two processes. Neither can knock over the other's bowl, and each
+                        must be told where they are up to if they leave the kitchen and come back.</p>
+                </div>
+            </div>
+
+            <p>The kernel tracks all of that in one structure, the <strong>process control block</strong> (on Linux,
+                <code>task_struct</code>): PID, state, registers, page-table pointer, file descriptor table, parent,
+                credentials, accounting. When people say "the kernel switched processes", they mean it saved one of
+                these and loaded another.
+            </p>
+
+            <h4 id="the-five-states">The five states<a class="headerlink" href="#the-five-states"
+                    title="Permanent link">#</a></h4>
+
+            <p>At any instant a process is in exactly one state, and almost all of your intuition about performance
+                comes from knowing which one.</p>
+
+            <div class="viz" data-viz="process-states"></div>
+
+            <div class="callout callout-key">
+                <p>Only two arrows in that diagram are the scheduler's <em>choice</em>: dispatch (ready → running) and
+                    preempt (running → ready). Every other transition is forced — by the program calling something
+                    blocking, or by hardware finishing something. When you tune a system you are almost always tuning
+                    how long processes sit in <strong>ready</strong>, or why they are sitting in
+                    <strong>waiting</strong>.
+                </p>
+            </div>
+
+            <h4 id="how-processes-are-born">How processes are born<a class="headerlink" href="#how-processes-are-born"
+                    title="Permanent link">#</a></h4>
+
+            <p>Unix does something that looks bizarre until you see the reason: creating a process and running a
+                program are <em>two separate calls</em>. <code>fork()</code> duplicates the caller. <code>exec()</code>
+                throws the current program away and loads a new one in its place. Every shell command you have ever
+                typed is <code>fork</code>, then <code>exec</code>, then <code>wait</code>.</p>
+
+            <div class="viz" data-viz="fork-exec"></div>
+
+            <p>The gap between the two calls is the payoff. In that window the child is still the parent's code, so it
+                can rearrange the world its new program will wake up in — redirect <code>stdout</code>, close
+                descriptors, drop privileges, enter a namespace — and the new program needs to know nothing about it.
+                That is how shell redirection, pipes and containers are all built out of the same two calls.</p>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">What does this program print, and how many times?</p>
+                <p>The trap is that <code>fork()</code> returns twice: once in the parent with the child's PID, once in
+                    the child with <code>0</code>. Both halves continue from the same line, so everything after the
+                    call runs in duplicate unless you branch on the return value.</p>
+
+                <div class="code-tabs" data-label="fork, exec and wait">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import os, sys
+
+pid = os.fork()          # returns TWICE - once per process
+
+if pid == 0:
+    # child: replace this program entirely
+    os.execvp("ls", ["ls", "-l"])
+    sys.exit(1)          # only reached if exec failed
+else:
+    # parent: block until that specific child finishes
+    _, status = os.waitpid(pid, 0)
+    print("child exited with", os.WEXITSTATUS(status))
+
+# Anything printed BEFORE the fork and buffered will appear twice,
+# because the buffer itself was duplicated. Flush before forking.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="c">
+                        <pre><code data-lang="c">
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/wait.h&gt;
+
+int main(void) {
+    fflush(stdout);              /* or the buffer gets duplicated */
+    pid_t pid = fork();
+
+    if (pid &lt; 0) {               /* out of PIDs or memory */
+        perror("fork");
+        return 1;
+    }
+    if (pid == 0) {              /* child */
+        execlp("ls", "ls", "-l", NULL);
+        perror("exec");          /* exec only returns on failure */
+        _exit(1);
+    }
+    int status;
+    waitpid(pid, &amp;status, 0);    /* reap it, or it stays a zombie */
+    printf("child exited with %d\n", WEXITSTATUS(status));
+    return 0;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Two classic bugs live in that snippet.</strong> First, <code>printf</code> before
+                    <code>fork</code> without flushing duplicates the buffered text — the buffer is process memory and
+                    gets copied. Second, forgetting <code>wait</code> leaves a <strong>zombie</strong>: the process is
+                    dead but its exit status keeps a slot in the process table. A long-running parent that never reaps
+                    eventually exhausts the PID space.
+                </p>
+            </div>
+
+            <div class="callout callout-interview">
+                <p><strong>"Isn't copying the whole address space on <code>fork</code> ruinously expensive?"</strong>
+                    It would be, so it does not happen. <code>fork</code> copies the page <em>table</em> and marks every
+                    page read-only in both processes; the first write to a page traps and copies just that page. A
+                    <code>fork</code> of a 4 GB Redis costs kilobytes. You will meet the mechanism in §5.
+                </p>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-threads">Threads<a class="headerlink" href="#2-threads" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Create</b> <code class="big-o o-good">~10–30 µs</code></li>
+                <li><b>Stack cost</b> <code class="big-o o-good">8 MB virtual, ~8 KB real</code></li>
+                <li><b>Isolation</b> <code class="big-o o-bad">none</code></li>
+            </ul>
+
+            <p>A process bundles two unrelated things: a container of resources, and a thing that executes. Threads
+                split them. Several threads share one address space, one file table, one set of permissions — but each
+                has its own stack, registers and program counter.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">👩‍🍳</span>
+                <div class="analogy-body">
+                    <b>Picture it — three cooks, one kitchen</b>
+                    <p>Same worktop, same fridge, same pans. Each cook has their own hands and their own place in their
+                        own recipe. They finish faster than one cook could — right up until two of them reach for the
+                        same knife, or one salts a pot the other already salted. Everything good and everything
+                        terrifying about threads is in that sentence.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="threads"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — cheap and instant sharing</b>Passing a megabyte between threads costs
+                    a pointer. Between processes it costs a copy through the kernel.</li>
+                <li class="is-bad"><b>Weakness — no protection</b>One wild pointer in one thread corrupts the others
+                    and kills the whole process. Processes fail alone; threads fail together.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">Two threads each increment a shared counter a hundred thousand times. What is the
+                    final value?</p>
+                <p>Almost never 200,000. <code>counter += 1</code> is not one instruction — it is load, add, store, and
+                    a thread can be preempted between any two of them. Both threads read the same old value, both add
+                    one, both write the same new value, and one increment vanishes.</p>
+
+                <div class="code-tabs" data-label="The race, and the fix">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import threading
+
+counter = 0
+lock = threading.Lock()
+
+def bump_racy():
+    global counter
+    for _ in range(100_000):
+        counter += 1              # load, add, store - three chances to be preempted
+
+def bump_safe():
+    global counter
+    for _ in range(100_000):
+        with lock:                # the three steps become indivisible
+            counter += 1
+
+threads = [threading.Thread(target=bump_safe) for _ in range(2)]
+for t in threads: t.start()
+for t in threads: t.join()
+print(counter)                    # 200000, every time
+
+# Note: CPython's GIL makes the racy version *usually* correct, which is
+# worse than always wrong - the bug survives your tests and appears in prod.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="c">
+                        <pre><code data-lang="c">
+#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+
+static long counter = 0;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+static void *bump(void *arg) {
+    for (int i = 0; i &lt; 100000; i++) {
+        pthread_mutex_lock(&amp;lock);
+        counter++;                    /* critical section: keep it tiny */
+        pthread_mutex_unlock(&amp;lock);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t a, b;
+    pthread_create(&amp;a, NULL, bump, NULL);
+    pthread_create(&amp;b, NULL, bump, NULL);
+    pthread_join(a, NULL);
+    pthread_join(b, NULL);
+    printf("%ld\n", counter);         /* 200000 */
+    return 0;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Threads are not a way to make slow code fast.</strong> They help when the work is genuinely
+                    parallel (multiple cores, CPU-bound) or genuinely blocking (waiting on I/O). They do not help a
+                    single-core, single-dependency chain, and they never help an algorithm that is <code>O(n²)</code>
+                    when it could be <code>O(n log n)</code>. Fix the algorithm first; concurrency multiplies constant
+                    factors, not complexity classes.</p>
+            </div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-cpu-scheduling">CPU Scheduling<a class="headerlink" href="#3-cpu-scheduling"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Linux time slice</b> <code class="big-o o-good">~1–10 ms</code></li>
+                <li><b>Switch cost</b> <code class="big-o o-ok">~1–5 µs</code></li>
+                <li><b>Cache re-warm</b> <code class="big-o o-bad">often 10× the switch</code></li>
+            </ul>
+
+            <p>There are more runnable things than cores, so somebody must choose. The scheduler runs whenever a
+                process blocks, exits, wakes, or has held the CPU too long, and answers one question: <em>who
+                    next?</em></p>
+
+            <div class="analogy">
+                <span class="analogy-icon">☕</span>
+                <div class="analogy-body">
+                    <b>Picture it — one barista, a queue, and a rule</b>
+                    <p>Serve strictly in arrival order and the person ordering forty coffees blocks everyone behind
+                        them. Serve the quickest order first and the average wait drops — but the big order may never
+                        be served at all. Give everyone thirty seconds and pass the rest on, and nobody is stuck, but
+                        every switch costs you a moment of fumbling. Those three rules are FCFS, SJF and round robin,
+                        and the fumbling is the context switch.</p>
+                </div>
+            </div>
+
+            <p>Change the picker and nothing else, and the same four jobs finish in a completely different order with
+                completely different average waits. Try each policy below.</p>
+
+            <div class="viz" data-viz="scheduling"></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Policy</th>
+                        <th>Picks</th>
+                        <th>Good at</th>
+                        <th>Fails when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>FCFS</td>
+                        <td>whoever arrived first</td>
+                        <td>batch work, no starvation</td>
+                        <td>one long job blocks everyone — the <em>convoy effect</em></td>
+                    </tr>
+                    <tr>
+                        <td>SJF / SRTF</td>
+                        <td>the shortest remaining burst</td>
+                        <td>provably the best average wait</td>
+                        <td>you cannot know burst lengths; long jobs starve</td>
+                    </tr>
+                    <tr>
+                        <td>Round robin</td>
+                        <td>next in the queue, for one quantum</td>
+                        <td>interactivity — everyone runs soon</td>
+                        <td>quantum too small: all switching, no work</td>
+                    </tr>
+                    <tr>
+                        <td>Priority</td>
+                        <td>the most important arrived job</td>
+                        <td>real-time and latency-critical work</td>
+                        <td>starvation, unless you add ageing</td>
+                    </tr>
+                    <tr>
+                        <td>MLFQ / CFS</td>
+                        <td>whoever is furthest behind their fair share</td>
+                        <td>mixed real workloads with no hints</td>
+                        <td>needs tuning; can be gamed by yielding early</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Real systems do not use any of the textbook four directly. Linux's CFS — and its successor EEVDF —
+                tracks how much CPU time each task has received relative to its weight and always runs the one that has
+                fallen furthest behind. There is no fixed quantum: the slice shrinks as the number of runnable tasks
+                grows, so latency stays bounded.</p>
+
+            <h4 id="what-a-switch-costs">What a switch actually costs<a class="headerlink" href="#what-a-switch-costs"
+                    title="Permanent link">#</a></h4>
+
+            <div class="viz" data-viz="context-switch"></div>
+
+            <div class="callout callout-key">
+                <p>The register copy is the cheap half. The expensive half is invisible: the incoming process starts
+                    with the outgoing one's data still in L1, L2 and the TLB, and stalls on cache misses for thousands
+                    of cycles. This is why pinning threads to cores helps, why a thread pool sized to core count beats
+                    ten thousand threads, and why "just add more threads" eventually makes things slower.</p>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">Your service's p99 latency is terrible but every CPU sits at 40%. Where is the
+                    time going?</p>
+                <p>Idle CPU with bad latency means your requests are not waiting for the CPU — they are in
+                    <strong>waiting</strong>, not <strong>ready</strong>. Something blocking is in the path: a
+                    synchronous disk write, a downstream call, a lock held across I/O, or a connection pool with fewer
+                    slots than concurrent requests. The scheduler is not your problem; find the blocking call.
+                </p>
+
+                <div class="code-tabs" data-label="Looking at it on Linux">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# What state is each thread in?  R = running/ready, S = sleeping,
+# D = uninterruptible sleep (almost always disk), Z = zombie.
+ps -eLo pid,tid,stat,pcpu,wchan:24,comm | head -30
+
+# Run-queue length. If 'r' is much larger than the core count you are
+# CPU-starved; if 'b' is high you are blocked on I/O instead.
+vmstat 1 5
+
+# Involuntary switches = preemptions. A huge number means too many
+# runnable threads for the cores you have.
+pidstat -w -p &lt;pid&gt; 1 5
+
+# Which syscall is a stuck thread sitting in?
+strace -p &lt;pid&gt; -c -f
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-2">Unit 2 — Memory<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
+            <p>The second illusion: that your program owns a private, contiguous, enormous block of memory. It owns
+                none of those things.</p>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-the-address-space">The Address Space<a class="headerlink" href="#4-the-address-space"
+                    title="Permanent link">#</a></h3>
+
+            <p>Every process sees the same layout: code at the bottom, then initialised data, then a heap that grows
+                upward, then a huge gap, then a stack that grows downward from the top. Two processes can both hold a
+                pointer to <code>0x400000</code> and be looking at entirely different bytes.</p>
+
+            <div class="ascii">high addresses
+                ┌────────────────────────┐
+                │ kernel (not yours) │ ← same in every process, unreachable in user mode
+                ├────────────────────────┤
+                │ stack ↓ │ ← locals, return addresses; grows down
+                │ │
+                │ (unmapped gap) │ ← touch this and you get SIGSEGV
+                │ │
+                │ heap ↑ │ ← malloc / new; grows up
+                ├────────────────────────┤
+                │ .bss (zeroed globals) │
+                │ .data (initialised) │
+                │ .text (your code) │ ← read-only and executable
+                └────────────────────────┘
+                low addresses (0x0 deliberately unmapped, so *NULL faults)</div>
+
+            <p>Why not just hand each process a real, contiguous slab of physical RAM? People tried. The result is
+                <strong>external fragmentation</strong>: free memory exists but in the wrong shape.
+            </p>
+
+            <div class="viz" data-viz="fragmentation"></div>
+
+            <div class="callout callout-key">
+                <p>The final frame is the pivotal idea of the whole unit. Instead of making memory fit the request,
+                    <strong>chop everything into fixed-size pages and stop requiring contiguity</strong>. External
+                    fragmentation then cannot happen, because every hole is exactly the size of every request.
+                </p>
+            </div>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-virtual-memory">Virtual Memory &amp; Paging<a class="headerlink" href="#5-virtual-memory"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Page size</b> <code class="big-o o-good">4 KB</code></li>
+                <li><b>TLB hit</b> <code class="big-o o-great">~1 cycle</code></li>
+                <li><b>TLB miss (page walk)</b> <code class="big-o o-ok">~100 cycles</code></li>
+                <li><b>Fault to SSD</b> <code class="big-o o-bad">~100 µs</code></li>
+            </ul>
+
+            <p>Every address your program uses is <strong>virtual</strong>. Hardware — the memory management unit —
+                translates it on every single access, using a per-process table the kernel maintains. This one
+                indirection buys isolation, relocation, sharing, swapping and lazy allocation all at once.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏨</span>
+                <div class="analogy-body">
+                    <b>Picture it — hotel room numbers</b>
+                    <p>Every guest is told they are in room 1, 2, 3. The front desk keeps a private map from each
+                        guest's numbering to the actual doors, which are scattered across four floors. Guests never
+                        collide, the hotel can move you overnight without telling you, and two guests can be shown to
+                        the same room deliberately when they are meant to share. The map is the page table.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="page-translation"></div>
+
+            <p>Note what the animation does <em>not</em> translate: the offset. Because pages are <code>2¹²</code>
+                bytes, the low 12 bits pass straight through and only the top bits are looked up. That is the entire
+                reason page sizes are powers of two.</p>
+
+            <h4 id="the-page-fault">The page fault is a feature<a class="headerlink" href="#the-page-fault"
+                    title="Permanent link">#</a></h4>
+
+            <p>When a page table entry says <code>valid = 0</code>, the hardware traps to the kernel. Beginners read
+                that as an error; it is in fact the hook that makes most of the system work:</p>
+
+            <ul class="card-grid">
+                <li><b>Lazy allocation</b><code>malloc</code> of 1 GB touches no physical memory. Pages appear on first
+                    write.</li>
+                <li><b>Demand paging</b>An executable is mapped, not loaded. Its pages arrive from disk as they are
+                    first executed.</li>
+                <li><b>Copy-on-write</b>Shared pages are marked read-only; the first write makes a private copy.</li>
+                <li><b>Swapping</b>A cold page is written to disk and its entry invalidated. Touching it brings it
+                    back.</li>
+                <li><b>mmap'd files</b>File contents appear as memory. Reads fault the data in; the page cache and
+                    your address space are the same pages.</li>
+                <li class="is-bad"><b>And the error case</b>No mapping at all → <code>SIGSEGV</code>. Same mechanism,
+                    different verdict.</li>
+            </ul>
+
+            <div class="viz" data-viz="copy-on-write"></div>
+
+            <h4 id="choosing-a-victim">When memory runs out, somebody must go<a class="headerlink"
+                    href="#choosing-a-victim" title="Permanent link">#</a></h4>
+
+            <div class="viz" data-viz="page-replacement"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>Thrashing</strong> is what happens when the set of pages processes actively need exceeds
+                    physical memory. Every fault evicts a page that is about to be needed, so the machine spends all
+                    its time paging and almost none computing. The signature is unmistakable: CPU near zero, disk at
+                    100%, load average climbing, everything unresponsive. The only real fixes are fewer processes or
+                    more RAM — you cannot schedule your way out of it.</p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your process shows 12 GB of virtual memory but the machine has 8 GB of RAM and is
+                    not swapping. How?</p>
+                <p>Because virtual size (<code>VSZ</code>) counts <em>reservations</em>, and resident size
+                    (<code>RSS</code>) counts real frames. Allocated-but-untouched pages, memory-mapped files, and
+                    shared libraries counted once per process all inflate <code>VSZ</code>. Only <code>RSS</code>
+                    consumes RAM — and even <code>RSS</code> over-counts, because shared pages are charged to every
+                    process that maps them.</p>
+
+                <div class="code-tabs" data-label="Seeing it yourself">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import mmap, os
+
+# Reserve 4 GiB of address space. This does NOT allocate 4 GiB of RAM -
+# the mapping is anonymous and every page is copy-on-write from a shared
+# zero page until something writes to it.
+region = mmap.mmap(-1, 4 * 1024 ** 3)
+
+def kb(field):
+    for line in open("/proc/self/status"):
+        if line.startswith(field):
+            return line.split()[1]
+
+print("VmSize", kb("VmSize"))     # ~4 GiB - the promise
+print("VmRSS ", kb("VmRSS"))      # a few MB - the reality
+
+region[0] = 1                     # one write -> exactly one page faults in
+print("VmRSS ", kb("VmRSS"))      # up by 4 KB, not 4 GiB
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# VSZ is the promise, RSS is the bill.
+ps -o pid,vsz,rss,comm -p $$
+
+# Every mapping, with its permissions and backing file.
+cat /proc/$$/maps | head
+
+# Per-mapping resident and *private* memory - the number that actually
+# disappears when the process exits.
+grep -E 'Rss|Pss|Private' /proc/$$/smaps_rollup
+
+# Are we faulting from disk?  'majflt/s' above zero means real I/O.
+pidstat -r -p $$ 1 3
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-the-memory-hierarchy">The Memory Hierarchy<a class="headerlink" href="#6-the-memory-hierarchy"
+                    title="Permanent link">#</a></h3>
+
+            <p>The OS spends enormous effort keeping your data near the top of a ladder whose rungs are orders of
+                magnitude apart. Once you have internalised the distances, half of systems performance is obvious.</p>
+
+            <div class="viz" data-viz="memory-hierarchy"></div>
+
+            <div class="callout callout-key">
+                <p>Two properties make caching work at every level, and they are the same two: <strong>temporal
+                        locality</strong> (what you touched, you will touch again) and <strong>spatial locality</strong>
+                    (what is next to it, you will touch next). Iterating an array row-wise is fast and column-wise is
+                    slow for exactly this reason, and it is the same reason the page cache, the TLB, readahead and
+                    branch predictors all exist.</p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-3">Unit 3 — Coordination<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
+            <p>Once two things run at once, correctness stops being about your code and starts being about the
+                interleavings your code allows.</p>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-synchronisation">Synchronisation<a class="headerlink" href="#7-synchronisation"
+                    title="Permanent link">#</a></h3>
+
+            <p>A <strong>race condition</strong> is any situation where the result depends on timing. The cause is
+                almost always the same: an operation that looks atomic in your source is several instructions in the
+                machine, and a thread can be stopped between any two of them.</p>
+
+            <div class="viz" data-viz="race-condition"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚻</span>
+                <div class="analogy-body">
+                    <b>Picture it — the single-occupancy toilet</b>
+                    <p>One room, one lock, one key. You do not negotiate with the queue and you do not check whether
+                        anyone is inside — you try the handle. If it is locked you wait; when the occupant leaves, the
+                        next person gets in. A mutex is that lock, the room is the critical section, and the cardinal
+                        sin is going in and never coming out.</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Primitive</th>
+                        <th>Answers</th>
+                        <th>Use when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Mutex</b></td>
+                        <td>"only one at a time"</td>
+                        <td>protecting shared mutable state; the default choice</td>
+                    </tr>
+                    <tr>
+                        <td><b>Semaphore</b></td>
+                        <td>"at most N at a time"</td>
+                        <td>counting a resource — free buffer slots, connection pool</td>
+                    </tr>
+                    <tr>
+                        <td><b>Condition variable</b></td>
+                        <td>"wait until this becomes true"</td>
+                        <td>a thread must sleep until another changes state</td>
+                    </tr>
+                    <tr>
+                        <td><b>RW lock</b></td>
+                        <td>"many readers or one writer"</td>
+                        <td>reads vastly outnumber writes <em>and</em> sections are long</td>
+                    </tr>
+                    <tr>
+                        <td><b>Atomic</b></td>
+                        <td>"this one word, indivisibly"</td>
+                        <td>counters and flags — no kernel involvement at all</td>
+                    </tr>
+                    <tr>
+                        <td><b>Spinlock</b></td>
+                        <td>"busy-wait, do not sleep"</td>
+                        <td>kernel code holding a lock for nanoseconds on another core</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-tip">
+                <p>A mutex that is contended puts the loser to <em>sleep</em>, which costs a syscall and a context
+                    switch — perhaps 2 µs. A spinlock burns the CPU instead. Spinning wins only when the expected wait
+                    is shorter than the switch, which in user space is almost never. Modern mutexes (futex, on Linux)
+                    spin briefly and then sleep, giving you both.</p>
+            </div>
+
+            <h4 id="the-bounded-buffer">The pattern behind every queue<a class="headerlink" href="#the-bounded-buffer"
+                    title="Permanent link">#</a></h4>
+
+            <p>Producer–consumer over a bounded buffer is the single most reused concurrency shape in software: thread
+                pools, log pipelines, Kafka consumers, socket backlogs, <code>asyncio</code> queues. Two counting
+                semaphores and a mutex do all of it.</p>
+
+            <div class="viz" data-viz="producer-consumer"></div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">Why must the buffer be bounded at all — why not let the producer run free?</p>
+                <p>Because an unbounded queue converts a throughput mismatch into a memory leak. If the producer is
+                    even 1% faster than the consumer, the queue grows without limit until the machine dies — and it
+                    dies <em>far</em> from the actual bug. A bounded buffer turns that into
+                    <strong>back-pressure</strong>:
+                    the producer blocks, the slowdown propagates upstream, and the system degrades instead of
+                    collapsing.</p>
+
+                <div class="code-tabs" data-label="Bounded buffer">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import queue, threading, time
+
+# maxsize is the whole point: put() blocks when the queue is full.
+work = queue.Queue(maxsize=5)
+
+def producer():
+    for i in range(20):
+        work.put(i)              # blocks once 5 items are outstanding
+    for _ in range(2):
+        work.put(None)           # one sentinel per consumer
+
+def consumer():
+    while (item := work.get()) is not None:
+        time.sleep(0.05)         # deliberately slower than the producer
+        print("handled", item)
+
+threads = [threading.Thread(target=producer)] + \
+          [threading.Thread(target=consumer) for _ in range(2)]
+for t in threads: t.start()
+for t in threads: t.join()
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="c">
+                        <pre><code data-lang="c">
+#include &lt;pthread.h&gt;
+#include &lt;semaphore.h&gt;
+
+#define N 5
+static int buf[N];
+static int in = 0, out = 0;
+static sem_t empty, full;                 /* counting: slots and items  */
+static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
+static void *producer(void *arg) {
+    for (int i = 0; i &lt; 20; i++) {
+        sem_wait(&amp;empty);                 /* claim a free slot          */
+        pthread_mutex_lock(&amp;mtx);         /* THEN take the mutex        */
+        buf[in] = i; in = (in + 1) % N;
+        pthread_mutex_unlock(&amp;mtx);
+        sem_post(&amp;full);                  /* announce an item           */
+    }
+    return NULL;
+}
+
+static void *consumer(void *arg) {
+    for (int i = 0; i &lt; 20; i++) {
+        sem_wait(&amp;full);
+        pthread_mutex_lock(&amp;mtx);
+        int v = buf[out]; out = (out + 1) % N;
+        pthread_mutex_unlock(&amp;mtx);
+        sem_post(&amp;empty);
+        (void)v;
+    }
+    return NULL;
+}
+
+int main(void) {
+    sem_init(&amp;empty, 0, N);
+    sem_init(&amp;full, 0, 0);
+    pthread_t p, c;
+    pthread_create(&amp;p, NULL, producer, NULL);
+    pthread_create(&amp;c, NULL, consumer, NULL);
+    pthread_join(p, NULL);
+    pthread_join(c, NULL);
+    return 0;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Swap those two lines and you deadlock.</strong> If the producer takes the mutex
+                    <em>before</em> <code>sem_wait(empty)</code>, then when the buffer is full it falls asleep holding
+                    the mutex — and the consumer, which needs that mutex to drain anything, can never run. Order
+                    matters: always take the counting semaphore first, the mutex second.
+                </p>
+            </div>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-deadlock">Deadlock<a class="headerlink" href="#8-deadlock" title="Permanent link">#</a></h3>
+
+            <p>Deadlock needs four conditions to hold simultaneously. Break any one and it becomes impossible.</p>
+
+            <ol>
+                <li><strong>Mutual exclusion</strong> — the resource cannot be shared.</li>
+                <li><strong>Hold and wait</strong> — a process holds one resource while requesting another.</li>
+                <li><strong>No preemption</strong> — the resource cannot be taken away by force.</li>
+                <li><strong>Circular wait</strong> — a cycle of processes each waiting on the next.</li>
+            </ol>
+
+            <div class="viz" data-viz="deadlock"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚦</span>
+                <div class="analogy-body">
+                    <b>Picture it — gridlock at a four-way junction</b>
+                    <p>Four cars each edge into the box and each now blocks the one that would let them out. Nobody
+                        has crashed, nobody is at fault, and nobody can move. Only three things resolve it: don't enter
+                        the box unless your exit is clear (prevent hold-and-wait), agree a fixed order of precedence
+                        (prevent circular wait), or someone reverses (preemption).</p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Prevention — lock ordering</b>Number every lock; always acquire in increasing
+                    order. Kills circular wait, costs nothing, and is what real code does.</li>
+                <li class="is-good"><b>Prevention — try-lock with backoff</b><code>trylock</code> the second lock;
+                    release everything and retry on failure. Kills hold-and-wait.</li>
+                <li><b>Avoidance — Banker's algorithm</b>Grant a request only if the system stays in a safe state.
+                    Beautiful, and requires knowing every process's maximum need in advance, so effectively unused.</li>
+                <li><b>Detection and recovery</b>Let it happen, find the cycle, kill a victim. This is what databases
+                    do — and why your transaction sometimes returns "deadlock detected, retry".</li>
+                <li class="is-bad"><b>The ostrich algorithm</b>Ignore it. Reboot when it happens. Genuinely the right
+                    call for rare deadlocks in non-critical software, and what general-purpose OSes actually do.</li>
+            </ul>
+
+            <div class="callout callout-interview">
+                <p><strong>"How would you debug a hung service?"</strong> Take a thread dump (<code>jstack</code>,
+                    <code>py-spy dump</code>, <code>gdb thread apply all bt</code>) and look at what each thread is
+                    blocked on. Deadlock shows up instantly as two threads each waiting on a lock the other holds. If
+                    instead every thread waits on the same external call, it is not deadlock — it is a missing timeout,
+                    which is far more common in practice.
+                </p>
+            </div>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-talking-between-processes">Talking Between Processes<a class="headerlink"
+                    href="#9-talking-between-processes" title="Permanent link">#</a></h3>
+
+            <p>Isolation is the point of a process, so any communication has to be deliberate and has to go through the
+                kernel. The mechanisms differ mostly in <em>how many copies</em> the data makes.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mechanism</th>
+                        <th>Shape</th>
+                        <th>Copies</th>
+                        <th>Reach for it when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Pipe</b></td>
+                        <td>byte stream, one direction</td>
+                        <td>2</td>
+                        <td>parent to child; shell pipelines</td>
+                    </tr>
+                    <tr>
+                        <td><b>Named pipe (FIFO)</b></td>
+                        <td>byte stream, via a path</td>
+                        <td>2</td>
+                        <td>unrelated processes on one machine</td>
+                    </tr>
+                    <tr>
+                        <td><b>Unix domain socket</b></td>
+                        <td>stream or datagram, bidirectional</td>
+                        <td>2</td>
+                        <td>the default for local IPC — can pass file descriptors</td>
+                    </tr>
+                    <tr>
+                        <td><b>TCP socket</b></td>
+                        <td>stream over a network</td>
+                        <td>2+</td>
+                        <td>the processes may be on different machines</td>
+                    </tr>
+                    <tr>
+                        <td><b>Shared memory</b></td>
+                        <td>a shared page mapping</td>
+                        <td>0</td>
+                        <td>bulk data, lowest possible latency — you supply the locking</td>
+                    </tr>
+                    <tr>
+                        <td><b>Signal</b></td>
+                        <td>one integer, asynchronous</td>
+                        <td>—</td>
+                        <td>notification only; not for data</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-key">
+                <p><strong>Shared memory is the only zero-copy option, and the only one with no built-in
+                        synchronisation.</strong> Everything else is a queue with a kernel in the middle doing the
+                    ordering for you. That is the trade in one line: pay for copies and get correctness, or take the
+                    speed and own the locking yourself.</p>
+            </div>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">What actually happens when you type <code>ls | wc -l</code>?</p>
+                <p>The shell creates a pipe — a kernel buffer with two descriptors — then forks twice. In each child it
+                    uses <code>dup2</code> to point <code>stdout</code> (or <code>stdin</code>) at the pipe end
+                    <em>before</em> calling <code>exec</code>, so both programs run completely unaware they are in a
+                    pipeline. Closing the unused ends matters: <code>wc</code> only sees end-of-file when the
+                    <em>last</em> writing descriptor closes, so a forgotten copy in the parent hangs the pipeline
+                    forever.
+                </p>
+
+                <div class="code-tabs" data-label="Building a pipeline by hand">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import os
+
+r, w = os.pipe()                  # r and w are plain file descriptors
+
+if os.fork() == 0:                # child 1: becomes `ls`
+    os.close(r)                   # it never reads
+    os.dup2(w, 1)                 # its stdout IS the pipe now
+    os.close(w)
+    os.execvp("ls", ["ls"])
+
+if os.fork() == 0:                # child 2: becomes `wc -l`
+    os.close(w)                   # it never writes
+    os.dup2(r, 0)                 # its stdin IS the pipe
+    os.close(r)
+    os.execvp("wc", ["wc", "-l"])
+
+os.close(r); os.close(w)          # ESSENTIAL: while the parent still holds
+os.wait(); os.wait()              # the write end, wc never sees EOF
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# The same thing, with the shell doing the work.
+ls | wc -l
+
+# Watch the descriptors the shell set up for a running pipeline:
+ls /proc/$$/fd -l
+
+# A pipe is a fixed-size kernel buffer (64 KB by default). Fill it
+# without a reader and the writer blocks - that is back-pressure again.
+yes | head -1   # head exits, yes gets SIGPIPE, the pipeline ends cleanly
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-4">Unit 4 — The Outside World<a class="headerlink" href="#unit-4" title="Permanent link">#</a>
+            </h2>
+            <p>Everything so far happened inside the machine. Now the parts that touch storage, devices and other
+                machines — all of them, in Unix, pretending to be files.</p>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-files-and-file-systems">Files &amp; File Systems<a class="headerlink"
+                    href="#10-files-and-file-systems" title="Permanent link">#</a></h3>
+
+            <p>A file is the OS's second great lie: a named, arbitrarily long, byte-addressable stream, built on a
+                device that only understands fixed-size blocks at fixed addresses. The structure that maintains the
+                fiction is the <strong>inode</strong>.</p>
+
+            <div class="viz" data-viz="inode"></div>
+
+            <div class="callout callout-key">
+                <p>The inode holds everything about a file <em>except its name</em>. A directory is simply a file whose
+                    contents are (name → inode number) pairs. That one design decision explains hard links (two names,
+                    one inode, one link count), why renaming within a file system is instant regardless of file size,
+                    and why deleting an open file frees nothing until the last descriptor closes.</p>
+            </div>
+
+            <h4 id="the-descriptor-chain">What a file descriptor really is<a class="headerlink"
+                    href="#the-descriptor-chain" title="Permanent link">#</a></h4>
+
+            <div class="ascii">your process the kernel the file system
+                ┌───────────┐ ┌──────────────────┐ ┌────────────┐
+                │ fd 0 ─────┼──────▶│ open file entry │──────▶│ inode 8421 │
+                │ fd 1 ─────┼──────▶│ offset, flags │ │ size, mode │
+                │ fd 3 ─────┼──┐ └──────────────────┘ │ blocks[] │
+                └───────────┘ │ ▲ └────────────┘
+                │ │ ▲
+                └────────────────────┘ (dup2 shares this) │
+                (a second open() makes a new entry pointing here)</div>
+
+            <p>Three levels, and each one explains a behaviour. <code>dup2</code> makes two descriptors share an
+                <em>open file entry</em>, so they share the offset — that is why <code>ls &gt; f</code> and
+                <code>echo &gt;&gt; f</code> behave differently. Two separate <code>open()</code> calls make two
+                entries with independent offsets pointing at the same inode. And the inode's link count is what
+                actually decides when the blocks are freed.
+            </p>
+
+            <ul class="card-grid">
+                <li><b>The page cache is not optional</b>Ordinary reads and writes go through RAM. A "write" returns
+                    once the data is in a dirty page, not once it is on the disk.</li>
+                <li class="is-bad"><b>Which is why <code>fsync</code> exists</b>Until <code>fsync</code> returns, a
+                    power cut loses your data. Databases call it constantly and it dominates their write latency.</li>
+                <li><b>Journalling</b>Write your intent to a log first, then do the work. After a crash, replay the
+                    log. This is why <code>ext4</code> mounts in seconds instead of running <code>fsck</code>.</li>
+                <li><b>Everything is a file</b><code>/proc</code>, <code>/sys</code>, pipes, sockets, devices — all
+                    reachable through <code>open</code>/<code>read</code>/<code>write</code>/<code>close</code>. One
+                    interface, dozens of implementations.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">You delete a 40 GB log file with <code>rm</code>, but <code>df</code> still shows
+                    the disk full. Why, and what do you do?</p>
+                <p>Because <code>rm</code> removes a <em>name</em>, not a file. The inode's link count drops to zero,
+                    but a process still holds an open descriptor, so the kernel keeps the blocks alive until that
+                    descriptor closes. Restart or signal the holder — or, if you cannot, truncate the file through
+                    <code>/proc/&lt;pid&gt;/fd/&lt;n&gt;</code> to reclaim the space immediately.
+                </p>
+
+                <div class="code-tabs" data-label="Finding the culprit">
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# Files that are deleted but still open - the classic "df and du disagree".
+lsof +L1
+
+# Or, straight from the process:
+ls -l /proc/1234/fd | grep deleted
+
+# Reclaim the space without restarting the process:
+: &gt; /proc/1234/fd/7
+
+# Proof that names are cheap and inodes are the real file:
+echo hello &gt; a; ln a b        # one inode, two names
+stat -c '%h %i %n' a b        # same inode number, link count 2
+rm a; cat b                   # still there - link count is now 1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-io-and-interrupts">I/O &amp; Interrupts<a class="headerlink" href="#11-io-and-interrupts"
+                    title="Permanent link">#</a></h3>
+
+            <p>Devices are thousands to millions of times slower than the CPU, so the OS never waits for them by
+                asking. It asks the device to speak up when it is ready. That is an <strong>interrupt</strong>: the
+                hardware's way of calling a function inside the kernel.</p>
+
+            <div class="viz" data-viz="interrupt"></div>
+
+            <div class="callout callout-tip">
+                <p>Interrupt handlers run with interrupts disabled on that core, so they must be short. Linux splits
+                    them in two: a <em>top half</em> that acknowledges the device and queues work, and a <em>bottom
+                        half</em> (softirq, tasklet or kernel thread) that does the real processing later with
+                    interrupts enabled. When a NIC delivers millions of packets a second, even this is too expensive —
+                    so the driver switches to <strong>polling</strong> (NAPI) under load, which is the one case where
+                    busy-waiting wins.</p>
+            </div>
+
+            <p>Above the interrupt sits scheduling of the requests themselves. On a spinning disk the arm movement
+                dominates everything, so the order you serve requests in changes throughput by a factor of three.</p>
+
+            <div class="viz" data-viz="disk-scheduling"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>None of that applies to an SSD.</strong> There is no arm, so "seek distance" is meaningless
+                    and reordering buys nothing but latency. The correct I/O scheduler for NVMe on Linux is usually
+                    <code>none</code>. Carrying spinning-disk intuition onto flash is one of the most common sources of
+                    confidently wrong performance advice.
+                </p>
+            </div>
+
+            <h4 id="blocking-vs-async">Blocking, non-blocking, and the event loop<a class="headerlink"
+                    href="#blocking-vs-async" title="Permanent link">#</a></h4>
+
+            <ul class="card-grid">
+                <li><b>Blocking</b>One thread per connection. Simple, and the thread sleeps for free — but 10,000
+                    connections means 10,000 stacks and a scheduler full of them.</li>
+                <li><b>Non-blocking + readiness</b><code>epoll</code>/<code>kqueue</code>: ask the kernel "which of
+                    these 10,000 descriptors can move now?", then do only that work. One thread, one core, enormous
+                    concurrency.</li>
+                <li><b>Completion-based</b><code>io_uring</code>/IOCP: submit the operation, get told when it is
+                    <em>done</em>. Fewer syscalls still, because submissions and completions are shared ring buffers.
+                </li>
+                <li class="is-good"><b>The rule</b>Blocking threads for CPU-bound work, event loops for
+                    connection-bound work. Mixing them — a blocking call inside an event loop — stalls every other
+                    connection on that thread.</li>
+            </ul>
+
+            <!-- ============================================================ 12 -->
+            <h3 id="12-vms-and-containers">Virtual Machines &amp; Containers<a class="headerlink"
+                    href="#12-vms-and-containers" title="Permanent link">#</a></h3>
+
+            <p>The OS virtualises the CPU and memory for processes. Two technologies push the same idea one level
+                further — and they are far less similar than the marketing suggests.</p>
+
+            <figure class="figure">
+                <svg viewBox="0 0 640 260" role="img"
+                    aria-label="Side by side comparison: a virtual machine stack with a hypervisor and two guest kernels, versus a container stack sharing one host kernel">
+                    <text x="160" y="20" class="n-sub">virtual machines</text>
+                    <text x="480" y="20" class="n-sub">containers</text>
+
+                    <rect x="30" y="30" width="120" height="34" rx="6" class="n-cmp" stroke-width="2" />
+                    <text x="90" y="47" class="n-label n-label-dark" style="font-size:12px">app A</text>
+                    <rect x="170" y="30" width="120" height="34" rx="6" class="n-cmp" stroke-width="2" />
+                    <text x="230" y="47" class="n-label n-label-dark" style="font-size:12px">app B</text>
+
+                    <rect x="30" y="72" width="120" height="34" rx="6" class="n-act" stroke-width="2" />
+                    <text x="90" y="89" class="n-label n-label-dark" style="font-size:11px">guest kernel</text>
+                    <rect x="170" y="72" width="120" height="34" rx="6" class="n-act" stroke-width="2" />
+                    <text x="230" y="89" class="n-label n-label-dark" style="font-size:11px">guest kernel</text>
+
+                    <rect x="30" y="114" width="260" height="34" rx="6" class="n-idle" stroke-width="2" />
+                    <text x="160" y="131" class="n-label" style="font-size:12px">hypervisor</text>
+                    <rect x="30" y="156" width="260" height="34" rx="6" class="n-idle" stroke-width="2" />
+                    <text x="160" y="173" class="n-label" style="font-size:12px">host kernel</text>
+                    <rect x="30" y="198" width="260" height="34" rx="6" class="n-idle" stroke-width="2" />
+                    <text x="160" y="215" class="n-label" style="font-size:12px">hardware</text>
+
+                    <rect x="350" y="30" width="120" height="34" rx="6" class="n-cmp" stroke-width="2" />
+                    <text x="410" y="47" class="n-label n-label-dark" style="font-size:12px">app A</text>
+                    <rect x="490" y="30" width="120" height="34" rx="6" class="n-cmp" stroke-width="2" />
+                    <text x="550" y="47" class="n-label n-label-dark" style="font-size:12px">app B</text>
+
+                    <rect x="350" y="72" width="120" height="34" rx="6" class="n-done" stroke-width="2" />
+                    <text x="410" y="89" class="n-label n-label-dark" style="font-size:11px">namespaces</text>
+                    <rect x="490" y="72" width="120" height="34" rx="6" class="n-done" stroke-width="2" />
+                    <text x="550" y="89" class="n-label n-label-dark" style="font-size:11px">namespaces</text>
+
+                    <rect x="350" y="114" width="260" height="76" rx="6" class="n-idle" stroke-width="2" />
+                    <text x="480" y="152" class="n-label" style="font-size:12px">one shared host kernel</text>
+                    <rect x="350" y="198" width="260" height="34" rx="6" class="n-idle" stroke-width="2" />
+                    <text x="480" y="215" class="n-label" style="font-size:12px">hardware</text>
+
+                    <text x="160" y="252" class="n-sub">boots in seconds · isolates completely</text>
+                    <text x="480" y="252" class="n-sub">starts in milliseconds · shares the kernel</text>
+                </svg>
+                <figcaption class="viz-caption">The whole difference is the middle row: a VM brings its own kernel, a
+                    container borrows the host's. Everything else — startup time, memory overhead, blast radius —
+                    follows from that one fact.</figcaption>
+            </figure>
+
+            <p>A container is not a lightweight VM. It is an ordinary Linux process with three kernel features applied
+                to it:</p>
+
+            <ol>
+                <li><strong>Namespaces</strong> — change what the process can <em>see</em>. Separate PID, mount,
+                    network, user, UTS and IPC views. Inside its PID namespace your process is PID 1, which is why it
+                    must handle signals and reap children like an init system.</li>
+                <li><strong>cgroups</strong> — limit what it can <em>use</em>. CPU shares, memory ceiling, I/O
+                    bandwidth. Exceed the memory limit and the kernel OOM-kills your process, which is what an exit
+                    code of 137 means.</li>
+                <li><strong>Union file system</strong> — layered, copy-on-write images. The same paging idea applied to
+                    files: share the read-only layers, copy a file only when written.</li>
+            </ol>
+
+            <div class="callout callout-interview">
+                <p><strong>"Why is a container not a security boundary in the way a VM is?"</strong> Because every
+                    container on a host talks to the <em>same kernel</em>. One kernel vulnerability reachable through a
+                    syscall is a route out of every container on that machine. A VM guest would have to break its
+                    kernel <em>and</em> the hypervisor. This is exactly why <code>gVisor</code>, Kata Containers and
+                    Firecracker microVMs exist — they reinsert a boundary while keeping container ergonomics.</p>
+            </div>
+
+            <hr />
+
+            <!-- ============================================================ 13 -->
+            <h2 id="13-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink"
+                    href="#13-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+
+            <h3 id="the-numbers">The numbers worth memorising<a class="headerlink" href="#the-numbers"
+                    title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>Cost</th>
+                        <th>Which means</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Function call</td>
+                        <td><code class="big-o o-great">~1 ns</code></td>
+                        <td>free; never optimise this first</td>
+                    </tr>
+                    <tr>
+                        <td>L1 cache hit</td>
+                        <td><code class="big-o o-great">~1 ns</code></td>
+                        <td>locality is worth designing for</td>
+                    </tr>
+                    <tr>
+                        <td>Main memory</td>
+                        <td><code class="big-o o-good">~100 ns</code></td>
+                        <td>a cache miss costs 100 instructions</td>
+                    </tr>
+                    <tr>
+                        <td>System call</td>
+                        <td><code class="big-o o-ok">~1–2 µs</code></td>
+                        <td>batch them; buffer your I/O</td>
+                    </tr>
+                    <tr>
+                        <td>Context switch</td>
+                        <td><code class="big-o o-ok">~1–5 µs</code></td>
+                        <td>plus cache damage; size pools to cores</td>
+                    </tr>
+                    <tr>
+                        <td>Mutex, uncontended</td>
+                        <td><code class="big-o o-great">~20 ns</code></td>
+                        <td>locking is cheap; <em>contention</em> is not</td>
+                    </tr>
+                    <tr>
+                        <td>Mutex, contended</td>
+                        <td><code class="big-o o-ok">~2 µs</code></td>
+                        <td>a sleep and a wake — shrink the critical section</td>
+                    </tr>
+                    <tr>
+                        <td>SSD random read</td>
+                        <td><code class="big-o o-bad">~100 µs</code></td>
+                        <td>a page fault to disk is 1000 memory accesses</td>
+                    </tr>
+                    <tr>
+                        <td>Disk seek</td>
+                        <td><code class="big-o o-bad">~10 ms</code></td>
+                        <td>sequential beats random by orders of magnitude</td>
+                    </tr>
+                    <tr>
+                        <td>Cross-region round trip</td>
+                        <td><code class="big-o o-bad">~150 ms</code></td>
+                        <td>no amount of tuning beats fewer round trips</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="the-mechanisms">Every mechanism, one line each<a class="headerlink" href="#the-mechanisms"
+                    title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mechanism</th>
+                        <th>Hides</th>
+                        <th>Trick</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Process</td>
+                        <td>having few CPUs</td>
+                        <td>save and restore state</td>
+                        <td>switch time, memory per process</td>
+                    </tr>
+                    <tr>
+                        <td>Thread</td>
+                        <td>waiting</td>
+                        <td>share everything but the stack</td>
+                        <td>no isolation; races</td>
+                    </tr>
+                    <tr>
+                        <td>Scheduler</td>
+                        <td>the queue</td>
+                        <td>preempt on a timer</td>
+                        <td>switch overhead, cold caches</td>
+                    </tr>
+                    <tr>
+                        <td>Virtual memory</td>
+                        <td>physical RAM</td>
+                        <td>translate every address</td>
+                        <td>TLB misses, page faults</td>
+                    </tr>
+                    <tr>
+                        <td>Demand paging</td>
+                        <td>slow loading</td>
+                        <td>fault the page in on first touch</td>
+                        <td>latency spikes; thrashing</td>
+                    </tr>
+                    <tr>
+                        <td>Copy-on-write</td>
+                        <td>the cost of <code>fork</code></td>
+                        <td>share read-only, copy on write</td>
+                        <td>a fault per first write</td>
+                    </tr>
+                    <tr>
+                        <td>Page cache</td>
+                        <td>disk latency</td>
+                        <td>keep file blocks in RAM</td>
+                        <td>data loss without <code>fsync</code></td>
+                    </tr>
+                    <tr>
+                        <td>File</td>
+                        <td>blocks and devices</td>
+                        <td>inode plus a byte-stream API</td>
+                        <td>indirection, metadata I/O</td>
+                    </tr>
+                    <tr>
+                        <td>Interrupt</td>
+                        <td>slow devices</td>
+                        <td>let hardware call the kernel</td>
+                        <td>storms; handlers must stay short</td>
+                    </tr>
+                    <tr>
+                        <td>Mutex</td>
+                        <td>interleaving</td>
+                        <td>make a section indivisible</td>
+                        <td>contention, deadlock</td>
+                    </tr>
+                    <tr>
+                        <td>Container</td>
+                        <td>the rest of the machine</td>
+                        <td>namespaces plus cgroups</td>
+                        <td>shared kernel, weaker boundary</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="diagnose-anything">Diagnose almost anything in four questions<a class="headerlink"
+                    href="#diagnose-anything" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><strong>Is it running or waiting?</strong> High CPU means you are compute-bound: profile the code.
+                    Low CPU with bad latency means you are blocked: find the syscall.</li>
+                <li><strong>If waiting, on what?</strong> <code>D</code> state is disk. <code>S</code> with a socket in
+                    <code>wchan</code> is the network. A lock shows up in a thread dump.
+                </li>
+                <li><strong>If running, is it doing useful work?</strong> Check <code>majflt</code> (paging),
+                    <code>cs</code> (switching) and cache misses in <code>perf stat</code> before you blame the
+                    algorithm.
+                </li>
+                <li><strong>Is the answer wrong only under load?</strong> Then it is a race, and no amount of reading
+                    the happy path will find it. Look for shared mutable state without a lock.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p>Almost every OS mechanism in this course is one of three moves: <strong>add a level of
+                        indirection</strong>
+                    (page tables, file descriptors, the IDT), <strong>cache the expensive thing</strong> (TLB, page
+                    cache, dentry cache), or <strong>do it lazily</strong> (demand paging, copy-on-write, delayed
+                    allocation). Once you see those three, a mechanism you have never met becomes guessable.</p>
+            </div>
+
+            <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
+            </h3>
+            <ol>
+                <li>📘 The <a href="os-detailed-course.html">Operating Systems Detailed Course</a> — the same ground in
+                    38 sections, from first principles: kernel architectures, the full scheduling family, page-table
+                    structure, classic synchronisation problems, journalling file systems, disk and SSD internals,
+                    security, and a Linux performance-debugging playbook.</li>
+                <li>📚 Browse both guides in the <a href="../os-courses.html">Operating Systems catalog</a>.</li>
+                <li>📖 <a href="https://pages.cs.wisc.edu/~remzi/OSTEP/">Operating Systems: Three Easy Pieces</a> —
+                    free,
+                    complete, and the best OS book written. Read the virtualisation part first.</li>
+                <li>🧪 <a href="https://pdos.csail.mit.edu/6.828/">MIT 6.1810 / xv6</a> — a real Unix kernel small
+                    enough to read in a weekend, with labs that make you implement the things on this page.</li>
+                <li>🔍 <a href="https://www.brendangregg.com/linuxperf.html">Brendan Gregg's Linux performance
+                        material</a> — the tools that turn all of this into evidence rather than opinion.</li>
+            </ol>
+
+            <blockquote>
+                <p><em>"An operating system is a collection of things that don't fit into a language. There shouldn't
+                        be one."</em> — Dan Ingalls. He was wrong, but understanding exactly why is a good test of
+                    whether this page landed.</p>
+            </blockquote>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Operating Systems</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="os-study.js"></script>
+</body>
+
+</html>

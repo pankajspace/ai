@@ -38,6 +38,10 @@
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
 
+## Operating Systems
+1. [OS Crash Course](projects/techtoday/study/os/os-crash-course.html)
+2. [OS Detailed Course](projects/techtoday/study/os/os-detailed-course.html)
+
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
