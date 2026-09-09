@@ -34,6 +34,10 @@
 1. [Python Crash Course](projects/techtoday/study/python/python-crash-course.html)
 2. [Python Detailed Course](projects/techtoday/study/python/python-detailed-course.html)
 
+## JavaScript
+1. [JavaScript Crash Course](projects/techtoday/study/javascript/javascript-crash-course.html)
+2. [JavaScript Detailed Course](projects/techtoday/study/javascript/javascript-detailed-course.html)
+
 ## DSA
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)

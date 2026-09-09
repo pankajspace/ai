@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>JavaScript Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in JavaScript — types and coercion, scope and the temporal dead zone, references, closures, prototypes, the event loop, promises and async/await, modules and the DOM, each explained with a step-by-step animation." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="javascript-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="../programming-languages.html" class="nav-back-link"
+                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to Language
+                Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="javascript-crash-course">JavaScript<a class="headerlink" href="#javascript-crash-course"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">JavaScript is easy to start and famously easy to be confused by, because a handful of its
+                mechanisms — <code>this</code>, closures, coercion, the event loop — are invisible until they bite. This
+                page teaches those mechanisms directly. Each section gives you a mental model, an animation of the
+                machine actually doing the work, and the two or three lines you will type this week. Press
+                <strong>Play</strong> on any animation and step through it; the language tabs let you compare the same
+                idea in JavaScript and Python.
+            </p>
+
+            <div class="callout callout-key">
+                <p>Almost every JavaScript surprise comes from one of <strong>four</strong> mechanisms: values are
+                    compared by <em>reference</em> when they are objects; names are resolved <em>lexically</em>, up the
+                    scope chain; <code>this</code> is decided by the <em>call site</em>, not the definition; and
+                    anything asynchronous runs <em>after</em> the current script finishes, through a queue. Learn those
+                    four and the language stops being surprising.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#0-what-javascript-is">What JavaScript Actually Is</a></li>
+                <li><a href="#1-values-and-types">Values, Types &amp; the Two Equalities</a></li>
+                <li><a href="#2-variables-and-scope">Variables, Scope &amp; the Temporal Dead Zone</a></li>
+                <li><a href="#3-objects-and-references">Objects, Arrays &amp; References</a></li>
+                <li><a href="#4-functions-and-this">Functions, Arrows &amp; <code>this</code></a></li>
+                <li><a href="#5-array-methods">The Array Methods That Replace Loops</a></li>
+                <li><a href="#6-the-call-stack">The Call Stack &amp; the Single Thread</a></li>
+                <li><a href="#7-closures">Closures</a></li>
+                <li><a href="#8-prototypes-and-classes">Prototypes &amp; Classes</a></li>
+                <li><a href="#9-the-event-loop">The Event Loop</a></li>
+                <li><a href="#10-promises-and-async">Promises &amp; async/await</a></li>
+                <li><a href="#11-modules">Modules &amp; the Ecosystem</a></li>
+                <li><a href="#12-the-browser">The Browser — DOM, Events &amp; fetch</a></li>
+                <li><a href="#13-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+            </ol>
+
+            <!-- ============================================================ 0 -->
+            <h2 id="0-what-javascript-is">What JavaScript Actually Is<a class="headerlink" href="#0-what-javascript-is"
+                    title="Permanent link">#</a></h2>
+
+            <p>Before any syntax, one distinction that clears up half the confusion beginners have: <strong>JavaScript
+                    the language is tiny, and almost everything you actually use is not part of it</strong>. The
+                language gives you values, objects, functions, and a rule for when code runs. It has no way to read a
+                file, draw a pixel, open a socket, or even print. Those come from whatever <em>host</em> is running the
+                language.</p>
+
+            <ul class="meta-strip">
+                <li><b>Spec</b> <code class="big-o o-great">ECMAScript</code></li>
+                <li><b>Engine</b> <code class="big-o o-good">V8, SpiderMonkey</code></li>
+                <li><b>Runtime</b> <code class="big-o o-ok">browser, Node</code></li>
+                <li><b>Threads</b> <code class="big-o o-bad">1</code></li>
+            </ul>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎹</span>
+                <div class="analogy-body">
+                    <b>Picture it — an engine, a chassis, a driver</b>
+                    <p>The <b>specification</b> (ECMAScript) is the blueprint: what <code>+</code> means, how
+                        <code>this</code> is resolved, what a promise does. The <b>engine</b> (V8 in Chrome and Node,
+                        SpiderMonkey in Firefox, JavaScriptCore in Safari) is a concrete implementation of that
+                        blueprint — it parses your code, compiles it, and runs it. The <b>runtime</b> is everything
+                        bolted around the engine: in a browser that means the DOM, <code>fetch</code>, timers and the
+                        event loop; in Node it means the filesystem, HTTP servers and processes. Same engine, different
+                        chassis — which is exactly why <code>document</code> is undefined in Node and <code>fs</code> is
+                        undefined in a browser.
+                    </p>
+                </div>
+            </div>
+
+            <p>The second thing worth knowing early: JavaScript is <strong>compiled, not interpreted line by
+                    line</strong>,
+                even though nothing looks compiled. V8 parses your whole file, generates bytecode, starts running it,
+                watches which functions get hot, and then recompiles those to optimised machine code — while making
+                guesses about the types you have been passing. If you later break a guess (a function that always got
+                numbers suddenly gets a string), it throws the optimised version away and starts again. This is why
+                "keep the shape of your objects consistent" is real performance advice and not folklore.</p>
+
+            <div class="ascii"> your source
+                │
+                ▼
+                ┌────────┐ AST ┌───────────┐ bytecode ┌────────────┐
+                │ parser │ ───────▶ │ Ignition │ ─────────▶ │ interpreter│──┐
+                └────────┘ │(bytecode) │ └────────────┘ │
+                └───────────┘ │ hot?
+                ▼
+                ┌───────────────────────────┐
+                │ TurboFan: optimised machine│
+                │ code + type assumptions │
+                └───────────────────────────┘
+                │ assumption broken
+                ▼ (deoptimise)
+                back to bytecode</div>
+
+            <div class="callout callout-tip">
+                <p>Two settings decide how strict the language is with you, and modern code turns both on without you
+                    noticing. <strong>Strict mode</strong> (automatic inside modules and classes) makes silent failures
+                    throw — assigning to an undeclared variable, duplicate parameter names, <code>this</code> defaulting
+                    to the global object. <strong>Module scope</strong> means your top-level <code>const</code> is not a
+                    global. If you are writing a <code>&lt;script type="module"&gt;</code> or a file in a
+                    <code>"type": "module"</code> package, you already have both.
+                </p>
+            </div>
+
+            <h2 id="unit-1">Unit 1 — The Language in Your Hands<a class="headerlink" href="#unit-1"
+                    title="Permanent link">#</a></h2>
+
+            <p>Five sections on the parts you type every day: values and how they compare, where names live, what a
+                variable really holds, how functions bind <code>this</code>, and the array methods that make loops
+                unnecessary. Nothing here is advanced — but each one has a sharp edge that costs people hours.</p>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-values-and-types">Values, Types &amp; the Two Equalities<a class="headerlink"
+                    href="#1-values-and-types" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Primitives</b> <code class="big-o o-great">7</code></li>
+                <li><b>Falsy values</b> <code class="big-o o-good">8</code></li>
+                <li><b>Number type</b> <code class="big-o o-ok">float64 only</code></li>
+                <li><b>Safe integers</b> <code class="big-o o-ok">±2⁵³−1</code></li>
+            </ul>
+
+            <p>JavaScript has exactly seven primitive types — <code>number</code>, <code>string</code>,
+                <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>symbol</code>,
+                <code>bigint</code>
+                — and one non-primitive: <strong>object</strong>. Arrays, functions, dates, regexes, <code>Map</code>,
+                <code>Set</code> and class instances are all objects. That is the whole type system. There is no integer
+                type, no char, no float versus double.
+            </p>
+
+            <p>The consequence that catches everyone: <strong>every number is a 64-bit float</strong>. Integers up to
+                2⁵³−1 are exact, so day-to-day arithmetic is fine, but decimals are not — <code>0.1 + 0.2</code> really
+                is <code>0.30000000000000004</code>, in every language with IEEE-754 doubles. Money belongs in integer
+                cents or a decimal library, never in a float.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📏</span>
+                <div class="analogy-body">
+                    <b>Picture it — a ruler with binary ticks</b>
+                    <p>A float can only land on ticks that are sums of powers of two. <code>0.5</code> and
+                        <code>0.25</code> are ticks; <code>0.1</code> falls between them, so the nearest tick is stored
+                        instead. Add two approximations and the error becomes visible in the last digits. Nothing is
+                        broken — you asked a binary ruler to measure a decimal length.
+                    </p>
+                </div>
+            </div>
+
+            <p>The other daily decision is which equality to use, and it is not a style question — the two operators run
+                genuinely different algorithms. <code>===</code> asks "same type and same value?". <code>==</code> is
+                allowed to <em>convert</em> the operands until the types match, following a specification algorithm
+                nobody memorises. Step through it below and watch <code>[] == false</code> become true through three
+                separate conversions.</p>
+
+            <div class="viz" data-viz="coercion"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — <code>===</code> is predictable</b>One rule, no conversions, no
+                    surprises. Use it everywhere. Linters default to enforcing it precisely because the alternative is
+                    unpredictable.</li>
+                <li class="is-bad"><b>Weakness — <code>==</code> is three algorithms deep</b>The result depends on the
+                    types of both operands and on <code>valueOf</code>/<code>toString</code>. The one accepted use is
+                    <code>x == null</code>, deliberate shorthand for "null or undefined".
+                </li>
+            </ul>
+
+            <p>Related, and just as common: <strong>truthiness</strong>. <code>if (x)</code> does not ask "does
+                <code>x</code> exist?" — it converts <code>x</code> to a boolean. Exactly eight values are falsy
+                (<code>false</code>, <code>0</code>, <code>-0</code>, <code>0n</code>, <code>''</code>,
+                <code>null</code>, <code>undefined</code>, <code>NaN</code>) and <em>everything</em> else is truthy,
+                including <code>[]</code>, <code>{}</code> and the string <code>'0'</code>. That is why
+                <code>count || 10</code> quietly replaces a legitimate <code>0</code>, and why <code>??</code> exists.
+            </p>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Why does <code>typeof null</code> return <code>'object'</code>, and how do you
+                    reliably tell an array from an object?</p>
+                <p><code>typeof null === 'object'</code> is a bug from 1995 that can never be fixed without breaking the
+                    web: values were tagged with a type in their low bits, and the null pointer's tag happened to
+                    collide with the object tag. Similarly <code>typeof []</code> is <code>'object'</code>, because an
+                    array <em>is</em> an object. So <code>typeof</code> is only trustworthy for primitives —
+                    for anything else use a purpose-built check: <code>Array.isArray</code> for arrays,
+                    <code>instanceof</code> for class instances, and <code>Object.prototype.toString.call(x)</code> when
+                    you need to distinguish a <code>Date</code> from a <code>Map</code> from a plain object.
+                </p>
+                <div class="code-tabs" data-label="Answer — checking types honestly">
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+typeof null;          // 'object'   &lt;- historical bug
+typeof [];            // 'object'   &lt;- arrays ARE objects
+typeof function () {}; // 'function' &lt;- the one object typeof names
+typeof NaN;           // 'number'   &lt;- NaN is a number that isn't one
+
+// what to use instead
+Array.isArray([]);                 // true
+value instanceof Date;             // true for dates (fails across iframes)
+Object.prototype.toString.call(v); // '[object Map]' etc - works for everything
+
+// the null/undefined check you actually want
+const isNullish = (v) =&gt; v == null;        // true for null AND undefined
+const isMissing = (v) =&gt; v === undefined;  // only undefined
+
+Number.isNaN(NaN);        // true   - no coercion
+isNaN('hello');           // true   - coerces first, almost never what you want
+Number.isInteger(5.0);    // true
+Number.isSafeInteger(2 ** 53); // false
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+# Python's equivalents, for contrast
+type(None)            # &lt;class 'NoneType'&gt;  - no historical accident
+isinstance([], list)  # True
+callable(lambda: 1)   # True
+
+# Python has no truthiness surprises of the same depth, but shares one:
+bool([]), bool({}), bool("")   # (False, False, False)  &lt;- differs from JS!
+# In JavaScript [] and {} are TRUTHY. This is the single biggest
+# translation error when moving between the two languages.
+
+0.1 + 0.2 == 0.3      # False - the same IEEE-754 float, same result
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The gotcha that ships bugs:</b> <code>NaN !== NaN</code>. Any arithmetic on a non-number produces
+                    <code>NaN</code>, which then silently poisons every calculation downstream, and comparing it to
+                    itself is false — so <code>arr.indexOf(NaN)</code> returns <code>-1</code> even when
+                    <code>NaN</code> is in the array. Guard at the boundary with <code>Number.isNaN</code>, and use
+                    <code>arr.includes(NaN)</code>, which uses a different comparison and does find it.
+                </p>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-variables-and-scope">Variables, Scope &amp; the Temporal Dead Zone<a class="headerlink"
+                    href="#2-variables-and-scope" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Declarations</b> <code class="big-o o-good">const, let, var</code></li>
+                <li><b>const scope</b> <code class="big-o o-great">block</code></li>
+                <li><b>var scope</b> <code class="big-o o-bad">function</code></li>
+                <li><b>Lookup cost</b> <code class="big-o o-great">O(depth)</code></li>
+            </ul>
+
+            <p>The rule is short: <strong>use <code>const</code> by default, <code>let</code> when you must reassign,
+                    and <code>var</code> never</strong>. But the reason matters, because it explains a whole family of
+                bugs
+                in older code.</p>
+
+            <p><code>var</code> is scoped to the enclosing <em>function</em>, ignoring blocks entirely — a
+                <code>var</code> declared inside an <code>if</code> is visible after it. It is also <em>hoisted and
+                    initialised to <code>undefined</code></em>, so reading it before the declaration gives you a value
+                rather than an error. <code>let</code> and <code>const</code> are scoped to the enclosing
+                <strong>block</strong>, and while they are hoisted too, they are left uninitialised: touching one before
+                its declaration throws. That gap is the <strong>temporal dead zone</strong>, and it converts a silent
+                <code>undefined</code> into a loud error.
+            </p>
+
+            <div class="viz" data-viz="hoisting"></div>
+
+            <div class="callout callout-key">
+                <p><code>const</code> makes the <em>binding</em> constant, not the value. <code>const user = {}</code>
+                    forbids <code>user = something</code> but permits <code>user.name = 'x'</code> all day. If you want
+                    the value frozen too, that is <code>Object.freeze(user)</code> — and even that is shallow.</p>
+            </div>
+
+            <p>Where a name is <em>looked up</em> is the second half of the story. When the engine meets a name, it
+                searches the current scope, then the scope that <em>lexically encloses</em> it in the source, then the
+                next one out, until it reaches global — and throws <code>ReferenceError</code> if it never finds it.
+                Crucially this chain is fixed by <strong>where the function was written</strong>, not by who called it.
+                Two functions calling the same helper see the same chain.</p>
+
+            <div class="viz" data-viz="scope-chain"></div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Why does this loop print <code>3 3 3</code> with <code>var</code> but
+                    <code>0 1 2</code> with <code>let</code>?
+                </p>
+                <p>Because <code>var i</code> creates <em>one</em> binding for the whole function. All three callbacks
+                    close over that single variable, and by the time the timers fire the loop has finished and
+                    <code>i</code> is <code>3</code>. <code>let i</code> is different in a way that looks like magic but
+                    is specified explicitly: a <code>for</code> loop with <code>let</code> creates a <strong>fresh
+                        binding per iteration</strong> and copies the current value into it. Three iterations, three
+                    separate variables, three different captured values. This is the single best argument for
+                    <code>let</code> over <code>var</code>.
+                </p>
+                <div class="code-tabs" data-label="Answer — the classic loop closure">
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+for (var i = 0; i &lt; 3; i++) {
+  setTimeout(() =&gt; console.log(i), 0);
+}
+// 3 3 3  - one shared binding, read after the loop ended
+
+for (let i = 0; i &lt; 3; i++) {
+  setTimeout(() =&gt; console.log(i), 0);
+}
+// 0 1 2  - a new binding per iteration
+
+// the pre-2015 workaround: an IIFE to force a new scope
+for (var i = 0; i &lt; 3; i++) {
+  (function (j) {
+    setTimeout(() =&gt; console.log(j), 0);
+  })(i);
+}
+// 0 1 2
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+# Python has the identical trap, and no `let` to save you
+fns = []
+for i in range(3):
+    fns.append(lambda: print(i))
+for f in fns:
+    f()          # 2 2 2 - late binding, one shared `i`
+
+# the fix is the same idea: bind the value now, via a default argument
+fns = []
+for i in range(3):
+    fns.append(lambda i=i: print(i))
+for f in fns:
+    f()          # 0 1 2
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Never assign to an undeclared name.</b> In sloppy mode <code>count = 5</code> silently creates a
+                    <em>global</em> variable, which then leaks across files and never gets garbage collected. Strict
+                    mode — which you get free in every module — turns it into a <code>ReferenceError</code>. This alone
+                    is a reason to write modules rather than plain scripts.
+                </p>
+            </div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-objects-and-references">Objects, Arrays &amp; References<a class="headerlink"
+                    href="#3-objects-and-references" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Property access</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Key type</b> <code class="big-o o-ok">string | symbol</code></li>
+                <li><b>Copy cost (spread)</b> <code class="big-o o-good">O(n) shallow</code></li>
+                <li><b>Equality</b> <code class="big-o o-bad">by reference</code></li>
+            </ul>
+
+            <p>An object is a bag of key–value pairs where the keys are strings (or symbols) and the values are
+                anything. An array is an object whose keys happen to be numeric and which carries a
+                <code>length</code>. Both are <strong>reference types</strong>, and that one fact produces more
+                confusing bugs than any other feature of the language.
+            </p>
+
+            <p>A variable never contains an object. It contains a <em>reference</em> — an arrow pointing at one place in
+                memory. Assigning copies the arrow, not the thing. So two variables can name the same object, and a
+                change through one is visible through the other. Watch what each kind of copy actually duplicates:</p>
+
+            <div class="viz" data-viz="copy-depth"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🏠</span>
+                <div class="analogy-body">
+                    <b>Picture it — a street address, not a house</b>
+                    <p>Writing down a friend's address on a second slip of paper does not build a second house. Both
+                        slips lead to the same front door, so if one of you repaints it, the other sees fresh paint.
+                        Spread (<code>{...a}</code>) builds a genuinely new house — but it copies the <em>addresses</em>
+                        of the garage and the shed rather than rebuilding them, which is exactly what "shallow" means.
+                    </p>
+                </div>
+            </div>
+
+            <p>Everyday syntax you will use constantly, all of it built on this model:</p>
+
+            <div class="code-tabs" data-label="Objects and arrays — the daily vocabulary">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const user = { id: 7, name: 'Ada', tags: ['js'] };
+
+// read
+user.name;              // dot notation - fixed key
+user['na' + 'me'];      // bracket notation - computed key
+user.address?.city;     // optional chaining: undefined instead of a throw
+user.nickname ?? 'anon' // nullish default (0 and '' survive)
+
+// write - all of these MUTATE
+user.role = 'admin';
+delete user.id;
+user.tags.push('ts');
+
+// copy - these produce new objects
+const patched = { ...user, role: 'editor' };      // later keys win
+const deep    = structuredClone(user);            // whole graph
+
+// inspect
+Object.keys(user);      // ['name', 'tags', 'role']
+Object.values(user);
+Object.entries(user);   // [['name','Ada'], ...] - the for..of pair form
+'name' in user;         // true - includes inherited keys
+Object.hasOwn(user, 'name'); // true - own keys only
+
+// arrays: know which methods mutate
+[3, 1, 2].sort();       // MUTATES and returns the same array
+[3, 1, 2].toSorted();   // returns a new array (ES2023)
+arr.splice(1, 2);       // MUTATES - removes in place
+arr.slice(1, 3);        // copies a window
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+user = {"id": 7, "name": "Ada", "tags": ["js"]}
+
+# read
+user["name"]                 # KeyError if missing - stricter than JS
+user.get("nickname", "anon") # the ?? equivalent
+
+# copy - the same shallow/deep distinction exists
+patched = {**user, "role": "editor"}   # like JS spread
+import copy
+deep = copy.deepcopy(user)             # like structuredClone
+
+# inspect
+list(user.keys()), list(user.items())
+"name" in user
+
+# and the same mutating-vs-returning split
+nums = [3, 1, 2]
+nums.sort()        # mutates, returns None  &lt;- JS returns the array
+sorted(nums)       # returns a new list
+</code></pre>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — cheap sharing</b>Passing a large object to a function costs nothing;
+                    only the reference moves. This is why JavaScript can pass big structures around freely.</li>
+                <li class="is-bad"><b>Weakness — accidental sharing</b>A function that mutates its argument changes the
+                    caller's data. Treat arguments as read-only unless mutation is the documented point of the
+                    function.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><b>Two references are never <code>===</code> unless they point at the same object.</b>
+                    <code>{a: 1} === {a: 1}</code> is <code>false</code>, and so is
+                    <code>[1,2].includes</code>-style deep matching — <code>arr.indexOf({id: 1})</code> will never find
+                    anything. Compare by a key (<code>arr.find(x =&gt; x.id === 1)</code>) or compare a serialised
+                    form; there is no built-in deep equality.
+                </p>
+            </div>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-functions-and-this">Functions, Arrows &amp; <code>this</code><a class="headerlink"
+                    href="#4-functions-and-this" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Functions are</b> <code class="big-o o-great">values</code></li>
+                <li><b>Arrow <code>this</code></b> <code class="big-o o-great">lexical</code></li>
+                <li><b>Function <code>this</code></b> <code class="big-o o-bad">call-site</code></li>
+                <li><b>Binding rules</b> <code class="big-o o-ok">4</code></li>
+            </ul>
+
+            <p>Functions in JavaScript are ordinary values: you can store one in a variable, put it in an array, pass it
+                to another function and return it from one. That is what makes callbacks, array methods, and the entire
+                asynchronous style possible — and it is the foundation of the next two sections.</p>
+
+            <div class="code-tabs" data-label="The four ways to write a function">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+function add(a, b) { return a + b; }        // declaration - hoisted whole
+const add = function (a, b) { return a + b; }; // expression - not hoisted
+const add = (a, b) =&gt; a + b;                 // arrow, implicit return
+const obj = { add(a, b) { return a + b; } }; // method shorthand
+
+// parameters
+const greet = (name = 'world', ...rest) =&gt; `hi ${name}`; // default + rest
+const draw = ({ x = 0, y = 0 } = {}) =&gt; …;   // named arguments
+
+// returning an object literal from an arrow needs parens
+const make = (id) =&gt; ({ id });               // the () are not optional
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+def add(a, b):
+    return a + b
+
+add = lambda a, b: a + b        # limited to a single expression
+
+def greet(name="world", *rest):
+    return f"hi {name}"
+
+def draw(*, x=0, y=0):          # keyword-only args - JS uses destructuring
+    ...
+
+# Python has no arrow/function `this` distinction: methods take `self`
+# explicitly, which is the problem `this` solves badly.
+</code></pre>
+                </div>
+            </div>
+
+            <p>Now the part that costs people afternoons. <strong><code>this</code> is not decided by where a function
+                    is written — it is decided by how it is called.</strong> The same function body can see four
+                different values depending on the call site. Step through each rule:</p>
+
+            <div class="viz" data-viz="this-binding"></div>
+
+            <p>Read the rules in priority order and you can answer any <code>this</code> question mechanically:
+                <code>new</code> wins (a fresh object), then explicit
+                <code>call</code>/<code>apply</code>/<code>bind</code>,
+                then a receiver before the dot, then the default (<code>undefined</code> in strict mode). Arrow
+                functions sit outside this list entirely — they have no <code>this</code> of their own, so the name
+                resolves up the scope chain like any ordinary variable.
+            </p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Use an arrow for</b>callbacks, array-method predicates, anything nested inside a
+                    method that needs the surrounding <code>this</code>. Arrows also have no <code>arguments</code> and
+                    cannot be used with <code>new</code> — which is a feature, not a limitation.</li>
+                <li class="is-bad"><b>Do not use an arrow for</b>object methods (there is no enclosing
+                    <code>this</code> to inherit), prototype methods, or anything you intend to call with
+                    <code>new</code>. Use the <code>method() {}</code> shorthand instead.
+                </li>
+            </ul>
+
+            <div class="callout callout-interview">
+                <p><b>Asked constantly:</b> "What is the difference between <code>call</code>, <code>apply</code> and
+                    <code>bind</code>?" — <code>call</code> and <code>apply</code> both invoke immediately and differ
+                    only in how arguments are passed (list vs array); <code>bind</code> invokes nothing and returns a
+                    new function permanently welded to that receiver. Follow-up worth pre-empting: binding an
+                    already-bound function does nothing, because the first binding wins.
+                </p>
+            </div>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-array-methods">The Array Methods That Replace Loops<a class="headerlink" href="#5-array-methods"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>map / filter</b> <code class="big-o o-good">O(n)</code></li>
+                <li><b>find / some</b> <code class="big-o o-good">O(n), early exit</code></li>
+                <li><b>sort</b> <code class="big-o o-ok">O(n log n)</code></li>
+                <li><b>includes on array</b> <code class="big-o o-bad">O(n)</code></li>
+            </ul>
+
+            <p>Most loops you would write in another language are one method call here. The value is not brevity — it
+                is that the method <em>names the intent</em>. <code>filter</code> announces "a subset, same values";
+                <code>map</code> announces "same count, different values". A reader knows the shape of the result before
+                reading the callback.
+            </p>
+
+            <div class="viz" data-viz="array-methods"></div>
+
+            <p>Because each one returns an array, they chain — and reading a chain top to bottom describes the pipeline
+                in order:</p>
+
+            <div class="code-tabs" data-label="A pipeline, and the loop it replaces">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const total = orders
+  .filter((o) =&gt; o.status === 'paid')     // fewer items
+  .map((o) =&gt; o.amount)                   // now numbers
+  .reduce((sum, amount) =&gt; sum + amount, 0); // one value
+
+// grouping - the reduce that earns its keep
+const byUser = orders.reduce((acc, o) =&gt; {
+  (acc[o.userId] ??= []).push(o);
+  return acc;                              // ALWAYS return the accumulator
+}, {});
+
+// or, in modern runtimes
+const byUser = Object.groupBy(orders, (o) =&gt; o.userId);
+
+// sort needs a comparator for numbers - the default is ALPHABETICAL
+[10, 9, 1].sort();                   // [1, 10, 9]   ⚠
+[10, 9, 1].sort((a, b) =&gt; a - b);    // [1, 9, 10]   ✓
+orders.toSorted((a, b) =&gt; b.amount - a.amount); // non-mutating (ES2023)
+
+// flatten one level of nested arrays
+[[1, 2], [3]].flat();                        // [1, 2, 3]
+users.flatMap((u) =&gt; u.roles);               // map + flat in one pass
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+total = sum(o["amount"] for o in orders if o["status"] == "paid")
+# Python prefers comprehensions where JS chains methods; same pipeline,
+# read right-to-left instead of top-to-bottom.
+
+from collections import defaultdict
+by_user = defaultdict(list)
+for o in orders:
+    by_user[o["user_id"]].append(o)
+
+from itertools import groupby   # note: requires sorted input, unlike JS
+
+sorted([10, 9, 1])                       # numeric by default - no JS trap
+sorted(orders, key=lambda o: -o["amount"])
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The three traps in this area.</b> (1) <code>sort()</code> without a comparator compares
+                    <em>strings</em>, so <code>[10, 9]</code> sorts to <code>[10, 9]</code>. (2) <code>sort</code>,
+                    <code>reverse</code> and <code>splice</code> mutate the original — use <code>toSorted</code>,
+                    <code>toReversed</code> and <code>slice</code> when you must not. (3) <code>forEach</code> ignores
+                    the return value and cannot be broken out of; if you need an early exit use <code>for…of</code>,
+                    and if you want a result use <code>map</code>.
+                </p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Deduplicate an array of objects by <code>id</code>, keeping the first occurrence.
+                </p>
+                <p>The naive <code>filter</code> with an <code>indexOf</code> inside is O(n²) — for each element it
+                    rescans the array. Use a <code>Set</code> or <code>Map</code> to make the "have I seen this?"
+                    question O(1), which brings the whole thing to O(n). A <code>Map</code> keyed by id also gives you
+                    "keep the last occurrence" for free by simply overwriting.</p>
+                <div class="code-tabs" data-label="Answer — deduplicate by key">
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+// O(n) - a Set remembers what we have already emitted
+const dedupe = (items) =&gt; {
+  const seen = new Set();
+  return items.filter((item) =&gt; {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+};
+
+// keep the LAST occurrence instead - a Map overwrites
+const lastWins = [...new Map(items.map((i) =&gt; [i.id, i])).values()];
+
+// primitives only? one line
+const unique = [...new Set([1, 2, 2, 3])];   // [1, 2, 3]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def dedupe(items):
+    seen = set()
+    out = []
+    for item in items:
+        if item["id"] in seen:
+            continue
+        seen.add(item["id"])
+        out.append(item)
+    return out
+
+# keep the last occurrence - dicts preserve insertion order
+last_wins = list({i["id"]: i for i in items}.values())
+
+unique = list(dict.fromkeys([1, 2, 2, 3]))   # order-preserving
+</code></pre>
+                    </div>
+                </div>
+            </div>
+            <h2 id="unit-2">Unit 2 — How JavaScript Actually Runs<a class="headerlink" href="#unit-2"
+                    title="Permanent link">#</a></h2>
+
+            <p>Everything so far you could have guessed from reading code. This unit is the machinery underneath: one
+                thread and one stack, scopes that outlive their functions, objects that inherit through a chain of other
+                objects, and a queue that decides when your callbacks run. These five sections are what separate someone
+                who can write JavaScript from someone who can debug it.</p>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-the-call-stack">The Call Stack &amp; the Single Thread<a class="headerlink"
+                    href="#6-the-call-stack" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Threads</b> <code class="big-o o-bad">1</code></li>
+                <li><b>Stack depth</b> <code class="big-o o-ok">~10k frames</code></li>
+                <li><b>Push / pop</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Blocking cost</b> <code class="big-o o-bad">whole UI</code></li>
+            </ul>
+
+            <p>JavaScript runs your code on <strong>exactly one thread</strong>. There is one call stack, and while
+                something is on it, nothing else in that program can happen — no click handler, no timer, no rendering.
+                A 200 ms synchronous loop is a 200 ms frozen page. Understanding this is the prerequisite for
+                understanding why the async model looks the way it does.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a stack of plates</b>
+                    <p>Every function call puts a plate on top of the pile, holding that call's arguments, local
+                        variables and the address to return to. You can only ever touch the top plate. When a function
+                        returns, its plate comes off and its locals are gone. Print the pile from the top down and you
+                        have a stack trace — which is why the error you are reading is always the <em>first</em> line,
+                        and the cause is usually further down.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="call-stack"></div>
+
+            <p>Two practical consequences. First, <strong>recursion depth is bounded</strong> — around ten thousand
+                frames before <code>RangeError: Maximum call stack size exceeded</code>. JavaScript engines do not
+                implement tail-call elimination (Safari aside), so deep recursion must be rewritten as a loop or split
+                across event-loop turns. Second, <strong>anything slow must not be synchronous</strong>: parse a huge
+                JSON file, or hash a password, and the whole tab stops. Move it to a <code>Worker</code>, or chunk it so
+                the stack can drain between pieces.</p>
+
+            <div class="callout callout-tip">
+                <p>When you see a stack trace, read it as the plates from top to bottom: the topmost frame is where the
+                    error <em>surfaced</em>, and each line below is who called it. In async code the trace often stops
+                    at the callback boundary — that is the stack having already unwound before the callback ran, and it
+                    is exactly why <code>async/await</code> is easier to debug than raw callbacks.</p>
+            </div>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-closures">Closures<a class="headerlink" href="#7-closures" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Captures</b> <code class="big-o o-great">the variable</code></li>
+                <li><b>Not</b> <code class="big-o o-bad">a copy of the value</code></li>
+                <li><b>Per call</b> <code class="big-o o-good">a new environment</code></li>
+                <li><b>Lifetime</b> <code class="big-o o-ok">as long as referenced</code></li>
+            </ul>
+
+            <p>A closure is what you get when a function <strong>outlives the scope it was created in and keeps
+                    access to it anyway</strong>. It is not an advanced feature you opt into — every function you write
+                inside another function is one. It sounds abstract until you see the two things it enables: private
+                state, and functions configured at runtime.</p>
+
+            <p>The mechanism is simple once you know that scopes live on the heap, not the stack. A function's frame
+                pops when it returns, but its <em>environment</em> survives as long as something still points at it —
+                and a returned inner function points at it. Watch the frame disappear while the variable stays alive:
+            </p>
+
+            <div class="viz" data-viz="closure"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎒</span>
+                <div class="analogy-body">
+                    <b>Picture it — a backpack the function never takes off</b>
+                    <p>When a function is created it straps on a backpack containing the scope it was born in — not a
+                        photocopy of the contents, the actual scope. Wherever that function travels, it can reach into
+                        the backpack. Two functions created in the same call share one backpack; two created in
+                        different calls carry different ones. The backpack is only thrown away when every function
+                        wearing it is gone.</p>
+                </div>
+            </div>
+
+            <div class="code-tabs" data-label="What closures are actually for">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// 1. private state - `count` is unreachable from outside
+function makeCounter() {
+  let count = 0;
+  return {
+    increment: () =&gt; ++count,
+    get value() { return count; },
+  };
+}
+const c = makeCounter();
+c.increment();       // 1
+c.count;             // undefined - genuinely private
+
+// 2. configuration captured once, reused forever
+const withPrefix = (prefix) =&gt; (msg) =&gt; console.log(`[${prefix}] ${msg}`);
+const logAuth = withPrefix('auth');
+logAuth('login ok'); // [auth] login ok
+
+// 3. memoisation - the cache lives in the closure
+const memoize = (fn) =&gt; {
+  const cache = new Map();
+  return (arg) =&gt; {
+    if (!cache.has(arg)) cache.set(arg, fn(arg));
+    return cache.get(arg);
+  };
+};
+
+// 4. once - a flag nobody else can flip
+const once = (fn) =&gt; {
+  let done = false;
+  return (...args) =&gt; {
+    if (done) return;
+    done = true;
+    return fn(...args);
+  };
+};
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# Python closures work the same way, with one wrinkle: assigning to a
+# captured name requires `nonlocal`, otherwise you create a new local.
+def make_counter():
+    count = 0
+    def increment():
+        nonlocal count      # JavaScript needs no such keyword
+        count += 1
+        return count
+    return increment
+
+c = make_counter()
+c()   # 1
+
+def with_prefix(prefix):
+    return lambda msg: print(f"[{prefix}] {msg}")
+
+from functools import lru_cache    # memoisation, batteries included
+
+@lru_cache(maxsize=None)
+def slow(n):
+    ...
+</code></pre>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — encapsulation without classes</b>State that literally cannot be
+                    reached from outside, no naming conventions or <code>#private</code> fields required. Every module
+                    pattern, hook and middleware factory is this.</li>
+                <li class="is-bad"><b>Weakness — silent retention</b>A closure keeps its <em>whole</em> environment
+                    alive, not just the variable it uses. A callback that captures a scope containing a large array
+                    keeps that array in memory for as long as the callback is registered.</li>
+            </ul>
+
+            <div class="callout callout-interview">
+                <p><b>The question behind the question:</b> when an interviewer asks "what is a closure?", they are
+                    checking whether you know it captures the <em>variable</em> rather than the value. The proof is the
+                    <code>var</code> loop from section 2: all three callbacks print <code>3</code> precisely because
+                    they share one live binding rather than three snapshots.
+                </p>
+            </div>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-prototypes-and-classes">Prototypes &amp; Classes<a class="headerlink"
+                    href="#8-prototypes-and-classes" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Inheritance</b> <code class="big-o o-good">delegation</code></li>
+                <li><b>Lookup</b> <code class="big-o o-ok">O(chain depth)</code></li>
+                <li><b>Methods stored</b> <code class="big-o o-great">once, shared</code></li>
+                <li><b>Chain ends at</b> <code class="big-o o-ok">null</code></li>
+            </ul>
+
+            <p>JavaScript has no classes in the way C++ or Java do. It has objects, and every object holds a hidden
+                link to another object called its <strong>prototype</strong>. When you read a property the engine looks
+                at the object, then its prototype, then <em>its</em> prototype, until it finds the key or runs out of
+                chain. <code>class</code> syntax is a readable way to build these links — real, useful sugar over a
+                mechanism that stays visible underneath.</p>
+
+            <div class="viz" data-viz="prototype-chain"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">📚</span>
+                <div class="analogy-body">
+                    <b>Picture it — asking up the chain of command</b>
+                    <p>You ask an object a question. If it knows the answer it replies. If not, it does not guess —
+                        it forwards the question to its manager, who forwards it again, until someone answers or the
+                        chain reaches the top and the reply is "undefined". Note what this is <em>not</em>: nothing was
+                        copied into the object when it was created. It genuinely asks, every single time.</p>
+                </div>
+            </div>
+
+            <p>The important asymmetry: <strong>reads walk the chain, writes never do</strong>. Assigning
+                <code>rex.speak = fn</code> creates an own property on <code>rex</code> that shadows the inherited one
+                for that object only. This is why mutating a shared prototype at runtime is so dangerous, and why
+                accidentally adding to <code>Object.prototype</code> breaks every object in the program.
+            </p>
+
+            <div class="code-tabs" data-label="Classes, and what they compile down to">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+class Animal {
+  static kingdom = 'Animalia';   // on the class itself
+  #secret = 42;                  // truly private - not just a convention
+  constructor(name) { this.name = name; }
+  speak() { return `${this.name} makes a sound`; }
+  get label() { return this.name.toUpperCase(); }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);                 // MUST run before touching `this`
+    this.breed = breed;
+  }
+  speak() { return `${super.speak()} - a bark`; }
+}
+
+const rex = new Dog('Rex', 'lab');
+rex instanceof Dog;     // true
+rex instanceof Animal;  // true - the chain is walked
+
+// the same thing, written by hand, pre-2015
+function Animal(name) { this.name = name; }
+Animal.prototype.speak = function () { return `${this.name} makes a sound`; };
+function Dog(name) { Animal.call(this, name); }
+Dog.prototype = Object.create(Animal.prototype);  // link the chains
+Dog.prototype.constructor = Dog;
+
+// no classes needed at all
+const proto = { speak() { return `${this.name} speaks`; } };
+const cat = Object.create(proto);
+cat.name = 'Tom';
+Object.getPrototypeOf(cat) === proto;   // true
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+class Animal:
+    kingdom = "Animalia"          # class attribute - shared, like a prototype
+
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return f"{self.name} makes a sound"
+
+    @property
+    def label(self):
+        return self.name.upper()
+
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name)
+        self.breed = breed
+
+    def speak(self):
+        return f"{super().speak()} - a bark"
+
+# Python resolves attributes through the MRO (a linearised class list),
+# JavaScript through a chain of ordinary objects. Same delegation idea;
+# Python's is fixed at class-definition time, JavaScript's is mutable at
+# runtime - you can reassign an object's prototype after creating it.
+</code></pre>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — one copy of every method</b>A thousand instances share a single
+                    <code>speak</code> function on the prototype. Defining methods inside the constructor instead
+                    creates a thousand copies.
+                </li>
+                <li class="is-bad"><b>Weakness — <code>this</code> comes along for the ride</b>Class methods are
+                    ordinary functions, so passing <code>obj.method</code> as a callback loses the receiver. Bind it, or
+                    declare the method as a class field arrow: <code>speak = () =&gt; …</code>.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><b>Never extend built-in prototypes.</b> <code>Array.prototype.last = …</code> works, and then
+                    breaks the moment a library iterates keys with <code>for…in</code>, or a future spec adds a method
+                    with the same name and different behaviour. If you need a helper, write a plain function.</p>
+            </div>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-the-event-loop">The Event Loop<a class="headerlink" href="#9-the-event-loop"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Microtasks drained</b> <code class="big-o o-great">all of them</code></li>
+                <li><b>Macrotasks per turn</b> <code class="big-o o-ok">1</code></li>
+                <li><b>setTimeout(fn, 0)</b> <code class="big-o o-bad">≥ 4 ms, later</code></li>
+                <li><b>Render budget</b> <code class="big-o o-ok">16.7 ms</code></li>
+            </ul>
+
+            <p>One thread, yet a browser handles clicks, timers and network responses without freezing. The trick is
+                that <strong>the slow work is not done by JavaScript</strong>. When you call <code>setTimeout</code> or
+                <code>fetch</code>, you hand a callback to the host — the browser or Node — and return immediately.
+                The host does the waiting on its own threads, and when it is finished it puts your callback in a
+                <em>queue</em>. The event loop's only job is: when the stack is empty, take the next callback and run
+                it.
+            </p>
+
+            <p>The subtlety, and the source of every "why did that print in that order" question, is that there are
+                <strong>two queues with different priorities</strong>. Microtasks (promise callbacks,
+                <code>await</code> resumptions) are drained <em>completely</em> after each task; macrotasks (timers,
+                I/O, DOM events) get one per turn.
+            </p>
+
+            <div class="viz" data-viz="event-loop"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">☕</span>
+                <div class="analogy-body">
+                    <b>Picture it — one barista, two queues</b>
+                    <p>There is a single barista (the thread). Customers who need something quick — "just add sugar to
+                        the one you already made" — form the priority queue, and the barista clears <em>all</em> of them
+                        before glancing at the main line. Customers in the main line (timers, clicks) are served one at
+                        a time, and after each one the priority queue is emptied again. This is fair to no one, and it
+                        is exactly why an infinite chain of quick requests can starve everybody else — including the
+                        browser's chance to repaint.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p>One turn of the loop: <strong>run one macrotask → drain every microtask → let the browser render →
+                        repeat</strong>. Almost every ordering puzzle in JavaScript is answered by reading those four
+                    steps in order. <code>setTimeout(fn, 0)</code> does not mean "now", it means "at the start of some
+                    future turn" — and in browsers nested timers are additionally clamped to about 4 ms.</p>
+            </div>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-promises-and-async">Promises &amp; async/await<a class="headerlink" href="#10-promises-and-async"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>States</b> <code class="big-o o-great">3</code></li>
+                <li><b>Transitions</b> <code class="big-o o-great">1, ever</code></li>
+                <li><b>Callbacks run as</b> <code class="big-o o-good">microtasks</code></li>
+                <li><b>await returns</b> <code class="big-o o-ok">a promise</code></li>
+            </ul>
+
+            <p>A promise is an object representing a value that is not there yet. It has three states — pending,
+                fulfilled, rejected — and it may transition <strong>exactly once</strong>. Because the result is stored
+                rather than broadcast, you can attach a handler long after it settled and still get the value; an event
+                you missed is gone forever, but a promise replays.</p>
+
+            <div class="viz" data-viz="promise-states"></div>
+
+            <p><code>async</code>/<code>await</code> is not a different mechanism — it is syntax over exactly those
+                promises. An <code>async</code> function always returns a promise, and <code>await</code> means "suspend
+                this function, hand control back to the caller, and resume in a microtask when that promise settles".
+                Watch a function pause and leave the stack entirely:</p>
+
+            <div class="viz" data-viz="async-await"></div>
+
+            <div class="code-tabs" data-label="The shape of async code you should be writing">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+async function loadDashboard(userId) {
+  try {
+    // independent work - start both, then await. NOT two sequential awaits.
+    const [user, orders] = await Promise.all([
+      fetchUser(userId),
+      fetchOrders(userId),
+    ]);
+
+    // dependent work - this one genuinely must wait
+    const prefs = await fetchPrefs(user.prefsId);
+
+    return { user, orders, prefs };
+  } catch (err) {
+    // catches ANY rejection above, exactly like a synchronous throw
+    report(err);
+    throw err;              // rethrow unless you can truly recover
+  } finally {
+    hideSpinner();          // runs on success and on failure
+  }
+}
+
+// mapping over async work: map first, then await together
+const users = await Promise.all(ids.map((id) =&gt; fetchUser(id)));
+
+// a deadline for anything
+const withTimeout = (promise, ms) =&gt;
+  Promise.race([
+    promise,
+    new Promise((_, reject) =&gt;
+      setTimeout(() =&gt; reject(new Error('timeout')), ms)),
+  ]);
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import asyncio
+
+async def load_dashboard(user_id):
+    try:
+        # gather is Promise.all
+        user, orders = await asyncio.gather(
+            fetch_user(user_id),
+            fetch_orders(user_id),
+        )
+        prefs = await fetch_prefs(user["prefs_id"])
+        return {"user": user, "orders": orders, "prefs": prefs}
+    except Exception as err:
+        report(err)
+        raise
+    finally:
+        hide_spinner()
+
+# The big difference: Python coroutines are LAZY - calling one does
+# nothing until it is awaited or scheduled. A JavaScript promise starts
+# its work the moment it is created, which is why `Promise.all` on
+# already-started promises still runs them in parallel.
+</code></pre>
+                </div>
+            </div>
+
+            <p>Once you have several promises in flight, the four combinators cover essentially every situation. They
+                differ only in <em>when they settle</em> and <em>what a failure does</em>:</p>
+
+            <div class="viz" data-viz="promise-concurrency"></div>
+
+            <div class="callout callout-warn">
+                <p><b>The two mistakes that show up in every code review.</b> First, sequential awaits over independent
+                    work — <code>await a(); await b();</code> takes the sum of both latencies when it could take the
+                    max. Second, an unhandled rejection: a promise chain with no <code>catch</code> and no
+                    <code>await</code> inside a <code>try</code> will crash a Node process and log a warning nobody
+                    reads in the browser. Also note <code>forEach</code> does not await — use <code>for…of</code> for
+                    sequential async work, or <code>Promise.all(map(...))</code> for parallel.
+                </p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">What does this print, and why?</p>
+                <p>Work it out with the loop rules: all synchronous code first, then every microtask, then one
+                    macrotask. <code>'1'</code> and <code>'4'</code> are synchronous. <code>'3'</code> is a promise
+                    callback — a microtask — so it runs as soon as the script finishes. <code>'2'</code> is a timer, a
+                    macrotask, so it runs after the microtask queue is empty. Answer: <code>1 4 3 2</code>. Note that
+                    the executor function passed to <code>new Promise</code> runs <strong>synchronously</strong>, which
+                    is the part most people get wrong.</p>
+                <div class="code-tabs" data-label="Answer — ordering">
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+console.log('1');
+
+setTimeout(() =&gt; console.log('2'), 0);
+
+new Promise((resolve) =&gt; {
+  console.log('4');        // ⚠ the executor is SYNCHRONOUS
+  resolve();
+}).then(() =&gt; console.log('3'));
+
+// prints: 1, 4, 3, 2
+
+// the same rules with await
+async function f() {
+  console.log('a');
+  await null;              // awaiting a non-promise still yields a microtask
+  console.log('c');
+}
+f();
+console.log('b');
+// prints: a, b, c
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import asyncio
+
+async def main():
+    print("1")
+    asyncio.get_running_loop().call_soon(lambda: print("2"))
+
+    async def later():
+        print("3")
+
+    task = asyncio.create_task(later())   # scheduled, not run yet
+    print("4")
+    await task
+
+asyncio.run(main())
+# 1, 4, 2, 3 - Python's loop has a single ready queue rather than
+# JavaScript's split macrotask/microtask priority, so the order differs.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+            <h2 id="unit-3">Unit 3 — Writing Real Code<a class="headerlink" href="#unit-3" title="Permanent link">#</a>
+            </h2>
+
+            <p>The language is only half the job. Real code is split across files, runs inside a host that gives it a
+                page or a process, and has to survive being read again in six months. Three sections: how modules load,
+                what the browser actually hands you, and a single page that ties everything above together.</p>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-modules">Modules &amp; the Ecosystem<a class="headerlink" href="#11-modules"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Standard</b> <code class="big-o o-great">ESM</code></li>
+                <li><b>Legacy (Node)</b> <code class="big-o o-ok">CommonJS</code></li>
+                <li><b>Evaluated</b> <code class="big-o o-great">once</code></li>
+                <li><b>Bindings</b> <code class="big-o o-good">live</code></li>
+            </ul>
+
+            <p>A module is a file with its own scope. Nothing inside it is visible elsewhere unless you
+                <code>export</code> it, and nothing from elsewhere is visible inside unless you <code>import</code> it.
+                That is the entire idea, and it replaced a decade of workarounds — IIFEs, namespaces, and global
+                variables carefully prefixed to avoid collisions.
+            </p>
+
+            <p>Two systems exist. <strong>ES modules</strong> (<code>import</code>/<code>export</code>) are the
+                standard, understood by browsers and Node alike; their imports are <em>static</em>, so the whole
+                dependency graph is known before a single line executes. <strong>CommonJS</strong>
+                (<code>require</code>/<code>module.exports</code>) is Node's original system, where importing is a
+                function call that runs the file right there. Compare how each one loads the same graph:</p>
+
+            <div class="viz" data-viz="module-graph"></div>
+
+            <div class="code-tabs" data-label="Module syntax you will actually type">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// cart.js - named exports are the default choice
+export const TAX = 0.2;
+export function total(items) { … }
+export default class Cart { … }        // at most one per module
+
+// main.js
+import Cart, { total, TAX as VAT } from './cart.js';  // extension required
+import * as cart from './cart.js';                     // namespace object
+
+// lazy: a function call, allowed anywhere, returns a promise
+const { heavy } = await import('./heavy.js');
+
+// side-effect only - runs the module, imports nothing
+import './polyfills.js';
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# cart.py
+TAX = 0.2
+def total(items): ...
+
+# main.py
+from cart import total, TAX as VAT
+import cart                       # namespace, like import * as
+import importlib
+heavy = importlib.import_module("heavy")   # the dynamic form
+
+# Python modules are also evaluated once and cached (sys.modules),
+# exactly like JavaScript. The difference: Python exports everything
+# public by default, JavaScript exports nothing unless you say so.
+</code></pre>
+                </div>
+            </div>
+
+            <p>Around modules sits the package ecosystem, and three facts save a lot of confusion.
+                <code>package.json</code> declares your dependencies and their allowed version ranges; the
+                <strong>lockfile</strong> records the exact versions that were installed and is what makes a build
+                reproducible, so it belongs in git. <code>npm ci</code> installs strictly from the lockfile and is what
+                CI should run; <code>npm install</code> may update it. And <code>node_modules</code> is a build
+                artifact — never committed, always regenerable.
+            </p>
+
+            <div class="callout callout-tip">
+                <p>To use ESM in Node, either add <code>"type": "module"</code> to <code>package.json</code> or name
+                    files <code>.mjs</code>. In ESM you lose <code>__dirname</code> and <code>require</code>, and gain
+                    <strong>top-level <code>await</code></strong> — you can await at the top of a module without
+                    wrapping it in an async function.
+                </p>
+            </div>
+
+            <!-- ============================================================ 12 -->
+            <h3 id="12-the-browser">The Browser — DOM, Events &amp; fetch<a class="headerlink" href="#12-the-browser"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>DOM read/write</b> <code class="big-o o-bad">can force layout</code></li>
+                <li><b>Frame budget</b> <code class="big-o o-ok">16.7 ms</code></li>
+                <li><b>Event phases</b> <code class="big-o o-good">3</code></li>
+                <li><b>fetch rejects on</b> <code class="big-o o-bad">network only</code></li>
+            </ul>
+
+            <p>The DOM is a tree of objects representing the page, handed to you by the browser. You query it, change
+                it, and listen to it — and the only performance rule that matters is that <strong>touching it is
+                    expensive</strong>. Reading a layout property such as <code>offsetHeight</code> forces the browser
+                to recompute geometry; doing that inside a loop that also writes creates "layout thrashing", where
+                every iteration invalidates the work of the last. Batch your reads, then batch your writes.</p>
+
+            <p>Events do not simply fire on the element you clicked. They travel <em>down</em> from the window to the
+                target, then back <em>up</em> — and that upward journey is what makes one listener able to serve a
+                thousand rows:</p>
+
+            <div class="viz" data-viz="dom-events"></div>
+
+            <div class="code-tabs" data-label="The browser API surface worth memorising">
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// query
+const el   = document.querySelector('#list');       // first match
+const all  = document.querySelectorAll('li.active'); // static NodeList
+
+// change - textContent is safe, innerHTML is an injection risk
+el.textContent = userInput;          // ✓ always
+el.innerHTML = userInput;            // ✗ executes markup
+el.classList.toggle('open', isOpen);
+el.dataset.userId = 7;               // &lt;div data-user-id="7"&gt;
+
+// build without parsing strings
+const li = document.createElement('li');
+li.textContent = name;
+list.append(li);
+
+// one delegated listener beats a thousand direct ones
+list.addEventListener('click', (e) =&gt; {
+  const row = e.target.closest('li');
+  if (row) select(row.dataset.id);
+});
+
+// cancellable listeners - one signal removes them all
+const ac = new AbortController();
+window.addEventListener('scroll', onScroll, { signal: ac.signal });
+ac.abort();
+
+// fetch: only rejects on NETWORK failure, never on 404 or 500
+const res = await fetch('/api/users', { signal: ac.signal });
+if (!res.ok) throw new Error(`HTTP ${res.status}`);   // you must check
+const data = await res.json();
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# The closest analogue on the server side
+import httpx
+
+async with httpx.AsyncClient() as client:
+    res = await client.get("/api/users", timeout=5)
+    res.raise_for_status()      # httpx DOES raise on 4xx/5xx - fetch does not
+    data = res.json()
+
+# Parsing HTML server-side rather than manipulating a live DOM
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(html, "html.parser")
+soup.select_one("#list")
+[li.get_text() for li in soup.select("li.active")]
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>The <code>fetch</code> trap everyone hits once:</b> a <code>404</code> or <code>500</code> is a
+                    perfectly successful HTTP exchange, so the promise <em>fulfils</em>. Only a dropped connection, DNS
+                    failure or CORS block rejects it. Always check <code>res.ok</code> yourself — otherwise your
+                    <code>catch</code> block never runs and you try to render an error page as JSON.
+                </p>
+            </div>
+
+            <p>Finally, the browser fires events far faster than you can usefully respond to them — <code>scroll</code>
+                and <code>input</code> can fire dozens of times a second. Two closures fix this, and knowing which to
+                reach for is the difference between a smooth page and a janky one:</p>
+
+            <div class="viz" data-viz="debounce-throttle"></div>
+
+            <!-- ============================================================ 13 -->
+            <h2 id="13-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink"
+                    href="#13-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+
+            <p>Everything above, compressed into the form you would want on a card next to your keyboard.</p>
+
+            <h3 id="the-decisions">The decisions you make daily<a class="headerlink" href="#the-decisions"
+                    title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Answer</th>
+                        <th>Because</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Declare a variable?</td>
+                        <td><code>const</code>, then <code>let</code></td>
+                        <td>Block scoped and TDZ-protected; <code>var</code> is function scoped and silently
+                            <code>undefined</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Compare two values?</td>
+                        <td><code>===</code>, except <code>x == null</code></td>
+                        <td><code>==</code> converts through a three-step algorithm nobody predicts</td>
+                    </tr>
+                    <tr>
+                        <td>Default a value?</td>
+                        <td><code>??</code> over <code>||</code></td>
+                        <td><code>||</code> also replaces legitimate <code>0</code> and <code>''</code></td>
+                    </tr>
+                    <tr>
+                        <td>Write a callback?</td>
+                        <td>Arrow function</td>
+                        <td>No <code>this</code> of its own, so the surrounding one survives</td>
+                    </tr>
+                    <tr>
+                        <td>Write an object method?</td>
+                        <td><code>method() {}</code> shorthand</td>
+                        <td>An arrow has no enclosing <code>this</code> to inherit</td>
+                    </tr>
+                    <tr>
+                        <td>Copy an object?</td>
+                        <td><code>{...o}</code>, or <code>structuredClone</code></td>
+                        <td>Spread is shallow — nested values stay shared</td>
+                    </tr>
+                    <tr>
+                        <td>Transform a list?</td>
+                        <td><code>map</code> / <code>filter</code> / <code>reduce</code></td>
+                        <td>The method names the shape of the result before you read the callback</td>
+                    </tr>
+                    <tr>
+                        <td>Find one item?</td>
+                        <td><code>find</code>, not <code>filter()[0]</code></td>
+                        <td><code>find</code> stops at the first match</td>
+                    </tr>
+                    <tr>
+                        <td>Several independent requests?</td>
+                        <td><code>Promise.all</code></td>
+                        <td>Sequential <code>await</code>s add latency instead of overlapping it</td>
+                    </tr>
+                    <tr>
+                        <td>Sort numbers?</td>
+                        <td><code>sort((a, b) =&gt; a - b)</code></td>
+                        <td>The default comparator sorts as strings</td>
+                    </tr>
+                    <tr>
+                        <td>Handle 1000 rows' clicks?</td>
+                        <td>One delegated listener on the parent</td>
+                        <td>Events bubble, and it keeps working for rows added later</td>
+                    </tr>
+                    <tr>
+                        <td>React to typing?</td>
+                        <td>Debounce; throttle for scroll</td>
+                        <td>Debounce waits for the end of a burst, throttle caps the rate during it</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="the-machine">The machine, in five sentences<a class="headerlink" href="#the-machine"
+                    title="Permanent link">#</a></h3>
+
+            <div class="ascii">1. ONE THREAD, ONE STACK
+                Every call pushes a frame; nothing else runs until it pops.
+                Slow synchronous work freezes everything.
+
+                2. NAMES RESOLVE OUTWARD, LEXICALLY
+                Current scope → enclosing scope → … → global → ReferenceError.
+                Fixed by where the code is WRITTEN, not who called it.
+
+                3. A FUNCTION KEEPS ITS BIRTH SCOPE ALIVE (closure)
+                The frame pops; the environment survives while anything references it.
+                It captures the VARIABLE, not a snapshot of the value.
+
+                4. PROPERTIES ARE FOUND BY WALKING A CHAIN OF OBJECTS (prototype)
+                Reads walk up the chain. Writes always land on the object itself.
+                `class` is sugar over exactly this.
+
+                5. ASYNC WORK RESUMES THROUGH QUEUES, AFTER THE STACK EMPTIES
+                run one macrotask → drain ALL microtasks → render → repeat
+                promises/await are microtasks; timers and events are macrotasks.</div>
+
+            <h3 id="the-traps">The traps, ranked by how often they bite<a class="headerlink" href="#the-traps"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="card-grid">
+                <li class="is-bad"><b>1. Shared references</b><code>const b = a</code> does not copy. Mutating
+                    <code>b.x</code> changes <code>a.x</code>, and <code>{...a}</code> only protects the top level.
+                </li>
+                <li class="is-bad"><b>2. Lost <code>this</code></b>Passing <code>obj.method</code> as a callback drops
+                    the receiver. Wrap it in an arrow or <code>bind</code> it.</li>
+                <li class="is-bad"><b>3. Sequential awaits</b>Two independent <code>await</code>s cost the sum of both
+                    latencies. Start both promises, then <code>Promise.all</code>.</li>
+                <li class="is-bad"><b>4. Truthiness on <code>0</code> and <code>''</code></b><code>if (count)</code>
+                    and <code>x || fallback</code> silently treat valid values as missing.</li>
+                <li class="is-bad"><b>5. Mutating array methods</b><code>sort</code>, <code>reverse</code>,
+                    <code>splice</code> change the original. <code>toSorted</code>, <code>toReversed</code> and
+                    <code>slice</code> do not.
+                </li>
+                <li class="is-bad"><b>6. Unhandled rejections</b>A chain with no <code>catch</code> and no
+                    <code>await</code> in a <code>try</code> crashes Node and vanishes in the browser.
+                </li>
+                <li class="is-bad"><b>7. <code>fetch</code> not rejecting on 404</b>An HTTP error is a successful
+                    request. Check <code>res.ok</code> yourself.</li>
+                <li class="is-bad"><b>8. Leaked listeners and timers</b>Every registered handler keeps its whole
+                    closure alive. Remove them, or pass an <code>AbortSignal</code>.</li>
+            </ul>
+
+            <p>That last one is worth one more look, because "why is memory climbing?" is a question you will be asked
+                eventually and the answer is always the same shape — something reachable from a root that nobody
+                remembered to release:</p>
+
+            <div class="viz" data-viz="garbage-collection"></div>
+
+            <h3 id="two-more-worth-knowing">Two more worth knowing before you go<a class="headerlink"
+                    href="#two-more-worth-knowing" title="Permanent link">#</a></h3>
+
+            <p><strong>Destructuring</strong> is everywhere in modern code — in imports, in function signatures, in
+                <code>for…of</code> over <code>Object.entries</code>. Reading it as "a picture of the shape I expect"
+                makes it immediately legible:
+            </p>
+
+            <div class="viz" data-viz="destructuring"></div>
+
+            <p>And <strong>generators</strong>, while rarer, are the mechanism behind <code>for await…of</code>,
+                streaming responses and lazy pipelines — a function that can pause in the middle and be resumed later
+                with its locals intact:</p>
+
+            <div class="viz" data-viz="generator"></div>
+
+            <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
+            </h3>
+
+            <ol>
+                <li><a href="javascript-detailed-course.html">The JavaScript Detailed Course</a> — the same ground
+                    from first principles plus everything this page skipped: property descriptors, symbols, iterators,
+                    <code>Proxy</code>, regular expressions, the memory model, Node internals and tooling.
+                </li>
+                <li><a href="../programming-languages.html">All Programming Language Courses</a> — the Python track
+                    covers the same ideas from the other side, which is the fastest way to see which parts of
+                    JavaScript are genuinely unusual.</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noopener">MDN
+                        JavaScript reference</a> — the documentation to keep open. Accurate,
+                    versioned, and the source most other sites are paraphrasing.</li>
+                <li><a href="https://tc39.es/ecma262/" target="_blank" rel="noopener">The ECMAScript specification</a>
+                    — dense, but the final word when two blog posts disagree about coercion or the event loop.</li>
+                <li><a href="https://javascript.info/" target="_blank" rel="noopener">javascript.info</a> — a
+                    well-sequenced tutorial with exercises, good for filling gaps in a specific area.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p>If you keep one thing from this page: <strong>when JavaScript surprises you, ask which of the four
+                        mechanisms is involved</strong>. Is a reference shared? Which scope is this name resolved in?
+                    What is the call site, and therefore <code>this</code>? Which queue is this callback sitting in?
+                    Almost every bug is one of those four, and each one has a visible, mechanical answer.</p>
+            </div>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; JavaScript</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="javascript-study.js"></script>
+</body>
+
+</html>
