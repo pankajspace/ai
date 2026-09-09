@@ -120,14 +120,6 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 projects/techtoday/
 ├── README.md
 ├── index.html                   ← Software and AI Engineering homepage (8 hub tiles)
-├── ai-projects.html             ← AI Projects catalog (7 project cards)
-├── aws-guides.html              ← AWS Cloud for Developers catalog (2 course cards)
-├── devops-guides.html           ← DevOps for Developers catalog (3 guide cards)
-├── dsa-courses.html             ← Data Structures & Algorithms catalog (2 course cards)
-├── git-guides.html              ← Git Version Control catalog (2 course cards)
-├── networking-courses.html      ← Computer Networking catalog (2 course cards)
-├── os-courses.html              ← Operating Systems & Linux catalog (4 course cards)
-├── programming-languages.html   ← Programming Languages catalog (4 course cards)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -138,6 +130,14 @@ projects/techtoday/
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
+    ├── ai-projects.html         ← AI Projects catalog (7 project cards)
+    ├── aws-guides.html          ← AWS Cloud for Developers catalog (2 course cards)
+    ├── devops-guides.html       ← DevOps for Developers catalog (3 guide cards)
+    ├── dsa-courses.html         ← Data Structures & Algorithms catalog (2 course cards)
+    ├── git-guides.html          ← Git Version Control catalog (2 course cards)
+    ├── networking-courses.html  ← Computer Networking catalog (2 course cards)
+    ├── os-courses.html          ← Operating Systems & Linux catalog (4 course cards)
+    ├── programming-languages.html ← Programming Languages catalog (4 course cards)
     ├── ai/                      ← LLM, RAG, Docker, Strands guides
     ├── aws/                     ← AWS crash course & detailed architecture
     ├── devops/                  ← Docker, Kubernetes, CI/CD guides
@@ -163,7 +163,7 @@ projects/techtoday/
 
 ## Adding a New Project Card
 
-1. Open `ai-projects.html`.
+1. Open `study/ai-projects.html`.
 2. Inside the `<div class="grid">` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and theory/explanation link.
 4. Update `index.html` under the **AI Projects** tile's `.hub-item-list` to include the new project shortcut.
