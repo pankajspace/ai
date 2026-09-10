@@ -57,6 +57,8 @@
 ## DevOps
 1. [DevOps Crash Course](projects/techtoday/study/devops/devops-crash-course.html)
 2. [DevOps Detailed Course](projects/techtoday/study/devops/devops-detailed-course.html)
+3. [Docker Crash Course](projects/techtoday/study/docker/docker-crash-course.html)
+4. [Kubernetes Crash Course](projects/techtoday/study/kubernetes/kubernetes-crash-course.html)
 
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)

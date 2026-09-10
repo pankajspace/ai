@@ -132,7 +132,7 @@ projects/techtoday/
 └── study/
     ├── ai-projects.html         ← AI Projects catalog (7 project cards)
     ├── aws-courses.html         ← Amazon Web Services catalog (2 course cards)
-    ├── devops-courses.html      ← DevOps catalog (2 course cards)
+    ├── devops-courses.html      ← DevOps catalog (4 course cards)
     ├── dsa-courses.html         ← Data Structures & Algorithms catalog (2 course cards)
     ├── networking-courses.html  ← Computer Networking catalog (2 course cards)
     ├── os-courses.html          ← Operating Systems catalog (2 course cards)
@@ -140,8 +140,10 @@ projects/techtoday/
     ├── ai/                      ← LLM, RAG, Docker, Strands guides
     ├── aws/                     ← crash course + detailed course
     ├── devops/                  ← crash course + detailed course
+    ├── docker/                  ← developer-centric crash course
     ├── dsa/                     ← crash course + detailed course
     ├── javascript/              ← crash course + detailed course
+    ├── kubernetes/              ← developer-centric crash course
     ├── networking/              ← crash course + detailed course
     ├── os/                      ← crash course + detailed course
     └── python/                  ← crash course + full course
