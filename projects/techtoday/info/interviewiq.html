@@ -5,7 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>How it works — InterviewIQ · TechToday</title>
-    <meta name="description" content="How the InterviewIQ demo works: ReAct tool-calling agents, deterministic evaluation, and anti-recency session memory." />
+    <meta name="description"
+        content="How the InterviewIQ demo works: ReAct tool-calling agents, deterministic evaluation, and anti-recency session memory." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>" />
     <link rel="stylesheet" href="../style.css" />
@@ -21,7 +22,7 @@
                 <span class="logo">⚡</span>
                 <span>TechToday</span>
             </a>
-            <a href="../" class="back-link">&larr; Go Back</a>
+            <a href="../" class="nav-back-link">&larr; Home</a>
         </nav>
     </header>
 
@@ -29,7 +30,8 @@
         <section class="hero">
             <div class="container">
                 <h1>🎯 InterviewIQ</h1>
-                <p class="subtitle">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency Session Memory</p>
+                <p class="subtitle">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency
+                    Session Memory</p>
             </div>
         </section>
 
@@ -38,55 +40,103 @@
 
                 <h2>Concept</h2>
                 <p>
-                    <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ embeds the LLM as a cognitive orchestrator inside an autonomous loop.
+                    <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn
+                    <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a
+                    single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ
+                    embeds the LLM as a cognitive orchestrator inside an autonomous loop.
                 </p>
                 <p>
-                    The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density, STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger tracks candidate performance across all turns, applying deterministic mathematical ranking to eliminate recency bias and power mid-session meta-coaching.
+                    The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density,
+                    STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and
+                    synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger
+                    tracks candidate performance across all turns, applying deterministic mathematical ranking to
+                    eliminate recency bias and power mid-session meta-coaching.
                 </p>
 
                 <h2>Theory &amp; Concepts</h2>
 
                 <p><strong>1. Autonomous ReAct Agent Loop vs. Static Pipelines</strong></p>
                 <p>
-                    Traditional LLM applications operate in a rigid, single-turn sequence: <code>User Prompt &rarr; LLM &rarr; Output</code>. This passive paradigm struggles in complex evaluation tasks because language models suffer from cognitive overload, hallucination during precise mathematical counting, and an inability to inspect intermediate diagnostic data.
+                    Traditional LLM applications operate in a rigid, single-turn sequence:
+                    <code>User Prompt &rarr; LLM &rarr; Output</code>. This passive paradigm struggles in complex
+                    evaluation tasks because language models suffer from cognitive overload, hallucination during
+                    precise mathematical counting, and an inability to inspect intermediate diagnostic data.
                 </p>
                 <p>
-                    InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022) via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
+                    InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022)
+                    via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
                 </p>
                 <ul>
-                    <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter specifications, and natural-language descriptions.</li>
-                    <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata, the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g., invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate arguments.</li>
-                    <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to deterministic Python functions, captures the structured outputs, and appends them back to the message transcript under the <code>tool</code> role.</li>
-                    <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>) until all necessary observations are gathered, then switches from tool calling to generating its final synthesized coaching critique.</li>
+                    <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema
+                        (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter
+                        specifications, and natural-language descriptions.</li>
+                    <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata,
+                        the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g.,
+                        invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and
+                        <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate
+                        arguments.</li>
+                    <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to
+                        deterministic Python functions, captures the structured outputs, and appends them back to the
+                        message transcript under the <code>tool</code> role.</li>
+                    <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>)
+                        until all necessary observations are gathered, then switches from tool calling to generating its
+                        final synthesized coaching critique.</li>
                 </ul>
 
                 <p><strong>2. Separation of Concerns: Deterministic NLP vs. Generative Synthesis</strong></p>
                 <p>
-                    A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code does with 100% precision</em>. Large Language Models are probabilistic next-token predictors; they are inherently unreliable at exact character counting, regex matching, and statistical calculations.
+                    A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code
+                        does with 100% precision</em>. Large Language Models are probabilistic next-token predictors;
+                    they are inherently unreliable at exact character counting, regex matching, and statistical
+                    calculations.
                 </p>
                 <ul>
-                    <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled regex word-boundary patterns (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).</li>
-                    <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action, Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
-                    <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates morphological regex stems to match expected domain keywords across grammatical inflections (e.g., <code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>), scoring coverage against a calibrated tiered curve (0–100).</li>
-                    <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging, constructive feedback.</li>
+                    <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled
+                        regex word-boundary patterns
+                        (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word
+                        frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).
+                    </li>
+                    <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically
+                        parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action,
+                        Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact
+                        metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
+                    <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates
+                        morphological regex stems to match expected domain keywords across grammatical inflections
+                        (e.g., <code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>), scoring
+                        coverage against a calibrated tiered curve (0–100).</li>
+                    <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural
+                        analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language
+                        capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging,
+                        constructive feedback.</li>
                 </ul>
 
                 <p><strong>3. Structured Session Memory &amp; Anti-Recency Bias</strong></p>
                 <p>
-                    Standard conversational AI setups pass entire chat transcripts into the prompt context. This introduces severe <strong>recency bias</strong> and <strong>context dilution</strong> ("lost-in-the-middle" phenomenon), where the model overemphasizes recent turns and forgets early answers.
+                    Standard conversational AI setups pass entire chat transcripts into the prompt context. This
+                    introduces severe <strong>recency bias</strong> and <strong>context dilution</strong>
+                    ("lost-in-the-middle" phenomenon), where the model overemphasizes recent turns and forgets early
+                    answers.
                 </p>
                 <p>
-                    InterviewIQ overcomes this using an append-only structured session ledger (<code>InterviewSessionMemory</code>):
+                    InterviewIQ overcomes this using an append-only structured session ledger
+                    (<code>InterviewSessionMemory</code>):
                 </p>
                 <ul>
-                    <li><strong>Immutable Turn Ledgers:</strong> Every interview turn stores the question metadata, candidate answer, and raw structured dicts from all tool executions.</li>
-                    <li><strong>Mathematical Composite Ranking:</strong> Weakest and strongest performance areas are determined globally across all turns using a deterministic composite sort key:
-                        <br/>
+                    <li><strong>Immutable Turn Ledgers:</strong> Every interview turn stores the question metadata,
+                        candidate answer, and raw structured dicts from all tool executions.</li>
+                    <li><strong>Mathematical Composite Ranking:</strong> Weakest and strongest performance areas are
+                        determined globally across all turns using a deterministic composite sort key:
+                        <br />
                         <code>rank_key(turn) = (relevance_score &uarr;, star_score &uarr;, -total_filler_count &darr;)</code>
-                        <br/>
-                        The globally weakest turn is computed as <code>min(turns, key=rank_key)</code>, ensuring an objective assessment even if the candidate aced the most recent question.
+                        <br />
+                        The globally weakest turn is computed as <code>min(turns, key=rank_key)</code>, ensuring an
+                        objective assessment even if the candidate aced the most recent question.
                     </li>
-                    <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls this tool, reads the aggregated memory state, and provides an evidence-based progress review.</li>
+                    <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes
+                        <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session
+                        meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls
+                        this tool, reads the aggregated memory state, and provides an evidence-based progress review.
+                    </li>
                 </ul>
 
                 <h2>Request flow</h2>
@@ -125,28 +175,29 @@
                 <h2>Code flow</h2>
                 <div class="mermaid-wrap">
                     <div class="mermaid">
-flowchart TD
-    A[Browser<br/>question_id + answer] -->|POST /evaluate| B[app.py<br/>evaluate route]
-    B -->|question_data + answer| C[agent.py<br/>EvaluatorAgent.evaluate_answer]
-    C -->|messages + TOOLS_SCHEMA| D[OpenAI API / LLM]
-    D -->|tool_calls request| E[Tool Dispatcher<br/>_tool_functions]
-    E -->|call detect_filler_words| F[tools.py<br/>detect_filler_words]
-    E -->|call check_star_structure| G[tools.py<br/>check_star_structure]
-    E -->|call score_relevance| H[tools.py<br/>score_relevance]
-    F -->|filler metrics dict| E
-    G -->|STAR metrics dict| E
-    H -->|relevance score dict| E
-    E -->|structured tool observations| C
-    C -->|messages + tool results| D
-    D -->|synthesized coaching advice| C
-    C -->|record turn + raw results| I[InterviewSessionMemory<br/>add_turn]
-    C -->|structured JSON evaluation| B
-    B -->|HTTP 200 JSON| A
+                        flowchart TD
+                        A[Browser<br />question_id + answer] -->|POST /evaluate| B[app.py<br />evaluate route]
+                        B -->|question_data + answer| C[agent.py<br />EvaluatorAgent.evaluate_answer]
+                        C -->|messages + TOOLS_SCHEMA| D[OpenAI API / LLM]
+                        D -->|tool_calls request| E[Tool Dispatcher<br />_tool_functions]
+                        E -->|call detect_filler_words| F[tools.py<br />detect_filler_words]
+                        E -->|call check_star_structure| G[tools.py<br />check_star_structure]
+                        E -->|call score_relevance| H[tools.py<br />score_relevance]
+                        F -->|filler metrics dict| E
+                        G -->|STAR metrics dict| E
+                        H -->|relevance score dict| E
+                        E -->|structured tool observations| C
+                        C -->|messages + tool results| D
+                        D -->|synthesized coaching advice| C
+                        C -->|record turn + raw results| I[InterviewSessionMemory<br />add_turn]
+                        C -->|structured JSON evaluation| B
+                        B -->|HTTP 200 JSON| A
                     </div>
                 </div>
 
                 <h2>Backend — ReAct Agent &amp; Session Memory</h2>
-                <span class="file-label">agent.py — The multi-turn tool-calling loop and anti-recency session store</span>
+                <span class="file-label">agent.py — The multi-turn tool-calling loop and anti-recency session
+                    store</span>
                 <pre><code class="language-python">class InterviewSessionMemory:
     """Append-only session store for interview turns.
 
@@ -270,7 +321,8 @@ class EvaluatorAgent:
         return response.choices[0].message.content or ""</code></pre>
 
                 <h2>Deterministic Tools</h2>
-                <span class="file-label">tools.py — Rule-based exact metrics for filler words, STAR coverage, and keyword relevance</span>
+                <span class="file-label">tools.py — Rule-based exact metrics for filler words, STAR coverage, and
+                    keyword relevance</span>
                 <pre><code class="language-python">def detect_filler_words(answer: str) -> dict[str, Any]:
     """Count filler words (um, like, basically, etc.) and compute density."""
     # Step 1: Return zero counts immediately if response text is empty
@@ -376,7 +428,8 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
     }</code></pre>
 
                 <h2>API route</h2>
-                <span class="file-label">app.py — Flask blueprint endpoints exposing evaluation and session reporting</span>
+                <span class="file-label">app.py — Flask blueprint endpoints exposing evaluation and session
+                    reporting</span>
                 <pre><code class="language-python">@bp.route("/evaluate", methods=["POST"])
 def evaluate():
     """Evaluate a candidate's answer to an interview question."""

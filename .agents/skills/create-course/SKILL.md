@@ -114,9 +114,7 @@ If the topic's code samples are not Python/JavaScript, extend the highlighter: a
                 <span class="tt-site-logo" aria-hidden="true">⚡</span>
                 <span>TechToday</span>
             </a>
-            <a href="../<slug>-courses.html" class="nav-back-link"
-                style="color: var(--tt-header-muted); font-size: 13px; text-decoration: none;">&larr; Back to <Topic>
-                Courses</a>
+            <a href="../<slug>-courses.html" class="nav-back-link">&larr; <Topic> Courses</a>
         </nav>
     </header>
     <div class="progress" aria-hidden="true"></div>
