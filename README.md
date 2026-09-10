@@ -31,12 +31,12 @@
 # Learn
 
 ## Python
-1. [Python Crash Course](projects/techtoday/study/python/python-crash-course.html)
-2. [Python Detailed Course](projects/techtoday/study/python/python-detailed-course.html)
+1. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
+2. [Python Detailed Course](projects/techtoday/study/programming-languages/python/python-detailed-course.html)
 
 ## JavaScript
-1. [JavaScript Crash Course](projects/techtoday/study/javascript/javascript-crash-course.html)
-2. [JavaScript Detailed Course](projects/techtoday/study/javascript/javascript-detailed-course.html)
+1. [JavaScript Crash Course](projects/techtoday/study/programming-languages/javascript/javascript-crash-course.html)
+2. [JavaScript Detailed Course](projects/techtoday/study/programming-languages/javascript/javascript-detailed-course.html)
 
 ## DSA
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
@@ -55,10 +55,10 @@
 2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
 
 ## DevOps
-1. [DevOps Crash Course](projects/techtoday/study/devops/devops-crash-course.html)
-2. [DevOps Detailed Course](projects/techtoday/study/devops/devops-detailed-course.html)
-3. [Docker Crash Course](projects/techtoday/study/docker/docker-crash-course.html)
-4. [Kubernetes Crash Course](projects/techtoday/study/kubernetes/kubernetes-crash-course.html)
+1. [DevOps Crash Course](projects/techtoday/study/devops/devops/devops-crash-course.html)
+2. [DevOps Detailed Course](projects/techtoday/study/devops/devops/devops-detailed-course.html)
+3. [Docker Crash Course](projects/techtoday/study/devops/docker/docker-crash-course.html)
+4. [Kubernetes Crash Course](projects/techtoday/study/devops/kubernetes/kubernetes-crash-course.html)
 
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)

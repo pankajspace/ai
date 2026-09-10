@@ -29,7 +29,7 @@
                 <span class="tt-site-logo" aria-hidden="true">⚡</span>
                 <span>TechToday</span>
             </a>
-            <a href="../dsa-courses.html" class="nav-back-link">&larr; DSA Courses</a>
+            <a href="dsa-courses.html" class="nav-back-link">&larr; DSA Courses</a>
         </nav>
     </header>
     <div class="progress" aria-hidden="true"></div>
@@ -277,7 +277,8 @@ console.log(data);                  // [3, 5, 9, 2, 0, 0, 0]
                     at 1, sell at 6).</p>
                 <p>Comparing every pair is <code>O(n²)</code>. The trick is that today's best sale only depends on
                     <strong>the cheapest price seen so far</strong>, and that is a single running minimum. One pass,
-                    two variables, <code>O(n)</code> time and <code>O(1)</code> space.</p>
+                    two variables, <code>O(n)</code> time and <code>O(1)</code> space.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — best time to buy and sell stock">
                     <div class="tab-pane" data-lang="python">
@@ -495,7 +496,7 @@ function reverse(head) {        // O(n) time, O(1) space
                 <p class="worked-q">Decide whether a singly linked list contains a cycle — and if it does, return the
                     node where the loop begins. You may not use extra memory proportional to the list.</p>
                 <p>Storing visited nodes in a set works but costs <code>O(n)</code> memory. <strong>Floyd's tortoise
-                    and hare</strong> runs one pointer at double speed: inside a loop the fast pointer laps the slow
+                        and hare</strong> runs one pointer at double speed: inside a loop the fast pointer laps the slow
                     one, so they must collide. Restarting one pointer at the head and stepping both one at a time then
                     lands exactly on the entry node.</p>
 
@@ -546,7 +547,8 @@ function detectCycle(head) {        // O(n) time, O(1) space
                     nodes rather than allocating new ones.</p>
                 <p>The messy part of every merge is the first node — you do not know which list it comes from. A
                     <strong>dummy head</strong> removes that special case entirely: attach everything after a
-                    throwaway node and return <code>dummy.next</code>. One pass, <code>O(n + m)</code>.</p>
+                    throwaway node and return <code>dummy.next</code>. One pass, <code>O(n + m)</code>.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — merge two sorted lists">
                     <div class="tab-pane" data-lang="python">
@@ -674,7 +676,8 @@ console.log(isBalanced("{[(])}"));      // false
                     and <code>get_min</code> — all in <code>O(1)</code>.</p>
                 <p>Scanning for the minimum on demand is <code>O(n)</code>. The insight is that the minimum is itself
                     <em>stack-shaped</em>: whatever was smallest before a push is still smallest after the matching
-                    pop. So keep a second stack of running minima that rises and falls with the first.</p>
+                    pop. So keep a second stack of running minima that rises and falls with the first.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — min stack with O(1) get_min">
                     <div class="tab-pane" data-lang="python">
@@ -741,7 +744,7 @@ console.log(s.getMin());            // 2 - the earlier 2 is still there
                     warmer one. <code>[73, 74, 75, 71, 69, 72, 76, 73]</code> becomes <code>[1, 1, 4, 2, 1, 1, 0,
                     0]</code>.</p>
                 <p>The brute force compares every day with every later day: <code>O(n²)</code>. A <strong>monotonic
-                    stack</strong> holds the indices of days still waiting for an answer, kept in decreasing
+                        stack</strong> holds the indices of days still waiting for an answer, kept in decreasing
                     temperature order. Each new warmer day resolves — and pops — all of them at once, so every index
                     is pushed and popped once: <code>O(n)</code>.</p>
 
@@ -1040,11 +1043,13 @@ console.log(maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3));
                 <b>Top Interview Question 3</b>
                 <p class="worked-q">Implement a fixed-capacity circular queue with <code>O(1)</code>
                     <code>enqueue</code>, <code>dequeue</code>, <code>front</code> and <code>rear</code>, backed by a
-                    plain array.</p>
+                    plain array.
+                </p>
                 <p>Shifting elements after every dequeue is <code>O(n)</code>. Instead let the head and tail
                     <strong>wrap around</strong> a fixed buffer using <code>% capacity</code>, and track a count so
                     you can tell a full buffer from an empty one — the classic ring buffer behind audio pipelines and
-                    network drivers.</p>
+                    network drivers.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — design a circular queue">
                     <div class="tab-pane" data-lang="python">
@@ -1237,7 +1242,8 @@ console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
                     ["bat"]]</code>.</p>
                 <p>Comparing every word with every other is <code>O(n²·L)</code>. The move is to build a
                     <strong>canonical key</strong> that all anagrams share — the sorted letters, or a 26-slot letter
-                    count — and use it as a dictionary key. One pass, <code>O(n·L log L)</code>.</p>
+                    count — and use it as a dictionary key. One pass, <code>O(n·L log L)</code>.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — group anagrams by canonical key">
                     <div class="tab-pane" data-lang="python">
@@ -1281,7 +1287,8 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 <b>Top Interview Question 2</b>
                 <p class="worked-q">Find the length of the longest run of consecutive integers in an unsorted array.
                     <code>[100, 4, 200, 1, 3, 2]</code> gives <code>4</code> (the run <code>1, 2, 3, 4</code>).
-                    Sorting is not allowed — it must be <code>O(n)</code>.</p>
+                    Sorting is not allowed — it must be <code>O(n)</code>.
+                </p>
                 <p>Put everything in a set, then only start counting from a number that has no left neighbour. That
                     guard is what keeps it linear: each run is walked exactly once, from its true start, so the total
                     work is <code>O(n)</code> even though there is a loop inside a loop.</p>
@@ -1333,7 +1340,8 @@ console.log(longestConsecutive([100, 4, 200, 1, 3, 2]));   // 4
                 <p>Counting is the easy half — a hash map does it in <code>O(n)</code>. Sorting the counts is
                     <code>O(n log n)</code>, but you can do better: a frequency can never exceed <code>n</code>, so
                     <strong>bucket by count</strong> into an array of lists and read it from the back. That is
-                    <code>O(n)</code> overall.</p>
+                    <code>O(n)</code> overall.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — top k frequent elements">
                     <div class="tab-pane" data-lang="python">
@@ -3115,11 +3123,13 @@ console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]));
             <div class="worked">
                 <b>Top Interview Question 3</b>
                 <p class="worked-q">Return the <code>k</code>-th largest element of an unsorted array — the
-                    <code>k</code>-th in sorted order, not the <code>k</code>-th distinct value.</p>
+                    <code>k</code>-th in sorted order, not the <code>k</code>-th distinct value.
+                </p>
                 <p>Sorting gives the answer in <code>O(n log n)</code>, and that is a perfectly good first reply.
                     <strong>Quickselect</strong> does better: it is quicksort that only recurses into the half
                     containing the answer, so the work halves each round and the average cost collapses to
-                    <code>O(n)</code>.</p>
+                    <code>O(n)</code>.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — quickselect for the k-th largest">
                     <div class="tab-pane" data-lang="python">
@@ -3213,7 +3223,8 @@ console.log(kthLargest([3, 2, 1, 5, 6, 4], 2));   // 5
                     index 0, can you reach the last index? <code>[2, 3, 1, 1, 4]</code> is reachable; <code>[3, 2, 1,
                     0, 4]</code> is not.</p>
                 <p>Exploring every jump sequence is exponential. Greedily track the <strong>furthest index reachable
-                    so far</strong>: if the loop ever stands on an index beyond that reach, the array is broken there
+                        so far</strong>: if the loop ever stands on an index beyond that reach, the array is broken
+                    there
                     and no later element can help. One pass, <code>O(n)</code>.</p>
 
                 <div class="code-tabs" data-label="Answer — jump game by furthest reach">
@@ -3301,7 +3312,8 @@ console.log(eraseOverlapIntervals([[1, 2], [2, 3], [3, 4], [1, 3]]));   // 1
                 <p>Trying every start is <code>O(n²)</code>. Two observations collapse it: if total gas is less than
                     total cost the trip is impossible; and if the tank runs dry somewhere between <code>s</code> and
                     <code>i</code>, then <em>no</em> station in that range can be the start — so jump the candidate
-                    all the way to <code>i + 1</code>. One pass, <code>O(n)</code>.</p>
+                    all the way to <code>i + 1</code>. One pass, <code>O(n)</code>.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — gas station in one pass">
                     <div class="tab-pane" data-lang="python">
@@ -3437,7 +3449,8 @@ console.log(mergeSort([5, 2, 9, 1, 5, 6]));   // [1, 2, 5, 5, 6, 9]
                 <p>Divide and conquer solves it in <code>O(n log n)</code>: the majority of the whole array must be
                     the majority of at least one half. But the same cancellation idea done iteratively —
                     <strong>Boyer-Moore voting</strong> — pairs off each majority element with a different one, and
-                    whatever survives is the answer. <code>O(n)</code> time, <code>O(1)</code> space.</p>
+                    whatever survives is the answer. <code>O(n)</code> time, <code>O(1)</code> space.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — majority element by cancellation">
                     <div class="tab-pane" data-lang="python">
@@ -3475,11 +3488,13 @@ console.log(majorityElement([2, 2, 1, 1, 1, 2, 2]));   // 2
             <div class="worked">
                 <b>Top Interview Question 3</b>
                 <p class="worked-q">Implement <code>pow(x, n)</code> for a real <code>x</code> and an integer
-                    <code>n</code> that may be negative, faster than multiplying <code>n</code> times.</p>
+                    <code>n</code> that may be negative, faster than multiplying <code>n</code> times.
+                </p>
                 <p>Multiplying in a loop is <code>O(n)</code> and times out for large exponents. Halve instead:
                     <code>x<sup>n</sup> = (x<sup>n/2</sup>)²</code>, with one extra multiply when <code>n</code> is
                     odd. The exponent shrinks by half every step, so it is <code>O(log n)</code> — the same <em>binary
-                    exponentiation</em> that powers modular arithmetic in cryptography.</p>
+                        exponentiation</em> that powers modular arithmetic in cryptography.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — fast exponentiation">
                     <div class="tab-pane" data-lang="python">
@@ -3661,7 +3676,8 @@ console.log(fibIterative(90));          // use BigInt past 2^53 - 1
                 <p>To arrive at step <code>n</code> you must have come from <code>n - 1</code> or <code>n - 2</code>,
                     so <code>ways(n) = ways(n - 1) + ways(n - 2)</code> — Fibonacci in disguise. Since only the last
                     two values are ever needed, the table collapses into two variables: <code>O(n)</code> time,
-                    <code>O(1)</code> space.</p>
+                    <code>O(1)</code> space.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — climbing stairs">
                     <div class="tab-pane" data-lang="python">
@@ -3697,7 +3713,8 @@ console.log(climbStairs(5));        // 8
                 <b>Top Interview Question 2</b>
                 <p class="worked-q">Houses stand in a row, each holding some money. Robbing two adjacent houses
                     triggers the alarm. What is the most you can take? <code>[2, 7, 9, 3, 1]</code> gives
-                    <code>12</code>.</p>
+                    <code>12</code>.
+                </p>
                 <p>At every house there are exactly two choices: <em>rob it</em> (and add the best total from two
                     houses back) or <em>skip it</em> (and carry the best total from one house back). Take the larger.
                     That is the whole recurrence, and again only two running values are needed.</p>
@@ -3736,11 +3753,13 @@ console.log(rob([2, 7, 9, 3, 1]));  // 12  (houses 0, 2 and 4)
                 <b>Top Interview Question 3</b>
                 <p class="worked-q">Given coin denominations and a target amount, return the fewest coins that make
                     the amount exactly, or <code>-1</code> if it cannot be done. <code>([1, 5, 6, 9], 11)</code> needs
-                    <code>2</code>.</p>
+                    <code>2</code>.
+                </p>
                 <p>Greedily grabbing the biggest coin is <strong>wrong</strong> — for <code>[1, 5, 6, 9]</code> and
                     <code>11</code> it takes 9 + 1 + 1 = three coins, while 5 + 6 needs two. Build a table instead:
                     the best way to make <code>amount</code> is one coin plus the best way to make <code>amount -
-                    coin</code>. <code>O(amount × coins)</code>.</p>
+                    coin</code>. <code>O(amount × coins)</code>.
+                </p>
 
                 <div class="code-tabs" data-label="Answer — coin change (fewest coins)">
                     <div class="tab-pane" data-lang="python">
@@ -4126,7 +4145,7 @@ console.log(combinationSum([2, 3, 6, 7], 7));   // [[2,2,3], [7]]
                 <li>📘 The <a href="dsa-detailed-course.html">DSA Detailed Course</a> — the same ground in 38 sections,
                     plus prefix sums, union-find, topological sort, MSTs, segment trees, string matching and a full
                     practice roadmap.</li>
-                <li>📚 Browse all guides in the <a href="../dsa-courses.html">DSA Courses catalog</a>.</li>
+                <li>📚 Browse all guides in the <a href="dsa-courses.html">DSA Courses catalog</a>.</li>
                 <li>📖 <a href="https://visualgo.net/">VisuAlgo</a> — interactive visualisations of every structure
                     here.</li>
                 <li>🧠 <a href="https://leetcode.com/">LeetCode</a> — for the repetitions. Time-box to 25 minutes, then

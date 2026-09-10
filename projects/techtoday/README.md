@@ -130,23 +130,18 @@ projects/techtoday/
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
-    ├── ai-projects.html         ← AI Projects catalog (7 project cards)
-    ├── aws-courses.html         ← Amazon Web Services catalog (2 course cards)
-    ├── devops-courses.html      ← DevOps catalog (4 course cards)
-    ├── dsa-courses.html         ← Data Structures & Algorithms catalog (2 course cards)
-    ├── networking-courses.html  ← Computer Networking catalog (2 course cards)
-    ├── os-courses.html          ← Operating Systems catalog (2 course cards)
-    ├── programming-languages.html ← Programming Languages catalog (4 course cards)
-    ├── ai/                      ← LLM, RAG, Docker, Strands guides
-    ├── aws/                     ← crash course + detailed course
-    ├── devops/                  ← crash course + detailed course
-    ├── docker/                  ← developer-centric crash course
-    ├── dsa/                     ← crash course + detailed course
-    ├── javascript/              ← crash course + detailed course
-    ├── kubernetes/              ← developer-centric crash course
-    ├── networking/              ← crash course + detailed course
-    ├── os/                      ← crash course + detailed course
-    └── python/                  ← crash course + full course
+    ├── ai/                      ← ai-projects.html catalog + LLM, RAG, Docker, Strands guides
+    ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
+    ├── devops/                  ← devops-courses.html catalog (4 cards)
+    │   ├── devops/              ← crash course + detailed course
+    │   ├── docker/              ← developer-centric crash course
+    │   └── kubernetes/          ← developer-centric crash course
+    ├── dsa/                     ← dsa-courses.html catalog + crash course + detailed course
+    ├── networking/              ← networking-courses.html catalog + crash course + detailed course
+    ├── os/                      ← os-courses.html catalog + crash course + detailed course
+    └── programming-languages/   ← programming-languages.html catalog (4 cards)
+        ├── javascript/          ← crash course + detailed course
+        └── python/              ← crash course + full course
 ```
 
 ---
@@ -163,7 +158,7 @@ projects/techtoday/
 
 ## Adding a New Project Card
 
-1. Open `study/ai-projects.html`.
+1. Open `study/ai/ai-projects.html`.
 2. Inside the `<div class="grid">` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and theory/explanation link.
 4. Update `index.html` under the **AI Projects** tile's `.hub-item-list` to include the new project shortcut.

@@ -22,8 +22,8 @@ Given a topic, derive a lowercase hyphenated `<slug>` (`kubernetes`, `system-des
 projects/techtoday/
 ├── index.html                        ← add/extend one hub tile
 └── study/
-    ├── <slug>-courses.html           ← catalog page (2 cards per topic)
     └── <slug>/
+        ├── <slug>-courses.html       ← catalog page (2 cards)
         ├── <slug>-crash-course.html
         ├── <slug>-detailed-course.html
         ├── <slug>-study.css          ← copy of dsa-study.css
@@ -35,7 +35,7 @@ Rules that hold across the whole site:
 - **No frameworks, no build step, no CDN.** Plain HTML + one CSS file + one JS file per topic folder.
 - Each topic folder is **self-contained** except for `../../site-header.css`, which is shared.
 - Catalog page naming follows the topic's own noun: `-courses.html` for courses, `-guides.html` where the existing site already used that (`git-guides.html`, `devops-guides.html`). For a new topic prefer `-courses.html`.
-- When the argument is **multiple topics that belong together** (e.g. "Rust, Go" → *Systems Languages*), give each topic its own `study/<slug>/` folder but a **single shared catalog page and a single hub tile**. Follow `programming-languages.html`, which holds Python and JavaScript.
+- When the argument is **multiple topics that belong together** (e.g. "Rust, Go" → *Systems Languages*), nest each topic folder under a parent folder named after the hub tile — `study/<tile-slug>/<slug>/` — with a **single catalog page at `study/<tile-slug>/<tile-slug>-courses.html`** listing every topic's cards, and a **single hub tile with one CTA**. Follow `study/programming-languages/{python,javascript}/` and `study/devops/{devops,docker,kubernetes}/`. Paths inside the nested course pages need one extra `../` level (`../../../site-header.css`).
 
 ---
 
@@ -289,9 +289,9 @@ Write these files **incrementally, a few sections at a time**, appending to the 
 
 ---
 
-## 7. Catalog page — `study/<slug>-courses.html`
+## 7. Catalog page — `study/<slug>/<slug>-courses.html`
 
-Copy `study/dsa-courses.html` and change the title, description, favicon emoji, hero copy and cards. It uses the site-wide `../style.css` (not the study CSS), `.grid.grid-2` for two cards, plain `.grid` for four or more:
+Copy `study/dsa/dsa-courses.html` and change the title, description, favicon emoji, hero copy and cards. It uses the site-wide `../../style.css` (not the study CSS), `.grid.grid-2` for two cards, plain `.grid` for four or more:
 
 ```html
 <div class="card">
@@ -300,11 +300,11 @@ Copy `study/dsa-courses.html` and change the title, description, favicon emoji, 
         <h3><Topic> Crash Course</h3>
     </div>
     <p>Two lines naming the actual sections covered — not adjectives.</p>
-    <a href="<slug>/<slug>-crash-course.html">Start learning &rarr;</a>
+    <a href="<slug>-crash-course.html">Start learning &rarr;</a>
 </div>
 ```
 
-For a multi-topic tile, one shared catalog page lists every topic's crash + detailed card, ordered crash/detailed per topic.
+For a multi-topic tile, the single catalog page sits in the tile folder and lists every topic's crash + detailed card, ordered crash/detailed per topic.
 
 ---
 
@@ -337,7 +337,7 @@ Append one `.hub-tile` inside `.hub-grid`, after the existing tiles, preceded by
         <!-- second sub-tile -->
     </div>
     <div class="hub-cta">
-        <a href="study/<slug>-courses.html">Explore All <Topic> Courses &rarr;</a>
+        <a href="study/<slug>/<slug>-courses.html">Explore All <Topic> Courses &rarr;</a>
     </div>
 </div>
 ```
