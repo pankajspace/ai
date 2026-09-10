@@ -1012,6 +1012,134 @@ class Dog(Animal):
                 I/O, DOM events) get one per turn.
             </p>
 
+            <p>Before stepping through the animation, here is the whole machine on one picture — the four parts and
+                the single circular path a callback travels through them.</p>
+
+            <figure class="figure">
+                <svg viewBox="0 0 880 590" role="img"
+                    aria-label="Complete map of the JavaScript event loop: the single-threaded engine with its call stack and heap hands asynchronous work to the host, the host enqueues finished callbacks onto the task queue while settled promises enqueue onto the microtask queue, and the event loop takes one macrotask, drains every microtask, renders, and pushes each callback back onto the empty call stack">
+                    <defs>
+                        <marker id="el-map-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                            orient="auto">
+                            <path d="M0,0 L10,5 L0,10 z" fill="#94a0ad" />
+                        </marker>
+                        <marker id="el-map-arrow-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7"
+                            markerHeight="7" orient="auto">
+                            <path d="M0,0 L10,5 L0,10 z" fill="#e0af68" />
+                        </marker>
+                    </defs>
+
+                    <!-- the engine -->
+                    <rect x="100" y="44" width="290" height="206" rx="10" class="n-idle" stroke-width="1.5" />
+                    <text x="245" y="64" class="n-sub">the JavaScript thread — one thing at a time</text>
+
+                    <rect x="116" y="76" width="128" height="160" rx="7" class="n-idle" stroke-width="1" />
+                    <text x="180" y="92" class="n-sub">call stack</text>
+                    <rect x="128" y="100" width="112" height="24" rx="4" class="n-act" />
+                    <text x="184" y="112" class="n-label n-label-dark" style="font-size:11px">console.log</text>
+                    <rect x="128" y="128" width="112" height="24" rx="4" class="n-cmp" />
+                    <text x="184" y="140" class="n-label n-label-dark" style="font-size:11px">render()</text>
+                    <rect x="128" y="156" width="112" height="24" rx="4" class="n-cmp" />
+                    <text x="184" y="168" class="n-label n-label-dark" style="font-size:11px">main()</text>
+                    <rect x="128" y="184" width="112" height="24" rx="4" class="n-idle" stroke-width="1" />
+                    <text x="184" y="196" class="n-label" style="font-size:11px">&lt;script&gt;</text>
+                    <text x="180" y="226" class="n-sub">LIFO · push / pop</text>
+
+                    <rect x="256" y="76" width="126" height="160" rx="7" class="n-idle" stroke-width="1" />
+                    <text x="319" y="92" class="n-sub">heap</text>
+                    <rect x="268" y="102" width="102" height="22" rx="4" class="n-idle" stroke-width="1" />
+                    <text x="319" y="113" class="n-label" style="font-size:11px">objects</text>
+                    <rect x="268" y="130" width="102" height="22" rx="4" class="n-idle" stroke-width="1" />
+                    <text x="319" y="141" class="n-label" style="font-size:11px">closures</text>
+                    <rect x="268" y="158" width="102" height="22" rx="4" class="n-cmp" />
+                    <text x="319" y="169" class="n-label n-label-dark" style="font-size:11px">promises</text>
+                    <text x="319" y="202" class="n-sub">values live here —</text>
+                    <text x="319" y="216" class="n-sub">the stack holds frames</text>
+
+                    <!-- the host -->
+                    <rect x="490" y="44" width="290" height="206" rx="10" class="n-idle" stroke-width="1.5" />
+                    <text x="635" y="64" class="n-sub">the host — browser / Node, many threads</text>
+                    <rect x="504" y="78" width="262" height="30" rx="6" class="n-idle" stroke-width="1" />
+                    <text x="635" y="93" class="n-label" style="font-size:11px">timers — setTimeout / setInterval</text>
+                    <rect x="504" y="114" width="262" height="30" rx="6" class="n-idle" stroke-width="1" />
+                    <text x="635" y="129" class="n-label" style="font-size:11px">network — fetch, XHR, WebSocket</text>
+                    <rect x="504" y="150" width="262" height="30" rx="6" class="n-idle" stroke-width="1" />
+                    <text x="635" y="165" class="n-label" style="font-size:11px">DOM events — click, key, scroll</text>
+                    <rect x="504" y="186" width="262" height="30" rx="6" class="n-idle" stroke-width="1" />
+                    <text x="635" y="201" class="n-label" style="font-size:11px">disk &amp; OS I/O — libuv pool</text>
+                    <text x="635" y="238" class="n-sub">the waiting happens here, off your thread</text>
+
+                    <line x1="390" y1="130" x2="486" y2="130" class="e-act" marker-end="url(#el-map-arrow-hot)" />
+                    <text x="438" y="110" class="n-sub">① hand off work</text>
+                    <text x="438" y="122" class="n-sub">returns at once</text>
+
+                    <!-- enqueue arrows -->
+                    <line x1="245" y1="250" x2="245" y2="296" class="e-idle" marker-end="url(#el-map-arrow)" />
+                    <text x="252" y="268" class="n-sub" style="text-anchor:start">② a promise</text>
+                    <text x="252" y="282" class="n-sub" style="text-anchor:start">settles</text>
+                    <line x1="635" y1="250" x2="635" y2="296" class="e-idle" marker-end="url(#el-map-arrow)" />
+                    <text x="642" y="268" class="n-sub" style="text-anchor:start">② the host</text>
+                    <text x="642" y="282" class="n-sub" style="text-anchor:start">finishes</text>
+
+                    <!-- the two queues -->
+                    <rect x="100" y="300" width="290" height="110" rx="10" class="n-idle" stroke-width="1.5" />
+                    <text x="245" y="320" class="n-sub">MICROTASK QUEUE — jumps the line</text>
+                    <rect x="116" y="330" width="258" height="26" rx="5" class="n-cmp" />
+                    <text x="245" y="343" class="n-label n-label-dark" style="font-size:11px">.then / .catch /
+                        .finally</text>
+                    <rect x="116" y="362" width="258" height="26" rx="5" class="n-cmp" />
+                    <text x="245" y="375" class="n-label n-label-dark" style="font-size:11px">await resume ·
+                        queueMicrotask</text>
+                    <text x="245" y="402" class="n-sub">drained COMPLETELY, every turn</text>
+
+                    <rect x="490" y="300" width="290" height="110" rx="10" class="n-idle" stroke-width="1.5" />
+                    <text x="635" y="320" class="n-sub">TASK QUEUE — macrotasks</text>
+                    <rect x="506" y="330" width="258" height="26" rx="5" class="n-out" />
+                    <text x="635" y="343" class="n-label n-label-dark" style="font-size:11px">timer fired · I/O
+                        complete</text>
+                    <rect x="506" y="362" width="258" height="26" rx="5" class="n-out" />
+                    <text x="635" y="375" class="n-label n-label-dark" style="font-size:11px">click handler ·
+                        MessageChannel</text>
+                    <text x="635" y="402" class="n-sub">exactly ONE taken per turn</text>
+
+                    <line x1="245" y1="410" x2="245" y2="456" class="e-idle" marker-end="url(#el-map-arrow)" />
+                    <text x="252" y="437" class="n-sub" style="text-anchor:start">③ served first</text>
+                    <line x1="635" y1="410" x2="635" y2="456" class="e-idle" marker-end="url(#el-map-arrow)" />
+                    <text x="642" y="437" class="n-sub" style="text-anchor:start">③ one per turn</text>
+
+                    <!-- the loop itself -->
+                    <rect x="100" y="460" width="680" height="96" rx="10" class="n-idle" stroke-width="1.5" />
+                    <text x="440" y="480" class="n-sub">THE EVENT LOOP — one turn, repeated forever</text>
+                    <rect x="116" y="492" width="150" height="44" rx="6" class="n-out" />
+                    <text x="191" y="509" class="n-label n-label-dark" style="font-size:11px">1 · take ONE</text>
+                    <text x="191" y="524" class="n-label n-label-dark" style="font-size:11px">macrotask</text>
+                    <rect x="282" y="492" width="150" height="44" rx="6" class="n-cmp" />
+                    <text x="357" y="509" class="n-label n-label-dark" style="font-size:11px">2 · drain ALL</text>
+                    <text x="357" y="524" class="n-label n-label-dark" style="font-size:11px">microtasks</text>
+                    <rect x="448" y="492" width="150" height="44" rx="6" class="n-done" />
+                    <text x="523" y="509" class="n-label n-label-dark" style="font-size:11px">3 · render</text>
+                    <text x="523" y="524" class="n-label n-label-dark" style="font-size:10px">rAF → layout →
+                        paint</text>
+                    <rect x="614" y="492" width="150" height="44" rx="6" class="n-idle" stroke-width="1" />
+                    <text x="689" y="509" class="n-label" style="font-size:11px">4 · repeat</text>
+                    <text x="689" y="524" class="n-label" style="font-size:10px">only if stack empty</text>
+
+                    <path d="M100 508 H56 V150 H112" class="e-act" stroke-linejoin="round"
+                        marker-end="url(#el-map-arrow-hot)" />
+                    <text transform="rotate(-90 42 330)" x="42" y="330" class="n-sub">④ pushed onto the empty
+                        stack</text>
+
+                    <text x="440" y="576" class="n-sub">step 2 also runs microtasks queued during step 2 — an endless
+                        chain there never reaches step 3, and the tab freezes</text>
+                </svg>
+                <figcaption class="viz-caption">The complete circuit. Nothing in this picture runs in parallel with
+                    your code except the host's own threads on the right; every callback you write comes back through
+                    the same single stack. The colours match the animation below — <span
+                        style="color:var(--accent)">running now</span>, <span style="color:var(--blue)">queued
+                        microtask</span>, <span style="color:var(--red)">queued macrotask</span>, <span
+                        style="color:var(--green)">rendered</span>.</figcaption>
+            </figure>
+
             <div class="viz" data-viz="event-loop"></div>
 
             <div class="analogy">
