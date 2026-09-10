@@ -119,7 +119,7 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── index.html                   ← Software and AI Engineering homepage (8 hub tiles)
+├── index.html                   ← Software and AI Engineering homepage (12 hub tiles)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -132,17 +132,15 @@ projects/techtoday/
 └── study/
     ├── ai-projects.html         ← AI Projects catalog (7 project cards)
     ├── aws-courses.html         ← Amazon Web Services catalog (2 course cards)
-    ├── devops-guides.html       ← DevOps for Developers catalog (3 guide cards)
+    ├── devops-courses.html      ← DevOps catalog (2 course cards)
     ├── dsa-courses.html         ← Data Structures & Algorithms catalog (2 course cards)
-    ├── git-guides.html          ← Git Version Control catalog (2 course cards)
     ├── networking-courses.html  ← Computer Networking catalog (2 course cards)
     ├── os-courses.html          ← Operating Systems catalog (2 course cards)
     ├── programming-languages.html ← Programming Languages catalog (4 course cards)
     ├── ai/                      ← LLM, RAG, Docker, Strands guides
     ├── aws/                     ← crash course + detailed course
-    ├── devops/                  ← Docker, Kubernetes, CI/CD guides
+    ├── devops/                  ← crash course + detailed course
     ├── dsa/                     ← crash course + detailed course
-    ├── git/                     ← crash course + detailed course
     ├── javascript/              ← crash course + detailed course
     ├── networking/              ← crash course + detailed course
     ├── os/                      ← crash course + detailed course
@@ -155,7 +153,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 12 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Design Patterns, LLD, HDL, Git, DevOps, AWS, AI Engineering, AI Projects). Six are populated with 2 items each and a bottom Explore All link pointing at their catalog page; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 12 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Design Patterns, LLD, HDL, Git, DevOps, AWS, AI Engineering, AI Projects). Seven are populated with 2 items each and a bottom Explore All link pointing at their catalog page; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
