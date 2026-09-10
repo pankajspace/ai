@@ -69,11 +69,12 @@
                 <li><a href="#7-ports">Ports &amp; Talking to Other Containers</a></li>
                 <li><a href="#8-volumes">Volumes &mdash; Where Your Data Lives</a></li>
                 <li><a href="#9-compose">Compose &mdash; Your App Plus Its Real Dependencies</a></li>
-                <li><a href="#10-signals">Signals, PID 1 &amp; Graceful Shutdown</a></li>
-                <li><a href="#11-registries">Registries, Tags &amp; Digests</a></li>
-                <li><a href="#12-debugging">Debugging a Container That Will Not Start</a></li>
-                <li><a href="#13-production">Making It Production-Ready</a></li>
-                <li><a href="#14-one-page">The Whole Thing on One Page</a></li>
+                <li><a href="#10-microservices">Microservices &mdash; Many Containers, One System</a></li>
+                <li><a href="#11-signals">Signals, PID 1 &amp; Graceful Shutdown</a></li>
+                <li><a href="#12-registries">Registries, Tags &amp; Digests</a></li>
+                <li><a href="#13-debugging">Debugging a Container That Will Not Start</a></li>
+                <li><a href="#14-production">Making It Production-Ready</a></li>
+                <li><a href="#15-one-page">The Whole Thing on One Page</a></li>
             </ol>
 
             <h2 id="unit-1">Unit 1 &mdash; The Model<a class="headerlink" href="#unit-1" title="Permanent link">#</a>
@@ -384,7 +385,7 @@ def read_upload(key: str):
                     <tr>
                         <td><code>ENTRYPOINT</code> / <code>CMD</code></td>
                         <td>What runs when the container starts</td>
-                        <td>Shell form, which breaks signal handling (&sect;10)</td>
+                        <td>Shell form, which breaks signal handling (&sect;11)</td>
                     </tr>
                 </tbody>
             </table>
@@ -427,7 +428,7 @@ RUN useradd --system --uid 10001 app && chown -R app:app /app
 USER 10001
 
 EXPOSE 8080
-# Exec form: your process is PID 1 and receives SIGTERM directly (§10).
+# Exec form: your process is PID 1 and receives SIGTERM directly (§11).
 CMD ["python", "-m", "app"]
 </code></pre>
                 </div>
@@ -819,9 +820,9 @@ npm ls lodash --all
             <h2 id="unit-3">Unit 3 &mdash; Running It on Your Machine<a class="headerlink" href="#unit-3"
                     title="Permanent link">#</a></h2>
 
-            <p>The image is built. Now four things that decide whether working inside containers is pleasant or
-                miserable: reaching your app, keeping your data, starting the dependencies, and stopping
-                cleanly.</p>
+            <p>The image is built. Now five things that decide whether working inside containers is pleasant or
+                miserable: reaching your app, keeping your data, starting the dependencies, splitting into several
+                services, and stopping cleanly.</p>
 
             <!-- ============================================================ 7 -->
             <h3 id="7-ports">7. Ports &amp; Talking to Other Containers<a class="headerlink" href="#7-ports"
@@ -1189,7 +1190,192 @@ def readyz():
             </div>
 
             <!-- ============================================================ 10 -->
-            <h3 id="10-signals">10. Signals, PID 1 &amp; Graceful Shutdown<a class="headerlink" href="#10-signals"
+            <h3 id="10-microservices">10. Microservices &mdash; Many Containers, One System<a class="headerlink"
+                    href="#10-microservices" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Unit of deploy</b> <code class="big-o o-good">one image per service</code></li>
+                <li><b>They find each other</b> <code class="big-o o-great">by service name</code></li>
+                <li><b>Shared database</b> <code class="big-o o-bad">not microservices</code></li>
+                <li><b>New cost</b> <code class="big-o o-bad">the network</code></li>
+            </ul>
+
+            <p>Containers made microservices practical, which is why the two words are so often used together &mdash;
+                and why so many teams end up with the costs of a distributed system and none of the benefits. The
+                mechanical part is genuinely easy and you have already seen all of it: one image per service, one
+                container each, one user-defined network, and they call each other by name. The hard part is not
+                mechanical at all.</p>
+
+            <p>Start from what actually changes. In a single process, a call from the order module to the payment
+                module is a function call: it cannot half-succeed, it cannot time out, and the compiler checks it.
+                Move payments into its own container and that same call becomes a network request that can be slow,
+                can be retried into a duplicate charge, and whose contract is now a convention rather than a type.
+                <strong>You have converted a compile-time problem into a run-time one</strong>, and everything below
+                is the consequence of that trade.
+            </p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; one kitchen or several restaurants</b>
+                    <p>One kitchen: the chef shouts to the pastry section and gets an answer immediately. Everyone
+                        shares an order book, a fridge and a rota. It is efficient and it does not scale past a
+                        certain size, because eventually nobody can move without colliding. Several restaurants: each
+                        has its own kitchen, its own suppliers and its own opening hours, and any of them can be
+                        refurbished without closing the others. But now the pastry order goes by courier &mdash; it
+                        can arrive late, arrive twice, or not arrive &mdash; and "is the dessert ready?" is no longer
+                        a question you can simply shout. That courier is your network, and pretending it is reliable
+                        is the single most expensive mistake in this model.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="service-topology"></div>
+
+            <p>The packaging rules follow directly, and they are the part Docker is responsible for. <strong>One
+                    service, one image, one repository of truth for its dependencies.</strong> Do not build a single
+                image containing three services selected by an environment variable &mdash; that image cannot be
+                deployed or rolled back per service, which removes the only reason you split them. And each service
+                gets its own configuration through its own environment variables, so that the same image runs
+                unchanged in every environment.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; independent deployability is the whole point</b> If a change
+                    to search can be built, tested, released and rolled back without coordinating with anyone, the
+                    split has paid for itself. That is the property to test a proposed boundary against, and it is
+                    the only one that matters.</li>
+                <li class="is-bad"><b>Weakness &mdash; a shared database undoes all of it</b> If two services write
+                    the same tables, they cannot change schema independently, cannot be released independently and
+                    cannot fail independently. That is a <em>distributed monolith</em>: every cost of both models
+                    and the benefits of neither.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A team wants to break their application into eight services because "it will
+                    scale better". What questions do you ask, and what would you actually recommend?</p>
+                <p>My first question is what "scale" means here, because the word covers two completely different
+                    problems and only one of them is solved by splitting. If they mean <em>load</em>, then a
+                    monolith scales horizontally perfectly well &mdash; you run ten copies behind a load balancer,
+                    and the constraint is almost always the database rather than the application tier, which
+                    splitting does not fix and often makes worse. If they mean <em>people</em> &mdash; teams
+                    blocking each other on releases, a merge queue that is permanently full, one team's bug
+                    delaying another's launch &mdash; then service boundaries genuinely help, and the boundary
+                    should follow the team boundary rather than a diagram of nouns. So I would ask: are you
+                    currently blocked on each other, does any part of the system need to scale differently from the
+                    rest, and does any part have a different availability requirement. If the answer to all three is
+                    no, I would recommend staying with one deployable and investing in modular boundaries inside it
+                    &mdash; separate modules, no cross-module database access, an explicit interface between them.
+                    That is nearly all of the benefit and none of the network. And I would name the costs plainly,
+                    because they are usually invisible in the proposal: eight pipelines, eight images, eight sets of
+                    dashboards and alerts, distributed tracing becoming mandatory rather than nice, a local
+                    development story that no longer fits on a laptop, and every cross-service call needing
+                    timeouts, retries and an answer to "what do we do when it is down". Eight services is a
+                    reasonable destination and a terrible starting point &mdash; and the modular monolith is the
+                    thing that makes the eventual split cheap, because the seams are already there.</p>
+                <div class="code-tabs" data-label="Several services, one file, and the profiles that keep it usable">
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+# compose.yaml — the whole system, with profiles so nobody has to run it all.
+services:
+  web:
+    build: ./services/web          # its OWN Dockerfile
+    ports: ["8080:8080"]           # the only service the browser reaches
+    environment:
+      # Service names, never localhost, never an IP. The embedded DNS on
+      # the project network resolves these.
+      ORDERS_URL: http://orders:8080
+      REQUEST_TIMEOUT_MS: "2000"   # ALWAYS set a timeout - a missing one is
+                                   # how one slow service stops the whole system
+    depends_on:
+      orders: { condition: service_started }
+
+  orders:
+    build: ./services/orders
+    environment:
+      PAYMENTS_URL: http://payments:8080
+      REQUEST_TIMEOUT_MS: "1000"   # shorter than the caller's, deliberately
+      DATABASE_URL: postgres://orders:orders@orders-db:5432/orders
+    depends_on:
+      orders-db: { condition: service_healthy }
+
+  payments:
+    build: ./services/payments
+    profiles: ["full"]             # not started by default
+    environment:
+      DATABASE_URL: postgres://pay:pay@payments-db:5432/payments
+
+  # ONE DATABASE PER SERVICE. A shared database is the line between
+  # "microservices" and "a distributed monolith".
+  orders-db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: orders, POSTGRES_PASSWORD: orders }
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders"]
+      interval: 2s
+      retries: 15
+    volumes: [orders-data:/var/lib/postgresql/data]
+
+  payments-db:
+    image: postgres:16-alpine
+    profiles: ["full"]
+    environment: { POSTGRES_USER: pay, POSTGRES_PASSWORD: pay }
+    volumes: [payments-data:/var/lib/postgresql/data]
+
+volumes:
+  orders-data:
+  payments-data:
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="bash">
+                        <pre><code data-lang="bash">
+# Start only what you are changing; point the rest at a shared environment.
+docker compose up -d                      # web + orders + orders-db
+docker compose --profile full up -d       # everything, when you need it
+
+# One repository or several? Either works; keep the Dockerfiles per service.
+#   monorepo:  services/web/Dockerfile, services/orders/Dockerfile, ...
+#              build only what changed, using path filters in CI
+#   polyrepo:  one repo per service, one pipeline each, shared templates
+
+# Build and tag each service independently - this is the point of the split.
+for svc in web orders payments; do
+  docker build -t "ghcr.io/acme/$svc:$GIT_SHA" "./services/$svc"
+done
+
+# Verify they talk over the project network by NAME, not by published port.
+docker compose exec web getent hosts orders
+docker compose exec web curl -m 2 -s http://orders:8080/readyz
+
+# The check that catches a distributed monolith early: does any service
+# connect to another service's database?
+grep -rn 'DATABASE_URL' services/*/  | sort
+# each service must point at its OWN database, or you have not split anything
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Every cross-service call needs a timeout, and most HTTP clients do not have one by
+                        default.</b> Without it, one slow service occupies every worker in its callers, and the
+                    callers' callers, until the whole system stops responding &mdash; with nothing crashed and every
+                    health check green. Set a timeout on every call, make the inner one shorter than the outer one,
+                    and only retry operations that are safe to run twice. The
+                    <a href="../kubernetes/kubernetes-crash-course.html#9-microservices">Kubernetes crash
+                        course</a> walks through this failure and the three patterns that contain it.
+                </p>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>The test for a good boundary is deployability, not tidiness.</b> If two services must be
+                    released together, share a database, or break each other when either changes shape, they are one
+                    service that has been given a network in the middle. Splitting is cheap to do and expensive to
+                    undo &mdash; so split along seams that already exist in your teams and your data, and leave
+                    everything else in one deployable until it hurts.</p>
+            </div>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-signals">11. Signals, PID 1 &amp; Graceful Shutdown<a class="headerlink" href="#11-signals"
                     title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
@@ -1318,8 +1504,8 @@ docker run --init myapp
                 what to do when it will not start there, and the short list that separates a demo image from one you
                 would run in production.</p>
 
-            <!-- ============================================================ 11 -->
-            <h3 id="11-registries">11. Registries, Tags &amp; Digests<a class="headerlink" href="#11-registries"
+            <!-- ============================================================ 12 -->
+            <h3 id="12-registries">12. Registries, Tags &amp; Digests<a class="headerlink" href="#12-registries"
                     title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
@@ -1429,9 +1615,9 @@ docker buildx imagetools inspect ghcr.io/acme/api:"$GIT_SHA" --raw \
                 </p>
             </div>
 
-            <!-- ============================================================ 12 -->
-            <h3 id="12-debugging">12. Debugging a Container That Will Not Start<a class="headerlink"
-                    href="#12-debugging" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 13 -->
+            <h3 id="13-debugging">13. Debugging a Container That Will Not Start<a class="headerlink"
+                    href="#13-debugging" title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
                 <li><b>137</b> <code class="big-o o-bad">OOM killed</code></li>
@@ -1488,7 +1674,7 @@ docker buildx imagetools inspect ghcr.io/acme/api:"$GIT_SHA" --raw \
                     <tr>
                         <td><code>143</code></td>
                         <td><code>SIGTERM</code></td>
-                        <td>Asked to stop and did not handle it (&sect;10)</td>
+                        <td>Asked to stop and did not handle it (&sect;11)</td>
                     </tr>
                 </tbody>
             </table>
@@ -1577,8 +1763,8 @@ docker inspect api --format '{{.HostConfig.Memory}}'
                     a tag change rather than a rebuild in the middle of an incident.</p>
             </div>
 
-            <!-- ============================================================ 13 -->
-            <h3 id="13-production">13. Making It Production-Ready<a class="headerlink" href="#13-production"
+            <!-- ============================================================ 14 -->
+            <h3 id="14-production">14. Making It Production-Ready<a class="headerlink" href="#14-production"
                     title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
@@ -1639,7 +1825,7 @@ docker inspect api --format '{{.HostConfig.Memory}}'
                     <tr>
                         <td>Handle <code>SIGTERM</code></td>
                         <td>Otherwise every deploy drops in-flight requests</td>
-                        <td>Exec form plus a drain handler (&sect;10)</td>
+                        <td>Exec form plus a drain handler (&sect;11)</td>
                     </tr>
                     <tr>
                         <td>Pin the base by digest</td>
@@ -1686,7 +1872,7 @@ trivy image --severity HIGH,CRITICAL --ignore-unfixed \
                 <div class="tab-pane" data-lang="yaml">
                     <pre><code data-lang="yaml">
 # The same requirements expressed where they will actually live.
-# Recognising this shape is most of what §Kubernetes asks of you.
+# Recognising this shape is most of what Kubernetes asks of you.
 spec:
   securityContext:
     runAsNonRoot: true
@@ -1725,22 +1911,26 @@ spec:
                     rather than in production, so the surprises arrive while you are looking.</p>
             </div>
 
-            <!-- ============================================================ 14 -->
-            <h3 id="14-one-page">14. The Whole Thing on One Page<a class="headerlink" href="#14-one-page"
+            <!-- ============================================================ 15 -->
+            <h3 id="15-one-page">15. The Whole Thing on One Page<a class="headerlink" href="#15-one-page"
                     title="Permanent link">#</a></h3>
 
-            <div class="ascii"> Dockerfile ──build──▶ IMAGE (read-only layers, addressed by digest)
-                │ │
-                │ ├──push──▶ registry (only new layers move)
-                │ │
-                │ └──run───▶ CONTAINER = image + 1 writable layer
-                │ + namespaces (what it sees)
-                │ + cgroups (what it uses)
-                │ │
-                order by rate of change writable layer dies with it
-                (base → deps → source) → volumes for data
-                → stdout for logs
-                → env vars for config</div>
+            <!-- prettier-ignore -->
+            <!-- beautify ignore:start -->
+            <div class="ascii">Dockerfile ──build──▶ IMAGE  (read-only layers, addressed by digest)
+                        │
+                        ├──push──▶ registry   (only new layers move)
+                        │
+                        └──run───▶ CONTAINER = image
+                                             + 1 writable layer
+                                             + namespaces  (what it sees)
+                                             + cgroups     (what it uses)
+
+order layers by rate of change        the writable layer dies with it
+   base → deps → source                 → volumes for data
+                                        → stdout for logs
+                                        → env vars for config</div>
+            <!-- beautify ignore:end -->
 
             <ul class="card-grid">
                 <li class="is-good"><b>A container is a process</b> Namespaces limit what it sees, cgroups limit

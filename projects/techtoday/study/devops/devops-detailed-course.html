@@ -407,17 +407,20 @@ done | sort -n | awk '{a[NR]=$1} END {print "median", a[int(NR/2)], "min"}'
                 including waiting). The ratio of the two is the diagnosis. A step with 20 minutes of process time and
                 two days of lead time is a queue, and queues are fixed by changing policy, not by working faster.</p>
 
-            <div class="ascii">step process lead waiting ← where the time really goes
-                ─────────────────────────────────────────────
-                write the change 4 h 4 h 0
-                open PR, wait review 5 m 31 h 31 h ← policy problem, not effort
-                CI pipeline 42 m 42 m 0
-                wait for merge window 0 18 h 18 h ← policy problem
-                deploy to staging 6 m 6 m 0
-                manual QA sign-off 2 h 26 h 24 h ← policy problem
-                production deploy 11 m 11 m 0
-                ─────────────────────────────────────────────
-                totals 7 h 80 h 73 h ← 91% of lead time is waiting</div>
+            <!-- prettier-ignore -->
+            <!-- beautify ignore:start -->
+            <div class="ascii">step                    process   lead   waiting
+────────────────────────────────────────────────────────────────────
+write the change           4 h     4 h      0
+open PR, wait review       5 m    31 h     31 h   ← policy, not effort
+CI pipeline               42 m    42 m      0
+wait for merge window      0      18 h     18 h   ← policy
+deploy to staging          6 m     6 m      0
+manual QA sign-off         2 h    26 h     24 h   ← policy
+production deploy         11 m    11 m      0
+────────────────────────────────────────────────────────────────────
+totals                     7 h    80 h     73 h   ← 91% is waiting</div>
+            <!-- beautify ignore:end -->
 
             <p>The point of the exercise is almost always the same discovery: the great majority of elapsed time is
                 waiting, not working, so optimising the working parts changes very little. In the map above, halving
@@ -1741,22 +1744,24 @@ docker network inspect "$(basename "$PWD")_default" | jq '.[0].Containers'
             <h3 id="14-2-request-path">What happens when you run <code>kubectl apply</code><a class="headerlink"
                     href="#14-2-request-path" title="Permanent link">#</a></h3>
 
+            <!-- prettier-ignore -->
+            <!-- beautify ignore:start -->
             <div class="ascii">kubectl apply -f deployment.yaml
-                │
-                ├─ 1. authentication certificate, token or OIDC → a username + groups
-                ├─ 2. authorisation RBAC: may this subject "create deployments" here?
-                ├─ 3. mutating admission webhooks and defaults edit the object
-                │ (sidecar injection happens here)
-                ├─ 4. schema validation is it a valid Deployment?
-                ├─ 5. validating admission policy engines may reject it (OPA, Kyverno)
-                └─ 6. persist to etcd the object now exists; the request returns
-                ↓ ...and only now does anything happen
-                deployment controller sees a Deployment with no ReplicaSet → creates one
-                replicaset controller sees 0 of 3 Pods → creates 3 Pod objects
-                scheduler sees Pods with no nodeName → binds each to a node
-                kubelet (per node) sees a Pod bound to itself → pulls image, starts it
-                endpoints controller sees a ready Pod matching a Service → adds endpoint
-                kube-proxy / CNI sees the endpoint change → programs the data path</div>
+  │
+  ├─ 1. authentication      cert / token / OIDC → user + groups
+  ├─ 2. authorisation       RBAC: may this subject do this here?
+  ├─ 3. mutating admission  webhooks and defaults edit the object
+  ├─ 4. schema validation   is it a valid Deployment?
+  ├─ 5. validating          policy engines may reject it
+  └─ 6. persist to etcd     the object exists; the call returns
+                            ↓  only now does anything happen
+  deployment controller  no ReplicaSet  → creates one
+  replicaset controller  0 of 3 Pods    → creates 3 Pod objects
+  scheduler              no nodeName    → binds each to a node
+  kubelet (per node)     Pod bound here → pulls image, starts it
+  endpoints controller   Pod is Ready   → adds it to the Service
+  kube-proxy / CNI       endpoint added → programs the data path</div>
+            <!-- beautify ignore:end -->
 
             <p>Read that list once more and notice that no component calls another. Each one watches the API server
                 and writes back to it. That is why Kubernetes is extensible without modification: an operator you
@@ -3557,23 +3562,26 @@ argocd app rollback api-prod 42          # or, better: git revert
                 <code>email</code> to <code>contact_email</code> becomes five steps across several deploys:
             </p>
 
-            <div class="ascii">deploy 1 ALTER TABLE users ADD COLUMN contact_email text; -- metadata only
-                old code unaffected: it does not know the column exists
+            <!-- prettier-ignore -->
+            <!-- beautify ignore:start -->
+            <div class="ascii">deploy 1  ADD COLUMN contact_email text;      -- metadata only
+          old code unaffected: it cannot see the column
 
-                deploy 2 application writes BOTH columns, reads the OLD one
-                safe to roll back: nothing depends on the new column yet
+deploy 2  app writes BOTH columns, reads the OLD one
+          safe to roll back: nothing reads the new column yet
 
-                (job) backfill contact_email in batches of 5 000, with pauses
-                resumable, cancellable, no long lock
+  (job)   backfill contact_email in batches of 5 000, with pauses
+          resumable, cancellable, no long lock
 
-                deploy 3 application writes BOTH, reads the NEW one
-                safe to roll back to deploy 2: both columns are still written
+deploy 3  app writes BOTH, reads the NEW one
+          safe to roll back to deploy 2
 
-                deploy 4 application writes and reads only the NEW column
-                safe to roll back to deploy 3
+deploy 4  app writes and reads only the NEW column
+          safe to roll back to deploy 3
 
-                deploy 5 ALTER TABLE users DROP COLUMN email; -- days later
-                only once you are certain no rollback will reach deploy 2</div>
+deploy 5  DROP COLUMN email;                 -- days later
+          only once no rollback can reach deploy 2</div>
+            <!-- beautify ignore:end -->
 
             <p>The invariant that makes this work is stated once and applies to every schema change you will ever
                 make: <b>each deploy must be compatible with the schema before it and the schema after it</b>. Hold

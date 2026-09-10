@@ -73,12 +73,13 @@
                 <li><a href="#6-config">Config &amp; Secrets</a></li>
                 <li><a href="#7-services">Services, DNS &amp; Endpoints</a></li>
                 <li><a href="#8-ingress">Ingress &mdash; Getting Traffic In</a></li>
-                <li><a href="#9-kubectl">kubectl &mdash; The Commands You Actually Need</a></li>
-                <li><a href="#10-debugging">Debugging &mdash; Pending, CrashLoop, 502</a></li>
-                <li><a href="#11-storage">State &amp; Storage (and Why You Probably Do Not Want It)</a></li>
-                <li><a href="#12-scaling">Scaling &amp; What It Costs</a></li>
-                <li><a href="#13-shipping">Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own</a></li>
-                <li><a href="#14-one-page">The Whole Thing on One Page</a></li>
+                <li><a href="#9-microservices">Microservices &mdash; Many Services, One Cluster</a></li>
+                <li><a href="#10-kubectl">kubectl &mdash; The Commands You Actually Need</a></li>
+                <li><a href="#11-debugging">Debugging &mdash; Pending, CrashLoop, 502</a></li>
+                <li><a href="#12-storage">State &amp; Storage (and Why You Probably Do Not Want It)</a></li>
+                <li><a href="#13-scaling">Scaling &amp; What It Costs</a></li>
+                <li><a href="#14-shipping">Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own</a></li>
+                <li><a href="#15-one-page">The Whole Thing on One Page</a></li>
             </ol>
 
             <h2 id="unit-1">Unit 1 &mdash; The Model<a class="headerlink" href="#unit-1" title="Permanent link">#</a>
@@ -910,8 +911,9 @@ kubectl get pods -l app=api \
             <h2 id="unit-3">Unit 3 &mdash; Being Reachable<a class="headerlink" href="#unit-3"
                     title="Permanent link">#</a></h2>
 
-            <p>Pod IPs change constantly, so something has to stand between your callers and that churn. Two objects
-                do it: a Service for inside the cluster, an Ingress for the outside world.</p>
+            <p>Pod IPs change constantly, so something has to stand between your callers and that churn. A Service
+                handles it inside the cluster and an Ingress handles the outside world &mdash; and once several
+                services are calling each other, a third problem appears that neither of them solves.</p>
 
             <!-- ============================================================ 7 -->
             <h3 id="7-services">7. Services, DNS &amp; Endpoints<a class="headerlink" href="#7-services"
@@ -1189,6 +1191,252 @@ kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50
                     rules. If it does not, stop looking at the Ingress entirely.</p>
             </div>
 
+            <!-- ============================================================ 9 -->
+            <h3 id="9-microservices">9. Microservices &mdash; Many Services, One Cluster<a class="headerlink"
+                    href="#9-microservices" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Calls</b> <code class="big-o o-good">by Service DNS name</code></li>
+                <li><b>Timeout</b> <code class="big-o o-bad">client default: none</code></li>
+                <li><b>Retry</b> <code class="big-o o-bad">amplifies without backoff</code></li>
+                <li><b>Fixed in</b> <code class="big-o o-good">your code, not the platform</code></li>
+            </ul>
+
+            <p>Everything so far has been about running <em>one</em> service well. A real system is a dozen of them
+                calling each other, and the mechanics of that are the easy part: each service is a Deployment, each
+                gets a Service, and they call each other by DNS name over the cluster network. You already know how
+                to do all of it.</p>
+
+            <p>What changes is failure. In one process a call between modules cannot half-succeed. Across services
+                it can be slow, time out, be retried into a duplicate write, or succeed while the caller has already
+                given up. And crucially, <strong>the platform cannot fix any of that for you</strong> &mdash;
+                Kubernetes will happily keep a saturated call chain running, because nothing in it has crashed.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚦</span>
+                <div class="analogy-body">
+                    <b>Picture it &mdash; one blocked junction</b>
+                    <p>A single junction gets slow. Cars queue back into the previous junction, which fills, which
+                        blocks the one before it. Within minutes the whole district is gridlocked, and the striking
+                        thing is that <em>nothing is broken</em> &mdash; every traffic light works, every road is
+                        open, every car is fine. Sending a mechanic to inspect the cars is useless; restarting them
+                        is worse. The only things that help are drivers who turn around after waiting too long
+                        (timeouts) and a barrier that stops feeding the blocked junction until it clears (a circuit
+                        breaker). That is precisely the shape of a cascading failure.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="cascading-failure"></div>
+
+            <p>The four patterns in that animation are worth naming, because they are the vocabulary every
+                discussion of service resilience uses. A <strong>timeout</strong> bounds how long a caller waits.
+                <strong>Retries with backoff and jitter</strong> recover from a blip without arriving as a herd. A
+                <strong>circuit breaker</strong> stops calling a dependency that is clearly broken, which protects
+                both sides. And a <strong>bulkhead</strong> &mdash; separate connection pools per dependency &mdash;
+                stops one slow dependency consuming all the capacity needed to serve everything else.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concern</th>
+                        <th>Kubernetes gives you</th>
+                        <th>You still have to</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Finding a service</td>
+                        <td>DNS and a stable Service IP</td>
+                        <td>Configure the name, never an IP</td>
+                    </tr>
+                    <tr>
+                        <td>Load balancing</td>
+                        <td>Across ready Pods, per connection</td>
+                        <td>Know it is per <em>connection</em> &mdash; long-lived gRPC channels pin to one Pod</td>
+                    </tr>
+                    <tr>
+                        <td>A slow dependency</td>
+                        <td><b>Nothing</b></td>
+                        <td>Timeouts, retries, breakers, bulkheads</td>
+                    </tr>
+                    <tr>
+                        <td>Isolation between teams</td>
+                        <td>Namespaces, quotas, NetworkPolicy</td>
+                        <td>Ask for them &mdash; none are on by default</td>
+                    </tr>
+                    <tr>
+                        <td>Following one request</td>
+                        <td><b>Nothing</b></td>
+                        <td>Propagate a trace ID through every hop</td>
+                    </tr>
+                    <tr>
+                        <td>Data consistency</td>
+                        <td><b>Nothing</b></td>
+                        <td>One database per service; idempotent writes</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength &mdash; the cluster makes the wiring trivial</b> A new service is a
+                    Deployment and a Service; discovery, load balancing and rollouts come free. That is genuinely a
+                    large amount of work you no longer do per service.</li>
+                <li class="is-bad"><b>Weakness &mdash; it makes the wiring trivial</b> Adding a service is so cheap
+                    that boundaries get drawn casually, and every casual boundary is a network call that can fail in
+                    ways a function call could not. The platform removes the friction that used to make you think
+                    twice.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">During an incident, one downstream service is slow &mdash; not down, just slow.
+                    Every Pod of every service starts failing its health checks and Kubernetes restarts all of them.
+                    What went wrong, and what would you change?</p>
+                <p>Two separate mistakes compounded, and separating them is the answer. The first is that the callers
+                    had no timeouts, so each worker waiting on the slow dependency was occupied for however long
+                    that dependency took. Once every worker is blocked, the service cannot answer <em>anything</em>,
+                    including requests that never touch the slow dependency &mdash; so the outage spreads upwards
+                    through the call chain even though only one service is degraded. The second mistake is that the
+                    liveness probes were doing real work, or were reaching a dependency, so when the service
+                    saturated they started timing out and Kubernetes concluded the containers were broken. They were
+                    not broken; they were busy. Restarting them threw away every in-flight request and produced a
+                    reconnection storm against a dependency that was already struggling, which makes recovery
+                    slower, not faster. What I would change: a timeout on every outbound call, shorter the further
+                    in you go; retries only on idempotent operations, with exponential backoff and jitter and a
+                    retry budget; a circuit breaker so a clearly broken dependency stops being called at all; and a
+                    liveness probe that is a flat 200 with a generous failure threshold, moving any dependency
+                    checking into readiness where the consequence is shedding traffic rather than destroying the
+                    process. The deeper point I would make is that this is an <em>application</em> problem wearing a
+                    platform costume &mdash; no Kubernetes setting fixes a call chain with no timeouts.</p>
+                <div class="code-tabs" data-label="Resilient calls, and the isolation to go with them">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+"""Every outbound call: a timeout, a bounded retry, and a breaker."""
+import httpx, random, time
+
+# Bulkhead: a SEPARATE pool per dependency, so a slow payments service
+# cannot consume the connections orders needs for everything else.
+payments = httpx.Client(
+    base_url="http://payments.prod.svc.cluster.local:8080",
+    timeout=httpx.Timeout(connect=0.3, read=1.0, write=1.0, pool=0.2),
+    limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+)
+
+class Breaker:
+    def __init__(self, threshold=0.5, window=100, cooldown=30):
+        self.failures, self.total = 0, 0
+        self.threshold, self.window, self.cooldown = threshold, window, cooldown
+        self.opened_at = None
+
+    def allow(self) -> bool:
+        if self.opened_at is None:
+            return True
+        if time.monotonic() - self.opened_at > self.cooldown:
+            self.opened_at = None          # half-open: let ONE call through
+            return True
+        return False                        # open: fail instantly, no request
+
+    def record(self, ok: bool):
+        self.total += 1
+        self.failures += 0 if ok else 1
+        if self.total >= self.window:
+            if self.failures / self.total > self.threshold:
+                self.opened_at = time.monotonic()
+            self.failures = self.total = 0
+
+breaker = Breaker()
+
+def charge(order_id: str, amount: int):
+    if not breaker.allow():
+        raise PaymentsUnavailable("circuit open")   # degrade, do not hang
+
+    for attempt in range(3):
+        try:
+            r = payments.post("/charge", json={"order": order_id,
+                                               "amount": amount},
+                              # An idempotency key makes a retry safe. Without
+                              # one, retrying a payment is a duplicate charge.
+                              headers={"Idempotency-Key": order_id})
+            r.raise_for_status()
+            breaker.record(True)
+            return r.json()
+        except (httpx.TimeoutException, httpx.HTTPStatusError):
+            breaker.record(False)
+            if attempt == 2:
+                raise
+            # Exponential backoff PLUS jitter: without jitter every caller
+            # retries at the same instant and arrives as one herd.
+            time.sleep((0.2 * 2 ** attempt) * (0.5 + random.random()))
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="yaml">
+                        <pre><code data-lang="yaml">
+# A namespace per team or per domain: the unit of quota, RBAC and policy.
+apiVersion: v1
+kind: ResourceQuota
+metadata: { name: team-orders, namespace: orders }
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: 40Gi
+    pods: "60"
+---
+# Default deny, then allow only the calls that should exist. Without this,
+# every pod in the cluster can reach every other pod - including your
+# database from a compromised frontend.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny, namespace: payments }
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: only-orders-may-call-payments, namespace: payments }
+spec:
+  podSelector:
+    matchLabels: { app: payments }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: orders }
+          podSelector:
+            matchLabels: { app: orders }
+      ports: [{ protocol: TCP, port: 8080 }]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><b>Kubernetes load-balances per <em>connection</em>, not per request.</b> For plain HTTP/1.1 that
+                    is fine, because connections come and go. For long-lived HTTP/2 or gRPC channels it means one
+                    client pins to one Pod for the life of the channel &mdash; so you scale to ten replicas and the
+                    traffic stays on two. The fixes are a client that does its own load balancing over the headless
+                    Service, periodic connection recycling, or a proxy that balances at the request layer.</p>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>A service mesh gives you all of this as configuration rather than code</b> &mdash; timeouts,
+                    retries, circuit breaking, mutual TLS between services and traces you did not have to
+                    instrument. It is genuinely valuable at a few dozen services and a large operational commitment
+                    before that: a sidecar in every Pod, another control plane to upgrade, and a new place for
+                    traffic to go wrong. Implement the four patterns in a shared library first; adopt a mesh when
+                    keeping that library consistent across languages has become the harder problem.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>The moment you have more than about three services, <b>distributed tracing stops being optional</b>.
+                    With one service, a log file answers "why was this slow?". With eight, per-service dashboards
+                    all look slightly bad and none of them says where the time went. Propagate the
+                    <code>traceparent</code> header through every hop &mdash; including message queues &mdash; and
+                    put the trace ID on every log line.
+                </p>
+            </div>
+
             <h2 id="unit-4">Unit 4 &mdash; Living With It<a class="headerlink" href="#unit-4"
                     title="Permanent link">#</a></h2>
 
@@ -1196,9 +1444,9 @@ kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50
                 subjects &mdash; storage, scaling and safe shipping &mdash; where a developer's decisions have the
                 largest consequences.</p>
 
-            <!-- ============================================================ 9 -->
-            <h3 id="9-kubectl">9. kubectl &mdash; The Commands You Actually Need<a class="headerlink" href="#9-kubectl"
-                    title="Permanent link">#</a></h3>
+            <!-- ============================================================ 10 -->
+            <h3 id="10-kubectl">10. kubectl &mdash; The Commands You Actually Need<a class="headerlink"
+                    href="#10-kubectl" title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
                 <li><b>Start with</b> <code class="big-o o-great">describe + events</code></li>
@@ -1287,9 +1535,9 @@ kubectl get pods -A --field-selector=status.phase!=Running
                 </p>
             </div>
 
-            <!-- ============================================================ 10 -->
-            <h3 id="10-debugging">10. Debugging &mdash; Pending, CrashLoop, 502<a class="headerlink"
-                    href="#10-debugging" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 11 -->
+            <h3 id="11-debugging">11. Debugging &mdash; Pending, CrashLoop, 502<a class="headerlink"
+                    href="#11-debugging" title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
                 <li><b>Pending</b> <code class="big-o o-bad">scheduler</code></li>
@@ -1427,7 +1675,7 @@ spec:
         failureThreshold: 2             # leave rotation quickly when unwell
 
 # And in the application: on SIGTERM, fail readiness FIRST, keep serving
-# for a few seconds, then drain and exit. See the Docker crash course §10.
+# for a few seconds, then drain and exit. See the Docker crash course §11.
 </code></pre>
                     </div>
                 </div>
@@ -1442,9 +1690,9 @@ spec:
                     shipping one.</p>
             </div>
 
-            <!-- ============================================================ 11 -->
-            <h3 id="11-storage">11. State &amp; Storage (and Why You Probably Do Not Want It)<a class="headerlink"
-                    href="#11-storage" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 12 -->
+            <h3 id="12-storage">12. State &amp; Storage (and Why You Probably Do Not Want It)<a class="headerlink"
+                    href="#12-storage" title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
                 <li><b>PVC</b> <code class="big-o o-good">a request for storage</code></li>
@@ -1566,8 +1814,8 @@ kubectl get pvc          # data-db-0, data-db-1, data-db-2 still there
                     all uninteresting &mdash; which is the entire benefit you came to Kubernetes for.</p>
             </div>
 
-            <!-- ============================================================ 12 -->
-            <h3 id="12-scaling">12. Scaling &amp; What It Costs<a class="headerlink" href="#12-scaling"
+            <!-- ============================================================ 13 -->
+            <h3 id="13-scaling">13. Scaling &amp; What It Costs<a class="headerlink" href="#13-scaling"
                     title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
@@ -1691,9 +1939,9 @@ kubectl get pods -A -o json | jq -r '
                     thirty Pods cannot open thirty times as many database connections as four.</p>
             </div>
 
-            <!-- ============================================================ 13 -->
-            <h3 id="13-shipping">13. Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own<a class="headerlink"
-                    href="#13-shipping" title="Permanent link">#</a></h3>
+            <!-- ============================================================ 14 -->
+            <h3 id="14-shipping">14. Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own<a class="headerlink"
+                    href="#14-shipping" title="Permanent link">#</a></h3>
 
             <ul class="meta-strip">
                 <li><b>Rollback</b> <code class="big-o o-great">rollout undo</code></li>
@@ -1836,26 +2084,29 @@ kubectl drain node-3 --ignore-daemonsets --dry-run=server
                     news, because it is a short list and all of it is in your manifest.</p>
             </div>
 
-            <!-- ============================================================ 14 -->
-            <h3 id="14-one-page">14. The Whole Thing on One Page<a class="headerlink" href="#14-one-page"
+            <!-- ============================================================ 15 -->
+            <h3 id="15-one-page">15. The Whole Thing on One Page<a class="headerlink" href="#15-one-page"
                     title="Permanent link">#</a></h3>
 
-            <div class="ascii"> you write controllers reconcile users reach it
-                ───────── ───────────────────── ──────────────
-                Deployment ──────▶ ReplicaSet ──▶ Pods Ingress
-                spec.replicas scheduler picks a node │ host + path
-                spec.template kubelet pulls + starts ▼
-                │ probes decide READY ────────────▶ Service
-                │ │ label selector
-                ├─ image@sha256 ConfigMap / Secret ──▶ env or file ▼
-                ├─ probes requests ──▶ scheduling EndpointSlice
-                ├─ resources limits ──▶ throttle / OOM kill │ Ready pods only
-                └─ labels ▼
-                Pod IP:port
+            <!-- prettier-ignore -->
+            <!-- beautify ignore:start -->
+            <div class="ascii">you write                    controllers reconcile
+──────────────────────       ─────────────────────────────────────────
+Deployment                   ReplicaSet ──▶ Pods
+  replicas: 4                  scheduler picks a node
+  image: api@sha256:…          kubelet pulls the image and starts it
+  readinessProbe                 │
+  resources.requests             ▼  probe passes ⇒ Ready
+  labels: app=api              EndpointSlice   (Ready pods only)
+                                 ▲
+ConfigMap / Secret ──▶ env       │ label selector
+                                 │
+users ──▶ Ingress ──▶ Service ───┘    host + path ⇒ svc ⇒ pod IP:port
 
-                debugging is always: spec (what you asked)
-                vs status (what is true)
-                + events (what happened in between)</div>
+debugging is always:   spec   (what you asked for)
+                    vs status (what is true now)
+                     + events (what happened in between)</div>
+            <!-- beautify ignore:end -->
 
             <ul class="card-grid">
                 <li class="is-good"><b>Declare, do not command</b> You write desired state; controllers close the

@@ -1291,6 +1291,128 @@ VIZ["pvc-pending"] = {
         return f;
     },
 };
+/* ---- 8. Cascading failure across services ---- */
+
+VIZ["cascading-failure"] = {
+    title: "How one slow service takes down all of them",
+    legend: [["lg-done", "healthy"], ["lg-act", "degraded"], ["lg-out", "saturated"], ["lg-idle", "idle"]],
+    options: [
+        { value: "naive", label: "No timeouts" },
+        { value: "timeout", label: "Timeouts and retries" },
+        { value: "breaker", label: "Circuit breaker" },
+    ],
+    build(option = "naive") {
+        const W = 720;
+        const H = 240;
+        const CHAIN = [
+            { x: 40, label: "web", sub: "200 workers" },
+            { x: 280, label: "orders", sub: "100 workers" },
+            { x: 520, label: "payments", sub: "50 workers" },
+        ];
+        const draw = (states, edges, caption) => {
+            let s = "";
+            CHAIN.forEach((c, i) => {
+                s += boxHTML(c.x, 80, 160, 46, c.label, states[i] || "n-idle", c.sub);
+                if (i < CHAIN.length - 1) {
+                    s += arrowHTML(c.x + 164, 103, CHAIN[i + 1].x - 6, 103, (edges && edges[i]) || "e-idle");
+                }
+            });
+            if (caption) s += capHTML(W / 2, 216, caption);
+            return svgHTML(W, H, s);
+        };
+        const f = [];
+
+        if (option === "timeout") {
+            f.push({
+                stage: draw(["n-done", "n-done", "n-act"], ["e-done", "e-act"], "payments p99 = 8 s; orders has a 1 s timeout"),
+                note: "Same failure, one change: <code>orders</code> gives up on <code>payments</code> after one second. A worker is now occupied for a second rather than for eight, which is an eight-fold increase in how much slowness the pool can absorb.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "orders", items: [{ text: "22 / 100 workers busy", cls: "is-done" }, { text: "checkout: degraded, not dead", cls: "is-act" }, { text: "browsing: unaffected", cls: "is-done" }] },
+                    { title: "web", items: [{ text: "responding in 1.1 s", cls: "is-act" }, { text: "still accepting requests", cls: "is-done" }] },
+                ]),
+                note: "<b>The failure is now contained.</b> Checkout is broken, and everything that does not touch payments still works. That distinction &mdash; a degraded feature rather than a dead site &mdash; is worth more than almost any other reliability investment.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "Retry naively", items: [{ text: "3 attempts, no delay", cls: "is-out" }, { text: "3× load on a struggling service", cls: "is-out" }, { text: "every caller does it at once", cls: "is-out" }, { text: "recovery becomes impossible", cls: "is-out" }] },
+                    { title: "Retry properly", items: [{ text: "only idempotent operations", cls: "is-done" }, { text: "exponential backoff", cls: "is-done" }, { text: "plus jitter, to break the sync", cls: "is-done" }, { text: "a budget: cap total retries", cls: "is-done" }] },
+                ]),
+                note: "<b>Retries are the most dangerous fix in this list.</b> A service that is slow because it is overloaded gets three times the traffic the moment its callers start retrying &mdash; and because every caller retries on the same schedule, they arrive together. Backoff spreads them out; jitter stops them re-synchronising; a retry budget stops the whole thing amplifying.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "Set a timeout for every call", items: [{ text: "HTTP client default = none", cls: "is-out" }, { text: "database client default = none", cls: "is-out" }, { text: "DNS, TLS, connect, read", cls: "is-act" }] },
+                    { title: "And make it shorter inward", items: [{ text: "web → orders: 2 s", cls: "is-done" }, { text: "orders → payments: 1 s", cls: "is-done" }, { text: "caller outlives the callee", cls: "is-done" }] },
+                ]),
+                note: "<b>The conclusion.</b> The single most common cause of a cascading outage is a client with no timeout, because most libraries default to waiting forever. Set one on every network call, make the inner timeout shorter than the outer one, and remember that a retry without backoff is not a mitigation &mdash; it is an amplifier. Switch the picker for the pattern that stops calling altogether.",
+            });
+            return f;
+        }
+
+        if (option === "breaker") {
+            f.push({
+                stage: draw(["n-done", "n-done", "n-out"], ["e-done", "e-act"], "circuit CLOSED — calls flow, failures counted"),
+                note: "A <b>circuit breaker</b> wraps the client. In the <b>closed</b> state everything is normal and it simply counts outcomes over a rolling window.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "Rolling window", items: [{ text: "62 of 100 calls failed", cls: "is-out" }, { text: "threshold: 50%", cls: "is-act" }, { text: "→ trip", cls: "is-out" }] },
+                ]),
+                note: "The failure rate crosses the threshold and the breaker <b>trips</b>. Note that this is a decision made from evidence over a window rather than from a single failure &mdash; one timeout is noise, sixty in a hundred is a broken dependency.",
+            });
+            f.push({
+                stage: draw(["n-done", "n-done", "n-out"], ["e-done", "e-idle"], "circuit OPEN — calls fail instantly, nothing is sent"),
+                note: "<b>Open.</b> Calls to <code>payments</code> now fail <em>immediately</em> without a network request. Two things happen at once: <code>orders</code> stops occupying workers on a call that was going to fail anyway, and <code>payments</code> stops receiving traffic it cannot serve, which is what gives it room to recover.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "While open", items: [{ text: "return a cached price", cls: "is-done" }, { text: "queue the payment for later", cls: "is-done" }, { text: "show \"try again shortly\"", cls: "is-done" }, { text: "never: hang, or crash", cls: "is-out" }] },
+                ]),
+                note: "The breaker only buys you the <em>opportunity</em> to degrade well &mdash; you still have to decide what to do instead. A cached value, a queued action or an honest error are all fine; what is not fine is having no answer, because then the breaker just moves the failure one layer up.",
+            });
+            f.push({
+                stage: draw(["n-done", "n-done", "n-act"], ["e-done", "e-act"], "HALF-OPEN — one trial call after 30 s"),
+                note: "<b>Half-open.</b> After a cool-down the breaker lets a single request through. If it succeeds the circuit closes and normal traffic resumes; if it fails the circuit opens again and the timer restarts. One probe, not a flood &mdash; which is the difference between recovering and re-breaking.",
+            });
+            f.push({
+                stage: panesHTML([
+                    { title: "In the application", items: [{ text: "timeouts", cls: "is-done" }, { text: "retries with backoff + jitter", cls: "is-done" }, { text: "circuit breaker", cls: "is-done" }, { text: "bulkheads: separate pools", cls: "is-done" }] },
+                    { title: "In a service mesh", items: [{ text: "the same four, as config", cls: "is-act" }, { text: "plus mTLS and traces for free", cls: "is-act" }, { text: "cost: a sidecar per pod", cls: "is-out" }, { text: "and a large thing to operate", cls: "is-out" }] },
+                ]),
+                note: "<b>The conclusion worth memorising.</b> These four patterns are what turns a set of services into a system that degrades instead of collapsing, and you can implement all of them in a library. A service mesh gives you the same behaviour as configuration plus mutual TLS and traces &mdash; genuinely useful at a few dozen services, and a large operational commitment before that.",
+            });
+            return f;
+        }
+
+        f.push({
+            stage: draw(["n-done", "n-done", "n-done"], ["e-done", "e-done"], "checkout p99 = 40 ms"),
+            note: "Three services. <code>web</code> calls <code>orders</code>, which calls <code>payments</code>. Everything is fast, every pool is nearly empty, and the system looks robust.",
+        });
+        f.push({
+            stage: draw(["n-done", "n-done", "n-act"], ["e-done", "e-act"], "payments p99 → 8 s (a slow query, not a crash)"),
+            note: "<code>payments</code> degrades &mdash; a missing index, a locked table, a slow dependency of its own. Crucially it does <b>not</b> crash: it still answers, just eight seconds later. Every health check it has is passing.",
+        });
+        f.push({
+            stage: draw(["n-done", "n-out", "n-act"], ["e-done", "e-act"], "orders: all 100 workers blocked waiting"),
+            note: "<b>And here is the mechanism.</b> <code>orders</code> has no timeout, so each worker waits the full eight seconds. At 20 requests per second, all 100 workers are occupied within five seconds &mdash; and now <code>orders</code> cannot serve <em>any</em> request, including the ones that never touch payments.",
+        });
+        f.push({
+            stage: draw(["n-out", "n-out", "n-act"], ["e-act", "e-act"], "web saturated too — the site is down"),
+            note: "The same thing happens one layer up. <code>web</code>'s workers block waiting on <code>orders</code>, and the entire site stops responding. <b>One slow service, no crashes anywhere, and total unavailability</b> &mdash; and the graph that shows it is a rising queue depth, not an error rate.",
+        });
+        f.push({
+            stage: panesHTML([
+                { title: "What Kubernetes does now", items: [{ text: "liveness probes time out", cls: "is-out" }, { text: "it restarts every pod", cls: "is-out" }, { text: "reconnect storm on recovery", cls: "is-out" }, { text: "and it happens again", cls: "is-out" }] },
+                { title: "Why the platform cannot help", items: [{ text: "no pod is unhealthy", cls: "is-act" }, { text: "no container crashed", cls: "is-act" }, { text: "the bug is in the CALLERS", cls: "is-act" }] },
+            ]),
+            note: "<b>This is the failure mode Kubernetes makes worse rather than better.</b> Restarting Pods does not fix a saturated call chain, and doing it to every replica at once adds a thundering herd on top. Resilience between services is an <em>application</em> concern &mdash; switch the picker to see the three patterns that fix it.",
+        });
+        return f;
+    },
+};
+
 /* ------------------------------------------------------------ viz player */
 
 const mountViz = (root) => {

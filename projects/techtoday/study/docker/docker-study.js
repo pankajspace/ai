@@ -1209,6 +1209,90 @@ VIZ["debug-container"] = {
         return f;
     },
 };
+/* ---- 9. Many services, one system ---- */
+
+VIZ["service-topology"] = {
+    title: "Splitting one container into several",
+    legend: [["lg-act", "changing"], ["lg-done", "running"], ["lg-out", "the new cost"], ["lg-idle", "not yet"]],
+    build() {
+        const W = 720;
+        const H = 250;
+        const draw = (boxes, edges, band, caption) => {
+            let s = band ? bandHTML(30, 30, 660, 160, band) : "";
+            boxes.forEach((b) => {
+                s += boxHTML(b.x, b.y, b.w || 150, 46, b.label, b.state, b.sub || "");
+            });
+            (edges || []).forEach((e) => {
+                s += arrowHTML(e.x1, e.y1, e.x2, e.y2, e.state || "e-idle", e.label || "");
+            });
+            if (caption) s += capHTML(W / 2, 232, caption);
+            return svgHTML(W, H, s);
+        };
+        const f = [];
+        f.push({
+            stage: draw([
+                { x: 250, y: 90, w: 220, label: "shop", state: "n-done", sub: "one image, one container" },
+            ], [], "everything talks over localhost", "one process, one deploy, one language"),
+            note: "The starting point, and a perfectly good one. Orders, payments and search are modules in a single process, so a call between them is a function call: no network, no serialisation, no partial failure.",
+        });
+        f.push({
+            stage: draw([
+                { x: 40, y: 90, label: "web", state: "n-act" },
+                { x: 280, y: 90, label: "orders", state: "n-act" },
+                { x: 520, y: 90, label: "payments", state: "n-act" },
+            ], [
+                { x1: 194, y1: 113, x2: 274, y2: 113, state: "e-act" },
+                { x1: 434, y1: 113, x2: 514, y2: 113, state: "e-act" },
+            ], "one user-defined network", "three images, three Dockerfiles, three release cadences"),
+            note: "Split into three services and the unit of packaging changes. Each has <b>its own Dockerfile, its own dependencies and its own image</b>, so each can be built, tested, scaled and deployed without touching the others. That independence is the entire reason to do this.",
+        });
+        f.push({
+            stage: draw([
+                { x: 40, y: 90, label: "web", state: "n-done" },
+                { x: 280, y: 90, label: "orders", state: "n-done", sub: "resolves as \"orders\"" },
+                { x: 520, y: 90, label: "payments", state: "n-done", sub: "resolves as \"payments\"" },
+            ], [
+                { x1: 194, y1: 113, x2: 274, y2: 113, state: "e-done", label: "http://orders:8080" },
+                { x1: 434, y1: 113, x2: 514, y2: 113, state: "e-done", label: "http://payments:8080" },
+            ], "one user-defined network — embedded DNS", "no published ports between them"),
+            note: "They find each other by <b>service name</b>, resolved by the network's embedded DNS. Note what is <em>not</em> here: no IP addresses, no <code>localhost</code>, and no published ports &mdash; only the browser-facing service needs <code>-p</code>. Everything else is internal.",
+        });
+        f.push({
+            stage: panesHTML([
+                { title: "What you gained", items: [{ text: "deploy one service alone", cls: "is-done" }, { text: "scale one service alone", cls: "is-done" }, { text: "a bad release blasts one radius", cls: "is-done" }, { text: "different languages per service", cls: "is-done" }, { text: "teams ship independently", cls: "is-done" }] },
+                { title: "What you now own", items: [{ text: "the network is now your program", cls: "is-out" }, { text: "partial failure is normal", cls: "is-out" }, { text: "a transaction spans services", cls: "is-out" }, { text: "one bug = 4 log streams", cls: "is-out" }, { text: "N pipelines, N images, N pagers", cls: "is-out" }] },
+            ]),
+            note: "<b>The honest trade.</b> A function call cannot half-succeed; an HTTP call can time out, return late, or be retried into a duplicate charge. You have exchanged a compile-time problem for a run-time one &mdash; which is the right exchange sometimes, and a terrible one when the driver was \"microservices are modern\".",
+        });
+        f.push({
+            stage: draw([
+                { x: 40, y: 60, label: "web", state: "n-done" },
+                { x: 40, y: 130, label: "orders", state: "n-done" },
+                { x: 250, y: 60, label: "payments", state: "n-done" },
+                { x: 250, y: 130, label: "search", state: "n-done" },
+                { x: 460, y: 60, label: "postgres", state: "n-cmp" },
+                { x: 460, y: 130, label: "redis + kafka", state: "n-cmp" },
+            ], [], "docker compose up — 14 containers, 9 GB", "the laptop problem"),
+            note: "<b>And here is the cost nobody budgets for.</b> Once there are a dozen services plus their databases and brokers, \"run the system locally\" stops being possible. This is the point at which developer experience quietly becomes an engineering problem of its own.",
+        });
+        f.push({
+            stage: panesHTML([
+                { title: "Ways out, cheapest first", items: [{ text: "compose profiles: run a subset", cls: "is-done" }, { text: "point at a shared dev env", cls: "is-done" }, { text: "contract tests, not live peers", cls: "is-done" }, { text: "ephemeral namespace per dev", cls: "is-cmp" }] },
+                { title: "Keep working locally", items: [{ text: "every service starts standalone", cls: "is-act" }, { text: "config by env, no fixed hosts", cls: "is-act" }, { text: "a seed dataset that fits in RAM", cls: "is-act" }] },
+            ]),
+            note: "The practical answer is usually <b>Compose profiles</b>: one file, tagged groups, so a developer starts the two services they are changing and points the rest at a shared environment. It keeps the single-command promise without keeping the whole system on one laptop.",
+        });
+        f.push({
+            stage: panesHTML([
+                { title: "Split when", items: [{ text: "teams block each other", cls: "is-done" }, { text: "one part scales differently", cls: "is-done" }, { text: "one part has a different SLA", cls: "is-done" }, { text: "a separate data model", cls: "is-done" }] },
+                { title: "Do not split when", items: [{ text: "the boundary is a guess", cls: "is-out" }, { text: "one team owns all of it", cls: "is-out" }, { text: "they share one database", cls: "is-out" }, { text: "\"it is more modern\"", cls: "is-out" }] },
+            ]),
+            note: "<b>The conclusion worth memorising.</b> Containers make splitting a service <em>easy</em>, which is not the same as making it <em>wise</em>. Split along boundaries that already exist in your organisation and your data, and be suspicious of any split where two services must be deployed together or share a database &mdash; that is a distributed monolith, with every cost of both models and the benefits of neither.",
+        });
+        return f;
+    },
+};
+
 /* ------------------------------------------------------------ viz player */
 
 const mountViz = (root) => {
