@@ -751,7 +751,7 @@ console.log(wrong);       // every row shows 9 - they are the same array
                 reverse [k,n) [5, 6, 7, | 1, 2, 3, 4] &larr; rotated right by 3</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you rotate an array by k positions in O(1) extra space?</p>
                 <p>Reverse the entire array,
                     reverse the first <code>k</code> elements, and reverse the remaining elements to cyclically shift
@@ -820,6 +820,111 @@ console.log(data);     // [5, 6, 7, 1, 2, 3, 4]
                 <li>You are about to sort, binary search, or apply two pointers / sliding window — all of which require
                     random access.</li>
             </ol>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Return an array where each position holds the product of every <em>other</em>
+                    element. <code>[1, 2, 3, 4]</code> becomes <code>[24, 12, 8, 6]</code>. Division is banned, and it
+                    must run in <code>O(n)</code>.</p>
+                <p>Division would be a one-liner — until a single zero appears and the whole thing collapses. The
+                    division-free answer is two sweeps: one left-to-right accumulating the product of everything
+                    <em>before</em> each index, one right-to-left folding in everything <em>after</em>. The output
+                    array doubles as the scratch space, so the extra memory is <code>O(1)</code>.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — product of array except self">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def product_except_self(nums):
+    """O(n) time, O(1) extra space (the output does not count). No division."""
+    out = [1] * len(nums)
+
+    prefix = 1                          # product of everything to the left
+    for i in range(len(nums)):
+        out[i] = prefix
+        prefix *= nums[i]
+
+    suffix = 1                          # product of everything to the right
+    for i in range(len(nums) - 1, -1, -1):
+        out[i] *= suffix
+        suffix *= nums[i]
+
+    return out
+
+
+print(product_except_self([1, 2, 3, 4]))    # [24, 12, 8, 6]
+print(product_except_self([0, 4, 0]))       # [0, 0, 0] - zeros are handled
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function productExceptSelf(nums) {      // O(n) time, O(1) extra space
+  const out = new Array(nums.length).fill(1);
+
+  let prefix = 1;                       // product of everything to the left
+  for (let i = 0; i &lt; nums.length; i++) {
+    out[i] = prefix;
+    prefix *= nums[i];
+  }
+
+  let suffix = 1;                       // product of everything to the right
+  for (let i = nums.length - 1; i &gt;= 0; i--) {
+    out[i] *= suffix;
+    suffix *= nums[i];
+  }
+
+  return out;
+}
+
+console.log(productExceptSelf([1, 2, 3, 4]));   // [24, 12, 8, 6]
+console.log(productExceptSelf([0, 4, 0]));      // [0, 0, 0]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Given daily stock prices, return the largest profit from a single buy followed by
+                    a later sell, or <code>0</code> if no trade is profitable.</p>
+                <p>The pairwise scan is <code>O(n²)</code>. Note that the best sale on any given day depends only on
+                    the <strong>cheapest price seen so far</strong> — a running minimum. That turns the problem into
+                    one pass over the array with two scalars, <code>O(n)</code> time and <code>O(1)</code> space.</p>
+
+                <div class="code-tabs" data-label="Answer — best time to buy and sell stock">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def max_profit(prices):
+    """O(n) time, O(1) space. Track the cheapest buy seen so far."""
+    cheapest, best = float("inf"), 0
+    for price in prices:
+        cheapest = min(cheapest, price)         # best day to have bought
+        best = max(best, price - cheapest)      # sell today at today's price
+    return best
+
+
+print(max_profit([7, 1, 5, 3, 6, 4]))   # 5
+print(max_profit([7, 6, 4, 3, 1]))      # 0 - never profitable
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function maxProfit(prices) {            // O(n) time, O(1) space
+  let cheapest = Infinity, best = 0;
+  for (const price of prices) {
+    cheapest = Math.min(cheapest, price);       // best day to have bought
+    best = Math.max(best, price - cheapest);    // sell at today's price
+  }
+  return best;
+}
+
+console.log(maxProfit([7, 1, 5, 3, 6, 4]));   // 5
+console.log(maxProfit([7, 6, 4, 3, 1]));      // 0 - never profitable
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 5 -->
             <h2 id="5-strings">5. Strings<a class="headerlink" href="#5-strings" title="Permanent link">#</a></h2>
@@ -911,7 +1016,7 @@ Array.from(s);              // mutable character array
             <h3 id="frequency-counting">The workhorse: frequency counting<a class="headerlink"
                     href="#frequency-counting" title="Permanent link">#</a></h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you verify if two strings are anagrams?</p>
                 <p>A very large share of string problems —
                     anagrams, permutations, "can we rearrange…", "longest substring
@@ -987,6 +1092,104 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate"])); // [['eat','tea','ate'
                     constant, and it makes comparing two counts a single array equality check.</p>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Decide whether a string is a palindrome, considering only letters and digits and
+                    ignoring case. <code>"A man, a plan, a canal: Panama"</code> is one.</p>
+                <p>Building a cleaned copy and comparing it with its reverse is correct but allocates two extra
+                    strings. Two pointers walking inwards from both ends — skipping anything that is not alphanumeric
+                    — settles it in <code>O(n)</code> time and <code>O(1)</code> space.</p>
+
+                <div class="code-tabs" data-label="Answer — valid palindrome with two pointers">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def is_palindrome(s):
+    """O(n) time, O(1) space. Skips punctuation without building a new string."""
+    left, right = 0, len(s) - 1
+    while left &lt; right:
+        while left &lt; right and not s[left].isalnum():
+            left += 1                       # skip junk on the left
+        while left &lt; right and not s[right].isalnum():
+            right -= 1                      # skip junk on the right
+        if s[left].lower() != s[right].lower():
+            return False
+        left, right = left + 1, right - 1
+    return True
+
+
+print(is_palindrome("A man, a plan, a canal: Panama"))   # True
+print(is_palindrome("race a car"))                       # False
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function isPalindrome(s) {                  // O(n) time, O(1) space
+  const alnum = (c) =&gt; /[a-z0-9]/i.test(c);
+  let left = 0, right = s.length - 1;
+  while (left &lt; right) {
+    while (left &lt; right &amp;&amp; !alnum(s[left])) left++;      // skip junk
+    while (left &lt; right &amp;&amp; !alnum(s[right])) right--;
+    if (s[left].toLowerCase() !== s[right].toLowerCase()) return false;
+    left++; right--;
+  }
+  return true;
+}
+
+console.log(isPalindrome("A man, a plan, a canal: Panama"));   // true
+console.log(isPalindrome("race a car"));                       // false
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Find the longest common prefix shared by an array of strings. <code>["flower",
+                    "flow", "flight"]</code> gives <code>"fl"</code>.</p>
+                <p>The prefix can never be longer than the shortest word, and it can only shrink. Walk the characters
+                    of the first word column by column and stop the instant one string disagrees — worst case
+                    <code>O(total characters)</code>, and in practice it exits almost immediately.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — longest common prefix">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def longest_common_prefix(words):
+    """O(total characters) worst case; usually exits after a few columns."""
+    if not words:
+        return ""
+    for i, ch in enumerate(words[0]):       # walk the first word column by column
+        for other in words[1:]:
+            if i == len(other) or other[i] != ch:
+                return words[0][:i]         # first disagreement ends the prefix
+    return words[0]                         # the first word is itself the prefix
+
+
+print(longest_common_prefix(["flower", "flow", "flight"]))   # "fl"
+print(longest_common_prefix(["dog", "racecar"]))             # ""
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function longestCommonPrefix(words) {       // O(total characters) worst case
+  if (words.length === 0) return "";
+  for (let i = 0; i &lt; words[0].length; i++) {
+    const ch = words[0][i];
+    for (const other of words.slice(1)) {
+      if (i === other.length || other[i] !== ch) return words[0].slice(0, i);
+    }
+  }
+  return words[0];                          // first word is the whole prefix
+}
+
+console.log(longestCommonPrefix(["flower", "flow", "flight"]));   // "fl"
+console.log(longestCommonPrefix(["dog", "racecar"]));             // ""
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 6 -->
             <h2 id="6-two-pointers">6. Two Pointers<a class="headerlink" href="#6-two-pointers"
                     title="Permanent link">#</a></h2>
@@ -1018,7 +1221,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate"])); // [['eat','tea','ate'
             </ol>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do two pointers locate a target pair in a sorted array?</p>
                 <p>Place pointers at opposite
                     boundaries; if their sum is too small, advance the left pointer, and if too large, decrement the
@@ -1097,7 +1300,7 @@ console.log(isPalindrome("A man, a plan, a canal: Panama")); // true
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you remove duplicates from a sorted array in place?</p>
                 <p>Advance a fast reading
                     pointer across every position while maintaining a slow writing pointer that only increments when
@@ -1175,6 +1378,56 @@ console.log(z);                          // [3, 5, 9, 2, 0, 0, 0]
                     the intended solution — that is how 3Sum works.</p>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Each entry of an array is the height of a vertical line. Pick two lines that, with
+                    the x-axis, hold the most water. <code>[1, 8, 6, 2, 5, 4, 8, 3, 7]</code> holds
+                    <code>49</code>.
+                </p>
+                <p>Every pair is <code>O(n²)</code>. Start with the widest possible container — one pointer at each
+                    end — and move the pointer at the <strong>shorter</strong> line inwards. Moving the taller one can
+                    only lose area (the width shrinks and the height is still capped by the short line), so nothing
+                    better is ever skipped. <code>O(n)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — container with most water">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def max_area(heights):
+    """O(n) time, O(1) space. Always move the pointer at the shorter wall."""
+    left, right, best = 0, len(heights) - 1, 0
+    while left &lt; right:
+        height = min(heights[left], heights[right])     # the short wall caps it
+        best = max(best, height * (right - left))
+        if heights[left] &lt; heights[right]:
+            left += 1               # the short side is the only one worth moving
+        else:
+            right -= 1
+    return best
+
+
+print(max_area([1, 8, 6, 2, 5, 4, 8, 3, 7]))   # 49
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function maxArea(heights) {             // O(n) time, O(1) space
+  let left = 0, right = heights.length - 1, best = 0;
+  while (left &lt; right) {
+    const height = Math.min(heights[left], heights[right]);
+    best = Math.max(best, height * (right - left));
+    if (heights[left] &lt; heights[right]) left++;   // move the shorter wall
+    else right--;
+  }
+  return best;
+}
+
+console.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]));   // 49
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 7 -->
             <h2 id="7-sliding-window">7. Sliding Window<a class="headerlink" href="#7-sliding-window"
                     title="Permanent link">#</a></h2>
@@ -1204,7 +1457,7 @@ console.log(z);                          // [3, 5, 9, 2, 0, 0, 0]
             </ol>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you find the longest substring without repeating characters using a sliding
                     window?</p>
                 <p>The variable form looks like a nested loop but is still <code>O(n)</code>: each
@@ -1298,6 +1551,140 @@ console.log(minSubarraySum([2, 3, 1, 2, 4, 3], 7));   // 2
                     range. For arrays containing negatives, use prefix sums with a hash map instead (next section).</p>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Given strings <code>s</code> and <code>t</code>, find the shortest substring of
+                    <code>s</code> that contains every character of <code>t</code> including duplicates.
+                    <code>("ADOBECODEBANC", "ABC")</code> gives <code>"BANC"</code>.
+                </p>
+                <p>This is the hardest shape of the pattern, and the trick is the bookkeeping. Keep a count of what is
+                    still <em>missing</em> and a single <code>have</code> counter of how many distinct requirements
+                    are already satisfied. Expand the right edge until the window is valid, then shrink the left edge
+                    as far as it stays valid. Each index enters and leaves once: <code>O(n + m)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — minimum window substring">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import Counter
+
+
+def min_window(s, t):
+    """O(n + m) time. Each index is added once and removed at most once."""
+    if not t or len(t) &gt; len(s):
+        return ""
+    need = Counter(t)                       # character -&gt; how many still needed
+    missing = len(t)                        # total characters still owed
+    best = (float("inf"), 0, 0)
+    left = 0
+
+    for right, ch in enumerate(s):
+        if need[ch] &gt; 0:
+            missing -= 1                    # this character paid off a debt
+        need[ch] -= 1                       # negatives mean "spare copies"
+
+        while missing == 0:                 # window is valid - try to shrink it
+            if right - left + 1 &lt; best[0]:
+                best = (right - left + 1, left, right)
+            need[s[left]] += 1
+            if need[s[left]] &gt; 0:           # we just gave up a needed character
+                missing += 1
+            left += 1
+
+    return "" if best[0] == float("inf") else s[best[1]:best[2] + 1]
+
+
+print(min_window("ADOBECODEBANC", "ABC"))   # "BANC"
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function minWindow(s, t) {                  // O(n + m) time
+  if (!t || t.length &gt; s.length) return "";
+  const need = new Map();
+  for (const ch of t) need.set(ch, (need.get(ch) ?? 0) + 1);
+
+  let missing = t.length, left = 0, best = [Infinity, 0, 0];
+
+  for (let right = 0; right &lt; s.length; right++) {
+    const ch = s[right];
+    if ((need.get(ch) ?? 0) &gt; 0) missing--;   // paid off a debt
+    need.set(ch, (need.get(ch) ?? 0) - 1);    // negatives are spare copies
+
+    while (missing === 0) {                   // valid - shrink from the left
+      if (right - left + 1 &lt; best[0]) best = [right - left + 1, left, right];
+      const out = s[left];
+      need.set(out, need.get(out) + 1);
+      if (need.get(out) &gt; 0) missing++;       // gave up a needed character
+      left++;
+    }
+  }
+
+  return best[0] === Infinity ? "" : s.slice(best[1], best[2] + 1);
+}
+
+console.log(minWindow("ADOBECODEBANC", "ABC"));   // "BANC"
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Given an array of positive integers and a target, find the length of the shortest
+                    contiguous subarray whose sum is at least the target, or <code>0</code> if none exists. <code>([2,
+                    3, 1, 2, 4, 3], 7)</code> gives <code>2</code> (the run <code>[4, 3]</code>).</p>
+                <p>This is the canonical <em>variable</em> window. Grow the right edge until the sum qualifies, then
+                    shrink the left edge for as long as it still qualifies, recording the best length each time.
+                    Because all values are positive, growing only ever increases the sum and shrinking only ever
+                    decreases it — that monotonicity is exactly what makes the two-pointer sweep valid, and each index
+                    enters and leaves once for <code>O(n)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — minimum size subarray sum">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def min_subarray_len(target, nums):
+    """O(n) time, O(1) space. Valid only because every value is positive."""
+    left = total = 0
+    best = float("inf")
+
+    for right, x in enumerate(nums):
+        total += x
+        while total &gt;= target:                  # qualifies - try to shorten it
+            best = min(best, right - left + 1)
+            total -= nums[left]
+            left += 1
+
+    return 0 if best == float("inf") else best
+
+
+print(min_subarray_len(7, [2, 3, 1, 2, 4, 3]))   # 2  ([4, 3])
+print(min_subarray_len(11, [1, 1, 1, 1]))        # 0  (impossible)
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function minSubArrayLen(target, nums) {         // O(n) time, O(1) space
+  let left = 0, total = 0, best = Infinity;
+
+  for (let right = 0; right &lt; nums.length; right++) {
+    total += nums[right];
+    while (total &gt;= target) {                   // qualifies - shorten it
+      best = Math.min(best, right - left + 1);
+      total -= nums[left++];
+    }
+  }
+
+  return best === Infinity ? 0 : best;
+}
+
+console.log(minSubArrayLen(7, [2, 3, 1, 2, 4, 3]));   // 2
+console.log(minSubArrayLen(11, [1, 1, 1, 1]));        // 0
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 8 -->
             <h2 id="8-prefix-sums-and-difference-arrays">8. Prefix Sums &amp; Difference Arrays<a class="headerlink"
                     href="#8-prefix-sums-and-difference-arrays" title="Permanent link">#</a></h2>
@@ -1364,7 +1751,7 @@ console.log(rangeSum(2, 5));              // 19
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you count subarrays that sum to k when numbers can be negative?</p>
                 <p>Pairing prefix
                     sums with a hash map answers a harder question: <em>how many</em> subarrays sum to
@@ -1448,6 +1835,100 @@ function buildPrefix2D(grid) {
                     </div>
                 </div>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Find the index where the sum of everything to its left equals the sum of
+                    everything to its right. <code>[1, 7, 3, 6, 5, 6]</code> gives <code>3</code>.</p>
+                <p>Recomputing both sides at every index is <code>O(n²)</code>. One total plus a running left sum is
+                    enough: the right side is always <code>total − left − nums[i]</code>. A single pass,
+                    <code>O(n)</code> time and <code>O(1)</code> space.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — find the pivot index">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def pivot_index(nums):
+    """O(n) time, O(1) space. right = total - left - nums[i], for free."""
+    total = sum(nums)
+    left = 0
+    for i, x in enumerate(nums):
+        if left == total - left - x:    # left side equals right side
+            return i
+        left += x
+    return -1
+
+
+print(pivot_index([1, 7, 3, 6, 5, 6]))   # 3
+print(pivot_index([1, 2, 3]))            # -1
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function pivotIndex(nums) {             // O(n) time, O(1) space
+  const total = nums.reduce((a, b) =&gt; a + b, 0);
+  let left = 0;
+  for (let i = 0; i &lt; nums.length; i++) {
+    if (left === total - left - nums[i]) return i;   // balanced here
+    left += nums[i];
+  }
+  return -1;
+}
+
+console.log(pivotIndex([1, 7, 3, 6, 5, 6]));   // 3
+console.log(pivotIndex([1, 2, 3]));            // -1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">In a binary array, find the longest subarray containing an equal number of
+                    <code>0</code>s and <code>1</code>s. <code>[0, 1, 0, 0, 1, 1, 0]</code> gives <code>6</code>.
+                </p>
+                <p>Rewrite every <code>0</code> as <code>−1</code>. An equal-count subarray is now a subarray summing
+                    to zero, which means the running total is the <em>same</em> at both ends. Store the first index at
+                    which each running total appears and the answer falls out in one pass, <code>O(n)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — contiguous array of equal 0s and 1s">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def find_max_length(nums):
+    """O(n) time. Treat 0 as -1: equal counts become a running sum of zero."""
+    first_seen = {0: -1}                # running sum -&gt; earliest index
+    running = best = 0
+    for i, x in enumerate(nums):
+        running += 1 if x == 1 else -1
+        if running in first_seen:
+            best = max(best, i - first_seen[running])   # sum unchanged in between
+        else:
+            first_seen[running] = i     # only the EARLIEST index is useful
+    return best
+
+
+print(find_max_length([0, 1, 0, 0, 1, 1, 0]))   # 6
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function findMaxLength(nums) {          // O(n) time
+  const firstSeen = new Map([[0, -1]]); // running sum -&gt; earliest index
+  let running = 0, best = 0;
+  for (let i = 0; i &lt; nums.length; i++) {
+    running += nums[i] === 1 ? 1 : -1;  // treat 0 as -1
+    if (firstSeen.has(running)) best = Math.max(best, i - firstSeen.get(running));
+    else firstSeen.set(running, i);     // keep only the earliest index
+  }
+  return best;
+}
+
+console.log(findMaxLength([0, 1, 0, 0, 1, 1, 0]));   // 6
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <h3 id="difference-arrays">Difference arrays: the mirror image<a class="headerlink"
                     href="#difference-arrays" title="Permanent link">#</a></h3>
@@ -1785,6 +2266,158 @@ class HashMap {
                 </p>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 1</b>
+                <p class="worked-q">Return the indices of the two numbers in an unsorted array that add up to a
+                    target. Exactly one answer exists.</p>
+                <p>The nested-loop answer is <code>O(n²)</code>. Instead ask a different question at each element:
+                    <em>have I already seen my complement?</em> A dictionary from value to index answers that in
+                    <code>O(1)</code>, so one pass is enough — and the map is filled <em>after</em> the lookup so an
+                    element never pairs with itself.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — two sum in one pass">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def two_sum(nums, target):
+    """O(n) time, O(n) space. Look up the complement instead of scanning for it."""
+    seen = {}                           # value -&gt; index
+    for i, x in enumerate(nums):
+        if target - x in seen:          # is my partner already behind me?
+            return [seen[target - x], i]
+        seen[x] = i                     # store AFTER the lookup
+    return []
+
+
+print(two_sum([2, 7, 11, 15], 9))       # [0, 1]
+print(two_sum([3, 3], 6))               # [0, 1]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function twoSum(nums, target) {         // O(n) time, O(n) space
+  const seen = new Map();               // value -&gt; index
+  for (let i = 0; i &lt; nums.length; i++) {
+    const need = target - nums[i];
+    if (seen.has(need)) return [seen.get(need), i];
+    seen.set(nums[i], i);               // store AFTER the lookup
+  }
+  return [];
+}
+
+console.log(twoSum([2, 7, 11, 15], 9)); // [0, 1]
+console.log(twoSum([3, 3], 6));         // [0, 1]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Group a list of words so that anagrams land in the same bucket: <code>["eat",
+                    "tea", "tan", "ate", "nat", "bat"]</code> becomes <code>[["eat", "tea", "ate"], ["tan", "nat"],
+                    ["bat"]]</code>.</p>
+                <p>Comparing every word against every other is <code>O(n²·L)</code>. Build a <strong>canonical
+                        key</strong> that all anagrams of a word share and use it as a dictionary key. Sorting the
+                    letters
+                    is the easy key at <code>O(L log L)</code>; a 26-slot letter count is <code>O(L)</code> and worth
+                    mentioning as the follow-up.</p>
+
+                <div class="code-tabs" data-label="Answer — group anagrams">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import defaultdict
+
+
+def group_anagrams(words):
+    """O(n * L) time with a count key. Anagrams collapse onto one bucket."""
+    buckets = defaultdict(list)
+    for word in words:
+        counts = [0] * 26                       # a..z tally, order-independent
+        for ch in word:
+            counts[ord(ch) - ord("a")] += 1
+        buckets[tuple(counts)].append(word)     # tuples are hashable, lists are not
+    return list(buckets.values())
+
+
+print(group_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"]))
+# [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function groupAnagrams(words) {                 // O(n * L) time
+  const buckets = new Map();
+  for (const word of words) {
+    const counts = new Array(26).fill(0);       // a..z tally
+    for (const ch of word) counts[ch.charCodeAt(0) - 97]++;
+    const key = counts.join(",");               // Map keys compare by identity
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(word);
+  }
+  return [...buckets.values()];
+}
+
+console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
+// [['eat','tea','ate'], ['tan','nat'], ['bat']]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Find the length of the longest run of consecutive integers in an unsorted array,
+                    in <code>O(n)</code> — so sorting is off the table. <code>[100, 4, 200, 1, 3, 2]</code> gives
+                    <code>4</code>.
+                </p>
+                <p>Drop everything into a set for <code>O(1)</code> membership tests. The linear bound comes from one
+                    guard: only begin counting at a value whose predecessor is absent, i.e. the true start of a run.
+                    Every run is then walked exactly once, so the inner loop costs <code>O(n)</code> across the whole
+                    array, not per element.</p>
+
+                <div class="code-tabs" data-label="Answer — longest consecutive sequence">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def longest_consecutive(nums):
+    """O(n) time, O(n) space. Each run is walked once, from its true start."""
+    seen = set(nums)
+    best = 0
+    for x in seen:
+        if x - 1 in seen:               # not a run start - somebody else owns it
+            continue
+        length = 1
+        while x + length in seen:       # walk this run to its end
+            length += 1
+        best = max(best, length)
+    return best
+
+
+print(longest_consecutive([100, 4, 200, 1, 3, 2]))          # 4
+print(longest_consecutive([0, 3, 7, 2, 5, 8, 4, 6, 0, 1]))  # 9
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function longestConsecutive(nums) {     // O(n) time, O(n) space
+  const seen = new Set(nums);
+  let best = 0;
+  for (const x of seen) {
+    if (seen.has(x - 1)) continue;      // not the start of a run
+    let length = 1;
+    while (seen.has(x + length)) length++;
+    best = Math.max(best, length);
+  }
+  return best;
+}
+
+console.log(longestConsecutive([100, 4, 200, 1, 3, 2]));   // 4
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 10 -->
             <h2 id="10-linked-lists">10. Linked Lists<a class="headerlink" href="#10-linked-lists"
                     title="Permanent link">#</a></h2>
@@ -1885,7 +2518,7 @@ function toArray(head) {
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you reverse a linked list in place?</p>
                 <p>Reversal is the canonical linked-list
                     question. The whole trick is that you need three references live
@@ -1931,7 +2564,7 @@ console.log(toArray(reverse(fromArray([1, 2, 3, 4, 5]))));  // [5,4,3,2,1]
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do fast and slow pointers detect cycles and locate midpoints?</p>
                 <p>These two belong
                     together: both run a slow pointer at one step and a fast pointer at two, and differ
@@ -1999,7 +2632,7 @@ function middle(head) {
             <h3 id="lru-cache">Where doubly linked lists earn their keep: an LRU cache<a class="headerlink"
                     href="#lru-cache" title="Permanent link">#</a></h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you design a Least Recently Used (LRU) Cache with O(1) operations?</p>
                 <p>An LRU cache
                     needs <code>O(1)</code> lookup <em>and</em> <code>O(1)</code> "move this item to most
@@ -2166,7 +2799,7 @@ console.log(cache.get(2));            // -1
             <div class="viz" data-viz="stack-queue"></div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you validate balanced brackets using a stack?</p>
                 <p>Push opening symbols onto a LIFO
                     stack; when encountering a closing symbol, pop the top element to verify that they form a matching
@@ -2243,7 +2876,7 @@ console.log(isBalanced("{[(])}"));      // false
                 i=7 73 &lt; 76 push 7 stack [6,7] -&gt; both keep answer 0</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How does a monotonic stack find the next greater element in O(n) time?</p>
                 <p>Maintain a stack
                     of indices with decreasing values; pop and record answers for all elements smaller than the current
@@ -2326,6 +2959,77 @@ console.log(largestRectangle([2, 1, 5, 6, 2, 3]));   // 10
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Design a stack with <code>push</code>, <code>pop</code>, <code>top</code> and
+                    <code>get_min</code>, every one of them <code>O(1)</code>.
+                </p>
+                <p>Caching a single minimum breaks as soon as it is popped — you would have to rescan. The fix is to
+                    notice that the history of minima is itself a stack: push the running minimum alongside every
+                    value so the two structures rise and fall together. <code>O(1)</code> everywhere,
+                    <code>O(n)</code> extra memory.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — min stack">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class MinStack:
+    """All four operations are O(1). The mins stack mirrors the main stack."""
+
+    def __init__(self):
+        self._items = []
+        self._mins = []                 # _mins[i] = min of _items[0..i]
+
+    def push(self, x):
+        self._items.append(x)
+        self._mins.append(x if not self._mins else min(x, self._mins[-1]))
+
+    def pop(self):
+        self._mins.pop()                # pop both - they always match in height
+        return self._items.pop()
+
+    def top(self):
+        return self._items[-1]
+
+    def get_min(self):
+        return self._mins[-1]           # O(1): no scanning, ever
+
+
+s = MinStack()
+for v in (5, 2, 7, 2):
+    s.push(v)
+print(s.get_min())                      # 2
+s.pop(); s.pop()
+print(s.get_min())                      # 2 - the first 2 is still in there
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class MinStack {                        // all four operations are O(1)
+  #items = [];
+  #mins = [];                           // #mins[i] = min of #items[0..i]
+
+  push(x) {
+    this.#items.push(x);
+    const previous = this.#mins.length ? this.#mins[this.#mins.length - 1] : x;
+    this.#mins.push(Math.min(x, previous));
+  }
+  pop()    { this.#mins.pop(); return this.#items.pop(); }
+  top()    { return this.#items[this.#items.length - 1]; }
+  getMin() { return this.#mins[this.#mins.length - 1]; }   // O(1)
+}
+
+const s = new MinStack();
+[5, 2, 7, 2].forEach((v) =&gt; s.push(v));
+console.log(s.getMin());                // 2
+s.pop(); s.pop();
+console.log(s.getMin());                // 2
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 12 -->
             <h2 id="12-queues-and-deques">12. Queues &amp; Deques<a class="headerlink" href="#12-queues-and-deques"
                     title="Permanent link">#</a></h2>
@@ -2390,7 +3094,7 @@ console.log(largestRectangle([2, 1, 5, 6, 2, 3]));   // 10
                 empty when size == 0 is ambiguous otherwise</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you implement a fixed-capacity circular queue using modular arithmetic?</p>
                 <p>Use
                     modulo math <code>(head + size) % capacity</code> to wrap around array indices so enqueue and
@@ -2556,7 +3260,7 @@ console.log(q.dequeue(), q.size);       // 'a' 1
             <h3 id="monotonic-deque">Sliding window maximum with a monotonic deque<a class="headerlink"
                     href="#monotonic-deque" title="Permanent link">#</a></h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you find the sliding window maximum in linear time?</p>
                 <p>Finding the maximum of every
                     window of size <code>k</code> naively costs <code>O(n·k)</code>. Keep a
@@ -2616,6 +3320,95 @@ console.log(windowMax([1, 3, -1, -3, 5, 3, 6, 7], 3));
                     </div>
                 </div>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">A grid holds empty cells (<code>0</code>), fresh oranges (<code>1</code>) and
+                    rotten ones (<code>2</code>). Every minute a rotten orange rots its four neighbours. Return the
+                    minutes until nothing fresh is left, or <code>-1</code> if that never happens.</p>
+                <p>Rot spreads from many sources at once, so a per-orange BFS would recount the same cells. Seed the
+                    queue with <em>every</em> rotten orange, then drain it <strong>one level at a time</strong> — each
+                    drained level is one minute. This multi-source BFS is the standard way to answer "how long until
+                    everything is reached" questions, in <code>O(rows × cols)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — rotting oranges (multi-source BFS)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+
+def oranges_rotting(grid):
+    """O(rows * cols). Draining one queue level = one minute of decay."""
+    rows, cols = len(grid), len(grid[0])
+    queue = deque()
+    fresh = 0
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:
+                queue.append((r, c))    # every rotten orange is a start point
+            elif grid[r][c] == 1:
+                fresh += 1
+
+    minutes = 0
+    while queue and fresh:
+        for _ in range(len(queue)):     # exactly one minute's worth of spread
+            r, c = queue.popleft()
+            for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nr, nc = r + dr, c + dc
+                if 0 &lt;= nr &lt; rows and 0 &lt;= nc &lt; cols and grid[nr][nc] == 1:
+                    grid[nr][nc] = 2    # marking as rotten also marks it visited
+                    fresh -= 1
+                    queue.append((nr, nc))
+        minutes += 1
+
+    return -1 if fresh else minutes     # unreachable fresh oranges -&gt; -1
+
+
+print(oranges_rotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]))   # 4
+print(oranges_rotting([[2, 1, 1], [0, 1, 1], [1, 0, 1]]))   # -1
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function orangesRotting(grid) {         // O(rows * cols)
+  const rows = grid.length, cols = grid[0].length;
+  let queue = [], fresh = 0;
+
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (grid[r][c] === 2) queue.push([r, c]);   // every rotten cell is a seed
+      else if (grid[r][c] === 1) fresh++;
+    }
+  }
+
+  let minutes = 0;
+  const moves = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  while (queue.length &amp;&amp; fresh) {
+    const next = [];                    // one minute's worth of spread
+    for (const [r, c] of queue) {
+      for (const [dr, dc] of moves) {
+        const nr = r + dr, nc = c + dc;
+        if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols &amp;&amp; grid[nr][nc] === 1) {
+          grid[nr][nc] = 2;             // rotten also means visited
+          fresh--;
+          next.push([nr, nc]);
+        }
+      }
+    }
+    queue = next;
+    minutes++;
+  }
+
+  return fresh ? -1 : minutes;
+}
+
+console.log(orangesRotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]));   // 4
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 13 -->
             <h2 id="13-recursion">13. Recursion<a class="headerlink" href="#13-recursion" title="Permanent link">#</a>
@@ -2822,6 +3615,136 @@ function dfsIterative(root, visit) {    // our stack lives on the heap
                     complexity. If the same label appears on more than one node, memoisation will help — and that
                     observation is literally the definition of dynamic programming.</p>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 1</b>
+                <p class="worked-q">Move a tower of <code>n</code> discs from peg A to peg C using peg B, never
+                    placing a larger disc on a smaller one. Print the moves.</p>
+                <p>The recursive statement is almost the whole solution: move the top <code>n − 1</code> discs out of
+                    the way, move the biggest disc across, then move the <code>n − 1</code> back on top. Each disc
+                    doubles the work, so the move count is <code>2ⁿ − 1</code> — the canonical demonstration that a
+                    tidy recurrence can still be exponential.</p>
+
+                <div class="code-tabs" data-label="Answer — towers of Hanoi">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def hanoi(n, source="A", target="C", spare="B"):
+    """2^n - 1 moves. Three lines of recursion; no iterative version is simpler."""
+    if n == 0:
+        return                              # nothing left to move
+    hanoi(n - 1, source, spare, target)     # get the small discs out of the way
+    print(f"move disc {n}: {source} -&gt; {target}")
+    hanoi(n - 1, spare, target, source)     # pile them back on the big disc
+
+
+hanoi(3)
+# move disc 1: A -&gt; C     move disc 2: A -&gt; B     move disc 1: C -&gt; B
+# move disc 3: A -&gt; C     move disc 1: B -&gt; A     move disc 2: B -&gt; C
+# move disc 1: A -&gt; C     (7 moves = 2^3 - 1)
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function hanoi(n, source = "A", target = "C", spare = "B") {   // 2^n - 1 moves
+  if (n === 0) return;                      // nothing left to move
+  hanoi(n - 1, source, spare, target);      // clear the small discs
+  console.log(`move disc ${n}: ${source} -&gt; ${target}`);
+  hanoi(n - 1, spare, target, source);      // pile them back on
+}
+
+hanoi(3);                                   // 7 moves = 2^3 - 1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Flatten an arbitrarily nested array of integers into a flat list: <code>[1, [2,
+                    [3, [4]], 5]]</code> becomes <code>[1, 2, 3, 4, 5]</code>.</p>
+                <p>This is the shape recursion exists for — the structure is defined in terms of itself, so the code
+                    should be too. Each element is either a value (emit it) or another list (recurse). Work is
+                    <code>O(total elements)</code> and the stack depth equals the nesting depth, which is worth saying
+                    out loud in an interview.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — flatten a nested list">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def flatten(items):
+    """O(total elements) time; stack depth == nesting depth."""
+    out = []
+    for item in items:
+        if isinstance(item, list):
+            out.extend(flatten(item))   # a list: solve the same problem, smaller
+        else:
+            out.append(item)            # a value: emit it
+    return out
+
+
+print(flatten([1, [2, [3, [4]], 5]]))   # [1, 2, 3, 4, 5]
+print(flatten([[], [[]], [1]]))         # [1]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function flatten(items) {               // O(total elements); depth == nesting
+  const out = [];
+  for (const item of items) {
+    if (Array.isArray(item)) out.push(...flatten(item));   // recurse
+    else out.push(item);                                   // emit
+  }
+  return out;
+}
+
+console.log(flatten([1, [2, [3, [4]], 5]]));   // [1, 2, 3, 4, 5]
+// The built-in equivalent: [1, [2, [3, [4]], 5]].flat(Infinity)
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Reverse a singly linked list recursively, and say what it costs compared with the
+                    iterative version.</p>
+                <p>Recurse to the tail first, then on the way back out make the next node point <em>backwards</em> and
+                    sever the old link. It is elegant, but honesty matters here: the stack grows to <code>O(n)</code>,
+                    so for a million-node list the iterative version is the one that survives. Interviewers usually
+                    want both, plus that trade-off stated.</p>
+
+                <div class="code-tabs" data-label="Answer — recursive list reversal">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def reverse_recursive(node):
+    """O(n) time, O(n) STACK - the iterative version uses O(1) space."""
+    if node is None or node.next is None:
+        return node                     # empty or single node: already reversed
+
+    new_head = reverse_recursive(node.next)   # reverse everything after me
+    node.next.next = node               # the next node now points back at me
+    node.next = None                    # ...and I become the new tail
+    return new_head                     # the old tail bubbles up unchanged
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function reverseRecursive(node) {       // O(n) time, O(n) STACK
+  if (node === null || node.next === null) return node;   // base case
+
+  const newHead = reverseRecursive(node.next);   // reverse the rest
+  node.next.next = node;                // the next node points back at me
+  node.next = null;                     // ...and I become the tail
+  return newHead;                       // old tail bubbles up unchanged
+}
+
+// Prefer the iterative version on long lists: it is O(1) space and cannot
+// blow the call stack.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 14 -->
             <h2 id="14-sorting">14. Sorting<a class="headerlink" href="#14-sorting" title="Permanent link">#</a></h2>
@@ -3464,6 +4387,157 @@ console.log([10, 9, 1].sort((a, b) =&gt; a - b)); // [1, 9, 10]  - right
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 1</b>
+                <p class="worked-q">An array holds only <code>0</code>, <code>1</code> and <code>2</code>. Sort it in
+                    a single pass with constant extra space — no counting pass, no library sort.</p>
+                <p>Counting each value and rewriting the array takes two passes. The <strong>Dutch national
+                        flag</strong> partition does it in one: three pointers carve the array into <em>done-zeros</em>,
+                    <em>done-ones</em>, <em>unexamined</em> and <em>done-twos</em>. The subtlety is that swapping a
+                    <code>2</code> in from the back brings an unexamined value, so the cursor must not advance.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — sort colours (Dutch national flag)">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def sort_colors(nums):
+    """O(n) time, O(1) space, single pass. Three regions, three pointers."""
+    low, i, high = 0, 0, len(nums) - 1
+    while i &lt;= high:
+        if nums[i] == 0:
+            nums[low], nums[i] = nums[i], nums[low]
+            low += 1
+            i += 1                      # what came back is a settled 0 or 1
+        elif nums[i] == 2:
+            nums[high], nums[i] = nums[i], nums[high]
+            high -= 1                   # do NOT advance i: the swapped-in value
+        else:                           # is still unexamined
+            i += 1
+
+
+data = [2, 0, 2, 1, 1, 0]
+sort_colors(data)
+print(data)                             # [0, 0, 1, 1, 2, 2]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function sortColors(nums) {             // O(n) time, O(1) space, one pass
+  let low = 0, i = 0, high = nums.length - 1;
+  const swap = (a, b) =&gt; { [nums[a], nums[b]] = [nums[b], nums[a]]; };
+
+  while (i &lt;= high) {
+    if (nums[i] === 0) swap(low++, i++);       // settled on the left
+    else if (nums[i] === 2) swap(high--, i);   // do NOT advance i
+    else i++;                                  // a 1 is already in place
+  }
+}
+
+const data = [2, 0, 2, 1, 1, 0];
+sortColors(data);
+console.log(data);                      // [0, 0, 1, 1, 2, 2]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Merge a sorted array <code>b</code> into a sorted array <code>a</code> that
+                    already has enough trailing space. Do it in place.</p>
+                <p>Merging forwards means shifting elements out of the way, which is <code>O(n·m)</code>. Fill
+                    <strong>from the back</strong> instead: the largest remaining value goes into the last free slot,
+                    and that slot is always beyond anything still unread. One reverse pass, <code>O(n + m)</code>.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — merge sorted array in place">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def merge_in_place(a, m, b, n):
+    """O(n + m) time, O(1) space. Writing backwards never overwrites unread data."""
+    i, j, write = m - 1, n - 1, m + n - 1
+    while j &gt;= 0:                       # once b is drained, a is already in place
+        if i &gt;= 0 and a[i] &gt; b[j]:
+            a[write] = a[i]
+            i -= 1
+        else:
+            a[write] = b[j]
+            j -= 1
+        write -= 1
+
+
+a = [1, 2, 3, 0, 0, 0]
+merge_in_place(a, 3, [2, 5, 6], 3)
+print(a)                                # [1, 2, 2, 3, 5, 6]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function mergeInPlace(a, m, b, n) {     // O(n + m) time, O(1) space
+  let i = m - 1, j = n - 1, write = m + n - 1;
+  while (j &gt;= 0) {                      // when b is drained, a is already sorted
+    if (i &gt;= 0 &amp;&amp; a[i] &gt; b[j]) a[write--] = a[i--];
+    else a[write--] = b[j--];
+  }
+}
+
+const a = [1, 2, 3, 0, 0, 0];
+mergeInPlace(a, 3, [2, 5, 6], 3);
+console.log(a);                         // [1, 2, 2, 3, 5, 6]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Arrange a list of non-negative integers so that concatenating them forms the
+                    largest possible number. <code>[3, 30, 34, 5, 9]</code> gives <code>"9534330"</code>.</p>
+                <p>Sorting descending numerically is wrong: <code>30</code> beats <code>3</code> numerically, yet
+                    <code>"330" &gt; "303"</code>. The right comparator asks which <em>concatenation</em> is larger,
+                    <code>a + b</code> versus <code>b + a</code>. This is the classic reminder that a custom
+                    comparator must define a consistent total order, and the leading-zero case still needs
+                    handling.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — largest number via a custom comparator">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from functools import cmp_to_key
+
+
+def largest_number(nums):
+    """O(n log n) comparisons, each on short strings. Order by a+b vs b+a."""
+    def compare(a, b):
+        if a + b == b + a:
+            return 0
+        return -1 if a + b &gt; b + a else 1   # -1 means "a comes first"
+
+    parts = sorted((str(x) for x in nums), key=cmp_to_key(compare))
+    joined = "".join(parts)
+    return "0" if joined[0] == "0" else joined   # [0, 0] must not become "00"
+
+
+print(largest_number([3, 30, 34, 5, 9]))   # "9534330"
+print(largest_number([0, 0]))              # "0"
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function largestNumber(nums) {          // O(n log n) comparisons
+  const parts = nums.map(String).sort((a, b) =&gt; (b + a).localeCompare(a + b));
+  const joined = parts.join("");
+  return joined[0] === "0" ? "0" : joined;   // [0, 0] must not become "00"
+}
+
+console.log(largestNumber([3, 30, 34, 5, 9]));   // "9534330"
+console.log(largestNumber([0, 0]));              // "0"
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 15 -->
             <h2 id="15-searching-and-binary-search">15. Searching &amp; Binary Search<a class="headerlink"
                     href="#15-searching-and-binary-search" title="Permanent link">#</a></h2>
@@ -3495,7 +4569,7 @@ console.log([10, 9, 1].sort((a, b) =&gt; a - b)); // [1, 9, 10]  - right
             </ol>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you implement exact-match binary search iteratively?</p>
                 <p>Maintain an inclusive range
                     <code>[lo, hi]</code> and compare target with mid; adjust boundaries to discard halves while
@@ -3543,7 +4617,7 @@ console.log(binarySearch([1, 3, 3, 3, 7, 9], 7));      // 4
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you find the first and last boundary indices of duplicate values?</p>
                 <p>Exact match is
                     rarely what you actually want. With duplicates you need <em>boundaries</em>: the first
@@ -3704,6 +4778,72 @@ console.log(minShipCapacity([1,2,3,4,5,6,7,8,9,10], 5));   // 15
                     you
                     can cheaply check a candidate, binary search the range.</p>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">A sorted array of distinct values was rotated at an unknown pivot — <code>[4, 5,
+                    6, 7, 0, 1, 2]</code> — and you must find a target in <code>O(log n)</code>.</p>
+                <p>Scanning is <code>O(n)</code> and throws the sortedness away. The key observation: cut anywhere and
+                    <strong>at least one half is still perfectly sorted</strong>. Work out which half that is by
+                    comparing the ends, check whether the target lies inside it, and discard the other half. Same
+                    <code>O(log n)</code>, one extra branch.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — search in a rotated sorted array">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def search_rotated(nums, target):
+    """O(log n). One half of every cut is always sorted - use it to decide."""
+    lo, hi = 0, len(nums) - 1
+    while lo &lt;= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+
+        if nums[lo] &lt;= nums[mid]:               # the LEFT half is sorted
+            if nums[lo] &lt;= target &lt; nums[mid]:
+                hi = mid - 1                    # target is inside it
+            else:
+                lo = mid + 1
+        else:                                   # the RIGHT half is sorted
+            if nums[mid] &lt; target &lt;= nums[hi]:
+                lo = mid + 1
+            else:
+                hi = mid - 1
+
+    return -1
+
+
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 0))   # 4
+print(search_rotated([4, 5, 6, 7, 0, 1, 2], 3))   # -1
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function searchRotated(nums, target) {  // O(log n)
+  let lo = 0, hi = nums.length - 1;
+  while (lo &lt;= hi) {
+    const mid = (lo + hi) &gt;&gt; 1;
+    if (nums[mid] === target) return mid;
+
+    if (nums[lo] &lt;= nums[mid]) {        // the LEFT half is sorted
+      if (nums[lo] &lt;= target &amp;&amp; target &lt; nums[mid]) hi = mid - 1;
+      else lo = mid + 1;
+    } else {                            // the RIGHT half is sorted
+      if (nums[mid] &lt; target &amp;&amp; target &lt;= nums[hi]) lo = mid + 1;
+      else hi = mid - 1;
+    }
+  }
+  return -1;
+}
+
+console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 0));   // 4
+console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 3));   // -1
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 16 -->
             <h2 id="16-trees">16. Trees<a class="headerlink" href="#16-trees" title="Permanent link">#</a></h2>
@@ -3881,7 +5021,7 @@ function postorder(node, out = []) {    // left, right, node
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you traverse a binary tree level by level using breadth-first search?</p>
                 <p>Level-order
                     is the odd one out: it is not depth-first at all, so it uses a queue rather than the call
@@ -4063,7 +5203,7 @@ function postorderIterative(root) {     // Left, Right, Root
             <h3 id="tree-recursion-template">The tree recursion template<a class="headerlink"
                     href="#tree-recursion-template" title="Permanent link">#</a></h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you compute the height, balance, and diameter of a binary tree?</p>
                 <p>Almost every tree
                     question fits one shape: solve the left subtree, solve the right subtree, combine.
@@ -4166,6 +5306,59 @@ function lowestCommonAncestor(node, a, b) {
                     </div>
                 </div>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Given two nodes <code>p</code> and <code>q</code> in a binary tree (no parent
+                    pointers, not a search tree), find their lowest common ancestor — the deepest node that has both
+                    of them below it.</p>
+                <p>Collecting the root-to-node path for each and comparing them works but needs two traversals and
+                    extra memory. The recursive answer is four lines: ask each subtree <em>"did you find either
+                        node?"</em>. A node whose two children both report a find <strong>is</strong> the answer;
+                    otherwise pass up whichever side reported one. Single <code>O(n)</code> pass, <code>O(h)</code>
+                    stack.</p>
+
+                <div class="code-tabs" data-label="Answer — lowest common ancestor of a binary tree">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def lowest_common_ancestor(root, p, q):
+    """O(n) time, O(h) stack. The split point is the answer."""
+    if root is None or root is p or root is q:
+        return root                     # found one - report it upwards
+
+    left = lowest_common_ancestor(root.left, p, q)
+    right = lowest_common_ancestor(root.right, p, q)
+
+    if left and right:
+        return root                     # p and q split here - this is the LCA
+    return left or right                # both live on one side; pass it up
+
+
+#         3
+#        / #       5   1        LCA(5, 1) = 3   (they split at the root)
+#      / \           LCA(6, 4) = 5   (4 is below 5, so 5 itself wins)
+#     6   2
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function lowestCommonAncestor(root, p, q) {   // O(n) time, O(h) stack
+  if (root === null || root === p || root === q) return root;
+
+  const left = lowestCommonAncestor(root.left, p, q);
+  const right = lowestCommonAncestor(root.right, p, q);
+
+  if (left &amp;&amp; right) return root;       // p and q split here - this is the LCA
+  return left || right;                 // both on one side; pass it up
+}
+
+// Note the second base case: if q sits BELOW p, the recursion stops at p and
+// returns it, which is the correct answer - an ancestor may be one of the nodes.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 17 -->
             <h2 id="17-binary-search-trees">17. Binary Search Trees<a class="headerlink" href="#17-binary-search-trees"
@@ -4345,7 +5538,7 @@ console.log([...tree.inOrder()]);       // [1,3,4,6,7,8,10,13,14]
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">Given a binary tree, decide whether it is a valid binary search tree.</p>
                 <p>The tempting answer — check that each node sits between its own two children — is
                     <strong>wrong</strong>.
@@ -4411,6 +5604,94 @@ function isValidBST(root) {             // O(n) time, O(h) stack
                     imported data. This is the entire reason for the next section.
                 </p>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Return the <code>k</code>-th smallest value in a binary search tree.</p>
+                <p>Flattening the whole tree into a sorted list is <code>O(n)</code> time <em>and</em>
+                    <code>O(n)</code> memory. The BST property means an in-order walk already emits values in sorted
+                    order, so an explicit stack lets you stop the moment the <code>k</code>-th value pops out:
+                    <code>O(h + k)</code>. If the question becomes "and now handle frequent updates", the follow-up
+                    answer is to augment each node with its subtree size.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — kth smallest element in a BST">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def kth_smallest(root, k):
+    """O(h + k) time, O(h) space. Stops as soon as the answer is found."""
+    stack, node = [], root
+    while stack or node:
+        while node:                     # dive to the smallest unvisited value
+            stack.append(node)
+            node = node.left
+        node = stack.pop()
+        k -= 1
+        if k == 0:
+            return node.value           # the k-th value in sorted order
+        node = node.right               # in-order: left, self, right
+    return None                         # the tree has fewer than k nodes
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function kthSmallest(root, k) {         // O(h + k) time, O(h) space
+  const stack = [];
+  let node = root;
+  while (stack.length || node) {
+    while (node) { stack.push(node); node = node.left; }   // dive left
+    node = stack.pop();
+    if (--k === 0) return node.value;   // the k-th value in sorted order
+    node = node.right;
+  }
+  return null;                          // fewer than k nodes
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Find the lowest common ancestor of two nodes in a <em>binary search tree</em>. How
+                    is this easier than the same question on a plain binary tree?</p>
+                <p>On a plain tree you must search both subtrees. In a BST the ordering tells you where to go without
+                    looking: if both values sit below the current node, walk left; if both sit above, walk right. The
+                    first node that lands <em>between</em> them is the split point, and therefore the answer. No
+                    recursion needed — <code>O(h)</code> time and <code>O(1)</code> space.</p>
+
+                <div class="code-tabs" data-label="Answer — lowest common ancestor of a BST">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def lca_bst(root, p, q):
+    """O(h) time, O(1) space. The ordering replaces the search entirely."""
+    node = root
+    while node:
+        if p.value &lt; node.value and q.value &lt; node.value:
+            node = node.left            # both smaller - the answer is left
+        elif p.value &gt; node.value and q.value &gt; node.value:
+            node = node.right           # both larger - the answer is right
+        else:
+            return node                 # they split here (or one IS this node)
+    return None
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function lcaBST(root, p, q) {           // O(h) time, O(1) space
+  let node = root;
+  while (node) {
+    if (p.value &lt; node.value &amp;&amp; q.value &lt; node.value) node = node.left;
+    else if (p.value &gt; node.value &amp;&amp; q.value &gt; node.value) node = node.right;
+    else return node;                   // the split point is the LCA
+  }
+  return null;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 18 -->
             <h2 id="18-balanced-trees-and-b-trees">18. Balanced Trees &amp; B-Trees<a class="headerlink"
@@ -4509,7 +5790,7 @@ function isValidBST(root) {             // O(n) time, O(h) stack
                 so a RANGE SCAN is one descent plus a linear walk</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do AVL tree rotations maintain O(log n) height during insertions?</p>
                 <p>Check the balance
                     factor after standard BST insertion; perform single or double rotations (left or right) in
@@ -4653,7 +5934,7 @@ console.log(root.value, root.height);   // 20 3
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">Convert a sorted array into a height-balanced binary search tree.</p>
                 <p>Inserting the sorted values one by one is exactly the disaster described above — you get a
                     right-leaning chain of height <code>n</code>. Balance has to be built in from the start.</p>
@@ -4707,6 +5988,77 @@ console.log(tree.value);            // 4 - the median becomes the root
                     </div>
                 </div>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Convert a balanced binary search tree into a sorted, circular doubly linked list
+                    <strong>in place</strong> — reuse <code>left</code> as <code>previous</code> and
+                    <code>right</code> as <code>next</code>, allocating no new nodes.
+                </p>
+                <p>This is the question that checks whether you really understand in-order traversal. Walking the tree
+                    in order visits the values in exactly the sequence the list needs, so all that is left is to
+                    stitch each visited node to the previously visited one. Keep a <code>previous</code> pointer
+                    across the recursion, then close the ring between head and tail at the end: <code>O(n)</code>
+                    time, <code>O(h)</code> stack, zero allocations.</p>
+
+                <div class="code-tabs" data-label="Answer — BST to sorted circular doubly linked list">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def tree_to_doubly_list(root):
+    """O(n) time, O(h) stack, no new nodes. left = prev, right = next."""
+    if root is None:
+        return None
+
+    head = previous = None
+
+    def visit(node):
+        nonlocal head, previous
+        if node is None:
+            return
+        visit(node.left)                # everything smaller is already linked
+
+        if previous is None:
+            head = node                 # the smallest value becomes the head
+        else:
+            previous.right = node       # stitch the two neighbours together
+            node.left = previous
+        previous = node
+
+        visit(node.right)
+
+    visit(root)
+    head.left, previous.right = previous, head   # close the ring
+    return head
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function treeToDoublyList(root) {       // O(n) time, O(h) stack, no allocation
+  if (!root) return null;
+
+  let head = null, previous = null;
+
+  const visit = (node) =&gt; {
+    if (!node) return;
+    visit(node.left);                   // everything smaller is linked already
+
+    if (!previous) head = node;         // the smallest value is the head
+    else { previous.right = node; node.left = previous; }
+    previous = node;
+
+    visit(node.right);
+  };
+
+  visit(root);
+  head.left = previous;                 // close the ring
+  previous.right = head;
+  return head;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 19 -->
             <h2 id="19-heaps-and-priority-queues">19. Heaps &amp; Priority Queues<a class="headerlink"
@@ -4875,7 +6227,7 @@ console.log(topK([7, 2, 9, 4, 1, 8], 3));       // [9, 8, 7]
             </p>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">Merge <code>k</code> sorted linked lists into one sorted list.</p>
                 <p>Concatenating everything and sorting is <code>O(N log N)</code> over all <code>N</code> elements and
                     throws away the fact that each list is <em>already</em> sorted. The smallest unused value can only
@@ -4951,6 +6303,123 @@ function mergeKLists(lists) {           // O(N log k) time, O(k) space
                     direction is the whole trick.</p>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">Numbers arrive one at a time. After each arrival you may be asked for the median
+                    of everything seen so far. Design a structure that keeps both operations fast.</p>
+                <p>Re-sorting on every query is <code>O(n log n)</code> per call. Split the data at the median
+                    instead: a <strong>max-heap</strong> for the lower half and a <strong>min-heap</strong> for the
+                    upper half. The two roots straddle the middle, so the median is either one root or the average of
+                    both. Keep the sizes within one of each other and insertion is <code>O(log n)</code> while the
+                    query is <code>O(1)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — find median from a data stream">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import heapq
+
+
+class MedianFinder:
+    """add: O(log n). median: O(1). Two heaps meeting at the middle."""
+
+    def __init__(self):
+        self._low = []                  # max-heap (negated) - the smaller half
+        self._high = []                 # min-heap - the larger half
+
+    def add(self, x):
+        heapq.heappush(self._low, -x)                       # always land in low
+        heapq.heappush(self._high, -heapq.heappop(self._low))   # pass the max up
+        if len(self._high) &gt; len(self._low):                # rebalance
+            heapq.heappush(self._low, -heapq.heappop(self._high))
+
+    def median(self):
+        if len(self._low) &gt; len(self._high):
+            return -self._low[0]        # odd count - low holds the extra value
+        return (-self._low[0] + self._high[0]) / 2
+
+
+mf = MedianFinder()
+for v in (5, 15, 1, 3):
+    mf.add(v)
+print(mf.median())                      # 4.0  -&gt; sorted: [1, 3, 5, 15]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+// JavaScript has no built-in heap; this uses the MinHeap from earlier in the
+// section, with the low half negated so a min-heap behaves like a max-heap.
+class MedianFinder {                    // add: O(log n), median: O(1)
+  constructor() {
+    this.low = new MinHeap();           // negated -&gt; acts as a max-heap
+    this.high = new MinHeap();
+  }
+
+  add(x) {
+    this.low.push(-x);                            // always land in low
+    this.high.push(-this.low.pop());              // pass its max up to high
+    if (this.high.size() &gt; this.low.size()) {     // rebalance
+      this.low.push(-this.high.pop());
+    }
+  }
+
+  median() {
+    if (this.low.size() &gt; this.high.size()) return -this.low.peek();
+    return (-this.low.peek() + this.high.peek()) / 2;
+  }
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Given points on a plane, return the <code>k</code> closest to the origin.</p>
+                <p>Sorting everything is <code>O(n log n)</code> when only <code>k</code> results are wanted. Keep a
+                    <strong>max-heap of size k</strong>: push each point and evict the worst whenever the heap
+                    overflows, so it always holds the best <code>k</code> seen so far. That is <code>O(n log k)</code>
+                    time and <code>O(k)</code> memory — and it works on a stream, where sorting cannot. Comparing
+                    squared distances avoids a pointless square root.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — k closest points to origin">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import heapq
+
+
+def k_closest(points, k):
+    """O(n log k) time, O(k) space. Squared distance - no sqrt needed."""
+    heap = []                                   # max-heap of the best k so far
+    for x, y in points:
+        heapq.heappush(heap, (-(x * x + y * y), x, y))   # negate for a max-heap
+        if len(heap) &gt; k:
+            heapq.heappop(heap)                 # drop the current worst
+    return [[x, y] for _, x, y in heap]
+
+
+print(k_closest([[1, 3], [-2, 2], [5, 8], [0, 1]], 2))   # [[-2, 2], [0, 1]]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function kClosest(points, k) {          // O(n log k) time, O(k) space
+  const heap = new MinHeap();           // stores [-distance, x, y]
+  for (const [x, y] of points) {
+    heap.push([-(x * x + y * y), x, y]);   // negate so the worst sits on top
+    if (heap.size() &gt; k) heap.pop();       // drop the current worst
+  }
+  return heap.toArray().map(([, x, y]) =&gt; [x, y]);
+}
+
+// Sorting is O(n log n) and needs the whole array up front; the size-k heap
+// works on a stream and never holds more than k points.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 20 -->
             <h2 id="20-tries">20. Tries<a class="headerlink" href="#20-tries" title="Permanent link">#</a></h2>
 
@@ -4972,7 +6441,7 @@ function mergeKLists(lists) {           // O(N log k) time, O(k) space
             <div class="viz" data-viz="trie"></div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How does a trie perform prefix matching and autocomplete in O(L) time?</p>
                 <p>Store characters
                     along tree edges where descendant nodes share common prefix paths, enabling <code>O(L)</code> word
@@ -5124,7 +6593,7 @@ console.log(trie.autocomplete("car"));  // ['car','card','care']
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">Given a dictionary of roots and a sentence, replace every word that has a root as
                     its prefix with the <em>shortest</em> such root. For roots <code>["cat", "bat", "rat"]</code> and
                     the sentence <code>"the cattle was rattled by the battery"</code>, the answer is
@@ -5190,6 +6659,92 @@ console.log(replaceWords(["cat", "bat", "rat"],
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Design a dictionary supporting <code>add_word</code> and <code>search</code>,
+                    where a search string may contain <code>.</code> as a wildcard matching any single character.</p>
+                <p>Adding is an ordinary trie insert. The wildcard is what makes it interesting: at a <code>.</code>
+                    the walk is no longer a single path, so the search has to branch into <em>every</em> child and
+                    succeed if any branch does — a depth-first search over the trie. A concrete word costs
+                    <code>O(L)</code>; a query that is all wildcards degrades to <code>O(26^L)</code>, which is worth
+                    stating out loud.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — design add and search words">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class WordDictionary:
+    """add: O(L). search: O(L) with no wildcards, branching at each '.'."""
+
+    def __init__(self):
+        self._children = {}
+        self._is_word = False
+
+    def add_word(self, word):
+        node = self
+        for ch in word:
+            node = node._children.setdefault(ch, WordDictionary())
+        node._is_word = True
+
+    def search(self, pattern, index=0):
+        if index == len(pattern):
+            return self._is_word        # only a complete word counts
+        ch = pattern[index]
+        if ch == ".":                   # wildcard: try every child
+            return any(child.search(pattern, index + 1)
+                       for child in self._children.values())
+        child = self._children.get(ch)
+        return child is not None and child.search(pattern, index + 1)
+
+
+d = WordDictionary()
+for w in ("bad", "dad", "mad"):
+    d.add_word(w)
+print(d.search("pad"), d.search("bad"), d.search(".ad"), d.search("b.."))
+# False True True True
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class WordDictionary {                  // add: O(L); '.' branches the search
+  constructor() {
+    this.children = new Map();
+    this.isWord = false;
+  }
+
+  addWord(word) {
+    let node = this;
+    for (const ch of word) {
+      if (!node.children.has(ch)) node.children.set(ch, new WordDictionary());
+      node = node.children.get(ch);
+    }
+    node.isWord = true;
+  }
+
+  search(pattern, index = 0) {
+    if (index === pattern.length) return this.isWord;
+    const ch = pattern[index];
+    if (ch === ".") {                   // wildcard: any child may match
+      for (const child of this.children.values()) {
+        if (child.search(pattern, index + 1)) return true;
+      }
+      return false;
+    }
+    const child = this.children.get(ch);
+    return child ? child.search(pattern, index + 1) : false;
+  }
+}
+
+const d = new WordDictionary();
+["bad", "dad", "mad"].forEach((w) =&gt; d.addWord(w));
+console.log(d.search("pad"), d.search("bad"), d.search(".ad"), d.search("b.."));
+// false true true true
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 21 -->
             <h2 id="21-union-find">21. Union-Find<a class="headerlink" href="#21-union-find"
                     title="Permanent link">#</a></h2>
@@ -5217,7 +6772,7 @@ console.log(replaceWords(["cat", "bat", "rat"],
             <div class="viz" data-viz="dsu"></div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do path compression and union by rank optimize disjoint-set operations?</p>
                 <p>Maintain
                     parent pointers representing sets; during <code>find</code>, compress paths directly to the root,
@@ -5330,7 +6885,7 @@ console.log(uf.connected(0, 3), uf.count);   // true 4
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">You are given an <code>n × n</code> matrix where <code>grid[i][j] = 1</code> means
                     city <code>i</code> and city <code>j</code> are directly connected. A province is a group of cities
                     connected directly or indirectly. How many provinces are there?</p>
@@ -5391,6 +6946,49 @@ console.log(countProvinces([[1, 1, 0],
                     answer whenever edges arrive incrementally and you only ever <em>merge</em> groups — it cannot split
                     them again.</p>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">A tree of <code>n</code> nodes had one extra edge added, creating exactly one
+                    cycle. Given the edge list, return the edge that can be removed — the last one in the input if
+                    several qualify.</p>
+                <p>A DFS after every insertion re-walks the graph and lands at <code>O(n²)</code>. Union-find answers
+                    it in one pass: process edges in order and union each pair. The first edge whose two endpoints are
+                    <strong>already in the same set</strong> is the one that closed the cycle, so it is the answer.
+                    With path compression and union by rank the whole scan is effectively <code>O(n)</code>.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — redundant connection">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def find_redundant_connection(edges):
+    """Effectively O(n). The first edge joining two connected nodes is the cycle."""
+    dsu = UnionFind(len(edges) + 1)     # nodes are labelled 1..n
+    for a, b in edges:
+        if not dsu.union(a, b):         # union returns False if already joined
+            return [a, b]               # this edge closed the cycle
+    return []
+
+
+print(find_redundant_connection([[1, 2], [1, 3], [2, 3]]))   # [2, 3]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function findRedundantConnection(edges) {   // effectively O(n)
+  const dsu = new UnionFind(edges.length + 1);   // nodes are labelled 1..n
+  for (const [a, b] of edges) {
+    if (!dsu.union(a, b)) return [a, b];        // already connected -&gt; the cycle
+  }
+  return [];
+}
+
+console.log(findRedundantConnection([[1, 2], [1, 3], [2, 3]]));   // [2, 3]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 22 -->
             <h2 id="22-graph-representations">22. Graph Representations<a class="headerlink"
@@ -5601,7 +7199,7 @@ function* gridNeighbours(grid, r, c) {
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">Given a reference to a node in a connected undirected graph, return a deep copy of
                     the whole graph. Every node holds a value and a list of neighbours.</p>
                 <p>The difficulty is not the traversal — it is the <strong>cycles</strong>. Copying naively recurses
@@ -5657,6 +7255,145 @@ function cloneGraph(node) {         // O(V + E)
                     </div>
                 </div>
             </div>
+
+            <div class="worked">
+                <b>Top Interview Question 2</b>
+                <p class="worked-q">A grid of <code>"1"</code> (land) and <code>"0"</code> (water) is given. Count the
+                    islands — groups of land connected horizontally or vertically.</p>
+                <p>This is the question that turns a grid into a graph: every cell is a vertex and its four neighbours
+                    are its edges. Scan for an unvisited land cell, then flood the whole island with DFS or BFS so it
+                    is never counted twice; the number of times you had to start a flood is the number of islands.
+                    Sinking each visited cell to <code>"0"</code> avoids a separate visited set. <code>O(rows ×
+                    cols)</code>.</p>
+
+                <div class="code-tabs" data-label="Answer — number of islands">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def num_islands(grid):
+    """O(rows * cols). Each cell is visited once and then sunk."""
+    if not grid:
+        return 0
+    rows, cols = len(grid), len(grid[0])
+
+    def sink(r, c):
+        if not (0 &lt;= r &lt; rows and 0 &lt;= c &lt; cols) or grid[r][c] != "1":
+            return                      # off the grid, or water/already visited
+        grid[r][c] = "0"                # sinking IS the visited marker
+        sink(r + 1, c); sink(r - 1, c)
+        sink(r, c + 1); sink(r, c - 1)
+
+    islands = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == "1":       # a brand new island
+                islands += 1
+                sink(r, c)
+    return islands
+
+
+print(num_islands([list("11000"), list("11000"), list("00100")]))   # 2
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function numIslands(grid) {             // O(rows * cols)
+  if (!grid.length) return 0;
+  const rows = grid.length, cols = grid[0].length;
+
+  const sink = (r, c) =&gt; {
+    if (r &lt; 0 || r &gt;= rows || c &lt; 0 || c &gt;= cols || grid[r][c] !== "1") return;
+    grid[r][c] = "0";                   // sinking IS the visited marker
+    sink(r + 1, c); sink(r - 1, c); sink(r, c + 1); sink(r, c - 1);
+  };
+
+  let islands = 0;
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (grid[r][c] === "1") { islands++; sink(r, c); }
+    }
+  }
+  return islands;
+}
+
+// On a very large grid, swap the recursion for a BFS queue: the DFS stack can
+// reach rows * cols deep and overflow.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">In a board of <code>"X"</code> and <code>"O"</code>, flip every region of
+                    <code>"O"</code>s that is completely surrounded by <code>"X"</code>s. A region touching the border
+                    is not surrounded and must survive.
+                </p>
+                <p>Testing each region for "does it touch the border?" repeats work. Invert the problem: start from
+                    the border <code>"O"</code>s only and mark everything reachable from them as
+                    <strong>safe</strong>. Whatever is still <code>"O"</code> afterwards must be enclosed, so flip it.
+                    Two sweeps and one flood, <code>O(rows × cols)</code>. Working from the guaranteed-safe boundary
+                    inwards is a pattern that reappears in many grid questions.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — surrounded regions">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def solve_surrounded(board):
+    """O(rows * cols). Flood from the border, then flip whatever is left."""
+    if not board:
+        return
+    rows, cols = len(board), len(board[0])
+
+    def mark_safe(r, c):
+        if not (0 &lt;= r &lt; rows and 0 &lt;= c &lt; cols) or board[r][c] != "O":
+            return
+        board[r][c] = "S"               # reachable from the border -&gt; safe
+        mark_safe(r + 1, c); mark_safe(r - 1, c)
+        mark_safe(r, c + 1); mark_safe(r, c - 1)
+
+    for r in range(rows):               # every border cell is a starting point
+        mark_safe(r, 0); mark_safe(r, cols - 1)
+    for c in range(cols):
+        mark_safe(0, c); mark_safe(rows - 1, c)
+
+    for r in range(rows):
+        for c in range(cols):
+            board[r][c] = "O" if board[r][c] == "S" else "X"
+
+
+grid = [list("XXXX"), list("XOOX"), list("XXOX"), list("XOXX")]
+solve_surrounded(grid)
+print(["".join(row) for row in grid])
+# ['XXXX', 'XXXX', 'XXXX', 'XOXX']   - only the border-touching O survives
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function solveSurrounded(board) {       // O(rows * cols)
+  if (!board.length) return;
+  const rows = board.length, cols = board[0].length;
+
+  const markSafe = (r, c) =&gt; {
+    if (r &lt; 0 || r &gt;= rows || c &lt; 0 || c &gt;= cols || board[r][c] !== "O") return;
+    board[r][c] = "S";                  // reachable from the border -&gt; safe
+    markSafe(r + 1, c); markSafe(r - 1, c);
+    markSafe(r, c + 1); markSafe(r, c - 1);
+  };
+
+  for (let r = 0; r &lt; rows; r++) { markSafe(r, 0); markSafe(r, cols - 1); }
+  for (let c = 0; c &lt; cols; c++) { markSafe(0, c); markSafe(rows - 1, c); }
+
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      board[r][c] = board[r][c] === "S" ? "O" : "X";
+    }
+  }
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- ============================================================ 23 -->
             <h2 id="23-graph-traversal">23. Graph Traversal<a class="headerlink" href="#23-graph-traversal"
@@ -6001,7 +7738,7 @@ function connectedComponents(graph, nodes) {
                     title="Permanent link">#</a></h3>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you detect a cycle in an undirected graph using DFS?</p>
                 <p>In an undirected graph, every edge is bidirectional. As DFS explores from <code>node</code> to
                     <code>neighbour</code>, if <code>neighbour</code> has already been visited and is <strong>not the
@@ -6069,7 +7806,7 @@ function hasCycleUndirected(graph, nodes) {  // O(V + E) time, O(V) space
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you detect a cycle in a directed graph using DFS (three-state / recursion
                     stack)?</p>
                 <p>In a directed graph, visiting an already-visited vertex does <em>not</em> imply a cycle (it could be
@@ -6141,7 +7878,7 @@ function hasCycleDirected(graph, nodes) {  // O(V + E) time, O(V) space
                     title="Permanent link">#</a></h3>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you determine if a graph is bipartite (2-colorable) using traversal?</p>
                 <p>A graph is <strong>bipartite</strong> if vertices can be split into two sets such that no two
                     adjacent nodes share the same set — which is mathematically equivalent to the graph having
@@ -6219,7 +7956,7 @@ function isBipartite(graph, nodes) {    // O(V + E) time, O(V) space
                     title="Permanent link">#</a></h3>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 4</b>
                 <p class="worked-q">How do you find all simple paths between two nodes using DFS with backtracking?</p>
                 <p>Standard graph traversal marks a vertex as visited permanently. To find <strong>all distinct
                         paths</strong> from source to target, we use <strong>backtracking</strong>: add the node to the
@@ -6414,7 +8151,7 @@ console.log(minutesToRotAll([[2, 1, 1], [1, 1, 0], [0, 1, 1]]));   // 4
                 valid order: shirt, socks, pants, tie, shoes, belt, jacket (not unique!)</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you find a topological ordering of a Directed Acyclic Graph (DAG) using
                     Kahn's algorithm or DFS?</p>
                 <p>Kahn's algorithm iteratively removes nodes with zero in-degree using a queue, while
@@ -6550,7 +8287,7 @@ console.log(topoSortKahn(2, [[0, 1], [1, 0]]));                  // null
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">There are <code>n</code> courses labelled <code>0…n-1</code> and a list of pairs
                     <code>[a, b]</code> meaning "you must take <code>b</code> before <code>a</code>". Return any valid
                     order in which to take all the courses, or an empty list if it is impossible.
@@ -6631,6 +8368,100 @@ console.log(findOrder(2, [[1, 0], [0, 1]]));                  // [] - circular
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">You are given a list of words sorted according to an unknown alphabet. Recover an
+                    ordering of the letters consistent with that dictionary, or report that the input is
+                    contradictory.</p>
+                <p>The hard half is realising this <em>is</em> a topological sort: comparing two adjacent words, the
+                    first position where they differ yields one ordering constraint — an edge. Build the graph from
+                    those edges and run Kahn's algorithm; a leftover node count means a cycle, i.e. no valid alphabet.
+                    Watch the trap case <code>["abc", "ab"]</code>: a prefix appearing <em>after</em> its own
+                    extension is invalid, and no edge would catch it.</p>
+
+                <div class="code-tabs" data-label="Answer — alien dictionary letter order">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from collections import deque
+
+
+def alien_order(words):
+    """O(total characters). Each adjacent pair contributes at most one edge."""
+    successors = {ch: set() for word in words for ch in word}
+    in_degree = {ch: 0 for ch in successors}
+
+    for first, second in zip(words, words[1:]):
+        if len(first) &gt; len(second) and first.startswith(second):
+            return ""                   # "abc" before "ab" is impossible
+        for a, b in zip(first, second):
+            if a != b:                  # the first difference is the constraint
+                if b not in successors[a]:
+                    successors[a].add(b)
+                    in_degree[b] += 1
+                break                   # later characters say nothing
+
+    queue = deque(ch for ch, d in in_degree.items() if d == 0)
+    order = []
+    while queue:
+        ch = queue.popleft()
+        order.append(ch)
+        for nxt in successors[ch]:
+            in_degree[nxt] -= 1
+            if in_degree[nxt] == 0:
+                queue.append(nxt)
+
+    return "".join(order) if len(order) == len(in_degree) else ""   # cycle -&gt; ""
+
+
+print(alien_order(["wrt", "wrf", "er", "ett", "rftt"]))   # "wertf"
+print(alien_order(["abc", "ab"]))                         # "" - contradictory
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function alienOrder(words) {            // O(total characters)
+  const successors = new Map(), inDegree = new Map();
+  for (const word of words) {
+    for (const ch of word) {
+      if (!successors.has(ch)) { successors.set(ch, new Set()); inDegree.set(ch, 0); }
+    }
+  }
+
+  for (let i = 0; i + 1 &lt; words.length; i++) {
+    const [first, second] = [words[i], words[i + 1]];
+    if (first.length &gt; second.length &amp;&amp; first.startsWith(second)) return "";
+    for (let j = 0; j &lt; Math.min(first.length, second.length); j++) {
+      if (first[j] !== second[j]) {     // the first difference is the edge
+        if (!successors.get(first[j]).has(second[j])) {
+          successors.get(first[j]).add(second[j]);
+          inDegree.set(second[j], inDegree.get(second[j]) + 1);
+        }
+        break;                          // later characters say nothing
+      }
+    }
+  }
+
+  const queue = [...inDegree].filter(([, d]) =&gt; d === 0).map(([ch]) =&gt; ch);
+  const order = [];
+  while (queue.length) {
+    const ch = queue.shift();
+    order.push(ch);
+    for (const next of successors.get(ch)) {
+      inDegree.set(next, inDegree.get(next) - 1);
+      if (inDegree.get(next) === 0) queue.push(next);
+    }
+  }
+
+  return order.length === inDegree.size ? order.join("") : "";   // cycle -&gt; ""
+}
+
+console.log(alienOrder(["wrt", "wrf", "er", "ett", "rftt"]));   // "wertf"
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 25 -->
             <h2 id="25-shortest-paths">25. Shortest Paths<a class="headerlink" href="#25-shortest-paths"
                     title="Permanent link">#</a></h2>
@@ -6662,7 +8493,7 @@ console.log(findOrder(2, [[1, 0], [0, 1]]));                  // [] - circular
             <div class="viz" data-viz="dijkstra"></div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How does Dijkstra's algorithm find single-source shortest paths on non-negative
                     weighted graphs?</p>
                 <p>By repeatedly extracting the unvisited vertex with the minimum tentative distance
@@ -6800,7 +8631,7 @@ console.log(rebuildPath(prev, "A", "F"));       // ['A','C','B','D','F']
             </ol>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you compute shortest paths when edge weights can be negative, or between all
                     pairs of vertices?</p>
                 <p>Bellman-Ford relaxes all edges \(V-1\) times to handle negative weights and
@@ -6895,7 +8726,7 @@ function floydWarshall(matrix) {        // O(V^3) all pairs
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">A network has <code>n</code> nodes labelled <code>1…n</code>. Given travel times
                     as directed edges <code>[from, to, time]</code>, a signal is sent from node <code>k</code>. How long
                     until <em>every</em> node receives it, or <code>-1</code> if some node never does?</p>
@@ -7003,7 +8834,7 @@ console.log(networkDelayTime([[1,2,1]], 2, 2));                   // -1
             </ol>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you construct a Minimum Spanning Tree (MST) using Kruskal's or Prim's
                     algorithm?</p>
                 <p>Both are greedy, and both are provably optimal because of the <strong>cut property</strong>: for any
@@ -7102,7 +8933,7 @@ console.log(kruskal(4, [[4, 0, 1], [2, 0, 2], [1, 1, 2], [5, 1, 3], [8, 2, 3]]))
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">Given points on a plane, the cost of connecting two of them is their Manhattan
                     distance <code>|x1-x2| + |y1-y2|</code>. Find the minimum total cost to connect all points so that
                     there is exactly one path between any two.</p>
@@ -7176,6 +9007,60 @@ console.log(minCostConnect([[0,0],[2,2],[3,10],[5,2],[7,0]]));   // 20
                 </div>
             </div>
 
+            <div class="worked">
+                <b>Top Interview Question 3</b>
+                <p class="worked-q">Each of <code>n</code> houses can get water either by digging its own well at a
+                    cost, or by laying a pipe to another house at a cost. Supply every house for the least total
+                    cost.</p>
+                <p>Wells and pipes look like two different problems, which is what makes this a good MST question. The
+                    trick is a <strong>virtual node 0</strong> representing the water source: digging a well at house
+                    <code>i</code> becomes an edge <code>0 — i</code> priced at the well cost. Now every option is
+                    just an edge, and the cheapest way to connect all <code>n + 1</code> nodes is a plain minimum
+                    spanning tree — Kruskal over the combined edge list, <code>O(E log E)</code>.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — optimize water distribution">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def min_cost_to_supply_water(n, wells, pipes):
+    """O(E log E). A virtual node turns 'dig a well' into 'lay a pipe to 0'."""
+    edges = [(cost, 0, house) for house, cost in enumerate(wells, start=1)]
+    edges += [(cost, a, b) for a, b, cost in pipes]
+    edges.sort()                        # Kruskal: cheapest edge first
+
+    dsu = UnionFind(n + 1)              # node 0 is the virtual water source
+    total = 0
+    for cost, a, b in edges:
+        if dsu.union(a, b):             # only edges that join two components
+            total += cost
+    return total
+
+
+print(min_cost_to_supply_water(3, [1, 2, 2], [[1, 2, 1], [2, 3, 1]]))   # 3
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function minCostToSupplyWater(n, wells, pipes) {   // O(E log E)
+  const edges = wells.map((cost, i) =&gt; [cost, 0, i + 1]);   // 0 = water source
+  for (const [a, b, cost] of pipes) edges.push([cost, a, b]);
+  edges.sort((x, y) =&gt; x[0] - y[0]);                // Kruskal: cheapest first
+
+  const dsu = new UnionFind(n + 1);
+  let total = 0;
+  for (const [cost, a, b] of edges) {
+    if (dsu.union(a, b)) total += cost;             // joins two components
+  }
+  return total;
+}
+
+console.log(minCostToSupplyWater(3, [1, 2, 2], [[1, 2, 1], [2, 3, 1]]));   // 3
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- ============================================================ 27 -->
             <h2 id="27-greedy-algorithms">27. Greedy Algorithms<a class="headerlink" href="#27-greedy-algorithms"
                     title="Permanent link">#</a></h2>
@@ -7208,7 +9093,7 @@ console.log(minCostConnect([[0,0],[2,2],[3,10],[5,2],[7,0]]));   // 20
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you find the maximum number of mutually compatible, non-overlapping
                     intervals?</p>
                 <p>Sort intervals by their finish times and greedily select the interval that ends earliest; finishing
@@ -7254,7 +9139,7 @@ console.log(maxMeetings([[1, 3], [2, 5], [4, 7], [6, 8]]));   // 2
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you determine if you can reach the last index of an array (Jump Game)?</p>
                 <p>Track the
                     furthest index
@@ -7297,7 +9182,7 @@ console.log(canJump([2, 3, 1, 1, 4]), canJump([3, 2, 1, 0, 4])); // true false
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you calculate the minimum number of platforms needed for a train schedule?
                 </p>
                 <p>Sort
@@ -7368,7 +9253,7 @@ console.log(minPlatforms([900, 940, 950], [910, 1200, 1120]));   // 2
                 where subproblems overlap and are therefore cached.</p>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you find the k-th smallest element in an unsorted array in O(n) average time
                     using Quickselect?</p>
                 <p>Like quicksort, partition the array around a pivot, but recurse only into the
@@ -7442,7 +9327,7 @@ console.log(quickselect([7, 2, 9, 4, 1, 8], 2));    // 4
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you compute powers in O(log n) time using binary exponentiation?</p>
                 <p>Rather than
                     multiplying
@@ -7489,7 +9374,7 @@ console.log(power(2, 30).toString());               // 1073741824
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you count inversions in an array in O(n log n) time?</p>
                 <p>Counting inversions is
                     divide and conquer hiding inside a sort. The pairs that are out of order are
@@ -7586,7 +9471,7 @@ console.log(countInversions([2, 4, 1, 3, 5]));      // 3
                 state.pop() # 3. un-choose (the "backtrack")</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you generate all possible subsets (the power set) of an array using
                     backtracking?</p>
                 <p>At each index, branch into two decisions: skip the element or include it, explore recursively, and
@@ -7641,7 +9526,7 @@ console.log(subsets([1, 2, 3]).length); // 8
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you generate all permutations of an array in place using backtracking?</p>
                 <p>Instead of
                     taking or skipping, swap each
@@ -7697,7 +9582,7 @@ console.log(permutations([1, 2, 3]).length);  // 6
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you generate combinations of k numbers with optimal search pruning?</p>
                 <p>If
                     there are not enough numbers left to ever reach length <code>k</code>, the loop stops rather than
@@ -7755,7 +9640,7 @@ console.log(combinations(5, 3).length);  // 10
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 4</b>
                 <p class="worked-q">How do you solve the N-Queens puzzle with constant-time conflict checking?</p>
                 <p>The three
                     sets make each conflict check <code>O(1)</code>, using
@@ -7886,7 +9771,7 @@ console.log(solveNQueens(8));                 // 92
                     title="Permanent link">#</a></h3>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How many distinct ways can you climb a staircase of n steps taking 1 or 2 steps at a
                     time?</p>
                 <p>Notice that this is Fibonacci in disguise: the number of ways to reach step \(n\) is
@@ -7922,7 +9807,7 @@ console.log(climbStairs(10));                  // 89
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you find the maximum loot you can rob without alerting police by robbing
                     adjacent houses?</p>
                 <p>House robber adds a constraint to the same linear shape: you may not take two
@@ -7963,7 +9848,7 @@ console.log(rob([2, 7, 9, 3, 1]));             // 12
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you find the fewest coins needed to make up a given amount?</p>
                 <p>Coin change needs a
                     real table rather than two variables, because the answer for an amount can depend on
@@ -8006,7 +9891,7 @@ console.log(coinChange([1, 5, 10, 25], 30));   // 2
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 4</b>
                 <p class="worked-q">How do you find the length of the Longest Increasing Subsequence (LIS) in O(n log n)
                     time?</p>
                 <p>Longest increasing subsequence has an obvious <code>O(n²)</code> DP, but the version
@@ -8068,7 +9953,7 @@ console.log(lis([10, 9, 2, 5, 3, 7]));         // 3
             <div class="viz" data-viz="knapsack"></div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 5</b>
                 <p class="worked-q">How do you find the length of the Longest Common Subsequence (LCS) between two
                     strings?</p>
                 <p>Use a 2D table where \(dp[i][j]\) is the LCS of prefixes \(a[:i]\) and \(b[:j]\). If characters
@@ -8119,7 +10004,7 @@ console.log(lcsLength("ABCBDAB", "BDCABA"));               // 4
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 6</b>
                 <p class="worked-q">How do you compute the minimum edit distance (Levenshtein distance) between two
                     strings?</p>
                 <p>Edit distance uses the same two-string grid but three choices instead of two, one per allowed edit.
@@ -8181,7 +10066,7 @@ console.log(editDistance("kitten", "sitting"));            // 3
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 7</b>
                 <p class="worked-q">How do you solve the 0/1 Knapsack problem using a space-optimized 1D array?</p>
                 <p>Knapsack
                     shows the space optimisation that applies to most 2-D DP: since each row only ever reads the
@@ -8330,7 +10215,7 @@ Math.clz32(x);          // count leading zeros -&gt; highest set bit position
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you find the single unique number in an array where every other number
                     appears twice?</p>
                 <p>Exploiting the property that XOR is its own inverse (\(a \oplus a = 0\) and \(a
@@ -8367,7 +10252,7 @@ console.log(singleNumber([4, 1, 2, 1, 2]));   // 4
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you count the number of set bits (population count / Hamming weight) in an
                     integer?</p>
                 <p>Counting set bits naively tests all 32 or 64 positions. Brian Kernighan's trick
@@ -8455,7 +10340,7 @@ console.log([...allSubsets(["a", "b"])]);     // [[], ['a'], ['b'], ['a','b']]
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">For every number from <code>0</code> to <code>n</code>, count how many
                     <code>1</code> bits it has. Return the counts as an array, and do it in <code>O(n)</code> total.
                 </p>
@@ -8517,7 +10402,7 @@ console.log(countBits(8));      // [0, 1, 1, 2, 1, 2, 2, 3, 1]
             </ul>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you compute the Greatest Common Divisor (GCD) and Least Common Multiple (LCM)
                     of two integers?</p>
                 <p>Euclid's algorithm computes the GCD in \(O(\log \min(a, b))\) by repeatedly
@@ -8560,7 +10445,7 @@ console.log(gcd(48, 18), lcm(4, 6));    // 6 12
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you find all prime numbers up to n using the Sieve of Eratosthenes?</p>
                 <p>The sieve
                     generates <em>every</em> prime below <code>n</code> at once. Crossing out starts at
@@ -8658,7 +10543,7 @@ console.log(primeFactors(360));                    // [2,2,2,3,3,5]
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you compute (base ^ exponent) % mod efficiently without integer overflow?</p>
                 <p>Modular
                     exponentiation is binary exponentiation with a <code>% mod</code> after every step, so the
@@ -8747,7 +10632,7 @@ console.log(modPow(2, 100, 1000000007).toString()); // 976371285
                 update(5) touches tree[5], tree[6], tree[8] 5 -&gt; 6 -&gt; 8 -&gt; ... (3 steps)</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you implement a Fenwick Tree (Binary Indexed Tree) for dynamic prefix sums
                     and point updates?</p>
                 <p>Store cumulative sums where node \(i\) covers \(i \ \& \ -i\) elements ending at
@@ -8827,7 +10712,7 @@ console.log(fw.rangeSum(2, 5));         // 29
             <h3 id="segment-tree">Segment tree<a class="headerlink" href="#segment-tree" title="Permanent link">#</a>
             </h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you implement an iterative Segment Tree supporting arbitrary associative
                     range queries and point updates?</p>
                 <p>More code than a Fenwick tree, but far more general: it works for
@@ -8932,7 +10817,7 @@ console.log(sums.query(0, 4));          // 16
             </div>
 
             <div class="worked">
-                <b>Interview question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">Design a structure over an integer array supporting two operations, both efficient
                     and interleaved arbitrarily: <code>update(i, value)</code> sets one element, and
                     <code>sumRange(i, j)</code> returns the sum of an inclusive range.
@@ -9032,7 +10917,7 @@ console.log(arr.sumRange(0, 2));    // 8
                 the text pointer NEVER goes backwards.</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How does the Knuth-Morris-Pratt (KMP) algorithm achieve O(n + m) substring search?
                 </p>
                 <p>Precompute the longest proper prefix that is also a suffix (LPS table) for each prefix of the
@@ -9129,7 +11014,7 @@ console.log(kmpSearch("ABABDABACDABABCABAB", "ABABCABAB"));  // [10]
                 in <code>O(1)</code>: drop the leftmost character's contribution, shift, add the new one — no need to
                 re-read the window.</p>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How does the Rabin-Karp algorithm use rolling hashes for substring search?</p>
                 <p>Hashes can
                     collide, so a hit must always be verified against the real substring. That keeps it correct,
@@ -9206,7 +11091,7 @@ console.log(rabinKarp("abracadabra", "abra"));               // [0, 7]
             <h3 id="palindromes">Palindromes: expand around centres<a class="headerlink" href="#palindromes"
                     title="Permanent link">#</a></h3>
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you find the longest palindromic substring by expanding around centers?</p>
                 <p>Every
                     palindrome has a centre — either a character (odd length) or a gap between two characters (even
@@ -9304,7 +11189,7 @@ console.log(longestPalindrome("cbbd"));    // 'bb'
                 result: [1,6] [8,10] [15,18]</div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 1</b>
                 <p class="worked-q">How do you merge overlapping intervals?</p>
                 <p>Sort intervals by start time. Iterate through
                     them, merging the current interval with the previous one if its start is \(\le\) the previous
@@ -9357,7 +11242,7 @@ console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]));
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 2</b>
                 <p class="worked-q">How do you insert an interval into an already sorted list of non-overlapping
                     intervals in O(n) time?</p>
                 <p>If the list is <em>already</em> sorted and non-overlapping, inserting one new
@@ -9413,7 +11298,7 @@ console.log(insertInterval([[1, 3], [6, 9]], [2, 5]));   // [[1,5],[6,9]]
             </div>
 
             <div class="worked">
-                <b>Question</b>
+                <b>Top Interview Question 3</b>
                 <p class="worked-q">How do you find the maximum number of concurrent intervals using a sweep-line
                     algorithm (Meeting Rooms II)?</p>
                 <p>Rather than manipulating intervals as objects, split
