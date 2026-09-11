@@ -894,9 +894,9 @@ All single-service container applications (`basic`, `langchain`, `rag`, `aws-str
 
 For complete step-by-step instructions, branch lifecycles, and rollback commands, see [DEPLOYMENT.md](file:///home/pankaj/Workspace/ai/projects/DEPLOYMENT.md).
 
-1. **`staging` Branch:** Serves as the pre-production validation target. Pushes to `staging` build and deploy the application to EC2 to verify reverse proxy routing, rate limiting rules, and container health prior to release.
-2. **`main` Branch:** Represents the protected production environment. Changes are merged into `main` after passing verification on `staging`.
-3. **Feature Branches (`feat/*`, `fix/*`):** Short-lived branches created from `main` for local development, then merged to `staging` for live testing.
+1. **`staging` Branch:** Serves as the active development and pre-production validation target. Developers commit and push directly to `staging` to build and deploy to EC2, verifying reverse proxy routing, rate limiting rules, and container health on the live host.
+2. **`main` Branch:** Represents the protected, stable production release. Once changes on `staging` pass live verification, `staging` is merged into `main` and pushed to trigger production deployment.
+3. **Rollback via Force Reset (Way 1):** If changes on `staging` fail or are discarded, `staging` is reset directly to `origin/main` (`git reset --hard origin/main && git push origin staging --force`), which automatically redeploys the stable production version.
 
 ---
 
