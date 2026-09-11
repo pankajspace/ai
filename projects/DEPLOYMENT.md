@@ -6,24 +6,24 @@ This document defines the deployment lifecycle, branch management rules, testing
 
 ## 1. Strategy Overview
 
-Strategy 2 provides a streamlined, direct workflow without requiring temporary feature branches:
+Strategy 2 provides a streamlined, direct Git workflow for all application features, bugfixes, UI updates, and infrastructure adjustments:
 
 1. **`staging` (Active Development & Testing Workbench)**:
-   - All day-to-day development, rate-limiting rules, config adjustments, and bugfixes are made directly on this branch.
-   - Pushes to `staging` automatically trigger GitHub Actions to build the Docker image, configure Nginx on EC2 (including rate limiting), and reload services for live testing.
+   - All day-to-day development, feature work, bugfixes, UI changes, and configuration updates are made directly on this branch.
+   - Pushes to `staging` automatically trigger GitHub Actions to build the Docker image, configure Nginx routing and secrets on EC2, and restart the project service for live pre-production testing.
 2. **`main` (Production Release)**:
-   - Represents the verified, stable production release.
+   - Represents the verified, stable, and live production environment.
    - You only merge `staging` into `main` after live verification on the host succeeds.
-   - Merges pushed to `main` automatically deploy to production.
-3. **Resolution of Failed Tests (Way 1 - Force Reset)**:
-   - If changes deployed on `staging` fail or are not ready for release, `staging` is instantly reset to match `main` and force-pushed.
+   - Pushes/merges to `main` automatically deploy the release to production.
+3. **Rollback of Failed Tests (Way 1 - Force Reset)**:
+   - If changes deployed on `staging` break, fail tests, or are abandoned, `staging` is instantly reset to match `main` and force-pushed.
    - GitHub Actions detects the force-push and automatically redeploys the stable `main` state to the host.
 
 ---
 
 ## 2. Daily Development & Deployment Lifecycle
 
-Follow these numbered steps for everyday development:
+Follow these numbered steps for any everyday feature, fix, or update:
 
 ### Step 1: Make Changes Directly on `staging`
 1. Switch to `staging` and make sure it is up to date:
@@ -31,11 +31,11 @@ Follow these numbered steps for everyday development:
    git checkout staging
    git pull origin staging
    ```
-2. Make your code or configuration changes under `projects/<project-name>/`.
+2. Make your code, UI, or configuration changes under `projects/<project-name>/`.
 3. Commit your changes:
    ```bash
    git add .
-   git commit -m "feat(project): update feature and rate limiting"
+   git commit -m "feat(project): describe your changes here"
    ```
 4. Push directly to `origin staging`:
    ```bash
@@ -44,22 +44,25 @@ Follow these numbered steps for everyday development:
 
 ### Step 2: Automated Deployment on Staging
 1. GitHub Actions detects the push on `staging` and automatically triggers the corresponding `deploy-<project>.yml` workflow.
-2. The workflow builds the container, pushes to Amazon ECR, ensures `/etc/nginx/conf.d/00-rate-limit.conf` and the project location block exist on EC2, and restarts the container.
+2. The workflow:
+   - Builds the Docker image and tags it with the Git commit SHA, build tag, and `:latest`.
+   - Pushes the image to Amazon ECR.
+   - Auto-provisions Nginx location blocks and secrets on EC2.
+   - Pulls the new image and restarts only this container (`docker compose up -d`).
 
 ### Step 3: Verify on Live Environment
-1. Check the GitHub Actions tab to confirm the workflow run succeeded.
-2. Test rate limiting by sending rapid POST requests:
+1. Check the GitHub Actions tab in your repository to confirm the workflow run succeeded.
+2. Verify the project in your browser:
+   Open `https://app.techtoday.click/<project-name>/` and test the newly added or updated functionality.
+3. Verify endpoint responses via terminal:
    ```bash
-   for i in {1..12}; do
-     curl -s -o /dev/null -w "POST $i: HTTP %{http_code}\n" -X POST https://app.techtoday.click/<project-name>/
-   done
-   ```
-   - Requests 1 through 10 should return normally (HTTP 200 / 400 / 405).
-   - Requests 11 and 12 must return **HTTP 429 Too Many Requests** with clean JSON `{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}`.
-   - In the web UI, hitting the limit will display a user-friendly error banner without crashing or showing raw HTML characters (`Unexpected token '<'`).
-3. Verify GET requests are unthrottled:
-   ```bash
-   curl -s -o /dev/null -w "GET: HTTP %{http_code}\n" https://app.techtoday.click/<project-name>/
+   # Check page availability
+   curl -I https://app.techtoday.click/<project-name>/
+
+   # Test API endpoint
+   curl -s -X POST https://app.techtoday.click/<project-name>/<endpoint> \
+     -H "Content-Type: application/json" \
+     -d '{"message": "test"}'
    ```
 4. Inspect container logs if troubleshooting is needed:
    ```bash
@@ -68,7 +71,7 @@ Follow these numbered steps for everyday development:
 
 ### Step 4: If Verification SUCCEEDS — Promote to `main`
 Once your changes pass verification:
-1. Switch to `main` and pull latest:
+1. Switch to `main` and pull the latest changes:
    ```bash
    git checkout main
    git pull origin main
@@ -98,23 +101,45 @@ If the changes break or do not work as expected, discard them and restore the st
 
 ---
 
-## 3. Production Emergency Procedures
+## 3. Production Rollback & Emergency Procedures
 
-### Emergency Nginx Rate Limit Disable (Zero Downtime)
-If rate limiting in production is blocking valid traffic and needs an immediate manual disable without waiting for CI/CD:
+### Scenario A: Reverting a Production Release via Git
+If a merged release causes unexpected issues in production:
+1. Find the merge commit hash on `main`:
+   ```bash
+   git checkout main
+   git pull origin main
+   git log -n 5 --oneline
+   ```
+2. Revert the commit:
+   ```bash
+   git revert -m 1 <commit-sha>
+   ```
+3. Push to `main`:
+   ```bash
+   git push origin main
+   ```
+4. GitHub Actions automatically builds and redeploys the previous stable state to production.
+
+### Scenario B: Direct Container Rollback on EC2 (Fastest Recovery)
+If you need an instant container rollback on the server without waiting for a new CI/CD build:
 1. SSH into the EC2 instance:
    ```bash
    ssh -i /path/to/key.pem ubuntu@app.techtoday.click
    ```
-2. Remove the `limit_req` directive from the project's location config:
+2. List available cached image tags:
    ```bash
-   sudo sed -i '/limit_req/d' /etc/nginx/conf.d/app-locations/<project-name>.conf
+   docker images | grep techtoday/<project-name>
    ```
-3. Reload Nginx:
+3. Update the image tag in the project compose file:
    ```bash
-   sudo nginx -t && sudo nginx -s reload
+   nano ~/apps/<project-name>/docker-compose.yml
+   # Change image tag from :latest or <broken-sha> to <previous-working-sha>
    ```
-   *Rate limiting is instantly disabled while containers remain running.*
+4. Restart the service:
+   ```bash
+   docker compose -f ~/apps/<project-name>/docker-compose.yml up -d
+   ```
 
 ---
 
@@ -124,8 +149,8 @@ If rate limiting in production is blocking valid traffic and needs an immediate 
    `git checkout staging && git pull origin staging`
 2. **Deploy changes to staging**:
    `git add . && git commit -m "feat: description" && git push origin staging`
-3. **Test rate limiting**:
-   `for i in {1..12}; do curl -s -o /dev/null -w "POST $i: HTTP %{http_code}\n" -X POST https://app.techtoday.click/<project-name>/; done`
+3. **Verify live staging endpoint**:
+   `curl -I https://app.techtoday.click/<project-name>/`
 4. **Promote staging to production (when good)**:
    `git checkout main && git pull origin main && git merge staging && git push origin main`
 5. **Rollback staging to production (Way 1 - when bad)**:
