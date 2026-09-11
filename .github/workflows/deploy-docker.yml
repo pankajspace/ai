@@ -8,6 +8,7 @@
 #
 # This workflow builds and pushes one ECR image per buildable service, then on
 # EC2 pulls and (re)starts the whole stack via the level2 + level3 profiles.
+# It also self-provisions the Nginx location block with AI rate limiting.
 #
 # Trigger: any push to `main` that changes a file under `projects/docker/`.
 #
@@ -17,9 +18,10 @@ name: Deploy docker
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
     paths:
       - 'projects/docker/**'
+      - '.github/workflows/deploy-docker.yml'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -61,41 +63,41 @@ jobs:
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Build, tag, and push all service images to ECR
-        # Each buildable service gets its own ECR repository under
-        # techtoday/docker-<service>. Every image is pushed with three tags
-        # (git SHA, human-readable build tag, and latest) pointing at the same
-        # layers, so rollback can target an exact build.
-        #
-        # cache-from/cache-to persist BuildKit layers in the GitHub Actions
-        # cache between runs, so unchanged services restore from cache instead
-        # of rebuilding from scratch on every ephemeral runner.
+      - name: Ensure ECR repositories exist
+        # Creates each repo if it doesn't already exist so new setups don't need
+        # manual `aws ecr create-repository` calls for every sub-image.
+        run: |
+          for repo in \
+            techtoday/docker-web \
+            techtoday/docker-quickbite \
+            techtoday/docker-scalergpt \
+            techtoday/docker-deskbuddy-agent \
+            techtoday/docker-deskbuddy-tools; do
+            aws ecr describe-repositories --repository-names "$repo" \
+              --region "${{ env.AWS_REGION }}" >/dev/null 2>&1 \
+              || aws ecr create-repository --repository-name "$repo" \
+                   --region "${{ env.AWS_REGION }}"
+          done
+
+      - name: Build, tag, and push images to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
         run: |
-          set -euo pipefail
-          cd projects/docker
+          # Map of repository suffix -> build context directory
+          declare -A targets=(
+            ["techtoday/docker-web"]="projects/docker"
+            ["techtoday/docker-quickbite"]="projects/docker/src/quick-bite-eta"
+            ["techtoday/docker-scalergpt"]="projects/docker/src/scaler-gpt"
+            ["techtoday/docker-deskbuddy-agent"]="projects/docker/src/desk-buddy/agent"
+            ["techtoday/docker-deskbuddy-tools"]="projects/docker/src/desk-buddy/tools"
+          )
 
-          # service <space> build-context
-          services="
-          web:.
-          quickbite:./src/quick-bite-eta
-          scalergpt:./src/scaler-gpt
-          deskbuddy-agent:./src/desk-buddy/agent
-          deskbuddy-tools:./src/desk-buddy/tools
-          "
-
-          for entry in $services; do
-            svc="${entry%%:*}"
-            ctx="${entry#*:}"
-            repo="techtoday/docker-${svc}"
-            echo "::group::Build ${svc} from ${ctx}"
+          for repo in "${!targets[@]}"; do
+            ctx="${targets[$repo]}"
+            echo "::group::Building and pushing $repo from $ctx"
             docker buildx build \
-              --platform linux/amd64 \
-              --cache-from "type=gha,scope=docker-${svc}" \
-              --cache-to "type=gha,mode=max,scope=docker-${svc}" \
-              --tag "$ECR_REGISTRY/$repo:$IMAGE_TAG" \
+              --tag "$ECR_REGISTRY/$repo:${{ env.IMAGE_TAG }}" \
               --tag "$ECR_REGISTRY/$repo:$BUILD_TAG" \
               --tag "$ECR_REGISTRY/$repo:latest" \
               --push \
@@ -113,8 +115,7 @@ jobs:
       - name: Deploy to EC2 via SSH
         # Pulls the just-pushed ":latest" images for this project and restarts
         # the whole stack, enabling the level2 + level3 profiles so the
-        # ScalerGPT and DeskBuddy services start. --no-deps is NOT used here:
-        # every service in this project must come up together.
+        # ScalerGPT and DeskBuddy services start.
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -125,6 +126,74 @@ jobs:
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+            # --- Nginx include (one-time per host, auto-ensured) ---
+            APP_CONF=/etc/nginx/conf.d/app.conf
+            if [ -f "$APP_CONF" ] && ! grep -q 'app-locations/\*\.conf' "$APP_CONF"; then
+              INC_TMP=$(mktemp)
+              awk '
+                { print }
+                !ins && /listen[[:space:]]+443/ { print "    include /etc/nginx/conf.d/app-locations/*.conf;"; ins=1 }
+              ' "$APP_CONF" > "$INC_TMP"
+              if grep -q 'app-locations/\*\.conf' "$INC_TMP"; then
+                sudo cp "$APP_CONF" "$APP_CONF.pre-app-locations.bak"
+                sudo cp "$INC_TMP" "$APP_CONF"
+                if sudo nginx -t; then
+                  sudo systemctl reload nginx
+                else
+                  echo "nginx -t failed after include insert; restoring $APP_CONF" >&2
+                  sudo cp "$APP_CONF.pre-app-locations.bak" "$APP_CONF"
+                fi
+              fi
+              rm -f "$INC_TMP"
+            fi
+
+            # --- Nginx rate limiting (one-time per host, auto-ensured) ---
+            RATE_CONF=/etc/nginx/conf.d/00-rate-limit.conf
+            if [ ! -f "$RATE_CONF" ]; then
+              RATE_TMP=$(mktemp)
+              printf '%s\n' \
+                'map $request_method $ai_post_limit {' \
+                '    POST     $binary_remote_addr;' \
+                '    default  "";' \
+                '}' \
+                '' \
+                'limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;' > "$RATE_TMP"
+              sudo cp "$RATE_TMP" "$RATE_CONF"
+              rm -f "$RATE_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit.conf" >&2
+                sudo rm -f "$RATE_CONF"
+              fi
+            fi
+
+            # --- Prune legacy inline location block from app.conf if present ---
+            if [ -f "$APP_CONF" ] && grep -q 'location[[:space:]]*/docker/' "$APP_CONF"; then
+              sudo sed -i -e '/location[[:space:]]*\/docker\//,/^[[:space:]]*}/d' "$APP_CONF"
+            fi
+
+            # --- Nginx location (write + reload only when it changes) ---
+            sudo mkdir -p /etc/nginx/conf.d/app-locations
+            NGINX_TMP=$(mktemp)
+            cat > "$NGINX_TMP" <<'NGINX'
+            location /docker/ {
+                limit_req          zone=ai_inputs burst=9 nodelay;
+                limit_req_status   429;
+                proxy_pass         http://localhost:5003;
+                proxy_set_header   Host $host;
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header   X-Forwarded-Proto $scheme;
+            }
+            NGINX
+            NGINX_DEST=/etc/nginx/conf.d/app-locations/docker.conf
+            if ! sudo cmp -s "$NGINX_TMP" "$NGINX_DEST" 2>/dev/null; then
+              sudo cp "$NGINX_TMP" "$NGINX_DEST"
+              sudo nginx -t && sudo systemctl reload nginx
+            fi
+            rm -f "$NGINX_TMP"
 
             # Light cleanup: remove only dangling (untagged) images so tagged
             # layers stay cached for faster pulls.

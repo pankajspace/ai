@@ -1,23 +1,38 @@
 # Builds and deploys the "rag" project (projects/rag) to production.
 #
-# Trigger: any push to `main` that changes a file under `projects/rag/`.
+# This workflow is SELF-PROVISIONING and idempotent: on every push it creates
+# the ECR repository, the secrets env file, the per-project Docker Compose
+# file, and the Nginx location block if they don't already exist, then builds,
+# pushes, and restarts only this project. Adding a project needs NO manual
+# ECR/Nginx/Compose/env wiring on EC2.
 name: Deploy rag
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
+    # Only run when this project's own files change, so unrelated commits
+    # don't trigger an unnecessary redeploy.
     paths:
       - 'projects/rag/**'
+      - '.github/workflows/deploy-rag.yml'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: techtoday/rag
+  # Full 40-character git commit SHA for this run, pushed as one of the three
+  # image tags below.
   IMAGE_TAG: ${{ github.sha }}
+  # Unique EC2 host port for this project (500x range). The container always
+  # listens on 5000 internally; Nginx forwards /rag/ to this port.
+  HOST_PORT: 5002
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
+      # id-token: write lets this job request a short-lived OIDC token from
+      # GitHub, exchanged for temporary AWS credentials — no static AWS keys
+      # stored as GitHub Secrets.
       id-token: write
       contents: read
 
@@ -25,23 +40,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        # Enables BuildKit, which is required for the GitHub Actions layer
-        # cache used by the build step below.
-        uses: docker/setup-buildx-action@v3
-
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          allowed-account-ids: ${{ secrets.AWS_ACCOUNT_ID }}
+          source-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repository exists
+        # Idempotent — creates techtoday/rag on the first deploy so no
+        # manual `aws ecr create-repository` is ever needed.
+        run: |
+          aws ecr describe-repositories --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" >/dev/null 2>&1 \
+            || aws ecr create-repository --repository-name "$ECR_REPOSITORY" \
+                 --region "$AWS_REGION"
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Compute a human-readable build tag
+        # Sortable, human-friendly tag: YYYYMMDD-HHMMSS-<run-number>-<short-sha>
+        # e.g. 20260701-153045-42-a1b2c3d — used by the rollback procedure in
+        # the project's README.
         id: vars
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
@@ -50,25 +72,22 @@ jobs:
           echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Build, tag, and push image to ECR
-        # Builds the image once and pushes all three tags (git SHA, human-
-        # readable build tag, and latest) so they point at identical layers.
-        #
-        # cache-from/cache-to persist the build layers in the GitHub Actions
-        # cache between runs. Because runners are ephemeral, without this every
-        # run would rebuild from scratch — re-installing torch, the langchain
-        # stack, and re-downloading the embedding/reranker models every time.
-        # With it, those heavy layers are restored from cache and only the
-        # diff is rebuilt.
-        uses: docker/build-push-action@v6
-        with:
-          context: projects/rag
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.build_tag }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-          cache-from: type=gha,scope=rag
-          cache-to: type=gha,mode=max,scope=rag
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
+        run: |
+          cd projects/rag
+
+          # Build once, then apply all three tags to the same image layers.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker tag  $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       - name: Record build tag in job summary
         run: |
@@ -76,23 +95,129 @@ jobs:
           echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Deploy to EC2 via SSH
+      - name: Provision and deploy on EC2 via SSH
+        # Idempotent self-provisioning: ensures the Nginx location, the secrets
+        # env file, and the per-project Compose file all exist, then pulls
+        # ":latest" and restarts only this project. Nginx is reloaded only when
+        # its location file actually changes.
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          command_timeout: 60m
+          command_timeout: 15m
           script: |
-            aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
+            set -e
+            REGION=${{ env.AWS_REGION }}
+            ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}
+            IMAGE=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com/techtoday/rag:latest
+
+            aws ecr get-login-password --region $REGION | \
               docker login --username AWS --password-stdin \
-              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+              $ACCOUNT.dkr.ecr.$REGION.amazonaws.com
 
-            # Light cleanup: remove only dangling (untagged) images.
-            # We keep tagged images cached so that 'docker compose pull'
-            # can reuse unchanged layers and only download the diff —
-            # much faster than re-pulling from scratch every time.
-            docker image prune -f
+            # --- Nginx include (one-time per host, auto-ensured) ---
+            APP_CONF=/etc/nginx/conf.d/app.conf
+            if [ -f "$APP_CONF" ] && ! grep -q 'app-locations/\*\.conf' "$APP_CONF"; then
+              INC_TMP=$(mktemp)
+              awk '
+                { print }
+                !ins && /listen[[:space:]]+443/ { print "    include /etc/nginx/conf.d/app-locations/*.conf;"; ins=1 }
+              ' "$APP_CONF" > "$INC_TMP"
+              if grep -q 'app-locations/\*\.conf' "$INC_TMP"; then
+                sudo cp "$APP_CONF" "$APP_CONF.pre-app-locations.bak"
+                sudo cp "$INC_TMP" "$APP_CONF"
+                if sudo nginx -t; then
+                  sudo systemctl reload nginx
+                else
+                  echo "nginx -t failed after include insert; restoring $APP_CONF" >&2
+                  sudo cp "$APP_CONF.pre-app-locations.bak" "$APP_CONF"
+                fi
+              else
+                echo "No 'listen 443' line in $APP_CONF; add the app-locations include manually (SETUP.md § 2.8)." >&2
+              fi
+              rm -f "$INC_TMP"
+            fi
 
-            docker compose -f ~/docker-compose.yml pull rag
-            docker compose -f ~/docker-compose.yml up -d --no-deps rag
+            # --- Nginx rate limiting (one-time per host, auto-ensured) ---
+            RATE_CONF=/etc/nginx/conf.d/00-rate-limit.conf
+            if [ ! -f "$RATE_CONF" ]; then
+              RATE_TMP=$(mktemp)
+              printf '%s\n' \
+                'map $request_method $ai_post_limit {' \
+                '    POST     $binary_remote_addr;' \
+                '    default  "";' \
+                '}' \
+                '' \
+                'limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;' > "$RATE_TMP"
+              sudo cp "$RATE_TMP" "$RATE_CONF"
+              rm -f "$RATE_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit.conf" >&2
+                sudo rm -f "$RATE_CONF"
+              fi
+            fi
+
+            # --- Prune legacy inline location block from app.conf if present ---
+            if [ -f "$APP_CONF" ] && grep -q 'location[[:space:]]*/rag/' "$APP_CONF"; then
+              sudo sed -i -e '/location[[:space:]]*\/rag\//,/^[[:space:]]*}/d' "$APP_CONF"
+            fi
+
+            # --- Nginx location (write + reload only when it changes) ---
+            sudo mkdir -p /etc/nginx/conf.d/app-locations
+            NGINX_TMP=$(mktemp)
+            cat > "$NGINX_TMP" <<'NGINX'
+            location /rag/ {
+                limit_req          zone=ai_inputs burst=9 nodelay;
+                limit_req_status   429;
+                proxy_pass         http://localhost:5002;
+                proxy_set_header   Host $host;
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header   X-Forwarded-Proto $scheme;
+            }
+            NGINX
+            NGINX_DEST=/etc/nginx/conf.d/app-locations/rag.conf
+            if ! sudo cmp -s "$NGINX_TMP" "$NGINX_DEST" 2>/dev/null; then
+              sudo cp "$NGINX_TMP" "$NGINX_DEST"
+              sudo nginx -t && sudo systemctl reload nginx
+            fi
+            rm -f "$NGINX_TMP"
+
+            # --- Secrets env file (regenerated so new keys are picked up) ---
+            mkdir -p ~/secrets
+            aws secretsmanager get-secret-value \
+              --secret-id techtoday/secrets --region $REGION \
+              --query SecretString --output text | \
+              python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+              > ~/secrets/rag.env
+            chmod 600 ~/secrets/rag.env
+
+            # --- Stop and remove legacy container from monolithic compose (migration) ---
+            if [ -f ~/docker-compose.yml ]; then
+              docker compose -f ~/docker-compose.yml stop rag 2>/dev/null || true
+              docker compose -f ~/docker-compose.yml rm -f rag 2>/dev/null || true
+            fi
+
+            # --- Per-project Compose file (self-contained, no shared edits) ---
+            mkdir -p ~/apps/rag
+            cat > ~/apps/rag/docker-compose.yml <<COMPOSE
+            services:
+              rag:
+                image: $IMAGE
+                restart: unless-stopped
+                command: python src/python/app.py
+                ports:
+                  - "5002:5000"
+                environment:
+                  - PATH_PREFIX=/rag
+                env_file:
+                  - $HOME/secrets/rag.env
+            COMPOSE
+
+            # --- Deploy: free disk, pull, restart just this project ---
+            docker image prune -af
+            docker compose -f ~/apps/rag/docker-compose.yml pull
+            docker compose -f ~/apps/rag/docker-compose.yml up -d

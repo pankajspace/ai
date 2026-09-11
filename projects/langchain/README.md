@@ -48,102 +48,24 @@ docker compose down
 On Linux, start Docker with `sudo systemctl start docker`. On macOS or Windows,
 start Docker Desktop and wait until Docker reports that it is running.
 
-### One-Time Production Setup
+### Production Setup
 
-Run these once before the first automatic deploy. They wire the project into the
-shared EC2 host. Do them again only when rebuilding the server. **Steps marked
-(local) must run on your local machine** with the AWS CLI configured as the
-`techtoday` IAM user; **steps marked (EC2) run over SSH** on the app host. Do not
-run the ECR or Secrets Manager steps on EC2 — the instance role
-(`ec2-techtoday-server-role`) can only *pull* images and *read* secrets, so
-`ecr:CreateRepository` and `secretsmanager:PutSecretValue` there fail with
-`AccessDeniedException` by design.
+The self-provisioning deploy workflow creates the ECR repository, seeds the
+image, writes `~/secrets/langchain.env`, adds the Nginx
+`/langchain/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate
+limiting enabled: 10 requests upfront, 1r/m refill), auto-ensures the
+`app-locations/*.conf` include and `00-rate-limit.conf`, and creates the
+per-project Compose service (`~/apps/langchain/docker-compose.yml`) automatically
+on every push.
 
-1. **Create the ECR repository** (local):
+**One manual step**: if `OPENAI_API_KEY` is not already in `techtoday/secrets`,
+add it before the first deploy:
 
-   ```bash
-   aws ecr create-repository --repository-name techtoday/langchain --region us-east-1
-   ```
-
-2. **Seed the initial image** (local, from `projects/langchain/`). Later pushes
-   are automated by the workflow:
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ECR
-   cd projects/langchain
-   docker build --platform linux/amd64 -t $ECR/techtoday/langchain:latest .
-   docker push $ECR/techtoday/langchain:latest
-   ```
-
-3. **Ensure `OPENAI_API_KEY` is in the shared secret** (local). Skip if it
-   already exists in `techtoday/secrets`. Set the real value in the AWS console
-   or CLI — never commit it.
-
-4. **Add the Nginx location block** (EC2). Inside the
-   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
-   `/etc/nginx/conf.d/app.conf`:
-
-   ```nginx
-   location /langchain/ {
-       proxy_pass         http://localhost:5001;
-       proxy_set_header   Host $host;
-       proxy_set_header   X-Real-IP $remote_addr;
-       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header   X-Forwarded-Proto $scheme;
-   }
-   ```
-
-   ```bash
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-
-5. **Create the secrets env file** (EC2):
-
-   ```bash
-   mkdir -p ~/secrets
-   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
-     --query SecretString --output text | \
-     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-     > ~/secrets/langchain.env
-   chmod 600 ~/secrets/langchain.env
-   ```
-
-6. **Add the production service to `~/docker-compose.yml`** (EC2). Use the image
-   URL (not `build:`), set `PATH_PREFIX=/langchain`, and map host port `5001`
-   (replace `<ECR>` with `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
-
-   ```yaml
-     langchain:
-       image: <ECR>/techtoday/langchain:latest
-       command: python src/python/app.py
-       restart: unless-stopped
-       environment:
-         - PATH_PREFIX=/langchain
-       env_file:
-         - ~/secrets/langchain.env
-       ports:
-         - "5001:5000"
-   ```
-
-7. **Start the service the first time** (EC2):
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-   docker compose -f ~/docker-compose.yml pull langchain
-   docker compose -f ~/docker-compose.yml up -d --no-deps langchain
-   curl -I https://app.techtoday.click/langchain/
-   ```
-
-After this one-time setup, every push under `projects/langchain/**` redeploys
-automatically.
+```bash
+CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['OPENAI_API_KEY']='your-key'; print(json.dumps(d))")
+aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
+```
 
 ### Commit and Automatic Deployment
 
@@ -172,41 +94,34 @@ curl -I https://app.techtoday.click/langchain/
 For a `502 Bad Gateway`, run on EC2:
 
 ```bash
-docker compose -f ~/docker-compose.yml ps
-docker compose -f ~/docker-compose.yml logs --tail=50 langchain
-grep -A12 "^  langchain:" ~/docker-compose.yml
+docker compose -f ~/apps/langchain/docker-compose.yml ps
+docker compose -f ~/apps/langchain/docker-compose.yml logs --tail=50 langchain
+cat ~/apps/langchain/docker-compose.yml
 ```
 
 The service must use `command: python src/python/app.py`. After correcting the
-production Compose file, validate and restart only this project:
+production Compose file, restart this project:
 
 ```bash
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+docker compose -f ~/apps/langchain/docker-compose.yml up -d
 ```
 
 ### Rollback
 
-List previous tags locally, then connect to EC2 and promote the chosen tag:
+List previous tags locally, then connect to EC2 and update `~/apps/langchain/docker-compose.yml`:
 
 ```bash
 aws ecr describe-images --repository-name techtoday/langchain --region us-east-1 \
     --query 'sort_by(imageDetails,&imagePushedAt)[-10:].imageTags' --output table
 ssh -i techtoday.pem ec2-user@44.193.134.238
 
-ACCOUNT_ID=<your-aws-account-id>
-ROLLBACK_TAG=<build-tag>
-aws ecr get-login-password --region us-east-1 | \
-    docker login --username AWS --password-stdin \
-    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
-docker pull $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:$ROLLBACK_TAG
-docker tag $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:$ROLLBACK_TAG \
-    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/langchain:latest
-docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+cd ~/apps/langchain
+# Edit docker-compose.yml to replace :latest with :<build-tag>
+sed -i 's/:latest/:<build-tag>/' docker-compose.yml
+docker compose pull
+docker compose up -d
 curl -I https://app.techtoday.click/langchain/
 ```
-
-The next successful deployment to `main` replaces the `latest` tag.
 
 ### Manual Deployment
 
@@ -228,8 +143,8 @@ ssh -i techtoday.pem ec2-user@44.193.134.238
 Then run on EC2:
 
 ```bash
-docker compose -f ~/docker-compose.yml pull langchain
-docker compose -f ~/docker-compose.yml up -d --no-deps langchain
+docker compose -f ~/apps/langchain/docker-compose.yml pull
+docker compose -f ~/apps/langchain/docker-compose.yml up -d
 ```
 
 If the pull reports `no space left on device`, run `docker system df`, then

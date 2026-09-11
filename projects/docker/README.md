@@ -303,27 +303,11 @@ SSH. Do not run the ECR/secret steps on EC2 — the instance role
    aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
    ```
 
-4. **Add the Nginx location block** (EC2). Inside the
-   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
-   `/etc/nginx/conf.d/app.conf`:
-
-   ```bash
-   sudo nano /etc/nginx/conf.d/app.conf
-   ```
-
-   ```nginx
-   location /docker/ {
-       proxy_pass         http://localhost:5003;
-       proxy_set_header   Host $host;
-       proxy_set_header   X-Real-IP $remote_addr;
-       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header   X-Forwarded-Proto $scheme;
-   }
-   ```
-
-   ```bash
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
+4. **Nginx location block & rate limiting** (handled automatically).
+   The `deploy-docker.yml` workflow automatically provisions
+   `/etc/nginx/conf.d/app-locations/docker.conf` with POST rate limiting
+   (`limit_req zone=ai_inputs burst=9 nodelay;` and `limit_req_status 429;`)
+   proxying to `http://localhost:5003`, so manual Nginx editing is not required.
 
 5. **Create the secrets env file** (EC2):
 

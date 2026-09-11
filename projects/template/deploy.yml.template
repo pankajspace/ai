@@ -37,11 +37,12 @@ name: Deploy PROJECT_NAME
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
     # Only run when this project's own files change, so unrelated commits
     # don't trigger an unnecessary redeploy.
     paths:
       - 'projects/PROJECT_NAME/**'
+      - '.github/workflows/deploy-PROJECT_NAME.yml'
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -170,11 +171,41 @@ jobs:
               rm -f "$INC_TMP"
             fi
 
+            # --- Nginx rate limiting (one-time per host, auto-ensured) ---
+            # Enforces 10 requests upfront (burst 9 + 1) on POST inputs, refilling at 1r/m.
+            # Named 00-rate-limit.conf to guarantee inclusion before app.conf.
+            RATE_CONF=/etc/nginx/conf.d/00-rate-limit.conf
+            if [ ! -f "$RATE_CONF" ]; then
+              RATE_TMP=$(mktemp)
+              printf '%s\n' \
+                'map $request_method $ai_post_limit {' \
+                '    POST     $binary_remote_addr;' \
+                '    default  "";' \
+                '}' \
+                '' \
+                'limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;' > "$RATE_TMP"
+              sudo cp "$RATE_TMP" "$RATE_CONF"
+              rm -f "$RATE_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit.conf" >&2
+                sudo rm -f "$RATE_CONF"
+              fi
+            fi
+
+            # --- Prune legacy inline location block from app.conf if present ---
+            if [ -f "$APP_CONF" ] && grep -q "location[[:space:]]*/PROJECT_NAME/" "$APP_CONF"; then
+              sudo sed -i -e "/location[[:space:]]*\/PROJECT_NAME\//,/^[[:space:]]*}/d" "$APP_CONF"
+            fi
+
             # --- Nginx location (write + reload only when it changes) ---
             sudo mkdir -p /etc/nginx/conf.d/app-locations
             NGINX_TMP=$(mktemp)
             cat > "$NGINX_TMP" <<'NGINX'
             location /PROJECT_NAME/ {
+                limit_req          zone=ai_inputs burst=9 nodelay;
+                limit_req_status   429;
                 proxy_pass         http://localhost:HOSTPORT;
                 proxy_set_header   Host $host;
                 proxy_set_header   X-Real-IP $remote_addr;
@@ -197,6 +228,12 @@ jobs:
               python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
               > ~/secrets/PROJECT_NAME.env
             chmod 600 ~/secrets/PROJECT_NAME.env
+
+            # --- Stop and remove legacy container from monolithic compose (migration) ---
+            if [ -f ~/docker-compose.yml ]; then
+              docker compose -f ~/docker-compose.yml stop PROJECT_NAME 2>/dev/null || true
+              docker compose -f ~/docker-compose.yml rm -f PROJECT_NAME 2>/dev/null || true
+            fi
 
             # --- Per-project Compose file (self-contained, no shared edits) ---
             mkdir -p ~/apps/PROJECT_NAME

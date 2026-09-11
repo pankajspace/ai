@@ -142,12 +142,11 @@ The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
 `EC2_SSH_KEY`.
 
-> **Nginx include (handled automatically):** per-project location files only
+> **Nginx include & rate limiting (handled automatically):** per-project location files only
 > take effect once the `app.techtoday.click` server block includes
-> `/etc/nginx/conf.d/app-locations/*.conf`. Fresh hosts get this from
-> [SETUP.md](SETUP.md) § 2.8, and the deploy workflow auto-inserts it into the
-> SSL server block on its first run if it is missing — so there is no manual
-> per-host step.
+> `/etc/nginx/conf.d/app-locations/*.conf`. Fresh hosts get this and `/etc/nginx/conf.d/00-rate-limit.conf` from
+> [SETUP.md](SETUP.md) § 2.8, and the deploy workflow auto-ensures both the include and rate limiting
+> configuration on its first run if missing — so there is no manual per-host step.
 
 ## 6. Deploy
 

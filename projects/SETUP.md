@@ -681,6 +681,15 @@ server {
     return 404;
   }
 }
+# Rate limiting for AI inputs: limit POST requests to 10 upfront (burst 9 + 1), replenishing 1/min
+# (Named 00-rate-limit.conf so it is loaded before server blocks in app.conf)
+sudo tee /etc/nginx/conf.d/00-rate-limit.conf > /dev/null << 'EOF'
+map $request_method $ai_post_limit {
+    POST     $binary_remote_addr;
+    default  "";
+}
+
+limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;
 EOF
 
 sudo nginx -t && sudo systemctl reload nginx
@@ -974,7 +983,7 @@ Docker image:
 
 #### 2.12.3. Docker Compose Environment Variables and Paths
 
-Set in each project's Compose file on the EC2 instance (in `~/apps/<project-name>/docker-compose.yml` for modern self-provisioning projects, or `~/docker-compose.yml` for shared-host projects):
+Set in each project's Compose file on the EC2 instance (in `~/apps/<project-name>/docker-compose.yml` for self-provisioning projects, or `~/docker-compose.yml` for the multi-service `docker` stack):
 
 1. `PATH_PREFIX` — URL path prefix for the Flask app, e.g. `/<project-name>` — tells Flask which prefix Nginx forwards under.
 2. `command: python src/python/app.py` — every production Flask container must execute this entrypoint. If it points at `python src/app.py` or another obsolete path, the container will exit/restart continuously and Nginx will return `502 Bad Gateway` for that project URL.

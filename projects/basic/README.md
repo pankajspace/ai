@@ -59,103 +59,24 @@ docker compose ps
 docker compose down
 ```
 
-### One-Time Production Setup
+### Production Setup
 
-Run these once before the first automatic deploy. They wire the project into the
-shared EC2 host. Do them again only when rebuilding the server. **Steps marked
-(local) must run on your local machine** with the AWS CLI configured as the
-`techtoday` IAM user; **steps marked (EC2) run over SSH** on the app host. Do not
-run the ECR or Secrets Manager steps on EC2 — the instance role
-(`ec2-techtoday-server-role`) can only *pull* images and *read* secrets, so
-`ecr:CreateRepository` and `secretsmanager:PutSecretValue` there fail with
-`AccessDeniedException` by design.
+The self-provisioning deploy workflow creates the ECR repository, seeds the
+image, writes `~/secrets/basic.env`, adds the Nginx
+`/basic/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate
+limiting enabled: 10 requests upfront, 1r/m refill), auto-ensures the
+`app-locations/*.conf` include and `00-rate-limit.conf`, and creates the
+per-project Compose service (`~/apps/basic/docker-compose.yml`) automatically
+on every push.
 
-1. **Create the ECR repository** (local):
+**One manual step**: if `OPENAI_API_KEY` or `GROQ_API_KEY` are not already
+in `techtoday/secrets`, add them before the first deploy:
 
-   ```bash
-   aws ecr create-repository --repository-name techtoday/basic --region us-east-1
-   ```
-
-2. **Seed the initial image** (local, from `projects/basic/`). Later pushes are
-   automated by the workflow:
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ECR
-   cd projects/basic
-   docker build --platform linux/amd64 -t $ECR/techtoday/basic:latest .
-   docker push $ECR/techtoday/basic:latest
-   ```
-
-3. **Ensure the API keys are in the shared secret** (local). This project needs
-   `OPENAI_API_KEY` and `GROQ_API_KEY`; skip any that already exist in
-   `techtoday/secrets`. Set the real values in the AWS console or CLI — never
-   commit them.
-
-4. **Add the Nginx location block** (EC2). Inside the
-   `server { listen 443 ssl ... server_name app.techtoday.click; }` block in
-   `/etc/nginx/conf.d/app.conf`:
-
-   ```nginx
-   location /basic/ {
-       proxy_pass         http://localhost:5000;
-       proxy_set_header   Host $host;
-       proxy_set_header   X-Real-IP $remote_addr;
-       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header   X-Forwarded-Proto $scheme;
-   }
-   ```
-
-   ```bash
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
-
-5. **Create the secrets env file** (EC2):
-
-   ```bash
-   mkdir -p ~/secrets
-   aws secretsmanager get-secret-value --secret-id techtoday/secrets \
-     --query SecretString --output text | \
-     python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
-     > ~/secrets/basic.env
-   chmod 600 ~/secrets/basic.env
-   ```
-
-6. **Add the production service to `~/docker-compose.yml`** (EC2). Use the image
-   URL (not `build:`), set `PATH_PREFIX=/basic`, and publish host port `5000`
-   (replace `<ECR>` with `<ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com`):
-
-   ```yaml
-     basic:
-       image: <ECR>/techtoday/basic:latest
-       command: python src/python/app.py
-       restart: unless-stopped
-       environment:
-         - PATH_PREFIX=/basic
-       env_file:
-         - ~/secrets/basic.env
-       ports:
-         - "5000:5000"
-   ```
-
-7. **Start the service the first time** (EC2):
-
-   ```bash
-   REGION=us-east-1
-   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-   aws ecr get-login-password --region $REGION | \
-     docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-   docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-   docker compose -f ~/docker-compose.yml pull basic
-   docker compose -f ~/docker-compose.yml up -d --no-deps basic
-   curl -I https://app.techtoday.click/basic/
-   ```
-
-After this one-time setup, every push under `projects/basic/**` redeploys
-automatically.
+```bash
+CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['OPENAI_API_KEY']='your-key'; d['GROQ_API_KEY']='your-key'; print(json.dumps(d))")
+aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
+```
 
 ### Commit and Automatic Deployment
 
@@ -188,23 +109,22 @@ A `502 Bad Gateway` usually means the container is not running behind Nginx.
 On the EC2 host:
 
 ```bash
-docker compose -f ~/docker-compose.yml ps
-docker compose -f ~/docker-compose.yml logs --tail=50 basic
-grep -A12 "^  basic:" ~/docker-compose.yml
+docker compose -f ~/apps/basic/docker-compose.yml ps
+docker compose -f ~/apps/basic/docker-compose.yml logs --tail=50 basic
+cat ~/apps/basic/docker-compose.yml
 ```
 
 The production service must use `command: python src/python/app.py`. After
-correcting `~/docker-compose.yml`, validate it and restart only this service:
+correcting `~/apps/basic/docker-compose.yml`, restart the service:
 
 ```bash
-docker compose -f ~/docker-compose.yml config >/dev/null && echo "compose file OK"
-docker compose -f ~/docker-compose.yml up -d --no-deps basic
+docker compose -f ~/apps/basic/docker-compose.yml up -d
 ```
 
 ### Rollback
 
-Find a previous image tag locally, then connect to EC2 and repoint `latest` to
-that image:
+Find a previous image tag locally, then connect to EC2 and update the tag in
+`~/apps/basic/docker-compose.yml`:
 
 ```bash
 aws ecr describe-images --repository-name techtoday/basic --region us-east-1 \
@@ -212,20 +132,13 @@ aws ecr describe-images --repository-name techtoday/basic --region us-east-1 \
 
 ssh -i techtoday.pem ec2-user@44.193.134.238
 
-ACCOUNT_ID=<your-aws-account-id>
-ROLLBACK_TAG=<build-tag>
-aws ecr get-login-password --region us-east-1 | \
-    docker login --username AWS --password-stdin \
-    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
-docker pull $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:$ROLLBACK_TAG
-docker tag $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:$ROLLBACK_TAG \
-    $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/techtoday/basic:latest
-docker compose -f ~/docker-compose.yml up -d --no-deps basic
+cd ~/apps/basic
+# Edit docker-compose.yml to replace :latest with :<build-tag>
+sed -i 's/:latest/:<build-tag>/' docker-compose.yml
+docker compose pull
+docker compose up -d
 curl -I https://app.techtoday.click/basic/
 ```
-
-Fix the underlying issue and merge it promptly because the next deployment to
-`main` overwrites the `latest` tag.
 
 ### Manual Deployment
 
@@ -248,8 +161,8 @@ ssh -i techtoday.pem ec2-user@44.193.134.238
 Then run on EC2:
 
 ```bash
-docker compose -f ~/docker-compose.yml pull basic
-docker compose -f ~/docker-compose.yml up -d --no-deps basic
+docker compose -f ~/apps/basic/docker-compose.yml pull
+docker compose -f ~/apps/basic/docker-compose.yml up -d
 ```
 
 If the pull fails with `no space left on device`, inspect and prune unused
@@ -261,8 +174,8 @@ docker system df
 docker container prune -f
 docker builder prune -af
 docker image prune -af
-docker compose -f ~/docker-compose.yml pull basic
-docker compose -f ~/docker-compose.yml up -d --no-deps basic
+docker compose -f ~/apps/basic/docker-compose.yml pull
+docker compose -f ~/apps/basic/docker-compose.yml up -d
 ```
 
 ---

@@ -173,18 +173,14 @@ flowchart TD
     subgraph Tier6["6. Application Runtime Layer (Docker Engine & Docker Compose)"]
         direction TB
 
-        subgraph ModernApps["Modern Isolated Self-Provisioning Stacks (~/apps/[project]/)"]
-            direction TB
-            AppStrands["aws-strands Container (Bedrock Strands Agents)"]
-            AppInterview["interviewiq Container (Groq AI Interview Coach)"]
-            AppShipment["shipment-exception-desk Container (Logistics Exception Desk)"]
-        end
-
-        subgraph CoreApps["Core AI Stacks (~/docker-compose.yml)"]
+        subgraph ModernApps["Isolated Self-Provisioning Stacks (~/apps/[project]/)"]
             direction TB
             AppBasic["basic Container (OpenAI Fundamentals & Playground)"]
             AppLangchain["langchain Container (LangChain LCEL & Agents)"]
             AppRAG["rag Container (ChromaDB + FlashRank Reranker)"]
+            AppStrands["aws-strands Container (Bedrock Strands Agents)"]
+            AppInterview["interviewiq Container (Groq AI Interview Coach)"]
+            AppShipment["shipment-exception-desk Container (Logistics Exception Desk)"]
         end
 
         subgraph DockerMulti["Multi-Container Microservices Stack (~/docker-compose.yml)"]
@@ -471,6 +467,20 @@ Key Architectural Properties of this Pattern:
 1. **Certificate Issuance:** Executed via `certbot --nginx -d techtoday.click -d www.techtoday.click` and `certbot --nginx -d app.techtoday.click`.
 2. **ACME Validation:** Certbot dynamically creates temporary challenge tokens under `/.well-known/acme-challenge/` over HTTP port 80.
 3. **Auto-Renewal Automation:** Amazon Linux 2023 runs a systemd timer (`certbot-renew.timer`) twice daily that invokes `certbot renew`. If a certificate is within 30 days of expiry, Certbot re-challenges, writes new keys, and signals Nginx to reload certificates seamlessly.
+
+### 4.6. AI Input Rate Limiting and Abuse Prevention (`00-rate-limit.conf`)
+
+To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) against denial-of-service, automated scraping, or runaway querying, Nginx enforces rate limiting on prompt submissions at the edge.
+
+1. **HTTP-Level Definition (`/etc/nginx/conf.d/00-rate-limit.conf`):**
+   - Prefix Ordering: Named `00-rate-limit.conf` to guarantee it is loaded alphabetically by Nginx before `app.conf` and any server or location blocks.
+   - Method Mapping: Uses `map $request_method $ai_post_limit` so only `POST` requests (prompt and input submissions) evaluate to the client's binary IP address (`$binary_remote_addr`). `GET` requests evaluate to empty string `""` and bypass the rate limit completely, ensuring page views, stylesheets, and scripts are never throttled.
+   - Memory Zone: A 10 MB shared memory zone (`zone=ai_inputs:10m`) tracks approximately 160,000 active IPv4 addresses simultaneously.
+   - Rate Definition: Sets `rate=1r/m` (1 request per minute) as the continuous replenishment rate.
+2. **Location-Level Enforcement (`/etc/nginx/conf.d/app-locations/*.conf`):**
+   - Burst Allowance: `limit_req zone=ai_inputs burst=9 nodelay;` permits an immediate burst of up to 10 requests upfront (1 base + 9 burst), catering to interactive user experimentation.
+   - Instant Rejection: Requests exceeding the burst capacity are immediately rejected with `limit_req_status 429;` (`HTTP 429 Too Many Requests`) without queuing or wasting EC2 worker threads.
+   - Replenishment: After the initial burst, the user's quota replenishes at 1 request per minute (up to 60 requests per hour).
 
 ---
 
@@ -779,13 +789,13 @@ Deployments are entirely automated using GitHub Actions. Pipelines are idempoten
 All workflows reside under `.github/workflows/`:
 
 1. **`deploy-techtoday.yml`:** Static site pipeline. Syncs `projects/techtoday/` to `/var/www/techtoday/` via `rsync` over SSH.
-2. **`deploy-basic.yml`:** Container pipeline. Builds `techtoday/basic`, pulls and restarts `basic` service via `~/docker-compose.yml`.
-3. **`deploy-langchain.yml`:** Container pipeline. Builds `techtoday/langchain`, pulls and restarts `langchain` service via `~/docker-compose.yml`.
-4. **`deploy-rag.yml`:** Container pipeline. Builds `techtoday/rag` with Buildx cache, pulls and restarts `rag` service via `~/docker-compose.yml`.
-5. **`deploy-docker.yml`:** Multi-container pipeline. Builds 5 microservice images with Buildx cache, pulls and restarts stack via Compose profiles (`level2`, `level3`), and runs post-start ingestion.
-6. **`deploy-aws-strands.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location, per-project Compose, and restarts `aws-strands`.
-7. **`deploy-interviewiq.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location, per-project Compose, and restarts `interviewiq`.
-8. **`deploy-shipment-exception-desk.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location, per-project Compose, and restarts `shipment-exception-desk`.
+2. **`deploy-basic.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/basic/`), and restarts `basic`.
+3. **`deploy-langchain.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/langchain/`), and restarts `langchain`.
+4. **`deploy-rag.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/rag/`), and restarts `rag`.
+5. **`deploy-docker.yml`:** Multi-container pipeline. Builds 5 microservice images with Buildx cache, auto-provisions Nginx location with rate limiting, pulls and restarts stack via Compose profiles (`level2`, `level3`), and runs post-start ingestion.
+6. **`deploy-aws-strands.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `aws-strands`.
+7. **`deploy-interviewiq.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `interviewiq`.
+8. **`deploy-shipment-exception-desk.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `shipment-exception-desk`.
 
 ### 7.2. Shared GitHub Actions Secrets
 
@@ -872,15 +882,21 @@ Self-Provisioning Execution Steps:
 11. **Isolated Per-Project Docker Compose:** Writes `~/apps/<project>/docker-compose.yml` specifying the latest ECR image, `restart: unless-stopped`, host-to-container port mapping (`500x:5000`), `PATH_PREFIX`, and the env file.
 12. **Prune, Pull, and Up:** Prunes dangling untagged images to prevent disk exhaustion, pulls the new image, and recreates the container in detached mode (`docker compose pull && docker compose up -d`).
 
-### 7.4. Monolithic / Shared Host Compose Model
+### 7.4. Unified Self-Provisioning and Multi-Service Compose Model
 
-Legacy projects (`basic`, `langchain`, `rag`) and multi-service `docker` share `~/docker-compose.yml` on the EC2 host.
-- The workflow connects via SSH and targets the specific service explicitly:
-  ```bash
-  docker compose -f ~/docker-compose.yml pull <service>
-  docker compose -f ~/docker-compose.yml up -d --no-deps <service>
-  ```
-- The `--no-deps` flag prevents Docker Compose from recreating or interrupting any other service defined in the shared file.
+All single-service container applications (`basic`, `langchain`, `rag`, `aws-strands`, `interviewiq`, and `shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
+
+1. **Per-Project Isolation (`~/apps/<project>/`):** Each project owns its own `docker-compose.yml`, mapped to its assigned loopback port (`5000`–`5006`), running with isolated secrets (`~/secrets/<project>.env`).
+2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=9 nodelay;`).
+3. **Multi-Service Exception (`docker`):** The `docker` project continues to utilize its multi-service profile orchestration on EC2 while also taking advantage of the automated Nginx location routing and rate limiting.
+
+### 7.5. Dual-Branch Environment Strategy (`staging` and `main`)
+
+For complete step-by-step instructions, branch lifecycles, and rollback commands, see [DEPLOYMENT.md](file:///home/pankaj/Workspace/ai/projects/DEPLOYMENT.md).
+
+1. **`staging` Branch:** Serves as the pre-production validation target. Pushes to `staging` build and deploy the application to EC2 to verify reverse proxy routing, rate limiting rules, and container health prior to release.
+2. **`main` Branch:** Represents the protected production environment. Changes are merged into `main` after passing verification on `staging`.
+3. **Feature Branches (`feat/*`, `fix/*`):** Short-lived branches created from `main` for local development, then merged to `staging` for live testing.
 
 ---
 
@@ -945,19 +961,19 @@ To roll back a containerized project to a previous build:
    ssh -i techtoday.pem ec2-user@$ELASTIC_IP
    ```
 3. **Update the Image Tag:**
-   - For a self-provisioning project (e.g. `shipment-exception-desk`):
+   - For a self-provisioning project (e.g. `basic`, `langchain`, `rag`, `shipment-exception-desk`):
      ```bash
-     cd ~/apps/shipment-exception-desk
+     cd ~/apps/<project-name>
      # Edit docker-compose.yml to replace :latest with :<build-tag>
      sed -i 's/:latest/:20260907-114520-14-3a7b9c1/' docker-compose.yml
      docker compose pull
      docker compose up -d
      ```
-   - For a shared-host project (e.g. `rag`):
+   - For the multi-service `docker` stack:
      ```bash
-     # Edit ~/docker-compose.yml to pin the rag image tag
-     docker compose -f ~/docker-compose.yml pull rag
-     docker compose -f ~/docker-compose.yml up -d --no-deps rag
+     # Edit ~/docker-compose.yml to pin the specific sub-image tag
+     docker compose -f ~/docker-compose.yml pull web
+     docker compose -f ~/docker-compose.yml up -d --no-deps web
      ```
 4. **Verify Rollback:**
    ```bash
