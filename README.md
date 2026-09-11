@@ -66,6 +66,10 @@
 1. [AWS Crash Course](projects/techtoday/study/aws/aws-crash-course.html)
 2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
 
+## AI Engineering
+1. [AI Engineering Crash Course](projects/techtoday/study/ai-engineering/ai-engineering-crash-course.html)
+2. [AI Engineering Detailed Course](projects/techtoday/study/ai-engineering/ai-engineering-detailed-course.html)
+
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 

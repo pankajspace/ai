@@ -131,6 +131,7 @@ projects/techtoday/
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
     ├── ai/                      ← ai-projects.html catalog + LLM, RAG, Docker, Strands guides
+    ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
     ├── devops/                  ← devops-courses.html catalog (4 cards)
     │   ├── devops/              ← crash course + detailed course
@@ -151,7 +152,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 12 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Design Patterns, LLD, HDL, Git, DevOps, AWS, AI Engineering, AI Projects). Eight are populated with 2 items each and a bottom Explore All link pointing at their catalog page; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 12 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Design Patterns, LLD, HDL, Git, DevOps, AWS, AI Engineering, AI Projects). Nine are populated with 2 items each and a bottom Explore All link pointing at their catalog page; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
