@@ -182,17 +182,17 @@ After the project works:
 1. Document its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets in its `README.md`.
 2. Advance the next available local and EC2 host ports in § 1 of this guide.
 3. Verify every workflow path listed in the project README exists under `.github/workflows/`.
-4. If the project should appear in the public catalog or home page, update `projects/techtoday/study/ai/ai-projects.html` (and optionally `projects/techtoday/index.html`).
+4. If the project should appear in the public catalog or home page, update `projects/techtoday/study/ai-projects/ai-projects.html` (and optionally `projects/techtoday/index.html`).
 
 Public project catalog card update:
 
-1. Open `projects/techtoday/study/ai/ai-projects.html`.
+1. Open `projects/techtoday/study/ai-projects/ai-projects.html`.
 2. Locate the project grid inside the projects section.
 3. Copy an existing project card.
 4. Update the title, description, link, icon or visual marker, and theory/explanation link.
 5. Use a live status only after the production URL works.
 6. If the project is featured on the homepage, update the AI Projects tile in `projects/techtoday/index.html`.
-7. Preview `projects/techtoday/index.html` and `projects/techtoday/study/ai/ai-projects.html` locally before committing.
+7. Preview `projects/techtoday/index.html` and `projects/techtoday/study/ai-projects/ai-projects.html` locally before committing.
 
 After this, routine work follows the new project's `README.md`. Verify that it
 contains concrete local setup, daily development, deployment, production

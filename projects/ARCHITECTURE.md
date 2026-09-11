@@ -918,12 +918,12 @@ sequenceDiagram
 
 ### 8.2. Static Asset Delivery Flow
 
-For requests targeting `https://techtoday.click/` or `https://techtoday.click/study/ai/rag-embeddings.html`:
+For requests targeting `https://techtoday.click/` or `https://techtoday.click/study/ai-projects/rag-embeddings.html`:
 
 1. Client resolves `techtoday.click` to the Elastic IP.
 2. Nginx accepts TCP 443, decrypts TLS using `/etc/letsencrypt/live/techtoday.click/fullchain.pem`.
 3. Matches the `techtoday.click` server block in `techtoday.conf`.
-4. Checks `/var/www/techtoday/study/ai/rag-embeddings.html` directly from disk via `try_files`.
+4. Checks `/var/www/techtoday/study/ai-projects/rag-embeddings.html` directly from disk via `try_files`.
 5. Nginx streams the static HTML or PDF directly to the client socket using the Linux kernel `sendfile` system call. Zero Docker containers or Python processes are invoked.
 
 ---
