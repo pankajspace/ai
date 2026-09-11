@@ -28,7 +28,17 @@
 8. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
 9. [Container App Template](projects/template/README.md)
 
+---
+
 # Learn
+
+## Operating Systems
+1. [OS Crash Course](projects/techtoday/study/os/os-crash-course.html)
+2. [OS Detailed Course](projects/techtoday/study/os/os-detailed-course.html)
+
+## Networking
+1. [Networking Crash Course](projects/techtoday/study/networking/networking-crash-course.html)
+2. [Networking Detailed Course](projects/techtoday/study/networking/networking-detailed-course.html)
 
 ## Python
 1. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
@@ -42,18 +52,6 @@
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
 
-## Operating Systems
-1. [OS Crash Course](projects/techtoday/study/os/os-crash-course.html)
-2. [OS Detailed Course](projects/techtoday/study/os/os-detailed-course.html)
-
-## Networking
-1. [Networking Crash Course](projects/techtoday/study/networking/networking-crash-course.html)
-2. [Networking Detailed Course](projects/techtoday/study/networking/networking-detailed-course.html)
-
-## AWS
-1. [AWS Crash Course](projects/techtoday/study/aws/aws-crash-course.html)
-2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
-
 ## Git
 1. [Git Crash Course](projects/techtoday/study/git/git-crash-course.html)
 2. [Git Detailed Course](projects/techtoday/study/git/git-detailed-course.html)
@@ -64,12 +62,14 @@
 3. [Docker Crash Course](projects/techtoday/study/devops/docker/docker-crash-course.html)
 4. [Kubernetes Crash Course](projects/techtoday/study/devops/kubernetes/kubernetes-crash-course.html)
 
+## AWS
+1. [AWS Crash Course](projects/techtoday/study/aws/aws-crash-course.html)
+2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
+
 ## Claude Code Guide
 1. [Claude Code Guide](claude-code/claude-code-guide.md)
 
-# AI Career Path
-1. [AI Career](ai/ai-career.md)
-2. [AI Roadmap](ai/ai-roadmap.md)
+---
 
 # Links
 1. [Claude Code 101](https://anthropic.skilljar.com/claude-code-101)
