@@ -195,6 +195,27 @@ jobs:
               fi
             fi
 
+            # --- Nginx 429 JSON response (auto-ensured in app-locations) ---
+            RATE_RESP=/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf
+            if [ ! -f "$RATE_RESP" ]; then
+              sudo mkdir -p /etc/nginx/conf.d/app-locations
+              RATE_RESP_TMP=$(mktemp)
+              printf '%s\n' \
+                'error_page 429 = @rate_limit_error;' \
+                'location @rate_limit_error {' \
+                '    default_type application/json;' \
+                '    return 429 '\''{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}\n'\'';' \
+                '}' > "$RATE_RESP_TMP"
+              sudo cp "$RATE_RESP_TMP" "$RATE_RESP"
+              rm -f "$RATE_RESP_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit-response.conf" >&2
+                sudo rm -f "$RATE_RESP"
+              fi
+            fi
+
             # --- Prune legacy inline location block from app.conf if present ---
             if [ -f "$APP_CONF" ] && grep -q 'location[[:space:]]*/shipment-exception-desk/' "$APP_CONF"; then
               sudo sed -i -e '/location[[:space:]]*\/shipment-exception-desk\//,/^[[:space:]]*}/d' "$APP_CONF"

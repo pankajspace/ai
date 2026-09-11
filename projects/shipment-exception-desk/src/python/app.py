@@ -14,6 +14,7 @@ from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
 from pipeline import process_exception
+from rate_limiter import check_rate_limit
 from session import clear_session, generate_daily_summary, get_triage_log
 
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
@@ -22,6 +23,21 @@ STATIC_DIR = Path(__file__).resolve().parents[1]
 app = Flask(__name__, static_folder=str(STATIC_DIR))
 CORS(app)
 bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
 
 
 @bp.route("/")

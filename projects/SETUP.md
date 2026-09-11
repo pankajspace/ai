@@ -692,6 +692,16 @@ map $request_method $ai_post_limit {
 limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;
 EOF
 
+# Clean JSON response for HTTP 429 Too Many Requests:
+sudo mkdir -p /etc/nginx/conf.d/app-locations
+sudo tee /etc/nginx/conf.d/app-locations/00-rate-limit-response.conf > /dev/null << 'EOF'
+error_page 429 = @rate_limit_error;
+location @rate_limit_error {
+    default_type application/json;
+    return 429 '{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}\n';
+}
+EOF
+
 sudo nginx -t && sudo systemctl reload nginx
 ```
 

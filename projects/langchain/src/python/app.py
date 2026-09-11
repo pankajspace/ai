@@ -21,6 +21,7 @@ from flask_cors import CORS
 
 from agent import ask
 from chat import reply
+from rate_limiter import check_rate_limit
 from summarizer import summarize
 
 # ---------------------------------------------------------------------------
@@ -43,6 +44,20 @@ CORS(app)
 # A Blueprint groups related routes.  We register it once at the bottom with
 # the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
 bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
 
 
 # ---------------------------------------------------------------------------

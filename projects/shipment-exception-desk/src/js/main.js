@@ -131,8 +131,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "Error processing exception report.");
+                let errMsg = `Request failed (${response.status})`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData && (errorData.detail || errorData.error)) {
+                        errMsg = errorData.detail || errorData.error;
+                    }
+                } catch (_) {
+                    if (response.status === 429) {
+                        errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+                    } else {
+                        errMsg = `Server error (${response.status}). Please try again later.`;
+                    }
+                }
+                throw new Error(errMsg);
             }
 
             const data = await response.json();

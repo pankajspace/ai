@@ -6,6 +6,24 @@
 
 const API = document.body.dataset.apiBase || "";
 
+async function parseResponse(res) {
+    if (!res.ok) {
+        let errMsg = `Request failed (${res.status})`;
+        try {
+            const errData = await res.json();
+            if (errData && (errData.error || errData.detail)) errMsg = errData.error || errData.detail;
+        } catch (_) {
+            if (res.status === 429) {
+                errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+            } else {
+                errMsg = `Server error (${res.status}). Please try again later.`;
+            }
+        }
+        throw new Error(errMsg);
+    }
+    return res.json();
+}
+
 let questions = [];
 let currentQuestionIndex = 0;
 
@@ -134,12 +152,12 @@ async function evaluateCurrentAnswer() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ question_id: q.id, answer }),
         });
-        const data = await res.json();
+        const data = await parseResponse(res);
         renderEvaluationResult(data);
         await updateScorecard();
     } catch (err) {
         console.error("Evaluation error:", err);
-        alert("Failed to evaluate answer. Please check server logs.");
+        alert(err.message || "Failed to evaluate answer. Please check server logs.");
     } finally {
         evaluateBtn.innerHTML = "🚀 Evaluate Answer";
         evaluateBtn.disabled = false;
@@ -225,7 +243,7 @@ async function updateScorecard() {
         const res = await fetch(`${API}/scorecard`);
         const data = await res.json();
 
-        document.getElementById("sessionStatsSummary").innerText = 
+        document.getElementById("sessionStatsSummary").innerText =
             `Session Average Relevance: ${data.average_relevance}/100 | Questions Answered: ${data.total_questions}`;
 
         const tbody = document.getElementById("scorecardTableBody");
@@ -268,12 +286,12 @@ async function sendCoachMessage(customPrompt = null) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query }),
         });
-        const data = await res.json();
+        const data = await parseResponse(res);
         removeChatMessage(typingId);
         appendChatMessage("coach", data.response);
     } catch (err) {
         removeChatMessage(typingId);
-        appendChatMessage("coach", "⚠️ Could not connect to AI Coach. Please verify server status.");
+        appendChatMessage("coach", `⚠️ ${err.message || "Could not connect to AI Coach. Please verify server status."}`);
     }
 }
 

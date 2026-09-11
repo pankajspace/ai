@@ -55,7 +55,8 @@ Follow these numbered steps for everyday development:
    done
    ```
    - Requests 1 through 10 should return normally (HTTP 200 / 400 / 405).
-   - Requests 11 and 12 must return **HTTP 429 Too Many Requests**.
+   - Requests 11 and 12 must return **HTTP 429 Too Many Requests** with clean JSON `{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}`.
+   - In the web UI, hitting the limit will display a user-friendly error banner without crashing or showing raw HTML characters (`Unexpected token '<'`).
 3. Verify GET requests are unthrottled:
    ```bash
    curl -s -o /dev/null -w "GET: HTTP %{http_code}\n" https://app.techtoday.click/<project-name>/

@@ -21,6 +21,7 @@ from pathlib import Path
 import requests as http_client
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
+from rate_limiter import check_rate_limit
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -42,6 +43,21 @@ CORS(app)
 # A Blueprint groups related routes. We register it once at the bottom with
 # the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
 bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
 
 # Internal service URLs — these use Docker Compose service names, never IPs.
 QUICKBITE_URL = "http://quickbite:8000"

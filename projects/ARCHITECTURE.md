@@ -481,6 +481,10 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
    - Burst Allowance: `limit_req zone=ai_inputs burst=9 nodelay;` permits an immediate burst of up to 10 requests upfront (1 base + 9 burst), catering to interactive user experimentation.
    - Instant Rejection: Requests exceeding the burst capacity are immediately rejected with `limit_req_status 429;` (`HTTP 429 Too Many Requests`) without queuing or wasting EC2 worker threads.
    - Replenishment: After the initial burst, the user's quota replenishes at 1 request per minute (up to 60 requests per hour).
+3. **JSON Error Response Handling (`/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf`):**
+   - Direct JSON Error Routing: Configures `error_page 429 = @rate_limit_error;` inside the SSL server block to redirect throttled requests to internal named location `@rate_limit_error`.
+   - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}` instead of default Nginx HTML error pages.
+   - Frontend Interception: Frontend `main.js` files explicitly check `!res.ok`, ensuring any 429 or server errors are rendered in user-friendly banners rather than crashing with `SyntaxError: Unexpected token '<'`.
 
 ---
 

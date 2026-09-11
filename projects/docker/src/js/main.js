@@ -6,6 +6,24 @@
 
 const API = document.body.dataset.apiBase || "";
 
+async function parseResponse(res) {
+    if (!res.ok) {
+        let errMsg = `Request failed (${res.status})`;
+        try {
+            const errData = await res.json();
+            if (errData && (errData.error || errData.detail)) errMsg = errData.error || errData.detail;
+        } catch (_) {
+            if (res.status === 429) {
+                errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+            } else {
+                errMsg = `Server error (${res.status}). Please try again later.`;
+            }
+        }
+        throw new Error(errMsg);
+    }
+    return res.json();
+}
+
 // ── QuickBite ETA (Level 1) ──────────────────────────────────────────
 
 async function predictETA() {
@@ -28,7 +46,7 @@ async function predictETA() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
-        const data = await res.json();
+        const data = await parseResponse(res);
         if (data.error) throw new Error(data.error);
 
         resultEl.className = "result visible correct-result";
@@ -60,7 +78,7 @@ async function askScalerGPT() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query }),
         });
-        const data = await res.json();
+        const data = await parseResponse(res);
         if (data.error) throw new Error(data.error);
         if (data.detail) throw new Error(data.detail);
 
@@ -98,7 +116,7 @@ async function chatDeskBuddy() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ session_id: sessionId, message }),
         });
-        const data = await res.json();
+        const data = await parseResponse(res);
         if (data.error) throw new Error(data.error);
 
         resultEl.className = "result visible correct-result";

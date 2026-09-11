@@ -61,6 +61,20 @@ async function callApi({ btn, result, endpoint, body, render }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
+        if (!res.ok) {
+            let errMsg = `Request failed (${res.status})`;
+            try {
+                const errData = await res.json();
+                if (errData && errData.error) errMsg = errData.error;
+            } catch (_) {
+                if (res.status === 429) {
+                    errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+                } else {
+                    errMsg = `Server error (${res.status}). Please try again later.`;
+                }
+            }
+            throw new Error(errMsg);
+        }
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         render(data, result);
