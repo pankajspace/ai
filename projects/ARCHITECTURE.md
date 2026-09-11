@@ -483,7 +483,7 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
    - Replenishment: After the initial burst, the user's quota replenishes at 1 request per minute (up to 60 requests per hour).
 3. **JSON Error Response Handling (`/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf`):**
    - Direct JSON Error Routing: Configures `error_page 429 = @rate_limit_error;` inside the SSL server block to redirect throttled requests to internal named location `@rate_limit_error`.
-   - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}` instead of default Nginx HTML error pages.
+   - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}` instead of default Nginx HTML error pages.
    - Frontend Interception: Frontend `main.js` files explicitly check `!res.ok`, ensuring any 429 or server errors are rendered in user-friendly banners rather than crashing with `SyntaxError: Unexpected token '<'`.
 
 ---

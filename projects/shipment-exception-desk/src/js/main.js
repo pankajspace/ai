@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 } catch (_) {
                     if (response.status === 429) {
-                        errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+                        errMsg = "Rate limit exceeded (10 requests per hour). Please wait an hour and try again.";
                     } else {
                         errMsg = `Server error (${response.status}). Please try again later.`;
                     }

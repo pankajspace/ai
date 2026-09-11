@@ -118,7 +118,7 @@ setupCard({
 });
 ```
 
-Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (10 requests per hour). Please wait a minute and try again.`), and prevents raw HTML or JSON parse crashes.
+Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (10 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
 
 ### Working-demo requirement
 

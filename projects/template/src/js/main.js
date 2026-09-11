@@ -45,7 +45,7 @@ async function callApi({ btn, result, endpoint, body, render }) {
                 if (errData && errData.error) errMsg = errData.error;
             } catch (_) {
                 if (res.status === 429) {
-                    errMsg = "Rate limit exceeded (10 requests per hour). Please wait a minute and try again.";
+                    errMsg = "Rate limit exceeded (10 requests per hour). Please wait an hour and try again.";
                 } else {
                     errMsg = `Server error (${res.status}). Please try again later.`;
                 }

@@ -698,7 +698,7 @@ sudo tee /etc/nginx/conf.d/app-locations/00-rate-limit-response.conf > /dev/null
 error_page 429 = @rate_limit_error;
 location @rate_limit_error {
     default_type application/json;
-    return 429 '{"error": "Rate limit exceeded (10 requests per hour). Please wait a minute and try again."}\n';
+    return 429 '{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}\n';
 }
 EOF
 
