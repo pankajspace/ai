@@ -1,24 +1,24 @@
 
 ## Software & AI Engineering Courses
 1. Operating Systems // done
-2. Computer Networks // done
-3. Programming Languages: Python & JavaScript // done
-4. Data Structures and Algorithms // done
+2. Networking // done
+3. Programming // done
+4. DSA // done
 5. Design Patterns
 6. LLD
 7. HLD
-8. Git & Version Control // done
+8. Git // done
 9. DevOps // done
 10. AWS // done
-11. Database Systems
+11. Databases
 12. HTML & CSS
-12. React, Redux, React Router
-13. Node, Express, MongoDB
-12. Software Projects
-13. AI Engineering // done
-14. AI Projects // done
-15. Web Performance Optimization
-16. Web Security
+13. React Stack
+14. MERN
+15. Software Projects
+16. AI Engineering // done
+17. AI Projects // done
+18. Web Performance
+19. Web Security
 
 ### Courses to Complete
 1. [Docker and Kubernetes UDM SG](https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/) 21Hrs
