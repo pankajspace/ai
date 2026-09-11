@@ -54,6 +54,10 @@
 1. [AWS Crash Course](projects/techtoday/study/aws/aws-crash-course.html)
 2. [AWS Detailed Course](projects/techtoday/study/aws/aws-detailed-course.html)
 
+## Git
+1. [Git Crash Course](projects/techtoday/study/git/git-crash-course.html)
+2. [Git Detailed Course](projects/techtoday/study/git/git-detailed-course.html)
+
 ## DevOps
 1. [DevOps Crash Course](projects/techtoday/study/devops/devops/devops-crash-course.html)
 2. [DevOps Detailed Course](projects/techtoday/study/devops/devops/devops-detailed-course.html)
