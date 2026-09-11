@@ -119,7 +119,7 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── index.html                   ← Software and AI Engineering homepage (12 hub tiles)
+├── index.html                   ← Software and AI Engineering homepage (19 hub tiles)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -152,7 +152,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 12 category tiles on the homepage (Operating Systems, Networking Concepts, Programming Languages, DSA, Design Patterns, LLD, HDL, Git, DevOps, AWS, AI Engineering, AI Projects). Nine are populated with 2 items each and a bottom Explore All link pointing at their catalog page; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 19 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Software Projects, AI Engineering, AI Projects, Web Performance, Web Security). Nine are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
