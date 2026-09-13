@@ -1,6 +1,6 @@
 ---
 description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting"
-name: "Create Container Project"
+name: "create-container-project"
 argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist"
 agent: "gemini"
 ---

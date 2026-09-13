@@ -1,6 +1,6 @@
 ---
 description: "Generate a '# Quick Review of Concepts' section summarizing the main ideas from study notes files"
-name: "Quick Review of Concepts"
+name: "quick-review-concepts"
 argument-hint: "File(s) to summarize (defaults to the active file)"
 agent: "gemini"
 ---

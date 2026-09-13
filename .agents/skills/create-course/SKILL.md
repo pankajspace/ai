@@ -1,6 +1,6 @@
 ---
 description: "Use when: creating a crash course and a detailed course for one or more topics on the TechToday study site, with animated visualisations, a catalog page, and a homepage hub tile"
-name: "Create Course"
+name: "create-course"
 argument-hint: "One or more topics (e.g. 'Kubernetes', or 'Rust, Go' for a shared tile)"
 ---
 

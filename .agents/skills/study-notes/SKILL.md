@@ -1,6 +1,6 @@
 ---
 description: "Populate the '# My Notes' section of a study-class Markdown file with detailed concepts and fully-decoded code examples from its companion HTML/PDF source"
-name: "Study Notes (My Notes)"
+name: "study-notes"
 argument-hint: "Class Markdown file to populate (defaults to the active file)"
 ---
 Create or update the `# My Notes` section of a study-class Markdown file so it becomes a thorough, self-contained set of learning notes — covering every main concept AND every code example (with explanations) from the class's source material. If no file is given, use the active file.
@@ -8,7 +8,7 @@ Create or update the `# My Notes` section of a study-class Markdown file so it b
 This skill is the detailed counterpart to the `quick-review` skill: `# Quick Review of Concepts` is a fast skimmable refresher, whereas `# My Notes` is the full walkthrough a learner reads to actually understand and re-implement the class.
 
 ## Where these files live
-- Study notes live at `study/NN-<Class-Name>/<class-name>.md` (e.g. [study/03-AI-Infused-Learning-3/ai-infused-learning-3.md](../../../study/03-AI-Infused-Learning-3/ai-infused-learning-3.md)).
+- Study notes live at `study/NN-<Class-Name>/<class-name>.md` (e.g. [study/01-llms-prompting/llms-prompting.md](../../../study/01-llms-prompting/llms-prompting.md)).
 - Each `.md` has a companion source in the SAME folder — usually a `.html` slide/lecture deck with the same base name, and occasionally a `.pdf`. That companion is the source of truth.
 - The `.md` typically contains: a top nav link line, `# AI Infused Learning - N`, `# Links`, optionally `# Contact` / `# Homework`, then `# My Notes` (the target), then `# Quick Review of Concepts`.
 

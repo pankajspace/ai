@@ -1,6 +1,6 @@
 ---
 description: "Use when: adding an info (ⓘ) icon to a project's demo card that links to a self-contained 'how this works' page explaining the concept, request flow, code flow, and source code for that demo"
-name: "Code Explainer"
+name: "code-explainer"
 argument-hint: "Project folder (e.g. projects/basic) and which card(s)/demo(s) to explain (defaults to all cards)"
 ---
 
