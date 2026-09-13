@@ -435,20 +435,17 @@ server {
 
 Every container application drops an isolated configuration file into `/etc/nginx/conf.d/app-locations/<project-name>.conf`.
 
-Example (`/etc/nginx/conf.d/app-locations/shipment-exception-desk.conf`):
+Example (`/etc/nginx/conf.d/app-locations/shipment-exception-desk.conf`), written verbatim by the project's deploy workflow:
 
 ```nginx
 location /shipment-exception-desk/ {
+    limit_req          zone=ai_inputs burst=9 nodelay;
+    limit_req_status   429;
     proxy_pass         http://localhost:5006;
     proxy_set_header   Host $host;
     proxy_set_header   X-Real-IP $remote_addr;
     proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header   X-Forwarded-Proto $scheme;
-
-    # Streaming and buffering settings for LLM responses
-    proxy_buffering    off;
-    proxy_read_timeout 300s;
-    proxy_connect_timeout 75s;
 }
 ```
 
@@ -458,9 +455,10 @@ Key Architectural Properties of this Pattern:
 2. **Proxy Headers Preservation:**
    - `Host $host`: Preserves the original requested domain (`app.techtoday.click`).
    - `X-Real-IP $remote_addr`: Transmits the true client public IPv4 address to Flask.
-   - `X-Forwarded-For $proxy_add_x_forwarded_for`: Appends client and intermediary proxy hops.
+   - `X-Forwarded-For $proxy_add_x_forwarded_for`: Appends client and intermediary proxy hops. The application-tier rate limiter (Section 4.7) reads this header to identify the real client.
    - `X-Forwarded-Proto $scheme`: Tells Flask whether the incoming request was `http` or `https` (preventing redirect loops).
-3. **Buffering Disabled (`proxy_buffering off`):** Essential for AI streaming completions (Server-Sent Events / SSE) so tokens reach the browser in real time instead of being buffered until completion.
+3. **Edge Rate Limiting:** `limit_req zone=ai_inputs burst=9 nodelay;` throttles POST submissions before they ever reach a container (Section 4.6).
+4. **Optional Streaming Tuning:** Projects that stream LLM tokens (Server-Sent Events) can add `proxy_buffering off;` and a longer `proxy_read_timeout` to their location block so tokens reach the browser in real time. These directives are not part of the default generated block.
 
 ### 4.5. SSL/TLS Certificate Lifecycle (Let's Encrypt & Certbot)
 
@@ -485,6 +483,17 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
    - Direct JSON Error Routing: Configures `error_page 429 = @rate_limit_error;` inside the SSL server block to redirect throttled requests to internal named location `@rate_limit_error`.
    - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}` instead of default Nginx HTML error pages.
    - Frontend Interception: Frontend `main.js` files explicitly check `!res.ok`, ensuring any 429 or server errors are rendered in user-friendly banners rather than crashing with `SyntaxError: Unexpected token '<'`.
+
+### 4.7. Application-Tier Rate Limiting (`src/python/rate_limiter.py`)
+
+The Nginx zone in Section 4.6 is a token-bucket refilling at 1 request per minute, so it cannot express a hard hourly cap, and it is bypassed entirely when an app is reached outside the proxy (local development, or a container port opened for debugging). Every project therefore ships a second, authoritative quota inside the Flask process.
+
+1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`basic`, `langchain`, `rag`, `docker`, `aws-strands`, `interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=10, window_seconds=3600)`.
+2. **Sliding Window Quota:** A strict sliding window of **10 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
+3. **Storage:** SQLite at `/tmp/ai_rate_limit.db` in WAL mode, with an `(ip, timestamp)` index. No Redis or external dependency is required, and the quota survives worker threads within a container. The counter resets when the container is recreated, which is acceptable for an abuse guard.
+4. **Client Identification:** `get_client_ip()` prefers the first entry of `X-Forwarded-For`, falls back to `X-Real-IP`, then `request.remote_addr` — matching the headers Nginx sets in Section 4.4.
+5. **Enforcement Hook:** Each app registers a Blueprint `@bp.before_request` handler, `enforce_rate_limit()`, that runs `check_rate_limit` on `POST` requests only. `GET` requests (pages, CSS, JS) are never throttled.
+6. **Response Contract:** A blocked request returns HTTP `429` with a `Retry-After` header (seconds until the oldest logged request leaves the window) and a JSON body `{"error": "Rate limit exceeded (10 requests per hour). Please try again in N minutes."}` — the same shape as the Nginx 429 body, so the frontend handles both identically.
 
 ---
 
@@ -558,47 +567,86 @@ Because Nginx forwards the entire path to the upstream container without strippi
 
 #### 5.3.1. Blueprint Registration with `PATH_PREFIX`
 
-Every application extracts `PATH_PREFIX` from its environment (defaulting to empty for root or isolated tests):
+Every application extracts `PATH_PREFIX` from its environment (defaulting to empty for local runs), writes every route as a relative path, and applies the prefix once at registration time:
 
 ```python
 import os
-from flask import Flask, Blueprint, render_template, request, jsonify
+from pathlib import Path
 
-app = Flask(__name__)
+from flask import Blueprint, Flask, jsonify, request
+
+from rate_limiter import check_rate_limit
+
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 
-bp = Blueprint("app", __name__)
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
 
 @bp.route("/")
 def index():
-    return render_template("index.html", path_prefix=PATH_PREFIX)
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # Inject the runtime prefix into the shipped placeholder.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
 
 @bp.route("/triage", methods=["POST"])
 def triage():
-    # Process business logic
     return jsonify({"result": "processed"})
 
-# Register blueprint with prefix
+
+# The single place where PATH_PREFIX is applied.
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 ```
 
+Static assets are served through the same Blueprint (`/css/<path:filename>` and `/js/<path:filename>` calling `app.send_static_file`), so they inherit the prefix as well.
+
 #### 5.3.2. Frontend Hydration and API Routing
 
-1. **HTML Shell Attribute:** In `src/index.html`, the body element is rendered with a data attribute:
+1. **HTML Shell Attribute:** `src/index.html` ships with an empty placeholder that Flask rewrites at request time:
    ```html
-   <body data-api-base="{{ path_prefix }}">
+   <body data-api-base="">
    ```
-2. **Client-Side Discovery:** In `src/js/main.js`, all asynchronous `fetch()` requests read this base attribute:
+   Served locally it stays empty (relative URLs); in production it becomes `data-api-base="/shipment-exception-desk"`. No template engine is involved — the same file opens correctly from the filesystem during UI work.
+2. **Client-Side Discovery:** In `src/js/main.js`, all asynchronous `fetch()` requests read this base attribute and handle non-2xx responses (notably `429`) before parsing:
    ```javascript
    const API = document.body.dataset.apiBase || "";
 
    async function callApi(endpoint, payload) {
-       const response = await fetch(`${API}${endpoint}`, {
+       const res = await fetch(`${API}${endpoint}`, {
            method: "POST",
            headers: { "Content-Type": "application/json" },
            body: JSON.stringify(payload)
        });
-       return await response.json();
+       if (!res.ok) {
+           // 429 from Nginx or from the app-tier limiter both carry a JSON
+           // { error } body; fall back to a status message if parsing fails.
+           let errMsg = `Request failed (${res.status})`;
+           try {
+               const errData = await res.json();
+               if (errData && errData.error) errMsg = errData.error;
+           } catch (_) { /* non-JSON error page */ }
+           throw new Error(errMsg);
+       }
+       return await res.json();
    }
    ```
 3. **Environment Parity:** This design guarantees that the exact same JavaScript code functions locally on `http://localhost:8086/` (where `PATH_PREFIX` is empty or `/`) and in production on `https://app.techtoday.click/shipment-exception-desk/` without conditional domain logic or environment flags in the browser bundle.
@@ -717,6 +765,7 @@ flowchart TD
     }]
   }
   ```
+- Branch Coverage: the `repo:pankajspace/*` subject wildcard covers both deploy branches (`refs/heads/staging` and `refs/heads/main`). A trust policy pinned to `ref:refs/heads/main` would make every `staging` deploy fail at the OIDC token exchange with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
 - Permissions Policy (`ECRPushAndSSH`):
   - Grants `ecr:GetAuthorizationToken` on `*`.
   - Grants `ecr:CreateRepository` and `ecr:DescribeRepositories` on `arn:aws:ecr:*:090232461741:repository/techtoday/*`.
@@ -790,7 +839,7 @@ Deployments are entirely automated using GitHub Actions. Pipelines are idempoten
 
 ### 7.1. Pipeline Matrix Overview
 
-All workflows reside under `.github/workflows/`:
+All workflows reside under `.github/workflows/`. Every one of them triggers on pushes to `staging` and `main` that touch its own project path, and each also exposes a manual `workflow_dispatch` trigger for re-running a deploy without a code change:
 
 1. **`deploy-techtoday.yml`:** Static site pipeline. Syncs `projects/techtoday/` to `/var/www/techtoday/` via `rsync` over SSH.
 2. **`deploy-basic.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/basic/`), and restarts `basic`.
@@ -826,7 +875,7 @@ sequenceDiagram
     participant Nginx as Host Nginx Service
     participant Docker as Docker Engine
 
-    Dev->>GH: git push origin main (changes in projects/<project>/**)
+    Dev->>GH: git push origin staging (or main) with changes in projects/<project>/**
     GH->>OIDC: Request temporary AWS credentials via OIDC
     OIDC-->>GH: Return short-lived STS tokens
 
@@ -863,7 +912,7 @@ sequenceDiagram
 
 Self-Provisioning Execution Steps:
 
-1. **Path-Scoped Trigger:** Filtered by `paths: ['projects/<project-name>/**']`. Unrelated commits do not trigger builds.
+1. **Path-Scoped Trigger:** Filtered by `branches: [main, staging]` and `paths: ['projects/<project-name>/**', '.github/workflows/deploy-<project-name>.yml']`. Unrelated commits do not trigger builds; a `workflow_dispatch` entry allows manual runs from the Actions tab.
 2. **OIDC Authentication:** GitHub OIDC provider exchanges the runner's ephemeral JSON Web Token (JWT) for scoped AWS credentials via `aws-actions/configure-aws-credentials@v5`.
 3. **Idempotent ECR Repository Creation:**
    ```bash
@@ -896,7 +945,7 @@ All single-service container applications (`basic`, `langchain`, `rag`, `aws-str
 
 ### 7.5. Dual-Branch Environment Strategy (`staging` and `main`)
 
-For complete step-by-step instructions, branch lifecycles, and rollback commands, see [DEPLOYMENT.md](file:///home/pankaj/Workspace/ai/projects/DEPLOYMENT.md).
+For complete step-by-step instructions, branch lifecycles, and rollback commands, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 1. **`staging` Branch:** Serves as the active development and pre-production validation target. Developers commit and push directly to `staging` to build and deploy to EC2, verifying reverse proxy routing, rate limiting rules, and container health on the live host.
 2. **`main` Branch:** Represents the protected, stable production release. Once changes on `staging` pass live verification, `staging` is merged into `main` and pushed to trigger production deployment.
@@ -984,9 +1033,9 @@ To roll back a containerized project to a previous build:
    curl -I https://app.techtoday.click/<project-name>/
    ```
 
-### 9.2. Disk Space and Memory Management on t2.micro / t3.small
+### 9.2. Disk Space and Memory Management
 
-Because the server runs multiple Docker containers on a resource-constrained instance, strict resource stewardship is enforced:
+Because the server runs multiple Docker containers on a single instance (currently `t3.medium`, and as small as `t2.micro` on a starter setup), strict resource stewardship is enforced:
 
 1. **Automated Dangling Image Cleanup:**
    - Every CI/CD workflow runs `docker image prune -af` or `docker image prune -f` during the deploy step.

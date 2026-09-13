@@ -2,6 +2,8 @@
 
 This document defines the deployment lifecycle, branch management rules, testing procedures, and rollback commands for projects deployed to `app.techtoday.click` using the dual-branch strategy (`staging` and `main`).
 
+See [SETUP.md](SETUP.md) for the one-time infrastructure setup, [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project, and [ARCHITECTURE.md](ARCHITECTURE.md) for the pipeline internals.
+
 ---
 
 ## 1. Strategy Overview
@@ -43,7 +45,7 @@ Follow these numbered steps for any everyday feature, fix, or update:
    ```
 
 ### Step 2: Automated Deployment on Staging
-1. GitHub Actions detects the push on `staging` and automatically triggers the corresponding `deploy-<project>.yml` workflow.
+1. GitHub Actions detects the push on `staging` and automatically triggers the corresponding `deploy-<project>.yml` workflow. Each workflow is path-scoped, so it only runs when files under `projects/<project-name>/` or its own workflow file changed. A run can also be started by hand from the **Actions** tab (`workflow_dispatch`).
 2. The workflow:
    - Builds the Docker image and tags it with the Git commit SHA, build tag, and `:latest`.
    - Pushes the image to Amazon ECR.
@@ -66,7 +68,7 @@ Follow these numbered steps for any everyday feature, fix, or update:
    ```
 4. Inspect container logs if troubleshooting is needed:
    ```bash
-   ssh -i /path/to/key.pem ubuntu@app.techtoday.click "docker compose -f ~/apps/<project-name>/docker-compose.yml logs --tail 50"
+   ssh -i /path/to/techtoday.pem ec2-user@app.techtoday.click "docker compose -f ~/apps/<project-name>/docker-compose.yml logs --tail 50"
    ```
 
 ### Step 4: If Verification SUCCEEDS — Promote to `main`
@@ -125,7 +127,7 @@ If a merged release causes unexpected issues in production:
 If you need an instant container rollback on the server without waiting for a new CI/CD build:
 1. SSH into the EC2 instance:
    ```bash
-   ssh -i /path/to/key.pem ubuntu@app.techtoday.click
+   ssh -i /path/to/techtoday.pem ec2-user@app.techtoday.click
    ```
 2. List available cached image tags:
    ```bash
@@ -135,11 +137,16 @@ If you need an instant container rollback on the server without waiting for a ne
    ```bash
    nano ~/apps/<project-name>/docker-compose.yml
    # Change image tag from :latest or <broken-sha> to <previous-working-sha>
+   # For the multi-service `docker` project the file is ~/docker-compose.yml
    ```
 4. Restart the service:
    ```bash
    docker compose -f ~/apps/<project-name>/docker-compose.yml up -d
    ```
+
+> This pin is temporary: the next deploy of that project rewrites
+> `~/apps/<project-name>/docker-compose.yml` back to `:latest`. Follow up with
+> Scenario A so the fix lands in Git.
 
 ---
 

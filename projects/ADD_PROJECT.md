@@ -4,6 +4,7 @@ Use this checklist when adding a new container app after the shared setup in
 [SETUP.md](SETUP.md) is complete. Put all routine development, deployment,
 rollback, troubleshooting, and project-specific configuration in the new
 project's `README.md`. Keep the current next-port allocation in this guide.
+The day-to-day branch flow for every project is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 1. Pick Project Values
 
@@ -40,8 +41,8 @@ cd "$PROJECT_NAME"
 Adjust the copied files:
 
 1. `docker-compose.yml` — change the `web` service's published port from `8090` to `<local-port>`.
-2. `src/python/` — replace the starter `echo` feature and update `src/python/app.py` routes. Keep `PATH_PREFIX` support.
-3. `src/index.html`, `src/css/`, and `src/js/` — update the UI and browser behavior for the new project.
+2. `src/python/` — replace the starter `echo` feature and update `src/python/app.py` routes. Keep `PATH_PREFIX` support, `src/python/rate_limiter.py`, and the `enforce_rate_limit` `before_request` hook that caps POST requests at 10 per hour per IP.
+3. `src/index.html`, `src/css/`, and `src/js/` — update the UI and browser behavior for the new project. Keep the `!res.ok` branch in `src/js/main.js` that renders 429 rate-limit errors.
 4. `requirements.txt` — add libraries the project needs.
 5. `.env.example` — list required environment variables.
 6. `linkedin.txt` — add launch/update copy, or leave it empty until ready.
@@ -140,7 +141,8 @@ The final `grep` should print nothing, and the `test -f` command should print
 
 The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
-`EC2_SSH_KEY`.
+`EC2_SSH_KEY`. It runs on pushes to `staging` and `main` that touch
+`projects/<project-name>/**` or the workflow file itself.
 
 > **Nginx include & rate limiting (handled automatically):** per-project location files only
 > take effect once the `app.techtoday.click` server block includes
@@ -150,19 +152,32 @@ The workflow reuses the shared GitHub secrets already configured for this repo:
 
 ## 6. Deploy
 
-Commit and push to `main`. The push under `projects/<project-name>/` triggers
-the workflow, which provisions and deploys everything automatically:
+Commit and push to `staging` first — that is the deployment target for all
+day-to-day work ([DEPLOYMENT.md](DEPLOYMENT.md)). The push under
+`projects/<project-name>/` triggers the workflow, which provisions and deploys
+everything automatically:
 
 ```bash
 # Run on: local machine
+git checkout staging
 git add projects/<project-name> .github/workflows/deploy-<project-name>.yml
 git commit -m "Add <project-name> project"
-git push origin main
+git push origin staging
 ```
 
 Watch the run under the repository's **Actions** tab. The first run creates all
 AWS and EC2 resources for the project; later pushes rebuild and restart only
 this project.
+
+After verifying the live URL (§ 7), promote the project to production:
+
+```bash
+# Run on: local machine
+git checkout main
+git pull origin main
+git merge staging
+git push origin main
+```
 
 ## 7. Verify Production
 
