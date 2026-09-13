@@ -71,7 +71,8 @@
 2. [AI Engineering Detailed Course](projects/techtoday/study/ai-engineering/ai-engineering-detailed-course.html)
 
 ## Claude Code Guide
-1. [Claude Code Guide](claude-code/claude-code-guide.md)
+1. [Claude Code Guide](ai/claude-code-guide.md)
+2. [AI Syllabus](ai/ai-syllabus.md)
 
 ---
 
