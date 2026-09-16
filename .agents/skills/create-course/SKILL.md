@@ -35,7 +35,7 @@ Rules that hold across the whole site:
 - **No frameworks, no build step, no CDN.** Plain HTML + one CSS file + one JS file per topic folder.
 - Each topic folder is **self-contained** except for `../../site-header.css`, which is shared.
 - Catalog page naming follows the topic's own noun: `-courses.html` for courses, `-guides.html` where the existing site already used that (`git-guides.html`, `devops-guides.html`). For a new topic prefer `-courses.html`.
-- When the argument is **multiple topics that belong together** (e.g. "Rust, Go" → *Systems Languages*), nest each topic folder under a parent folder named after the hub tile — `study/<tile-slug>/<slug>/` — with a **single catalog page at `study/<tile-slug>/<tile-slug>-courses.html`** listing every topic's cards, and a **single hub tile with one CTA**. Follow `study/programming-languages/{python,javascript}/` and `study/devops/{devops,docker,kubernetes}/`. Paths inside the nested course pages need one extra `../` level (`../../../site-header.css`).
+- When the argument is **multiple topics that belong together** (e.g. "Rust, Go" → *Systems Languages*), nest each topic folder under a parent folder named after the hub tile — `study/<tile-slug>/<slug>/` — with a **single catalog page at `study/<tile-slug>/<tile-slug>-courses.html`** listing every topic's cards, and a **single hub tile with a final `Show All &rarr;` bullet**. Follow `study/programming-languages/{python,javascript}/` and `study/devops/{devops,docker,kubernetes}/`. Paths inside the nested course pages need one extra `../` level (`../../../site-header.css`).
 
 ---
 
@@ -310,45 +310,40 @@ For a multi-topic tile, the single catalog page sits in the tile folder and list
 
 ## 8. Homepage hub tile — `projects/techtoday/index.html`
 
-Append one `.hub-tile` inside `.hub-grid`, after the existing tiles, preceded by an HTML comment naming it:
+Append or update one `.hub-tile` inside `.hub-grid`, preceded by an HTML comment naming it:
 
 ```html
 <!-- <Topic> Tile -->
-<div class="hub-tile">
-    <div class="hub-tile-header">
+<div class="hub-tile is-collapsed" data-tile-id="<slug>">
+    <div class="hub-tile-header" role="button" tabindex="0" aria-expanded="false"
+        aria-label="Expand <Topic> tile">
         <div class="hub-tile-title">
-            <span class="icon">🧩</span>
+            <span class="icon" aria-hidden="true">
+                <svg ...>...</svg>
+            </span>
             <h2><Topic></h2>
         </div>
-        <span class="hub-tile-badge">Optional label</span>
+        <span class="hub-status live">Live</span>
     </div>
-    <p class="hub-tile-desc">
-        One sentence naming the concrete ground covered.
-    </p>
-    <div class="hub-item-list">
-        <a class="hub-item" href="study/<slug>/<slug>-crash-course.html">
-            <span class="hub-item-icon">💡</span>
-            <div class="hub-item-content">
-                <span class="hub-item-title"><Topic> Crash Course</span>
-                <span class="hub-item-desc">Short, specific description.</span>
-            </div>
-            <span class="hub-item-arrow">&rarr;</span>
-        </a>
-        <!-- second sub-tile -->
-    </div>
-    <div class="hub-cta">
-        <a href="study/<slug>/<slug>-courses.html">Explore All <Topic> Courses &rarr;</a>
+    <div class="hub-tile-body">
+        <ul class="hub-bullet-list">
+            <li><a href="study/<slug>/<slug>-crash-course.html"><Topic> Crash Course</a></li>
+            <li><a href="study/<slug>/<slug>-detailed-course.html"><Topic> Detailed Course</a></li>
+            <li><a href="study/<slug>/<slug>-courses.html">Show All &rarr;</a></li>
+        </ul>
     </div>
 </div>
 ```
 
-**Exactly two sub-tiles per hub tile**, chosen by this rule:
+Tile structure rules:
 
-- **One topic** → crash course, then detailed course (the DSA, Git, OS, Networking tiles).
-- **Two or more topics sharing the tile** → the **crash course of each topic** takes the two slots, and the detailed courses live only on the catalog page (the Programming Languages tile: Python Crash + JavaScript Crash).
-- **Three or more topics** → the two most important crash courses; the `.hub-cta` link is what surfaces the rest. Never add a third `.hub-item`; the tile height is what keeps the grid even.
-
-The `.hub-cta` link is mandatory and always points at the catalog page.
+1. **Collapsible container**: Include `is-collapsed` on `.hub-tile`, with `data-tile-id="<slug>"` and accessibility attributes on `.hub-tile-header` (`role="button"`, `tabindex="0"`, `aria-expanded="false"`, `aria-label="Expand <Topic> tile"`).
+2. **SVG Icon**: In `.hub-tile-title .icon`, use an inline SVG with glowing gradients/filters matching the dark theme design system.
+3. **Status badge**: Use `<span class="hub-status live">Live</span>` (or `wip` for upcoming topics).
+4. **No main tile description**: Omit `<p class="hub-tile-desc">` on live tiles to keep vertical space compact.
+5. **Horizontal bullet list**: Replace old card-box items and bottom CTA blocks with `<ul class="hub-bullet-list">` inside `<div class="hub-tile-body">`. All course links render horizontally as compact, flex-wrapped pill badges.
+6. **Course bullets**: For a single topic, list its crash course and detailed course. For multi-topic tiles (e.g. Programming Languages, DevOps), list the relevant crash and detailed courses for each topic.
+7. **Show All link**: The final bullet in `<ul class="hub-bullet-list">` must always link to the topic's courses catalog landing page using `Show All &rarr;` (e.g. `<li><a href="study/<slug>/<slug>-courses.html">Show All &rarr;</a></li>`). Do not add a separate bottom `.hub-cta` block.
 
 ---
 
