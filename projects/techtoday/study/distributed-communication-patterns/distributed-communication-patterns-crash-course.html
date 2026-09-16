@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Distributed Communication Patterns Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in how services talk to each other — sync vs async, gRPC, discovery, timeouts, retries, idempotency, circuit breakers, queues, delivery guarantees, the outbox, sagas and real-time push, each with an animation." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="stylesheet" href="distributed-communication-patterns-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true">⚡</span>
+                <span>TechToday</span>
+            </a>
+            <a href="distributed-communication-patterns-courses.html" class="nav-back-link">&larr; Distributed
+                Communication Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="distributed-communication-crash-course">Distributed Communication Patterns<a class="headerlink"
+                    href="#distributed-communication-crash-course" title="Permanent link">#</a></h1>
+
+            <p class="lede">The moment your code makes a call that leaves the process, everything you knew about
+                function calls stops being true. This page is the set of patterns that exist because of that one fact —
+                the ones you will reach for every week. Mental model first, code second. Press <strong>Play</strong> on
+                any animation to watch the idea move.</p>
+
+            <div class="callout callout-key">
+                <p>Every pattern on this page answers one question: <strong>how do you build something dependable out of
+                        components that can be slow, can be down, and can never tell you which?</strong> Timeouts,
+                    retries, idempotency keys, circuit breakers, queues, outboxes and sagas are not seven unrelated
+                    tools. They are seven answers to that single question, and each one buys reliability with a
+                    currency you must be willing to spend: latency, duplication, staleness, or complexity.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#0-the-third-outcome">The Third Outcome</a></li>
+                <li><a href="#1-sync-or-async">Synchronous or Asynchronous</a></li>
+                <li><a href="#2-rest-grpc-graphql">REST, gRPC &amp; GraphQL</a></li>
+                <li><a href="#3-discovery-and-load-balancing">Finding &amp; Choosing an Instance</a></li>
+                <li><a href="#4-timeouts-and-deadlines">Timeouts &amp; Deadlines</a></li>
+                <li><a href="#5-retries-and-backoff">Retries, Backoff &amp; Jitter</a></li>
+                <li><a href="#6-idempotency">Idempotency</a></li>
+                <li><a href="#7-circuit-breakers-and-bulkheads">Circuit Breakers &amp; Bulkheads</a></li>
+                <li><a href="#8-queues-and-topics">Queues &amp; Topics</a></li>
+                <li><a href="#9-delivery-and-ordering">Delivery Guarantees &amp; Ordering</a></li>
+                <li><a href="#10-dead-letters-and-backpressure">Dead Letters &amp; Backpressure</a></li>
+                <li><a href="#11-the-outbox">The Dual Write &amp; the Outbox</a></li>
+                <li><a href="#12-sagas">Sagas</a></li>
+                <li><a href="#13-pushing-to-the-client">Pushing to the Client</a></li>
+                <li><a href="#14-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+            </ol>
+
+            <!-- ============================================================ 0 -->
+            <h2 id="0-the-third-outcome">The Third Outcome<a class="headerlink" href="#0-the-third-outcome"
+                    title="Permanent link">#</a></h2>
+
+            <p>Before any pattern makes sense you need one idea. A local function call has two outcomes: it returns, or
+                it throws. A <strong>remote</strong> call has three: it returns, it fails, or <strong>you never find
+                    out</strong>. That third outcome does not exist inside a process, it cannot be eliminated, and
+                every single pattern in this course is machinery for surviving it.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📮</span>
+                <div class="analogy-body">
+                    <b>Picture it — posting a letter with no tracking</b>
+                    <p>You post a cheque and hear nothing for a week. Did it get lost on the way there? Did it arrive
+                        and get lost in their office? Did they cash it and the receipt got lost on the way back?
+                        <em>You cannot tell.</em> And the decision you have to make — send another cheque or not — is
+                        exactly the decision your HTTP client makes on every timeout, dozens of times a second.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="partial-failure"></div>
+
+            <p>Notice what went wrong there. Nobody wrote a bug. The server did its job, the network dropped one packet
+                out of billions, and the client did the textbook thing. The double charge is an emergent property of a
+                correct client talking to a correct server over an imperfect wire.</p>
+
+            <ul class="card-grid">
+                <li class="is-bad"><b>A timeout is not an error</b>An HTTP <code>500</code> tells you the work failed.
+                    A timeout tells you <em>nothing</em> — the request may never have arrived, may have failed, or may
+                    have completely succeeded. Code that treats them identically is code that double-charges people.
+                </li>
+                <li class="is-bad"><b>Slow is worse than down</b>A dead service gives you a fast connection-refused,
+                    which is easy to handle. A service answering in 30 seconds holds your threads, your connections and
+                    your memory hostage, and takes your service down with it. <strong>Grey failure is the hard
+                        case.</strong></li>
+            </ul>
+
+            <h3 id="0-1-what-the-network-does-to-your-numbers">What the network does to your numbers<a
+                    class="headerlink" href="#0-1-what-the-network-does-to-your-numbers" title="Permanent link">#</a>
+            </h3>
+
+            <ul class="meta-strip">
+                <li><b>In-process call</b> <code class="big-o o-great">~1 ns</code></li>
+                <li><b>Same-datacentre RPC</b> <code class="big-o o-ok">~0.5 ms</code></li>
+                <li><b>Cross-region RPC</b> <code class="big-o o-bad">~70 ms</code></li>
+                <li><b>4G round trip</b> <code class="big-o o-bad">~180 ms</code></li>
+            </ul>
+
+            <p>Those numbers are six orders of magnitude apart, and the spread is why a refactor that &ldquo;just&rdquo;
+                moves a method into another service can make a page ten times slower. But latency is only half of it.
+                The other half is arithmetic:</p>
+
+            <div class="ascii">chain of 4 services, each 99.9% available
+
+                availability = 0.999 x 0.999 x 0.999 x 0.999 = 99.6%
+                -> 3.5 hours of downtime per month, not 43 minutes
+
+                p99 latency = p99(A) + p99(B) + p99(C) + p99(D)
+                -> tails ADD; they do not average out</div>
+
+            <div class="callout callout-warn">
+                <p><strong>Availability multiplies and latency adds.</strong> Every synchronous dependency you put in a
+                    request path makes both worse, permanently. This is the real cost of a microservice boundary, and
+                    it is why the interesting question is never &ldquo;should these be separate services?&rdquo; but
+                    <em>&ldquo;does this call have to be in the request path at all?&rdquo;</em>
+                </p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Two rules of thumb worth memorising before anything else. <strong>First: the network is not
+                        reliable, not fast, not secure, and its topology changes</strong> — these are four of the
+                    famous <em>eight fallacies of distributed computing</em>, and every outage you will ever debug is
+                    someone having assumed one of them. <strong>Second: you cannot make a distributed call as safe as a
+                        local one; you can only make its failure cheap.</strong></p>
+            </div>
+
+            <!-- ============================================================ unit 1 -->
+            <h2 id="unit-1">Unit 1 &mdash; Calling Another Service<a class="headerlink" href="#unit-1"
+                    title="Permanent link">#</a></h2>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-sync-or-async">Synchronous or Asynchronous<a class="headerlink" href="#1-sync-or-async"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Sync latency</b> <code class="big-o o-bad">sum of the chain</code></li>
+                <li><b>Sync availability</b> <code class="big-o o-bad">product of the chain</code></li>
+                <li><b>Async latency</b> <code class="big-o o-great">one broker write</code></li>
+                <li><b>Async consistency</b> <code class="big-o o-ok">eventual</code></li>
+            </ul>
+
+            <p>This is the first and biggest fork in the road, and it is not really a technology choice. It is a choice
+                about <strong>who waits</strong>. In a synchronous call the caller holds a connection open until the
+                work is finished. In an asynchronous one the caller hands the work to a broker, gets an
+                acknowledgement, and leaves.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">☕</span>
+                <div class="analogy-body">
+                    <b>Picture it — a coffee shop</b>
+                    <p><em>Synchronous</em> is the barista taking your order, making it, and handing it over before
+                        serving the next person. Simple, and the queue is only as fast as the slowest drink.
+                        <em>Asynchronous</em> is the cashier writing your name on a cup and putting it on the rail: the
+                        till keeps moving, three baristas work the rail in parallel, and you find out your drink is
+                        ready later. The second design serves far more people — and introduces a state the first one
+                        never had: <strong>paid for, not yet made</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="sync-vs-async"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Choose synchronous when the caller needs the answer</b>A price, an
+                    authorisation, a seat availability, a login. If the next line of the caller's code cannot run
+                    without the result, a queue only adds machinery around a wait you still have to do.</li>
+                <li class="is-good"><b>Choose asynchronous when the caller needs an acknowledgement</b>Send the email,
+                    update the search index, recalculate the recommendations, emit the audit record. Nobody is
+                    watching, so do not make a customer wait for it — and do not let its outage become yours.</li>
+                <li class="is-bad"><b>The sync trap</b>&ldquo;It is only one more call&rdquo; is how a 200 ms endpoint
+                    becomes a 2 s endpoint over eighteen months, one reasonable pull request at a time.</li>
+                <li class="is-bad"><b>The async trap</b>Eventual consistency is a <em>product</em> problem, not just an
+                    engineering one. Somebody has to decide what the screen says while the order exists but is not yet
+                    paid for.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A user uploads a profile photo. What happens synchronously, and what happens
+                    asynchronously?</p>
+                <p>Split by what the user must see before the request can return. They must see that the upload
+                    <em>succeeded</em> and, ideally, their new photo — so storing the original and returning its URL is
+                    synchronous. Everything derived from it is not: generating five thumbnail sizes, running content
+                    moderation, stripping EXIF, invalidating CDN paths, and notifying their followers. Each of those is
+                    slow, each can fail independently, and none of them should be able to make the upload button
+                    return an error.
+                </p>
+                <p>The interesting part is the in-between state. Thumbnails are not ready yet, so the answer is not
+                    &ldquo;do it later and hope&rdquo; — it is to <em>design the intermediate state</em>: serve the
+                    original scaled by the browser until the thumbnail exists, or show a shimmer. That decision is the
+                    actual work of going asynchronous.</p>
+                <div class="code-tabs" data-label="Answer — synchronous path returns fast, work is queued">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+@app.post("/profile/photo", status_code=202)
+async def upload_photo(user_id: str, file: UploadFile):
+    # Synchronous: only what the user must see before the button stops spinning.
+    key = f"users/{user_id}/original/{uuid.uuid4()}.jpg"
+    await s3.put_object(Bucket=BUCKET, Key=key, Body=await file.read())
+
+    await db.execute(
+        "update users set photo_key = $1, photo_state = 'processing' where id = $2",
+        key, user_id,
+    )
+
+    # Asynchronous: one event, four independent consumers, none in the request path.
+    await outbox.append(
+        topic="photo.uploaded",
+        key=user_id,
+        payload={"userId": user_id, "objectKey": key, "uploadedAt": now_iso()},
+    )
+
+    return {"state": "processing", "url": cdn_url(key)}
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+app.post("/profile/photo", async (req, res) =&gt; {
+  // Synchronous: only what the user must see before the button stops spinning.
+  const key = `users/${req.userId}/original/${randomUUID()}.jpg`;
+  await s3.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: req.file.buffer }));
+
+  await db.query(
+    "update users set photo_key = $1, photo_state = 'processing' where id = $2",
+    [key, req.userId],
+  );
+
+  // Asynchronous: one event, four independent consumers, none in the request path.
+  await outbox.append({
+    topic: "photo.uploaded",
+    key: req.userId,
+    payload: { userId: req.userId, objectKey: key, uploadedAt: new Date().toISOString() },
+  });
+
+  res.status(202).json({ state: "processing", url: cdnUrl(key) });
+});
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-interview">
+                <p><strong>The answer interviewers are listening for</strong> is not &ldquo;use a queue&rdquo;. It is
+                    the sentence <em>&ldquo;asynchronous buys availability and pays for it in consistency, so the real
+                        question is what the user sees in between&rdquo;</em>. Naming the intermediate state is what
+                    separates someone who has read about queues from someone who has shipped one.</p>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-rest-grpc-graphql">REST, gRPC &amp; GraphQL<a class="headerlink" href="#2-rest-grpc-graphql"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>REST + JSON</b> <code class="big-o o-good">universal</code></li>
+                <li><b>gRPC + protobuf</b> <code class="big-o o-great">4&times; smaller</code></li>
+                <li><b>GraphQL</b> <code class="big-o o-ok">one flexible endpoint</code></li>
+            </ul>
+
+            <p>Once you have decided to make a synchronous call, you pick a style. All three of these are
+                request/response over HTTP; they differ in <em>who decides the shape of the response</em> and
+                <em>how much the two ends must agree in advance</em>.
+            </p>
+
+            <div class="viz" data-viz="rpc-modes"></div>
+
+            <p>The animation shows gRPC's four call shapes, because those are the ones people have not met. The
+                encoding difference matters just as much, and it is where most of the performance argument lives:</p>
+
+            <div class="viz" data-viz="wire-formats"></div>
+
+            <div class="code-tabs" data-label="The same contract, three ways">
+                <div class="tab-pane" data-lang="proto">
+                    <pre><code data-lang="proto">
+syntax = "proto3";
+package orders.v1;
+
+service Orders {
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  rpc WatchOrder(GetOrderRequest) returns (stream OrderEvent);
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message Order {
+  string order_id  = 1;
+  string status    = 2;   // never renumber a tag
+  int64  total_minor = 3;
+  string currency  = 4;
+  reserved 5;             // 5 was 'legacy_total', do not reuse
+}
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="json">
+                    <pre><code data-lang="json">
+GET /v1/orders/A-4471
+
+{
+  "id": "A-4471",
+  "status": "paid",
+  "amount": 8210,
+  "currency": "GBP",
+  "_links": { "cancel": "/v1/orders/A-4471/cancellation" }
+}
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text">
+# GraphQL: the CLIENT chooses the fields, in one round trip
+
+query {
+  order(id: "A-4471") {
+    status
+    amount
+    customer { name tier }      # would be a second REST call
+    items { sku qty }           # would be a third
+  }
+}
+</code></pre>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>REST wins at the edge</b>Cacheable by URL, debuggable with <code>curl</code>,
+                    understood by every proxy and every developer, and it survives a receiver who has never seen your
+                    schema. For a public API this is usually the end of the discussion.</li>
+                <li class="is-good"><b>gRPC wins between your own services</b>Generated clients in every language, a
+                    schema that CI can check for breaking changes, HTTP/2 multiplexing, streaming, and 4&times; smaller
+                    payloads. Deadlines and cancellation are built into the protocol rather than bolted on.</li>
+                <li class="is-good"><b>GraphQL wins for varied clients</b>When an iOS screen, an Android screen and a
+                    web dashboard all need different slices of the same graph, letting the client specify the slice
+                    beats maintaining three bespoke endpoints.</li>
+                <li class="is-bad"><b>And the costs</b>gRPC is awkward from a browser (you need grpc-web or a gateway)
+                    and uncacheable. GraphQL moves query cost to runtime — an innocent query can fan out into an N+1
+                    storm, so you need dataloaders, depth limits and cost analysis before you expose it publicly.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>Whatever you pick, your real contract is the schema, and it will outlive your code.</strong>
+                    You never get to upgrade both sides at once — during any rollout v1 and v2 are both live and
+                    talking to each other. Add optional fields with defaults, rename freely, and never reuse or retype
+                    a field number.</p>
+            </div>
+
+            <div class="viz" data-viz="schema-evolution"></div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-discovery-and-load-balancing">Finding &amp; Choosing an Instance<a class="headerlink"
+                    href="#3-discovery-and-load-balancing" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Discovery</b> <code class="big-o o-ok">a freshness problem</code></li>
+                <li><b>Round robin</b> <code class="big-o o-bad">counts turns</code></li>
+                <li><b>Least connections</b> <code class="big-o o-great">counts work</code></li>
+            </ul>
+
+            <p>&ldquo;Call the orders service&rdquo; hides two questions. <em>Where is it?</em> — its instances are
+                ephemeral, rescheduled constantly, and their addresses change every deploy. And <em>which one?</em> —
+                because there are eleven of them and they are not equally healthy.</p>
+
+            <div class="viz" data-viz="service-discovery"></div>
+
+            <div class="callout callout-key">
+                <p>Discovery is not a lookup problem, it is a <strong>freshness</strong> problem. Every design &mdash;
+                    DNS with short TTLs, a sidecar watching a registry, a client library that subscribes &mdash; is
+                    trading how stale the caller's address list may be against how much load the registry can take.
+                    The window between &ldquo;instance died&rdquo; and &ldquo;callers know&rdquo; is
+                    <code>probe&nbsp;interval &times; failure&nbsp;threshold</code>, and during it, callers send
+                    traffic into a black hole.
+                </p>
+            </div>
+
+            <p>Then you pick one. The default everyone inherits is round robin, and it fails in a specific, common way
+                that is worth seeing once:</p>
+
+            <div class="viz" data-viz="load-balancing"></div>
+
+            <div class="callout callout-tip">
+                <p><strong>Use the picker above to compare all three.</strong> Round robin distributes <em>requests</em>
+                    equally, which only helps if every request costs the same and every server is identical.
+                    Least-connections distributes <em>work</em>, so a slow server naturally receives less. Consistent
+                    hashing distributes <em>keys</em>, which is what you want when the server has a cache worth keeping
+                    warm.</p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your p50 is healthy but your p99 tripled after a deploy. All instances pass their
+                    health checks. What is your first hypothesis?</p>
+                <p>One instance is <em>grey failing</em> — up, answering, passing a shallow <code>/healthz</code> that
+                    only proves the process can return 200, but slow. With round robin it keeps receiving its full
+                    share, so a fixed fraction of requests is slow and the tail moves while the median does not. The
+                    tell is the shape: if p99 tripled and p50 did not, look for a <em>subset</em> of instances, not a
+                    global regression.</p>
+                <p>Three fixes, in increasing order of value: make health checks <em>deep</em> (check the dependencies
+                    the endpoint actually needs); switch to least-request load balancing so slowness is self-limiting;
+                    and add <strong>outlier detection</strong> so an instance whose error or latency profile deviates
+                    from its peers is ejected automatically for a cool-down period.</p>
+            </div>
+
+            <!-- ============================================================ unit 2 -->
+            <h2 id="unit-2">Unit 2 &mdash; Surviving the Network<a class="headerlink" href="#unit-2"
+                    title="Permanent link">#</a></h2>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-timeouts-and-deadlines">Timeouts &amp; Deadlines<a class="headerlink"
+                    href="#4-timeouts-and-deadlines" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>No timeout</b> <code class="big-o o-bad">wait forever</code></li>
+                <li><b>Per-hop timeout</b> <code class="big-o o-ok">wasted work</code></li>
+                <li><b>Propagated deadline</b> <code class="big-o o-great">nothing wasted</code></li>
+            </ul>
+
+            <p>A timeout is the only way to convert the third outcome into the second one: it turns &ldquo;I do not
+                know&rdquo; into a definite failure you can act on. Every remote call needs one. But a timeout set
+                independently at each hop produces a subtle, expensive bug.</p>
+
+            <div class="viz" data-viz="timeout-deadline"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a table that has already left</b>
+                    <p>A table orders, waits twenty minutes, gives up and walks out. Nobody tells the kitchen. The
+                        kitchen finishes the order, plates it, and the waiter carries it to an empty table — while
+                        eleven new tables wait for the same stove. <strong>The wasted work is not the meal; it is the
+                            stove time.</strong> That is exactly what a missing deadline costs you: capacity, spent
+                        precisely when you have none to spare.</p>
+                </div>
+            </div>
+
+            <div class="code-tabs" data-label="Propagating a deadline instead of setting a timeout">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# The caller sets ONE budget for the whole request tree.
+async def handle_request(request):
+    deadline = time.monotonic() + 3.0          # absolute, not a duration
+
+    price = await get_price(request.sku, deadline)
+    stock = await get_stock(request.sku, deadline)
+    return render(price, stock)
+
+
+async def get_price(sku, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining &lt;= 0.05:                      # not enough time to be useful
+        raise DeadlineExceeded()               # fail now, do not start the call
+
+    # Pass the remainder down; the next hop subtracts its own elapsed time.
+    async with httpx.AsyncClient() as client:
+        return await client.get(
+            f"{PRICING}/price/{sku}",
+            timeout=remaining,
+            headers={"X-Request-Deadline-Ms": str(int(remaining * 1000))},
+        )
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// The caller sets ONE budget for the whole request tree.
+async function handleRequest(req) {
+  const deadline = Date.now() + 3000;          // absolute, not a duration
+
+  const price = await getPrice(req.sku, deadline);
+  const stock = await getStock(req.sku, deadline);
+  return render(price, stock);
+}
+
+async function getPrice(sku, deadline) {
+  const remaining = deadline - Date.now();
+  if (remaining &lt;= 50) throw new DeadlineExceeded(); // fail now, do not start
+
+  // AbortController is how you actually cancel in-flight work in JS.
+  const ac = new AbortController();
+  const timer = setTimeout(() =&gt; ac.abort(), remaining);
+  try {
+    return await fetch(`${PRICING}/price/${sku}`, {
+      signal: ac.signal,
+      headers: { "X-Request-Deadline-Ms": String(remaining) },
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Three timeout bugs that are nearly universal.</strong> One: <em>the default is often
+                        infinite</em> — Python's <code>requests</code>, many JDBC drivers and plenty of gRPC setups
+                    will wait forever unless told otherwise. Two: <em>connect timeout and read timeout are different
+                        settings</em>, and setting only one leaves the other unbounded. Three: <em>an inner timeout
+                        larger than an outer one is always a bug</em>; the inner call can never win, so it is pure
+                    wasted capacity. Timeouts must <strong>shrink</strong> as you go down the stack.</p>
+            </div>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-retries-and-backoff">Retries, Backoff &amp; Jitter<a class="headerlink"
+                    href="#5-retries-and-backoff" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Immediate retry</b> <code class="big-o o-bad">load amplifier</code></li>
+                <li><b>Exponential</b> <code class="big-o o-ok">still synchronised</code></li>
+                <li><b>Full jitter</b> <code class="big-o o-great">smooth</code></li>
+                <li><b>Retry budget</b> <code class="big-o o-great">&le; 10% of traffic</code></li>
+            </ul>
+
+            <p>Retrying is the obvious response to a failed call and the easiest way to turn a small problem into an
+                outage. The difference between the two is entirely in <em>when</em> you retry.</p>
+
+            <div class="viz" data-viz="retry-backoff"></div>
+
+            <p>Step through all three variants above. The first is a load amplifier aimed at the thing that is already
+                struggling. The second fixes the volume and leaves every client synchronised. Only the third — adding
+                randomness — produces the smooth ramp a recovering service can actually survive.</p>
+
+            <div class="code-tabs" data-label="Full jitter, with a retryable-error check">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+RETRYABLE = {408, 429, 500, 502, 503, 504}
+
+async def call_with_retries(fn, *, attempts=4, base=0.2, cap=10.0):
+    for attempt in range(attempts):
+        try:
+            return await fn()
+        except HttpError as e:
+            # Never retry a 400 or a 422 - the request itself is wrong,
+            # and it will be exactly as wrong the second time.
+            if e.status not in RETRYABLE or attempt == attempts - 1:
+                raise
+            # Honour the server if it told us when to come back.
+            wait = e.retry_after or random.uniform(0, min(cap, base * 2 ** attempt))
+        except (TimeoutError, ConnectionError):
+            if attempt == attempts - 1:
+                raise
+            wait = random.uniform(0, min(cap, base * 2 ** attempt))
+
+        await asyncio.sleep(wait)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+const RETRYABLE = new Set([408, 429, 500, 502, 503, 504]);
+
+async function callWithRetries(fn, { attempts = 4, base = 200, cap = 10_000 } = {}) {
+  for (let attempt = 0; attempt &lt; attempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      const last = attempt === attempts - 1;
+      const retryable = err.status === undefined || RETRYABLE.has(err.status);
+      // Never retry a 400 or a 422 - the request itself is wrong.
+      if (last || !retryable) throw err;
+
+      // Full jitter: a uniform sample from the whole backoff window.
+      const window = Math.min(cap, base * 2 ** attempt);
+      const wait = err.retryAfterMs ?? Math.random() * window;
+      await new Promise((r) =&gt; setTimeout(r, wait));
+    }
+  }
+}
+</code></pre>
+                </div>
+            </div>
+
+            <p>The rule that people miss is that retries <strong>compose multiplicatively</strong>. Three layers each
+                retrying three times is not three retries, it is twenty-seven:</p>
+
+            <div class="viz" data-viz="retry-storm"></div>
+
+            <div class="callout callout-key">
+                <p><strong>Retry at exactly one layer</strong> — usually the one closest to the user that still
+                    understands the request — and cap it with a <strong>retry budget</strong>: if retries exceed ~10%
+                    of requests, stop retrying entirely until the ratio recovers. Every other layer fails fast and
+                    reports upward. Add a circuit breaker so that repeated failure stops producing traffic at all.</p>
+            </div>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-idempotency">Idempotency<a class="headerlink" href="#6-idempotency" title="Permanent link">#</a>
+            </h3>
+
+            <ul class="meta-strip">
+                <li><b>Safe to retry</b> <code class="big-o o-great">GET, PUT, DELETE</code></li>
+                <li><b>Not safe</b> <code class="big-o o-bad">POST charge, send</code></li>
+                <li><b>Fix</b> <code class="big-o o-good">client-minted key</code></li>
+            </ul>
+
+            <p>Retries and at-least-once delivery both mean the same thing: <strong>your handler will be called more
+                    than once with the same input</strong>, and not occasionally — routinely, under load, exactly when
+                it matters. Idempotency is the property that makes that harmless, and it is the single highest-leverage
+                idea in this course.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🛗</span>
+                <div class="analogy-body">
+                    <b>Picture it — a lift button</b>
+                    <p>Press the call button once, or jab it eleven times: the lift comes once. The button is
+                        idempotent, and that is precisely why nobody has to think about how many times they pressed it.
+                        A vending machine's coin slot is not idempotent, which is why you watch it like a hawk. Design
+                        your endpoints to be lift buttons.</p>
+                </div>
+            </div>
+
+            <div class="viz" data-viz="idempotency-key"></div>
+
+            <div class="code-tabs" data-label="The unique constraint does the work, not the if-statement">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+@app.post("/charges")
+async def create_charge(body: ChargeRequest, idempotency_key: str = Header(...)):
+    async with db.transaction():                      # ONE transaction
+        try:
+            # The unique index is the lock. Never "select then insert" -
+            # two concurrent retries will both pass that check.
+            await db.execute(
+                "insert into idempotency_keys (key, request_hash) values ($1, $2)",
+                idempotency_key, hash_of(body),
+            )
+        except UniqueViolation:
+            stored = await db.fetchrow(
+                "select response, request_hash from idempotency_keys where key = $1",
+                idempotency_key,
+            )
+            # Same key, different body = a client bug worth shouting about.
+            if stored["request_hash"] != hash_of(body):
+                raise HTTPException(422, "idempotency key reused with a different body")
+            return json.loads(stored["response"])     # replay the original answer
+
+        charge = await ledger.charge(body.amount, body.currency, body.card_token)
+        await db.execute(
+            "update idempotency_keys set response = $1 where key = $2",
+            json.dumps(charge), idempotency_key,
+        )
+        return charge
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+app.post("/charges", async (req, res) =&gt; {
+  const key = req.header("Idempotency-Key");
+  if (!key) return res.status(400).json({ error: "Idempotency-Key required" });
+
+  await db.transaction(async (tx) =&gt; {              // ONE transaction
+    try {
+      // The unique index is the lock. Never "select then insert" -
+      // two concurrent retries will both pass that check.
+      await tx.query(
+        "insert into idempotency_keys (key, request_hash) values ($1, $2)",
+        [key, hashOf(req.body)],
+      );
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) throw err;
+      const { rows } = await tx.query(
+        "select response, request_hash from idempotency_keys where key = $1", [key],
+      );
+      // Same key, different body = a client bug worth shouting about.
+      if (rows[0].request_hash !== hashOf(req.body)) {
+        return res.status(422).json({ error: "key reused with a different body" });
+      }
+      return res.json(rows[0].response);             // replay the original answer
+    }
+
+    const charge = await ledger.charge(req.body);
+    await tx.query("update idempotency_keys set response = $1 where key = $2",
+      [charge, key]);
+    res.json(charge);
+  });
+});
+</code></pre>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Naturally idempotent — do this where you can</b><code>PUT /orders/44
+                        {status:"shipped"}</code> sets an absolute state, so running it twice is identical to running
+                    it once. Prefer absolute assignments (<code>set balance = 90</code>) over relative ones
+                    (<code>balance = balance - 10</code>) whenever the domain allows.</li>
+                <li class="is-bad"><b>Needs an explicit key</b>Anything that appends, sends, charges or emits.
+                    <code>POST /charges</code>, <code>POST /emails</code>, <code>append to ledger</code>. There is no
+                    way to make these safe without remembering that you already did them.
+                </li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>The three ways people get this wrong.</strong> Generating a new key per <em>attempt</em>
+                    instead of per <em>intent</em> — the key must be created before the first try and reused by every
+                    retry. Checking with a <code>SELECT</code> before inserting — two concurrent retries both see
+                    nothing and both proceed; only a unique constraint is atomic. And writing the key in a different
+                    transaction from the effect — which reintroduces exactly the dual-write problem you will meet in
+                    section 11.</p>
+            </div>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-circuit-breakers-and-bulkheads">Circuit Breakers &amp; Bulkheads<a class="headerlink"
+                    href="#7-circuit-breakers-and-bulkheads" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Breaker</b> <code class="big-o o-great">stop calling</code></li>
+                <li><b>Bulkhead</b> <code class="big-o o-great">cap the damage</code></li>
+                <li><b>Shedding</b> <code class="big-o o-good">reject early</code></li>
+            </ul>
+
+            <p>Timeouts, retries and idempotency make a <em>single</em> call survivable. These two patterns stop a
+                failing dependency from consuming the calling service itself. A circuit breaker decides <em>whether to
+                    call at all</em>; a bulkhead decides <em>how much of you can be tied up</em> when the answer is
+                yes.</p>
+
+            <div class="viz" data-viz="circuit-breaker"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">⚡</span>
+                <div class="analogy-body">
+                    <b>Picture it — the consumer unit in your house</b>
+                    <p>A short circuit in the kitchen trips one breaker. Your lights stay on, your router stays on, and
+                        the house does not burn down. The breaker does not repair the fault — it
+                        <strong>contains</strong>
+                        it, and it makes the fault obvious and the recovery deliberate. A software circuit breaker has
+                        exactly this job, and like the electrical one it must be scoped: one per dependency, never a
+                        single breaker for everything.</p>
+                </div>
+            </div>
+
+            <p>The breaker keeps you from calling a broken thing. The bulkhead keeps the calls you <em>do</em> make from
+                eating every resource you have:</p>
+
+            <div class="viz" data-viz="bulkhead"></div>
+
+            <div class="callout callout-key">
+                <p><strong>Resource exhaustion is how one failure becomes all failures.</strong> A shared thread pool,
+                    connection pool or event loop is a single point of contagion: the slow dependency does not have to
+                    break you directly, it just has to hold your workers long enough that everything else queues behind
+                    it. Partition by dependency, and pair every breaker with a <strong>fallback</strong> — a cached
+                    value, a degraded feature, a queued write, or an honest error.</p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">Your recommendations service is down. The product page is timing out. Walk through
+                    what should have prevented the outage.</p>
+                <p>Four layers, each of which would have been enough on its own. <strong>A short timeout</strong>
+                    (200 ms, not 30 s) means a hanging call releases its worker almost immediately. <strong>A
+                        bulkhead</strong> caps recommendations at, say, 20% of the pool, so even with a long timeout it
+                    cannot consume all of it. <strong>A circuit breaker</strong> notices the failure rate and stops
+                    calling entirely, which also removes load from a service trying to restart. <strong>A
+                        fallback</strong> — last week's popular items, or simply omitting the carousel — turns the
+                    whole thing from an outage into a slightly less personalised page.</p>
+                <p>The framing to say out loud: <em>recommendations is a non-critical dependency, so the design fault
+                        was letting a non-critical dependency fail a critical path at all.</em> Classify every
+                    dependency as critical or not, and make the non-critical ones structurally incapable of taking you
+                    down.</p>
+            </div>
+
+            <!-- ============================================================ unit 3 -->
+            <h2 id="unit-3">Unit 3 &mdash; Talking Through a Broker<a class="headerlink" href="#unit-3"
+                    title="Permanent link">#</a></h2>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-queues-and-topics">Queues &amp; Topics<a class="headerlink" href="#8-queues-and-topics"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Queue</b> <code class="big-o o-great">one consumer gets it</code></li>
+                <li><b>Topic</b> <code class="big-o o-great">everyone gets a copy</code></li>
+                <li><b>Log</b> <code class="big-o o-great">+ replay</code></li>
+            </ul>
+
+            <p>A broker gives you three things at once: it <strong>decouples in time</strong> (the receiver need not be
+                up), it <strong>decouples in identity</strong> (the sender need not know who receives), and it
+                <strong>absorbs load</strong> (a spike becomes a backlog instead of an error page). What you choose
+                between is not really a product but a delivery semantic.
+            </p>
+
+            <div class="viz" data-viz="queue-consumers"></div>
+
+            <div class="callout callout-tip">
+                <p>The two numbers to alarm on for any queue are <strong>depth</strong> (is it growing without bound?)
+                    and <strong>oldest message age</strong> (are we already late?). Depth alone lies to you: a queue
+                    with a steady depth of 40 looks identical whether messages take 50 ms or 50 minutes to get through
+                    it.</p>
+            </div>
+
+            <p>Now the same infrastructure with the opposite semantic. A queue splits work between consumers; a
+                <strong>topic</strong> copies it to all of them:
+            </p>
+
+            <div class="viz" data-viz="pubsub-fanout"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>Getting this backwards is a classic production incident.</strong> Deploy three replicas of a
+                    service that reads a <em>queue</em> expecting each replica to see every message, and each replica
+                    sees a third of them — two thirds of your orders are never billed, silently. Say the semantic out
+                    loud when you create the subscription: <em>&ldquo;competing consumers&rdquo;</em> or
+                    <em>&ldquo;fan-out&rdquo;</em>.
+                </p>
+            </div>
+
+            <p>The third shape is the <strong>log</strong> — Kafka, Pulsar, Kinesis. It looks like a topic but it does
+                not delete what it delivers, and that one difference changes everything downstream of it:</p>
+
+            <div class="viz" data-viz="log-stream"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Choose a queue</b>when work is disposable once done, consumers are
+                    interchangeable, and you want per-message retries and a dead letter queue for free. Job processing,
+                    emails, thumbnails.</li>
+                <li class="is-good"><b>Choose a log</b>when the history is the product: multiple independent readers,
+                    replay after a bug, ordering within a key, or feeding both a real-time consumer and a nightly
+                    analytics job from the same data.</li>
+                <li class="is-bad"><b>Log costs</b>Parallelism is capped by partition count, which you must choose up
+                    front. Rebalances produce duplicates. And there is no per-message retry — one poison record blocks
+                    its whole partition unless you handle it yourself.</li>
+            </ul>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-delivery-and-ordering">Delivery Guarantees &amp; Ordering<a class="headerlink"
+                    href="#9-delivery-and-ordering" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>At most once</b> <code class="big-o o-bad">may lose</code></li>
+                <li><b>At least once</b> <code class="big-o o-good">may duplicate</code></li>
+                <li><b>Exactly once</b> <code class="big-o o-ok">only as an effect</code></li>
+            </ul>
+
+            <p>Every broker's guarantee comes down to one decision in the consumer: <strong>do you acknowledge before
+                    or after doing the work?</strong> That is the whole thing. Everything else is marketing.</p>
+
+            <div class="viz" data-viz="delivery-semantics"></div>
+
+            <div class="callout callout-key">
+                <p><strong>There is no exactly-once delivery.</strong> It is provably impossible over an unreliable
+                    network — the classic two-generals result. What you can have is exactly-once <em>effect</em>:
+                    at-least-once delivery plus a dedupe key committed in the same transaction as the side effect. When
+                    a vendor says &ldquo;exactly once&rdquo;, they mean either that, or exactly-once within their own
+                    system only. Your call to Stripe is still yours to protect.</p>
+            </div>
+
+            <p>Ordering has the same character — a guarantee that is narrower than people assume, and silently lost by
+                a default setting:</p>
+
+            <div class="viz" data-viz="ordering-keys"></div>
+
+            <div class="code-tabs" data-label="Key the message, and make the handler order-insensitive anyway">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# 1. Same entity -> same key -> same partition -> ordered.
+await producer.send(
+    topic="order-events",
+    key=order_id.encode(),          # NOT a random uuid, NOT round robin
+    value=event.to_json(),
+    headers=[("event-id", event.id.encode()), ("traceparent", ctx.encode())],
+)
+
+
+# 2. Belt and braces: reject stale events even if they do arrive in order.
+async def handle(event):
+    updated = await db.execute(
+        """update orders
+              set status = $1, version = $2
+            where id = $3 and version &lt; $2""",   # monotonic guard
+        event.status, event.version, event.order_id,
+    )
+    if updated == 0:
+        log.info("stale or duplicate event ignored", event_id=event.id)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+// 1. Same entity -> same key -> same partition -> ordered.
+await producer.send({
+  topic: "order-events",
+  messages: [{
+    key: orderId,                   // NOT a random uuid, NOT round robin
+    value: JSON.stringify(event),
+    headers: { "event-id": event.id, traceparent: ctx },
+  }],
+});
+
+// 2. Belt and braces: reject stale events even if they do arrive in order.
+async function handle(event) {
+  const { rowCount } = await db.query(
+    `update orders
+        set status = $1, version = $2
+      where id = $3 and version &lt; $2`,          // monotonic guard
+    [event.status, event.version, event.orderId],
+  );
+  if (rowCount === 0) log.info({ eventId: event.id }, "stale or duplicate ignored");
+}
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Never ask for global ordering.</strong> It means one partition, one consumer, and no
+                    horizontal scale — you have bought a distributed system and configured it to be a single-threaded
+                    one. Ask instead: <em>which entity's events must not overtake each other?</em> That entity's id is
+                    your partition key, and everything else is free to be reordered.</p>
+            </div>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-dead-letters-and-backpressure">Dead Letters &amp; Backpressure<a class="headerlink"
+                    href="#10-dead-letters-and-backpressure" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Poison message</b> <code class="big-o o-bad">fails forever</code></li>
+                <li><b>DLQ</b> <code class="big-o o-great">unblocks the stream</code></li>
+                <li><b>Unbounded queue</b> <code class="big-o o-bad">hidden overload</code></li>
+            </ul>
+
+            <p>Retries assume failure is transient. Some failures are not — a malformed payload will fail identically
+                forever, and while it is being retried it blocks everything behind it.</p>
+
+            <div class="viz" data-viz="dlq"></div>
+
+            <div class="callout callout-tip">
+                <p>A dead letter queue is a <strong>bug report with the payload attached</strong>, not a graveyard.
+                    Alarm on <code>depth &gt; 0</code>, keep the original message plus the exception and stack trace,
+                    and put a one-click <strong>redrive</strong> in the runbook. The most common failure in practice is
+                    not a missing DLQ — it is a DLQ nobody has looked at since March.</p>
+            </div>
+
+            <p>The other broker failure mode is quieter, and it is the one that kills processes at 3 a.m.: a producer
+                that is simply faster than its consumer.</p>
+
+            <div class="viz" data-viz="backpressure"></div>
+
+            <div class="callout callout-key">
+                <p><strong>Every queue must be bounded, and the bound must come from a latency target rather than from
+                        available memory.</strong> &ldquo;Unbounded&rdquo; always means &ldquo;bounded by RAM,
+                    discovered during an incident&rdquo;. Once bounded you have three real options when it fills:
+                    <em>push back</em> (stop reading, so the producer slows down), <em>shed</em> (reject with
+                    <code>503</code> plus <code>Retry-After</code>), or <em>drop by policy</em> (discard the oldest,
+                    which is right for live data whose value decays).
+                </p>
+            </div>
+
+            <!-- ============================================================ unit 4 -->
+            <h2 id="unit-4">Unit 4 &mdash; Coordinating Work<a class="headerlink" href="#unit-4"
+                    title="Permanent link">#</a></h2>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-the-outbox">The Dual Write &amp; the Outbox<a class="headerlink" href="#11-the-outbox"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Dual write</b> <code class="big-o o-bad">no correct version</code></li>
+                <li><b>Outbox</b> <code class="big-o o-great">one transaction</code></li>
+                <li><b>CDC</b> <code class="big-o o-good">zero app changes</code></li>
+            </ul>
+
+            <p>Here is the most common bug in event-driven systems, and it is in code that looks completely reasonable:
+                save to the database, then publish an event. Two systems, two commits, and no transaction that spans
+                them.</p>
+
+            <div class="viz" data-viz="outbox"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>A dual write has no correct implementation.</strong> Retrying narrows the window; it never
+                    closes it, because the process can die inside the retry loop. Reversing the order just swaps
+                    &ldquo;an order nobody was told about&rdquo; for &ldquo;an event about an order that does not
+                    exist&rdquo;. If you catch yourself writing <code>db.save(); broker.publish();</code>, you have
+                    this bug.</p>
+            </div>
+
+            <div class="code-tabs" data-label="The outbox: two inserts, one commit">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+async def place_order(order):
+    async with db.transaction():                  # ONE transaction, ONE system
+        await db.execute(
+            "insert into orders (id, customer_id, total_minor) values ($1, $2, $3)",
+            order.id, order.customer_id, order.total_minor,
+        )
+        await db.execute(
+            """insert into outbox (id, topic, partition_key, payload)
+               values ($1, $2, $3, $4)""",
+            uuid.uuid4(), "order-events", order.id, order.to_event_json(),
+        )
+    # No publish here. Nothing to fail. Nothing to retry. Nothing to get wrong.
+
+
+# A separate process, restartable at any moment, publishes what committed.
+async def relay():
+    while True:
+        rows = await db.fetch(
+            "select * from outbox where published_at is null order by id limit 100"
+        )
+        for row in rows:
+            await broker.publish(row["topic"], key=row["partition_key"],
+                                 value=row["payload"], headers={"event-id": row["id"]})
+            # A crash here republishes on restart - consumers dedupe on event-id.
+            await db.execute("update outbox set published_at = now() where id = $1",
+                             row["id"])
+        await asyncio.sleep(0.2)
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
+async function placeOrder(order) {
+  await db.transaction(async (tx) =&gt; {          // ONE transaction, ONE system
+    await tx.query(
+      "insert into orders (id, customer_id, total_minor) values ($1, $2, $3)",
+      [order.id, order.customerId, order.totalMinor],
+    );
+    await tx.query(
+      `insert into outbox (id, topic, partition_key, payload)
+       values ($1, $2, $3, $4)`,
+      [randomUUID(), "order-events", order.id, order.toEventJson()],
+    );
+  });
+  // No publish here. Nothing to fail. Nothing to retry. Nothing to get wrong.
+}
+
+// A separate process, restartable at any moment, publishes what committed.
+async function relay() {
+  for (;;) {
+    const { rows } = await db.query(
+      "select * from outbox where published_at is null order by id limit 100",
+    );
+    for (const row of rows) {
+      await broker.publish(row.topic, {
+        key: row.partition_key, value: row.payload, headers: { "event-id": row.id },
+      });
+      // A crash here republishes on restart - consumers dedupe on event-id.
+      await db.query("update outbox set published_at = now() where id = $1", [row.id]);
+    }
+    await sleep(200);
+  }
+}
+</code></pre>
+                </div>
+            </div>
+
+            <p>The outbox converts an impossible problem into a solved one plus a tolerable one: atomicity within a
+                single database, and at-least-once publishing that consumers deduplicate. The alternative, if you
+                cannot change the application at all, is to let the database's own log be the source of events:</p>
+
+            <div class="viz" data-viz="cdc"></div>
+
+            <!-- ============================================================ 12 -->
+            <h3 id="12-sagas">Sagas<a class="headerlink" href="#12-sagas" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Steps</b> <code class="big-o o-good">local transactions</code></li>
+                <li><b>Rollback</b> <code class="big-o o-bad">does not exist</code></li>
+                <li><b>Instead</b> <code class="big-o o-great">compensations</code></li>
+            </ul>
+
+            <p>One business operation, four services, four databases. You cannot wrap that in a transaction, so you
+                give up atomicity and replace it with a sequence of local transactions, each with a matching
+                <strong>compensation</strong> that semantically offsets it.
+            </p>
+
+            <div class="viz" data-viz="saga"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🧾</span>
+                <div class="analogy-body">
+                    <b>Picture it — a refund is not an un-charge</b>
+                    <p>A database rollback leaves no trace: the write never existed. A compensation is a <em>new
+                            forward transaction</em> — the customer's statement shows the charge and the refund, the
+                        warehouse log shows the reservation and the release, and for a few seconds the money genuinely
+                        was gone. Compensation is bookkeeping, not time travel, and designing it is the real work of a
+                        saga.</p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Orchestration</b>One component owns the state machine and calls each step. Easy
+                    to see, easy to debug, easy to add a timeout or a manual intervention step. Use it for anything
+                    long, critical, or with more than three steps.</li>
+                <li class="is-good"><b>Choreography</b>Each service reacts to events and publishes its own. Maximum
+                    decoupling, and adding a participant needs no change anywhere else. Good for two or three stable
+                    steps.</li>
+                <li class="is-bad"><b>Orchestration's cost</b>The orchestrator knows about everyone, so it becomes a
+                    place logic accumulates and a service every team must change.</li>
+                <li class="is-bad"><b>Choreography's cost</b>The flow exists nowhere as a readable artefact.
+                    &ldquo;Why did this order stall?&rdquo; means correlating logs across five services, and cyclic
+                    subscriptions become loops nobody designed.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>Two rules that make sagas work.</strong> Every step must be <em>idempotent</em>, because the
+                    orchestrator will retry on timeout. And <em>design the compensations first</em> — the happy path
+                    is the easy half, and discovering during an incident that a step has no compensation (an email is
+                    already sent, a warehouse has already shipped) is how sagas get a bad reputation. Where a step
+                    truly cannot be undone, put it <strong>last</strong>.</p>
+            </div>
+
+            <p>For contrast, the mechanism sagas replace — two-phase commit — is worth understanding precisely so you
+                can explain why you did not use it:</p>
+
+            <div class="viz" data-viz="two-phase-commit"></div>
+
+            <!-- ============================================================ 13 -->
+            <h3 id="13-pushing-to-the-client">Pushing to the Client<a class="headerlink"
+                    href="#13-pushing-to-the-client" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Polling</b> <code class="big-o o-ok">simple, wasteful</code></li>
+                <li><b>SSE</b> <code class="big-o o-great">server &rarr; client</code></li>
+                <li><b>WebSocket</b> <code class="big-o o-good">both ways</code></li>
+                <li><b>Webhook</b> <code class="big-o o-ok">server &rarr; server</code></li>
+            </ul>
+
+            <p>Everything so far has been servers talking to servers. The last hop is different, because the client is
+                behind a NAT, on a flaky radio, and cannot be called. So the connection must start from their side,
+                and the question becomes how long you keep it open.</p>
+
+            <div class="viz" data-viz="push-channels"></div>
+
+            <div class="callout callout-tip">
+                <p><strong>Default to server-sent events.</strong> They ride on ordinary HTTP with your existing auth,
+                    reconnect automatically with <code>Last-Event-ID</code> resumption built in, and cover the common
+                    case of server-to-client updates. Reach for WebSockets only when the <em>client</em> needs to send
+                    frequently — chat, collaborative editing, games. Keep polling in your pocket for updates that are
+                    rare and not urgent; it is not a bad design, just a bad default.</p>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Long-lived connections are state, and that is the real cost.</strong> Every deploy
+                    disconnects everyone at once (so you need jittered reconnect, or they all come back together).
+                    Autoscaling is driven by connection count, not CPU. And because any server may need to reach any
+                    client, you need a pub/sub backplane behind them &mdash; which means the fan-out problem you solved
+                    in section 8 reappears, one layer down.</p>
+            </div>
+
+            <p>When the &ldquo;client&rdquo; is another company's server, the pattern flips into a
+                <strong>webhook</strong>: you make the HTTP call, to an endpoint you do not control and cannot
+                debug.
+            </p>
+
+            <div class="viz" data-viz="webhook-retry"></div>
+
+            <!-- ============================================================ 14 -->
+            <h2 id="14-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink"
+                    href="#14-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+
+            <p>Everything above, compressed into the three decisions you actually make.</p>
+
+            <h3 id="pick-a-style">Pick a communication style<a class="headerlink" href="#pick-a-style"
+                    title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>If the caller&hellip;</th>
+                        <th>Use</th>
+                        <th>You are accepting</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>needs the answer to continue</td>
+                        <td>synchronous RPC (gRPC internally, REST at the edge)</td>
+                        <td>latency adds, availability multiplies</td>
+                    </tr>
+                    <tr>
+                        <td>needs only an acknowledgement</td>
+                        <td>queue &mdash; competing consumers</td>
+                        <td>eventual consistency, duplicate handling</td>
+                    </tr>
+                    <tr>
+                        <td>is announcing a fact to nobody in particular</td>
+                        <td>topic &mdash; pub/sub fan-out</td>
+                        <td>no visible call graph; the event schema is now an API</td>
+                    </tr>
+                    <tr>
+                        <td>wants replay, or many independent readers</td>
+                        <td>log (Kafka, Kinesis, Pulsar)</td>
+                        <td>partition-capped parallelism, rebalance duplicates</td>
+                    </tr>
+                    <tr>
+                        <td>is a browser that needs updates</td>
+                        <td>SSE, or WebSocket if it must send too</td>
+                        <td>connections are state: deploys, scaling, backplane</td>
+                    </tr>
+                    <tr>
+                        <td>is another company's server</td>
+                        <td>webhook, signed and retried for hours</td>
+                        <td>out-of-order delivery, endpoints you cannot debug</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="pick-a-reliability-pattern">Pick a reliability pattern<a class="headerlink"
+                    href="#pick-a-reliability-pattern" title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symptom</th>
+                        <th>Pattern</th>
+                        <th>The one detail people get wrong</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>calls hang forever</td>
+                        <td>timeouts</td>
+                        <td>the default is often infinite; connect and read are separate settings</td>
+                    </tr>
+                    <tr>
+                        <td>work continues after the caller left</td>
+                        <td>deadline propagation</td>
+                        <td>pass an <em>absolute</em> deadline, not a duration</td>
+                    </tr>
+                    <tr>
+                        <td>transient errors reach users</td>
+                        <td>retry with full jitter</td>
+                        <td>retry at one layer only, under a budget</td>
+                    </tr>
+                    <tr>
+                        <td>retries cause double effects</td>
+                        <td>idempotency key</td>
+                        <td>one key per <em>intent</em>; enforce with a unique constraint</td>
+                    </tr>
+                    <tr>
+                        <td>a broken dependency is still being called</td>
+                        <td>circuit breaker</td>
+                        <td>scope per dependency, and always pair with a fallback</td>
+                    </tr>
+                    <tr>
+                        <td>one dependency exhausts the whole service</td>
+                        <td>bulkhead</td>
+                        <td>partition the pool <em>before</em> you need to</td>
+                    </tr>
+                    <tr>
+                        <td>a queue grows without limit</td>
+                        <td>backpressure / load shedding</td>
+                        <td>bound it from a latency target, not from RAM</td>
+                    </tr>
+                    <tr>
+                        <td>one message fails forever</td>
+                        <td>dead letter queue</td>
+                        <td>alarm on depth &gt; 0 and keep a redrive path</td>
+                    </tr>
+                    <tr>
+                        <td>db write and event can diverge</td>
+                        <td>transactional outbox (or CDC)</td>
+                        <td>never <code>save()</code> then <code>publish()</code></td>
+                    </tr>
+                    <tr>
+                        <td>a multi-service operation half-failed</td>
+                        <td>saga with compensations</td>
+                        <td>design the compensations first; put un-undoable steps last</td>
+                    </tr>
+                    <tr>
+                        <td>a fan-out is as slow as its worst shard</td>
+                        <td>hedged requests, partial results</td>
+                        <td>measure the p99 of the aggregate, not of the parts</td>
+                    </tr>
+                    <tr>
+                        <td>cache expiry floods the origin</td>
+                        <td>single-flight + jittered TTL</td>
+                        <td>stale-while-revalidate beats an error every time</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="the-questions-to-ask-of-any-design">The questions to ask of any design<a class="headerlink"
+                    href="#the-questions-to-ask-of-any-design" title="Permanent link">#</a></h3>
+
+            <div class="ascii">For every arrow you draw between two boxes, answer these:
+
+                1. Does the caller need the answer? -> if no, why is this arrow synchronous?
+                2. What is the timeout, and who set it? -> "the default" is not an answer
+                3. What happens on a duplicate? -> retries and redelivery guarantee one
+                4. What happens if this side is down? -> fallback, queue, or degrade
+                5. What happens if it is SLOW, not down? -> the harder and more common case
+                6. Is the effect and its event one commit? -> if not, you have a dual write
+                7. How do you know it is broken? -> trace id, queue depth, oldest-age
+                8. How do you replay after fixing a bug? -> DLQ redrive, or log offset reset</div>
+
+            <div class="callout callout-key">
+                <p><strong>If you remember one sentence from this page:</strong> the network gives you three outcomes
+                    instead of two, so every pattern here is either <em>making the unknown outcome rare</em> (timeouts,
+                    breakers, bulkheads), <em>making it harmless</em> (idempotency, outbox, compensations), or
+                    <em>making it visible</em> (tracing, queue depth, DLQs). When you meet a pattern that is not on
+                    this page, ask which of those three it is doing &mdash; there is no fourth category.
+                </p>
+            </div>
+
+            <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
+            </h3>
+            <ol>
+                <li>📘 The <a href="distributed-communication-patterns-detailed-course.html">Distributed Communication
+                        Patterns Detailed Course</a> &mdash; the same ground in 43 sections, plus transports and
+                    HTTP/3, service meshes, consensus and quorums, CQRS and event sourcing, scatter-gather and tail
+                    latency, distributed tracing, contract testing and a practice roadmap.</li>
+                <li>📚 Browse both guides in the <a href="distributed-communication-patterns-courses.html">Distributed
+                        Communication Courses catalog</a>.</li>
+                <li>📖 <a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">AWS
+                        Builders' Library &mdash; Timeouts, retries, and backoff with jitter</a> &mdash; the measured
+                    data behind section 5, from people running it at planetary scale.</li>
+                <li>🧩 <a href="https://microservices.io/patterns/">microservices.io pattern catalog</a> &mdash; Chris
+                    Richardson's reference for saga, outbox, API gateway and their variants.</li>
+                <li>🧠 <a href="https://martinfowler.com/articles/201701-event-driven.html">Martin Fowler &mdash; What
+                        do you mean by &ldquo;event-driven&rdquo;?</a> &mdash; the clearest short treatment of the four
+                    things people mean by that phrase.</li>
+            </ol>
+
+            <blockquote>
+                <p><em>"A distributed system is one in which the failure of a computer you didn't even know existed can
+                        render your own computer unusable."</em> &mdash; Leslie Lamport</p>
+            </blockquote>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Distributed Communication Patterns</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="distributed-communication-patterns-study.js"></script>
+</body>
+
+</html>
