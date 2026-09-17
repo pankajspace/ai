@@ -593,6 +593,130 @@ class Queue {
 
             <div class="viz" data-viz="heap"></div>
 
+            <div class="code-tabs" data-label="Using and building a heap">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            import heapq
+            
+            # heapq turns any list into a MIN-heap in place.
+            nums = [5, 1, 8, 3, 9, 2]
+            heapq.heapify(nums)             # O(n), not O(n log n)
+            heapq.heappush(nums, 0)         # O(log n)
+            smallest = heapq.heappop(nums)  # O(log n) -&gt; 0
+            peek = nums[0]                  # O(1)
+            
+            # Top-k without sorting everything: O(n log k) time, O(k) space.
+            def top_k(nums, k):
+                heap = []
+                for x in nums:
+                    heapq.heappush(heap, x)
+                    if len(heap) &gt; k:
+                        heapq.heappop(heap)     # evict the smallest; keep the k largest
+                return sorted(heap, reverse=True)
+            
+            # For a MAX-heap, negate the values (heapq has no max variant).
+            def max_heap_demo(values):
+                heap = [-v for v in values]
+                heapq.heapify(heap)
+                return -heapq.heappop(heap)     # largest
+            
+            # Priority queues: push (priority, tiebreaker, payload) tuples so that
+            # equal priorities never try to compare the payloads.
+            import itertools
+            counter = itertools.count()
+            tasks = []
+            heapq.heappush(tasks, (2, next(counter), "write tests"))
+            heapq.heappush(tasks, (1, next(counter), "fix outage"))
+            print(heapq.heappop(tasks)[2])      # 'fix outage'
+            
+            print(top_k([7, 2, 9, 4, 1, 8], 3)) # [9, 8, 7]
+            print(heapq.nlargest(3, [7, 2, 9])) # [9, 7, 2] - built in
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            // JavaScript has no heap, so here is a complete one. Pass a comparator to
+            // get a max-heap or to order objects by any field.
+            class Heap {
+              constructor(compare = (a, b) =&gt; a - b, items = []) {
+                this.compare = compare;
+                this.data = items;
+                // Heapify bottom-up: O(n), not O(n log n).
+                for (let i = (this.data.length &gt;&gt; 1) - 1; i &gt;= 0; i--) this.#siftDown(i);
+              }
+            
+              get size() {
+                return this.data.length;
+              }
+            
+              peek() {
+                return this.data[0];              // O(1)
+              }
+            
+              push(value) {                       // O(log n)
+                this.data.push(value);
+                this.#siftUp(this.data.length - 1);
+              }
+            
+              pop() {                             // O(log n)
+                if (this.data.length === 0) return undefined;
+                const top = this.data[0];
+                const last = this.data.pop();
+                if (this.data.length) {
+                  this.data[0] = last;
+                  this.#siftDown(0);
+                }
+                return top;
+              }
+            
+              #siftUp(i) {
+                while (i &gt; 0) {
+                  const parent = (i - 1) &gt;&gt; 1;
+                  if (this.compare(this.data[i], this.data[parent]) &gt;= 0) break;
+                  [this.data[i], this.data[parent]] = [this.data[parent], this.data[i]];
+                  i = parent;
+                }
+              }
+            
+              #siftDown(i) {
+                const n = this.data.length;
+                while (true) {
+                  let best = i;
+                  const l = 2 * i + 1;
+                  const r = 2 * i + 2;
+                  if (l &lt; n &amp;&amp; this.compare(this.data[l], this.data[best]) &lt; 0) best = l;
+                  if (r &lt; n &amp;&amp; this.compare(this.data[r], this.data[best]) &lt; 0) best = r;
+                  if (best === i) return;
+                  [this.data[i], this.data[best]] = [this.data[best], this.data[i]];
+                  i = best;
+                }
+              }
+            }
+            
+            const minHeap = new Heap();
+            [5, 1, 8, 3].forEach((x) =&gt; minHeap.push(x));
+            console.log(minHeap.pop());                     // 1
+            
+            const maxHeap = new Heap((a, b) =&gt; b - a);
+            const tasks = new Heap((a, b) =&gt; a.priority - b.priority);
+            tasks.push({ priority: 2, name: "write tests" });
+            tasks.push({ priority: 1, name: "fix outage" });
+            console.log(tasks.pop().name);                  // 'fix outage'
+            
+            function topK(nums, k) {                        // O(n log k)
+              const heap = new Heap();
+              for (const x of nums) {
+                heap.push(x);
+                if (heap.size &gt; k) heap.pop();              // drop the smallest
+              }
+              return heap.data.sort((a, b) =&gt; b - a);
+            }
+            
+            console.log(topK([7, 2, 9, 4, 1, 8], 3));       // [9, 8, 7]
+            </code></pre>
+                                </div>
+                            </div>
+
             <div class="worked">
                 <b>Top Interview Question</b>
                 <p class="worked-q">Implement a FIFO queue using only two stacks. You may only use push, pop, peek and
@@ -861,6 +985,154 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
 
             <div class="viz" data-viz="bst-search"></div>
 
+            <div class="code-tabs" data-label="A complete BST, including deletion">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            class BST:
+                class _Node:
+                    __slots__ = ("value", "left", "right")
+            
+                    def __init__(self, value):
+                        self.value = value
+                        self.left = self.right = None
+            
+                def __init__(self):
+                    self.root = None
+            
+                def insert(self, value):
+                    """O(h). Duplicates are ignored."""
+                    def go(node):
+                        if node is None:
+                            return BST._Node(value)
+                        if value &lt; node.value:
+                            node.left = go(node.left)
+                        elif value &gt; node.value:
+                            node.right = go(node.right)
+                        return node
+                    self.root = go(self.root)
+            
+                def contains(self, value):
+                    """O(h), iterative - no stack frames needed."""
+                    node = self.root
+                    while node:
+                        if value == node.value:
+                            return True
+                        node = node.left if value &lt; node.value else node.right
+                    return False
+            
+                def delete(self, value):
+                    """The only fiddly operation. Three cases, see the comments."""
+                    def go(node, value):
+                        if node is None:
+                            return None
+                        if value &lt; node.value:
+                            node.left = go(node.left, value)
+                        elif value &gt; node.value:
+                            node.right = go(node.right, value)
+                        else:
+                            # Case 1 and 2: zero or one child - splice the child up.
+                            if node.left is None:
+                                return node.right
+                            if node.right is None:
+                                return node.left
+                            # Case 3: two children. Replace this value with its
+                            # in-order successor (smallest value in the right subtree),
+                            # then delete that successor from the right subtree.
+                            successor = node.right
+                            while successor.left:
+                                successor = successor.left
+                            node.value = successor.value
+                            node.right = go(node.right, successor.value)
+                        return node
+                    self.root = go(self.root, value)
+            
+                def in_order(self):
+                    """Sorted iteration for free. O(n)."""
+                    stack, node = [], self.root
+                    while stack or node:
+                        while node:
+                            stack.append(node)
+                            node = node.left
+                        node = stack.pop()
+                        yield node.value
+                        node = node.right
+            
+            
+            tree = BST()
+            for v in [8, 3, 10, 1, 6, 14, 4, 7, 13]:
+                tree.insert(v)
+            print(list(tree.in_order()))    # [1, 3, 4, 6, 7, 8, 10, 13, 14]
+            tree.delete(3)
+            print(list(tree.in_order()))    # [1, 4, 6, 7, 8, 10, 13, 14]
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            class BST {
+              constructor() {
+                this.root = null;
+              }
+            
+              insert(value) {                       // O(h), duplicates ignored
+                const go = (node) =&gt; {
+                  if (!node) return { value, left: null, right: null };
+                  if (value &lt; node.value) node.left = go(node.left);
+                  else if (value &gt; node.value) node.right = go(node.right);
+                  return node;
+                };
+                this.root = go(this.root);
+              }
+            
+              contains(value) {                     // O(h), iterative
+                let node = this.root;
+                while (node) {
+                  if (value === node.value) return true;
+                  node = value &lt; node.value ? node.left : node.right;
+                }
+                return false;
+              }
+            
+              delete(value) {
+                const go = (node, value) =&gt; {
+                  if (!node) return null;
+                  if (value &lt; node.value) node.left = go(node.left, value);
+                  else if (value &gt; node.value) node.right = go(node.right, value);
+                  else {
+                    if (!node.left) return node.right;    // 0 or 1 child
+                    if (!node.right) return node.left;
+                    // Two children: promote the in-order successor.
+                    let successor = node.right;
+                    while (successor.left) successor = successor.left;
+                    node.value = successor.value;
+                    node.right = go(node.right, successor.value);
+                  }
+                  return node;
+                };
+                this.root = go(this.root, value);
+              }
+            
+              *inOrder() {                          // sorted iteration, O(n)
+                const stack = [];
+                let node = this.root;
+                while (stack.length || node) {
+                  while (node) {
+                    stack.push(node);
+                    node = node.left;
+                  }
+                  node = stack.pop();
+                  yield node.value;
+                  node = node.right;
+                }
+              }
+            }
+            
+            const tree = new BST();
+            for (const v of [8, 3, 10, 1, 6, 14, 4, 7, 13]) tree.insert(v);
+            console.log([...tree.inOrder()]);       // [1,3,4,6,7,8,10,13,14]
+            </code></pre>
+                                </div>
+                            </div>
+
             <div class="callout callout-warn">
                 <p><strong>The BST's fatal flaw:</strong> insert <code>1, 2, 3, 4, 5</code> in order and every node
                     becomes a right child. You now have a linked list wearing a tree costume, and every operation
@@ -918,6 +1190,141 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                     without disturbing the ordering.</figcaption>
             </figure>
 
+            <div class="code-tabs" data-label="AVL insertion with rotations">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            class AVLNode:
+                __slots__ = ("value", "left", "right", "height")
+            
+                def __init__(self, value):
+                    self.value = value
+                    self.left = self.right = None
+                    self.height = 1
+            
+            
+            def h(node):
+                return node.height if node else 0
+            
+            
+            def update(node):
+                node.height = 1 + max(h(node.left), h(node.right))
+            
+            
+            def balance_factor(node):
+                """&gt; 1 means left heavy, &lt; -1 means right heavy."""
+                return h(node.left) - h(node.right) if node else 0
+            
+            
+            def rotate_right(y):
+                """    y            x
+                      / \\          / \\
+                     x   C   -&gt;    A   y      O(1) pointer surgery, order preserved.
+                    / \\              / \\
+                   A   B            B   C
+                """
+                x = y.left
+                y.left = x.right
+                x.right = y
+                update(y)
+                update(x)
+                return x                # x is the new subtree root
+            
+            
+            def rotate_left(x):
+                y = x.right
+                x.right = y.left
+                y.left = x
+                update(x)
+                update(y)
+                return y
+            
+            
+            def avl_insert(node, value):
+                """Ordinary BST insert, then rebalance on the way back up. O(log n)."""
+                if node is None:
+                    return AVLNode(value)
+                if value &lt; node.value:
+                    node.left = avl_insert(node.left, value)
+                elif value &gt; node.value:
+                    node.right = avl_insert(node.right, value)
+                else:
+                    return node
+            
+                update(node)
+                bf = balance_factor(node)
+            
+                if bf &gt; 1 and value &lt; node.left.value:      # left-left
+                    return rotate_right(node)
+                if bf &lt; -1 and value &gt; node.right.value:    # right-right
+                    return rotate_left(node)
+                if bf &gt; 1:                                  # left-right
+                    node.left = rotate_left(node.left)
+                    return rotate_right(node)
+                if bf &lt; -1:                                 # right-left
+                    node.right = rotate_right(node.right)
+                    return rotate_left(node)
+                return node
+            
+            
+            root = None
+            for v in [10, 20, 30, 40, 50]:      # sorted input that would ruin a plain BST
+                root = avl_insert(root, v)
+            print(root.value, root.height)      # 20 3  - height 3 instead of 5
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            const h = (node) =&gt; (node ? node.height : 0);
+            const update = (node) =&gt; { node.height = 1 + Math.max(h(node.left), h(node.right)); };
+            const balanceFactor = (node) =&gt; (node ? h(node.left) - h(node.right) : 0);
+            
+            function rotateRight(y) {               // O(1), preserves in-order sequence
+              const x = y.left;
+              y.left = x.right;
+              x.right = y;
+              update(y);
+              update(x);
+              return x;                             // new subtree root
+            }
+            
+            function rotateLeft(x) {
+              const y = x.right;
+              x.right = y.left;
+              y.left = x;
+              update(x);
+              update(y);
+              return y;
+            }
+            
+            function avlInsert(node, value) {       // BST insert + rebalance on unwind
+              if (!node) return { value, left: null, right: null, height: 1 };
+              if (value &lt; node.value) node.left = avlInsert(node.left, value);
+              else if (value &gt; node.value) node.right = avlInsert(node.right, value);
+              else return node;
+            
+              update(node);
+              const bf = balanceFactor(node);
+            
+              if (bf &gt; 1 &amp;&amp; value &lt; node.left.value) return rotateRight(node);   // LL
+              if (bf &lt; -1 &amp;&amp; value &gt; node.right.value) return rotateLeft(node);  // RR
+              if (bf &gt; 1) {                                                      // LR
+                node.left = rotateLeft(node.left);
+                return rotateRight(node);
+              }
+              if (bf &lt; -1) {                                                     // RL
+                node.right = rotateRight(node.right);
+                return rotateLeft(node);
+              }
+              return node;
+            }
+            
+            let root = null;
+            for (const v of [10, 20, 30, 40, 50]) root = avlInsert(root, v);
+            console.log(root.value, root.height);   // 20 3
+            </code></pre>
+                                </div>
+                            </div>
+
             <h4 id="tries">Tries — the autocomplete tree<a class="headerlink" href="#tries" title="Permanent link">#</a>
             </h4>
             <p>A <strong>trie</strong> (prefix tree) stores words along the <em>edges</em> rather than in the nodes.
@@ -927,6 +1334,143 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
             </p>
 
             <div class="viz" data-viz="trie"></div>
+
+            <div class="code-tabs" data-label="A trie with autocomplete">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            class Trie:
+                def __init__(self):
+                    self.children = {}      # character -&gt; Trie
+                    self.is_word = False
+                    self.count = 0          # how many words pass through this node
+            
+                def insert(self, word):
+                    """O(len(word))."""
+                    node = self
+                    for ch in word:
+                        node = node.children.setdefault(ch, Trie())
+                        node.count += 1
+                    node.is_word = True
+            
+                def _walk(self, prefix):
+                    """Follow a prefix; return the node it ends at, or None."""
+                    node = self
+                    for ch in prefix:
+                        node = node.children.get(ch)
+                        if node is None:
+                            return None
+                    return node
+            
+                def search(self, word):
+                    node = self._walk(word)
+                    return node is not None and node.is_word
+            
+                def starts_with(self, prefix):
+                    return self._walk(prefix) is not None
+            
+                def count_prefix(self, prefix):
+                    """How many stored words begin with this prefix. O(len(prefix))."""
+                    node = self._walk(prefix)
+                    return node.count if node else 0
+            
+                def autocomplete(self, prefix, limit=10):
+                    """Every word under the prefix, via DFS from that node."""
+                    node = self._walk(prefix)
+                    if node is None:
+                        return []
+                    out = []
+            
+                    def dfs(node, path):
+                        if len(out) &gt;= limit:
+                            return
+                        if node.is_word:
+                            out.append(prefix + path)
+                        for ch, child in sorted(node.children.items()):
+                            dfs(child, path + ch)
+            
+                    dfs(node, "")
+                    return out
+            
+            
+            trie = Trie()
+            for w in ["car", "card", "care", "cat", "dog"]:
+                trie.insert(w)
+            
+            print(trie.search("car"))            # True
+            print(trie.search("ca"))             # False - a prefix is not a word
+            print(trie.starts_with("ca"))        # True
+            print(trie.count_prefix("car"))      # 3
+            print(trie.autocomplete("car"))      # ['car', 'card', 'care']
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            class Trie {
+              constructor() {
+                this.children = new Map();        // character -&gt; Trie
+                this.isWord = false;
+                this.count = 0;                   // words passing through this node
+              }
+            
+              insert(word) {                      // O(word.length)
+                let node = this;
+                for (const ch of word) {
+                  if (!node.children.has(ch)) node.children.set(ch, new Trie());
+                  node = node.children.get(ch);
+                  node.count++;
+                }
+                node.isWord = true;
+              }
+            
+              #walk(prefix) {
+                let node = this;
+                for (const ch of prefix) {
+                  node = node.children.get(ch);
+                  if (!node) return null;
+                }
+                return node;
+              }
+            
+              search(word) {
+                const node = this.#walk(word);
+                return Boolean(node?.isWord);
+              }
+            
+              startsWith(prefix) {
+                return this.#walk(prefix) !== null;
+              }
+            
+              countPrefix(prefix) {               // O(prefix.length)
+                return this.#walk(prefix)?.count ?? 0;
+              }
+            
+              autocomplete(prefix, limit = 10) {
+                const start = this.#walk(prefix);
+                if (!start) return [];
+                const out = [];
+                const dfs = (node, path) =&gt; {
+                  if (out.length &gt;= limit) return;
+                  if (node.isWord) out.push(prefix + path);
+                  for (const ch of [...node.children.keys()].sort()) {
+                    dfs(node.children.get(ch), path + ch);
+                  }
+                };
+                dfs(start, "");
+                return out;
+              }
+            }
+            
+            const trie = new Trie();
+            for (const w of ["car", "card", "care", "cat", "dog"]) trie.insert(w);
+            
+            console.log(trie.search("car"));        // true
+            console.log(trie.search("ca"));         // false
+            console.log(trie.startsWith("ca"));     // true
+            console.log(trie.countPrefix("car"));   // 3
+            console.log(trie.autocomplete("car"));  // ['car','card','care']
+            </code></pre>
+                                </div>
+                            </div>
 
             <div class="worked">
                 <b>Top Interview Question</b>
@@ -1009,9 +1553,128 @@ console.log(maxDepth(tree));        // 3
                 accumulation, and deletions.</p>
             <div class="viz" data-viz="traversal" data-option="postorder"></div>
 
+            <div class="code-tabs" data-label="The node, and the three depth-first orders">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            class TreeNode:
+                def __init__(self, value, left=None, right=None):
+                    self.value, self.left, self.right = value, left, right
+            
+            
+            def preorder(node, out=None):
+                """Node, left, right. Use to serialise or copy a tree."""
+                out = [] if out is None else out
+                if node:
+                    out.append(node.value)
+                    preorder(node.left, out)
+                    preorder(node.right, out)
+                return out
+            
+            
+            def inorder(node, out=None):
+                """Left, node, right. On a BST this yields sorted order."""
+                out = [] if out is None else out
+                if node:
+                    inorder(node.left, out)
+                    out.append(node.value)
+                    inorder(node.right, out)
+                return out
+            
+            
+            def postorder(node, out=None):
+                """Left, right, node. Children finish first - use to free or evaluate."""
+                out = [] if out is None else out
+                if node:
+                    postorder(node.left, out)
+                    postorder(node.right, out)
+                    out.append(node.value)
+                return out
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            class TreeNode {
+              constructor(value, left = null, right = null) {
+                this.value = value;
+                this.left = left;
+                this.right = right;
+              }
+            }
+            
+            function preorder(node, out = []) {     // node, left, right
+              if (!node) return out;
+              out.push(node.value);
+              preorder(node.left, out);
+              preorder(node.right, out);
+              return out;
+            }
+            
+            function inorder(node, out = []) {      // left, node, right -&gt; sorted on a BST
+              if (!node) return out;
+              inorder(node.left, out);
+              out.push(node.value);
+              inorder(node.right, out);
+              return out;
+            }
+            
+            function postorder(node, out = []) {    // left, right, node
+              if (!node) return out;
+              postorder(node.left, out);
+              postorder(node.right, out);
+              out.push(node.value);
+              return out;
+            }
+            </code></pre>
+                                </div>
+                            </div>
+
             <h4>Level-order traversal (BFS)</h4>
             <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
             <div class="viz" data-viz="traversal" data-option="level"></div>
+
+            <div class="code-tabs" data-label="Level-order (BFS)">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            from collections import deque
+            
+            def level_order(root):
+                """BFS with a queue. Returns one list per level."""
+                if not root:
+                    return []
+                levels, q = [], deque([root])
+                while q:
+                    level = []
+                    for _ in range(len(q)):         # snapshot the size = this level
+                        node = q.popleft()
+                        level.append(node.value)
+                        if node.left:
+                            q.append(node.left)
+                        if node.right:
+                            q.append(node.right)
+                    levels.append(level)
+                return levels
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            function levelOrder(root) {             // BFS, one array per level
+              if (!root) return [];
+              const levels = [];
+              let frontier = [root];
+              while (frontier.length) {
+                levels.push(frontier.map((n) =&gt; n.value));
+                const next = [];
+                for (const node of frontier) {
+                  if (node.left) next.push(node.left);
+                  if (node.right) next.push(node.right);
+                }
+                frontier = next;
+              }
+              return levels;
+            }
+            </code></pre>
+                                </div>
+                            </div>
 
             <!-- ============================================================ 7 -->
             <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
@@ -1335,6 +1998,116 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
                     node can never be improved later, since a detour only ever adds cost. With negative edges the logic
                     collapses and you need Bellman-Ford instead.</p>
             </div>
+
+            <div class="code-tabs" data-label="Dijkstra with a priority queue">
+                                <div class="tab-pane" data-lang="python">
+                                    <pre><code data-lang="python">
+            import heapq
+            from collections import defaultdict
+            
+            def dijkstra(graph, start):
+                """graph: {node: [(neighbour, weight)]}. O((V + E) log V)."""
+                dist = defaultdict(lambda: float("inf"))
+                dist[start] = 0
+                prev = {}
+                visited = set()
+                pq = [(0, start)]           # (distance, node) - the heap orders by distance
+            
+                while pq:
+                    d, node = heapq.heappop(pq)
+                    if node in visited:
+                        continue            # a stale entry from an earlier, worse path
+                    visited.add(node)       # this distance is now final
+            
+                    for neighbour, weight in graph[node]:
+                        candidate = d + weight
+                        if candidate &lt; dist[neighbour]:     # relax
+                            dist[neighbour] = candidate
+                            prev[neighbour] = node
+                            heapq.heappush(pq, (candidate, neighbour))
+                            # We do not remove the old entry; we just skip it above.
+                            # This "lazy deletion" is simpler and still O(E log V).
+            
+                return dict(dist), prev
+            
+            
+            def rebuild_path(prev, start, goal):
+                path, node = [], goal
+                while node != start:
+                    path.append(node)
+                    node = prev.get(node)
+                    if node is None:
+                        return None         # unreachable
+                path.append(start)
+                return path[::-1]
+            
+            
+            graph = {
+                "A": [("B", 4), ("C", 2)],
+                "B": [("A", 4), ("C", 1), ("D", 5)],
+                "C": [("A", 2), ("B", 1), ("D", 8), ("F", 10)],
+                "D": [("B", 5), ("C", 8), ("E", 2), ("F", 6)],
+                "E": [("D", 2), ("F", 3)],
+                "F": [("C", 10), ("D", 6), ("E", 3)],
+            }
+            dist, prev = dijkstra(graph, "A")
+            print(dist["F"])                            # 12
+            print(rebuild_path(prev, "A", "F"))         # ['A', 'C', 'B', 'D', 'F']
+            </code></pre>
+                                </div>
+                                <div class="tab-pane" data-lang="javascript">
+                                    <pre><code data-lang="javascript">
+            // Uses the Heap class from section 19.
+            function dijkstra(graph, start) {       // O((V + E) log V)
+              const dist = new Map([[start, 0]]);
+              const prev = new Map();
+              const visited = new Set();
+              const pq = new Heap((a, b) =&gt; a[0] - b[0]);   // [distance, node]
+              pq.push([0, start]);
+            
+              while (pq.size) {
+                const [d, node] = pq.pop();
+                if (visited.has(node)) continue;    // stale entry - lazy deletion
+                visited.add(node);                  // distance is now final
+            
+                for (const [neighbour, weight] of graph.get(node) ?? []) {
+                  const candidate = d + weight;
+                  if (candidate &lt; (dist.get(neighbour) ?? Infinity)) {   // relax
+                    dist.set(neighbour, candidate);
+                    prev.set(neighbour, node);
+                    pq.push([candidate, neighbour]);
+                  }
+                }
+              }
+              return { dist, prev };
+            }
+            
+            function rebuildPath(prev, start, goal) {
+              const path = [];
+              let node = goal;
+              while (node !== start) {
+                path.push(node);
+                node = prev.get(node);
+                if (node === undefined) return null;    // unreachable
+              }
+              path.push(start);
+              return path.reverse();
+            }
+            
+            const graph = new Map([
+              ["A", [["B", 4], ["C", 2]]],
+              ["B", [["A", 4], ["C", 1], ["D", 5]]],
+              ["C", [["A", 2], ["B", 1], ["D", 8], ["F", 10]]],
+              ["D", [["B", 5], ["C", 8], ["E", 2], ["F", 6]]],
+              ["E", [["D", 2], ["F", 3]]],
+              ["F", [["C", 10], ["D", 6], ["E", 3]]],
+            ]);
+            const { dist, prev } = dijkstra(graph, "A");
+            console.log(dist.get("F"));                     // 12
+            console.log(rebuildPath(prev, "A", "F"));       // ['A','C','B','D','F']
+            </code></pre>
+                                </div>
+                            </div>
 
             <hr />
 
