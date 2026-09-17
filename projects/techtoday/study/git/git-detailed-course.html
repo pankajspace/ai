@@ -2,14 +2,7 @@
 <html lang="en">
 
 <head>
-    <script>
-        if (window.location.pathname.endsWith('/ai')) {
-            const base = document.createElement('base');
-            let path = window.location.pathname.replace(/\/ai\/?$/, '');
-            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
-            document.head.appendChild(base);
-        }
-    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />
@@ -43,7 +36,8 @@
                 here depends on anything later. Processes are shown as <strong>animations</strong> &mdash; press
                 <strong>Play</strong> and step through with the arrows &mdash; and code blocks default to the
                 <strong>Shell</strong> tab, with <strong>git config</strong>, <strong>YAML</strong> and script tabs
-                where those are the better answer.</p>
+                where those are the better answer.
+            </p>
 
             <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
                     title="Permanent link">#</a></h2>
@@ -100,7 +94,8 @@
                 <p>New to Git, or here to fix a specific problem? Start with the
                     <a href="git-crash-course.html">Git Crash Course</a> &mdash; it covers the three trees, branches,
                     merging, rebasing and recovery in fourteen animated sections. This page is the long form: same
-                    material, derived from the storage layer, with the edge cases left in.</p>
+                    material, derived from the storage layer, with the edge cases left in.
+                </p>
             </div>
 
             <p>Git is a <strong>content-addressable filesystem with a version control interface written on top of
@@ -118,7 +113,8 @@
                 <em>branching and merging cheap</em>, because the kernel's development model is thousands of
                 concurrent topic branches. And it had to provide <em>strong integrity guarantees</em>, because
                 patches arrive from strangers and the project needed to be able to prove that history had not been
-                altered.</p>
+                altered.
+            </p>
 
             <table>
                 <thead>
@@ -170,7 +166,8 @@
                     is designed for humans and may change between versions. <b>Plumbing</b> commands
                     (<code>hash-object</code>, <code>cat-file</code>, <code>ls-tree</code>, <code>update-ref</code>,
                     <code>rev-parse</code>) are the stable, scriptable primitives. Plumbing is also the best teaching
-                    tool, because it shows the data structure with no interpretation layered on top.</p>
+                    tool, because it shows the data structure with no interpretation layered on top.
+                </p>
             </div>
 
             <!-- ====== 2 ====== -->
@@ -183,7 +180,8 @@
                 <strong>local</strong> (<code>.git/config</code>, the default), and <strong>worktree</strong> for
                 per-worktree overrides. When a setting behaves unexpectedly, <code>git config --show-origin
                     --get &lt;key&gt;</code> tells you which file set it &mdash; that one command resolves most
-                configuration mysteries.</p>
+                configuration mysteries.
+            </p>
 
             <div class="code-tabs" data-label="A working baseline configuration">
                 <div class="tab-pane" data-lang="ini">
@@ -235,7 +233,8 @@ git config user.email me@work-example.com
 
             <p><strong>Conditional includes</strong> solve the problem everyone eventually has: a personal identity
                 and a work identity, and commits authored under the wrong one. Rather than remembering to set
-                <code>user.email</code> per repository, key it off the directory.</p>
+                <code>user.email</code> per repository, key it off the directory.
+            </p>
 
             <div class="code-tabs" data-label="One identity per directory tree">
                 <div class="tab-pane" data-lang="ini">
@@ -312,13 +311,15 @@ git config user.email me@work-example.com
                 tracked path &mdash; path, mode, blob id, stage number, and cached <code>stat</code> data so
                 <code>git status</code> can skip files whose size and mtime have not changed. That caching is why
                 <code>status</code> is fast and also why <code>touch</code>-ing every file makes it slow for one run.
-                The packfiles are the other binary format, covered in section 36.</p>
+                The packfiles are the other binary format, covered in section 36.
+            </p>
 
             <p>Refs have one more wrinkle: they may not exist as files at all. Git periodically <em>packs</em> refs
                 into a single <code>.git/packed-refs</code> file, so <code>cat .git/refs/heads/main</code> can fail on
                 a branch that definitely exists. Always read refs through plumbing &mdash;
                 <code>git rev-parse</code> or <code>git for-each-ref</code> &mdash; rather than by reading files, and
-                newer Git versions may use the <code>reftable</code> backend where no per-ref files exist at all.</p>
+                newer Git versions may use the <code>reftable</code> backend where no per-ref files exist at all.
+            </p>
 
             <div class="code-tabs" data-label="Read the repository the supported way">
                 <div class="tab-pane" data-lang="bash">
@@ -351,7 +352,8 @@ v2.4.0 4a7b8c9
                 <p>A <b>bare</b> repository (<code>git init --bare</code>) is exactly the contents of
                     <code>.git</code> with no working tree, which is what a server hosts. This is why cloning a bare
                     repo and cloning a normal one give identical history: there was never anything in the working tree
-                    that Git needed.</p>
+                    that Git needed.
+                </p>
             </div>
 
             <!-- ====== 4 ====== -->
@@ -364,13 +366,15 @@ v2.4.0 4a7b8c9
                 <code>.git/objects/&lt;first two hex chars&gt;/&lt;remaining 38&gt;</code>. The key is therefore a
                 deterministic function of the value, which produces three properties simultaneously: identical
                 content is stored once, nothing can be modified in place, and any object can be verified by
-                recomputing its id.</p>
+                recomputing its id.
+            </p>
 
             <div class="viz" data-viz="content-addressing"></div>
 
             <p>You can compute a Git object id without Git, which is the clearest way to see there is no magic in it.
                 The header is part of the hashed input, which is why a Git blob id differs from a plain
-                <code>sha1sum</code> of the same file.</p>
+                <code>sha1sum</code> of the same file.
+            </p>
 
             <div class="code-tabs" data-label="Compute a blob id from first principles">
                 <div class="tab-pane" data-lang="bash">
@@ -426,7 +430,8 @@ print(git_blob_id(b"hello world\n"))
                     supported (<code>git init --object-format=sha256</code>) but interoperate poorly with existing
                     tooling, so most repositories remain SHA-1. In practice Git's integrity story leans on signed
                     commits and tags for authenticity, and on hashing for accidental corruption &mdash; and
-                    <code>git fsck</code> is the command that checks the latter.</p>
+                    <code>git fsck</code> is the command that checks the latter.
+                </p>
             </div>
 
             <!-- ====== 5 ====== -->
@@ -437,7 +442,8 @@ print(git_blob_id(b"hello world\n"))
                 <code>&lt;mode&gt; &lt;type&gt; &lt;object id&gt;\t&lt;name&gt;</code>. Entries pointing at blobs are
                 files; entries pointing at other trees are subdirectories. A tree is therefore a complete, immutable
                 description of one directory, and because subdirectory entries are themselves content-addressed, the
-                root tree's id summarises the entire project.</p>
+                root tree's id summarises the entire project.
+            </p>
 
             <div class="viz" data-viz="object-graph"></div>
 
@@ -516,7 +522,8 @@ $ git ls-tree -r HEAD            # recurse into subtrees
                 entries has nothing to reference it &mdash; hence the <code>.gitkeep</code> convention. And
                 <strong>changing a deeply nested file rewrites every tree above it</strong>: a new blob means a new
                 leaf tree, which means a new parent tree, all the way to the root. Those trees are tiny, so the cost
-                is negligible, but it is why every commit has a distinct root tree id.</p>
+                is negligible, but it is why every commit has a distinct root tree id.
+            </p>
 
             <!-- ====== 6 ====== -->
             <h2 id="6-commits">6. Commits, Parents, and the DAG<a class="headerlink" href="#6-commits"
@@ -563,7 +570,8 @@ git log --merges --oneline    # commits with more than one parent
                 <strong>One parent</strong> is an ordinary commit. <strong>Two or more</strong> is a merge, and the
                 order matters enormously: the <em>first parent</em> is the branch you were on when you merged, which
                 is why <code>git log --first-parent main</code> reads as one entry per feature landed and why
-                <code>git revert -m 1</code> means &ldquo;keep the mainline&rdquo;.</p>
+                <code>git revert -m 1</code> means &ldquo;keep the mainline&rdquo;.
+            </p>
 
             <p>Because every commit names its parents and nothing names its children, history is a <strong>directed
                     acyclic graph</strong> that can only be traversed backwards. Every Git command that shows you
@@ -721,7 +729,8 @@ rm .git/index &amp;&amp; git reset
                     to ignore a tracked config file, and they are a trap. Both are local-only promises to Git, both
                     are invisible in <code>git status</code>, and both cause merges and checkouts to behave in ways
                     that look like Git bugs. If a file must differ per developer, do not track it: commit a
-                    <code>.example</code> template, add the real path to <code>.gitignore</code>, and generate it.</p>
+                    <code>.example</code> template, add the real path to <code>.gitignore</code>, and generate it.
+                </p>
             </div>
 
             <!-- ====== 8 ====== -->
@@ -731,7 +740,8 @@ rm .git/index &amp;&amp; git reset
             <p><code>git add</code> does three things per path: read the file, write a blob if that content is not
                 already stored, and update the index entry. It is not a queue of filenames &mdash; it captures
                 <em>contents at the moment you run it</em>, which is the whole explanation for the classic
-                &ldquo;I staged it, then edited it, and the commit is wrong&rdquo; surprise.</p>
+                &ldquo;I staged it, then edited it, and the commit is wrong&rdquo; surprise.
+            </p>
 
             <p>The <code>-p</code> / <code>--patch</code> mode is where the index earns its existence. Git splits the
                 diff into hunks and asks about each one; <code>y</code> and <code>n</code> stage or skip,
@@ -739,7 +749,8 @@ rm .git/index &amp;&amp; git reset
                 you can stage individual lines by deleting the ones you do not want (changing a
                 <code>-</code> to a space keeps the original line). The same interface is available on
                 <code>git restore -p</code>, <code>git stash -p</code>, <code>git reset -p</code> and
-                <code>git checkout -p</code>.</p>
+                <code>git checkout -p</code>.
+            </p>
 
             <div class="code-tabs" data-label="Staging, and the pathspec magic words">
                 <div class="tab-pane" data-lang="bash">
@@ -764,7 +775,8 @@ git add ':(attr:text)'                # every path with the 'text' attribute
                 uncommitted), <code>core.excludesFile</code> (usually
                 <code>~/.config/git/ignore</code>, global for you), and then every <code>.gitignore</code> from the
                 repository root down to the file's own directory, with deeper files winning. Within one file, the
-                <em>last</em> matching pattern wins, which is how negation works.</p>
+                <em>last</em> matching pattern wins, which is how negation works.
+            </p>
 
             <div class="code-tabs" data-label="A .gitignore that behaves">
                 <div class="tab-pane" data-lang="text">
@@ -857,7 +869,8 @@ tests/fixtures/ export-ignore
                 <code>bisect</code> tests one, <code>blame</code> attributes a line to one, <code>log -S</code> finds
                 one. A commit that mixes a bug fix with a rename and a dependency bump degrades all four of those
                 tools simultaneously. The discipline is not &ldquo;commit often&rdquo; but &ldquo;each commit is one
-                complete idea that leaves the tree working&rdquo;.</p>
+                complete idea that leaves the tree working&rdquo;.
+            </p>
 
             <p>Messages have a strong convention that is worth following even if nothing enforces it: a subject line
                 under about 50 characters in the imperative mood, a blank line, then a body wrapped near 72 columns
@@ -904,7 +917,8 @@ git log --format='%(trailers:key=Fixes,valueonly)' -5
                 like <code>feat</code>, <code>fix</code>, <code>docs</code>, <code>refactor</code>,
                 <code>test</code>, <code>chore</code> and a <code>BREAKING CHANGE:</code> trailer &mdash; is worth
                 adopting when you want automated changelogs and semantic version bumps, and worth skipping when you
-                do not, because it is machine-readable structure and its only real benefit is machines reading it.</p>
+                do not, because it is machine-readable structure and its only real benefit is machines reading it.
+            </p>
 
             <div class="callout callout-key">
                 <p><code>--amend</code> does not edit a commit; it creates a replacement with a new id and moves the
@@ -924,7 +938,8 @@ git log --format='%(trailers:key=Fixes,valueonly)' -5
                 it through a fixed search order &mdash; <code>refs/&lt;name&gt;</code>,
                 <code>refs/tags/&lt;name&gt;</code>, <code>refs/heads/&lt;name&gt;</code>,
                 <code>refs/remotes/&lt;name&gt;</code>, <code>refs/remotes/&lt;name&gt;/HEAD</code> &mdash; which is
-                why a tag and a branch with the same name is a bad idea.</p>
+                why a tag and a branch with the same name is a bad idea.
+            </p>
 
             <p><code>HEAD</code> is a <em>symbolic ref</em>: a ref whose contents are the name of another ref. Its
                 normal value is the literal text <code>ref: refs/heads/main</code>. That indirection is what makes
@@ -937,7 +952,8 @@ git log --format='%(trailers:key=Fixes,valueonly)' -5
                 You reach it by checking out a commit, a tag, or a remote-tracking ref. Everything still works, but
                 there is no branch beneath HEAD to advance, so commits made there are referenced only by HEAD itself
                 and become unreachable the moment you switch away. It is not a broken state &mdash; CI systems and
-                <code>git bisect</code> use it deliberately &mdash; but it needs a branch before you walk away.</p>
+                <code>git bisect</code> use it deliberately &mdash; but it needs a branch before you walk away.
+            </p>
 
             <div class="code-tabs" data-label="Working with refs as data">
                 <div class="tab-pane" data-lang="bash">
@@ -976,7 +992,8 @@ do so (now or later) by using -c with the switch command. Example:
                     <code>@{upstream}</code> for the tracking branch, so <code>git log @{u}..@</code> reads
                     &ldquo;what do I have that upstream does not&rdquo;. <code>@{push}</code> is the ref you would push
                     to, which differs from <code>@{upstream}</code> in triangular workflows where you pull from
-                    upstream and push to your own fork.</p>
+                    upstream and push to your own fork.
+                </p>
             </div>
 
             <!-- ====== 11 ====== -->
@@ -993,7 +1010,8 @@ do so (now or later) by using -c with the switch command. Example:
                 unrelated jobs that <code>git checkout</code> had been doing: moving HEAD, and overwriting files.
                 <code>checkout</code> still works and always will, but <code>git checkout &lt;file&gt;</code> silently
                 destroying uncommitted work while <code>git checkout &lt;branch&gt;</code> refuses to is exactly the
-                kind of inconsistency the split removed. Prefer the new commands.</p>
+                kind of inconsistency the split removed. Prefer the new commands.
+            </p>
 
             <div class="code-tabs" data-label="Branch operations worth knowing">
                 <div class="tab-pane" data-lang="bash">
@@ -1023,7 +1041,8 @@ git branch --merged main | grep -vE '^\*|main' | xargs -r git branch -d
                     ancestors of <code>main</code>, so the branch is reported as unmerged and <code>-d</code> refuses
                     to delete it. That is correct and it is also why teams using squash-merge end up typing
                     <code>-D</code> routinely. <code>git cherry -v main feature</code> answers the content question
-                    instead: it lists commits whose changes are not already upstream.</p>
+                    instead: it lists commits whose changes are not already upstream.
+                </p>
             </div>
 
             <!-- ====== 12 ====== -->
@@ -1076,7 +1095,8 @@ git shortlog -sne                     # contributors by commit count
                 changed &mdash; so it finds where a symbol was introduced or removed, and ignores commits that merely
                 moved it. <code>-G</code> finds commits whose diff text matches a regex at all, so it also catches
                 lines that were moved or reformatted. When hunting for the origin of a value, start with
-                <code>-S</code>.</p>
+                <code>-S</code>.
+            </p>
 
             <div class="callout callout-tip">
                 <p>Aliases turn these into muscle memory. <code>lg = log --oneline --graph --decorate --all</code>
@@ -1091,7 +1111,8 @@ git shortlog -sne                     # contributors by commit count
 
             <p>There are three trees, so there are three adjacent gaps, and <code>git diff</code> has a form for each.
                 The fourth form takes no working tree at all and compares two commits. Most confusion about
-                <code>git diff</code> is confusion about which two things it chose.</p>
+                <code>git diff</code> is confusion about which two things it chose.
+            </p>
 
             <div class="viz" data-viz="four-diffs"></div>
 
@@ -1228,7 +1249,8 @@ git name-rev --name-only &lt;sha&gt;
                 parents, so the default combined diff shows only the parts Git had to resolve by hand. Use
                 <code>-m</code> to see the merge against each parent separately, or
                 <code>--diff-merges=first-parent</code> to see what the merge brought into the mainline &mdash; the
-                latter is usually the question you meant to ask.</p>
+                latter is usually the question you meant to ask.
+            </p>
 
             <div class="callout callout-interview">
                 <p><b>The archaeology sequence, in order.</b> <code>git log -S &lt;value&gt;</code> to find where a
@@ -1236,12 +1258,14 @@ git name-rev --name-only &lt;sha&gt;
                     <code>git blame -w -M -C</code> if you need line-level attribution;
                     <code>git log -L</code> if you want a function's whole life; and <code>git tag --contains</code> to
                     learn which release shipped it. Every one of these works offline, instantly, on a ten-year
-                    repository.</p>
+                    repository.
+                </p>
             </div>
 
             <!-- ====== 15 ====== -->
             <h2 id="15-restore">15. Undoing Work &mdash; <code>restore</code>, <code>checkout</code>,
-                <code>clean</code><a class="headerlink" href="#15-restore" title="Permanent link">#</a></h2>
+                <code>clean</code><a class="headerlink" href="#15-restore" title="Permanent link">#</a>
+            </h2>
 
             <p>These are the commands that operate below the commit level, and they are the only ones in Git that can
                 destroy work irrecoverably. Everything else moves pointers around objects that still exist; these
@@ -1315,7 +1339,8 @@ git stash push -u -m "before I do something rash"
                     <code>node_modules</code>, virtualenvs, build output <em>and</em> any local
                     <code>.env</code> that was deliberately ignored. It is the correct command for &ldquo;give me a
                     pristine tree&rdquo; and a very effective way to lose an afternoon of local configuration. Run
-                    <code>git clean -ndx</code> first, every time, without exception.</p>
+                    <code>git clean -ndx</code> first, every time, without exception.
+                </p>
             </div>
 
             <!-- ====== 16 ====== -->
@@ -1326,7 +1351,8 @@ git stash push -u -m "before I do something rash"
                 <b>Step one:</b> move the branch that HEAD points at to the target commit. <b>Step two
                     (<code>--mixed</code>, the default):</b> make the index match that commit. <b>Step three
                     (<code>--hard</code>):</b> make the working tree match too. <code>--soft</code> stops after step
-                one. Seen this way there are no flags to memorise, only a question of how far the copying goes.</p>
+                one. Seen this way there are no flags to memorise, only a question of how far the copying goes.
+            </p>
 
             <div class="viz" data-viz="reset-modes"></div>
 
@@ -1367,13 +1393,15 @@ git reset --keep &lt;sha&gt;
                 any file with local modifications differs between the two commits &mdash; a safer <code>--hard</code>
                 for &ldquo;move me back but do not eat my work&rdquo;. <code>--merge</code> is similar and is what
                 <code>git merge --abort</code> uses internally. Neither is a substitute for stashing first, but both
-                fail loudly rather than silently.</p>
+                fail loudly rather than silently.
+            </p>
 
             <div class="callout callout-key">
                 <p>Three commands are constantly confused. <code>reset</code> moves a <b>branch pointer</b>.
                     <code>restore</code> copies <b>file contents</b> between trees. <code>revert</code> creates a
                     <b>new commit</b> that undoes an old one. Pick by asking what you want to move: a pointer, a file,
-                    or history-that-other-people-have.</p>
+                    or history-that-other-people-have.
+                </p>
             </div>
 
             <!-- ====== 17 ====== -->
@@ -1415,7 +1443,8 @@ git revert &lt;revert-sha&gt;
                 <p>A revert removes a change from the current <em>state</em>; it does not remove it from
                     <em>history</em>. For a leaked credential this is not enough &mdash; the value is still in the
                     object database and in every existing clone. Rotate the credential first (section 37), then decide
-                    separately whether a history rewrite is worth its cost.</p>
+                    separately whether a history rewrite is worth its cost.
+                </p>
             </div>
 
             <!-- ====== 18 ====== -->
@@ -1474,7 +1503,8 @@ git diff main...feature                  # what the branch adds (PR view)
                 link to the branch, <code>git branch --merged</code> will not list it, and re-merging the branch later
                 will try to apply everything again. Squash-merge is a legitimate policy &mdash; it keeps
                 <code>main</code> at one commit per change &mdash; but it obliges you to delete the branch
-                immediately.</p>
+                immediately.
+            </p>
 
             <!-- ====== 19 ====== -->
             <h2 id="19-conflicts">19. Merge Conflicts<a class="headerlink" href="#19-conflicts"
@@ -1485,7 +1515,8 @@ git diff main...feature                  # what the branch adds (PR view)
                 three entries &mdash; stage 1 (base), stage 2 (ours), stage 3 (theirs). A path with stages 1&ndash;3
                 and no stage 0 <em>is</em> the definition of &ldquo;unmerged&rdquo;, and
                 <code>git add</code> during a merge means nothing more than &ldquo;collapse these three stages back to
-                one&rdquo;.</p>
+                one&rdquo;.
+            </p>
 
             <div class="viz" data-viz="merge-conflict"></div>
 
@@ -1493,7 +1524,8 @@ git diff main...feature                  # what the branch adds (PR view)
                 <code>merge</code> style shows only the two sides, which forces you to guess what each one changed
                 <em>from</em>. <code>zdiff3</code> includes the merge base between them, so you can see that (say)
                 one side changed 30 to 60 while the other changed 30 to 10 &mdash; information that frequently makes
-                the correct resolution obvious.</p>
+                the correct resolution obvious.
+            </p>
 
             <div class="code-tabs" data-label="Resolving, and the escape hatches">
                 <div class="tab-pane" data-lang="bash">
@@ -1546,7 +1578,8 @@ git merge --abort                 # restore the exact pre-merge state
                     merge. A rebase checks out the upstream branch and replays your commits onto it, so
                     &ldquo;ours&rdquo; is upstream and &ldquo;theirs&rdquo; is your own work. Reaching for
                     <code>--theirs</code> from muscle memory mid-rebase is a reliable way to discard exactly the code
-                    you were trying to preserve.</p>
+                    you were trying to preserve.
+                </p>
             </div>
 
             <!-- ====== 20 ====== -->
@@ -1611,11 +1644,13 @@ git merge --abort                 # restore the exact pre-merge state
                 <code>-s ours</code> is a different animal &mdash; it produces a merge commit whose tree is
                 <em>identical to yours</em>, discarding the other branch's content entirely while recording it as
                 merged. That is occasionally exactly what you want (retiring an abandoned branch so it stops showing
-                up as unmerged) and is otherwise a way to silently lose an entire feature.</p>
+                up as unmerged) and is otherwise a way to silently lose an entire feature.
+            </p>
 
             <p>Custom <strong>merge drivers</strong> handle files where the generic algorithm is always wrong. A
                 <code>union</code> driver keeps both sides of an append-only file. A driver that runs a generator can
-                resolve a lockfile properly instead of producing a conflict nobody can read.</p>
+                resolve a lockfile properly instead of producing a conflict nobody can read.
+            </p>
 
             <div class="code-tabs" data-label="A merge driver for a generated lockfile">
                 <div class="tab-pane" data-lang="ini">
@@ -1654,7 +1689,8 @@ docs/api.json     -diff linguist-generated=true
             <p><code>git rebase &lt;upstream&gt;</code> finds the commits reachable from HEAD but not from
                 <code>&lt;upstream&gt;</code>, saves each as a patch, checks out <code>&lt;upstream&gt;</code>, and
                 replays the patches one at a time. Each replayed commit gets a new parent, therefore a new id. The
-                content may be identical; the objects are not, and the originals become unreachable.</p>
+                content may be identical; the objects are not, and the originals become unreachable.
+            </p>
 
             <div class="viz" data-viz="rebase-vs-merge"></div>
 
@@ -1708,7 +1744,8 @@ git range-diff origin/main @{1} HEAD   # prove the rebase changed nothing else
                     first verifies the remote ref is still where your last fetch saw it, converting &ldquo;I deleted a
                     colleague's commits&rdquo; into &ldquo;the push was rejected&rdquo;. Add
                     <code>--force-if-includes</code> (Git 2.30+) to also require that your local branch has
-                    incorporated everything you have fetched.</p>
+                    incorporated everything you have fetched.
+                </p>
             </div>
 
             <!-- ====== 22 ====== -->
@@ -1818,7 +1855,8 @@ exec   pytest -q
                     <code>feature-b</code> sits on top of <code>feature-a</code> which sits on <code>main</code>,
                     rebasing the bottom of the stack normally strands everything above it; with this setting Git moves
                     every branch pointer that falls inside the rebased range. Combined with
-                    <code>--autosquash</code> it removes most of the reason people reach for stacked-PR tooling.</p>
+                    <code>--autosquash</code> it removes most of the reason people reach for stacked-PR tooling.
+                </p>
             </div>
 
             <!-- ====== 23 ====== -->
@@ -1829,7 +1867,8 @@ exec   pytest -q
                 where to put them. <code>git rebase --onto &lt;newbase&gt; &lt;upstream&gt; &lt;branch&gt;</code>
                 separates them, and once you read the three arguments as three answers &mdash;
                 <em>onto</em> where, <em>after</em> what, <em>which</em> branch &mdash; a whole class of surgery
-                becomes routine.</p>
+                becomes routine.
+            </p>
 
             <div class="viz" data-viz="rebase-onto"></div>
 
@@ -1898,7 +1937,8 @@ Grace Hopper &lt;grace@example.com&gt; &lt;ghopper@example.com&gt;
                     pull request, every CI cache, every commit id quoted in an issue and every deployment pinned to a
                     SHA becomes invalid. Treat it as a migration with an announcement and a cut-over, not as a
                     command. If the goal is merely to make a <code>.mailmap</code>-style correction, use
-                    <code>.mailmap</code> &mdash; it changes output without touching a single object.</p>
+                    <code>.mailmap</code> &mdash; it changes output without touching a single object.
+                </p>
             </div>
 
             <!-- ====== 24 ====== -->
@@ -1934,10 +1974,12 @@ git log --cherry-pick --left-right --oneline main...release/2.4
                 commit on <code>main</code>. Git also compares commits by <em>patch id</em> &mdash; a hash of the diff
                 itself, ignoring context and ids &mdash; which is how <code>git cherry</code> and
                 <code>--cherry-pick</code> can tell that two different commits are the same change, and why a
-                cherry-picked fix usually does not conflict when the branch is finally merged.</p>
+                cherry-picked fix usually does not conflict when the branch is finally merged.
+            </p>
 
             <p>Below cherry-pick sits the <strong>email patch workflow</strong> that Git was originally built for and
-                that the Linux kernel still uses. <code>format-patch</code> turns commits into mbox files; <code>am</code>
+                that the Linux kernel still uses. <code>format-patch</code> turns commits into mbox files;
+                <code>am</code>
                 applies them, preserving authorship. It remains the best way to move commits between repositories that
                 have no common remote.</p>
 
@@ -1968,7 +2010,8 @@ git clone repo.bundle restored/
             <p>A stash is not a scratch file: <code>git stash</code> creates real commit objects &mdash; one for the
                 index state and one for the working tree, with the current HEAD as a parent &mdash; and points
                 <code>refs/stash</code> at them. The reflog on that ref is what makes <code>stash@{1}</code>,
-                <code>stash@{2}</code> and so on behave like a stack.</p>
+                <code>stash@{2}</code> and so on behave like a stack.
+            </p>
 
             <div class="viz" data-viz="stash-flow"></div>
 
@@ -2014,7 +2057,8 @@ git stash clear                      # DANGEROUS - no confirmation
                 old id, the new id, who did it, when, and what command caused it. That journal is the
                 <strong>reflog</strong>, and because it records <em>pointer movements</em> rather than commits, it
                 survives every operation that makes commits unreachable &mdash; reset, rebase, amend, branch deletion,
-                a botched merge.</p>
+                a botched merge.
+            </p>
 
             <div class="viz" data-viz="reflog-rescue"></div>
 
@@ -2048,14 +2092,16 @@ ls .git/lost-found/commit/
                 rescue you and a server's reflog is not yours. Entries expire:
                 <code>gc.reflogExpire</code> defaults to 90 days for reachable commits and
                 <code>gc.reflogExpireUnreachable</code> to 30 days for the rest. And it only knows about things that
-                became objects, so an edit you never staged, committed or stashed has no entry anywhere.</p>
+                became objects, so an edit you never staged, committed or stashed has no entry anywhere.
+            </p>
 
             <div class="callout callout-tip">
                 <p>Two settings worth applying globally:
                     <code>git config --global gc.reflogExpireUnreachable 90.days</code> keeps orphaned commits for a
                     quarter instead of a month, and <code>git config --global gc.pruneExpire 30.days</code> gives
                     unreachable objects a longer stay of execution. Neither costs anything you will notice on a normal
-                    repository.</p>
+                    repository.
+                </p>
             </div>
 
             <!-- ====== 27 ====== -->
@@ -2067,7 +2113,8 @@ ls .git/lost-found/commit/
                 <strong>remote-tracking branches</strong> under <code>refs/remotes/&lt;remote&gt;/</code>, which record
                 where each branch was on that remote the last time you communicated with it. <code>origin/main</code>
                 is a local ref you cannot push to and should not try to edit &mdash; a cached photograph of the
-                server, not a window onto it.</p>
+                server, not a window onto it.
+            </p>
 
             <div class="viz" data-viz="remote-model"></div>
 
@@ -2125,7 +2172,8 @@ git push -u origin fix              # push to MY fork
                 that tells Git which refs on one side correspond to which refs on the other. The leading
                 <code>+</code> means &ldquo;allow a non-fast-forward update&rdquo;. Every remote has a default fetch
                 refspec in its config, and once you can read it, <code>fetch</code> and <code>push</code> stop being
-                magic.</p>
+                magic.
+            </p>
 
             <div class="viz" data-viz="fetch-pull-push"></div>
 
@@ -2211,7 +2259,8 @@ git ls-remote --heads origin 'refs/heads/release/*'
                 stored as <code>branch.&lt;name&gt;.remote</code> and <code>branch.&lt;name&gt;.merge</code> in
                 <code>.git/config</code>. The upstream is what makes bare <code>git pull</code> and
                 <code>git push</code> work with no arguments, what <code>@{u}</code> resolves to, and what
-                <code>git status</code> compares against to say &ldquo;ahead 2, behind 1&rdquo;.</p>
+                <code>git status</code> compares against to say &ldquo;ahead 2, behind 1&rdquo;.
+            </p>
 
             <div class="code-tabs" data-label="Upstreams and the triangular workflow">
                 <div class="tab-pane" data-lang="bash">
@@ -2254,7 +2303,8 @@ git rev-parse --abbrev-ref @{push}  # where a bare push would go
                     <code>git branch -r</code> slowly fills with branches that no longer exist and
                     <code>git switch &lt;name&gt;</code> can silently recreate one from a stale ref. Set
                     <code>fetch.prune = true</code> and <code>fetch.pruneTags = true</code> once and the problem
-                    disappears permanently.</p>
+                    disappears permanently.
+                </p>
             </div>
 
             <!-- ====== 30 ====== -->
@@ -2265,7 +2315,8 @@ git rev-parse --abbrev-ref @{push}  # where a bare push would go
                 <strong>lightweight</strong> tag is just a file under <code>refs/tags/</code> holding a commit id. An
                 <strong>annotated</strong> tag creates a fourth kind of Git object &mdash; a tag object with its own
                 id, containing the target, a tagger, a date, a message, and optionally a GPG or SSH signature.
-                Releases should always be annotated: the metadata is the point.</p>
+                Releases should always be annotated: the metadata is the point.
+            </p>
 
             <div class="code-tabs" data-label="Tagging properly">
                 <div class="tab-pane" data-lang="bash">
@@ -2320,13 +2371,15 @@ jobs:
                 <code>&lt;nearest-tag&gt;-&lt;commits-since&gt;-g&lt;short-sha&gt;</code>, which is human-readable,
                 sorts sensibly, and identifies an exact commit. Add <code>--dirty</code> and a build made from a
                 modified working tree says so, which is worth a great deal the first time an unreproducible binary
-                turns up in production.</p>
+                turns up in production.
+            </p>
 
             <div class="callout callout-warn">
                 <p>Never move a published tag. <code>git tag -f</code> plus a force-push will update the server, but
                     clients that already fetched the old tag keep it &mdash; Git does not update an existing tag on
                     fetch unless forced &mdash; so different machines end up disagreeing about what
-                    <code>v2.4.0</code> means, silently. If a release is wrong, publish <code>v2.4.1</code>.</p>
+                    <code>v2.4.0</code> means, silently. If a release is wrong, publish <code>v2.4.1</code>.
+                </p>
             </div>
 
             <!-- ====== 31 ====== -->
@@ -2444,7 +2497,8 @@ jobs:
                 <strong>not committed</strong> and <strong>not cloned</strong>, which is a deliberate security
                 decision &mdash; cloning a repository must never execute code the author chose. That is also why
                 sharing hooks across a team requires either <code>core.hooksPath</code> pointing at a committed
-                directory, or a manager like <code>pre-commit</code> or Husky.</p>
+                directory, or a manager like <code>pre-commit</code> or Husky.
+            </p>
 
             <table>
                 <thead>
@@ -2755,7 +2809,8 @@ git maintenance start            # background gc, commit-graph, prefetch
                 <p>Submodules fail in a predictable pattern: someone clones without <code>--recurse-submodules</code>
                     and gets empty directories, or commits in the submodule without pushing them, leaving the parent
                     pointing at a commit nobody else can fetch. Set <code>submodule.recurse = true</code> globally and
-                    <code>push.recurseSubmodules = check</code> to catch the second case before it ships.</p>
+                    <code>push.recurseSubmodules = check</code> to catch the second case before it ships.
+                </p>
             </div>
 
             <!-- ====== 36 ====== -->
@@ -2766,7 +2821,8 @@ git maintenance start            # background gc, commit-graph, prefetch
                 <code>gc</code>, which collects them into a <strong>packfile</strong> where similar objects are stored
                 as deltas against one another, plus an <code>.idx</code> index mapping ids to offsets. Deltas here are
                 purely a storage optimisation chosen by content similarity &mdash; not by commit order &mdash; so Git
-                can still reconstruct any snapshot directly.</p>
+                can still reconstruct any snapshot directly.
+            </p>
 
             <div class="viz" data-viz="packfile"></div>
 
@@ -2801,13 +2857,15 @@ git config feature.manyFiles true
                 <code>git gc --prune=now</code> is the command that genuinely deletes your safety net. And
                 <code>--aggressive</code>, widely recommended on the internet, discards existing delta chains and
                 recomputes them from scratch: hours of CPU for a marginal size win. Plain <code>git gc</code> is
-                almost always the right call.</p>
+                almost always the right call.
+            </p>
 
             <div class="callout callout-tip">
                 <p><code>git commit-graph write --reachable</code> builds a cache of the commit DAG, turning
                     <code>git log --graph</code> and merge-base computations from repeated object parsing into index
                     lookups. On a repository with hundreds of thousands of commits the difference is seconds versus
-                    tens of seconds, and <code>git maintenance start</code> keeps it current in the background.</p>
+                    tens of seconds, and <code>git maintenance start</code> keeps it current in the background.
+                </p>
             </div>
 
             <!-- ====== 37 ====== -->
@@ -3109,7 +3167,8 @@ git push --force --all &amp;&amp; git push --force --tags
                         <td>&ldquo;Everything is duplicated after a pull&rdquo;</td>
                         <td>Someone rebased and force-pushed</td>
                         <td><code>git reset --hard origin/&lt;branch&gt;</code>, or
-                            <code>git pull --rebase</code></td>
+                            <code>git pull --rebase</code>
+                        </td>
                     </tr>
                     <tr>
                         <td>&ldquo;Up to date, but the PR shows conflicts&rdquo;</td>
@@ -3135,7 +3194,8 @@ git push --force --all &amp;&amp; git push --force --tags
                         <td>&ldquo;<code>.gitignore</code> is ignored&rdquo;</td>
                         <td>The file is already tracked</td>
                         <td><code>git rm --cached &lt;p&gt;</code>; check
-                            <code>git check-ignore -v &lt;p&gt;</code></td>
+                            <code>git check-ignore -v &lt;p&gt;</code>
+                        </td>
                     </tr>
                     <tr>
                         <td>&ldquo;<code>blame</code> points at a formatter&rdquo;</td>
@@ -3171,13 +3231,15 @@ git push --force --all &amp;&amp; git push --force --tags
                         <td>&ldquo;<code>git status</code> takes seconds&rdquo;</td>
                         <td>Stat-ing a huge tree on every run</td>
                         <td><code>core.fsmonitor</code>, <code>core.untrackedCache</code>,
-                            <code>git maintenance start</code></td>
+                            <code>git maintenance start</code>
+                        </td>
                     </tr>
                     <tr>
                         <td>&ldquo;A secret got committed&rdquo;</td>
                         <td>It is compromised the instant it is pushed</td>
                         <td>Rotate, then revert, then decide about
-                            <code>filter-repo</code></td>
+                            <code>filter-repo</code>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -3195,7 +3257,8 @@ git push --force --all &amp;&amp; git push --force --tags
                     <code>update-index</code>, <code>write-tree</code>, <code>commit-tree</code> and
                     <code>update-ref</code> to create a commit without ever running <code>git add</code> or
                     <code>git commit</code>. Then <code>git log</code> it. Nothing else teaches the object model this
-                    quickly.</li>
+                    quickly.
+                </li>
                 <li><b>Watch deduplication happen.</b> Create two files with identical contents in different
                     directories, commit, and confirm with <code>git ls-tree -r HEAD</code> that both point at one
                     blob. Change one byte and watch the id change completely.</li>
@@ -3204,10 +3267,12 @@ git push --force --all &amp;&amp; git push --force --tags
                     is always right.</li>
                 <li><b>Lose a commit on purpose.</b> Commit on a detached HEAD, switch away, then recover it with
                     <code>reflog</code> and <code>branch</code>. Then do it again after a
-                    <code>git reset --hard HEAD~3</code>.</li>
+                    <code>git reset --hard HEAD~3</code>.
+                </li>
                 <li><b>Cause a conflict deliberately.</b> Two branches, same line, then merge. Inspect
                     <code>git ls-files -u</code> and <code>git show :1:/:2:/:3:</code> before resolving. Turn on
-                    <code>zdiff3</code> and do it again to see the difference.</li>
+                    <code>zdiff3</code> and do it again to see the difference.
+                </li>
                 <li><b>Rebase the same divergence you just merged.</b> Reset both branches and redo it with
                     <code>rebase</code>. Compare the two graphs with <code>git log --graph --all --oneline</code>.
                 </li>
@@ -3251,10 +3316,13 @@ git push --force --all &amp;&amp; git push --force --tags
                     answer far more questions than their reputation suggests.</li>
                 <li><a href="https://learngitbranching.js.org/" target="_blank" rel="noopener">Learn Git
                         Branching</a> &mdash; an interactive sandbox; the best place to drill
-                    <code>rebase --onto</code> and <code>cherry-pick</code>.</li>
-                <li><a href="https://github.com/newren/git-filter-repo" target="_blank" rel="noopener">git-filter-repo</a>
+                    <code>rebase --onto</code> and <code>cherry-pick</code>.
+                </li>
+                <li><a href="https://github.com/newren/git-filter-repo" target="_blank"
+                        rel="noopener">git-filter-repo</a>
                     &mdash; the supported tool for history rewrites, with documentation that explains why
-                    <code>filter-branch</code> should not be used.</li>
+                    <code>filter-branch</code> should not be used.
+                </li>
             </ol>
 
         </article>
