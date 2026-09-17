@@ -1109,6 +1109,764 @@ VIZ["platform-feedback"] = {
     },
 };
 
+/* ==========================================================================
+   Advanced course widgets
+   ========================================================================== */
+
+/* ---- A1. KV cache ---- */
+
+VIZ["kv-cache"] = {
+    title: "Decoding token by token, with and without a KV cache",
+    legend: [["lg-done", "cached K/V"], ["lg-cmp", "recomputed this step"], ["lg-act", "token being produced"], ["lg-idle", "not generated yet"]],
+    options: [
+        { value: "cached", label: "With KV cache" },
+        { value: "naive", label: "No cache" },
+    ],
+    build(option) {
+        const cached = option !== "naive";
+        const toks = ["Claim", "C-77001", "is", "overdue", "by", "three", "days"];
+        const prompt = 3;
+        const frames = [];
+        let work = 0;
+
+        const snap = (i, note) => {
+            const marks = {};
+            toks.forEach((_, j) => {
+                if (j < i) marks[j] = cached ? "is-done" : "is-cmp";
+                else if (j === i) marks[j] = "is-active";
+                else marks[j] = "is-ghost";
+            });
+            frames.push({
+                stage: cellsHTML(toks, marks) + captionHTML(`attention work so far: <b>${work}</b> token-positions`),
+                note,
+            });
+        };
+
+        work = prompt;
+        snap(prompt, `Three prompt tokens are encoded in one pass. Now the model must emit token ${prompt + 1}, and to do that it needs a key and a value vector for <em>every</em> earlier position.`);
+
+        for (let i = prompt + 1; i < toks.length; i++) {
+            work += cached ? 1 : i;
+            snap(
+                i,
+                cached
+                    ? `Cached: the K/V for positions <code>0..${i - 1}</code> were computed once and kept in GPU memory. This step computes K/V for <strong>one</strong> new position and attends over the rest. Cost per token is flat.`
+                    : `No cache: every earlier position is projected again from scratch — <code>${i}</code> of them this step. Cost per token grows linearly with what you have already written, so the answer gets slower as it gets longer.`
+            );
+        }
+
+        frames.push({
+            stage: cellsHTML(toks, Object.fromEntries(toks.map((_, j) => [j, cached ? "is-done" : "is-cmp"]))) +
+                captionHTML(`total attention work: <b>${work}</b> token-positions`),
+            note: cached
+                ? "Total work is linear in the sequence. The price is memory: the cache is roughly <code>2 &times; layers &times; heads &times; head_dim &times; seq_len</code> bytes per request, which is why a self-hosted deployment runs out of VRAM long before it runs out of FLOPs, and why batch size and context length trade against each other."
+                : "Total work is quadratic. Nobody serves this way — but the shape matters to you, because it is the same shape as a prompt you rebuild from scratch on every turn. <strong>Provider prompt caching is this optimisation exposed as an API</strong>: keep the long, stable prefix byte-identical and you get the cached price.",
+        });
+
+        return frames;
+    },
+};
+
+/* ---- A2. Context budget ---- */
+
+VIZ["context-budget"] = {
+    title: "Packing a 32k context window",
+    legend: [["lg-done", "fits and earns its place"], ["lg-act", "being changed"], ["lg-out", "overflow or waste"], ["lg-idle", "untouched"]],
+    build() {
+        const frames = [];
+        const snap = (parts, note, total, cap = 32) =>
+            frames.push({
+                stage:
+                    svgHTML(640, 120, laneHTML(parts.map((p) => ({ label: p[0], state: p[2], tag: p[1] })), 40, 54)) +
+                    captionHTML(`total <b>${total.toFixed(1)}k</b> of ${cap}k &nbsp;·&nbsp; you pay for all of it, every turn`),
+                note,
+            });
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "2.4k", "n-done"], ["history", "6.0k", "n-done"], ["retrieved", "9.0k", "n-done"], ["question", "0.1k", "n-done"]],
+            "A working layout. Note the order: stable content first, volatile content last — that is what makes prefix caching possible.",
+            18.4
+        );
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "2.4k", "n-done"], ["history", "6.0k", "n-done"], ["retrieved", "24.0k", "n-act"], ["question", "0.1k", "n-done"]],
+            "Recall is poor, so somebody widens retrieval from 6 chunks to 20. This is the single most common reflex in a struggling RAG system.",
+            33.4
+        );
+
+        snap(
+            [["system", "0.9k", "n-out"], ["tool schemas", "2.4k", "n-done"], ["history", "6.0k", "n-done"], ["retrieved", "24.0k", "n-out"], ["question", "0.1k", "n-done"]],
+            "It overflows. Whatever truncation your framework does silently now decides what the model sees — and frameworks usually drop from the <em>front</em>, which is exactly where your system prompt lives.",
+            33.4
+        );
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "2.4k", "n-done"], ["history", "6.0k", "n-done"], ["retrieved", "24.0k", "n-out"], ["question", "0.1k", "n-done"]],
+            "Even when it fits, accuracy drops. Models attend well to the start and end of the window and weakly to the middle — <strong>lost in the middle</strong>. Chunks 8 to 15 are being paid for and not read.",
+            33.4
+        );
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "2.4k", "n-done"], ["history", "6.0k", "n-done"], ["reranked", "3.6k", "n-act"], ["question", "0.1k", "n-done"]],
+            "The real fix is upstream: retrieve 40 candidates, rerank with a cross-encoder, keep 6. Precision comes from the reranker, not the window size.",
+            13.0
+        );
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "1.1k", "n-act"], ["history", "1.4k", "n-act"], ["reranked", "3.6k", "n-done"], ["question", "0.1k", "n-done"]],
+            "Then prune the rest: only load the tool schemas this step can use, and replace turn-by-turn history with a rolling summary plus the last two turns verbatim.",
+            7.1
+        );
+
+        snap(
+            [["system", "0.9k", "n-done"], ["tool schemas", "1.1k", "n-done"], ["history", "1.4k", "n-done"], ["reranked", "3.6k", "n-done"], ["question", "0.1k", "n-done"]],
+            "7.1k instead of 33.4k: about a fifth of the cost, a visibly faster first token, and <em>higher</em> accuracy. <strong>Context is a budget you spend, not a bucket you fill.</strong>",
+            7.1
+        );
+
+        return frames;
+    },
+};
+
+/* ---- A3. Chunking ---- */
+
+VIZ["chunking"] = {
+    title: "Where you cut the document decides what you can retrieve",
+    legend: [["lg-cmp", "one chunk"], ["lg-act", "the sentence that answers the question"], ["lg-out", "fact split in half"], ["lg-done", "retrieved"]],
+    options: [
+        { value: "fixed", label: "Fixed size, no overlap" },
+        { value: "overlap", label: "Fixed size + overlap" },
+        { value: "semantic", label: "Structure-aware" },
+    ],
+    build(option) {
+        const s = ["§4.1", "Late", "fees", "apply", "when", "a", "claim", "passes", "SLA.", "The", "fee", "is", "2%", "per", "day.", "§4.2", "Appeals"];
+        const frames = [];
+        const snap = (marks, cap, note) =>
+            frames.push({ stage: cellsHTML(s, marks) + captionHTML(cap), note });
+
+        snap({}, "one sentence per box &nbsp;·&nbsp; question: <b>&ldquo;what is the late fee rate?&rdquo;</b>", "A page of a contract. The answer to the question spans two sentences: one names the concept, the next gives the number.");
+
+        const ans = { 9: "is-active", 10: "is-active", 11: "is-active", 12: "is-active", 13: "is-active", 14: "is-active" };
+        snap(ans, "the answer lives here", "This is what a correct answer needs in the same chunk: <code>The fee is 2% per day.</code> — a sentence whose subject is a pronoun.");
+
+        if (option === "semantic") {
+            snap({ 0: "is-window", 1: "is-window", 2: "is-window", 3: "is-window", 4: "is-window", 5: "is-window", 6: "is-window", 7: "is-window", 8: "is-window", 9: "is-window", 10: "is-window", 11: "is-window", 12: "is-window", 13: "is-window", 14: "is-window" },
+                "chunk 1 = §4.1, boundary follows the heading", "Structure-aware splitting cuts on the document's own boundaries — headings, list items, table rows — not on a character count. §4.1 stays whole.");
+            snap({ 9: "is-done", 10: "is-done", 11: "is-done", 12: "is-done", 13: "is-done", 14: "is-done", 0: "is-window", 1: "is-window", 2: "is-window", 3: "is-window", 4: "is-window", 5: "is-window", 6: "is-window", 7: "is-window", 8: "is-window" },
+                "retrieved: §4.1 entire", "One chunk, complete clause, correct answer, and the citation is a section number a human can check. Prepend the heading path to the chunk text so the embedding carries its own context.");
+            snap({ 0: "is-done", 1: "is-done", 2: "is-done", 3: "is-done", 4: "is-done", 5: "is-done", 6: "is-done", 7: "is-done", 8: "is-done", 9: "is-done", 10: "is-done", 11: "is-done", 12: "is-done", 13: "is-done", 14: "is-done" },
+                "answer: 2% per day &nbsp;·&nbsp; source §4.1", "<strong>Chunk on the structure the author gave you.</strong> Fixed-size splitting is the default because it is easy, not because it is good — and for contracts, tickets and logs the structure is right there in the text.");
+            return frames;
+        }
+
+        const overlap = option === "overlap";
+        snap({ 0: "is-window", 1: "is-window", 2: "is-window", 3: "is-window", 4: "is-window", 5: "is-window", 6: "is-window", 7: "is-window", 8: "is-window", 9: "is-window" },
+            "chunk 1 = tokens 0–9", "Fixed-size splitting counts tokens and cuts. The cut lands mid-clause, because the splitter cannot read.");
+        snap({ 9: "is-out", 10: "is-out", 11: "is-out", 12: "is-out", 13: "is-out", 14: "is-out", 0: "is-dim", 1: "is-dim", 2: "is-dim", 3: "is-dim", 4: "is-dim", 5: "is-dim", 6: "is-dim", 7: "is-dim", 8: "is-dim" },
+            overlap ? "chunk 2 = tokens 8–17 (2-token overlap)" : "chunk 2 = tokens 10–17",
+            overlap
+                ? "With overlap, chunk 2 starts two tokens early. Cheap insurance — but the overlap has to be wider than the fact you are trying to keep whole, and here it is not."
+                : "Chunk 2 begins <code>The fee is 2% per day.</code> with no idea what &ldquo;the fee&rdquo; refers to. The chunk is a fact with its subject amputated.");
+        snap({ 10: "is-out", 11: "is-out", 12: "is-out", 13: "is-out", 14: "is-out" },
+            "embedding of chunk 2", "Now embed that. &ldquo;Late fee&rdquo; never appears in the chunk, so the vector sits nowhere near the query — the retriever will not return it, and no amount of prompt engineering downstream recovers a chunk that was never fetched.");
+        snap({ 0: "is-dim", 1: "is-dim", 2: "is-dim", 3: "is-dim", 4: "is-dim", 5: "is-dim", 6: "is-dim", 7: "is-dim", 8: "is-dim", 9: "is-out", 10: "is-out", 11: "is-out", 12: "is-out", 13: "is-out", 14: "is-out" },
+            "result: retrieval miss, or a confident wrong answer", "<strong>Most &ldquo;the model hallucinated&rdquo; bugs are chunking bugs.</strong> Before you touch the prompt, print the chunks the retriever actually returned and read them as a human would.");
+
+        return frames;
+    },
+};
+
+/* ---- A4. ANN index ---- */
+
+VIZ["ann-index"] = {
+    title: "How an HNSW index finds neighbours without scanning everything",
+    legend: [["lg-act", "current node"], ["lg-done", "path taken"], ["lg-cmp", "evaluated"], ["lg-idle", "never touched"]],
+    build() {
+        const layers = [
+            [["L2", 60], ["a", 200], ["b", 400], ["c", 580]],
+            [["L1", 60], ["d", 150], ["e", 260], ["f", 370], ["g", 470], ["h", 580]],
+            [["L0", 60], ["i", 120], ["j", 190], ["k", 260], ["l", 330], ["m", 400], ["n", 470], ["o", 540], ["p", 600]],
+        ];
+        const ys = [50, 130, 210];
+        const state = layers.map((row) => row.map(() => "n-idle"));
+        const frames = [];
+
+        const view = (note, target) => {
+            let body = "";
+            layers.forEach((row, r) => {
+                for (let i = 1; i < row.length - 1; i++) {
+                    body += edgeHTML(row[i][1], ys[r], row[i + 1][1], ys[r], state[r][i] !== "n-idle" && state[r][i + 1] !== "n-idle" ? "e-done" : "e-idle");
+                }
+            });
+            body += edgeHTML(400, ys[0], 370, ys[1], "e-done");
+            body += edgeHTML(370, ys[1], 400, ys[2], "e-done");
+            layers.forEach((row, r) => {
+                row.forEach((n, i) => {
+                    body += i === 0
+                        ? `<text x="${n[1]}" y="${ys[r] + 4}" class="n-sub">${n[0]}</text>`
+                        : nodeHTML(n[1], ys[r], n[0], state[r][i], 16);
+                });
+            });
+            if (target) body += `<text x="600" y="${ys[2] + 34}" class="n-sub">query</text>`;
+            return svgHTML(640, 250, body);
+        };
+
+        const snap = (note, target) => frames.push({ stage: view(note, target), note });
+
+        snap("One million vectors. Comparing the query against all of them is exact and far too slow, so the index trades a little recall for two orders of magnitude of speed.");
+        snap("HNSW builds a hierarchy. Layer&nbsp;0 holds every vector. Each layer above holds a random sample with long-range links — a motorway network over a street map.");
+
+        state[0][2] = "n-act";
+        snap("Search starts at a fixed entry point on the top layer and greedily walks to whichever neighbour is closer to the query. Few nodes, huge hops.");
+        state[0][2] = "n-done";
+        state[0][3] = "n-cmp";
+        snap("It evaluates <code>c</code>, finds it no closer, and stops moving on this layer. Greedy descent: move only while distance decreases.");
+
+        state[1][3] = "n-act";
+        snap("Drop to layer&nbsp;1 at the same point and repeat with shorter links. The coarse layer got you into the right region for the price of four distance computations.");
+        state[1][3] = "n-done";
+        state[1][4] = "n-cmp";
+        state[1][5] = "n-cmp";
+        snap("Two more candidates evaluated. <code>ef_search</code> is the size of this candidate list — raise it for recall, lower it for latency. It is the one knob you will actually tune in production.");
+
+        state[2][5] = "n-act";
+        snap("Down to layer&nbsp;0, the full graph, but only in a tiny neighbourhood.", true);
+        state[2][5] = "n-done";
+        state[2][6] = "n-cmp";
+        state[2][7] = "n-cmp";
+        state[2][8] = "n-act";
+        snap("Local greedy search finds the true nearest neighbours after touching a few hundred nodes out of a million.", true);
+
+        state[2][8] = "n-done";
+        snap("<strong>The cost you must budget for is memory, not CPU</strong> — the graph lives in RAM, roughly <code>vectors &times; dims &times; 4 bytes</code> plus the links. Ten million 1536-dim float32 vectors is about 60&nbsp;GB before you store a single piece of metadata. That number, not the query latency, is what decides the deployment topology.", true);
+
+        return frames;
+    },
+};
+
+/* ---- A5. Hybrid search and RRF ---- */
+
+VIZ["hybrid-rrf"] = {
+    title: "Fusing keyword and vector results with Reciprocal Rank Fusion",
+    legend: [["lg-act", "being scored"], ["lg-done", "final order"], ["lg-cmp", "considered"], ["lg-idle", "not ranked"]],
+    build() {
+        const frames = [];
+        const rows = () => [
+            ["rank", "BM25", "dense", "doc", "RRF score"],
+            ["1", "D-7", "D-2", "", ""],
+            ["2", "D-3", "D-7", "", ""],
+            ["3", "D-9", "D-5", "", ""],
+            ["4", "D-2", "D-3", "", ""],
+        ];
+        const grid = rows();
+        const head = { "0,0": "is-head", "0,1": "is-head", "0,2": "is-head", "0,3": "is-head", "0,4": "is-head" };
+        const snap = (marks, note) => frames.push({ stage: gridHTML(grid.map(clone), { ...head, ...marks }) + captionHTML("RRF: <code>score(d) = &Sigma; 1 / (k + rank<sub>i</sub>(d))</code> with <code>k = 60</code>"), note });
+
+        snap({}, "A query about &ldquo;SLA breach code 4021&rdquo;. BM25 ranks by exact term overlap; the dense retriever ranks by meaning. They disagree, which is the whole point of running both.");
+        snap({ "1,1": "is-act", "2,1": "is-act", "3,1": "is-act", "4,1": "is-act" }, "BM25 puts <code>D-7</code> first because it literally contains <code>4021</code>. Keyword search is unbeatable on identifiers, error codes, part numbers and surnames — the exact tokens an embedding model has never seen.");
+        snap({ "1,2": "is-act", "2,2": "is-act", "3,2": "is-act", "4,2": "is-act" }, "The dense retriever puts <code>D-2</code> first: it never mentions 4021 but describes the breach in prose. Vectors win on paraphrase and synonymy.");
+
+        grid[1][3] = "D-7"; grid[1][4] = "1/61 + 1/62 = .0325";
+        snap({ "1,3": "is-act", "1,4": "is-act" }, "RRF ignores the raw scores — deliberately. BM25 scores and cosine similarities are not on the same scale and normalising them is a tuning rabbit hole. Only the <em>ranks</em> are combined.");
+        grid[2][3] = "D-2"; grid[2][4] = "1/64 + 1/61 = .0320";
+        snap({ "2,3": "is-act", "2,4": "is-act" }, "<code>D-2</code> is 4th for BM25 and 1st for dense. Appearing on both lists is what earns rank.");
+        grid[3][3] = "D-3"; grid[3][4] = "1/62 + 1/64 = .0318";
+        grid[4][3] = "D-5 / D-9"; grid[4][4] = "1/63 = .0159";
+        snap({ "3,3": "is-cmp", "3,4": "is-cmp", "4,3": "is-cmp", "4,4": "is-cmp" }, "Documents on one list only score roughly half as much. That is the useful property: agreement between two independent retrievers is evidence, and RRF prices it without a single tuned weight.");
+        snap({ "1,3": "is-done", "1,4": "is-done", "2,3": "is-done", "2,4": "is-done", "3,3": "is-done", "3,4": "is-done" }, "<strong>Hybrid is the default, not the optimisation.</strong> In enterprise corpora — tickets, claims, part catalogues — a large fraction of queries contain an identifier, and a pure-vector system fails exactly those queries while looking fine on your demo set.");
+
+        return frames;
+    },
+};
+
+/* ---- A6. Cross-encoder reranking ---- */
+
+VIZ["rerank"] = {
+    title: "Retrieve wide, rerank narrow",
+    legend: [["lg-cmp", "candidate"], ["lg-act", "scored by cross-encoder"], ["lg-done", "sent to the model"], ["lg-out", "dropped"]],
+    build() {
+        const ids = ["D-2", "D-7", "D-3", "D-5", "D-9", "D-1", "D-8", "D-4"];
+        const scores = ["0.81", "0.79", "0.78", "0.77", "0.77", "0.76", "0.75", "0.74"];
+        const ce = { "D-5": "9.1", "D-2": "2.4", "D-7": "8.7", "D-3": "-1.2", "D-9": "0.4", "D-1": "-3.0", "D-8": "-2.1", "D-4": "6.2" };
+        const frames = [];
+
+        frames.push({
+            stage: cellsHTML(ids, Object.fromEntries(ids.map((_, i) => [i, "is-cmp"])), Object.fromEntries(scores.map((s, i) => [i, s]))),
+            note: "Eight candidates from hybrid search, with their similarity scores. Look at the spread: <code>0.81</code> down to <code>0.74</code>. The bi-encoder cannot really tell these apart, because it embedded every document <em>before</em> it ever saw your query.",
+        });
+
+        ids.forEach((_, i) => {
+            const marks = Object.fromEntries(ids.map((_, j) => [j, j < i ? "is-cmp" : j === i ? "is-active" : "is-cmp"]));
+            const tags = Object.fromEntries(ids.map((id, j) => [j, j <= i ? ce[id] : scores[j]]));
+            frames.push({
+                stage: cellsHTML(ids, marks, tags),
+                note: i === 0
+                    ? "A cross-encoder scores the pair <code>(query, document)</code> jointly in one forward pass, so every query token can attend to every document token. Far more accurate, and far too slow to run over a million documents — which is why it runs over eight."
+                    : `Scoring <code>${ids[i]}</code>. Notice the scale: these are logits, not similarities, and they <em>separate</em>. <code>${ids[i]}</code> gets <code>${ce[ids[i]]}</code>.`,
+            });
+        });
+
+        const order = ["D-5", "D-7", "D-4", "D-2"];
+        const dropped = ["D-9", "D-3", "D-8", "D-1"];
+        frames.push({
+            stage: cellsHTML(order.concat(dropped),
+                Object.fromEntries(order.concat(dropped).map((_, i) => [i, i < 4 ? "is-done" : "is-out"])),
+                Object.fromEntries(order.concat(dropped).map((id, i) => [i, ce[id]]))),
+            note: "Reordered. <code>D-5</code> was 4th by vector similarity and is first by relevance; <code>D-2</code> fell from 1st to 4th. Keep the top 4, drop the rest.",
+        });
+        frames.push({
+            stage: cellsHTML(order, Object.fromEntries(order.map((_, i) => [i, "is-done"])), Object.fromEntries(order.map((id, i) => [i, ce[id]]))),
+            note: "<strong>Reranking is usually the highest-return change you can make to a mediocre RAG system</strong>, because it fixes precision without touching the index, the chunker or the prompt. Budget for it: a cross-encoder over 50 candidates adds 50–200&nbsp;ms, which is real but almost always worth it.",
+        });
+
+        return frames;
+    },
+};
+
+/* ---- A7. Corrective / self-correcting RAG ---- */
+
+VIZ["crag-loop"] = {
+    title: "Corrective RAG — grading retrieval before you trust it",
+    legend: [["lg-act", "running"], ["lg-done", "passed"], ["lg-out", "failed the grade"], ["lg-idle", "idle"]],
+    build() {
+        const frames = [];
+        const nodes = {
+            q: [70, 60, "query"],
+            r: [220, 60, "retrieve"],
+            g: [380, 60, "grade"],
+            w: [380, 170, "rewrite"],
+            x: [540, 170, "escalate"],
+            gen: [540, 60, "generate"],
+            v: [220, 170, "verify"],
+        };
+        const view = (states, edges) => {
+            let body = "";
+            const e = (a, b, s) => edgeHTML(nodes[a][0], nodes[a][1], nodes[b][0], nodes[b][1], s);
+            body += e("q", "r", edges.qr || "e-idle");
+            body += e("r", "g", edges.rg || "e-idle");
+            body += e("g", "gen", edges.ggen || "e-idle");
+            body += e("g", "w", edges.gw || "e-idle");
+            body += e("w", "r", edges.wr || "e-idle");
+            body += e("w", "x", edges.wx || "e-idle");
+            body += e("gen", "v", edges.genv || "e-idle");
+            body += e("v", "w", edges.vw || "e-idle");
+            Object.entries(nodes).forEach(([k, n]) => {
+                body += nodeHTML(n[0], n[1], n[2], states[k] || "n-idle", 42);
+            });
+            return svgHTML(640, 240, body);
+        };
+        const snap = (states, edges, note) => frames.push({ stage: view(states, edges), note });
+
+        snap({ q: "n-act" }, {}, "&ldquo;Why was claim C-77001 declined?&rdquo; Plain RAG retrieves, stuffs and answers. Corrective RAG inserts a judgement between retrieval and generation.");
+        snap({ q: "n-done", r: "n-act" }, { qr: "e-done" }, "Retrieve as normal: hybrid search, top&nbsp;20, reranked to 5.");
+        snap({ q: "n-done", r: "n-done", g: "n-act" }, { qr: "e-done", rg: "e-done" }, "A cheap grader — a small model or a classifier — scores each chunk: <em>does this document actually support answering this question?</em> Not &ldquo;is it similar&rdquo;; similarity already said yes.");
+        snap({ q: "n-done", r: "n-done", g: "n-out" }, { qr: "e-done", rg: "e-done" }, "Two of five are relevant, three are about a different site. The grade is <code>ambiguous</code>. A plain pipeline would answer confidently from this; that is where hallucinations come from.");
+        snap({ q: "n-done", r: "n-done", g: "n-out", w: "n-act" }, { qr: "e-done", rg: "e-done", gw: "e-act" }, "So correct instead of generating. Rewrite the query using what the good chunks revealed — the claim's site code and its policy section.");
+        snap({ q: "n-done", r: "n-act", g: "n-idle", w: "n-done" }, { qr: "e-done", gw: "e-done", wr: "e-act" }, "Retrieve again with the sharper query. Cap the loop at two attempts: an unbounded corrective loop is an unbounded bill.");
+        snap({ q: "n-done", r: "n-done", g: "n-done", w: "n-done" }, { qr: "e-done", rg: "e-done", wr: "e-done", gw: "e-done" }, "Five of five relevant. The grade passes.");
+        snap({ q: "n-done", r: "n-done", g: "n-done", w: "n-done", gen: "n-act" }, { qr: "e-done", rg: "e-done", wr: "e-done", gw: "e-done", ggen: "e-act" }, "Now generate, with an instruction the model can obey: answer only from these documents, cite the chunk id for each claim.");
+        snap({ q: "n-done", r: "n-done", g: "n-done", w: "n-done", gen: "n-done", v: "n-act" }, { qr: "e-done", rg: "e-done", wr: "e-done", gw: "e-done", ggen: "e-done", genv: "e-act" }, "Self-RAG adds one more check: verify every sentence in the answer is entailed by a cited chunk. Cheap, and it catches the confident half-truths.");
+        snap({ q: "n-done", r: "n-done", g: "n-done", w: "n-done", gen: "n-done", v: "n-done", x: "n-out" }, { qr: "e-done", rg: "e-done", wr: "e-done", gw: "e-done", ggen: "e-done", genv: "e-done", wx: "e-idle" }, "And when two corrective passes still fail, take the exit on the right: <strong>say &ldquo;I could not find this&rdquo; and hand to a human.</strong> An abstention rate you can measure is worth more to a customer than an accuracy number you cannot.");
+
+        return frames;
+    },
+};
+
+/* ---- A8. Graph retrieval ---- */
+
+VIZ["graph-hop"] = {
+    title: "The question a vector index cannot answer",
+    legend: [["lg-act", "current hop"], ["lg-done", "on the answer path"], ["lg-cmp", "expanded"], ["lg-idle", "not visited"]],
+    build() {
+        const N = {
+            sup: [90, 60, "Supplier", "Nord"],
+            part: [250, 60, "Part", "BRK-12"],
+            lot: [410, 60, "Lot", "L-889"],
+            veh: [560, 60, "Vehicle", "V-41"],
+            fleet: [560, 180, "Fleet", "Cardiff"],
+            claim: [410, 180, "Claim", "C-77001"],
+            pol: [250, 180, "Policy", "§4.1"],
+            inv: [90, 180, "Invoice", "I-22"],
+        };
+        const state = Object.fromEntries(Object.keys(N).map((k) => [k, "n-idle"]));
+        const E = [["sup", "part"], ["part", "lot"], ["lot", "veh"], ["veh", "fleet"], ["fleet", "claim"], ["claim", "pol"], ["pol", "inv"], ["claim", "lot"]];
+        const eState = E.map(() => "e-idle");
+        const frames = [];
+
+        const snap = (note) => {
+            let body = "";
+            E.forEach(([a, b], i) => {
+                body += edgeHTML(N[a][0], N[a][1], N[b][0], N[b][1], eState[i]);
+            });
+            Object.entries(N).forEach(([k, n]) => {
+                body += nodeHTML(n[0], n[1], n[2], state[k], 34, n[3]);
+            });
+            frames.push({ stage: svgHTML(640, 250, body), note });
+        };
+
+        snap("&ldquo;Which vehicles are affected by the brake lot that caused claim C-77001?&rdquo; No single document contains that answer, so no chunk can be retrieved to answer it.");
+        state.claim = "n-act";
+        snap("A graph makes the entities and their relationships first-class. Start at the entity the question names — resolved by an exact id lookup, not a similarity search.");
+        eState[7] = "e-act"; state.lot = "n-act"; state.claim = "n-done";
+        snap("Hop one: <code>(:Claim)-[:CAUSED_BY]-&gt;(:Lot)</code>. One edge traversal, deterministic, no embedding involved.");
+        eState[7] = "e-done"; eState[2] = "e-act"; state.veh = "n-act"; state.lot = "n-done";
+        snap("Hop two: every vehicle fitted with a part from that lot. In Cypher this is <code>MATCH (c:Claim {id:$id})-[:CAUSED_BY]-&gt;(:Lot)&lt;-[:FROM_LOT]-(:Part)-[:FITTED_TO]-&gt;(v:Vehicle) RETURN v</code>.");
+        eState[2] = "e-done"; eState[3] = "e-act"; state.fleet = "n-cmp"; state.veh = "n-done";
+        snap("Hop three gives the operational answer the customer actually wants: which fleets, and therefore who to phone this afternoon.");
+        eState[1] = "e-act"; state.part = "n-cmp";
+        snap("Walk the other direction and you get the supply-side answer: which supplier, which invoice, which contract clause covers recovery.");
+        eState[1] = "e-done"; eState[0] = "e-done"; state.sup = "n-cmp";
+        snap("Three hops, an exact answer, and a path you can show a regulator. A vector index would have returned the five documents most <em>similar</em> to the question and let the model guess.");
+        Object.keys(state).forEach((k) => (state[k] = state[k] === "n-idle" ? "n-idle" : "n-done"));
+        snap("<strong>Use the graph for relationships and identity, the vector index for language.</strong> The practical pattern is: resolve entities with the graph, fetch narrative text with the vector store, and give the model both. Building the ontology is 80% of the work, and it is the same modelling conversation you would have had anyway.");
+
+        return frames;
+    },
+};
+
+/* ---- A9. LangGraph execution ---- */
+
+VIZ["langgraph-run"] = {
+    title: "A LangGraph run — state, conditional edges, checkpoints, interrupt",
+    legend: [["lg-act", "executing"], ["lg-done", "complete"], ["lg-cmp", "checkpoint written"], ["lg-out", "paused for a human"]],
+    build() {
+        const N = {
+            start: [70, 60, "START"],
+            plan: [210, 60, "plan"],
+            tools: [360, 60, "tools"],
+            check: [510, 60, "check"],
+            human: [360, 175, "approve"],
+            end: [560, 175, "END"],
+        };
+        const frames = [];
+        const snap = (state, edges, stateBar, note) => {
+            let body = "";
+            const e = (a, b, s) => edgeHTML(N[a][0], N[a][1], N[b][0], N[b][1], s || "e-idle");
+            body += e("start", "plan", edges.sp);
+            body += e("plan", "tools", edges.pt);
+            body += e("tools", "check", edges.tc);
+            body += e("check", "tools", edges.ct);
+            body += e("check", "human", edges.ch);
+            body += e("human", "end", edges.he);
+            Object.entries(N).forEach(([k, n]) => {
+                body += nodeHTML(n[0], n[1], n[2], state[k] || "n-idle", 38);
+            });
+            frames.push({
+                stage: svgHTML(640, 235, body) + captionHTML(`state: <code>${stateBar}</code>`),
+                note,
+            });
+        };
+
+        snap({ start: "n-act" }, {}, "{messages: [], claim: null, steps: 0}", "A graph is not a chain: it is a state machine. One typed state object flows through nodes, and each node returns a <em>partial update</em> that is merged in — not a new object built from scratch.");
+        snap({ start: "n-done", plan: "n-act" }, { sp: "e-done" }, "{messages: [+1], claim: 'C-77001', steps: 1}", "The <code>plan</code> node calls the model and writes back to state. The reducer on <code>messages</code> is <code>add_messages</code>, so the list appends rather than overwrites — that choice of reducer is the single most common source of &ldquo;my history disappeared&rdquo; bugs.");
+        snap({ start: "n-done", plan: "n-cmp" }, { sp: "e-done" }, "{... steps: 1} → checkpoint #1", "A checkpointer persists the state after every node. In Postgres, not memory, if you want the run to survive a deploy.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-act" }, { sp: "e-done", pt: "e-done" }, "{tool_calls: 2, steps: 2}", "The <code>tools</code> node executes both requested calls concurrently. The state update carries both results back, keyed by call id so the model can match them.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-cmp", check: "n-act" }, { sp: "e-done", pt: "e-done", tc: "e-done" }, "{tool_calls: 2, steps: 3}", "A <em>conditional edge</em> is a plain function of state that returns the name of the next node. This is where you enforce the loop budget: <code>if state['steps'] &gt; 8: return 'approve'</code>.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-act", check: "n-done" }, { sp: "e-done", pt: "e-done", tc: "e-done", ct: "e-act" }, "{steps: 4}", "The check routes back to <code>tools</code>: one piece of evidence is missing. A cycle — which is exactly what a chain cannot express and why the graph exists.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-cmp", check: "n-act" }, { sp: "e-done", pt: "e-done", tc: "e-done", ct: "e-done" }, "{steps: 5, ready: true}", "Second pass, evidence complete. The condition now routes forward.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-done", check: "n-done", human: "n-out" }, { sp: "e-done", pt: "e-done", tc: "e-done", ct: "e-done", ch: "e-act" }, "{steps: 6, awaiting_approval: true}", "<code>interrupt()</code> before the node that changes the world. The graph stops, the checkpoint holds the whole state, and the process can die — the run resumes from the thread id when the approver comes back tomorrow.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-done", check: "n-done", human: "n-done", end: "n-act" }, { sp: "e-done", pt: "e-done", tc: "e-done", ct: "e-done", ch: "e-done", he: "e-act" }, "{approved_by: 'j.mills', steps: 7}", "Approved, resumed, decision written, run finished — with a checkpoint per step you can replay.");
+        snap({ start: "n-done", plan: "n-done", tools: "n-done", check: "n-done", human: "n-done", end: "n-done" }, { sp: "e-done", pt: "e-done", tc: "e-done", ct: "e-done", ch: "e-done", he: "e-done" }, "{thread_id: 'C-77001', steps: 7}", "<strong>The three things you get from a graph that a while-loop does not give you: durable pause, deterministic replay, and an edge condition you can unit-test.</strong> In a regulated customer estate, all three are requirements rather than luxuries.");
+
+        return frames;
+    },
+};
+
+/* ---- A10. Multi-agent supervisor ---- */
+
+VIZ["supervisor-agents"] = {
+    title: "Supervisor, workers, and what happens when one fails",
+    legend: [["lg-act", "working"], ["lg-done", "returned"], ["lg-out", "failed / isolated"], ["lg-idle", "idle"]],
+    build() {
+        const sup = [320, 50];
+        const workers = [[110, 165, "policy"], [250, 165, "claims"], [390, 165, "billing"], [530, 165, "notes"]];
+        const wState = ["n-idle", "n-idle", "n-idle", "n-idle"];
+        let sState = "n-idle";
+        const frames = [];
+        const snap = (note, eStates = []) => {
+            let body = "";
+            workers.forEach((w, i) => {
+                body += arrowHTML(sup[0], sup[1] + 34, w[0], w[1] - 30, eStates[i] || "e-idle");
+            });
+            body += nodeHTML(sup[0], sup[1], "supervisor", sState, 46);
+            workers.forEach((w, i) => body += nodeHTML(w[0], w[1], w[2], wState[i], 40));
+            frames.push({ stage: svgHTML(640, 240, body), note });
+        };
+
+        snap("&ldquo;Is claim C-77001 payable, and if so how much?&rdquo; One agent with twelve tools would work — badly. Its prompt would be 4,000 tokens of instructions for four unrelated jobs.");
+        sState = "n-act";
+        snap("A supervisor decomposes instead. Each worker gets a narrow system prompt and only the tools for its own domain, which shrinks both the context and the blast radius.");
+        wState[0] = wState[1] = "n-act";
+        snap("Policy and claims run <strong>concurrently</strong> — they share no state. In a graph this is a fan-out to two nodes; the aggregation happens because both write to different keys of the same state object.", ["e-act", "e-act"]);
+        wState[2] = "n-act";
+        snap("Billing joins. Watch the cost model here: four workers means four model calls per turn, plus the supervisor's. Multi-agent is not free, and a single well-prompted agent beats a badly decomposed swarm.", ["e-act", "e-act", "e-act"]);
+        wState[0] = "n-done"; wState[1] = "n-done";
+        snap("Two return structured results. They return <em>data</em>, not prose — a worker that answers in English forces the supervisor to re-parse it, and that is where multi-agent systems lose their accuracy.", ["e-done", "e-done", "e-act"]);
+        wState[2] = "n-out";
+        snap("Billing's upstream SAP connector times out. In a single-agent design the whole run dies here.", ["e-done", "e-done", "e-act"]);
+        wState[2] = "n-out"; sState = "n-cmp";
+        snap("With fault isolation the supervisor records a partial result and continues. <strong>Design every worker's failure as a value it can return</strong>, not an exception that unwinds the run.", ["e-done", "e-done", "e-idle"]);
+        wState[3] = "n-act";
+        snap("The notes worker summarises the handler's free text, unaffected by the billing outage.", ["e-done", "e-done", "e-idle", "e-act"]);
+        wState[3] = "n-done"; sState = "n-done";
+        snap("The supervisor aggregates: <em>payable under §4.1, amount unavailable — billing degraded, routed to a human for the figure.</em> Partial, honest, and actionable — which beats a confident number sourced from nothing.", ["e-done", "e-done", "e-idle", "e-done"]);
+
+        return frames;
+    },
+};
+
+/* ---- A11. MCP ---- */
+
+VIZ["mcp-flow"] = {
+    title: "Model Context Protocol — host, client, server and the trust boundary",
+    legend: [["lg-act", "message in flight"], ["lg-done", "established"], ["lg-out", "blocked at the boundary"], ["lg-idle", "idle"]],
+    build() {
+        const frames = [];
+        const snap = (states, arrow, label, note) => {
+            let body = "";
+            body += `<line x1="330" y1="16" x2="330" y2="224" class="e-idle" stroke-dasharray="6 6"/>`;
+            body += `<text x="330" y="236" class="n-sub">trust boundary</text>`;
+            body += boxHTML(20, 40, 130, 56, "host app", states.host || "n-idle", "your chat UI");
+            body += boxHTML(180, 40, 130, 56, "MCP client", states.client || "n-idle", "one per server");
+            body += boxHTML(360, 40, 130, 56, "MCP server", states.server || "n-idle", "customer side");
+            body += boxHTML(510, 40, 110, 56, "SAP / Jira", states.sys || "n-idle", "system of record");
+            if (arrow) body += arrowHTML(arrow[0], 150, arrow[1], 150, arrow[2] || "e-act");
+            if (label) body += `<text x="320" y="185" class="n-sub">${esc(label)}</text>`;
+            frames.push({ stage: svgHTML(640, 245, body), note });
+        };
+
+        snap({ host: "n-act" }, null, "", "MCP exists because every integration used to be bespoke. <code>N</code> models times <code>M</code> systems was <code>N&times;M</code> adapters; a protocol makes it <code>N+M</code>.");
+        snap({ host: "n-done", client: "n-act" }, [150, 300], "initialize", "The host spawns one client per server and they negotiate protocol version and capabilities. The client is a thin translator — it holds no business logic.");
+        snap({ host: "n-done", client: "n-done", server: "n-act" }, [310, 380], "tools/list", "The server advertises its tools, resources and prompts. This is the important inversion: <strong>the customer's team owns and versions the tool definitions</strong>, not you, so the integration outlives your engagement.");
+        snap({ host: "n-done", client: "n-done", server: "n-done" }, [380, 310, "e-done"], "schemas", "Schemas come back and become the function definitions in the model call. Same JSON Schema, same discipline as any tool calling — description quality still decides accuracy.");
+        snap({ host: "n-done", client: "n-act", server: "n-done" }, [150, 380], "tools/call find_claims", "The model asks for a tool. The client forwards it across the boundary.");
+        snap({ host: "n-done", client: "n-done", server: "n-act", sys: "n-act" }, [490, 600], "query as the end user", "The server calls the real system <em>with the end user's identity</em>, not a shared service account. This is the whole security argument: the boundary is where authorisation lives, and it is on the customer's side of it.");
+        snap({ host: "n-done", client: "n-done", server: "n-done", sys: "n-done" }, [600, 380, "e-done"], "rows", "Results flow back. Note what did not cross the boundary: credentials, the full table, or any row this user may not see.");
+        snap({ host: "n-done", client: "n-done", server: "n-out" }, [310, 380, "e-act"], "tools/call delete_claim", "Now a prompt-injected instruction in a claim note tries to call a destructive tool. The server rejects it — the allow-list, the rate limit and the write approval live server-side.");
+        snap({ host: "n-done", client: "n-done", server: "n-done", sys: "n-done" }, null, "", "<strong>Treat every MCP server as a piece of security surface, not a convenience.</strong> Ask who wrote it, what identity it runs as, whether tools are read-only by default, and what happens when the model is persuaded to call the worst one. A third-party server you did not audit is an unreviewed dependency with your customer's data behind it.");
+
+        return frames;
+    },
+};
+
+/* ---- A12. LoRA ---- */
+
+VIZ["lora-adapter"] = {
+    title: "Why LoRA makes fine-tuning affordable",
+    legend: [["lg-done", "frozen"], ["lg-act", "trainable"], ["lg-cmp", "merged at inference"], ["lg-idle", "unused"]],
+    build() {
+        const W = [
+            [".12", "-.4", ".03", ".9", "-.2", ".51", ".07", "-.8"],
+            [".33", ".18", "-.6", ".22", ".41", "-.1", ".65", ".02"],
+            ["-.7", ".26", ".14", "-.3", ".08", ".77", "-.5", ".31"],
+            [".05", "-.9", ".43", ".16", "-.6", ".29", ".11", ".84"],
+            [".61", ".07", "-.2", ".38", ".93", "-.4", ".24", "-.1"],
+            ["-.3", ".52", ".88", "-.7", ".15", ".06", "-.9", ".47"],
+        ];
+        const all = (cls) => Object.fromEntries(W.flatMap((row, r) => row.map((_, c) => [`${r},${c}`, cls])));
+        const A = [["a1"], ["a2"], ["a3"], ["a4"], ["a5"], ["a6"]];
+        const B = [["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"]];
+        const frames = [];
+
+        frames.push({
+            stage: gridHTML(W, all("is-done")) + captionHTML("one weight matrix <b>W</b> &nbsp;·&nbsp; 6 &times; 8 = 48 parameters (imagine 4096 &times; 4096)"),
+            note: "One of hundreds of weight matrices in the model. Full fine-tuning updates every cell — and keeps an optimizer state two to four times larger than the weights themselves, which is why a 7B model needs about 80&nbsp;GB of VRAM to train and 14 to run.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-act")) + captionHTML("full fine-tune: <b>48</b> trainable parameters here"),
+            note: "Everything is trainable, so everything must be stored, checkpointed and shipped. One customer, one 14&nbsp;GB artefact — and a second customer means a second copy of the whole model.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-done")) + captionHTML("freeze <b>W</b> entirely"),
+            note: "LoRA's observation: the <em>change</em> a fine-tune makes to a weight matrix is empirically low-rank. You do not need to move 48 numbers to express it.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-done")) + gridHTML(A, Object.fromEntries(A.map((_, r) => [`${r},0`, "is-act"]))) + captionHTML("add <b>A</b> (6 &times; r, r = 1) &nbsp;·&nbsp; trainable"),
+            note: "Attach two small matrices beside it. <code>A</code> projects down to rank <code>r</code> — in practice 8 to 64, here 1 so it fits on screen.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-done")) + gridHTML(A, Object.fromEntries(A.map((_, r) => [`${r},0`, "is-act"]))) + gridHTML(B, Object.fromEntries(B[0].map((_, c) => [`0,${c}`, "is-act"]))) + captionHTML("and <b>B</b> (r &times; 8) &nbsp;·&nbsp; trainable &nbsp;·&nbsp; <b>14</b> parameters instead of 48"),
+            note: "<code>B</code> projects back up. The forward pass becomes <code>h = Wx + (BA)x &times; &alpha;/r</code>. Only <code>A</code> and <code>B</code> receive gradients — 14 numbers here, typically well under 1% of the model in practice.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-done")) + gridHTML(A, Object.fromEntries(A.map((_, r) => [`${r},0`, "is-cmp"]))) + gridHTML(B, Object.fromEntries(B[0].map((_, c) => [`0,${c}`, "is-cmp"]))) + captionHTML("adapter artefact: a few MB, swappable per customer"),
+            note: "QLoRA goes further: quantise the frozen base to 4-bit and train the adapters in 16-bit on top. A 7B fine-tune then fits on a single 24&nbsp;GB consumer card — which is the difference between a GPU cluster request and an afternoon.",
+        });
+        frames.push({
+            stage: gridHTML(W, all("is-cmp")) + captionHTML("merged for deployment, or served as a hot-swappable adapter"),
+            note: "<strong>The operational win matters more than the training win.</strong> One base model in memory, a directory of small adapters, and you can serve twelve customers' tuned behaviour from one GPU. The FDE question is never &ldquo;can we fine-tune&rdquo; — it is <em>&ldquo;is the failure a knowledge gap (use RAG) or a behaviour gap (fine-tune)?&rdquo;</em>",
+        });
+
+        return frames;
+    },
+};
+
+/* ---- A13. Quantisation ---- */
+
+VIZ["quantise"] = {
+    title: "Quantisation — the same weights, fewer bits",
+    legend: [["lg-idle", "fp16 value"], ["lg-act", "snapped to a level"], ["lg-done", "int4 level"], ["lg-out", "error introduced"]],
+    build() {
+        const w = [31, 12, 47, 5, 39, 22, 44, 17, 28, 9, 36, 25];
+        const q = w.map((v) => Math.round(v / 8) * 8);
+        const frames = [];
+        const marks = (cls) => Object.fromEntries(w.map((_, i) => [i, cls]));
+
+        frames.push({ stage: barsHTML(w, marks("is-aux")) + captionHTML("12 weights at fp16 &nbsp;·&nbsp; <b>2 bytes</b> each"), note: "Weights, at 16-bit precision. A 7B model at fp16 is about 14&nbsp;GB — too big for most single GPUs once you add the KV cache for a realistic batch." });
+        frames.push({ stage: barsHTML(w, { ...marks("is-aux"), 2: "is-act" }) + captionHTML("find the range: min 5, max 47"), note: "Quantisation is a scale-and-round. Find the range of the block, divide it into a small number of levels, and store the level index instead of the number." });
+        frames.push({ stage: barsHTML(q, { ...marks("is-act") }) + captionHTML("snap each weight to the nearest of 16 levels"), note: "Four bits gives 16 levels. Each weight becomes an index, and the block keeps one scale factor — which is why it is <em>block-wise</em>: one global scale for the whole tensor would be ruined by a single outlier." });
+        frames.push({
+            stage: barsHTML(q, Object.fromEntries(w.map((v, i) => [i, v === q[i] ? "is-done" : "is-out"]))) + captionHTML("<b>0.5 bytes</b> each &nbsp;·&nbsp; 4&times; smaller &nbsp;·&nbsp; red bars moved"),
+            note: "Most weights moved slightly; that error is the price. For <code>Q4_K_M</code>-class quantisation the measured quality loss on general benchmarks is small — but <strong>&ldquo;small on benchmarks&rdquo; is not &ldquo;small on your golden set&rdquo;</strong>, and structured-output adherence degrades before prose quality does.",
+        });
+        frames.push({
+            stage: barsHTML(q, marks("is-done")) + captionHTML("7B: 14 GB &rarr; ~4 GB &nbsp;·&nbsp; fits a 24 GB card with room to batch"),
+            note: "The reason an FDE cares: quantisation is often what makes an <em>air-gapped</em> or in-tenant deployment possible at all. The customer has two A10s, not a cluster, and the choice is a quantised local model or no local model.",
+        });
+        frames.push({
+            stage: barsHTML(q, marks("is-done")) + captionHTML("always re-run the eval suite after changing quantisation"),
+            note: "<strong>Treat quantisation level as a versioned part of the model, exactly like the prompt.</strong> Run the golden set at each level, publish the accuracy-per-pound table, and let the customer choose with numbers in front of them.",
+        });
+
+        return frames;
+    },
+};
+
+/* ---- A14. Guardrail pipeline ---- */
+
+VIZ["guardrail-pipeline"] = {
+    title: "Rails on the way in, rails on the way out",
+    legend: [["lg-act", "stage running"], ["lg-done", "passed"], ["lg-out", "blocked or redacted"], ["lg-idle", "not reached"]],
+    build() {
+        const stages = ["input", "topical rail", "injection scan", "PII redact", "model", "output check", "PII restore", "deliver"];
+        const state = stages.map(() => "n-idle");
+        const tag = stages.map(() => "");
+        const frames = [];
+        const snap = (payload, note) =>
+            frames.push({
+                stage: svgHTML(640, 130, laneHTML(stages.map((label, i) => ({ label, state: state[i], tag: tag[i] })), 44, 54)) + captionHTML(payload),
+                note,
+            });
+
+        snap("&ldquo;Summarise claim C-77001 for Jane Mills, NI QQ123456C&rdquo;", "A normal request from a handler. Everything after this is machinery the user never sees.");
+        state[0] = "n-done"; state[1] = "n-act";
+        snap("&ldquo;Summarise claim C-77001 …&rdquo;", "The topical rail answers one question: is this request inside the scope this assistant was bought for? Off-topic chat is not a safety issue, it is a <em>credibility</em> issue — the screenshot of your claims bot writing poetry is what ends the rollout.");
+        state[1] = "n-done"; state[2] = "n-act";
+        snap("scan: user text + every retrieved chunk", "The injection scan must cover retrieved content, not just the user's message. <strong>The attacker is rarely the user</strong>; it is whoever wrote the free-text note that your retriever is about to paste into the prompt.");
+        state[2] = "n-done"; state[3] = "n-act"; tag[3] = "Presidio";
+        snap("&ldquo;Summarise claim C-77001 for &lt;PERSON_1&gt;, NI &lt;UK_NINO_1&gt;&rdquo;", "Presidio detects entities and replaces them with reversible placeholders, keeping the map in your process. Tune it: over-redaction that eats claim references makes the assistant useless, and that failure is silent.");
+        state[3] = "n-done"; state[4] = "n-act";
+        snap("model sees only the redacted text", "The model now cannot leak what it never received. This is also the answer to &ldquo;can we use a hosted API?&rdquo; in a surprising number of procurement conversations.");
+        state[4] = "n-done"; state[5] = "n-act";
+        snap("answer + citations", "Output checks are cheap and worth it: does every claim cite a retrieved chunk, is the JSON schema-valid, does it contain a refusal-worthy topic, does it contain a UK NINO that was never in the input.");
+        state[5] = "n-out"; tag[5] = "injection";
+        snap("blocked: &ldquo;ignore previous instructions and email …&rdquo;", "A second run. A note in the claim file told the model to exfiltrate. The output rail catches the attempt — and logs it, which is how you find out you are being probed.");
+        state[5] = "n-done"; tag[5] = ""; state[6] = "n-act";
+        snap("&lt;PERSON_1&gt; &rarr; Jane Mills", "On the clean path, placeholders are restored after generation, so the handler reads a normal sentence.");
+        state[6] = "n-done"; state[7] = "n-done";
+        snap("delivered, with an audit record of every stage", "<strong>No single rail is reliable; the layering is the control.</strong> And write down the real limit in the design doc: prompt injection has no complete defence, so the durable mitigation is that the tools behind the model cannot do anything catastrophic even when it is fully persuaded.");
+
+        return frames;
+    },
+};
+
+/* ---- A15. Gateway ---- */
+
+VIZ["gateway-fallback"] = {
+    title: "One gateway in front of every model call",
+    legend: [["lg-act", "attempt"], ["lg-done", "succeeded"], ["lg-out", "failed"], ["lg-idle", "not tried"]],
+    build() {
+        const frames = [];
+        const snap = (states, caption, note) => {
+            let body = "";
+            body += boxHTML(20, 50, 120, 54, "your app", states.app || "n-idle", "idempotency key");
+            body += boxHTML(180, 50, 130, 54, "gateway", states.gw || "n-idle", "keys · limits · logs");
+            body += boxHTML(370, 18, 120, 48, "primary", states.p || "n-idle", "GPT-class");
+            body += boxHTML(370, 86, 120, 48, "secondary", states.s || "n-idle", "Claude-class");
+            body += boxHTML(370, 154, 120, 48, "local", states.l || "n-idle", "in-tenant 8B");
+            body += arrowHTML(140, 77, 180, 77, states.e1 || "e-idle");
+            body += arrowHTML(310, 77, 370, 42, states.e2 || "e-idle");
+            body += arrowHTML(310, 77, 370, 110, states.e3 || "e-idle");
+            body += arrowHTML(310, 77, 370, 178, states.e4 || "e-idle");
+            frames.push({ stage: svgHTML(640, 215, body) + captionHTML(caption), note });
+        };
+
+        snap({ app: "n-act" }, "attempt 1", "Every production call carries an idempotency key. It is not ceremony: a retried tool call that posts a payment twice is the kind of incident that ends an engagement.");
+        snap({ app: "n-done", gw: "n-act", e1: "e-act" }, "gateway: resolve route", "The gateway holds the provider keys, so no key is ever in an application config or a notebook. Rotation becomes one operation instead of a search across repositories.");
+        snap({ app: "n-done", gw: "n-done", p: "n-act", e1: "e-done", e2: "e-act" }, "primary &rarr; 429", "Primary returns <code>429</code>. You did not exceed your own limit — a different tenant on the same account did, which is a failure mode teams discover in production rather than design for.");
+        snap({ app: "n-done", gw: "n-act", p: "n-out", e1: "e-done", e2: "e-act" }, "backoff 0.5s · 1s · 2s + jitter", "Retry with exponential backoff <em>and jitter</em>. Without jitter every client in your fleet retries in lockstep and you have built a self-inflicted thundering herd.");
+        snap({ app: "n-done", gw: "n-act", p: "n-out", e1: "e-done", e2: "e-act", e3: "e-act", s: "n-act" }, "fallback &rarr; secondary", "Still limited, so route to a second provider. Because the gateway normalises the request shape, the application does not know this happened.");
+        snap({ app: "n-done", gw: "n-done", p: "n-out", s: "n-done", e1: "e-done", e2: "e-act", e3: "e-done" }, "200 OK · 1.9s · £0.004 · logged", "Success. The gateway logs model, latency, tokens, cost and the trace id, tagged by tenant — which is how you answer &ldquo;what does this cost per claim?&rdquo; without a spreadsheet exercise.");
+        snap({ app: "n-done", gw: "n-done", p: "n-out", s: "n-out", l: "n-act", e1: "e-done", e2: "e-act", e3: "e-act", e4: "e-act" }, "both providers down &rarr; degrade locally", "The interesting tier is the third. A small in-tenant model that handles the routine 60% keeps the workflow alive during a provider outage — degraded and honest beats unavailable.");
+        snap({ app: "n-done", gw: "n-done", l: "n-done", e1: "e-done", e4: "e-done" }, "one place to change models, prices and limits", "<strong>Put the gateway in on day one, before there is anything to route.</strong> Retrofitting it means editing every call site in a codebase the customer's team now owns, and it is the component that makes &ldquo;switch to the cheaper model for tier-1 tickets&rdquo; a config change rather than a project.");
+
+        return frames;
+    },
+};
+
+/* ---- A16. Text to SQL ---- */
+
+VIZ["text-to-sql"] = {
+    title: "Text-to-SQL that is safe enough to run",
+    legend: [["lg-act", "current stage"], ["lg-done", "passed"], ["lg-out", "rejected"], ["lg-idle", "pending"]],
+    build() {
+        const stages = ["question", "schema select", "generate", "parse & lint", "policy filter", "EXPLAIN", "execute", "verify"];
+        const state = stages.map(() => "n-idle");
+        const frames = [];
+        const snap = (payload, note) =>
+            frames.push({
+                stage: svgHTML(640, 130, laneHTML(stages.map((label, i) => ({ label, state: state[i] })), 44, 54)) + captionHTML(payload),
+                note,
+            });
+
+        snap("&ldquo;How many Cardiff claims breached SLA last month?&rdquo;", "Text-to-SQL is the highest-value and highest-risk pattern in enterprise AI: it answers questions nobody pre-built a report for, and it runs code against a production database.");
+        state[0] = "n-done"; state[1] = "n-act";
+        snap("1,400 tables &rarr; 4 tables, 18 columns", "You cannot paste a 1,400-table schema into a prompt, and you should not want to. Retrieve the relevant subset — by embedding table and column <em>descriptions</em>, not names — and pass only that, with two sample rows per table so the model sees the actual value formats.");
+        state[1] = "n-done"; state[2] = "n-act";
+        snap("SELECT count(*) FROM claims c JOIN sites s …", "Generation, with the dialect named explicitly. MS SQL is not Postgres, and the model will happily emit <code>LIMIT</code> against a server that wants <code>TOP</code>.");
+        state[2] = "n-done"; state[3] = "n-act";
+        snap("parse to AST · single statement · SELECT only", "<strong>Never regex the SQL. Parse it.</strong> Reject anything that is not a single <code>SELECT</code>: no semicolons, no CTE hiding a write, no <code>INTO</code>, no procedure call. An LLM-generated string is untrusted input like any other.");
+        state[3] = "n-done"; state[4] = "n-act";
+        snap("inject: AND s.region IN ('cardiff')", "Entitlements are enforced by rewriting the AST, not by asking the model nicely in the system prompt. Better still, connect as a read-only role whose row-level security already scopes the user — then the database enforces it even if your filter has a bug.");
+        state[4] = "n-done"; state[5] = "n-act";
+        snap("EXPLAIN: estimated 1.2M rows scanned", "Run the plan first. A generated query with a missing join predicate will cheerfully table-scan a fact table and take the customer's reporting database down with it — a genuine way to lose an engagement in week three.");
+        state[5] = "n-out";
+        snap("rejected: cost above threshold, no index on s.region", "Above the cost budget, so refuse and explain. Enforce a statement timeout and a row cap as well; both belong to the database role, not the application.");
+        state[5] = "n-act";
+        snap("rewrite with the indexed date partition &rarr; 40k rows", "One repair attempt with the plan's complaint fed back as context. Loop at most once.");
+        state[5] = "n-done"; state[6] = "n-act";
+        snap("executed in 180ms · 312 rows", "Execute, on a read replica. Never point this at the primary — the whole point is that you do not know what query will arrive.");
+        state[6] = "n-done"; state[7] = "n-done";
+        snap("answer + the SQL, shown to the user", "<strong>Show the generated SQL next to the answer, always.</strong> An analyst who can read the query will catch the subtle wrong join that no eval suite would have flagged, and the visible SQL is what converts a black box into a tool the team trusts.");
+
+        return frames;
+    },
+};
+
+/* ---- A17. Permission-aware retrieval ---- */
+
+VIZ["entitlement-filter"] = {
+    title: "The retrieval layer has to know who is asking",
+    legend: [["lg-done", "visible to this user"], ["lg-out", "must not be returned"], ["lg-act", "retrieved"], ["lg-idle", "filtered out"]],
+    build() {
+        const docs = ["HR-1", "CLM-2", "CLM-3", "LEGAL-4", "CLM-5", "BOARD-6", "CLM-7", "HR-8"];
+        const allowed = [false, true, true, false, true, false, true, false];
+        const frames = [];
+        const snap = (marks, tags, cap, note) => frames.push({ stage: cellsHTML(docs, marks, tags) + captionHTML(cap), note });
+
+        snap({}, {}, "one index, eight documents, one user: a tier-1 claims handler", "Every RAG pilot starts with one index and no notion of identity. It works perfectly, right up to the day somebody ingests the HR folder.");
+        snap(Object.fromEntries(docs.map((_, i) => [i, allowed[i] ? "is-done" : "is-out"])), {}, "what this user is entitled to see", "The customer's permission model already answers this question. Your job is not to invent one — it is to <em>reuse</em> theirs, because a second permission model will drift from the first and the drift is invisible.");
+        snap(Object.fromEntries(docs.map((_, i) => [i, "is-active"])), {}, "post-filtering: retrieve first, filter after", "The naive fix is to retrieve the top 5 by similarity and drop the ones the user cannot see. Two things break.");
+        snap({ 0: "is-active", 3: "is-active", 5: "is-active", 1: "is-dim", 2: "is-dim" }, { 0: "leak", 3: "leak", 5: "leak" }, "top-5 are all restricted", "First, the most relevant documents are often the restricted ones, so after filtering you return two weak chunks and the answer quality collapses — for the users with the least access, who are the majority.");
+        snap({ 0: "is-out", 3: "is-out", 5: "is-out" }, { 0: "in prompt", 3: "in prompt", 5: "in prompt" }, "the model already saw them", "Second, and worse: in most implementations the filtering happens after the text reached the model. The summary leaks even when the citation list does not.");
+        snap(Object.fromEntries(docs.map((_, i) => [i, allowed[i] ? "is-active" : "is-dim"])), {}, "pre-filtering: ACL as a metadata predicate on the query", "So filter <em>inside</em> the search. Store the ACL — group ids, classification, region — as metadata on every chunk, and pass the user's resolved groups as a hard predicate so the index never considers the rest.");
+        snap({ 1: "is-done", 2: "is-done", 4: "is-done", 6: "is-done" }, { 1: "1", 2: "2", 4: "3", 6: "4" }, "top-4 of the permitted set", "Now the top-k is the top-k <em>of what this user may see</em>, which is both correct and better. Cost: your ingest pipeline must carry permissions through, and re-sync them when they change.");
+        snap({ 1: "is-done", 2: "is-done", 4: "is-done", 6: "is-done", 0: "is-out", 3: "is-out", 5: "is-out", 7: "is-out" }, {}, "plus the negative evals", "<strong>Write the denial tests into the golden set.</strong> &ldquo;Tier-1 asks a question only answerable from a legal document&rdquo; must assert a refusal, run in CI, and keep running after you leave. An entitlement bug is not a quality regression; it is a notifiable incident.");
+
+        return frames;
+    },
+};
+
 /* ------------------------------------------------------------ viz player */
 
 const mountViz = (root) => {

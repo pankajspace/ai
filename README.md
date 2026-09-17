@@ -73,6 +73,7 @@
 ## Forward Deployed Engineer
 1. [FDE Crash Course](projects/techtoday/study/fde/fde-crash-course.html)
 2. [FDE Detailed Course](projects/techtoday/study/fde/fde-detailed-course.html)
+3. [FDE Advanced Course](projects/techtoday/study/fde/fde-advanced-course.html)
 
 ## Distributed Communication Patterns
 1. [Distributed Communication Crash Course](projects/techtoday/study/distributed-communication-patterns/distributed-communication-patterns-crash-course.html)
