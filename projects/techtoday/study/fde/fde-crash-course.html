@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        if (window.location.pathname.endsWith('/ai')) {
+            const base = document.createElement('base');
+            let path = window.location.pathname.replace(/\/ai\/?$/, '');
+            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+            document.head.appendChild(base);
+        }
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Forward Deployed Engineer Crash Course | TechToday</title>
+    <meta name="description"
+        content="A visual crash course in forward deployed engineering — the engagement loop, discovery, ontologies, grounding, evals, the integration wall, handover and the decomposition interview." />
+    <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="fde-study.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+</head>
+
+<body class="is-crash">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="fde-courses.html" class="nav-back-link">&larr; FDE Courses</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main>
+        <article class="study">
+            <h1 id="fde-crash-course">Forward Deployed Engineer<a class="headerlink" href="#fde-crash-course"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">A forward deployed engineer is a software engineer who goes and sits with the customer until
+                the thing actually works. This page teaches the job the way it is done: the engagement loop, the
+                discovery work that decides everything, the build, the wall between a prototype and production, and the
+                interview that gets you hired. Press <strong>Play</strong> on any animation to watch the idea move.</p>
+
+            <div class="callout callout-key">
+                <p>One sentence holds the whole role together: <strong>the model is the easy part.</strong> Frontier
+                    models are commodities available to every competitor at the same price. What is scarce is the
+                    engineer who can get one wired into a forty-year-old claims system, prove it is right, pass a
+                    security review, and leave behind something the customer's own team can change. That gap — between
+                    what a platform <em>can</em> do and what a customer actually needs — is the entire job.</p>
+            </div>
+
+            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
+                    title="Permanent link">#</a></h2>
+            <ol class="table-of-contents table-of-contents-numbered">
+                <li><a href="#0-why-this-role-exists">Why This Role Exists</a></li>
+                <li><a href="#1-what-an-fde-actually-is">What an FDE Actually Is</a></li>
+                <li><a href="#2-the-engagement-loop">The Engagement Loop</a></li>
+                <li><a href="#3-discovery">Discovery — Finding the Real Problem</a></li>
+                <li><a href="#4-ship-on-day-one">Ship on Day One</a></li>
+                <li><a href="#5-the-ontology">The Ontology</a></li>
+                <li><a href="#6-grounding">Grounding in the Customer's Data</a></li>
+                <li><a href="#7-agents-and-tools">Agents &amp; Tool Calls</a></li>
+                <li><a href="#8-evals">Evals — Proving It Works</a></li>
+                <li><a href="#9-the-integration-wall">The Integration Wall</a></li>
+                <li><a href="#10-observability">Observability &amp; Cost</a></li>
+                <li><a href="#11-handover">Handover Without Rot</a></li>
+                <li><a href="#12-the-decomposition-interview">The Decomposition Interview</a></li>
+                <li><a href="#13-the-whole-role-on-one-page">The Whole Role on One Page</a></li>
+            </ol>
+
+            <!-- ============================================================ 0 -->
+            <h2 id="0-why-this-role-exists">Why This Role Exists<a class="headerlink" href="#0-why-this-role-exists"
+                    title="Permanent link">#</a></h2>
+
+            <ul class="meta-strip">
+                <li><b>Enterprise AI pilots with no measurable impact</b> <code class="big-o o-bad">~95%</code></li>
+                <li><b>Of the work that is not the model</b> <code class="big-o o-bad">~80%</code></li>
+                <li><b>Growth in FDE job postings, 2025</b> <code class="big-o o-great">~800%</code></li>
+            </ul>
+
+            <p>Before any of the craft makes sense you need one idea, and it is the same idea Big-O is to algorithms:
+                <strong>deployment is the product.</strong> A model that answers correctly in a notebook has produced
+                nothing. Value appears only when the answer arrives inside a workflow a real person already uses, from
+                data they already trust, fast enough that they do not open the old system instead.
+            </p>
+
+            <p>MIT's 2025 study of enterprise generative-AI programmes found roughly <strong>95% produced no measurable
+                    impact on profit and loss</strong>. That number is easy to misread as "the models are not good
+                enough". Watch what actually kills them.</p>
+
+            <div class="viz" data-viz="pilot-gap"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🍽️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a restaurant with a brilliant kitchen and no waiters</b>
+                    <p>The chef is world class. The food is extraordinary. But nobody takes orders, nobody knows about
+                        the nut allergy on table six, and nothing leaves the pass. Diners leave hungry and conclude the
+                        restaurant is bad. The kitchen was never the constraint. Palantir's founders described the
+                        forward deployed role in exactly these terms — front-of-house staff so integrated with the
+                        kitchen that they are empowered to tell a customer they are ordering the wrong thing.</p>
+                </div>
+            </div>
+
+            <p>There is a structural reason the gap does not close on its own. The knowledge needed to ship enterprise
+                AI
+                is split across a contract, and neither side has the other half.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>The vendor knows</b> how the model behaves at scale, which prompting patterns
+                    hold
+                    up, how retrieval fails, what an eval suite has to catch, and which failure modes only appear at
+                    volume.</li>
+                <li class="is-good"><b>The customer knows</b> the domain, the data schemas, which table is actually
+                    trusted, the compliance boundary, and the twelve edge cases that generate most of the exceptions.
+                </li>
+                <li class="is-bad"><b>Nobody bridges it</b> — a customer success manager cannot write the integration, a
+                    consultant does not ship production code, and documentation has never once closed a knowledge gap
+                    this wide.</li>
+            </ul>
+
+            <div class="callout callout-key">
+                <p>The FDE is the person who holds both halves at once. That is the whole design of the role, and every
+                    practice in this course follows from it.</p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-1">Unit 1 — The Role<a class="headerlink" href="#unit-1" title="Permanent link">#</a></h2>
+            <p>What the job is, how an engagement is shaped, and the two behaviours that separate the people who are
+                good
+                at it from the people who are merely strong engineers.</p>
+
+            <!-- ============================================================ 1 -->
+            <h3 id="1-what-an-fde-actually-is">What an FDE Actually Is<a class="headerlink"
+                    href="#1-what-an-fde-actually-is" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Invented</b> <code class="big-o o-good">Palantir, ~2005</code></li>
+                <li><b>Internal name</b> <code class="big-o o-good">"Delta"</code></li>
+                <li><b>Typical travel</b> <code class="big-o o-ok">25–50%</code></li>
+            </ul>
+
+            <p><em>Forward deployed</em> is a military term: stationed at the front, not at headquarters. The
+                engineering
+                version means you work inside the customer's environment — on their site, on their Slack, in their cloud
+                account, against their real data — and you write <strong>production code</strong> there, not
+                recommendations about it.</p>
+
+            <p>The role was created at Palantir around 2005, selling Gotham into US intelligence agencies. The customers
+                could not describe what they needed, could not share their data, and changed their workflows constantly.
+                Two existing roles both failed: a consultant could not write production code, and a solutions engineer
+                could not reshape the product. So Palantir invented a third — internally the "Delta" track — and by 2016
+                had <strong>more forward deployed engineers than product engineers</strong>, which for a software
+                company
+                is an extraordinary ratio.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🚒</span>
+                <div class="analogy-body">
+                    <b>Picture it — the fire engine, not the fire safety report</b>
+                    <p>A consultant inspects the building and hands you a report recommending sprinklers. A solutions
+                        engineer demonstrates their sprinkler product and configures the standard package. The forward
+                        deployed engineer installs sprinklers in <em>your</em> building, discovers the pipework is
+                        non-standard, re-plumbs it, stays for the first fire, and then teaches your maintenance team to
+                        run the system.</p>
+                </div>
+            </div>
+
+            <p>Three properties separate the role from everything adjacent to it:</p>
+
+            <ol>
+                <li><strong>They write production code.</strong> Not slides, not architecture diagrams — pipelines,
+                    services, integrations that people depend on the next morning.</li>
+                <li><strong>They own the outcome, not the demo.</strong> A sales engineer wins the deal. An FDE makes
+                    sure the deal still works in month nine, and gets paged when it does not.</li>
+                <li><strong>They translate between worlds.</strong> The same person writes a Terraform module for an SRE
+                    on Tuesday and a one-page memo for a CFO on Wednesday, and both have to be good.</li>
+            </ol>
+
+            <h4 id="1-1-the-neighbouring-roles">Against the neighbouring roles<a class="headerlink"
+                    href="#1-1-the-neighbouring-roles" title="Permanent link">#</a></h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Deliverable</th>
+                        <th>Writes new production code?</th>
+                        <th>Still there in month nine?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Forward deployed engineer</strong></td>
+                        <td>A running system in the customer's environment</td>
+                        <td>Yes, that is the job</td>
+                        <td>Yes — same person scopes it and maintains it</td>
+                    </tr>
+                    <tr>
+                        <td>Management consultant</td>
+                        <td>Report, recommendation, roadmap</td>
+                        <td>No</td>
+                        <td>No — engagement ends at delivery</td>
+                    </tr>
+                    <tr>
+                        <td>Solutions / sales engineer</td>
+                        <td>Demo, PoC, technical win</td>
+                        <td>Rarely — configures what exists</td>
+                        <td>No — hands off before production</td>
+                    </tr>
+                    <tr>
+                        <td>Product engineer</td>
+                        <td>Platform features for every customer</td>
+                        <td>Yes</td>
+                        <td>Yes, but one-to-many and never embedded</td>
+                    </tr>
+                    <tr>
+                        <td>ML engineer</td>
+                        <td>Models, training and serving pipelines</td>
+                        <td>Yes</td>
+                        <td>Platform-side, not customer-embedded</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-warn">
+                <p><strong>The distinction people get wrong.</strong> "Customer-facing engineer" is not the definition —
+                    plenty of roles talk to customers. The definition is <strong>end-to-end accountability for a system
+                        running in someone else's environment</strong>. If you hand off before production, you are doing
+                    pre-sales. If you never write the code, you are consulting. The FDE does both halves and stays.</p>
+            </div>
+
+            <div class="worked">
+                <b>Screening question</b>
+                <p class="worked-q">"Why do you want to be an FDE rather than a product engineer?"</p>
+                <p>The answer that fails is "I like talking to people". The answer that works names the trade honestly:
+                    you are giving up depth in one codebase and an uninterrupted calendar, and buying a shorter feedback
+                    loop between a decision and its consequence. Say what you are giving up — interviewers are screening
+                    for someone who has understood the cost, because the people who have not are the ones who leave
+                    after eight months.</p>
+
+                <div class="code-tabs" data-label="The shape of the trade">
+                    <div class="tab-pane" data-lang="text">
+                        <pre><code data-lang="text">
+PRODUCT ENGINEER                     FORWARD DEPLOYED ENGINEER
+------------------------------       ------------------------------
+one codebase, years                  five codebases, months each
+requirements arrive filtered         you are the filter
+success = feature shipped            success = workflow changed
+failure found in a bug tracker       failure found by a person in the room
+deep expertise, narrow               broad execution, deliberately shallow
+calendar mostly yours                calendar mostly theirs
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ 2 -->
+            <h3 id="2-the-engagement-loop">The Engagement Loop<a class="headerlink" href="#2-the-engagement-loop"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Discover</b> <code class="big-o o-good">weeks 1–3</code></li>
+                <li><b>Prototype</b> <code class="big-o o-good">weeks 2–8</code></li>
+                <li><b>Harden</b> <code class="big-o o-ok">months 3–6</code></li>
+                <li><b>Hand off</b> <code class="big-o o-ok">month 6+</code></li>
+            </ul>
+
+            <p>Every engagement, in every company running this model, is the same four stages with a fifth arrow that
+                loops back to the platform team. The durations shift — a ten-day proof of concept at one end, a
+                multi-year defence programme at the other — but the sequence does not.</p>
+
+            <div class="viz" data-viz="engagement-loop"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — compressed feedback</b>The distance between "we built the wrong thing"
+                    and "we know we built the wrong thing" is a day, because the person who would tell you is sitting
+                    across the table.</li>
+                <li class="is-bad"><b>Weakness — it does not parallelise</b>One engineer, one account, one quarter.
+                    Scaling means more people, not more leverage — unless the fifth arrow works.</li>
+            </ul>
+
+            <div class="callout callout-tip">
+                <p>Match the cadence to the customer's reality, not to your roadmap. A hospital's clinical governance
+                    committee meets monthly; a trading desk wants it before the quarter closes. The stages are fixed,
+                    the
+                    clock is theirs.</p>
+            </div>
+
+            <!-- ============================================================ 3 -->
+            <h3 id="3-discovery">Discovery — Finding the Real Problem<a class="headerlink" href="#3-discovery"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Customer conversations per week</b> <code class="big-o o-good">5–15</code></li>
+                <li><b>Share of an AI FDE's week</b> <code class="big-o o-ok">30–40%</code></li>
+                <li><b>Deliverable</b> <code class="big-o o-great">a testable hypothesis</code></li>
+            </ul>
+
+            <p>Discovery is the highest-leverage engineering work in the entire engagement, and it involves no code. You
+                cannot eval, orchestrate, deploy or observe your way out of having built the wrong thing. Everything
+                downstream is a multiplier on a decision made in week one.</p>
+
+            <p>The work is specific: sit with the people who do the job, watch them do it, and map the distance between
+                the process on the wiki and the process in the room.</p>
+
+            <div class="viz" data-viz="discovery-gap"></div>
+
+            <div class="callout callout-key">
+                <p>"The model is usually the cleanest part. The hard part is finding the workflow nobody documented, the
+                    data source people actually trust, and the person who knows why the process works that way."</p>
+            </div>
+
+            <h4 id="3-1-questions-that-work">Questions that work<a class="headerlink" href="#3-1-questions-that-work"
+                    title="Permanent link">#</a></h4>
+
+            <p>Bad discovery asks people to design software. Good discovery asks them to narrate history, because memory
+                of last Tuesday is reliable and speculation about a hypothetical tool is not.</p>
+
+            <ol>
+                <li><strong>"Walk me through the last one you did."</strong> Not the typical one — the last one. Typical
+                    cases are reconstructions; the last one has the mess still attached.</li>
+                <li><strong>"What did you do just before that step, and just after?"</strong> This is where the
+                    spreadsheet, the phone call and the second login appear.</li>
+                <li><strong>"When was the last time this went wrong, and what happened?"</strong> Exceptions are where
+                    the cost is, and they are never in the process diagram.</li>
+                <li><strong>"Which number here do you actually trust?"</strong> There are always two systems that
+                    disagree, and everybody knows which one is right without it being written down.</li>
+                <li><strong>"What would you stop doing if you could?"</strong> The answer is rarely what the sponsor
+                    named in the kickoff.</li>
+            </ol>
+
+            <div class="callout callout-warn">
+                <p><strong>The sponsor is not the user.</strong> The executive who signed the contract describes the
+                    problem they can see from their seat, which is usually a reporting problem. The operator four levels
+                    down has a workflow problem. Build for the sponsor and you get a dashboard nobody opens; build for
+                    the operator and let the sponsor watch the metric move.</p>
+            </div>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">How do you turn three days of conversations into something you can build against?
+                </p>
+                <p>Write the hypothesis down in a form that can be proved wrong by Friday. If it cannot be falsified
+                    with
+                    a week of code, it is not a hypothesis — it is a wish. Keep it to one page and get the operator, not
+                    the sponsor, to disagree with it.</p>
+
+                <div class="code-tabs" data-label="The one-page scoping doc">
+                    <div class="tab-pane" data-lang="text">
+                        <pre><code data-lang="text">
+WHO          Claims handlers, Tier 2, Leeds office. 40 people.
+TODAY        90 min median per exception claim. 1 in 3 reworked.
+             38 min of the 90 is waiting on a phone call to Ops.
+BELIEF       If the staffing check were automatic and surfaced at
+             intake, median drops below 60 min and rework halves.
+TEST         Week 1: read-only view joining claims + the Ops roster,
+             shown to 4 handlers on live data. If they say "I still
+             have to phone", the belief is wrong and we stop.
+MEASURE      Median minutes to resolution; reopen rate within 14 days.
+             Baseline pulled from 6 months of history BEFORE we build.
+NOT DOING    Auto-approval. Anything touching payment. The mobile app.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><strong>Pull the baseline before you build anything.</strong> If you cannot state today's number, you
+                    will never be able to prove you improved it — and in month six, "it feels better" loses to a budget
+                    review every time.</p>
+            </div>
+
+            <!-- ============================================================ 4 -->
+            <h3 id="4-ship-on-day-one">Ship on Day One<a class="headerlink" href="#4-ship-on-day-one"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>First working artefact</b> <code class="big-o o-great">day 1</code></li>
+                <li><b>First grounded answer</b> <code class="big-o o-good">day 3</code></li>
+                <li><b>First eval set</b> <code class="big-o o-good">day 4</code></li>
+            </ul>
+
+            <p>"Ship on day one" is the phrase the discipline is built on, and it is not bravado. It is a claim about
+                where risk lives: the expensive unknowns in an enterprise deployment are <em>access</em> and
+                <em>fit</em>, and both are only discoverable by trying. A week spent writing a requirements document
+                discovers neither.
+            </p>
+
+            <div class="viz" data-viz="ship-day-one"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🧗</span>
+                <div class="analogy-body">
+                    <b>Picture it — clipping the first bolt</b>
+                    <p>A climber does not plan the whole route from the ground. They get the first piece of protection
+                        in
+                        early, because until they have, a fall costs everything. Day-one shipping is the first bolt: it
+                        proves you can reach their data, it gives the sponsor something to show, and it turns the
+                        relationship from a promise into a track record.</p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — it finds the blockers while they are cheap</b>You learn in week one
+                    that the table you need is owned by a team in another country, instead of in week nine.</li>
+                <li class="is-bad"><b>Weakness — it invites shoddiness</b>Shipping fast is not the same as shipping
+                    flimsy. Narrow and solid beats broad and broken; a demo that falls over in front of an operator
+                    costs
+                    more trust than a week of silence.</li>
+            </ul>
+
+            <div class="worked">
+                <b>The day-one artefact</b>
+                <p class="worked-q">What does "something working" actually look like on the first afternoon?</p>
+                <p>A read-only connector and a list. No model, no inference, no cleverness. It is worth more than a
+                    diagram because it answers the only question that matters at that point — can we reach your data at
+                    all, with credentials that exist, through a network path that is open?</p>
+
+                <div class="code-tabs" data-label="Day one — prove you can reach the data">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import os, sqlalchemy as sa
+from fastapi import FastAPI, Query
+
+# Read-only credentials, in their VPC, against a replica.
+# Never ask for write access on day one - it triples the approval chain.
+engine = sa.create_engine(os.environ["CLAIMS_RO_DSN"], pool_pre_ping=True)
+app = FastAPI()
+
+@app.get("/exceptions")
+def exceptions(site: str | None = Query(None), limit: int = 50):
+    sql = sa.text("""
+        SELECT claim_id, opened_at, site_code, status, amount
+        FROM   claims_exceptions
+        WHERE  (:site IS NULL OR site_code = :site)
+        ORDER  BY opened_at DESC
+        LIMIT  :limit
+    """)
+    with engine.connect() as cx:
+        rows = cx.execute(sql, {"site": site, "limit": limit}).mappings().all()
+    return {"count": len(rows), "rows": [dict(r) for r in rows]}
+
+# Day one is done when a handler opens this, filters to their site,
+# and says "that one's wrong". That sentence is worth a month of specs.
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+import express from "express";
+import pg from "pg";
+
+// Read-only pool, inside their network, pointed at a replica.
+const pool = new pg.Pool({ connectionString: process.env.CLAIMS_RO_DSN });
+const app = express();
+
+app.get("/exceptions", async (req, res) =&gt; {
+  const { site = null, limit = 50 } = req.query;
+  const { rows } = await pool.query(
+    `SELECT claim_id, opened_at, site_code, status, amount
+       FROM claims_exceptions
+      WHERE ($1::text IS NULL OR site_code = $1)
+      ORDER BY opened_at DESC
+      LIMIT $2`,
+    [site, Number(limit)]
+  );
+  res.json({ count: rows.length, rows });
+});
+
+// The goal is not the endpoint. The goal is the conversation it starts.
+app.listen(8080);
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p><strong>Ask for read-only first, always.</strong> Write access multiplies the number of people who
+                    must approve you, and you do not need it to prove anything in week one. Earn it in week four with a
+                    track record behind you.</p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-2">Unit 2 — The Build<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
+            <p>Four layers, built in this order. Each one only makes sense once the layer beneath it exists, and
+                skipping
+                straight to the model is the most common way a deployment fails.</p>
+
+            <!-- ============================================================ 5 -->
+            <h3 id="5-the-ontology">The Ontology<a class="headerlink" href="#5-the-ontology"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Built by</b> <code class="big-o o-great">day 2</code></li>
+                <li><b>Entities to start</b> <code class="big-o o-good">3–6</code></li>
+                <li><b>Owner after handover</b> <code class="big-o o-good">the customer</code></li>
+            </ul>
+
+            <p>An ontology is a plain name for something unglamorous: <strong>a typed model of the customer's nouns and
+                    the verbs between them</strong>, sitting on top of source systems that were named by people who have
+                since left. <code>Order</code>, <code>Customer</code>, <code>Shipment</code>, and the fact that an order
+                is <code>placed_by</code> a customer.</p>
+
+            <p>Palantir productised this in Foundry and every serious AI deployment has rediscovered it since, because a
+                generic model has no idea what your company means by "active account". The domain knowledge has to live
+                somewhere, and a prompt is the worst available place for it.</p>
+
+            <div class="viz" data-viz="ontology-build"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🗺️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a street map versus satellite photos</b>
+                    <p>Satellite photos contain every fact but no structure; to find a route you must interpret pixels
+                        every time. A street map has already decided what counts as a road, a junction and a one-way
+                        system. Raw tables are the photographs. The ontology is the map — and a map is what you can hand
+                        to somebody else.</p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — it is the thing that survives you</b>Models change quarterly, prompts
+                    change weekly. A good domain model outlives both and is the artefact the customer's team can extend.
+                </li>
+                <li class="is-good"><b>Strength — it is your permissions and audit boundary</b>Access control and
+                    logging attach to entities and actions, not to strings in a prompt.</li>
+                <li class="is-bad"><b>Weakness — it tempts you into a data-modelling project</b>Six weeks of ontology
+                    and no working workflow is a failure. Three entities that support one real decision beats forty that
+                    support none.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">How do you express an ontology in ordinary code, without a platform?</p>
+                <p>Typed entities, explicit links, and functions over them. The point is not the framework — it is that
+                    there is exactly one definition of "overdue shipment" in the codebase, and both the UI and the model
+                    call the same one. The moment that definition exists twice, they diverge and an operator loses
+                    trust.
+                </p>
+
+                <div class="code-tabs" data-label="Ontology — entities, links and actions">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+
+@dataclass(frozen=True)
+class Shipment:
+    id: str
+    order_id: str          # link: fulfils -&gt; Order
+    carrier: str
+    promised_at: datetime
+    last_scan_at: datetime | None
+    site_code: str
+
+    # ONE definition of "late", used by the UI, the alerts and the model.
+    @property
+    def is_overdue(self) -&gt; bool:
+        return datetime.utcnow() &gt; self.promised_at
+
+    @property
+    def is_dark(self) -&gt; bool:
+        """No carrier scan for 8h - the field name operators actually use."""
+        if self.last_scan_at is None:
+            return True
+        return datetime.utcnow() - self.last_scan_at &gt; timedelta(hours=8)
+
+def find_shipments(site: str, overdue_only: bool = True) -&gt; list[Shipment]:
+    """An ACTION. This - not the table - is what the model may call."""
+    rows = repo.query_shipments(site_code=site)
+    return [s for s in rows if s.is_overdue] if overdue_only else rows
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+
+export class Shipment {
+  constructor(row) { Object.assign(this, row); }
+
+  // ONE definition of "late", shared by the UI, the alerts and the model.
+  get isOverdue() { return Date.now() &gt; this.promisedAt.getTime(); }
+
+  // "Dark" is the word the operators use. Use their word, not yours.
+  get isDark() {
+    if (!this.lastScanAt) return true;
+    return Date.now() - this.lastScanAt.getTime() &gt; EIGHT_HOURS;
+  }
+}
+
+// An ACTION. The model never sees SHIP_EVT; it sees this.
+export async function findShipments(site, { overdueOnly = true } = {}) {
+  const rows = await repo.queryShipments({ siteCode: site });
+  const all = rows.map((r) =&gt; new Shipment(r));
+  return overdueOnly ? all.filter((s) =&gt; s.isOverdue) : all;
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><strong>Use their words.</strong> If dispatchers say "dark" for a vehicle with no recent ping, the
+                    field is called <code>is_dark</code>. Naming entities after the business's own vocabulary is the
+                    cheapest adoption win available, and renaming them later is surprisingly expensive.</p>
+            </div>
+
+            <!-- ============================================================ 6 -->
+            <h3 id="6-grounding">Grounding in the Customer's Data<a class="headerlink" href="#6-grounding"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Two pipelines</b> <code class="big-o o-good">ingest + serve</code></li>
+                <li><b>Retrieve then pass</b> <code class="big-o o-good">20 → 5</code></li>
+                <li><b>Permission check</b> <code class="big-o o-great">at retrieval</code></li>
+            </ul>
+
+            <p>Grounding is how a general model answers a question about a company it was never trained on: find the
+                relevant passages from the customer's own corpus, put them in the prompt, and require the answer to come
+                from them. Everyone calls this RAG. Almost everyone builds the happy path and stops.</p>
+
+            <div class="viz" data-viz="grounding-pipeline"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">⚖️</span>
+                <div class="analogy-body">
+                    <b>Picture it — a barrister and a junior</b>
+                    <p>The barrister knows the law in general but nothing about this client. The junior pulls the
+                        relevant files and marks the paragraphs that matter. The barrister argues only from those pages,
+                        and cites them. If the junior pulls the wrong file, the barrister will argue the wrong case
+                        fluently and confidently — which is exactly what a badly retrieved passage does to a model.</p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — no training required</b>New documents are searchable the moment they
+                    are indexed, and you can cite sources, which is what makes the answer auditable.</li>
+                <li class="is-bad"><b>Weakness — retrieval failures are invisible</b>The model does not say "I found
+                    nothing useful". It answers anyway, from whatever it was given, in the same confident tone.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>The leak that ends deployments.</strong> If the index does not carry permissions, retrieval
+                    will happily surface a passage from a document the asking user cannot open. You have then built a
+                    system that launders access control. Filter by the <em>user's</em> entitlements at query time,
+                    inside
+                    the search, not by asking the model to be discreet.</p>
+            </div>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">What does a defensible retrieval step look like?</p>
+                <p>Permission filter inside the query, hybrid search so exact identifiers still work, rerank before you
+                    spend context on it, and citations on the way out. Four things, none of them clever, all of them
+                    missing from most first drafts.</p>
+
+                <div class="code-tabs" data-label="Retrieval with entitlements and reranking">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def retrieve(question: str, user: User, k: int = 5) -&gt; list[Chunk]:
+    qv = embed(question)                       # SAME model used at ingest
+
+    # 1. Permission filter is part of the query, not a post-filter.
+    #    A post-filter can return zero rows and look like "no answer".
+    candidates = index.search(
+        vector=qv,
+        text=question,                         # 2. hybrid: part numbers matter
+        top_k=20,
+        filter={"acl_groups": {"$in": user.groups}},
+    )
+
+    # 3. Rerank 20 -&gt; 5. Usually worth more than upgrading the base model.
+    ranked = reranker.rank(question, candidates)[:k]
+
+    # 4. Keep provenance so the answer can be checked by a human.
+    return [c.with_citation(c.doc_id, c.heading_path, c.page) for c in ranked]
+
+SYSTEM = (
+    "Answer ONLY from the passages provided. Cite the passage id after each "
+    "claim. If the passages do not contain the answer, reply exactly: "
+    "'Not covered by the documents I can see.'"
+)
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+export async function retrieve(question, user, k = 5) {
+  const qv = await embed(question);            // SAME model used at ingest
+
+  // 1. Entitlements go INSIDE the query. Post-filtering silently
+  //    turns "you may not see this" into "there is no answer".
+  const candidates = await index.search({
+    vector: qv,
+    text: question,                            // 2. hybrid: IDs and codes
+    topK: 20,
+    filter: { acl_groups: { $in: user.groups } },
+  });
+
+  // 3. Rerank 20 -&gt; 5 before spending context on them.
+  const ranked = (await reranker.rank(question, candidates)).slice(0, k);
+
+  // 4. Provenance travels with the chunk, all the way to the UI.
+  return ranked.map((c) =&gt; c.withCitation(c.docId, c.headingPath, c.page));
+}
+
+export const SYSTEM =
+  "Answer ONLY from the passages provided. Cite the passage id after each " +
+  "claim. If the passages do not contain the answer, reply exactly: " +
+  "'Not covered by the documents I can see.'";
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Before tuning anything, measure <strong>retrieval</strong> separately from
+                    <strong>generation</strong>.
+                    Ask: was the right passage in the top five? If it was not, no prompt change will save you, and you
+                    have just spent a week on the wrong half of the system.</p>
+            </div>
+
+            <!-- ============================================================ 7 -->
+            <h3 id="7-agents-and-tools">Agents &amp; Tool Calls<a class="headerlink" href="#7-agents-and-tools"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Turn cap</b> <code class="big-o o-good">6–10</code></li>
+                <li><b>Policy lives in</b> <code class="big-o o-great">code, not the prompt</code></li>
+                <li><b>Autonomy</b> <code class="big-o o-ok">a dial the customer sets</code></li>
+            </ul>
+
+            <p>An agent is a loop: the model proposes a tool call, you execute it, you feed the result back, repeat
+                until
+                it produces an answer or you stop it. The loop is trivial. Everything that matters is in the boundary
+                around it — which tools exist, what they are allowed to do, and who approves the ones that cost money.
+            </p>
+
+            <div class="viz" data-viz="agent-loop"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎓</span>
+                <div class="analogy-body">
+                    <b>Picture it — a capable intern on their first week</b>
+                    <p>Bright, fast, and genuinely useful. You would not give them the company card and root access on
+                        day one. You give them four specific things they may do, a spending limit enforced by the card
+                        itself rather than by a memo, and a rule that anything above a threshold gets a signature. The
+                        constraints are not distrust — they are what makes the delegation safe enough to be worth doing.
+                    </p>
+                </div>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — it handles the branching real work has</b>Fixed pipelines break on the
+                    exception cases; a loop can look something up and change its plan.</li>
+                <li class="is-bad"><b>Weakness — every turn is a chance to diverge</b>Cost, latency and failure modes
+                    all compound with turn count, and an unbounded loop is a way to spend a lot of money slowly.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>A prompt is not a control.</strong> "Never spend more than £2,000" in a system prompt is a
+                    strong suggestion that fails under an unusual input or a prompt injection in a retrieved document.
+                    The cap belongs in the tool, where it is deterministic, testable and visible to an auditor.</p>
+            </div>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">Write the loop the way it survives a security review.</p>
+                <p>Bounded turns, a whitelist of tools, validation before execution, and structured refusals fed back as
+                    observations so the model can replan rather than retry blindly. Note how little of this is about the
+                    model.</p>
+
+                <div class="code-tabs" data-label="Agent loop with enforced guardrails">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+MAX_TURNS = 8
+COST_CAP_GBP = 2000
+
+def run_agent(goal: str, ctx: Context) -&gt; Result:
+    messages = [{"role": "system", "content": SYSTEM},
+                {"role": "user", "content": goal}]
+
+    for turn in range(MAX_TURNS):
+        reply = model.chat(messages, tools=TOOL_SCHEMAS)   # only these tools
+        if not reply.tool_calls:
+            return Result(answer=reply.content, turns=turn)
+
+        for call in reply.tool_calls:
+            verdict = guardrails.check(call, ctx, cap=COST_CAP_GBP)
+            if not verdict.allowed:
+                # Feed the REASON back. Told why, a model replans;
+                # told only "denied", it retries the same thing.
+                messages.append(tool_result(call, {
+                    "error": "blocked_by_policy",
+                    "reason": verdict.reason,
+                }))
+                continue
+
+            if verdict.needs_human:
+                return Result(pending=approval.request(call, ctx))
+
+            messages.append(tool_result(call, TOOLS[call.name](**call.args)))
+
+    raise TurnLimitExceeded(goal)   # bounded loops fail loudly, not silently
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+const MAX_TURNS = 8;
+const COST_CAP_GBP = 2000;
+
+export async function runAgent(goal, ctx) {
+  const messages = [
+    { role: "system", content: SYSTEM },
+    { role: "user", content: goal },
+  ];
+
+  for (let turn = 0; turn &lt; MAX_TURNS; turn++) {
+    const reply = await model.chat(messages, { tools: TOOL_SCHEMAS });
+    if (!reply.toolCalls?.length) return { answer: reply.content, turns: turn };
+
+    for (const call of reply.toolCalls) {
+      const verdict = guardrails.check(call, ctx, { cap: COST_CAP_GBP });
+
+      if (!verdict.allowed) {
+        // The reason is the useful part - it lets the model replan.
+        messages.push(toolResult(call, {
+          error: "blocked_by_policy",
+          reason: verdict.reason,
+        }));
+        continue;
+      }
+      if (verdict.needsHuman) return { pending: await approval.request(call, ctx) };
+
+      messages.push(toolResult(call, await TOOLS[call.name](call.args)));
+    }
+  }
+  throw new TurnLimitExceeded(goal);   // never loop forever on someone's bill
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Start every agent at <strong>propose-only</strong>. It drafts the action, a human clicks approve, and
+                    you log both. After a few hundred approvals you have real evidence for where the threshold should
+                    sit — and the customer is the one who moves the dial, not you.</p>
+            </div>
+
+            <!-- ============================================================ 8 -->
+            <h3 id="8-evals">Evals — Proving It Works<a class="headerlink" href="#8-evals" title="Permanent link">#</a>
+            </h3>
+
+            <ul class="meta-strip">
+                <li><b>Where cases come from</b> <code class="big-o o-great">real field failures</code></li>
+                <li><b>Compare</b> <code class="big-o o-good">per case, not aggregate</code></li>
+                <li><b>Gate</b> <code class="big-o o-great">CI, before merge</code></li>
+            </ul>
+
+            <p>Evaluation engineering is the single most-cited differentiator in forward deployed hiring, for one blunt
+                reason: without it, nobody can tell whether this week's change made the system better or worse, so
+                eventually nobody changes anything and the deployment freezes. An eval suite is what converts an
+                argument
+                about vibes into a number.</p>
+
+            <div class="viz" data-viz="eval-harness"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🧪</span>
+                <div class="analogy-body">
+                    <b>Picture it — a blood test, not a vibe</b>
+                    <p>"The patient seems better" is not a clinical finding. A panel of specific measurements, taken the
+                        same way each time, is. Evals are the blood panel for a probabilistic system: the same inputs,
+                        the same graders, every release, so that "better" is a claim you can defend rather than a
+                        feeling
+                        you have.</p>
+                </div>
+            </div>
+
+            <p>The set is not invented at a desk. Every case comes from a real one an operator walked you through, with
+                the answer <em>they</em> said was right. When something fails in the field it becomes a case
+                permanently — that is how the suite earns its keep.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — it makes change safe</b>With a suite you can swap models, rewrite
+                    prompts and refactor retrieval, because you will know within minutes what you broke.</li>
+                <li class="is-bad"><b>Weakness — aggregate scores lie</b>5/6 to 5/6 can hide a fix and a new break.
+                    Always diff per case; a red-to-green-to-red cell is a release blocker.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">What is the smallest eval harness worth having?</p>
+                <p>A file of cases, a grader chosen per case type, and a CI job that fails the build on any regression.
+                    That is it. A spreadsheet is genuinely fine for the first ten cases; by fifty you want this.</p>
+
+                <div class="code-tabs" data-label="A minimal eval harness with CI gating">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import json, sys
+
+GRADERS = {
+    "exact":  lambda got, want: got.strip() == want.strip(),
+    "field":  lambda got, want: json.loads(got)["decision"] == want,
+    "rubric": lambda got, want: judge(got, rubric=want).score &gt;= 4,  # last resort
+}
+
+def run(cases_path: str, baseline_path: str) -&gt; int:
+    cases = [json.loads(l) for l in open(cases_path)]
+    baseline = json.load(open(baseline_path))
+    results, regressions = {}, []
+
+    for c in cases:
+        got = system.answer(c["input"], user=c["as_user"])
+        ok = GRADERS[c["grader"]](got, c["expected"])
+        results[c["id"]] = ok
+        # A pass that becomes a fail blocks the merge. New failures do not
+        # block - they are cases you had not solved yet and are honest about.
+        if baseline.get(c["id"]) and not ok:
+            regressions.append(c["id"])
+
+    print(f"{sum(results.values())}/{len(cases)} pass")
+    if regressions:
+        print("REGRESSIONS:", ", ".join(regressions))
+        return 1        # non-zero exit fails the pipeline
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(run("evals/cases.jsonl", "evals/baseline.json"))
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+const GRADERS = {
+  exact: (got, want) =&gt; got.trim() === want.trim(),
+  field: (got, want) =&gt; JSON.parse(got).decision === want,
+  rubric: async (got, want) =&gt; (await judge(got, want)).score &gt;= 4, // last resort
+};
+
+export async function run(cases, baseline) {
+  const results = {};
+  const regressions = [];
+
+  for (const c of cases) {
+    const got = await system.answer(c.input, { user: c.asUser });
+    const ok = await GRADERS[c.grader](got, c.expected);
+    results[c.id] = ok;
+    // Pass -&gt; fail blocks the merge. Still-failing cases do not:
+    // they are known gaps, tracked honestly rather than hidden.
+    if (baseline[c.id] && !ok) regressions.push(c.id);
+  }
+
+  const passed = Object.values(results).filter(Boolean).length;
+  console.log(`${passed}/${cases.length} pass`);
+  if (regressions.length) {
+    console.error("REGRESSIONS:", regressions.join(", "));
+    process.exitCode = 1;    // fail the pipeline, not the customer
+  }
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p>Hand the eval suite over with the system. A customer who inherits the code but not the tests can keep
+                    it running and can never safely change it — which means it freezes on the day you leave and rots
+                    from
+                    there.</p>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-3">Unit 3 — The Deployment<a class="headerlink" href="#unit-3" title="Permanent link">#</a>
+            </h2>
+            <p>The prototype works. You are now roughly a fifth of the way there, and the remaining four fifths have
+                almost nothing to do with the model.</p>
+
+            <!-- ============================================================ 9 -->
+            <h3 id="9-the-integration-wall">The Integration Wall<a class="headerlink" href="#9-the-integration-wall"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Gates between demo and prod</b> <code class="big-o o-bad">5</code></li>
+                <li><b>Run them</b> <code class="big-o o-great">in parallel, from week 2</code></li>
+                <li><b>Cleared by</b> <code class="big-o o-ok">people and documents, not code</code></li>
+            </ul>
+
+            <p>This is where forward deployed engineers earn their compensation, and it is the part no tutorial covers.
+                Between a working prototype and a system real people use sits a series of organisational gates — each
+                one
+                a queue, each one owned by somebody who does not report to your sponsor.</p>
+
+            <div class="viz" data-viz="integration-wall"></div>
+
+            <div class="analogy">
+                <span class="analogy-icon">🛂</span>
+                <div class="analogy-body">
+                    <b>Picture it — customs, not the flight</b>
+                    <p>The flight is the easy part and it is the part you planned for. Then comes passport control,
+                        baggage, the declaration form and the queue for the taxi. None of it is technically difficult;
+                        all of it is sequential, owned by different people, and impossible to hurry from inside the
+                        queue. The only winning move is to start every queue at once.</p>
+                </div>
+            </div>
+
+            <p>The topology you deploy into is the decision the gates force, so make it early and deliberately rather
+                than discovering it during a security review. Switch between the three shapes below:</p>
+
+            <div class="viz" data-viz="deploy-topology"></div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Do — get the constraints in writing in week one</b>Where may data be processed?
+                    How long are prompts retained? Is the model provider an approved sub-processor? Three questions that
+                    each can invalidate an architecture.</li>
+                <li class="is-bad"><b>Do not — treat the security team as an obstacle</b>They are the only people who
+                    can actually approve you. Bring them a threat model in week two and they become your fastest route,
+                    rather than your last one.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>Every dependency is a question you will answer on a Thursday.</strong> This is why
+                    experienced
+                    FDEs are conservative about frameworks — a first-party SDK and some code you wrote is easier to
+                    defend, debug in someone else's estate, and hand over than a stack of abstractions. Prototype with
+                    the framework, unwind it before production.</p>
+            </div>
+
+            <!-- ============================================================ 10 -->
+            <h3 id="10-observability">Observability &amp; Cost<a class="headerlink" href="#10-observability"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Per request</b> <code class="big-o o-good">trace + cost + outcome</code></li>
+                <li><b>Traces live</b> <code class="big-o o-great">wherever the data lives</code></li>
+                <li><b>Report</b> <code class="big-o o-good">cost per resolved case</code></li>
+            </ul>
+
+            <p>In a deterministic system, failure is loud: a stack trace, a 500, a page. A probabilistic system fails
+                <em>quietly</em> — it keeps answering, in the same confident tone, slightly worse each week, until users
+                stop trusting it and drift back to the old process. You cannot see that from an uptime dashboard.
+            </p>
+
+            <p>So you instrument differently. Every request emits the full prompt, the retrieved chunks, every tool
+                call,
+                latency per span, tokens, cost, and — the part teams skip — <strong>what happened to the
+                    answer</strong>.
+                Accepted? Edited? Ignored? That last field is the only real quality signal you have.</p>
+
+            <div class="viz" data-viz="trace-waterfall"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>A trace contains the full prompt, and the full prompt contains the record.</strong> Traces
+                    are
+                    personal data. If the customer's data may not leave their region, neither may your observability
+                    backend — this catches more teams than any other single rule.</p>
+            </div>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">What do you actually log per request?</p>
+                <p>One structured event per request, with a correlation id that reaches the UI so a user can report
+                    "this
+                    answer was wrong" and you can find the exact run. Cost goes on the same record, tagged by team, so
+                    the month-end conversation is about unit economics rather than a single large bill.</p>
+
+                <div class="code-tabs" data-label="One trace record per request">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+import time, uuid
+
+def answer_with_trace(question: str, user: User) -&gt; Answer:
+    span = {"run_id": str(uuid.uuid4()), "user_team": user.team, "t0": time.time()}
+
+    chunks = retrieve(question, user)
+    span["retrieved"] = [c.doc_id for c in chunks]     # WHAT was grounded on
+    span["retrieval_ms"] = int((time.time() - span["t0"]) * 1000)
+
+    out = model.generate(prompt(question, chunks))
+    span |= {
+        "model": out.model,
+        "prompt_tokens": out.usage.prompt,
+        "completion_tokens": out.usage.completion,
+        "cost_gbp": price(out.model, out.usage),        # unit economics
+        "total_ms": int((time.time() - span["t0"]) * 1000),
+    }
+    traces.emit(span)                                   # stays in-region
+
+    # run_id goes to the UI so "this was wrong" maps to one exact run,
+    # and the feedback later becomes an eval case.
+    return Answer(text=out.text, citations=chunks, run_id=span["run_id"])
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+import { randomUUID } from "node:crypto";
+
+export async function answerWithTrace(question, user) {
+  const t0 = Date.now();
+  const span = { runId: randomUUID(), userTeam: user.team };
+
+  const chunks = await retrieve(question, user);
+  span.retrieved = chunks.map((c) =&gt; c.docId);        // WHAT was grounded on
+  span.retrievalMs = Date.now() - t0;
+
+  const out = await model.generate(prompt(question, chunks));
+  Object.assign(span, {
+    model: out.model,
+    promptTokens: out.usage.prompt,
+    completionTokens: out.usage.completion,
+    costGbp: price(out.model, out.usage),             // unit economics
+    totalMs: Date.now() - t0,
+  });
+  traces.emit(span);                                   // stays in-region
+
+  // The runId reaches the UI, so a thumbs-down maps to one exact run.
+  return { text: out.text, citations: chunks, runId: span.runId };
+}
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Report <strong>cost per resolved case</strong>, not cost per token. A finance director cannot
+                    evaluate
+                    "£0.004 per thousand tokens" but understands "£0.31 per claim, against £6.10 of handler time"
+                    immediately — and that sentence is what renews the contract.</p>
+            </div>
+
+            <!-- ============================================================ 11 -->
+            <h3 id="11-handover">Handover Without Rot<a class="headerlink" href="#11-handover"
+                    title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Target bus factor</b> <code class="big-o o-great">≥ 3</code></li>
+                <li><b>Real test</b> <code class="big-o o-good">their first solo page</code></li>
+                <li><b>Success measured</b> <code class="big-o o-good">90 days after you leave</code></li>
+            </ul>
+
+            <p>Eventually you leave. What happens next is the only honest measure of the engagement — and the failure
+                mode is seductive, because it looks exactly like success while it is happening.</p>
+
+            <div class="viz" data-viz="handover"></div>
+
+            <div class="callout callout-warn">
+                <p><strong>The hero trap.</strong> When the customer is delighted <em>with you</em> rather than with the
+                    system, when they refuse to talk to anyone else, when you are the only person who can deploy — that
+                    is not seniority. It is a single point of failure that converts into churn the moment you are
+                    reassigned. Good programmes force rotation for exactly this reason.</p>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Do — give away the pager</b>Let their engineer take primary on-call with you as
+                    secondary. The first page they handle alone is the real handover; everything before it is theatre.
+                </li>
+                <li class="is-good"><b>Do — hand over the eval suite</b>Without it they can keep it running but cannot
+                    safely change it, so it freezes and slowly diverges from the business.</li>
+                <li class="is-bad"><b>Do not — write documentation at the end</b>A runbook written in week twenty-four
+                    is fiction. Write it from your own incidents, as they happen.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Field practice</b>
+                <p class="worked-q">What does a runbook that actually gets used look like?</p>
+                <p>Symptom first, because that is what the person at 2am has. Not architecture, not rationale — the
+                    thing
+                    they can see, the thing to check, and the exact command. Five entries drawn from real incidents beat
+                    fifty speculative ones.</p>
+
+                <div class="code-tabs" data-label="Runbook — symptom first">
+                    <div class="tab-pane" data-lang="text">
+                        <pre><code data-lang="text">
+SYMPTOM   "Answers say 'Not covered by the documents I can see'" (spike)
+CHECK     grafana / retrieval_hits_p50   -- is it 0?
+CAUSE     Nightly ingest failed; index is stale or empty.
+FIX       kubectl -n claims logs job/ingest-nightly --tail=200
+          make reindex CORPUS=policies      # ~25 min, safe to re-run
+ESCALATE  #claims-ai-oncall, then data-platform if the SOURCE export is missing.
+
+SYMPTOM   "It's slow" / p95 over 4s
+CHECK     traces: which span dominates? (usually llm, sometimes ops-api)
+FIX       If ops-api &gt; 2s: it is their mainframe window, 06:00-06:30 daily.
+          Nothing to fix. Banner already switches on automatically.
+
+SYMPTOM   Decision looks wrong on ONE claim
+DO NOT    change the prompt.
+DO        take the run_id from the UI footer, add it to evals/cases.jsonl
+          with the expected answer, then fix and prove it with `make eval`.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <h2 id="unit-4">Unit 4 — Getting the Job<a class="headerlink" href="#unit-4" title="Permanent link">#</a>
+            </h2>
+            <p>The loop tests three things separately, and strong engineers routinely fail the one they did not
+                practise.
+            </p>
+
+            <!-- ============================================================ 12 -->
+            <h3 id="12-the-decomposition-interview">The Decomposition Interview<a class="headerlink"
+                    href="#12-the-decomposition-interview" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Format</b> <code class="big-o o-ok">60 min, ambiguous brief</code></li>
+                <li><b>Scored on</b> <code class="big-o o-great">how you scope</code></li>
+                <li><b>Most common failure</b> <code class="big-o o-bad">solving too early</code></li>
+            </ul>
+
+            <p>The loop is usually four parts: a behavioural round on ownership, a practical coding round (parse this
+                messy file, expose an API — not LeetCode), a data- or AI-heavy system design round, and the
+                <strong>decomposition case study</strong>. Palantir invented the last one and everybody hiring FDEs now
+                runs a version of it.
+            </p>
+
+            <p>You get a vague, real-world brief and an hour. The single most common failure is a strong engineer
+                reaching for a solution in the first ninety seconds.</p>
+
+            <div class="viz" data-viz="decomposition"></div>
+
+            <div class="callout callout-key">
+                <p>You are not scored on the answer. You are scored on: did you scope before solving, did you sequence
+                    by
+                    dependency, did you propose something genuinely shippable, and did you change your mind when handed
+                    new information. Naming a technology earns nothing.</p>
+            </div>
+
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">"A logistics firm wants an AI agent that reroutes delayed shipments. They have SAP
+                    data, a weather API and 500 warehouse managers. How do you build the eval suite so the agent does
+                    not
+                    overspend while holding a 99% delivery rate?"</p>
+                <p>The question has a trap in it: it sounds like it is about evals, but the two numbers — cost and
+                    delivery rate — are in tension, and nobody has told you the exchange rate between them. Find that
+                    first, then the eval design writes itself. Answer out loud in this order.</p>
+
+                <div class="code-tabs" data-label="The structure of a passing answer">
+                    <div class="tab-pane" data-lang="text">
+                        <pre><code data-lang="text">
+1. SCOPE       "What is a delay worth? If a late pallet costs GBP 400 in
+               penalties, spending GBP 300 to save it is correct and my
+               eval must reward it. Without that number I cannot grade
+               a single case." -- the whole design hangs on this.
+
+2. USER        Who acts? A warehouse manager on a phone, or a central
+               control tower? Propose-and-approve vs fully autonomous
+               are different products with different eval sets.
+
+3. DATA        SAP is batch, weather is real-time. What is the staleness
+               of the shipment record at decision time? An agent acting
+               on a 4-hour-old position is the actual failure mode.
+
+4. DECOMPOSE   (a) detect delay  (b) decide reroute is warranted
+               (c) choose option (d) execute booking. Four evals, not one.
+               (a) is a plain accuracy metric; (d) needs an integration
+               test, not a model eval. Do not grade them together.
+
+5. EVAL SET    300 historical delays with what the human actually chose
+               AND the realised outcome. Grade the agent against the
+               OUTCOME, not against the human -- humans were guessing too.
+
+6. GUARDRAIL   Cost cap and carrier allowlist in code. Then the eval
+               question narrows to: within policy, did it pick well?
+
+7. MVP         Ship propose-only for 6 weeks. 500 managers accepting or
+               rejecting is a labelled dataset arriving for free, and it
+               is how you earn the right to turn autonomy up.
+
+8. TRADE-OFF   "99% delivery at any cost" is not a real objective. I would
+               push back and ask for the tolerance, because the honest
+               answer changes the system.
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>Three portfolio pieces move an application more than any amount of interview practice: something you
+                    deployed <strong>in someone else's environment</strong>, an <strong>enterprise integration</strong>
+                    with real OAuth and retries, and an <strong>eval harness</strong> you built for a system you
+                    shipped.
+                    Each maps directly onto a round of the loop.</p>
+            </div>
+
+            <!-- ============================================================ 13 -->
+            <h2 id="13-the-whole-role-on-one-page">The Whole Role on One Page<a class="headerlink"
+                    href="#13-the-whole-role-on-one-page" title="Permanent link">#</a></h2>
+
+            <p>Everything above, compressed.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stage</th>
+                        <th>You are doing</th>
+                        <th>Output</th>
+                        <th>Fails when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Discover</td>
+                        <td>Watching people work; mapping documented vs lived process</td>
+                        <td>A falsifiable hypothesis and a measured baseline</td>
+                        <td>You build for the sponsor instead of the operator</td>
+                    </tr>
+                    <tr>
+                        <td>Model the domain</td>
+                        <td>Naming entities, links and actions in the business's words</td>
+                        <td>An ontology the customer can extend</td>
+                        <td>It becomes a six-week data-modelling project</td>
+                    </tr>
+                    <tr>
+                        <td>Prototype</td>
+                        <td>Shipping something narrow on real data in week one</td>
+                        <td>A working artefact and a re-scoped week two</td>
+                        <td>It is broad and flimsy instead of narrow and solid</td>
+                    </tr>
+                    <tr>
+                        <td>Ground &amp; orchestrate</td>
+                        <td>Retrieval with entitlements; tools with guardrails</td>
+                        <td>Answers that cite, actions that are bounded</td>
+                        <td>Policy lives in a prompt instead of in code</td>
+                    </tr>
+                    <tr>
+                        <td>Evaluate</td>
+                        <td>Turning field failures into graded cases, gating CI</td>
+                        <td>A suite that makes change safe</td>
+                        <td>You compare aggregates instead of per-case diffs</td>
+                    </tr>
+                    <tr>
+                        <td>Clear the wall</td>
+                        <td>SSO, egress, residency, security review, change board</td>
+                        <td>A production path, opened in parallel</td>
+                        <td>You start the queues in series, in month four</td>
+                    </tr>
+                    <tr>
+                        <td>Observe</td>
+                        <td>Traces with cost and outcome, in-region</td>
+                        <td>Cost per resolved case; a quality signal</td>
+                        <td>Quality degrades silently and nobody notices</td>
+                    </tr>
+                    <tr>
+                        <td>Hand off</td>
+                        <td>Runbook, pairing, the pager, the eval suite</td>
+                        <td>Bus factor ≥ 3 and a system that still changes</td>
+                        <td>You became the hero and then got reassigned</td>
+                    </tr>
+                    <tr>
+                        <td>Feed the platform</td>
+                        <td>Extracting the pattern you have now built three times</td>
+                        <td>A feature the next engagement starts with</td>
+                        <td>Cost per customer stays flat — you are a consultancy</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="viz" data-viz="platform-feedback"></div>
+
+            <h3 id="13-1-the-four-ways-it-goes-wrong">The four ways the model goes wrong<a class="headerlink"
+                    href="#13-1-the-four-ways-it-goes-wrong" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><strong>Consultancy creep.</strong> More custom code per account than patterns pushed back to the
+                    platform. Cost per customer never falls, and the business gets valued like a services firm.</li>
+                <li><strong>Hero culture.</strong> One irreplaceable engineer per account. Delightful, then
+                    catastrophic.
+                </li>
+                <li><strong>Platform–product mismatch.</strong> If the platform cannot cover ~80% out of the box, the
+                    FDE
+                    builds bespoke software forever. FDEs cannot fix a weak product; they can only delay the reckoning.
+                </li>
+                <li><strong>Burnout.</strong> Travel, customer pressure, and a full context switch every quarter. The
+                    healthiest programmes plan rotation and rest deliberately rather than hoping.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p>If you remember one thing: <strong>the scarce skill is not building the system, it is building the
+                        system inside someone else's constraints and then leaving it working.</strong> Everything in
+                    this
+                    course is a consequence of that sentence.</p>
+            </div>
+
+            <h3 id="13-2-where-to-go-next">Where to go next<a class="headerlink" href="#13-2-where-to-go-next"
+                    title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><a href="fde-detailed-course.html">The FDE detailed course</a> — thirty-five sections covering the
+                    same ground from first principles, plus engagement economics, qualification, data integration,
+                    compliance, on-call in someone else's estate, adoption measurement, writing, and the hiring loop in
+                    depth.</li>
+                <li><a href="fde-courses.html">All FDE courses</a> — the catalogue page for this topic.</li>
+                <li><a href="../ai-engineering/ai-engineering-detailed-course.html">AI Engineering detailed course</a> —
+                    the model-side depth this course deliberately skips: tokenisation, context windows, sampling,
+                    embeddings, reranking and serving.</li>
+                <li>Palantir's own product documentation for Foundry's ontology, and the job descriptions for forward
+                    deployed roles at Palantir, OpenAI and Anthropic. Read three postings side by side — the overlap is
+                    the real syllabus for this role.</li>
+                <li>MIT NANDA's <em>State of AI in Business</em> report, for the primary source behind the pilot-failure
+                    numbers in section&nbsp;0.</li>
+            </ol>
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Study Library &mdash; Forward Deployed Engineer</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="fde-study.js"></script>
+</body>
+
+</html>

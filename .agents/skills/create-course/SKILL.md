@@ -88,14 +88,6 @@ If the topic's code samples are not Python/JavaScript, extend the highlighter: a
 <html lang="en">
 
 <head>
-    <script>
-        if (window.location.pathname.endsWith('/ai')) {
-            const base = document.createElement('base');
-            let path = window.location.pathname.replace(/\/ai\/?$/, '');
-            base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
-            document.head.appendChild(base);
-        }
-    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />
