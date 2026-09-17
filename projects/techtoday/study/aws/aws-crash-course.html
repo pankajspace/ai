@@ -79,6 +79,18 @@
             <h3 id="1-regions-and-azs">1. Regions, Availability Zones &amp; the Shape of AWS<a class="headerlink"
                     href="#1-regions-and-azs" title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>AWS is data centres all over the world, rented by the hour. A <b>Region</b> is the city you
+                        choose to run in (Mumbai, Virginia, Frankfurt). An <b>Availability Zone</b> is one of several
+                        separate buildings inside that city, each with its own power and network. Running in one
+                        building is risky; running in two or three is the normal way to stay up when one has a bad
+                        day.</p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>Regions</b> <code class="big-o o-good">36+</code></li>
                 <li><b>AZs per Region</b> <code class="big-o o-great">3+</code></li>
@@ -199,6 +211,17 @@ print(spread)          # Counter({'us-east-1a': 3}) is the finding
             <!-- ============================================================ 2 -->
             <h3 id="2-iam">2. IAM &mdash; Who Can Do What<a class="headerlink" href="#2-iam"
                     title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>IAM is the doorkeeper for everything on AWS. Every click, script, and service-to-service call
+                        is checked against written rules before it is allowed. Nothing is permitted until a rule says
+                        it is, and a single "no" beats every "yes". Most AWS problems that look mysterious are really
+                        an IAM rule you have not read yet.</p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>Default</b> <code class="big-o o-bad">deny</code></li>
@@ -361,6 +384,18 @@ for r in result["EvaluationResults"]:
             <h3 id="3-vpc">3. The VPC &mdash; Where Your Resources Live<a class="headerlink" href="#3-vpc"
                     title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A VPC is your own private network inside AWS &mdash; a fenced plot of land that nobody else
+                        shares. Inside it you create <b>subnets</b> (rooms): public ones that can reach the internet,
+                        private ones that cannot. <b>Security groups</b> are the guards on each door, deciding which
+                        traffic gets in. If two things cannot talk to each other on AWS, the answer is almost always
+                        in here.</p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>Typical CIDR</b> <code class="big-o o-good">10.0.0.0/16</code></li>
                 <li><b>Subnet</b> <code class="big-o o-ok">1 AZ, always</code></li>
@@ -510,6 +545,18 @@ S3Endpoint:
             <h3 id="4-cost">4. What You Are Actually Paying For<a class="headerlink" href="#4-cost"
                     title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>AWS is a metered utility: you pay for what is <em>switched on</em>, not for what you actually
+                        use. A server nobody visits still bills by the hour, a disk still bills whether it is full or
+                        empty, and moving data <em>out</em> of AWS costs money while moving it in is free. Surprise
+                        bills are nearly always idle resources and data transfer, not the thing you were focused on.
+                    </p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>Savings Plan</b> <code class="big-o o-good">up to 66% off</code></li>
                 <li><b>Spot</b> <code class="big-o o-great">up to 90% off</code></li>
@@ -643,6 +690,18 @@ aws ec2 describe-snapshots --owner-ids self \
             <!-- ============================================================ 5 -->
             <h3 id="5-s3">5. S3 &mdash; The Default Place to Put Things<a class="headerlink" href="#5-s3"
                     title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>S3 is unlimited file storage on the internet. You put a file into a <b>bucket</b>, it gets an
+                        address, and AWS quietly keeps several copies across different buildings so it does not get
+                        lost. It is cheap, it never fills up, and it is where uploads, backups, images, videos, logs
+                        and analytics data all end up. It is <em>not</em> a disk and not a database &mdash; you read
+                        and write whole objects, not parts of them.</p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>Durability</b> <code class="big-o o-great">11 nines</code></li>
@@ -789,6 +848,19 @@ await fetch(url, {
             <!-- ============================================================ 6 -->
             <h3 id="6-compute">6. Compute &mdash; Lambda, Containers &amp; EC2<a class="headerlink" href="#6-compute"
                     title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Compute is simply "where your code runs", and AWS gives you three sizes of it.
+                        <b>Lambda</b> runs one function when something triggers it and charges only for those
+                        milliseconds. <b>Containers</b> (ECS/Fargate) run your packaged app continuously without you
+                        touching servers. <b>EC2</b> hands you a plain virtual machine and everything on it is yours
+                        to look after. The real choice is how much maintenance you want to own.
+                    </p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>Lambda max</b> <code class="big-o o-ok">15 min, 10 GB</code></li>
@@ -950,6 +1022,18 @@ def handler(event, context):
             <h3 id="7-databases">7. Databases &mdash; Choosing and Not Regretting It<a class="headerlink"
                     href="#7-databases" title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>This is where your structured data lives, and there are two families. <b>RDS and Aurora</b> are
+                        ordinary SQL databases (PostgreSQL, MySQL) that AWS patches, backs up and fails over for you
+                        &mdash; you can ask them any question later. <b>DynamoDB</b> is a key-value store that stays
+                        fast at any size but only answers the questions you designed for up front. Choose by the
+                        queries you will need, because changing your mind later is expensive.</p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>RDS failover</b> <code class="big-o o-ok">60–120 s</code></li>
                 <li><b>Aurora replicas</b> <code class="big-o o-good">up to 15</code></li>
@@ -1079,6 +1163,19 @@ print(res["Count"], res["ConsumedCapacity"] if "ConsumedCapacity" in res else ""
             <!-- ============================================================ 8 -->
             <h3 id="8-traffic">8. Getting Traffic In &mdash; ALB, Route 53 &amp; CloudFront<a class="headerlink"
                     href="#8-traffic" title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Three services get a user's browser to your code. <b>Route 53</b> is the phone book: it turns
+                        your domain name into an address. <b>CloudFront</b> is a network of local branches that keeps
+                        copies of your pages, images and videos close to the user so they load fast. The
+                        <b>load balancer</b> is the receptionist at your door, sending each request to a server that
+                        is currently healthy and quietly skipping the ones that are not.
+                    </p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>ALB</b> <code class="big-o o-good">layer 7</code></li>
@@ -1226,6 +1323,19 @@ aws cloudfront create-invalidation \
             <h3 id="9-messaging">9. Decoupling &mdash; SQS, SNS &amp; EventBridge<a class="headerlink"
                     href="#9-messaging" title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>If service A calls service B directly, A breaks whenever B is down or slow. Instead, A leaves a
+                        message and walks away. <b>SQS</b> is a to-do list &mdash; one worker picks up each job when
+                        it is ready. <b>SNS</b> is a megaphone &mdash; one announcement, everyone subscribed hears it.
+                        <b>EventBridge</b> is a smart sorting office &mdash; it reads each event and delivers it only
+                        to the services that asked for that kind.
+                    </p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>SQS retention</b> <code class="big-o o-good">up to 14 days</code></li>
                 <li><b>SQS delivery</b> <code class="big-o o-ok">at-least-once</code></li>
@@ -1369,6 +1479,18 @@ EmailRule:
             <h3 id="10-observability">10. Observability &mdash; Knowing Before Your Users Do<a class="headerlink"
                     href="#10-observability" title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>These are the instruments on the dashboard. <b>CloudWatch</b> collects numbers and logs and
+                        can wake someone up when a number goes wrong. <b>X-Ray</b> follows one single request across
+                        every service it touches, so you can see which hop was slow. <b>CloudTrail</b> is the security
+                        camera: it records who called which AWS API, when, and from where. Without these you find out
+                        about outages from your users.</p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>Metric resolution</b> <code class="big-o o-good">1 s – 1 min</code></li>
                 <li><b>Alarm states</b> <code class="big-o o-ok">OK / ALARM / no data</code></li>
@@ -1496,6 +1618,19 @@ def log_request(route, tenant, duration_ms, status):
             <!-- ============================================================ 11 -->
             <h3 id="11-security">11. Security Beyond IAM &mdash; KMS, Secrets &amp; Blast Radius<a class="headerlink"
                     href="#11-security" title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>IAM decides who may do what; these services limit the damage when something still goes wrong.
+                        <b>KMS</b> holds the encryption keys and never hands them out, so stolen data is unreadable.
+                        <b>Secrets Manager</b> stores passwords and API keys properly instead of in your code, and
+                        can rotate them. And splitting work across <b>separate accounts</b> means one mistake stays
+                        inside one account instead of taking down everything.
+                    </p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>KMS payload limit</b> <code class="big-o o-bad">4 KB</code></li>
@@ -1640,6 +1775,19 @@ creds = get_secret("prod/db")
             <h3 id="12-iac">12. Infrastructure as Code &amp; Deployment<a class="headerlink" href="#12-iac"
                     title="Permanent link">#</a></h3>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Instead of clicking around the console and hoping you remember what you did, you write your
+                        infrastructure down in a file and let a tool build it &mdash; <b>CloudFormation</b>, the
+                        <b>CDK</b> or <b>Terraform</b>. The file goes in Git, so changes get reviewed, staging and
+                        production match, and rebuilding the whole environment is one command instead of an
+                        afternoon of remembering.
+                    </p>
+                </div>
+            </div>
+
             <ul class="meta-strip">
                 <li><b>Rollback</b> <code class="big-o o-great">automatic</code></li>
                 <li><b>Change set</b> <code class="big-o o-good">dry run</code></li>
@@ -1773,6 +1921,17 @@ aws cloudformation describe-stack-resource-drifts --stack-name prod-api \
             <!-- ============================================================ 13 -->
             <h3 id="13-resilience">13. Building Things That Survive<a class="headerlink" href="#13-resilience"
                     title="Permanent link">#</a></h3>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Things break on AWS as a matter of routine &mdash; a server dies, a zone goes dark, a
+                        dependency gets slow. Resilience is designing so that none of those becomes an outage: spread
+                        copies across Availability Zones, health-check everything, set timeouts so a slow call cannot
+                        hang the whole system, retry sensibly, and actually test that your backups restore.</p>
+                </div>
+            </div>
 
             <ul class="meta-strip">
                 <li><b>Assume</b> <code class="big-o o-bad">everything fails</code></li>

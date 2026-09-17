@@ -92,6 +92,19 @@
             <h2 id="1-what-aws-is">1. What AWS Is, and How to Think About It<a class="headerlink" href="#1-what-aws-is"
                     title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>AWS is an enormous amount of hardware with a web API bolted to the front. The console, the
+                        CLI, Terraform and your own code are all just different callers of that same API &mdash;
+                        there is no secret back door. It also helps to know that every service has two halves: the
+                        <em>ordering desk</em> that creates and changes resources, and the <em>resource itself</em>
+                        doing the work. The second keeps running even when the first is having a bad day.
+                    </p>
+                </div>
+            </div>
+
             <p>AWS is a set of APIs in front of a very large amount of hardware. That sentence is not a
                 simplification &mdash; it is the most useful frame you can hold, because it explains almost every
                 behaviour that otherwise seems arbitrary. The console is a web application that calls those APIs.
@@ -222,6 +235,17 @@ X-Amz-Security-Token: IQoJb3JpZ2luX2Vj...   ← present only for role sessions
             <h2 id="2-global-infrastructure">2. Global Infrastructure<a class="headerlink"
                     href="#2-global-infrastructure" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Where AWS physically is. A <b>Region</b> is a city you choose to run in; an <b>Availability
+                            Zone</b> is one of several independent buildings in that city; <b>edge locations</b> are
+                        hundreds of small outposts near users that only do caching and DNS. Picking the right level
+                        is what decides your latency, your resilience and a surprising share of your bill.</p>
+                </div>
+            </div>
+
             <p>AWS's physical layout is a three-level hierarchy plus an edge network, and every availability and
                 latency decision you make is really a decision about which level to operate at.</p>
 
@@ -327,6 +351,18 @@ X-Amz-Security-Token: IQoJb3JpZ2luX2Vj...   ← present only for role sessions
             <!-- ============================================================ 3 -->
             <h2 id="3-accounts-and-organizations">3. Accounts, Organizations &amp; Landing Zones<a class="headerlink"
                     href="#3-accounts-and-organizations" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>An AWS <b>account</b> is a sealed box: its own resources, its own permissions, its own bill.
+                        Real companies do not use one giant account &mdash; they use many (dev, prod, security) so a
+                        mistake in one cannot spill into another. <b>Organizations</b> groups those accounts under
+                        one bill with company-wide rules nobody can override, and a <b>landing zone</b> is the
+                        ready-made starting layout for all of it.</p>
+                </div>
+            </div>
 
             <p>An AWS <strong>account</strong> is the fundamental container: a namespace for resources, a boundary
                 for IAM, a unit of billing, and &mdash; most importantly &mdash; the only truly hard isolation
@@ -451,6 +487,18 @@ X-Amz-Security-Token: IQoJb3JpZ2luX2Vj...   ← present only for role sessions
             <!-- ============================================================ 4 -->
             <h2 id="4-iam-identities">4. IAM I &mdash; Identities, Principals &amp; Credentials<a class="headerlink"
                     href="#4-iam-identities" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>This section is about <em>who</em> is knocking on the door. A <b>user</b> is a permanent login
+                        with a password or long-lived keys. A <b>role</b> is a temporary badge that anyone trusted
+                        can borrow for a few hours &mdash; a person, an EC2 instance, a Lambda function, a build
+                        pipeline. Modern AWS uses roles for almost everything, because a badge that expires cannot
+                        leak for long.</p>
+                </div>
+            </div>
 
             <p>IAM answers one question for every API call: <em>is this principal permitted to perform this action on
                     this resource under these conditions?</em> Before the evaluation logic in the next section,
@@ -604,6 +652,19 @@ aws ec2 describe-instances \
             <!-- ============================================================ 5 -->
             <h2 id="5-iam-policies">5. IAM II &mdash; Policies &amp; the Evaluation Engine<a class="headerlink"
                     href="#5-iam-policies" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Permissions on AWS are written as short JSON rules: <em>who</em> may do <em>what</em> to
+                        <em>which thing</em>, <em>under what conditions</em>. This section is the exact order AWS
+                        checks those rules in. Two facts carry most of it: nothing is allowed unless a rule allows
+                        it, and one explicit "deny" anywhere beats every allow. Learn the order once and you can
+                        debug any "Access Denied" on the platform.
+                    </p>
+                </div>
+            </div>
 
             <p>This section is the single highest-value piece of AWS knowledge there is, because every access
                 problem on the platform &mdash; and every access <em>control</em> you design &mdash; reduces to it.
@@ -833,6 +894,19 @@ aws ec2 describe-instances \
             <h2 id="6-iam-roles">6. IAM III &mdash; Roles, Federation &amp; Identity Center<a class="headerlink"
                     href="#6-iam-roles" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>How you actually get that temporary badge. A role carries a short note saying who is allowed
+                        to borrow it, and <b>STS</b> is the desk that hands out the badge for a few hours.
+                        <b>Federation</b> means your existing company login (Okta, Entra ID, Google) or your CI
+                        system can borrow one too &mdash; so nobody needs a permanent AWS password, and access
+                        disappears the moment someone leaves the company.
+                    </p>
+                </div>
+            </div>
+
             <p>A role is a permission set with a <strong>trust policy</strong> instead of credentials. The trust
                 policy is a resource-based policy on the role that answers "who may assume me?" &mdash; and it is
                 evaluated independently of the assumer's own permissions. Both sides must agree.</p>
@@ -968,6 +1042,17 @@ aws s3 ls --profile prod-admin
             <!-- ============================================================ 7 -->
             <h2 id="7-clients-and-credentials">7. Talking to AWS &mdash; CLI, SDKs &amp; the Credential Chain<a
                     class="headerlink" href="#7-clients-and-credentials" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>When you run an AWS command, something has to decide <em>which</em> credentials to use. Every
+                        SDK looks in the same places in the same fixed order: environment variables first, then your
+                        config file, then the role attached to the machine. This one list explains nearly every
+                        "it works on my laptop but not on the server" mystery.</p>
+                </div>
+            </div>
 
             <p>Every SDK resolves credentials through the same ordered <strong>default credential provider
                     chain</strong>. Knowing the order explains most "it works on my machine" problems, because the
@@ -1112,6 +1197,18 @@ eval $(aws sts assume-role --role-arn arn:aws:iam::123456789012:role/read-only \
             <h2 id="8-vpc-fundamentals">8. VPC Fundamentals &mdash; CIDR, Subnets &amp; Routes<a class="headerlink"
                     href="#8-vpc-fundamentals" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A VPC is your own private network inside AWS. You pick a block of IP addresses for it, carve
+                        that block into <b>subnets</b> (one per building, so per Availability Zone), and give each
+                        subnet a <b>route table</b> &mdash; a short list of "traffic for here goes there". A subnet is
+                        "public" purely because its route table points at the internet gateway; there is no other
+                        switch.</p>
+                </div>
+            </div>
+
             <p>A <strong>Virtual Private Cloud</strong> is a software-defined network inside a Region. It is not a
                 virtual switch and there is no real router &mdash; the whole thing is implemented in the hypervisor
                 and the network fabric, which is why a route table change takes effect instantly across thousands of
@@ -1240,6 +1337,20 @@ eval $(aws sts assume-role --role-arn arn:aws:iam::123456789012:role/read-only \
             <h2 id="9-vpc-connectivity">9. VPC Connectivity &mdash; Gateways, NAT &amp; PrivateLink<a class="headerlink"
                     href="#9-vpc-connectivity" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>How your private network reaches the outside world. An <b>internet gateway</b> is the front
+                        door for public subnets. A <b>NAT gateway</b> lets private servers call out without anyone
+                        calling in &mdash; convenient, and one of the biggest line items on most AWS bills.
+                        <b>VPC endpoints</b> and <b>PrivateLink</b> are the cheaper, safer alternative: a private
+                        side-entrance straight to S3, DynamoDB or another team's service without touching the
+                        internet at all.
+                    </p>
+                </div>
+            </div>
+
             <h3 id="9-1-gateways">9.1 Internet and egress-only gateways<a class="headerlink" href="#9-1-gateways"
                     title="Permanent link">#</a></h3>
 
@@ -1353,6 +1464,18 @@ SsmEndpoint:
             <h2 id="10-firewalls">10. Firewalls &mdash; Security Groups &amp; Network ACLs<a class="headerlink"
                     href="#10-firewalls" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Two layers of traffic filtering. A <b>security group</b> is a bouncer standing at each
+                        individual resource: it only lists what is allowed, and it remembers a conversation it let
+                        in, so replies come back automatically. A <b>network ACL</b> is a gate around a whole subnet
+                        that can also say "no", but has no memory, so you must allow both directions. In practice you
+                        use security groups and leave the ACLs alone.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="sg-vs-nacl"></div>
 
             <h3 id="10-1-security-groups">10.1 Security groups<a class="headerlink" href="#10-1-security-groups"
@@ -1444,6 +1567,19 @@ DbSg:
             <h2 id="11-connecting-networks">11. Connecting Networks &mdash; Peering, TGW, VPN &amp; DX<a
                     class="headerlink" href="#11-connecting-networks" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Joining separate networks together. <b>Peering</b> is a private cable between two VPCs &mdash;
+                        fine for a few, unmanageable for many. <b>Transit Gateway</b> is the hub everything plugs
+                        into instead. <b>VPN</b> connects your office over the public internet, cheap but variable.
+                        <b>Direct Connect</b> is a dedicated physical line to AWS: expensive, predictable, and what
+                        large companies use.
+                    </p>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -1515,6 +1651,18 @@ DbSg:
             <!-- ============================================================ 12 -->
             <h2 id="12-ec2">12. EC2 &mdash; Instances, Storage &amp; Purchase Options<a class="headerlink"
                     href="#12-ec2" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>EC2 is renting a computer by the second. The odd names like <code>m7g.large</code> are just
+                        "what it is good at, which generation, how big". <b>EBS</b> is a virtual hard disk you attach
+                        to it that survives a reboot. And the same machine has several prices: pay as you go, commit
+                        for a year and save a third, or take AWS's spare capacity at a large discount on the
+                        condition it can be taken back with two minutes' notice.</p>
+                </div>
+            </div>
 
             <h3 id="12-1-families">12.1 Reading an instance type<a class="headerlink" href="#12-1-families"
                     title="Permanent link">#</a></h3>
@@ -1638,6 +1786,17 @@ aws ssm describe-instance-information \
             <h2 id="13-auto-scaling">13. Auto Scaling &amp; Launch Templates<a class="headerlink"
                     href="#13-auto-scaling" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Instead of guessing how many servers you need, you write down a recipe for one server and a
+                        target such as "keep average CPU near 50%". AWS then adds machines when it gets busy, removes
+                        them when it goes quiet, and silently replaces any that stop answering health checks. It is
+                        also how you roll out a new version without downtime.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="autoscaling"></div>
 
             <p>An <strong>Auto Scaling group</strong> maintains a desired number of instances between a minimum and a
@@ -1724,6 +1883,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 14 -->
             <h2 id="14-load-balancing">14. Elastic Load Balancing<a class="headerlink" href="#14-load-balancing"
                     title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A load balancer is the receptionist in front of your servers: one address for the world, and
+                        it hands each request to a server that is currently healthy. The <b>ALB</b> understands web
+                        traffic, so it can route by URL path or hostname and terminate HTTPS. The <b>NLB</b> does not
+                        look inside the traffic at all and is simply very fast. It also quietly hides failures &mdash;
+                        a dead server just stops receiving requests.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="alb-routing"></div>
 
@@ -1840,6 +2011,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 15 -->
             <h2 id="15-s3">15. Amazon S3 in Depth<a class="headerlink" href="#15-s3" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>S3 stores whole files, called objects, in buckets, and keeps copies of each one across several
+                        buildings so losing data is effectively impossible. There are no real folders &mdash; the
+                        slashes in a name are just part of the name. It never runs out of space, it gets faster the
+                        more you spread your names out, and you can even run SQL over data sitting in it without
+                        loading it anywhere first.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="s3-durability"></div>
 
             <h3 id="15-1-model">15.1 The object model<a class="headerlink" href="#15-1-model"
@@ -1909,6 +2092,17 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 16 -->
             <h2 id="16-s3-data-management">16. S3 Security, Versioning, Lifecycle &amp; Replication<a class="headerlink"
                     href="#16-s3-data-management" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Four housekeeping jobs for your buckets: deciding who can read them (the answer to "how do S3
+                        leaks happen" is always here), keeping old copies so a bad overwrite or deletion can be
+                        undone, automatically shuffling files nobody has touched in months into cheaper storage, and
+                        copying a bucket to another Region for compliance or disaster recovery.</p>
+                </div>
+            </div>
 
             <h3 id="16-1-access">16.1 The layers of access control<a class="headerlink" href="#16-1-access"
                     title="Permanent link">#</a></h3>
@@ -2014,6 +2208,19 @@ aws ssm describe-instance-information \
             <h2 id="17-file-storage">17. File Storage &mdash; EFS, FSx &amp; Storage Gateway<a class="headerlink"
                     href="#17-file-storage" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Sometimes your software insists on a real folder it can open, edit and save into &mdash; S3
+                        cannot do that. <b>EFS</b> is a shared network drive many Linux machines can mount at once.
+                        <b>FSx</b> is the same idea for Windows file shares and high-performance computing.
+                        <b>Storage Gateway</b> puts an AWS-backed drive inside your own office. Use these only when
+                        an object store genuinely will not fit; they cost considerably more.
+                    </p>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -2081,6 +2288,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 18 -->
             <h2 id="18-rds-aurora">18. RDS &amp; Aurora<a class="headerlink" href="#18-rds-aurora"
                     title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A normal SQL database &mdash; PostgreSQL or MySQL &mdash; except AWS installs it, patches it,
+                        backs it up and keeps a standby copy in another building ready to take over. <b>Aurora</b> is
+                        AWS's own rebuild of those engines: the storage grows by itself, replicas share one copy of
+                        the data, and failover takes seconds rather than minutes. You give up root access on the
+                        server; you get your weekends back.</p>
+                </div>
+            </div>
 
             <p><strong>RDS</strong> is a managed relational database: AWS handles provisioning, patching, backups,
                 failover and replication for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server and Db2. You do not get
@@ -2183,6 +2402,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 19 -->
             <h2 id="19-dynamodb">19. DynamoDB &mdash; Modelling, Capacity &amp; Indexes<a class="headerlink"
                     href="#19-dynamodb" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>DynamoDB is a giant, permanently fast lookup table. You choose a <b>key</b>, and AWS uses it
+                        to decide which machine your item lives on &mdash; which is why a well-chosen key stays fast
+                        at any size, and a bad one (everybody's data under one key) creates a hot spot. The trade is
+                        that you must know your questions in advance; there is no "just add a WHERE clause" later,
+                        only extra indexes you planned for.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="dynamodb-partition"></div>
 
@@ -2300,6 +2531,19 @@ aws ssm describe-instance-information \
             <h2 id="20-caching">20. Caching &mdash; ElastiCache &amp; DAX<a class="headerlink" href="#20-caching"
                     title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A cache keeps the answers everyone keeps asking for in memory, so the database is never asked
+                        the same question twice. <b>ElastiCache</b> is managed Redis or Memcached for that;
+                        <b>DAX</b> is the same trick bolted onto DynamoDB. Caching is usually a better answer to a
+                        struggling database than buying a bigger one &mdash; as long as you have thought about what
+                        happens when the cache is empty or the data goes stale.
+                    </p>
+                </div>
+            </div>
+
             <p>A cache does not absorb load, it <em>removes</em> it &mdash; which is why it is usually a better first
                 response to database pressure than a larger instance. AWS offers <strong>ElastiCache</strong> for
                 Redis, Valkey and Memcached, <strong>MemoryDB</strong> as a durable Redis-compatible primary
@@ -2374,6 +2618,19 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 21 -->
             <h2 id="21-lambda">21. Lambda in Depth<a class="headerlink" href="#21-lambda" title="Permanent link">#</a>
             </h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>You upload a function, something triggers it, AWS finds a machine to run it on, and you pay
+                        for the milliseconds it ran. No servers to patch and no capacity to plan. The details that
+                        matter in practice are the <b>cold start</b> (the first call waits while a new environment
+                        boots), the fact that a warm environment is reused &mdash; so anything you leave in memory is
+                        still there next time &mdash; and the concurrency limit that decides how many can run at
+                        once.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="lambda-lifecycle"></div>
 
@@ -2461,6 +2718,17 @@ aws ssm describe-instance-information \
             <h2 id="22-api-gateway">22. API Gateway<a class="headerlink" href="#22-api-gateway"
                     title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A managed front door for your API. It gives you an HTTPS address and a custom domain, checks
+                        who the caller is, throttles anyone hammering you, and forwards the request to a Lambda
+                        function or a service behind it. It exists so that every one of your functions does not have
+                        to reimplement authentication, rate limiting and TLS for itself.</p>
+                </div>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -2541,6 +2809,19 @@ aws ssm describe-instance-information \
             <h2 id="23-containers">23. Containers &mdash; ECR, ECS, Fargate &amp; EKS<a class="headerlink"
                     href="#23-containers" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Four pieces of the same story. <b>ECR</b> is the private shelf where your Docker images live.
+                        <b>ECS</b> is AWS's own, fairly simple scheduler that keeps N copies of your container
+                        running. <b>Fargate</b> means you never see the underlying servers at all. <b>EKS</b> is
+                        managed Kubernetes &mdash; far more power and far more moving parts, worth it mainly if you
+                        already speak Kubernetes.
+                    </p>
+                </div>
+            </div>
+
             <h3 id="23-1-ecr">23.1 ECR<a class="headerlink" href="#23-1-ecr" title="Permanent link">#</a></h3>
 
             <p>The Elastic Container Registry stores images, scans them for vulnerabilities (basic scanning on push,
@@ -2604,6 +2885,17 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 24 -->
             <h2 id="24-step-functions">24. Step Functions &amp; Orchestration<a class="headerlink"
                     href="#24-step-functions" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>For a process with several steps &mdash; charge the card, reserve stock, send the email &mdash;
+                        you draw it as a flowchart instead of writing the glue yourself. Step Functions then runs it,
+                        remembers where each execution got to, retries the flaky steps, follows the branches, can
+                        wait for days if needed, and shows you a picture of exactly where a run failed.</p>
+                </div>
+            </div>
 
             <p>Once a process has more than about three steps with retries, branches and partial failures,
                 hand-rolling it in Lambda becomes a distributed-systems project you did not intend to start.
@@ -2714,6 +3006,18 @@ aws ssm describe-instance-information \
             <h2 id="25-messaging">25. Messaging &mdash; SQS, SNS &amp; EventBridge<a class="headerlink"
                     href="#25-messaging" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Ways for services to talk without waiting for each other. <b>SQS</b> is a to-do list: work
+                        piles up safely and one worker takes each job. <b>SNS</b> is a megaphone: one announcement,
+                        every subscriber gets a copy. <b>EventBridge</b> is a sorting office that reads each event
+                        and routes it to whoever asked for that type. The payoff is that a slow or broken consumer
+                        no longer breaks the producer.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="sqs-visibility"></div>
 
             <h3 id="25-1-sqs">25.1 SQS<a class="headerlink" href="#25-1-sqs" title="Permanent link">#</a></h3>
@@ -2798,6 +3102,18 @@ aws ssm describe-instance-information \
             <h2 id="26-streaming">26. Streaming &mdash; Kinesis, Firehose &amp; MSK<a class="headerlink"
                     href="#26-streaming" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>A queue throws a message away once it is handled. A <b>stream</b> keeps it, like a tape, so
+                        several different teams can read the same events at their own pace and rewind if their code
+                        was wrong. <b>Kinesis</b> is AWS's version, <b>MSK</b> is managed Apache Kafka, and
+                        <b>Firehose</b> is the no-code pipe that just dumps the stream into S3 or a warehouse.
+                    </p>
+                </div>
+            </div>
+
             <p>Queues delete a message once it is processed. <strong>Streams</strong> keep an ordered log that many
                 independent consumers read at their own positions, and that can be replayed. That difference &mdash;
                 replay and multiple independent readers &mdash; is the reason to choose a stream.</p>
@@ -2851,6 +3167,17 @@ aws ssm describe-instance-information \
             <h2 id="27-analytics">27. Analytics &mdash; Athena, Glue, Redshift &amp; OpenSearch<a class="headerlink"
                     href="#27-analytics" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Asking questions of data that already sits in S3. <b>Athena</b> runs plain SQL straight over
+                        those files and charges by the data scanned. <b>Glue</b> keeps the catalogue of what those
+                        files contain and cleans them up. <b>Redshift</b> is a proper data warehouse for heavy,
+                        repeated reporting. <b>OpenSearch</b> is for free-text search and poking around in logs.</p>
+                </div>
+            </div>
+
             <p>The AWS analytics story is built on the idea that <strong>S3 is the data lake</strong> and the
                 engines are interchangeable readers of it. Storage and compute are separated, so you can point
                 several tools at the same files.</p>
@@ -2893,6 +3220,17 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 28 -->
             <h2 id="28-route53">28. Route 53 &amp; DNS<a class="headerlink" href="#28-route53"
                     title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Route 53 is the phone book that turns <code>shop.example.com</code> into an address a browser
+                        can connect to. Because it also health-checks your endpoints, it can do more than answer
+                        blindly: send users to the nearest Region, split traffic 90/10 for a careful release, or stop
+                        handing out the address of a site that has just stopped responding.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="route53-routing"></div>
 
@@ -2970,6 +3308,17 @@ aws ssm describe-instance-information \
             <h2 id="29-cloudfront">29. CloudFront &amp; the Edge<a class="headerlink" href="#29-cloudfront"
                     title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>CloudFront keeps copies of your pages, images and videos in hundreds of small sites around the
+                        world, so a user in Sydney is served locally instead of waiting on a server in Virginia. It
+                        makes things faster, cuts the load and the bandwidth bill on your origin, absorbs traffic
+                        spikes, and can even run small pieces of code at the edge.</p>
+                </div>
+            </div>
+
             <div class="viz" data-viz="cloudfront-cache"></div>
 
             <p>CloudFront is a CDN with over 600 points of presence. It terminates TLS near the user, serves cached
@@ -3025,6 +3374,17 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 30 -->
             <h2 id="30-observability">30. Observability &mdash; CloudWatch, X-Ray &amp; CloudTrail<a class="headerlink"
                     href="#30-observability" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Three different questions, three tools. <b>CloudWatch</b> answers "is anything wrong?" with
+                        metrics, logs and alarms that page someone. <b>X-Ray</b> answers "where exactly is the time
+                        going?" by following one request through every service it touches. <b>CloudTrail</b> answers
+                        "who did this?" by recording every AWS API call made in the account.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="cloudwatch-alarm"></div>
 
@@ -3084,6 +3444,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 31 -->
             <h2 id="31-security-services">31. Security Services &mdash; KMS, Secrets, GuardDuty, WAF<a
                     class="headerlink" href="#31-security-services" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>The services that protect you when something has already gone wrong. <b>KMS</b> holds
+                        encryption keys that never leave it, so stolen data is unreadable. <b>Secrets Manager</b>
+                        keeps passwords and API keys out of your source code and rotates them. <b>GuardDuty</b>
+                        watches the account for suspicious behaviour. <b>WAF</b> filters malicious web requests
+                        before they reach your app.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="kms-envelope"></div>
 
@@ -3178,6 +3550,18 @@ aws ssm describe-instance-information \
             <!-- ============================================================ 32 -->
             <h2 id="32-iac">32. Infrastructure as Code<a class="headerlink" href="#32-iac" title="Permanent link">#</a>
             </h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Describe the infrastructure you want in a file and let a tool make reality match it, instead
+                        of clicking through the console and hoping. <b>CloudFormation</b> is AWS's built-in version,
+                        the <b>CDK</b> lets you write it in a real programming language, and <b>Terraform</b> does
+                        the same across clouds. The win is that the file lives in Git: reviewed, repeatable, and able
+                        to rebuild an entire environment from scratch.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="cfn-deploy"></div>
 
@@ -3370,6 +3754,18 @@ sam local start-api                 # run the API locally in Docker
             <!-- ============================================================ 33 -->
             <h2 id="33-cicd">33. CI/CD on AWS<a class="headerlink" href="#33-cicd" title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>The conveyor belt from a commit to production: build the code, run the tests, then roll it out
+                        gradually &mdash; a few servers at a time, or to 5% of users first &mdash; while watching the
+                        alarms, and put the old version back automatically if anything goes red. AWS has its own
+                        CodePipeline family for this, though plenty of teams drive the same deployments from GitHub
+                        Actions.</p>
+                </div>
+            </div>
+
             <p>The AWS-native chain is <strong>CodePipeline</strong> (orchestration) driving
                 <strong>CodeBuild</strong> (build and test) and <strong>CodeDeploy</strong> (deployment strategies),
                 with <strong>CodeArtifact</strong> for private packages and <strong>CodeConnections</strong> linking
@@ -3476,6 +3872,18 @@ jobs:
             <h2 id="34-cost">34. Cost Management &amp; Optimisation<a class="headerlink" href="#34-cost"
                     title="Permanent link">#</a></h2>
 
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>Finding out where the money actually goes and then spending less of it. Tag everything so the
+                        bill can be split by team, switch off what nobody uses, right-size the machines that are far
+                        bigger than they need to be, commit to a year for the workloads that never stop, and set an
+                        alarm on the budget so you learn about a runaway cost in hours rather than at the end of the
+                        month.</p>
+                </div>
+            </div>
+
             <p>Section 12.3 covered how compute is <em>bought</em>. This section is about seeing where the money
                 actually goes and reducing it, which is a different skill: the bill is denominated in usage types,
                 not in applications, and the largest surprises are rarely in the line item you expected.</p>
@@ -3531,6 +3939,17 @@ jobs:
             <!-- ============================================================ 35 -->
             <h2 id="35-well-architected">35. The Well-Architected Framework<a class="headerlink"
                     href="#35-well-architected" title="Permanent link">#</a></h2>
+
+            <div class="plain">
+                <span class="plain-icon">💬</span>
+                <div class="plain-body">
+                    <b>In plain English</b>
+                    <p>AWS's standard checklist for reviewing a design, grouped into six themes: can we operate it,
+                        is it secure, does it survive failure, is it fast enough, does it cost a sensible amount, and
+                        is it wasteful. It is not paperwork &mdash; it is a set of uncomfortable questions that
+                        reliably catch the thing everyone forgot.</p>
+                </div>
+            </div>
 
             <p>Six pillars, each of which is really a set of questions to ask about a design. The framework is worth
                 knowing not because it is a certification topic but because it is the checklist every AWS design
