@@ -502,7 +502,7 @@ h1:hover .headerlink {
 /* Inner wrappers inside article.study must fill article width */
 .study-layout .wrap,
 .study .wrap,
-body.docker-guide .study-layout main,
+body.docker-guide main.study-layout,
 body.docker-guide .study .hero-wrap {
     width: 100% !important;
     max-width: 100% !important;
@@ -517,21 +517,55 @@ body.scaler-guide .content {
     max-width: 100% !important;
 }
 
-/* Mobile layout matching Python and DSA guides */
+/* Base table responsiveness across all AI study guides */
+.study table,
+body.scaler-guide table,
+body.docker-guide table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Base pre / code responsiveness across all AI study guides */
+pre,
+.code pre,
+.term pre,
+.runbox pre,
+.codeblock pre {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+/* Mobile layout matching Python and DSA reference guides */
 @media (max-width: 960px) {
-    .study-layout {
-        display: block;
-        width: 90%;
-        max-width: 1500px;
-        padding-top: 0;
+
+    .study-layout,
+    main.study-layout {
+        display: block !important;
+        width: 90% !important;
+        max-width: 1500px !important;
+        margin: 0 auto !important;
+        padding: 0 0 64px !important;
+    }
+
+    .study-layout .study,
+    .study {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 16px 0 0 !important;
     }
 
     .topic-menu {
         position: sticky;
         top: 53px;
         max-height: none;
-        margin: 0 -16px 12px;
-        padding: 0 16px;
+        margin: 0 -20px 12px;
+        padding: 0 20px;
         overflow: visible;
         background: var(--page, #0b0d10);
         border-right: 0;
@@ -572,20 +606,47 @@ body.scaler-guide .content {
     .table-of-contents {
         grid-template-columns: 1fr;
     }
-}
 
-@media (min-width: 961px) {
-    .topic-menu-panel>summary {
-        cursor: default;
-        pointer-events: none;
+    /* Hero & visual components on tablet/mobile */
+    .hero-inner,
+    .hero .wrap {
+        padding: 36px 16px 28px !important;
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
     }
-}
 
-@media (max-width: 760px) {
-    body.docker-guide table {
-        display: block;
-        max-width: 100%;
-        overflow-x: auto;
+    .phone {
+        transform: none !important;
+        max-width: 100% !important;
+        margin: 20px auto 0 !important;
+    }
+
+    .li-card {
+        width: 100% !important;
+        max-width: 560px !important;
+        margin: 20px auto !important;
+    }
+
+    .arena-grid,
+    .gradio .gbody,
+    .arch,
+    .senses,
+    .cmp-grid {
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+    }
+
+    .sec-head h2 {
+        min-width: 0 !important;
+    }
+
+    .route-inner {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .port {
+        min-width: 0 !important;
     }
 
     body.docker-guide .flip {
@@ -600,6 +661,85 @@ body.scaler-guide .content {
     body.docker-guide .decode dt {
         white-space: normal;
         overflow-wrap: anywhere;
+    }
+}
+
+@media (min-width: 961px) {
+    .topic-menu-panel>summary {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+/* Small mobile screens matching DSA & Python reference guides */
+@media (max-width: 640px) {
+
+    .study,
+    .study-layout,
+    main.study-layout {
+        width: 90% !important;
+        max-width: 1500px !important;
+        padding-top: 0 !important;
+    }
+
+    .study>h1:first-child,
+    .hero h1 {
+        margin-bottom: 16px;
+        font-size: clamp(1.7rem, 6vw, 2.2rem) !important;
+    }
+
+    .table-of-contents {
+        grid-template-columns: 1fr !important;
+    }
+
+    pre,
+    .code pre,
+    .term pre,
+    .runbox pre,
+    .codeblock pre {
+        padding: 16px 14px !important;
+        font-size: 13px !important;
+    }
+
+    .strat-tabs {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .builder .slots,
+    .builder .tray {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        justify-content: center !important;
+    }
+
+    .builder .blockpiece {
+        font-size: 12.5px !important;
+        padding: 8px 12px !important;
+    }
+
+    .sec-head h2,
+    h2 {
+        font-size: clamp(1.35rem, 4.5vw, 1.7rem) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .strat-tabs {
+        grid-template-columns: 1fr !important;
+    }
+
+    .howto .passes {
+        grid-template-columns: 1fr !important;
+    }
+
+    .agenda .row {
+        grid-template-columns: 60px 1fr !important;
+    }
+
+    .sec-num {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 15px !important;
     }
 }
 
