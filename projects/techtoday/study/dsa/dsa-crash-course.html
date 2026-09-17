@@ -53,6 +53,7 @@
             <ol class="table-of-contents table-of-contents-numbered">
                 <li><a href="#0-the-only-maths-you-need">The Only Maths You Need</a></li>
                 <li><a href="#1-arrays">Arrays</a></li>
+                <li><a href="#strings">Strings</a></li>
                 <li><a href="#2-linked-lists">Linked Lists</a></li>
                 <li><a href="#3-stacks">Stacks</a></li>
                 <li><a href="#4-queues">Queues</a></li>
@@ -214,15 +215,6 @@ const wrong = new Array(3).fill(new Array(4).fill(0)); // wrong: only one row is
                 <strong>amortised</strong> means — a long run is fast, not that every single call is.
             </p>
 
-            <div class="callout callout-warn">
-                <p><strong>Strings are arrays of characters that you cannot edit.</strong> In both Python and
-                    JavaScript strings are <strong>immutable</strong>, so every "change" builds a whole new string. That
-                    makes <code>text += word</code> inside a loop <code>O(n²)</code> — the single most common accidental
-                    slowdown in beginner code. Collect the pieces in a list and <code>"".join(parts)</code> (Python) or
-                    <code>parts.join("")</code> (JavaScript) once, for <code>O(n)</code>.
-                </p>
-            </div>
-
             <div class="worked">
                 <b>Top Interview Question</b>
                 <p class="worked-q">Move every zero in an array to the end, keeping the order of the other numbers, and
@@ -265,6 +257,165 @@ function moveZeroes(nums) {         // O(n) time, O(1) space
 const data = [0, 3, 0, 5, 9, 0, 2];
 moveZeroes(data);
 console.log(data);                  // [3, 5, 9, 2, 0, 0, 0]
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ 1b -->
+            <h3 id="strings">Strings<a class="headerlink" href="#strings" title="Permanent link">#</a></h3>
+
+            <ul class="meta-strip">
+                <li><b>Index</b> <code class="big-o o-great">O(1)</code></li>
+                <li><b>Concatenate</b> <code class="big-o o-good">O(n + m)</code></li>
+                <li><b>Naive search</b> <code class="big-o o-bad">O(n·m)</code></li>
+                <li><b>Immutable</b> in both languages</li>
+            </ul>
+
+            <p>A string is an array of characters with one extra rule that changes everything: in both Python and
+                JavaScript it is <strong>immutable</strong>. You cannot overwrite a character in place — every
+                "change" quietly builds a brand new string and copies the old one across.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🪧</span>
+                <div class="analogy-body">
+                    <b>Picture it — a carved stone sign</b>
+                    <p>You cannot rub out one letter on a carved sign. To fix a typo you carve a whole new sign. Doing
+                        that once is fine; doing it once per word in a long speech is how an afternoon disappears.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>That immutability is behind the single most common accidental slowdown in beginner code:
+                    <code>text += word</code> inside a loop is <code>O(n²)</code>, because each <code>+=</code> copies
+                    everything written so far. Collect the pieces in a list and join once —
+                    <code>"".join(parts)</code> in Python, <code>parts.join("")</code> in JavaScript — for
+                    <code>O(n)</code>.
+                </p>
+            </div>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — cheap to share</b>Because nothing can modify a string, it is safe to
+                    pass around, use as a dictionary key, and cache.</li>
+                <li class="is-bad"><b>Weakness — every edit copies</b>Need to change characters in a loop? Convert to a
+                    list of characters, edit, then join back once.</li>
+            </ul>
+
+            <div class="worked">
+                <b>Question</b>
+                <p class="worked-q">How do you build and edit strings without going quadratic?</p>
+                <p>Collect the pieces and join them once, and reach for a mutable character list whenever you genuinely
+                    need to overwrite positions. The rest is the everyday toolkit — splitting, searching, reversing and
+                    counting characters, which is the single highest-value habit for string problems.</p>
+
+                <div class="code-tabs" data-label="Strings, done right">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+s = "Hello, World"
+
+s[0]                    # 'H'   O(1)
+s.lower()               # O(n) - a NEW string, s is unchanged
+s.split(", ")           # ['Hello', 'World']
+s.find("World")         # 7, or -1 if absent
+s[::-1]                 # 'dlroW ,olleH' - reverse by slicing
+
+# BAD: each += copies everything so far -&gt; O(n^2)
+out = ""
+for w in ["a", "b", "c"]:
+    out += w
+
+# GOOD: one allocation at the end -&gt; O(n)
+out = "".join(["a", "b", "c"])
+
+# When you must overwrite characters, use a list and join once.
+chars = list("hello")
+chars[0] = "H"
+print("".join(chars))   # 'Hello'
+
+# Counting characters solves a huge share of string problems.
+from collections import Counter
+print(Counter("mississippi").most_common(2))    # [('i', 4), ('s', 4)]
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+const s = "Hello, World";
+
+s[0];                       // 'H'   O(1)
+s.toLowerCase();            // O(n) - a NEW string
+s.split(", ");              // ['Hello', 'World']
+s.indexOf("World");         // 7, or -1
+[...s].reverse().join("");  // 'dlroW ,olleH' - spread is emoji-safe
+
+// GOOD: collect, then join once -&gt; predictably O(n)
+const out = ["a", "b", "c"].join("");
+
+// When you must overwrite characters, use an array and join once.
+const chars = [..."hello"];
+chars[0] = "H";
+console.log(chars.join(""));    // 'Hello'
+
+// Counting characters solves a huge share of string problems.
+const freq = new Map();
+for (const ch of "mississippi") freq.set(ch, (freq.get(ch) ?? 0) + 1);
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-tip">
+                <p><strong>Characters are not bytes.</strong> JavaScript strings are UTF-16, so an emoji takes two
+                    slots and <code>"😀".length === 2</code>. Reversing with <code>s.split("")</code> corrupts it;
+                    <code>[...s]</code> walks whole code points and is safe.
+                </p>
+            </div>
+
+            <div class="worked">
+                <b>Top Interview Question</b>
+                <p class="worked-q">Decide whether a string is a palindrome, counting only letters and digits and
+                    ignoring case. <code>"A man, a plan, a canal: Panama"</code> is one.</p>
+                <p>Stripping the punctuation into a cleaned copy and comparing it with its reverse works, but allocates
+                    two more strings — and on an immutable type that is the expensive thing.</p>
+                <p>Walk <strong>two pointers</strong> inwards from both ends instead, skipping anything that is not
+                    alphanumeric as you go. Nothing is copied, so it is <code>O(n)</code> time and <code>O(1)</code>
+                    space.</p>
+
+                <div class="code-tabs" data-label="Answer — valid palindrome with two pointers">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+def is_palindrome(s):
+    """O(n) time, O(1) space. No cleaned copy is ever built."""
+    left, right = 0, len(s) - 1
+    while left &lt; right:
+        while left &lt; right and not s[left].isalnum():
+            left += 1                       # skip junk on the left
+        while left &lt; right and not s[right].isalnum():
+            right -= 1                      # skip junk on the right
+        if s[left].lower() != s[right].lower():
+            return False
+        left, right = left + 1, right - 1
+    return True
+
+print(is_palindrome("A man, a plan, a canal: Panama"))   # True
+print(is_palindrome("race a car"))                       # False
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+function isPalindrome(s) {                  // O(n) time, O(1) space
+  const alnum = (c) =&gt; /[a-z0-9]/i.test(c);
+  let left = 0, right = s.length - 1;
+  while (left &lt; right) {
+    while (left &lt; right &amp;&amp; !alnum(s[left])) left++;      // skip junk
+    while (left &lt; right &amp;&amp; !alnum(s[right])) right--;
+    if (s[left].toLowerCase() !== s[right].toLowerCase()) return false;
+    left++; right--;
+  }
+  return true;
+}
+
+console.log(isPalindrome("A man, a plan, a canal: Panama"));   // true
+console.log(isPalindrome("race a car"));                       // false
 </code></pre>
                     </div>
                 </div>
@@ -594,17 +745,17 @@ class Queue {
             <div class="viz" data-viz="heap"></div>
 
             <div class="code-tabs" data-label="Using and building a heap">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             import heapq
-            
+
             # heapq turns any list into a MIN-heap in place.
             nums = [5, 1, 8, 3, 9, 2]
             heapq.heapify(nums)             # O(n), not O(n log n)
             heapq.heappush(nums, 0)         # O(log n)
             smallest = heapq.heappop(nums)  # O(log n) -&gt; 0
             peek = nums[0]                  # O(1)
-            
+
             # Top-k without sorting everything: O(n log k) time, O(k) space.
             def top_k(nums, k):
                 heap = []
@@ -613,13 +764,13 @@ class Queue {
                     if len(heap) &gt; k:
                         heapq.heappop(heap)     # evict the smallest; keep the k largest
                 return sorted(heap, reverse=True)
-            
+
             # For a MAX-heap, negate the values (heapq has no max variant).
             def max_heap_demo(values):
                 heap = [-v for v in values]
                 heapq.heapify(heap)
                 return -heapq.heappop(heap)     # largest
-            
+
             # Priority queues: push (priority, tiebreaker, payload) tuples so that
             # equal priorities never try to compare the payloads.
             import itertools
@@ -628,13 +779,13 @@ class Queue {
             heapq.heappush(tasks, (2, next(counter), "write tests"))
             heapq.heappush(tasks, (1, next(counter), "fix outage"))
             print(heapq.heappop(tasks)[2])      # 'fix outage'
-            
+
             print(top_k([7, 2, 9, 4, 1, 8], 3)) # [9, 8, 7]
             print(heapq.nlargest(3, [7, 2, 9])) # [9, 7, 2] - built in
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             // JavaScript has no heap, so here is a complete one. Pass a comparator to
             // get a max-heap or to order objects by any field.
             class Heap {
@@ -644,20 +795,20 @@ class Queue {
                 // Heapify bottom-up: O(n), not O(n log n).
                 for (let i = (this.data.length &gt;&gt; 1) - 1; i &gt;= 0; i--) this.#siftDown(i);
               }
-            
+
               get size() {
                 return this.data.length;
               }
-            
+
               peek() {
                 return this.data[0];              // O(1)
               }
-            
+
               push(value) {                       // O(log n)
                 this.data.push(value);
                 this.#siftUp(this.data.length - 1);
               }
-            
+
               pop() {                             // O(log n)
                 if (this.data.length === 0) return undefined;
                 const top = this.data[0];
@@ -668,7 +819,7 @@ class Queue {
                 }
                 return top;
               }
-            
+
               #siftUp(i) {
                 while (i &gt; 0) {
                   const parent = (i - 1) &gt;&gt; 1;
@@ -677,7 +828,7 @@ class Queue {
                   i = parent;
                 }
               }
-            
+
               #siftDown(i) {
                 const n = this.data.length;
                 while (true) {
@@ -692,17 +843,17 @@ class Queue {
                 }
               }
             }
-            
+
             const minHeap = new Heap();
             [5, 1, 8, 3].forEach((x) =&gt; minHeap.push(x));
             console.log(minHeap.pop());                     // 1
-            
+
             const maxHeap = new Heap((a, b) =&gt; b - a);
             const tasks = new Heap((a, b) =&gt; a.priority - b.priority);
             tasks.push({ priority: 2, name: "write tests" });
             tasks.push({ priority: 1, name: "fix outage" });
             console.log(tasks.pop().name);                  // 'fix outage'
-            
+
             function topK(nums, k) {                        // O(n log k)
               const heap = new Heap();
               for (const x of nums) {
@@ -711,11 +862,11 @@ class Queue {
               }
               return heap.data.sort((a, b) =&gt; b - a);
             }
-            
+
             console.log(topK([7, 2, 9, 4, 1, 8], 3));       // [9, 8, 7]
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <div class="worked">
                 <b>Top Interview Question</b>
@@ -986,19 +1137,19 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
             <div class="viz" data-viz="bst-search"></div>
 
             <div class="code-tabs" data-label="A complete BST, including deletion">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             class BST:
                 class _Node:
                     __slots__ = ("value", "left", "right")
-            
+
                     def __init__(self, value):
                         self.value = value
                         self.left = self.right = None
-            
+
                 def __init__(self):
                     self.root = None
-            
+
                 def insert(self, value):
                     """O(h). Duplicates are ignored."""
                     def go(node):
@@ -1010,7 +1161,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                             node.right = go(node.right)
                         return node
                     self.root = go(self.root)
-            
+
                 def contains(self, value):
                     """O(h), iterative - no stack frames needed."""
                     node = self.root
@@ -1019,7 +1170,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                             return True
                         node = node.left if value &lt; node.value else node.right
                     return False
-            
+
                 def delete(self, value):
                     """The only fiddly operation. Three cases, see the comments."""
                     def go(node, value):
@@ -1045,7 +1196,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                             node.right = go(node.right, successor.value)
                         return node
                     self.root = go(self.root, value)
-            
+
                 def in_order(self):
                     """Sorted iteration for free. O(n)."""
                     stack, node = [], self.root
@@ -1056,8 +1207,8 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                         node = stack.pop()
                         yield node.value
                         node = node.right
-            
-            
+
+
             tree = BST()
             for v in [8, 3, 10, 1, 6, 14, 4, 7, 13]:
                 tree.insert(v)
@@ -1065,14 +1216,14 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
             tree.delete(3)
             print(list(tree.in_order()))    # [1, 4, 6, 7, 8, 10, 13, 14]
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             class BST {
               constructor() {
                 this.root = null;
               }
-            
+
               insert(value) {                       // O(h), duplicates ignored
                 const go = (node) =&gt; {
                   if (!node) return { value, left: null, right: null };
@@ -1082,7 +1233,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 };
                 this.root = go(this.root);
               }
-            
+
               contains(value) {                     // O(h), iterative
                 let node = this.root;
                 while (node) {
@@ -1091,7 +1242,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 }
                 return false;
               }
-            
+
               delete(value) {
                 const go = (node, value) =&gt; {
                   if (!node) return null;
@@ -1110,7 +1261,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 };
                 this.root = go(this.root, value);
               }
-            
+
               *inOrder() {                          // sorted iteration, O(n)
                 const stack = [];
                 let node = this.root;
@@ -1125,13 +1276,13 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 }
               }
             }
-            
+
             const tree = new BST();
             for (const v of [8, 3, 10, 1, 6, 14, 4, 7, 13]) tree.insert(v);
             console.log([...tree.inOrder()]);       // [1,3,4,6,7,8,10,13,14]
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <div class="callout callout-warn">
                 <p><strong>The BST's fatal flaw:</strong> insert <code>1, 2, 3, 4, 5</code> in order and every node
@@ -1191,30 +1342,30 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
             </figure>
 
             <div class="code-tabs" data-label="AVL insertion with rotations">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             class AVLNode:
                 __slots__ = ("value", "left", "right", "height")
-            
+
                 def __init__(self, value):
                     self.value = value
                     self.left = self.right = None
                     self.height = 1
-            
-            
+
+
             def h(node):
                 return node.height if node else 0
-            
-            
+
+
             def update(node):
                 node.height = 1 + max(h(node.left), h(node.right))
-            
-            
+
+
             def balance_factor(node):
                 """&gt; 1 means left heavy, &lt; -1 means right heavy."""
                 return h(node.left) - h(node.right) if node else 0
-            
-            
+
+
             def rotate_right(y):
                 """    y            x
                       / \\          / \\
@@ -1228,8 +1379,8 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 update(y)
                 update(x)
                 return x                # x is the new subtree root
-            
-            
+
+
             def rotate_left(x):
                 y = x.right
                 x.right = y.left
@@ -1237,8 +1388,8 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 update(x)
                 update(y)
                 return y
-            
-            
+
+
             def avl_insert(node, value):
                 """Ordinary BST insert, then rebalance on the way back up. O(log n)."""
                 if node is None:
@@ -1249,10 +1400,10 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                     node.right = avl_insert(node.right, value)
                 else:
                     return node
-            
+
                 update(node)
                 bf = balance_factor(node)
-            
+
                 if bf &gt; 1 and value &lt; node.left.value:      # left-left
                     return rotate_right(node)
                 if bf &lt; -1 and value &gt; node.right.value:    # right-right
@@ -1264,20 +1415,20 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                     node.right = rotate_right(node.right)
                     return rotate_left(node)
                 return node
-            
-            
+
+
             root = None
             for v in [10, 20, 30, 40, 50]:      # sorted input that would ruin a plain BST
                 root = avl_insert(root, v)
             print(root.value, root.height)      # 20 3  - height 3 instead of 5
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             const h = (node) =&gt; (node ? node.height : 0);
             const update = (node) =&gt; { node.height = 1 + Math.max(h(node.left), h(node.right)); };
             const balanceFactor = (node) =&gt; (node ? h(node.left) - h(node.right) : 0);
-            
+
             function rotateRight(y) {               // O(1), preserves in-order sequence
               const x = y.left;
               y.left = x.right;
@@ -1286,7 +1437,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
               update(x);
               return x;                             // new subtree root
             }
-            
+
             function rotateLeft(x) {
               const y = x.right;
               x.right = y.left;
@@ -1295,16 +1446,16 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
               update(y);
               return y;
             }
-            
+
             function avlInsert(node, value) {       // BST insert + rebalance on unwind
               if (!node) return { value, left: null, right: null, height: 1 };
               if (value &lt; node.value) node.left = avlInsert(node.left, value);
               else if (value &gt; node.value) node.right = avlInsert(node.right, value);
               else return node;
-            
+
               update(node);
               const bf = balanceFactor(node);
-            
+
               if (bf &gt; 1 &amp;&amp; value &lt; node.left.value) return rotateRight(node);   // LL
               if (bf &lt; -1 &amp;&amp; value &gt; node.right.value) return rotateLeft(node);  // RR
               if (bf &gt; 1) {                                                      // LR
@@ -1317,13 +1468,13 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
               }
               return node;
             }
-            
+
             let root = null;
             for (const v of [10, 20, 30, 40, 50]) root = avlInsert(root, v);
             console.log(root.value, root.height);   // 20 3
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <h4 id="tries">Tries — the autocomplete tree<a class="headerlink" href="#tries" title="Permanent link">#</a>
             </h4>
@@ -1336,14 +1487,14 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
             <div class="viz" data-viz="trie"></div>
 
             <div class="code-tabs" data-label="A trie with autocomplete">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             class Trie:
                 def __init__(self):
                     self.children = {}      # character -&gt; Trie
                     self.is_word = False
                     self.count = 0          # how many words pass through this node
-            
+
                 def insert(self, word):
                     """O(len(word))."""
                     node = self
@@ -1351,7 +1502,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                         node = node.children.setdefault(ch, Trie())
                         node.count += 1
                     node.is_word = True
-            
+
                 def _walk(self, prefix):
                     """Follow a prefix; return the node it ends at, or None."""
                     node = self
@@ -1360,26 +1511,26 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                         if node is None:
                             return None
                     return node
-            
+
                 def search(self, word):
                     node = self._walk(word)
                     return node is not None and node.is_word
-            
+
                 def starts_with(self, prefix):
                     return self._walk(prefix) is not None
-            
+
                 def count_prefix(self, prefix):
                     """How many stored words begin with this prefix. O(len(prefix))."""
                     node = self._walk(prefix)
                     return node.count if node else 0
-            
+
                 def autocomplete(self, prefix, limit=10):
                     """Every word under the prefix, via DFS from that node."""
                     node = self._walk(prefix)
                     if node is None:
                         return []
                     out = []
-            
+
                     def dfs(node, path):
                         if len(out) &gt;= limit:
                             return
@@ -1387,31 +1538,31 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                             out.append(prefix + path)
                         for ch, child in sorted(node.children.items()):
                             dfs(child, path + ch)
-            
+
                     dfs(node, "")
                     return out
-            
-            
+
+
             trie = Trie()
             for w in ["car", "card", "care", "cat", "dog"]:
                 trie.insert(w)
-            
+
             print(trie.search("car"))            # True
             print(trie.search("ca"))             # False - a prefix is not a word
             print(trie.starts_with("ca"))        # True
             print(trie.count_prefix("car"))      # 3
             print(trie.autocomplete("car"))      # ['car', 'card', 'care']
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             class Trie {
               constructor() {
                 this.children = new Map();        // character -&gt; Trie
                 this.isWord = false;
                 this.count = 0;                   // words passing through this node
               }
-            
+
               insert(word) {                      // O(word.length)
                 let node = this;
                 for (const ch of word) {
@@ -1421,7 +1572,7 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 }
                 node.isWord = true;
               }
-            
+
               #walk(prefix) {
                 let node = this;
                 for (const ch of prefix) {
@@ -1430,20 +1581,20 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 }
                 return node;
               }
-            
+
               search(word) {
                 const node = this.#walk(word);
                 return Boolean(node?.isWord);
               }
-            
+
               startsWith(prefix) {
                 return this.#walk(prefix) !== null;
               }
-            
+
               countPrefix(prefix) {               // O(prefix.length)
                 return this.#walk(prefix)?.count ?? 0;
               }
-            
+
               autocomplete(prefix, limit = 10) {
                 const start = this.#walk(prefix);
                 if (!start) return [];
@@ -1459,18 +1610,18 @@ console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
                 return out;
               }
             }
-            
+
             const trie = new Trie();
             for (const w of ["car", "card", "care", "cat", "dog"]) trie.insert(w);
-            
+
             console.log(trie.search("car"));        // true
             console.log(trie.search("ca"));         // false
             console.log(trie.startsWith("ca"));     // true
             console.log(trie.countPrefix("car"));   // 3
             console.log(trie.autocomplete("car"));  // ['car','card','care']
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <div class="worked">
                 <b>Top Interview Question</b>
@@ -1554,13 +1705,13 @@ console.log(maxDepth(tree));        // 3
             <div class="viz" data-viz="traversal" data-option="postorder"></div>
 
             <div class="code-tabs" data-label="The node, and the three depth-first orders">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             class TreeNode:
                 def __init__(self, value, left=None, right=None):
                     self.value, self.left, self.right = value, left, right
-            
-            
+
+
             def preorder(node, out=None):
                 """Node, left, right. Use to serialise or copy a tree."""
                 out = [] if out is None else out
@@ -1569,8 +1720,8 @@ console.log(maxDepth(tree));        // 3
                     preorder(node.left, out)
                     preorder(node.right, out)
                 return out
-            
-            
+
+
             def inorder(node, out=None):
                 """Left, node, right. On a BST this yields sorted order."""
                 out = [] if out is None else out
@@ -1579,8 +1730,8 @@ console.log(maxDepth(tree));        // 3
                     out.append(node.value)
                     inorder(node.right, out)
                 return out
-            
-            
+
+
             def postorder(node, out=None):
                 """Left, right, node. Children finish first - use to free or evaluate."""
                 out = [] if out is None else out
@@ -1590,9 +1741,9 @@ console.log(maxDepth(tree));        // 3
                     out.append(node.value)
                 return out
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             class TreeNode {
               constructor(value, left = null, right = null) {
                 this.value = value;
@@ -1600,7 +1751,7 @@ console.log(maxDepth(tree));        // 3
                 this.right = right;
               }
             }
-            
+
             function preorder(node, out = []) {     // node, left, right
               if (!node) return out;
               out.push(node.value);
@@ -1608,7 +1759,7 @@ console.log(maxDepth(tree));        // 3
               preorder(node.right, out);
               return out;
             }
-            
+
             function inorder(node, out = []) {      // left, node, right -&gt; sorted on a BST
               if (!node) return out;
               inorder(node.left, out);
@@ -1616,7 +1767,7 @@ console.log(maxDepth(tree));        // 3
               inorder(node.right, out);
               return out;
             }
-            
+
             function postorder(node, out = []) {    // left, right, node
               if (!node) return out;
               postorder(node.left, out);
@@ -1625,18 +1776,18 @@ console.log(maxDepth(tree));        // 3
               return out;
             }
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <h4>Level-order traversal (BFS)</h4>
             <p>Visits nodes row by row from top to bottom using a FIFO queue.</p>
             <div class="viz" data-viz="traversal" data-option="level"></div>
 
             <div class="code-tabs" data-label="Level-order (BFS)">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             from collections import deque
-            
+
             def level_order(root):
                 """BFS with a queue. Returns one list per level."""
                 if not root:
@@ -1654,9 +1805,9 @@ console.log(maxDepth(tree));        // 3
                     levels.append(level)
                 return levels
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             function levelOrder(root) {             // BFS, one array per level
               if (!root) return [];
               const levels = [];
@@ -1673,8 +1824,8 @@ console.log(maxDepth(tree));        // 3
               return levels;
             }
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <!-- ============================================================ 7 -->
             <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
@@ -2000,11 +2151,11 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
             </div>
 
             <div class="code-tabs" data-label="Dijkstra with a priority queue">
-                                <div class="tab-pane" data-lang="python">
-                                    <pre><code data-lang="python">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
             import heapq
             from collections import defaultdict
-            
+
             def dijkstra(graph, start):
                 """graph: {node: [(neighbour, weight)]}. O((V + E) log V)."""
                 dist = defaultdict(lambda: float("inf"))
@@ -2012,13 +2163,13 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
                 prev = {}
                 visited = set()
                 pq = [(0, start)]           # (distance, node) - the heap orders by distance
-            
+
                 while pq:
                     d, node = heapq.heappop(pq)
                     if node in visited:
                         continue            # a stale entry from an earlier, worse path
                     visited.add(node)       # this distance is now final
-            
+
                     for neighbour, weight in graph[node]:
                         candidate = d + weight
                         if candidate &lt; dist[neighbour]:     # relax
@@ -2027,10 +2178,10 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
                             heapq.heappush(pq, (candidate, neighbour))
                             # We do not remove the old entry; we just skip it above.
                             # This "lazy deletion" is simpler and still O(E log V).
-            
+
                 return dict(dist), prev
-            
-            
+
+
             def rebuild_path(prev, start, goal):
                 path, node = [], goal
                 while node != start:
@@ -2040,8 +2191,8 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
                         return None         # unreachable
                 path.append(start)
                 return path[::-1]
-            
-            
+
+
             graph = {
                 "A": [("B", 4), ("C", 2)],
                 "B": [("A", 4), ("C", 1), ("D", 5)],
@@ -2054,9 +2205,9 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
             print(dist["F"])                            # 12
             print(rebuild_path(prev, "A", "F"))         # ['A', 'C', 'B', 'D', 'F']
             </code></pre>
-                                </div>
-                                <div class="tab-pane" data-lang="javascript">
-                                    <pre><code data-lang="javascript">
+                </div>
+                <div class="tab-pane" data-lang="javascript">
+                    <pre><code data-lang="javascript">
             // Uses the Heap class from section 19.
             function dijkstra(graph, start) {       // O((V + E) log V)
               const dist = new Map([[start, 0]]);
@@ -2064,12 +2215,12 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
               const visited = new Set();
               const pq = new Heap((a, b) =&gt; a[0] - b[0]);   // [distance, node]
               pq.push([0, start]);
-            
+
               while (pq.size) {
                 const [d, node] = pq.pop();
                 if (visited.has(node)) continue;    // stale entry - lazy deletion
                 visited.add(node);                  // distance is now final
-            
+
                 for (const [neighbour, weight] of graph.get(node) ?? []) {
                   const candidate = d + weight;
                   if (candidate &lt; (dist.get(neighbour) ?? Infinity)) {   // relax
@@ -2081,7 +2232,7 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
               }
               return { dist, prev };
             }
-            
+
             function rebuildPath(prev, start, goal) {
               const path = [];
               let node = goal;
@@ -2093,7 +2244,7 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
               path.push(start);
               return path.reverse();
             }
-            
+
             const graph = new Map([
               ["A", [["B", 4], ["C", 2]]],
               ["B", [["A", 4], ["C", 1], ["D", 5]]],
@@ -2106,8 +2257,8 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
             console.log(dist.get("F"));                     // 12
             console.log(rebuildPath(prev, "A", "F"));       // ['A','C','B','D','F']
             </code></pre>
-                                </div>
-                            </div>
+                </div>
+            </div>
 
             <hr />
 
