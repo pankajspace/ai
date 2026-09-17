@@ -34,7 +34,7 @@
                 handover. This one teaches the machinery you have to be fluent in to do that job inside a real customer
                 estate &mdash; how the model actually decodes, where a context window goes, how retrieval is built and
                 graded, how agents are orchestrated durably, what fine-tuning buys and what it costs, and how any of it
-                survives an enterprise security review. Thirty-seven sections, each one assuming only the ones before
+                survives an enterprise security review. Forty-one sections, each one assuming only the ones before
                 it. Press <strong>Play</strong> on any animation.</p>
 
             <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
@@ -75,9 +75,13 @@
                 <li><a href="#32-serving-and-infrastructure">Serving: FastAPI, Containers, CI/CD and Cloud</a></li>
                 <li><a href="#33-cost-and-capacity">Cost Modelling and Capacity Planning</a></li>
                 <li><a href="#34-reference-architectures">Two Reference Architectures</a></li>
-                <li><a href="#35-cheat-sheet">Cheat Sheet</a></li>
-                <li><a href="#36-pattern-recognition">Pattern Recognition Playbook</a></li>
-                <li><a href="#37-practice-roadmap">Practice Roadmap</a></li>
+                <li><a href="#35-framework-landscape">The Framework Landscape</a></li>
+                <li><a href="#36-cloud-network-linux">The Ground You Deploy Onto: Cloud, Network, Linux</a></li>
+                <li><a href="#37-model-foundations">Model Foundations You Must Be Able to Explain</a></li>
+                <li><a href="#38-agentic-ides">AI-Assisted Development with Agentic IDEs</a></li>
+                <li><a href="#39-cheat-sheet">Cheat Sheet</a></li>
+                <li><a href="#40-pattern-recognition">Pattern Recognition Playbook</a></li>
+                <li><a href="#41-practice-roadmap">Practice Roadmap</a></li>
             </ol>
 
             <!-- ============================================================ 1 -->
@@ -105,23 +109,24 @@
             <h3 id="1-1-the-shape-of-the-stack">1.1 The shape of the stack<a class="headerlink"
                     href="#1-1-the-shape-of-the-stack" title="Permanent link">#</a></h3>
 
-            <div class="ascii"> what the customer sees
-                ┌───────────────────────────────────────────────────────────────┐
-                │ a claims handler asks a question and gets a cited answer │
-                └───────────────────────────────────────────────────────────────┘
-                │
-                ┌─────┴──────────────┐ ┌──────────────────┐ ┌────────────────┐
-                │ orchestration │ │ retrieval │ │ the model │
-                │ §19–23 agents, │ │ §10–18 chunking, │ │ §2–9 decoding, │
-                │ graphs, MCP │ │ vectors, graphs │ │ context, tools │
-                └─────┬──────────────┘ └────────┬─────────┘ └───────┬────────┘
-                └──────────────┬───────────┴────────────────────┘
-                │
-                ┌────────────────────┴──────────────────────────────────────────┐
-                │ the part that decides whether it ships │
-                │ §26–33 legacy systems, entitlements, guardrails, gateway, │
-                │ observability, serving, cost │
-                └───────────────────────────────────────────────────────────────┘</div>
+            <pre class="ascii">                         what the customer sees
+  ┌───────────────────────────────────────────────────────────────┐
+  │  a claims handler asks a question and gets a cited answer     │
+  └───────────────────────────────────────────────────────────────┘
+        │
+  ┌─────┴──────────────┐  ┌──────────────────┐  ┌────────────────┐
+  │ orchestration      │  │ retrieval        │  │ the model      │
+  │ §19–23 agents,     │  │ §10–18 chunking, │  │ §2–9 decoding, │
+  │ graphs, MCP        │  │ vectors, graphs  │  │ context, tools │
+  └─────┬──────────────┘  └────────┬─────────┘  └───────┬────────┘
+        └──────────────┬───────────┴────────────────────┘
+                       │
+  ┌────────────────────┴──────────────────────────────────────────┐
+  │ the part that decides whether it ships                        │
+  │ §26–33 legacy systems, entitlements, guardrails, gateway,     │
+  │         observability, serving, cost                          │
+  │ §35–38 stack choice, cloud and Linux, model theory, agent IDEs│
+  └───────────────────────────────────────────────────────────────┘</pre>
 
             <p>Read the bottom band again. In most failed enterprise AI projects, nothing in the top three boxes was
                 wrong. The pilot answered questions correctly in a notebook and then could not be connected to the
@@ -244,10 +249,10 @@
             <p>Switch the widget to <em>No cache</em> and watch the work counter. The cache turns quadratic decoding
                 into linear decoding, and it pays for that with memory: roughly</p>
 
-            <div class="ascii">bytes ≈ 2 (K and V) × layers × kv_heads × head_dim × seq_len × dtype_bytes
+            <pre class="ascii">bytes ≈ 2 (K and V) × layers × kv_heads × head_dim × seq_len × dtype_bytes
 
-                Llama-3-8B, 8k context, fp16, one request:
-                2 × 32 × 8 × 128 × 8192 × 2 ≈ 1.07 GB</div>
+Llama-3-8B, 8k context, fp16, one request:
+  2 × 32 × 8 × 128 × 8192 × 2  ≈  1.07 GB</pre>
 
             <p>One gigabyte, for one conversation. On a 24&nbsp;GB card holding a 16&nbsp;GB model you have room for
                 about seven concurrent long conversations before you start evicting. This single calculation is why
@@ -561,6 +566,59 @@ not just a quality control.
                     impresses a customer CTO in an early review.</p>
             </div>
 
+            <h3 id="4-4-when-it-does-not-fit">4.4 When the evidence genuinely does not fit<a class="headerlink"
+                    href="#4-4-when-it-does-not-fit" title="Permanent link">#</a></h3>
+
+            <p>Summarising a 300-page report, or answering across forty documents at once, is the case where no amount
+                of reranking helps &mdash; the task really does need all of it. There are four strategies, and naming
+                them correctly is half of choosing.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Strategy</th>
+                        <th>How</th>
+                        <th>Calls</th>
+                        <th>Use when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Stuffing</b></td>
+                        <td>Put everything in one prompt</td>
+                        <td>1</td>
+                        <td>It fits with headroom. Always try this first &mdash; the others exist only because it
+                            fails</td>
+                    </tr>
+                    <tr>
+                        <td><b>Map-reduce</b></td>
+                        <td>Summarise each chunk independently, then combine the summaries</td>
+                        <td>n + 1, parallel</td>
+                        <td>Fast, and the default for &ldquo;summarise these forty tickets&rdquo;. Loses
+                            cross-document relationships</td>
+                    </tr>
+                    <tr>
+                        <td><b>Refine</b></td>
+                        <td>Summarise chunk 1, then ask the model to revise that summary given chunk 2, and so on</td>
+                        <td>n, strictly serial</td>
+                        <td>Narrative documents where later text changes the meaning of earlier text. Slow, and early
+                            errors propagate</td>
+                    </tr>
+                    <tr>
+                        <td><b>Sliding window</b></td>
+                        <td>Walk a fixed window with overlap, carrying forward a running state</td>
+                        <td>n, serial</td>
+                        <td>Transcripts, logs and chat history where locality matters and the whole will never fit</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-tip">
+                <p>Map-reduce is parallel and therefore fast; refine is serial and therefore slow but coherent. If you
+                    need both, map-reduce into section summaries and then <em>refine</em> over those &mdash; a dozen
+                    inputs instead of three hundred, at a fraction of the wall-clock time.</p>
+            </div>
+
             <!-- ============================================================ 5 -->
             <h2 id="5-prompt-architecture">5. Prompting Patterns That Survive Production<a class="headerlink"
                     href="#5-prompt-architecture" title="Permanent link">#</a></h2>
@@ -579,14 +637,14 @@ not just a quality control.
             <h3 id="5-1-the-layout">5.1 The layout that survives caching and injection<a class="headerlink"
                     href="#5-1-the-layout" title="Permanent link">#</a></h3>
 
-            <div class="ascii">┌ system ──────────────────────────────────────────────┐ stable · cacheable
-                │ role, scope, refusal rules, output contract │
-                ├ tool schemas ────────────────────────────────────────┤ stable · cacheable
-                ├ few-shot examples ───────────────────────────────────┤ stable · cacheable
-                ├ retrieved evidence ──────────────────────────────────┤ volatile · UNTRUSTED
-                │ &lt;doc id="CLM-2"&gt; ... &lt;/doc&gt; (delimited, id'd) │
-                ├ conversation history ────────────────────────────────┤ volatile
-                └ user question ───────────────────────────────────────┘ volatile · UNTRUSTED</div>
+            <pre class="ascii">┌ system ──────────────────────────────────────────────┐  stable · cacheable
+│ role, scope, refusal rules, output contract          │
+├ tool schemas ────────────────────────────────────────┤  stable · cacheable
+├ few-shot examples ───────────────────────────────────┤  stable · cacheable
+├ retrieved evidence ──────────────────────────────────┤  volatile · UNTRUSTED
+│ &lt;doc id="CLM-2"&gt; ... &lt;/doc&gt;  (delimited, id'd)       │
+├ conversation history ────────────────────────────────┤  volatile
+└ user question ───────────────────────────────────────┘  volatile · UNTRUSTED</pre>
 
             <p>Three rules are doing the work here. Stable content goes first so the cacheable prefix is as long as
                 possible. Retrieved evidence is wrapped in explicit delimiters with ids, so the model can cite and so
@@ -877,6 +935,13 @@ export const Result = z.object({
                 mean an unsupported refusal fails validation rather than reaching a customer &mdash; the schema is
                 quietly enforcing a policy, which is far more reliable than a sentence in the prompt asking for one.
             </p>
+
+            <p>Libraries such as <code>instructor</code> wrap the last mile of this: they derive the JSON Schema from
+                your Pydantic model, pass it as <code>response_format</code> or as a tool definition, validate the
+                reply and re-ask on failure &mdash; the loop in §6.3, as a decorator. Worth using, with one caveat
+                for field work: know what it does underneath, because when a provider in the customer's estate does
+                not support strict mode you will need to fall back to prompting plus validation yourself, and a
+                library that hides the difference will hide the failure too.</p>
 
             <h3 id="6-3-the-repair-loop">6.3 The repair loop, bounded<a class="headerlink" href="#6-3-the-repair-loop"
                     title="Permanent link">#</a></h3>
@@ -1622,6 +1687,48 @@ somebody who picked the model from a leaderboard.
                     enterprise workflows &mdash; every serious option is fast enough.</li>
             </ol>
 
+            <table>
+                <thead>
+                    <tr>
+                        <th>Store</th>
+                        <th>What it is</th>
+                        <th>Where it fits an engagement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>FAISS</b></td>
+                        <td>A library, not a server: Flat, IVF, IVF-PQ and HNSW indexes in-process</td>
+                        <td>Embedded use, notebooks, and the exact-search harness you compare recall against. No
+                            filtering, no persistence story, no concurrency &mdash; you build those</td>
+                    </tr>
+                    <tr>
+                        <td><b>ChromaDB</b></td>
+                        <td>A developer-friendly store that runs in-process or as a container</td>
+                        <td>Week-one prototypes and the local demo. I would not put it under a production corpus of
+                            millions</td>
+                    </tr>
+                    <tr>
+                        <td><b>pgvector</b></td>
+                        <td>A Postgres extension: HNSW and IVFFlat indexes on ordinary columns</td>
+                        <td>The pragmatic default in an enterprise. Your ACLs, your metadata, your vectors and your
+                            transactions in one database with one backup</td>
+                    </tr>
+                    <tr>
+                        <td><b>Qdrant / Weaviate / Milvus</b></td>
+                        <td>Purpose-built vector databases, self-hostable</td>
+                        <td>When filtered search, payload indexing and sharding at scale genuinely matter, and the
+                            customer will accept a new system to operate</td>
+                    </tr>
+                    <tr>
+                        <td><b>Pinecone</b></td>
+                        <td>Fully managed, serverless</td>
+                        <td>Excellent, and ruled out by a residency or zero-egress requirement more often than not.
+                            Ask before you design around it</td>
+                    </tr>
+                </tbody>
+            </table>
+
             <div class="callout callout-tip">
                 <p>Report recall as a number you chose, not as a property of the system: &ldquo;at <code>ef_search =
                         128</code> we measure 0.97 recall@10 against exact search, at p95 22&nbsp;ms&rdquo;. Build the
@@ -1757,14 +1864,14 @@ const fused = rrf([await denseSearch(q), await bm25Search(q)]);
             <h3 id="14-1-the-two-stage-shape">14.1 The two-stage shape<a class="headerlink"
                     href="#14-1-the-two-stage-shape" title="Permanent link">#</a></h3>
 
-            <div class="ascii">query
-                │
-                ├─ dense top-50 ─┐
-                │ ├─ RRF ─→ 60 unique candidates ─→ cross-encoder ─→ top 6 ─→ LLM
-                └─ BM25 top-50 ─┘ (recall stage) (precision stage)
+            <pre class="ascii">query
+  │
+  ├─ dense  top-50 ─┐
+  │                 ├─ RRF ─→ 60 unique candidates ─→ cross-encoder ─→ top 6 ─→ LLM
+  └─ BM25   top-50 ─┘            (recall stage)          (precision stage)
 
-                recall stage: cheap, approximate, "do not lose the answer"
-                precision stage: expensive, exact, "put the answer first"</div>
+recall stage:    cheap, approximate, "do not lose the answer"
+precision stage: expensive, exact,  "put the answer first"</pre>
 
             <p>Naming the two stages is not pedantry &mdash; it tells you which one to fix. Low recall means the
                 answer never entered the funnel: look at chunking, hybrid search, filters. Low precision means it
@@ -1955,6 +2062,64 @@ export async function answerComplex(question, ctx) {
                     attribute. It is also much harder to hand over.</li>
             </ul>
 
+            <h3 id="15-4-the-named-variants">15.4 The named variants, disentangled<a class="headerlink"
+                    href="#15-4-the-named-variants" title="Permanent link">#</a></h3>
+
+            <p>The literature names a dozen of these and they overlap heavily. Four are worth being able to tell
+                apart, because a customer's data scientist will use the words.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>The one idea</th>
+                        <th>Worth it when</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Corrective RAG (CRAG)</b></td>
+                        <td>Grade the retrieved set; if it is weak, rewrite and retrieve again or fall back to another
+                            source</td>
+                        <td>Recall is uneven across your corpus &mdash; the common case</td>
+                    </tr>
+                    <tr>
+                        <td><b>Self-RAG</b></td>
+                        <td>The model emits reflection tokens deciding whether to retrieve, and whether each sentence
+                            is supported</td>
+                        <td>You need per-sentence attribution, e.g. regulated advice</td>
+                    </tr>
+                    <tr>
+                        <td><b>Adaptive RAG</b></td>
+                        <td>Classify the query first and route it: no retrieval for chit-chat, single-shot for
+                            lookups, multi-hop only when needed</td>
+                        <td>Cost control. It is §3's routing idea applied to retrieval, and usually the cheapest of
+                            the four to add</td>
+                    </tr>
+                    <tr>
+                        <td><b>Contextual retrieval</b></td>
+                        <td>At ingest, prepend a generated sentence situating each chunk in its parent document before
+                            embedding it</td>
+                        <td>Always, if you can afford the ingest pass &mdash; it is §10.3 with a model instead of a
+                            breadcrumb, and it measurably lifts recall</td>
+                    </tr>
+                    <tr>
+                        <td><b>LOTR / merger retriever</b></td>
+                        <td>Run several retrievers over several indexes and merge the results, deduplicating and
+                            reordering to put the strongest evidence at both ends of the context</td>
+                        <td>Multiple corpora with different characteristics &mdash; policies, tickets, email.
+                            Mechanically it is §13's fusion generalised past two retrievers</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-warn">
+                <p>Every one of these is a paper with a name, and none of them is a product decision. Add one only
+                    when a measured failure cluster demands it, and record which cluster in the commit message.
+                    Otherwise you accumulate four retrieval strategies, none of which anybody can explain, and a
+                    handover that fails.</p>
+            </div>
+
             <!-- ============================================================ 16 -->
             <h2 id="16-rag-evaluation">16. RAG Evaluation and Synthetic Sets<a class="headerlink"
                     href="#16-rag-evaluation" title="Permanent link">#</a></h2>
@@ -2063,6 +2228,37 @@ system you built, not the work the customer does.
                 benchmark. Calibrate it once against 30 human-labelled cases and record the agreement rate; if it is
                 below about 85%, the judge is measuring something other than what you think.</p>
 
+            <p>A note on the classical metrics, because somebody will ask for them. <b>BLEU</b> and <b>ROUGE</b> score
+                n-gram overlap against a reference answer; <b>F1</b> balances precision and recall on extracted spans.
+                They are cheap, deterministic and reproducible, which is genuinely valuable &mdash; and they punish a
+                correct answer phrased differently from the reference, which makes them close to useless for open
+                generation. Use F1 and exact match where the output is a <em>span or a label</em>, and an LLM judge
+                where it is prose. Reporting a BLEU score on a claims summariser tells the customer nothing they can
+                act on.</p>
+
+            <h4 id="16-4-the-tooling">The tooling, and what each is for<a class="headerlink" href="#16-4-the-tooling"
+                    title="Permanent link">#</a></h4>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>RAGAS</b> The four retrieval metrics of §16.1 &mdash; faithfulness, answer
+                    relevance, context precision and context recall &mdash; implemented, plus synthetic test-set
+                    generation from your corpus. The fastest route to a first honest number on a RAG pipeline.</li>
+                <li class="is-good"><b>DeepEval</b> Assertions in a <code>pytest</code> shape, so evals run in CI
+                    alongside unit tests rather than as a separate ritual. Good when the customer's team already lives
+                    in pytest, which is most of them.</li>
+                <li class="is-good"><b>PromptFoo</b> Declarative prompt regression: a YAML matrix of prompts &times;
+                    models &times; cases with a diffable report. The right tool for &ldquo;does prompt v4 beat v3, on
+                    both models, on all eleven categories?&rdquo;</li>
+                <li class="is-good"><b>Trajectory evaluation</b> For agents, the answer is not the only thing being
+                    graded. Score the <em>path</em>: did it call the right tools, in a sensible order, without
+                    redundant calls, and did it stop for the right reason (§19)? A correct answer reached by six
+                    wasteful calls is a cost bug you will not see any other way.</li>
+                <li class="is-bad"><b>Any of them, without a human-written set</b> All four make it easy to generate
+                    cases and grade them automatically, which makes it easy to build a benchmark that measures the
+                    system's agreement with itself. The operator-written cases from §16.2 are what keep it honest.
+                </li>
+            </ul>
+
             <div class="code-tabs" data-label="A CI gate that blocks on regression, not on absolute score">
                 <div class="tab-pane" data-lang="text">
                     <pre><code data-lang="text">
@@ -2163,6 +2359,14 @@ def gate(results: dict, baseline: dict, max_regression: float,
                     resolution</b> &mdash; the same supplier appearing as three rows with three spellings across two
                 systems &mdash; and it is not an AI problem. It is deterministic rules first (tax id, registration
                 number), fuzzy matching second, and a human review queue for the remainder.</p>
+
+            <p>The engines are largely interchangeable and the query language is not. <b>Neo4j</b> and its managed
+                form <b>AuraDB</b> speak Cypher, which is the declarative pattern-matching language the examples below
+                use and the one most people mean by &ldquo;graph query&rdquo;. <b>Amazon Neptune</b> is the managed
+                option inside an AWS estate and speaks openCypher and Gremlin, which matters because it makes the
+                graph procurable in an account that will not approve a new vendor. And if the graph is small &mdash;
+                under a few million edges, which covers most single-workflow ontologies &mdash; recursive CTEs in the
+                Postgres you already run are a perfectly respectable answer that requires no new system at all.</p>
 
             <div class="code-tabs" data-label="Relational rows to graph, then a two-hop query">
                 <div class="tab-pane" data-lang="python">
@@ -2289,13 +2493,13 @@ Tuesday, and defensible in a regulatory conversation. Compare with
             <h3 id="18-2-two-architectures">18.2 The two architectures<a class="headerlink"
                     href="#18-2-two-architectures" title="Permanent link">#</a></h3>
 
-            <div class="ascii">A · text-first (default) B · vision-first (ColPali-style)
-                page → layout → OCR → text chunks page image → patch embeddings
-                → text embeddings → multi-vector index
-                ✓ cheap, citable to a span ✓ no OCR errors to propagate
-                ✓ works with your existing index ✓ survives terrible scans, forms
-                ✗ every OCR error is permanent ✗ large index, vision tokens at query
-                ✗ tables and figures need special care ✗ citation is a page, not a sentence</div>
+            <pre class="ascii">A · text-first (default)                 B · vision-first (ColPali-style)
+ page → layout → OCR → text chunks        page image → patch embeddings
+      → text embeddings                        → multi-vector index
+ ✓ cheap, citable to a span               ✓ no OCR errors to propagate
+ ✓ works with your existing index         ✓ survives terrible scans, forms
+ ✗ every OCR error is permanent           ✗ large index, vision tokens at query
+ ✗ tables and figures need special care   ✗ citation is a page, not a sentence</pre>
 
             <p>Start with A and keep a measured list of the pages where it fails. If a specific document family keeps
                 failing &mdash; and it is usually one: the forms, the drawings, the legacy scans &mdash; run B for
@@ -2356,6 +2560,18 @@ five seconds.
                 <li><b>Cheapest</b> <code class="big-o o-great">a workflow, not an agent</code></li>
                 <li><b>Hardest part</b> <code class="big-o o-bad">termination</code></li>
             </ul>
+
+            <div class="callout callout-tip">
+                <p>The classical taxonomy still gets asked about, and it maps cleanly onto what you build. A
+                    <b>reflex</b> agent maps a percept straight to an action &mdash; that is your router, or a
+                    classifier with a webhook. A <b>goal-based</b> agent searches for a sequence that reaches a stated
+                    goal &mdash; plan-and-execute. A <b>utility-based</b> agent chooses between goals by scoring
+                    outcomes &mdash; the escalation routing of §3.2, where the utility function is cost against
+                    accuracy. A <b>tool-using</b> (or model-based) agent maintains an internal picture of a world it
+                    cannot fully see and acts on it through tools &mdash; which is every production agent in this
+                    course.
+                </p>
+            </div>
 
             <div class="viz" data-viz="agent-loop"></div>
 
@@ -2691,6 +2907,29 @@ export async function supervise(task, ctx) {
                     justification attached.</p>
             </div>
 
+            <h3 id="21-3-coordination-and-protocols">21.3 Coordination, consensus and A2A<a class="headerlink"
+                    href="#21-3-coordination-and-protocols" title="Permanent link">#</a></h3>
+
+            <p>The multi-agent literature is full of coordination mechanisms &mdash; negotiation, contract-net
+                bidding, voting for consensus, multi-agent reinforcement learning where agents learn a joint policy.
+                They are genuinely interesting and almost none of them belongs in a customer deployment, for one
+                reason: <b>they trade determinism for emergence</b>, and an enterprise workflow is graded on being
+                reproducible and explainable. The exception worth knowing is <em>consensus as a quality check</em>
+                &mdash; running the same decision through two differently-prompted workers and escalating on
+                disagreement. That is self-consistency (§5.2) wearing a multi-agent hat, it costs 2&times;, and it is
+                defensible because the disagreement rate is a number you can report. Multi-agent reinforcement
+                learning (<b>MARL</b>), where agents learn a joint policy through interaction, is a research field
+                rather than a delivery tool &mdash; know the term, and do not propose it.</p>
+
+            <p>Agent-to-agent protocols such as <b>A2A</b> address a different problem from MCP and the two are
+                complementary: MCP standardises how <em>one</em> agent reaches tools and data (§23), while A2A
+                standardises how agents owned by <em>different teams or vendors</em> discover each other, describe
+                their capabilities and exchange tasks. In field work the relevance is organisational rather than
+                technical &mdash; it is the answer to &ldquo;our procurement team is building their own agent; how
+                will yours talk to it?&rdquo; The honest answer today is usually &ldquo;through an API with a schema,
+                and we will adopt the protocol when both sides have one&rdquo;, and the same trust-boundary
+                questions from §23.2 apply, only now the untrusted input is another organisation's agent.</p>
+
             <!-- ============================================================ 22 -->
             <h2 id="22-agent-memory">22. Agent Memory<a class="headerlink" href="#22-agent-memory"
                     title="Permanent link">#</a></h2>
@@ -2895,6 +3134,31 @@ the trust boundary with your customer's data. Treat it accordingly.
                     field-pattern-to-platform-feature move from the detailed course, applied to integrations.</p>
             </div>
 
+            <h3 id="23-3-managed-agent-platforms">23.3 Managed agent platforms<a class="headerlink"
+                    href="#23-3-managed-agent-platforms" title="Permanent link">#</a></h3>
+
+            <p>Every cloud now offers a managed agent service &mdash; Bedrock Agents, Vertex Agents, Foundry Agents
+                &mdash; where you register an action group (tools), attach a managed <em>knowledge base</em> (their
+                ingest, chunking, embedding and vector store), and the platform runs the orchestration loop. The pitch
+                is that you skip §§10&ndash;14 and §20 entirely.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Take it when</b> The customer is already deep in that cloud, the workload is
+                    ordinary document Q&amp;A, and their security team has pre-approved the service. Provisioning a
+                    knowledge base is an afternoon against a fortnight, and it inherits their IAM and their audit log
+                    &mdash; which is a real advantage, not a small one.</li>
+                <li class="is-bad"><b>Refuse it when</b> You need control over chunking, hybrid search, the reranker
+                    or the relevance floor &mdash; the four things that actually decide retrieval quality (§§10,
+                    13, 14). A managed knowledge base gives you a knob or two and hides the rest, so when quality is
+                    poor you have no lever and no diagnosis.</li>
+                <li class="is-bad"><b>Also refuse when</b> The run must pause for days for a human approver, or the
+                    audit trail must record per-step state. Durable interrupts and replayable checkpoints (§20) are
+                    where managed loops are weakest.</li>
+                <li class="is-good"><b>The hybrid that usually wins</b> Managed guardrails and managed identity,
+                    because those are commodity and their security team already trusts them; your own retrieval and
+                    your own graph, because those are where the engagement's value is.</li>
+            </ul>
+
             <!-- ============================================================ 24 -->
             <h2 id="24-fine-tuning">24. Fine-Tuning: LoRA, QLoRA and Preference Optimisation<a class="headerlink"
                     href="#24-fine-tuning" title="Permanent link">#</a></h2>
@@ -3034,6 +3298,70 @@ def build_dataset(rows: list[dict]) -&gt; list[dict]:
                 human-in-the-loop queue. Every time a reviewer edits a generated output, you have a rejected response
                 and a chosen one, produced as a by-product of work they were doing anyway. Build the capture from day
                 one even if you never train &mdash; it is the same data that tells you where the system is weak.</p>
+
+            <h4 id="24-4-the-toolchain">The toolchain, and where the GPU comes from<a class="headerlink"
+                    href="#24-4-the-toolchain" title="Permanent link">#</a></h4>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Piece</th>
+                        <th>What it does</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>transformers</code> + <code>Trainer</code></td>
+                        <td>The training loop, checkpointing, evaluation hooks</td>
+                        <td>Fine when you need control; most runs do not, and a config file is easier to review</td>
+                    </tr>
+                    <tr>
+                        <td><code>peft</code></td>
+                        <td>LoRA, QLoRA, prefix tuning, prompt tuning, IA3 &mdash; the adapter methods</td>
+                        <td>LoRA dominates in practice. Prefix tuning prepends trainable virtual tokens instead of
+                            modifying weights; cheaper still, and generally weaker</td>
+                    </tr>
+                    <tr>
+                        <td><code>trl</code></td>
+                        <td><code>SFTTrainer</code>, <code>DPOTrainer</code>, <code>ORPOTrainer</code>,
+                            <code>KTOTrainer</code>
+                        </td>
+                        <td>The preference-optimisation half. KTO needs only a binary good/bad label per sample, not
+                            pairs &mdash; which fits a review queue where nobody rewrote the rejected answer</td>
+                    </tr>
+                    <tr>
+                        <td><code>bitsandbytes</code></td>
+                        <td>4-bit NF4 quantisation of the frozen base for QLoRA</td>
+                        <td>Training only; use AWQ or GPTQ for serving (§25)</td>
+                    </tr>
+                    <tr>
+                        <td>Axolotl</td>
+                        <td>YAML over all of the above</td>
+                        <td>The whole run becomes one reviewable, version-controlled file &mdash; which matters when
+                            the customer must reproduce it after you leave</td>
+                    </tr>
+                    <tr>
+                        <td><code>datasets</code></td>
+                        <td>Loading, mapping, packing, splitting</td>
+                        <td>Public instruction sets (Alpaca-style, and the DPO preference sets) are useful for
+                            <em>format</em> reference; do not mix them into a domain run and expect domain behaviour
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Weights &amp; Biases</td>
+                        <td>Run tracking: loss curves, hyper-parameters, artefacts</td>
+                        <td>Watch <em>eval</em> loss. Train loss falling while eval loss rises is memorisation, and on
+                            a small domain set it happens by epoch three</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>For hardware, the ladder is: the customer's own GPUs if they have idle ones, a spot GPU instance in
+                their cloud account if the data may live there, and a rental marketplace such as RunPod or vast.ai
+                only for work on synthetic or public data. <b>Check the data classification before you rent a GPU from
+                    anyone</b> &mdash; a QLoRA run on a marketplace box is a third-party sub-processor holding
+                customer data, and that is a contract question, not a procurement convenience.</p>
 
             <div class="callout callout-warn">
                 <p>Three traps. <b>Catastrophic forgetting</b>: an aggressively tuned model gets better at your task
@@ -3285,8 +3613,73 @@ Schema archaeology, in the order that works:
                 </div>
             </div>
 
-            <h3 id="26-3-workflow-surfaces">26.3 Meeting users where they already are<a class="headerlink"
-                    href="#26-3-workflow-surfaces" title="Permanent link">#</a></h3>
+            <h3 id="26-3-keeping-data-fresh">26.3 Connectors, sync and freshness<a class="headerlink"
+                    href="#26-3-keeping-data-fresh" title="Permanent link">#</a></h3>
+
+            <p>An index is a cache of somebody else's database, and every cache has a staleness policy whether you
+                chose one or not. Decide it explicitly, write it in the design document, and show it in the UI &mdash;
+                &ldquo;data as of 06:14 today&rdquo; prevents more trust damage than any accuracy improvement.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mechanism</th>
+                        <th>How</th>
+                        <th>Freshness</th>
+                        <th>Cost to the customer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Full reload</td>
+                        <td>Truncate and re-ingest everything</td>
+                        <td>As often as you can afford</td>
+                        <td>Simple and honest; impossible past a few million rows</td>
+                    </tr>
+                    <tr>
+                        <td>Incremental sync</td>
+                        <td>Poll on a watermark: <code>WHERE updated_at &gt; :last_seen</code></td>
+                        <td>Minutes to hours</td>
+                        <td>Low &mdash; but it silently misses hard deletes and any row whose
+                            <code>updated_at</code> is not maintained, which is more of them than anyone admits
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Change data capture (CDC)</td>
+                        <td>Read the database's own transaction log (Debezium-style) and stream inserts, updates and
+                            deletes</td>
+                        <td>Seconds</td>
+                        <td>Correct, including deletes, with near-zero load on the source &mdash; and it needs a DBA,
+                            a replication slot and a change request. Ask early</td>
+                    </tr>
+                    <tr>
+                        <td>Webhooks / events</td>
+                        <td>The source pushes on change</td>
+                        <td>Seconds</td>
+                        <td>Best when it exists. Must be idempotent and signature-verified, and you still need a
+                            periodic reconciliation pass because webhooks get dropped</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>On the connector side the mechanics are dull and unavoidable: REST with cursor pagination (never offset
+                pagination on a table that is being written to &mdash; you will skip and duplicate rows), gRPC where
+                the customer's platform team offers it, and OAuth client-credentials service accounts scoped per
+                integration rather than one shared identity. Respect <code>Retry-After</code>, back off with jitter
+                (§30), and checkpoint your watermark <em>after</em> a successful commit so an interrupted sync
+                resumes rather than restarts.</p>
+
+            <div class="callout callout-warn">
+                <p>Deletions and permission changes are the two updates that a na&iuml;ve incremental sync misses, and
+                    they are the two that matter most: a document withdrawn from the source that your index still
+                    cites, or an access revocation that has not propagated (§28). If CDC is unavailable, run a
+                    nightly reconciliation that compares source ids against index ids and removes the orphans &mdash;
+                    and alert on the count, because a sudden spike means an upstream change nobody told you about.
+                </p>
+            </div>
+
+            <h3 id="26-4-workflow-surfaces">26.4 Meeting users where they already are<a class="headerlink"
+                    href="#26-4-workflow-surfaces" title="Permanent link">#</a></h3>
 
             <p>Adoption follows the surface, not the quality. A tool in Slack, Teams or the ticket system is used; a
                 separate web app requiring a new login is visited twice. Both matter technically because both carry
@@ -3422,17 +3815,17 @@ with the customer rather than a model you can buy.
             <h3 id="28-1-the-chain">28.1 The identity chain<a class="headerlink" href="#28-1-the-chain"
                     title="Permanent link">#</a></h3>
 
-            <div class="ascii">browser ──OIDC──► your API ──────────────► retriever ────► vector store
-                │ │ │ │
-                id_token validate sig, aud, resolved groups metadata
-                (who) iss, exp, nbf + classification predicate
-                │
-                ├──► on-behalf-of token ──► downstream API (SAP, Jira)
-                │
-                NEVER: svc_ai_prod with read-all
+            <pre class="ascii">browser ──OIDC──► your API ──────────────► retriever ────► vector store
+   │                  │                        │                │
+ id_token        validate sig, aud,       resolved groups   metadata
+ (who)           iss, exp, nbf            + classification   predicate
+                        │
+                        ├──► on-behalf-of token ──► downstream API (SAP, Jira)
+                        │
+                 NEVER: svc_ai_prod with read-all
 
-                The chain must be unbroken. The moment any hop substitutes a service
-                account, every control downstream of it is decorative.</div>
+The chain must be unbroken. The moment any hop substitutes a service
+account, every control downstream of it is decorative.</pre>
 
             <h3 id="28-2-the-vocabulary">28.2 The vocabulary you need in the room<a class="headerlink"
                     href="#28-2-the-vocabulary" title="Permanent link">#</a></h3>
@@ -3470,6 +3863,22 @@ with the customer rather than a model you can buy.
                         <td>RBAC / ABAC</td>
                         <td>Permissions by role, or by attributes (region, clearance, case ownership)</td>
                         <td>Enterprise reality is ABAC with an RBAC vocabulary bolted on</td>
+                    </tr>
+                    <tr>
+                        <td>Directory group mapping</td>
+                        <td>Azure AD / Entra ID (or Okta, or LDAP) groups arriving as claims and being mapped to your
+                            application roles</td>
+                        <td>Groups come as GUIDs, nest several levels deep, and are often omitted from the token
+                            entirely once a user is in more than ~200 of them &mdash; at which point you must call the
+                            directory's API instead of reading the claim</td>
+                    </tr>
+                    <tr>
+                        <td>Which OAuth grant</td>
+                        <td>Authorisation code + PKCE for a user in a browser; client credentials for
+                            service-to-service; on-behalf-of for acting as the user downstream; device code for a CLI
+                        </td>
+                        <td>Implicit and password grants are deprecated &mdash; proposing either will fail a security
+                            review on its own</td>
                     </tr>
                 </tbody>
             </table>
@@ -3555,6 +3964,10 @@ the tests that keep the system deployed.
             <h3 id="29-1-the-threat-list">29.1 The threats, named the way a security team names them<a
                     class="headerlink" href="#29-1-the-threat-list" title="Permanent link">#</a></h3>
 
+            <p>Use the <b>OWASP Top 10 for LLM Applications</b> as your vocabulary, because the customer's security
+                team already has. Mapping your design to a list they recognise turns the review from an interrogation
+                into a checklist, and the rows below are that list in the order it usually matters.</p>
+
             <table>
                 <thead>
                     <tr>
@@ -3604,6 +4017,15 @@ the tests that keep the system deployed.
                 instruction hierarchies help, and a sufficiently determined attacker gets through all of them. Say this
                 plainly in the architecture review; it builds more credibility than any claim of robustness, and it
                 moves the conversation to the control that does work.</p>
+
+            <p><b>Jailbreaks</b> are the sub-family aimed at the model's safety training rather than at your
+                instructions: role-play framing (&ldquo;you are an unrestricted assistant&rdquo;), hypothetical and
+                fiction wrappers, incremental escalation across turns, obfuscation by encoding or translation, and
+                token-level adversarial suffixes. Two practical consequences. First, test against a public jailbreak
+                corpus as part of the eval suite (§16) so the injection category has real cases in it rather than one
+                polite example you wrote. Second, a provider <b>moderation endpoint</b> is a cheap, useful outer layer
+                and a poor inner one &mdash; it catches the obvious and knows nothing about your claims policy, so run
+                it <em>alongside</em> your topical rail and never instead of it.</p>
 
             <div class="callout callout-key">
                 <p>The durable mitigation is architectural, not linguistic: <b>assume the model will eventually be
@@ -3848,6 +4270,54 @@ costs more credibility than having none.
                     question becomes a query rather than an argument.</li>
             </ul>
 
+            <h3 id="31-3-the-platforms">31.3 The platforms, and the one question to ask each<a class="headerlink"
+                    href="#31-3-the-platforms" title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Platform</th>
+                        <th>Strength</th>
+                        <th>The question</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>LangSmith</b></td>
+                        <td>Deep tracing of LangChain/LangGraph runs, dataset and eval management, prompt versioning
+                            in one place</td>
+                        <td>Hosted by default &mdash; will the customer accept full prompts and completions leaving
+                            their estate? (Self-hosting exists; price it early)</td>
+                    </tr>
+                    <tr>
+                        <td><b>Langfuse</b></td>
+                        <td>Open source and genuinely self-hostable; traces, scores, prompt management,
+                            framework-agnostic</td>
+                        <td>Usually the right answer in a VPC-only estate, for exactly that reason</td>
+                    </tr>
+                    <tr>
+                        <td><b>MLflow</b></td>
+                        <td>Experiment tracking and a model registry, now with tracing and LLM evaluation</td>
+                        <td>Already installed at any customer with a data-science team &mdash; adopting it is a
+                            smaller change request than introducing anything new</td>
+                    </tr>
+                    <tr>
+                        <td><b>OpenTelemetry + their stack</b></td>
+                        <td>Spans land in the Grafana, Datadog or Splunk the ops team already watches</td>
+                        <td>Least featureful for AI specifics, and by far the easiest to hand over. Emit OTel
+                            regardless of what else you choose</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout callout-warn">
+                <p>A trace contains the full prompt, and the full prompt contains the customer's record. Every
+                    observability decision is therefore a data-residency decision, and it is the one most often made
+                    accidentally &mdash; by a developer adding an API key to get a nice dashboard. Put the tracing
+                    backend in the design document alongside the model provider, and mask or drop payload fields for
+                    anything sensitive.</p>
+            </div>
+
             <!-- ============================================================ 32 -->
             <h2 id="32-serving-and-infrastructure">32. Serving: FastAPI, Containers, CI/CD and Cloud<a
                     class="headerlink" href="#32-serving-and-infrastructure" title="Permanent link">#</a></h2>
@@ -3950,6 +4420,126 @@ CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", \
                     the scoping document, then build inside them.</p>
             </div>
 
+            <h3 id="32-3-the-api-surface">32.3 The API surface: versioning, CORS and GraphQL<a class="headerlink"
+                    href="#32-3-the-api-surface" title="Permanent link">#</a></h3>
+
+            <p>Your service will be consumed by somebody else's front end, written by a team you will meet twice.
+                Three decisions save most of the friction.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Version from the first commit</b> URL-based (<code>/v1/ask</code>) is blunt,
+                    obvious and easy to route at the load balancer; header-based
+                    (<code>Accept: application/vnd.acme.v2+json</code>) is cleaner and invisible in logs, which is
+                    precisely why teams break it. Pick URL versioning unless their platform standard says otherwise,
+                    and never change a response shape in place.</li>
+                <li class="is-good"><b>CORS, deliberately</b> An explicit allow-list of their front-end origins, with
+                    credentials enabled only if you genuinely use cookies. <code>allow_origins=["*"]</code> with
+                    credentials is both invalid and an instant review failure &mdash; and it is the default people
+                    paste in to make a demo work.</li>
+                <li class="is-good"><b>OpenAPI for free</b> FastAPI generates the schema from your Pydantic models,
+                    so the contract cannot drift from the code. Give their front-end team the generated client rather
+                    than a document.</li>
+                <li class="is-bad"><b>GraphQL, usually not</b> If their platform mandates it, use Strawberry or
+                    Graphene and write dataloaders from day one &mdash; the N+1 problem is structural, and a resolver
+                    that issues one query per row will hammer the database you were given read-only access to as a
+                    favour. Streaming a token-by-token answer over GraphQL is also awkward, which alone rules it out
+                    for most AI endpoints.</li>
+            </ul>
+
+            <h3 id="32-4-tests-and-metrics">32.4 Tests and metrics that are not evals<a class="headerlink"
+                    href="#32-4-tests-and-metrics" title="Permanent link">#</a></h3>
+
+            <p>The golden set (§16) tells you whether the system is <em>right</em>. It does not tell you whether the
+                code works, and conflating the two produces a suite that is slow, flaky and skipped.</p>
+
+            <div class="code-tabs" data-label="Fast deterministic tests; the model never appears in them">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+import pytest
+
+@pytest.fixture
+def principal() -&gt; Principal:
+    return Principal("u1", frozenset({"claims-tier1"}), clearance=1,
+                     regions=frozenset({"cardiff"}))
+
+@pytest.fixture
+def fake_llm(monkeypatch):
+    """Record calls and return canned responses. Every test below runs in
+    milliseconds and gives the same answer on every machine."""
+    calls = []
+    async def _call(**kw):
+        calls.append(kw)
+        return CANNED[kw["model"]]
+    monkeypatch.setattr("app.llm.call", _call)
+    return calls
+
+def test_acl_predicate_is_applied(principal, fake_store):
+    search("anything", principal)
+    assert fake_store.last_filter["$and"][0] == {"acl_groups": {"$in": ["claims-tier1"]}}
+
+def test_router_escalates_on_value(fake_llm):
+    assert route({"type": "decide", "value_gbp": 25_000,
+                  "clauses_in_scope": 1}) == "reasoning"
+
+@pytest.mark.parametrize("sql", [
+    "SELECT 1; DROP TABLE claims",
+    "WITH x AS (DELETE FROM claims RETURNING *) SELECT * FROM x",
+    "SELECT * FROM sys.tables",
+])
+def test_validator_rejects(sql):
+    with pytest.raises(Unsafe):
+        validate(sql, "tsql", allowed={"claims", "sites"})
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text">
+The test pyramid for an AI service:
+
+  unit          no model, no network, milliseconds. Routing conditions,
+                SQL validation, ACL predicates, schema parsing, reducers,
+                termination conditions. This is where coverage means
+                something — aim high here and nowhere else.
+  contract      fake the provider; assert the request shape, the retry
+                behaviour, the idempotency key, the timeout.
+  integration   docker compose up: Postgres + pgvector + the app. Marked,
+                and run in CI but not on every save.
+  eval          the golden set (§16). Slow, costs money, non-deterministic.
+                Nightly and on PRs that touch prompts, retrieval or models.
+
+Runtime metrics, which are also not evals:
+
+  prometheus:  request rate, p50/p95/p99 latency by endpoint and tier,
+               in-flight requests, queue depth, tokens/sec, cost/minute,
+               tool error rate, rail block rate
+  grafana:     one board the CUSTOMER's ops team owns, not you. If they
+               cannot see it without asking you, the handover has not
+               happened.
+</code></pre>
+                </div>
+            </div>
+
+            <h3 id="32-5-kubernetes">32.5 If it has to be Kubernetes<a class="headerlink" href="#32-5-kubernetes"
+                    title="Permanent link">#</a></h3>
+
+            <p>Many enterprises have one platform and it is Kubernetes. You do not need to be an administrator; you
+                need to hand their platform team a manifest they recognise and to know which four settings are
+                different for an AI workload.</p>
+
+            <ol>
+                <li><b>Probes.</b> <code>livenessProbe</code> on <code>/healthz</code>,
+                    <code>readinessProbe</code> on <code>/readyz</code>. Set the liveness timeout above your longest
+                    request or Kubernetes will restart a pod that is merely busy generating.
+                </li>
+                <li><b>Graceful shutdown.</b> <code>terminationGracePeriodSeconds</code> longer than your longest
+                    in-flight call, plus a <code>preStop</code> sleep so the pod leaves the endpoint list before it
+                    stops accepting work. Without this, every deploy drops paid-for generations.</li>
+                <li><b>Autoscaling on the right signal.</b> A custom or external metric &mdash; in-flight requests,
+                    queue depth &mdash; not CPU (§32.2). KEDA if their cluster has it.</li>
+                <li><b>Secrets and identity.</b> Workload identity bound to the service account, so the pod assumes a
+                    cloud role rather than mounting a key. This is the same least-privilege argument as §36.3 and the
+                    same reviewer will ask about it.</li>
+            </ol>
+
             <!-- ============================================================ 33 -->
             <h2 id="33-cost-and-capacity">33. Cost Modelling and Capacity Planning<a class="headerlink"
                     href="#33-cost-and-capacity" title="Permanent link">#</a></h2>
@@ -4045,19 +4635,19 @@ only works at today's prices is not a business case.
             <h3 id="34-1-secure-assistant">34.1 A secure assistant over regulated data<a class="headerlink"
                     href="#34-1-secure-assistant" title="Permanent link">#</a></h3>
 
-            <div class="ascii">SSO (OIDC) ─► FastAPI ─► rails in ─► redact ─┬─► hybrid retrieve ──► rerank
-                §28 §32 §29 §29 │ §13 (ACL pre-filter, §28)
-                │ │
-                │ ▼
-                └─► text-to-SQL (read-only replica)
-                §27 │
-                ▼
-                gateway ─► model ─► rails out ─► restore
-                §30 §25 §29 §29
-                │
-                ▼
-                traces · cost · evals in CI
-                §31 §16</div>
+            <pre class="ascii">SSO (OIDC) ─► FastAPI ─► rails in ─► redact ─┬─► hybrid retrieve ──► rerank
+   §28          §32        §29        §29    │      §13 (ACL pre-filter, §28)
+                                             │              │
+                                             │              ▼
+                                             └─► text-to-SQL (read-only replica)
+                                                    §27      │
+                                                             ▼
+                                              gateway ─► model ─► rails out ─► restore
+                                                §30       §25       §29        §29
+                                                             │
+                                                             ▼
+                                              traces · cost · evals in CI
+                                                 §31            §16</pre>
 
             <p>Delivery order matters more than the diagram. Identity and entitlements first, because they constrain
                 everything and unblock the security review. Then retrieval quality with a measured eval set. Then the
@@ -4067,21 +4657,21 @@ only works at today's prices is not a business case.
             <h3 id="34-2-multi-agent-compliance">34.2 A multi-agent compliance workflow<a class="headerlink"
                     href="#34-2-multi-agent-compliance" title="Permanent link">#</a></h3>
 
-            <div class="ascii">trigger (ticket / schedule)
-                │
-                ▼
-                LangGraph supervisor ──────────────────────────────── checkpointer (Postgres)
-                │ §20/§21 §20
-                ├─► evidence agent → vector + graph retrieval §13 §17
-                ├─► policy agent → clause lookup, versioned §10
-                └─► systems agent → MCP server (Jira, SAP), read §23
-                │
-                ▼
-                draft finding ──► interrupt() ──► human approval UI ──► resume
-                │ §20 │
-                ▼ ▼
-                audit record: inputs, evidence ids, model + prompt versions, approver, time
-                §31</div>
+            <pre class="ascii">trigger (ticket / schedule)
+      │
+      ▼
+ LangGraph supervisor ──────────────────────────────── checkpointer (Postgres)
+      │   §20/§21                                            §20
+      ├─► evidence agent    → vector + graph retrieval        §13 §17
+      ├─► policy agent      → clause lookup, versioned        §10
+      └─► systems agent     → MCP server (Jira, SAP), read     §23
+      │
+      ▼
+ draft finding  ──► interrupt() ──► human approval UI ──► resume
+      │                §20                                  │
+      ▼                                                    ▼
+ audit record: inputs, evidence ids, model + prompt versions, approver, time
+                                   §31</pre>
 
             <p>Everything here exists because a compliance workflow is judged on its record, not its answer. The
                 checkpointer gives durable pause across days. The interrupt makes approval structural rather than
@@ -4096,10 +4686,600 @@ only works at today's prices is not a business case.
             </div>
 
             <!-- ============================================================ 35 -->
-            <h2 id="35-cheat-sheet">35. Cheat Sheet<a class="headerlink" href="#35-cheat-sheet"
+            <h2 id="35-framework-landscape">35. The Framework Landscape<a class="headerlink"
+                    href="#35-framework-landscape" title="Permanent link">#</a></h2>
+
+            <ul class="meta-strip">
+                <li><b>Frameworks are</b> <code class="big-o o-ok">replaceable</code></li>
+                <li><b>Your data model is</b> <code class="big-o o-great">not</code></li>
+                <li><b>Choose for</b> <code class="big-o o-great">handover, not features</code></li>
+                <li><b>Lock-in risk</b> <code class="big-o o-bad">at the orchestration layer</code></li>
+            </ul>
+
+            <p>You will be asked to justify a stack in the first architecture review of every engagement, usually by
+                someone whose team must maintain it. &ldquo;It is what I know&rdquo; is an honest answer and a losing
+                one. This section is the map, and the argument for each choice.</p>
+
+            <h3 id="35-1-the-map">35.1 The map<a class="headerlink" href="#35-1-the-map" title="Permanent link">#</a>
+            </h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>What it really is</th>
+                        <th>Reach for it when</th>
+                        <th>Cost of using it</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>LangChain / LCEL</b></td>
+                        <td>A component library plus a pipe operator. <code>prompt | model | parser</code> composes
+                            runnables with batching, streaming and retries for free</td>
+                        <td>Gluing many providers quickly; you want streaming and async without writing it</td>
+                        <td>Abstraction depth &mdash; debugging means reading framework source. Pin the version</td>
+                    </tr>
+                    <tr>
+                        <td><b>LlamaIndex</b></td>
+                        <td>A retrieval-first framework: loaders, node parsers, indexes, query engines</td>
+                        <td>Document-heavy RAG where the ingest zoo (PDF, Notion, Confluence, SQL) is the work</td>
+                        <td>Its index abstractions can hide the retrieval decisions you most need to control</td>
+                    </tr>
+                    <tr>
+                        <td><b>LangGraph</b></td>
+                        <td>A durable state machine (§20)</td>
+                        <td>Cycles, human approval, resumable runs &mdash; anything audited</td>
+                        <td>More ceremony than a loop; worth it exactly when durability is a requirement</td>
+                    </tr>
+                    <tr>
+                        <td><b>CrewAI</b></td>
+                        <td>Role-based multi-agent teams with sequential or hierarchical process</td>
+                        <td>Fast prototyping of a &ldquo;team of specialists&rdquo; demo</td>
+                        <td>Less control over state and termination; I would not hand it to an ops team unmodified
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>AutoGen</b></td>
+                        <td>Conversational multi-agent: agents message each other, with a group chat manager</td>
+                        <td>Research-style exploration, code-execution loops</td>
+                        <td>Free-form conversation is the topology to avoid in customer work (§21.1)</td>
+                    </tr>
+                    <tr>
+                        <td><b>DSPy</b></td>
+                        <td>A compiler for prompts (§8)</td>
+                        <td>You have a metric and 50+ examples and want the small model to do the job</td>
+                        <td>Needs data before it needs anything else</td>
+                    </tr>
+                    <tr>
+                        <td><b>n8n / Zapier-class</b></td>
+                        <td>Visual workflow automation with LLM nodes</td>
+                        <td>Genuinely useful for the customer's own ops team to own simple automations</td>
+                        <td>Version control and testing are weak; keep the AI-critical path in code</td>
+                    </tr>
+                    <tr>
+                        <td><b>Streamlit / Gradio</b></td>
+                        <td>Python-only UI for a demo or an internal review queue</td>
+                        <td>Week one, and for human-approval screens that never leave the intranet</td>
+                        <td>Not a production front end &mdash; say so before the customer assumes otherwise</td>
+                    </tr>
+                    <tr>
+                        <td><b>Tavily / search APIs</b></td>
+                        <td>A web-search tool shaped for LLM consumption</td>
+                        <td>Public-information lookups inside an agent</td>
+                        <td>Egress. In most regulated estates it will simply be blocked &mdash; check first</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="35-2-lcel-vs-plain">35.2 What the abstraction buys, concretely<a class="headerlink"
+                    href="#35-2-lcel-vs-plain" title="Permanent link">#</a></h3>
+
+            <div class="code-tabs" data-label="The same chain, framework and plain">
+                <div class="tab-pane" data-lang="python">
+                    <pre><code data-lang="python">
+# LCEL: composition, batching, streaming and retries come with the operator.
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
+chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | ChatPromptTemplate.from_template(ANSWER_PROMPT)
+    | model.with_retry(stop_after_attempt=3)
+    | JsonOutputParser()
+)
+answers = await chain.abatch(questions, config={"max_concurrency": 8})
+
+
+# Plain: twenty more lines, and every one of them is yours to debug.
+async def chain_plain(question: str) -&gt; dict:
+    docs = await retriever.aget(question)
+    prompt = ANSWER_PROMPT.format(context=format_docs(docs), question=question)
+    raw = await call_with_retry(prompt, attempts=3)
+    return json.loads(raw)
+
+# The trade is not "easy vs hard". It is "whose code is in the stack trace
+# at 2am, and can the customer's team read it?" — which is why I default to
+# the framework for I/O plumbing and plain code for the business logic.
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text">
+How to answer "why this stack?" in a review, in order:
+
+1. Name the constraint it satisfies (runs in our VPC / their team knows
+   Python / audit needs resumable runs).
+2. Name what you are NOT using it for (no framework in the security
+   path, no framework holding the schema).
+3. Name the exit: "the retriever, the prompts and the tool schemas are
+   plain objects; swapping the orchestration layer is two days."
+
+That third point is what a customer architect is actually testing.
+Frameworks churn; a stack you cannot exit is a liability you handed
+to someone else.
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-key">
+                <p>Keep the things that are expensive to rebuild &mdash; the ontology, the chunking pipeline, the tool
+                    schemas, the golden set, the ACL model &mdash; in plain code and plain data. Let the framework own
+                    the plumbing. Then a framework's next breaking release is an afternoon rather than a quarter, and
+                    you can say so with a straight face in the review.</p>
+            </div>
+
+            <!-- ============================================================ 36 -->
+            <h2 id="36-cloud-network-linux">36. The Ground You Deploy Onto: Cloud, Network and Linux<a
+                    class="headerlink" href="#36-cloud-network-linux" title="Permanent link">#</a></h2>
+
+            <ul class="meta-strip">
+                <li><b>Their account</b> <code class="big-o o-great">their rules</code></li>
+                <li><b>Private subnets</b> <code class="big-o o-great">for anything stateful</code></li>
+                <li><b>IAM</b> <code class="big-o o-great">least privilege, per service</code></li>
+                <li><b>Budget alarm</b> <code class="big-o o-great">before the first deploy</code></li>
+            </ul>
+
+            <p>An FDE deploys into infrastructure they did not build and cannot redesign. You will not be the cloud
+                architect, but you must be able to read their network diagram, ask for exactly the right resources,
+                and debug a box over SSH at nine at night. This section is the minimum ground floor.</p>
+
+            <h3 id="36-1-the-network-picture">36.1 The network picture<a class="headerlink"
+                    href="#36-1-the-network-picture" title="Permanent link">#</a></h3>
+
+            <pre class="ascii">                         VPC 10.0.0.0/16
+ ┌──────────────────────────────────────────────────────────────────┐
+ │  public subnet 10.0.1.0/24          private subnet 10.0.10.0/24  │
+ │  ┌────────────┐                     ┌───────────────┐            │
+ │  │ ALB :443   │───────────────────► │ ECS service   │            │
+ │  └────────────┘                     │ (your API)    │            │
+ │  ┌────────────┐   outbound only     └───────┬───────┘            │
+ │  │ NAT gw     │◄────────────────────────────┤                    │
+ │  └─────┬──────┘                             │                    │
+ │        │                            ┌───────▼───────┐            │
+ │        │                            │ RDS Postgres  │ (private)  │
+ │        │                            │ + pgvector    │            │
+ │        │                            └───────────────┘            │
+ │        │                      VPC endpoints → S3, ECR, Secrets   │
+ └────────┼─────────────────────────────────────────────────────────┘
+          ▼
+   internet (model provider) — or nothing at all, if air-gapped
+
+Security groups are stateful allow-lists between these boxes.
+"Can the app reach the database?" is always: SG on RDS allows :5432
+from the SG of the ECS service. Not from a CIDR. From the SG.</pre>
+
+            <p>Two details decide most deployment arguments. <b>VPC endpoints</b> let your service reach S3, ECR and
+                the secrets store without traversing the internet at all, which is frequently the difference between
+                passing and failing a zero-egress policy. And <b>NAT is one-way</b>: private subnets can call out,
+                nothing can call in &mdash; which is why the database belongs there and the load balancer does not.
+            </p>
+
+            <h3 id="36-2-the-services">36.2 The services you will actually ask for<a class="headerlink"
+                    href="#36-2-the-services" title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Need</th>
+                        <th>Service</th>
+                        <th>What to specify</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Run the API</td>
+                        <td>ECS Fargate (or their Kubernetes cluster)</td>
+                        <td>Task definition: image digest, CPU/memory, env from Secrets Manager, log driver,
+                            health-check path</td>
+                    </tr>
+                    <tr>
+                        <td>Front it</td>
+                        <td>Application Load Balancer</td>
+                        <td>Target group on <code>/readyz</code>, idle timeout above your longest stream (default 60s
+                            will cut it)</td>
+                    </tr>
+                    <tr>
+                        <td>Store images</td>
+                        <td>ECR</td>
+                        <td>Scan on push, immutable tags, lifecycle rule to expire old images</td>
+                    </tr>
+                    <tr>
+                        <td>Documents and artefacts</td>
+                        <td>S3</td>
+                        <td>Block public access, SSE-KMS, versioning, lifecycle to Glacier, and a bucket policy that
+                            names the task role</td>
+                    </tr>
+                    <tr>
+                        <td>Relational + vectors</td>
+                        <td>RDS Postgres with <code>pgvector</code></td>
+                        <td>Private subnet, automated backups, a read replica for §27, and a read-only role</td>
+                    </tr>
+                    <tr>
+                        <td>Batch ingest</td>
+                        <td>Lambda or a Fargate task on a schedule</td>
+                        <td>Lambda's 15-minute ceiling rules it out for large re-index jobs &mdash; know this before
+                            you promise it</td>
+                    </tr>
+                    <tr>
+                        <td>Cheap compute</td>
+                        <td>Spot / interruptible instances</td>
+                        <td>Fine for ingest and fine-tuning, wrong for the API. Checkpoint your jobs</td>
+                    </tr>
+                    <tr>
+                        <td>Not surprising anyone</td>
+                        <td>Budgets and cost anomaly alerts</td>
+                        <td>Set thresholds on day zero, tagged by project. This is a ten-minute task that saves a
+                            difficult conversation</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="36-3-iam-and-least-privilege">36.3 IAM and least privilege<a class="headerlink"
+                    href="#36-3-iam-and-least-privilege" title="Permanent link">#</a></h3>
+
+            <div class="code-tabs" data-label="A task role that a security reviewer will approve">
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text">
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadCorpusOnly",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::acme-corpus",
+                   "arn:aws:s3:::acme-corpus/ingest/*"],
+      "Condition": {"Bool": {"aws:SecureTransport": "true"}}
+    },
+    {
+      "Sid": "OwnSecretsOnly",
+      "Effect": "Allow",
+      "Action": ["secretsmanager:GetSecretValue"],
+      "Resource": "arn:aws:secretsmanager:eu-west-2:*:secret:claims/ai/*"
+    }
+  ]
+}
+
+Three habits that pass review:
+  · one role per service, never a shared "app role"
+  · resource ARNs, never "*" — including on the Resource of a Deny
+  · cross-account access via AssumeRole with an ExternalId, never keys
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text"># Linux you need at 9pm when a container is misbehaving
+
+id; groups                      # who am I, and is that why it's 403?
+ls -l /app/prompts              # rwx for owner/group/other — chmod 640
+chown -R app:app /app/data      # container runs as uid 10001, not root
+
+ps aux --sort=-%mem | head      # what is eating the box
+top -o %CPU                     # or htop if it exists
+ss -tulpn | grep 8000           # is anything actually listening
+lsof -p $(pgrep -f uvicorn)     # which files/sockets it holds open
+journalctl -u myapp -f --since '10 min ago'
+dmesg | tail                    # OOM killer leaves its note here
+
+df -h; du -sh /var/lib/docker/* # "disk full" is half of all incidents
+free -m                         # and memory pressure is most of the rest
+
+# Config comes from the environment, never from a file in the image
+printenv | grep -i -E 'model|db' | sed 's/=.*/=***/'   # print keys, not values
+
+# A safe ingest loop: set -euo pipefail or a failure mid-way is silent
+set -euo pipefail
+for f in /data/incoming/*.pdf; do
+  python -m ingest "$f" &gt;&gt; /var/log/ingest.log 2&gt;&amp;1 || echo "FAILED $f"
+done
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>Ask for the network diagram, the IAM boundary and the egress policy in week one, in writing. Almost
+                    every &ldquo;the pilot cannot go to production&rdquo; story ends at one of those three, and all
+                    three are cheap to discover early and extremely expensive to discover after you have built against
+                    the wrong assumption.</p>
+            </div>
+
+            <!-- ============================================================ 37 -->
+            <h2 id="37-model-foundations">37. Model Foundations You Must Be Able to Explain<a class="headerlink"
+                    href="#37-model-foundations" title="Permanent link">#</a></h2>
+
+            <ul class="meta-strip">
+                <li><b>Depth needed</b> <code class="big-o o-good">explain, not derive</code></li>
+                <li><b>Asked by</b> <code class="big-o o-ok">their data scientist</code></li>
+                <li><b>Also asked in</b> <code class="big-o o-ok">the interview loop</code></li>
+                <li><b>Rule</b> <code class="big-o o-great">mechanism, then consequence</code></li>
+            </ul>
+
+            <p>You will not train a CNN on an engagement. You will, repeatedly, be in a room with someone who has, and
+                who wants to know whether you understand what you are deploying. This section is the floor: enough to
+                explain any of it accurately in two minutes and to know which ideas still matter operationally.</p>
+
+            <h3 id="37-1-from-perceptron-to-transformer">37.1 From perceptron to transformer<a class="headerlink"
+                    href="#37-1-from-perceptron-to-transformer" title="Permanent link">#</a></h3>
+
+            <pre class="ascii">perceptron        y = f(Σ wᵢxᵢ + b)      one linear boundary. Cannot do XOR.
+MLP               stack them, add a non-linear activation → any function,
+                  given enough width. Activation is the whole trick: without
+                  it, ten layers collapse into one matrix.
+loss              a number saying how wrong (cross-entropy for classes,
+                  MSE for values). Training = make this smaller.
+gradient descent  which way is downhill for every weight, take a small step.
+backprop          the chain rule, applied efficiently backwards through the
+                  network to get those gradients. Not magic; bookkeeping.
+CNN               weight sharing over space. Same edge detector everywhere →
+                  far fewer parameters. Images, and 1-D over signals.
+RNN / LSTM        a hidden state carried along a sequence. LSTM adds gates so
+                  the gradient survives long sequences.
+limitation        recurrence is inherently sequential: step t needs t-1, so
+                  you cannot parallelise training across the sequence, and
+                  long-range information still degrades.
+attention         drop recurrence. Let every position look at every other
+                  position directly, in parallel (§2). That is the whole
+                  reason transformers won — throughput, not just accuracy.</pre>
+
+            <h3 id="37-2-training-regimes">37.2 The training regimes, named correctly<a class="headerlink"
+                    href="#37-2-training-regimes" title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stage</th>
+                        <th>What happens</th>
+                        <th>Why you care</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pre-training</td>
+                        <td>Next-token prediction over a very large corpus</td>
+                        <td>Where general capability comes from; you will never do it</td>
+                    </tr>
+                    <tr>
+                        <td>Continued / domain-adaptive pre-training (DAPT)</td>
+                        <td>More next-token training on in-domain raw text</td>
+                        <td>Occasionally right for genuinely alien vocabulary (clinical codes, legal citation).
+                            Expensive; try retrieval first</td>
+                    </tr>
+                    <tr>
+                        <td>Instruction tuning / SFT</td>
+                        <td>Supervised on (prompt, ideal response) pairs</td>
+                        <td>The behaviour fine-tune of §24</td>
+                    </tr>
+                    <tr>
+                        <td>Preference optimisation</td>
+                        <td>RLHF, or directly with DPO / ORPO / KTO on preference pairs</td>
+                        <td>Teaches &ldquo;better than&rdquo; where correctness is a matter of degree</td>
+                    </tr>
+                    <tr>
+                        <td>Distillation</td>
+                        <td>Train a small model on a large model's outputs for one narrow task</td>
+                        <td>The cheapest route to an affordable in-tenant model. Check the provider's terms first</td>
+                    </tr>
+                    <tr>
+                        <td>Transfer learning</td>
+                        <td>Reusing pre-trained representations for a new task</td>
+                        <td>The umbrella idea under all of the above; also what an embedding model is doing</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="37-3-nlp-basics">37.3 The NLP layer under retrieval<a class="headerlink" href="#37-3-nlp-basics"
+                    title="Permanent link">#</a></h3>
+
+            <p>Classical NLP did not disappear; it moved into the ingest pipeline, where it is cheap and
+                deterministic and therefore often better than a model call.</p>
+
+            <ul class="card-grid">
+                <li class="is-good"><b>Normalisation</b> Case folding, Unicode NFKC, whitespace and ligature repair,
+                    de-hyphenation across line breaks. Do this before embedding or your vectors carry PDF artefacts.
+                </li>
+                <li class="is-good"><b>Tokenisation</b> BPE for the model (§4); word tokenisation and stemming for
+                    BM25. They are different jobs and different vocabularies &mdash; do not conflate them.</li>
+                <li class="is-good"><b>Sparse representation</b> TF-IDF and BM25 are feature engineering: term
+                    frequency, inverse document frequency, length normalisation. Understanding <em>why</em> BM25
+                    saturates term frequency explains why it beats embeddings on identifiers.</li>
+                <li class="is-good"><b>NER and POS</b> Entity extraction at ingest gives you the metadata that makes
+                    filtering possible (§12) and the nodes that populate a graph (§17). A domain NER model is often
+                    the highest-value small model in the whole pipeline.</li>
+                <li class="is-bad"><b>Not worth it</b> Hand-built sentiment lexicons, bag-of-words classifiers, topic
+                    models. A small instruction model beats them and needs no maintenance.</li>
+            </ul>
+
+            <h3 id="37-4-vision-and-generation">37.4 Vision bridges and generative models<a class="headerlink"
+                    href="#37-4-vision-and-generation" title="Permanent link">#</a></h3>
+
+            <p><b>CLIP</b> trains an image encoder and a text encoder jointly with a contrastive objective, so a
+                picture of a brake caliper and the words &ldquo;brake caliper&rdquo; land near each other in one shared
+                space. That single property gives you image-to-image similarity search, text-to-image search over a
+                photo archive, and zero-shot classification by comparing an image against candidate label strings
+                &mdash; all with the vector infrastructure you already have from §12. Vision-language models extend the
+                idea: a vision encoder produces patch embeddings that are projected into the language model's token
+                space, which is why you can put an image in a prompt at all, and why doing so costs hundreds of
+                tokens.</p>
+
+            <p><b>GANs</b> (a generator and a discriminator competing) and <b>diffusion models</b> (learn to reverse a
+                noising process, then denoise from pure noise, steered by a text embedding) are how image generation
+                works. In enterprise field work you will rarely deploy them; you will regularly be asked about them,
+                and occasionally asked to explain why a marketing team's image tool cannot be pointed at the claims
+                archive.</p>
+
+            <div class="callout callout-interview">
+                <p>The form these questions take is always the same: &ldquo;explain X, and tell me why it matters
+                    here.&rdquo; The second half is the marking scheme. Attention &rarr; therefore quadratic prefill
+                    and a KV cache budget. Distillation &rarr; therefore an affordable in-tenant model. Contrastive
+                    image-text training &rarr; therefore we can search the photo archive with the vector database we
+                    already run. Mechanism, then consequence, every time.</p>
+            </div>
+
+            <!-- ============================================================ 38 -->
+            <h2 id="38-agentic-ides">38. AI-Assisted Development with Agentic IDEs<a class="headerlink"
+                    href="#38-agentic-ides" title="Permanent link">#</a></h2>
+
+            <ul class="meta-strip">
+                <li><b>Where it pays</b> <code class="big-o o-great">integration &amp; migration</code></li>
+                <li><b>Permission</b> <code class="big-o o-great">read-only by default</code></li>
+                <li><b>Memory</b> <code class="big-o o-good">AGENTS.md in the repo</code></li>
+                <li><b>Non-negotiable</b> <code class="big-o o-bad">you own the diff</code></li>
+            </ul>
+
+            <p>An FDE's edge is throughput: one engineer, one quarter, someone else's codebase. Coding agents are the
+                largest single multiplier available on that, and they are also the fastest way to put code you do not
+                understand into a regulated customer's repository. Both things are true, and the difference is
+                entirely operational discipline.</p>
+
+            <h3 id="38-1-the-surfaces">38.1 The surfaces<a class="headerlink" href="#38-1-the-surfaces"
+                    title="Permanent link">#</a></h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Surface</th>
+                        <th>Shape</th>
+                        <th>Best for</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>IDE agent (Copilot, Cursor, Antigravity)</td>
+                        <td>In-editor, sees open files and the workspace index</td>
+                        <td>Change sets you will review line by line; refactors with tests</td>
+                    </tr>
+                    <tr>
+                        <td>Terminal agent (Claude Code, Codex CLI)</td>
+                        <td>Runs commands, reads output, iterates</td>
+                        <td>Migrations, dependency upgrades, &ldquo;make the test suite pass&rdquo;</td>
+                    </tr>
+                    <tr>
+                        <td>Cloud / CI agent</td>
+                        <td>Triggered by an issue or a PR, opens a branch</td>
+                        <td>Mechanical, well-specified backlog items; flaky-test triage</td>
+                    </tr>
+                    <tr>
+                        <td>Review agent</td>
+                        <td>Comments on diffs</td>
+                        <td>A second pair of eyes on your own PRs when you are the only engineer on site</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 id="38-2-controls">38.2 The controls that make it safe on a customer's repo<a class="headerlink"
+                    href="#38-2-controls" title="Permanent link">#</a></h3>
+
+            <ol>
+                <li><b>Permission mode, chosen per task.</b> Read-only for exploring an unfamiliar codebase; approved
+                    edits for real work; full autonomy only in a scratch worktree you are willing to delete. On a
+                    customer's machine, start at the most restrictive and justify every step up.</li>
+                <li><b>Reasoning effort, chosen per task.</b> Low for mechanical edits, high for the design question
+                    you are actually stuck on. It is a cost and latency dial (§3) in another costume.</li>
+                <li><b>Project memory.</b> An <code>AGENTS.md</code> at the repo root carrying the build command, the
+                    test command, the house conventions, the deployment constraint and the things that look wrong but
+                    are deliberate. It is also, conveniently, a genuine handover artefact: the next human reads the
+                    same file.</li>
+                <li><b>A plan before a diff.</b> Make the agent write the plan, read it, correct it, then let it
+                    execute. Plan-and-execute (§19) applies to your own tooling for the same reason it applies to
+                    production agents.</li>
+                <li><b>Tools via MCP.</b> The same servers from §23 &mdash; their ticket system, their logs &mdash;
+                    with the same review checklist. A coding agent connected to a customer's Jira is an integration,
+                    with all the security implications of one.</li>
+                <li><b>Skills and subagents.</b> Package a repeated procedure (&ldquo;scaffold a connector to this
+                    house standard&rdquo;) as a reusable instruction file, and delegate wide searches to a subagent so
+                    the main context stays clean. This is the platform-feature move applied to your own workflow.</li>
+                <li><b>Hooks.</b> Deterministic checks that run on every agent action &mdash; formatter, linter,
+                    secret scanner, forbidden-path guard. The agent cannot talk its way past a hook, which is exactly
+                    why hooks are where the real safety lives.</li>
+                <li><b>Human-in-the-loop review.</b> You read every line that reaches a customer branch. Not because
+                    the code is bad, but because <b>you will be the one defending it in the architecture review</b>,
+                    and &ldquo;the agent wrote it&rdquo; is not an answer anyone accepts.</li>
+            </ol>
+
+            <div class="code-tabs" data-label="A repo memory file worth committing">
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text"># AGENTS.md
+
+## Commands
+- install: `uv sync`
+- test:    `pytest -q` (unit) / `pytest -m integration` (needs docker compose up)
+- lint:    `ruff check . &amp;&amp; mypy src`
+- evals:   `python -m evals.run --suite golden`
+
+## Constraints that are NOT negotiable here
+- Runs in the customer's VPC. No new outbound hosts, ever.
+- Postgres 14 — no features above that. pgvector 0.7.
+- Python 3.11 (their base image). Do not use 3.12 syntax.
+- Every DB call goes through `db/` with a read-only role. No raw psycopg
+  in feature code.
+
+## Conventions
+- Prompts live in `prompts/*.md` with a semver header. Never inline.
+- Tool schemas in `tools/schemas.py`; adding a tool requires a golden-set case.
+- All new endpoints need an entitlement test in `tests/test_acl.py`.
+
+## Things that look wrong and are deliberate
+- `retriever.py` re-embeds the query twice: once for dense, once for the
+  HyDE variant. Measured; do not "optimise" it away.
+- The 60-second ALB idle timeout is a customer platform setting, not ours.
+</code></pre>
+                </div>
+                <div class="tab-pane" data-lang="text">
+                    <pre><code data-lang="text">
+Where agents actually earn their keep on an engagement:
+
+  schema archaeology (§26)   profile 1,400 tables, write the data
+                             dictionary — days of work, well specified
+  connector scaffolding      the fifth REST/SOAP client is identical
+                             to the first four
+  test backfill              generate the entitlement denial cases from
+                             the ACL matrix, then YOU verify each one
+  migration toil             framework upgrades, dialect ports,
+                             typing a legacy module
+  eval harness plumbing      the runner, the report, the CI gate
+
+Where they do not:
+
+  the ontology               it encodes the customer's business logic;
+                             it comes from conversations, not code
+  the scoping decision       what NOT to build is the whole job
+  anything you cannot        if you would not sign the PR, do not merge it
+  defend line by line
+</code></pre>
+                </div>
+            </div>
+
+            <div class="callout callout-warn">
+                <p>Before running any agent on a customer's code, check the contract. Many engagements forbid source
+                    code leaving the estate, which rules out every hosted coding assistant and leaves you with a local
+                    model or nothing. Ask in week one, in writing, and note the answer in the same document as the
+                    egress policy from §36 &mdash; it is the same question.</p>
+            </div>
+
+            <!-- ============================================================ 39 -->
+            <h2 id="39-cheat-sheet">39. Cheat Sheet<a class="headerlink" href="#39-cheat-sheet"
                     title="Permanent link">#</a></h2>
 
-            <h3 id="35-1-numbers">35.1 Numbers worth knowing by heart<a class="headerlink" href="#35-1-numbers"
+            <h3 id="39-1-numbers">39.1 Numbers worth knowing by heart<a class="headerlink" href="#39-1-numbers"
                     title="Permanent link">#</a></h3>
 
             <table>
@@ -4153,7 +5333,7 @@ only works at today's prices is not a business case.
                 </tbody>
             </table>
 
-            <h3 id="35-2-diagnosis">35.2 Symptom &rarr; likely cause<a class="headerlink" href="#35-2-diagnosis"
+            <h3 id="39-2-diagnosis">39.2 Symptom &rarr; likely cause<a class="headerlink" href="#39-2-diagnosis"
                     title="Permanent link">#</a></h3>
 
             <table>
@@ -4223,9 +5403,9 @@ only works at today's prices is not a business case.
                 </tbody>
             </table>
 
-            <!-- ============================================================ 36 -->
-            <h2 id="36-pattern-recognition">36. Pattern Recognition Playbook<a class="headerlink"
-                    href="#36-pattern-recognition" title="Permanent link">#</a></h2>
+            <!-- ============================================================ 40 -->
+            <h2 id="40-pattern-recognition">40. Pattern Recognition Playbook<a class="headerlink"
+                    href="#40-pattern-recognition" title="Permanent link">#</a></h2>
 
             <p>What a customer says, what it usually means technically, and what to build.</p>
 
@@ -4291,15 +5471,15 @@ only works at today's prices is not a business case.
                 </tbody>
             </table>
 
-            <!-- ============================================================ 37 -->
-            <h2 id="37-practice-roadmap">37. Practice Roadmap<a class="headerlink" href="#37-practice-roadmap"
+            <!-- ============================================================ 41 -->
+            <h2 id="41-practice-roadmap">41. Practice Roadmap<a class="headerlink" href="#41-practice-roadmap"
                     title="Permanent link">#</a></h2>
 
             <p>Reading this is not the same as being able to do it under a customer's questioning. Build the following,
                 in order. Each one is small; together they cover every section above and give you a portfolio you can
                 open in an interview.</p>
 
-            <h3 id="37-1-the-builds">37.1 The builds<a class="headerlink" href="#37-1-the-builds"
+            <h3 id="41-1-the-builds">41.1 The builds<a class="headerlink" href="#41-1-the-builds"
                     title="Permanent link">#</a></h3>
 
             <ol>
@@ -4326,15 +5506,15 @@ only works at today's prices is not a business case.
                     document and have someone attack it.</li>
             </ol>
 
-            <h3 id="37-2-how-to-be-questioned">37.2 Rehearsing the defence<a class="headerlink"
-                    href="#37-2-how-to-be-questioned" title="Permanent link">#</a></h3>
+            <h3 id="41-2-how-to-be-questioned">41.2 Rehearsing the defence<a class="headerlink"
+                    href="#41-2-how-to-be-questioned" title="Permanent link">#</a></h3>
 
             <p>For each build, write down the three numbers you would quote, the trade-off you made, and the failure
                 mode you would warn the customer about. Then have someone ask &ldquo;why not the other option?&rdquo;
                 until you either have an answer or discover you were guessing. That exercise, repeated, is what
                 converts this material from knowledge into the thing an FDE is actually paid for.</p>
 
-            <h3 id="37-3-where-to-go-next">37.3 Where to go next<a class="headerlink" href="#37-3-where-to-go-next"
+            <h3 id="41-3-where-to-go-next">41.3 Where to go next<a class="headerlink" href="#41-3-where-to-go-next"
                     title="Permanent link">#</a></h3>
 
             <ol>
