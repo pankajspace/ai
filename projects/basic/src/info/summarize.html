@@ -7,8 +7,7 @@
     <title>How it works — Website Summarizer · AI Playground</title>
     <meta name="description"
         content="How the Website Summarizer demo works: scraping, GPT-4o mini, and the code behind it." />
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
     <link rel="stylesheet"
@@ -19,7 +18,7 @@
     <header>
         <nav class="nav container">
             <a href="../" class="brand">
-                <span class="logo">⚡</span>
+                <span class="logo" aria-hidden="true"></span>
                 <span>AI Playground</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Playground</a>
@@ -57,10 +56,20 @@
 
                 <h2>Theory &amp; Concepts</h2>
                 <p><strong>HTML Sanitization and Prompt Constraints</strong></p>
-                <p>The Website Summarizer demo demonstrates how to effectively prepare messy real-world data for an LLM:</p>
+                <p>The Website Summarizer demo demonstrates how to effectively prepare messy real-world data for an LLM:
+                </p>
                 <ul>
-                    <li><strong>Token Efficiency through Scraping:</strong> Web pages are filled with HTML tags, scripts, and navigation menus that are irrelevant to the actual content. In the <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens and increase API costs, while potentially confusing the model with structural noise.</li>
-                    <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's output can be predictably rendered by our frontend. Furthermore, instructing the model to "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that survived the BeautifulSoup cleanup.</li>
+                    <li><strong>Token Efficiency through Scraping:</strong> Web pages are filled with HTML tags,
+                        scripts, and navigation menus that are irrelevant to the actual content. In the
+                        <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out
+                        <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This
+                        is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens
+                        and increase API costs, while potentially confusing the model with structural noise.</li>
+                    <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the
+                        system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's
+                        output can be predictably rendered by our frontend. Furthermore, instructing the model to
+                        "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that
+                        survived the BeautifulSoup cleanup.</li>
                 </ul>
 
                 <h2>Request flow</h2>
