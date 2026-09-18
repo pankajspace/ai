@@ -10,6 +10,8 @@ Build a complete, self-contained study unit for each topic given as an argument:
 2. **Detailed course** — the whole topic, section by section, from first principles.
 3. **Catalog page** + **homepage hub tile** wiring both courses into `projects/techtoday/index.html`.
 
+Author each course in **Markdown first, then HTML**. The `.md` file is where the teaching is written and reviewed; the `.html` file is that same content wired into the site's components and animation engine. Every `.html` page in `study/` has a `.md` counterpart next to it, and the two must stay in sync.
+
 The reference implementation is **DSA** (`projects/techtoday/study/dsa/`). It is the most complete unit on the site — it carries the animation engine. Copy its assets and match its structure; do not invent a new design system.
 
 ---
@@ -24,7 +26,10 @@ projects/techtoday/
 └── study/
     └── <slug>/
         ├── <slug>-courses.html       ← catalog page (2 cards)
+        ├── <slug>-courses.md         ← Markdown counterpart
+        ├── <slug>-crash-course.md    ← written first
         ├── <slug>-crash-course.html
+        ├── <slug>-detailed-course.md ← written first
         ├── <slug>-detailed-course.html
         ├── <slug>-study.css          ← copy of dsa-study.css
         └── <slug>-study.js           ← copy of dsa-study.js
@@ -32,6 +37,7 @@ projects/techtoday/
 
 Rules that hold across the whole site:
 
+- **Markdown first.** Write `<slug>-crash-course.md` and `<slug>-detailed-course.md` before their HTML, and keep every `.html` page paired with a same-named `.md` in the same folder.
 - **No frameworks, no build step, no CDN.** Plain HTML + one CSS file + one JS file per topic folder.
 - Each topic folder is **self-contained** except for `../../site-header.css`, which is shared.
 - Catalog page naming follows the topic's own noun: `-courses.html` for courses, `-guides.html` where the existing site already used that (`git-guides.html`, `devops-guides.html`). For a new topic prefer `-courses.html`.
@@ -39,18 +45,100 @@ Rules that hold across the whole site:
 
 ---
 
-## 1. Plan the syllabus before writing any HTML
+## 1. Plan the syllabus before writing anything
 
-Write the two tables of contents first and confirm them, because everything else hangs off the section IDs.
+Write the two tables of contents first and confirm them, because everything else — Markdown anchors and HTML section IDs alike — hangs off the section IDs.
 
 - **Crash course** — 10–14 entries. Only what a practitioner touches weekly plus the fundamentals that make the rest legible. Group into 2–4 "Units" using `<h2 id="unit-1">Unit 1 — …</h2>` with `<h3>` sections beneath, exactly as the DSA crash course does. Start with the one prerequisite idea the whole topic rests on (DSA opens with Big-O) and end with a "the whole thing on one page" summary.
 - **Detailed course** — 25–40 numbered `<h2>` sections, ordered so each depends only on earlier ones. Number them in both the ID and the visible heading: `<h2 id="14-sorting">14. Sorting</h2>`. End with a cheat sheet, a pattern-recognition playbook, and a practice roadmap.
 
-Every section ID must be `#<n>-<kebab-title>` and every TOC entry links to it.
+Every section ID must be `#<n>-<kebab-title>` and every TOC entry links to it. The same IDs become the anchors in the Markdown file, so fix them once, here.
 
 ---
 
-## 2. Scaffold the topic assets
+## 2. Write the Markdown course first
+
+Write `<slug>-crash-course.md` and `<slug>-detailed-course.md` before touching HTML. Prose, examples, code and diagrams get reviewed here, where they are cheap to change; the HTML pass is then mechanical.
+
+Work **incrementally, a few sections at a time**, appending to the file. Do not attempt a single generation of a whole course.
+
+Use this shape, which is exactly what the HTML converts to and from:
+
+````markdown
+<!--
+Source: <slug>-crash-course.html
+Title: <Topic> Crash Course | TechToday
+Description: One sentence, specific, no marketing.
+-->
+
+<a id="<slug>-crash-course"></a>
+
+# <Topic>
+
+Two or three sentences on how to read the page.
+
+<a id="table-of-contents"></a>
+
+## Table of Contents
+
+1. [The first idea](#1-the-first-idea)
+
+<a id="1-the-first-idea"></a>
+
+## 1. The first idea
+
+- **Access** `O(1)`                         <!-- meta-strip: the numbers to memorise -->
+
+One paragraph of plain-language definition.
+
+> **Analogy** 🎬
+>
+> **Picture it — cinema seats**
+>
+> The everyday mental model.
+
+> **Interactive animation:** `cache-eviction` — rendered by the page script in the HTML version.
+
+- **Strength — …** …                        <!-- card-grid -->
+- **Weakness — …** …
+
+**Interview question**
+
+*The question.*
+
+The reasoning, in prose, before any code.
+
+**Answer — move zeroes in place**
+
+```python
+…
+```
+
+```javascript
+…
+```
+
+> **Key idea**
+>
+> The gotcha people actually hit.
+````
+
+Markdown ↔ HTML mapping to keep the pair in sync:
+
+1. `<a id="…"></a>` before a heading ⇄ the `id` on `<h1>`–`<h4>` (and its `.headerlink` anchor).
+2. `> **Key idea** / **Tip** / **Warning** / **Interview**` ⇄ `.callout.callout-key` / `-tip` / `-warn` / `-interview`.
+3. `> **Analogy** 🎬` + bold title ⇄ `.analogy` with `.analogy-icon` and `.analogy-body`.
+4. Bullet list of `**Term**` + value ⇄ `ul.meta-strip`; bullets of `**Strength — …**` ⇄ `ul.card-grid`.
+5. `**Interview question**` + italic question + prose ⇄ `.worked` with `.worked-q`.
+6. Consecutive fenced blocks under a bold label ⇄ `.code-tabs[data-label]` with one `.tab-pane` per language.
+7. `> **Interactive animation:** \`name\`` ⇄ `<div class="viz" data-viz="name"></div>` — one line per widget you intend to build, so §6 has a checklist.
+8. Fenced `text` block ⇄ `div.ascii`; italic caption line ⇄ `figcaption.viz-caption`; Markdown table ⇄ `<table>`.
+
+Confirm the Markdown reads as a complete course on its own before starting the HTML. If the HTML is edited later, update the `.md` in the same change — they are counterparts, not a one-way export.
+
+---
+
+## 3. Scaffold the topic assets
 
 ```bash
 cd projects/techtoday/study
@@ -81,7 +169,9 @@ If the topic's code samples are not Python/JavaScript, extend the highlighter: a
 
 ---
 
-## 3. Page skeleton (identical for both courses)
+## 4. Page skeleton (identical for both courses)
+
+With the Markdown approved, build the HTML page from it section by section — the headings, IDs, prose and code come across verbatim; only the wrappers are new.
 
 ```html
 <!DOCTYPE html>
@@ -143,7 +233,7 @@ Non-negotiables:
 
 ---
 
-## 4. Section anatomy and content components
+## 5. Section anatomy and content components
 
 Each crash-course section follows the same rhythm, and this is what makes the pages teach rather than list:
 
@@ -202,9 +292,11 @@ Available components (all styled by the copied CSS — use these, never ad-hoc i
 
 ---
 
-## 5. Animations — the part that matters most
+## 6. Animations — the part that matters most
 
 The requirement is "explain everything using animations, images or diagrams where it makes sense". Order of preference: **animated widget → SVG/ASCII diagram → table → prose**. Any process with steps (a request travelling, a rebase rewriting history, a scheduler switching, a packet being fragmented) should be a widget, not a paragraph.
+
+The `> **Interactive animation:** \`name\`` markers left in the Markdown are the work list: each one becomes a mounted widget here, with the same name.
 
 Mount a widget with a single element:
 
@@ -261,7 +353,7 @@ For static pictures use inline `<svg>` (no external images) wrapped as:
 
 ---
 
-## 6. Crash course vs detailed course
+## 7. Crash course vs detailed course
 
 |  | Crash | Detailed |
 | --- | --- | --- |
@@ -269,18 +361,18 @@ For static pictures use inline `<svg>` (no external images) wrapped as:
 | Sections | 10–14, grouped into Units | 25–40, numbered |
 | Framing | mental model first, code second | first principles, then proof and edge cases |
 | Code | the idiomatic form only | full implementations, both languages, plus the from-scratch version where a language lacks the feature |
-| Length guide | ~2,500–3,000 lines | ~8,000–10,000 lines |
+| Length guide | ~2,500–3,000 lines of HTML | ~8,000–10,000 lines of HTML |
 
 Cross-link them both ways:
 
 - Detailed course, inside section 1: a `callout-key` pointing new readers at the crash course.
 - Crash course, in the closing "Where to go next": a numbered list linking the detailed course, the catalog page, and 2–3 genuinely useful external resources.
 
-Write these files **incrementally, a few sections at a time**, appending to the file. Do not attempt a single generation of a 400 KB document.
+Write these files **incrementally, a few sections at a time**, appending to the file — in Markdown first, then in HTML. Do not attempt a single generation of a 400 KB document.
 
 ---
 
-## 7. Catalog page — `study/<slug>/<slug>-courses.html`
+## 8. Catalog page — `study/<slug>/<slug>-courses.html`
 
 Copy `study/dsa/dsa-courses.html` and change the title, description, favicon emoji, hero copy and cards. It uses the site-wide `../../style.css` (not the study CSS), `.grid.grid-2` for two cards, plain `.grid` for four or more:
 
@@ -297,9 +389,11 @@ Copy `study/dsa/dsa-courses.html` and change the title, description, favicon emo
 
 For a multi-topic tile, the single catalog page sits in the tile folder and lists every topic's crash + detailed card, ordered crash/detailed per topic.
 
+Give the catalog page a `<slug>-courses.md` counterpart too — title, hero copy and one bullet per card with its link.
+
 ---
 
-## 8. Homepage hub tile — `projects/techtoday/index.html`
+## 9. Homepage hub tile — `projects/techtoday/index.html`
 
 Append or update one `.hub-tile` inside `.hub-grid`, preceded by an HTML comment naming it:
 
@@ -338,22 +432,23 @@ Tile structure rules:
 
 ---
 
-## 9. Update the docs
+## 10. Update the docs
 
 1. **Root `README.md`** — add under `# Learn` a `## <Topic>` block with the two relative HTML links, matching the existing Python and DSA entries.
 2. **`projects/techtoday/README.md`** — add the new folder and catalog page to the *Project Structure* tree, and bump the tile count and category list in *Design* item 3 ("8 category tiles…").
 
 ---
 
-## 10. Verification checklist
+## 11. Verification checklist
 
 Run through this before reporting done:
 
+- [ ] Every `.html` page in the topic folder has a `.md` counterpart of the same name, and the two carry the same sections, prose and code.
 - [ ] Both courses open; the sticky sidebar renders and highlights the section you are in (proves the TOC IDs resolve).
 - [ ] Every `data-viz` value in the HTML has a matching key in `VIZ` — grep both and diff:
       `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`
 - [ ] Every widget plays, scrubs, reverses, and its final frame states the conclusion.
-- [ ] Widget state classes are in the table from §5.
+- [ ] Widget state classes are in the table from §6.
 - [ ] Language tabs switch, and the choice persists after reload.
 - [ ] Copy-code buttons work; no raw `<` `>` breaking a code block.
 - [ ] Crash ↔ detailed ↔ catalog ↔ homepage links all resolve, including `../../index.html` and `../<slug>-courses.html`.
