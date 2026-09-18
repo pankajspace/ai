@@ -68,6 +68,6 @@ docker run -it ubuntu sh
 
 # Execute a Command in a Running Container
 docker exec -it <container_id> <command>
-docker exec -it <container_id> sh
+docker exec -it ubuntu sh
 ```
 
