@@ -1,269 +1,975 @@
-<title>The Refund Bench</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Refund Bench — Agentic System Design | Applied AI Masterclass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@400;500;700&display=swap">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  color-scheme: light;
-  --bg:#F1F1EE; --surface:#FFFFFF; --surface-2:#E6E6E0;
-  --ink:#1A1A18; --ink-2:#585851; --ink-3:#86867E;
-  --rule:#D8D8D1; --rule-2:#BEBEB5;
-  --accent:#2B3A67; --accent-soft:#DFE3EE;
-  --up:#1B6B4C;   --up-soft:#D8EDE3;
-  --rej:#A52A38;  --rej-soft:#F7DEE0;
-  --esc:#5B4A9E;  --esc-soft:#E6E1F5;
-  --money:#8A5E12; --money-soft:#F6E9CE;
-  --code-bg:#1C1C1A; --code-ink:#E4E4DC; --code-dim:#87877D;
-  --display:"Instrument Serif",Georgia,"Times New Roman",serif;
-  --body:"Public Sans",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+:root {
+  color-scheme: dark;
+  --bg: #090d16;
+  --bg-2: #0f172a;
+  --surface: #131d31;
+  --surface-2: #1e293b;
+  --surface-3: #334155;
+  --line: #1e293b;
+  --line-2: #334155;
+  --text: #f8fafc;
+  --ink: #f8fafc;
+  --ink-2: #cbd5e1;
+  --ink-3: #94a3b8;
+  --dim: #64748b;
+  --accent: #60a5fa;
+  --accent-soft: rgba(96, 165, 250, 0.14);
+  --up: #4ade80;
+  --up-soft: rgba(74, 222, 128, 0.14);
+  --rej: #f87171;
+  --rej-soft: rgba(248, 113, 113, 0.14);
+  --esc: #c084fc;
+  --esc-soft: rgba(192, 132, 252, 0.14);
+  --money: #fbbf24;
+  --money-soft: rgba(251, 191, 36, 0.14);
+  --code-bg: #060913;
+  --code-ink: #f8fafc;
+  --code-dim: #94a3b8;
+  --radius: 12px;
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    color-scheme: dark;
-    --bg:#131312; --surface:#1C1C1A; --surface-2:#252523;
-    --ink:#EDEDE6; --ink-2:#ACACA3; --ink-3:#83837B;
-    --rule:#2F2F2C; --rule-2:#434340;
-    --accent:#9CB2E0; --accent-soft:#1E2436;
-    --up:#4FC79A;   --up-soft:#132E24;
-    --rej:#FF8A90;  --rej-soft:#351A1D;
-    --esc:#AFA0EC;  --esc-soft:#221E38;
-    --money:#E0AE52; --money-soft:#2E2413;
-    --code-bg:#0C0C0B; --code-ink:#E4E4DC; --code-dim:#76766D;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.68;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reading Progress Bar */
+#progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--up), var(--esc), var(--money));
+  z-index: 200;
+  transition: width .1s linear;
+}
+
+/* Hero Header */
+header.hero {
+  background: radial-gradient(900px 420px at 80% -12%, rgba(37, 99, 235, 0.18), transparent 60%), var(--bg-2);
+  color: #f8fafc;
+  padding: 64px 24px 50px;
+  border-bottom: 1px solid var(--line-2);
+  position: relative;
+  overflow: hidden;
+}
+header.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--up), var(--esc), var(--money));
+}
+.hero-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+.hero .eyebrow {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero h1 .accent, .hero h1 em {
+  color: var(--accent);
+  font-style: normal;
+}
+.hero p.lede {
+  color: var(--ink-2);
+  font-size: 1.12rem;
+  max-width: 74ch;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+.hero .meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+.hero .chip {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 100px;
+  padding: 6px 14px;
+  color: var(--ink-3);
+}
+.hero .chip b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Two-column Layout Wrapper */
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 48px;
+}
+@media (max-width: 960px) {
+  .wrap {
+    grid-template-columns: 1fr;
+    gap: 0;
   }
 }
-:root[data-theme="dark"]{
-  color-scheme: dark;
-  --bg:#131312; --surface:#1C1C1A; --surface-2:#252523;
-  --ink:#EDEDE6; --ink-2:#ACACA3; --ink-3:#83837B;
-  --rule:#2F2F2C; --rule-2:#434340;
-  --accent:#9CB2E0; --accent-soft:#1E2436;
-  --up:#4FC79A;   --up-soft:#132E24;
-  --rej:#FF8A90;  --rej-soft:#351A1D;
-  --esc:#AFA0EC;  --esc-soft:#221E38;
-  --money:#E0AE52; --money-soft:#2E2413;
-  --code-bg:#0C0C0B; --code-ink:#E4E4DC; --code-dim:#76766D;
+
+/* Sticky Table of Contents */
+nav.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 40px 0;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+@media (max-width: 960px) {
+  nav.toc {
+    position: static;
+    max-height: none;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+.toc h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+.toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.toc li {
+  margin-bottom: 4px;
+}
+.toc a {
+  display: block;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background .15s, color .15s;
+  line-height: 1.4;
+}
+.toc a:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.toc a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:var(--body); font-size:16.5px; line-height:1.65;
-  padding-inline:20px; padding-block:0 72px;
-  -webkit-font-smoothing:antialiased;
+/* Main Content Area */
+main {
+  padding: 40px 0 100px;
+  min-width: 0;
 }
-.col{width:100%; max-width:720px; margin-inline:auto}
-.wide{width:100%; max-width:980px; margin-inline:auto}
+section {
+  margin-bottom: 64px;
+  scroll-margin-top: 32px;
+}
+.kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+h2 em {
+  font-style: italic;
+  color: var(--accent);
+}
+h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 28px 0 10px;
+  color: var(--ink);
+}
+h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 18px 0 8px;
+  color: var(--ink);
+}
+p {
+  margin-bottom: 14px;
+  color: var(--ink-2);
+}
+p.lede {
+  font-size: 1.1rem;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: var(--ink);
+}
+ul, ol {
+  margin: 10px 0 16px 20px;
+  color: var(--ink-2);
+}
+li {
+  margin-bottom: 6px;
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
 
-header{padding-block:56px 38px; border-bottom:3px double var(--ink); margin-bottom:8px}
-.eyebrow{
-  font-family:var(--mono); font-size:11px; font-weight:600;
-  letter-spacing:.15em; text-transform:uppercase; color:var(--accent);
-  margin:0 0 20px;
+/* Callouts & Cards */
+.ask {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--money);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin: 22px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-h1{
-  font-family:var(--display); font-weight:400; font-size:clamp(42px,9vw,74px);
-  line-height:.98; letter-spacing:-.01em; margin:0 0 20px; text-wrap:balance;
+.ask .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--money);
+  display: block;
+  margin-bottom: 8px;
 }
-h1 em{font-style:italic; color:var(--accent)}
-.standfirst{font-size:19px; color:var(--ink-2); margin:0 0 26px; max-width:56ch}
-.meta{
-  font-family:var(--mono); font-size:11.5px; line-height:1.7; color:var(--ink-3);
-  display:flex; flex-wrap:wrap; gap:6px 22px;
+.ask .tag::before {
+  content: "💬 ";
 }
-.meta b{color:var(--ink-2); font-weight:400}
+.ask q {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 10px;
+  quotes: "“" "”";
+}
+.ask p {
+  margin-bottom: 8px;
+  color: var(--ink-2);
+}
+.ask p:last-child {
+  margin-bottom: 0;
+}
 
-section{padding-block:44px 8px}
-section + section{border-top:1px solid var(--rule)}
-h2{
-  font-family:var(--display); font-weight:400; font-size:clamp(28px,5.4vw,42px);
-  line-height:1.08; letter-spacing:-.005em; margin:0 0 10px; text-wrap:balance;
+.room {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin: 22px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-h2 em{font-style:italic}
-h3{
-  font-family:var(--body); font-weight:700; font-size:17px;
-  letter-spacing:-.005em; margin:34px 0 8px;
+.room .tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 8px;
 }
-.kicker{
-  font-family:var(--mono); font-size:11px; font-weight:600;
-  letter-spacing:.15em; text-transform:uppercase; color:var(--ink-3);
-  margin:0 0 12px;
+.room .tag::before {
+  content: "⚡ ";
 }
-p{margin:0 0 16px}
-.lede{font-size:18px; color:var(--ink-2); margin-bottom:22px}
-strong{font-weight:700}
-code{
-  font-family:var(--mono); font-size:.86em;
-  background:var(--surface-2); padding:1px 5px; border-radius:3px; color:var(--ink);
+.room p {
+  margin-bottom: 8px;
+  color: var(--ink-2);
 }
-.rs{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600}
-ul,ol{margin:0 0 16px; padding-left:22px}
-li{margin-bottom:7px}
-a{color:var(--accent)}
-
-.v{
-  font-family:var(--mono); font-size:10px; font-weight:600;
-  letter-spacing:.09em; text-transform:uppercase;
-  padding:3px 8px; border-radius:2px; white-space:nowrap;
-  display:inline-block; vertical-align:2px;
+.room p:last-child {
+  margin-bottom: 0;
 }
-.v.up{background:var(--up-soft); color:var(--up)}
-.v.rej{background:var(--rej-soft); color:var(--rej)}
-.v.esc{background:var(--esc-soft); color:var(--esc)}
-.v.drop{background:var(--surface-2); color:var(--ink-3)}
 
-.casefile{
-  background:var(--surface); border:1px solid var(--rule);
-  border-top:4px solid var(--accent); padding:0; margin:0 0 16px; border-radius:2px;
+.callout-ans {
+  background: var(--money-soft);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 18px 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: #fde68a;
 }
-.casefile-head{
-  display:flex; flex-wrap:wrap; gap:4px 24px; padding:14px 26px;
-  border-bottom:1px solid var(--rule); background:var(--surface-2);
-  font-family:var(--mono); font-size:11px; color:var(--ink-2);
+
+.casefile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 20px 0;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
-.casefile-head b{color:var(--ink); font-weight:600}
-.casefile-body{padding:24px 26px}
-.casefile-body p{font-size:17.5px; line-height:2.05; margin:0}
-mark{background:none; padding:0 1px; border-bottom:2.5px solid; color:inherit}
-mark.up{border-color:var(--up)}
-mark.rej{border-color:var(--rej)}
-mark.esc{border-color:var(--esc)}
-mark.drop{border-bottom:2.5px dotted var(--rule-2); color:var(--ink-3)}
-sup.gid{font-family:var(--mono); font-size:9.5px; font-weight:600; padding-left:2px}
-sup.up{color:var(--up)} sup.rej{color:var(--rej)} sup.esc{color:var(--esc)} sup.drop{color:var(--ink-3)}
-
-.tablewrap{overflow-x:auto; margin:0 0 16px; -webkit-overflow-scrolling:touch}
-table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:480px}
-th{
-  font-family:var(--mono); font-size:10px; font-weight:600;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
-  text-align:left; padding:0 14px 8px 0; border-bottom:1.5px solid var(--rule-2);
-  vertical-align:bottom;
+.casefile-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 12px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--ink-3);
 }
-td{padding:11px 14px 11px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.5}
-td:last-child,th:last-child{padding-right:0}
-.num{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
-tr.total td{border-bottom:none; border-top:2px solid var(--ink); font-weight:700}
-
-figure{margin:28px 0 30px}
-figure svg{display:block; width:100%; height:auto; max-width:100%; color:var(--ink)}
-figcaption{font-size:14px; color:var(--ink-2); margin-top:14px; max-width:70ch; margin-inline:auto; line-height:1.55}
-.svgwrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
-.svgwrap > svg{min-width:520px}
-
-.room,.ask{border-radius:2px; padding:18px 22px; margin:0 0 20px}
-.room{background:var(--accent-soft); border-left:3px solid var(--accent)}
-.ask{background:var(--money-soft); border-left:3px solid var(--money)}
-.room .tag,.ask .tag{
-  font-family:var(--mono); font-size:10px; font-weight:600;
-  letter-spacing:.13em; text-transform:uppercase;
-  display:block; margin-bottom:8px;
+.casefile-head b {
+  color: var(--ink);
+  font-weight: 600;
 }
-.room .tag{color:var(--accent)}
-.ask .tag{color:var(--money)}
-.room p,.ask p{margin:0 0 10px; font-size:15.5px}
-.room p:last-child,.ask p:last-child{margin-bottom:0}
-.ask q{font-style:italic; font-family:var(--display); font-size:19px; line-height:1.35; quotes:"“" "”"}
-
-pre{
-  background:var(--code-bg); color:var(--code-ink); border-radius:3px;
-  padding:20px 22px; overflow-x:auto; margin:0 0 6px;
-  font-family:var(--mono); font-size:12.5px; line-height:1.7;
-  -webkit-overflow-scrolling:touch;
+.casefile-body {
+  padding: 22px 24px;
 }
-pre code{background:none; padding:0; font-size:inherit; color:inherit}
-.c-dim{color:var(--code-dim)}
-.c-key{color:#CB9BE8}
-.c-str{color:#8FD1A0}
-.c-hi{background:rgba(255,190,90,.17); border-radius:2px; padding:1px 0}
-.marker{font-family:var(--mono); font-size:10.5px; font-weight:600; color:#F0B658; padding-right:10px}
-
-.annos{display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:2px; margin:18px 0 20px}
-.anno{background:var(--surface); padding:14px 16px; display:grid; grid-template-columns:32px 1fr; gap:12px; align-items:start}
-.anno .n{
-  font-family:var(--mono); font-size:11px; font-weight:600; color:var(--money);
-  background:var(--money-soft); border-radius:2px; text-align:center; padding:3px 0;
+.casefile-body p {
+  font-size: 17px;
+  line-height: 1.95;
+  margin: 0;
+  color: var(--ink);
 }
-.anno .t{font-size:14.5px; line-height:1.5}
-.anno .t b{display:block; font-size:14.5px; margin-bottom:2px}
-
-.tally{display:grid; gap:10px; margin:0 0 18px}
-.trow{
-  display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px 18px; align-items:center;
-  background:var(--surface); border:1px solid var(--rule); border-radius:2px; padding:13px 16px;
+mark {
+  background: none;
+  padding: 0 2px;
+  border-bottom: 2.5px solid;
+  color: inherit;
 }
-.tclaim{font-size:15px; line-height:1.45; min-width:0}
-.tclaim .id{font-family:var(--mono); font-size:11px; color:var(--ink-3); font-weight:600; margin-right:7px}
-.tclaim .ev{display:block; font-size:12.5px; color:var(--ink-3); margin-top:4px; font-family:var(--mono)}
-.tvotes{display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:flex-end}
-.dots{display:flex; gap:4px}
-.dot{width:12px; height:22px; border-radius:1px}
-.dot.up{background:var(--up)} .dot.rej{background:var(--rej)} .dot.esc{background:var(--esc)}
-.conf{font-family:var(--mono); font-size:11.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
-.amt{font-family:var(--mono); font-size:13px; font-weight:600; font-variant-numeric:tabular-nums; min-width:62px; text-align:right}
-@media (max-width:600px){ .trow{grid-template-columns:1fr} .tvotes{justify-content:flex-start} .amt{text-align:left; min-width:0} }
-
-.kv{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:2px; margin:0 0 22px}
-.kv > div{background:var(--surface); padding:14px 16px}
-.kv dt{font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 5px}
-.kv dd{margin:0; font-size:14.5px; line-height:1.4}
-.kv dd .big{font-family:var(--display); font-weight:400; font-size:30px; letter-spacing:-.01em; display:block; line-height:1.05}
-
-.q{font-family:var(--display); font-weight:400; font-size:23px; line-height:1.3; margin:0 0 18px; padding:2px 0 2px 16px; border-left:3px solid var(--money); text-wrap:balance}
-.calc{
-  font-family:var(--mono); font-size:13px; line-height:2;
-  background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--accent);
-  border-radius:2px; padding:16px 20px; margin:0 0 20px; overflow-x:auto;
-  white-space:pre; color:var(--ink); font-variant-numeric:tabular-nums;
+mark.up { border-color: var(--up); }
+mark.rej { border-color: var(--rej); }
+mark.esc { border-color: var(--esc); }
+mark.drop { border-bottom: 2.5px dotted var(--line-2); color: var(--ink-3); }
+sup.gid {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding-left: 2px;
 }
-.calc b{color:var(--money); font-weight:600}
-.calc i{color:var(--ink-3); font-style:normal}
-.callout-ans{background:var(--money-soft); border-radius:2px; padding:15px 20px; margin:0 0 20px; font-size:15.5px; line-height:1.55}
+sup.up { color: var(--up); }
+sup.rej { color: var(--rej); }
+sup.esc { color: var(--esc); }
+sup.drop { color: var(--ink-3); }
 
-.stage{background:var(--surface); border:1px solid var(--rule); border-radius:2px; margin:0 0 14px; overflow:hidden}
-.stage.boom{border-color:var(--money); border-width:1.5px}
-.stage-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:13px 18px; border-bottom:1px solid var(--rule); background:var(--surface-2)}
-.stage-n{font-family:var(--mono); font-size:11.5px; font-weight:600; width:26px; height:26px; flex:none; border-radius:50%; background:var(--accent); color:#FFF; display:grid; place-items:center}
-.stage.boom .stage-n{background:var(--money)}
-.stage-head h3{font-family:var(--body); font-weight:700; font-size:16px; margin:0; flex:1 1 auto}
-.stage-cost{font-family:var(--mono); font-size:11px; color:var(--ink-3); font-variant-numeric:tabular-nums; white-space:nowrap}
-.stage.boom .stage-cost{color:var(--money); font-weight:600}
-.stage-body{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--rule)}
-.io{background:var(--surface); padding:14px 18px}
-.io dt{font-family:var(--mono); font-size:10px; font-weight:600; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); margin:0 0 6px}
-.io dd{margin:0; font-size:14px; line-height:1.5}
-.io .payload{font-family:var(--mono); font-size:11px; line-height:1.6; background:var(--surface-2); border-radius:2px; padding:9px 11px; margin-top:8px; overflow-x:auto; white-space:pre; color:var(--ink-2)}
-.stage-note{padding:13px 18px; border-top:1px solid var(--rule); font-size:14.5px; line-height:1.55; color:var(--ink-2)}
-.stage.boom .stage-note{background:var(--money-soft); color:var(--ink)}
-@media (max-width:640px){ .stage-body{grid-template-columns:1fr} }
+.v {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: 1px;
+}
+.v.up { background: var(--up-soft); color: var(--up); }
+.v.rej { background: var(--rej-soft); color: var(--rej); }
+.v.esc { background: var(--esc-soft); color: var(--esc); }
+.v.drop { background: var(--surface-2); color: var(--ink-3); }
 
-.prompt{margin:0 0 26px}
-.prompt h4{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin:0 0 8px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap}
-.prompt h4 span{font-family:var(--body); letter-spacing:0; text-transform:none; font-size:13px; font-weight:400}
-.why{font-size:14.5px; color:var(--ink-2); margin:10px 0 0; line-height:1.55}
+/* Code Blocks */
+.codeblock {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid #1e293b;
+  border-radius: var(--radius);
+  margin: 18px 0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.codeblock .cb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.codeblock .dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.codeblock .dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.codeblock .dots i:nth-child(1) { background: #ef4444; }
+.codeblock .dots i:nth-child(2) { background: #f59e0b; }
+.codeblock .dots i:nth-child(3) { background: #10b981; }
+.codeblock .cb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--code-dim);
+  margin-left: 10px;
+  letter-spacing: .05em;
+}
+.copybtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--code-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  letter-spacing: .04em;
+}
+.copybtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.copybtn.copied {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+}
+.codeblock pre {
+  padding: 16px 20px;
+  overflow-x: auto;
+  color: var(--code-ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.68;
+  margin: 0;
+}
+.codeblock pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.c-dim { color: var(--code-dim); }
+.c-key { color: #c084fc; font-weight: 600; }
+.c-str { color: #86efac; }
+.c-hi { background: rgba(255, 190, 90, 0.18); border-radius: 2px; padding: 1px 2px; }
+.marker { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; color: #fbbf24; padding-right: 12px; }
 
-footer{border-top:3px double var(--ink); margin-top:40px; padding-top:22px; font-family:var(--mono); font-size:11.5px; color:var(--ink-3); line-height:1.8}
-@media (prefers-reduced-motion: no-preference){ html{scroll-behavior:smooth} }
-:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.calc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.85;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 16px 0 20px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.calc b { color: var(--money); font-weight: 700; }
+.calc i { color: var(--ink-3); font-style: normal; }
+
+/* Tallies, KV, Stages, Anno, Prompts */
+.tally {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 22px;
+}
+.trow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px 18px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.tclaim {
+  font-size: 14.5px;
+  line-height: 1.45;
+  min-width: 0;
+  color: var(--ink);
+}
+.tclaim .id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 700;
+  margin-right: 8px;
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.tclaim .ev {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tvotes {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.dots {
+  display: flex;
+  gap: 4px;
+}
+.dot {
+  width: 12px;
+  height: 22px;
+  border-radius: 2px;
+}
+.dot.up { background: var(--up); }
+.dot.rej { background: var(--rej); }
+.dot.esc { background: var(--esc); }
+.conf {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.amt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 65px;
+  text-align: right;
+}
+@media (max-width: 640px) {
+  .trow { grid-template-columns: 1fr; }
+  .tvotes { justify-content: flex-start; }
+  .amt { text-align: left; min-width: 0; }
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 18px 0 24px;
+}
+.kv > div {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.kv dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+.kv dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.kv dd .big {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -.02em;
+  display: block;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.stage {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 16px 0;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.stage.boom {
+  border-color: var(--money);
+  border-width: 2px;
+}
+.stage-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.stage-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+.stage.boom .stage-n {
+  background: var(--money);
+}
+.stage-head h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  flex: 1 1 auto;
+  color: var(--ink);
+}
+.stage-cost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: var(--surface);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.stage.boom .stage-cost {
+  color: var(--money);
+  font-weight: 700;
+  border-color: rgba(217, 119, 6, 0.3);
+  background: var(--money-soft);
+}
+.stage-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+}
+.io {
+  background: var(--surface);
+  padding: 14px 18px;
+}
+.io dt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 6px;
+}
+.io dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.io .payload {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 9px 12px;
+  margin-top: 8px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+.stage-note {
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  background: var(--surface);
+}
+.stage.boom .stage-note {
+  background: var(--money-soft);
+  color: #fde68a;
+}
+@media (max-width: 640px) {
+  .stage-body { grid-template-columns: 1fr; }
+}
+
+.annos {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 24px;
+}
+.anno {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 14px;
+  align-items: start;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.anno .n {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  text-align: center;
+  padding: 4px 0;
+}
+.anno .t {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.anno .t b {
+  display: block;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.prompt {
+  margin: 22px 0 28px;
+}
+.prompt h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.prompt h4 span {
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+}
+.why {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  margin-top: 10px;
+  line-height: 1.55;
+}
+
+/* Tables */
+.tablewrap {
+  overflow-x: auto;
+  margin: 16px 0 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14.5px;
+  min-width: 500px;
+}
+th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+tr:last-child td {
+  border-bottom: none;
+}
+td strong {
+  color: var(--ink);
+}
+.num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+tr.total td {
+  border-top: 2px solid var(--ink);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+/* Figures & SVGs */
+figure {
+  margin: 28px 0 34px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.svgwrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  color: var(--ink);
+}
+figcaption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+  text-align: center;
+  margin-top: 16px;
+  line-height: 1.6;
+  max-width: 76ch;
+  margin-inline: auto;
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--line);
+  margin-top: 60px;
+  padding: 32px 0 48px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.8;
+}
+footer b {
+  color: var(--ink);
+}
 </style>
+</head>
+<body>
 
-<header>
-  <div class="col">
-    <p class="eyebrow">Applied AI · Case study · Agentic system design</p>
-    <h1>The <em>Refund</em> Bench</h1>
-    <p class="standfirst">A customer types one angry paragraph. Inside it are four separate accusations, some true, some false, one unknowable. An agent must find them, judge each one against evidence, and decide how much money to give back — in under fifteen seconds, without ever paying twice.</p>
+<div id="progress"></div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Applied AI · Case study · Agentic system design</div>
+    <h1>The <span class="accent">Refund</span> Bench</h1>
+    <p class="lede">A customer types one angry paragraph. Inside it are four separate accusations, some true, some false, one unknowable. An agent must find them, judge each one against evidence, and decide how much money to give back — in under fifteen seconds, without ever paying twice.</p>
     <div class="meta">
-      <span><b>Scale</b> 200 disputes/min at dinner peak</span>
-      <span><b>Budget</b> 14 LLM calls per dispute</span>
-      <span><b>Hard limit</b> ₹2,000 auto-approval cap</span>
+      <span class="chip">Scale · <b>200 disputes/min at dinner peak</b></span>
+      <span class="chip">Budget · <b>14 LLM calls per dispute</b></span>
+      <span class="chip">Hard limit · <b>₹2,000 auto-approval cap</b></span>
+      <span class="chip">SLA · <b>p50 &lt; 15s · p90 &lt; 30s</b></span>
     </div>
   </div>
 </header>
 
-<main>
+<div class="wrap">
+  <nav class="toc">
+    <h4>Contents</h4>
+    <ul>
+      <li><a href="#s1">1 · The hook: Why seat 3 judges?</a></li>
+      <li><a href="#s2">2 · The case: 1 paragraph, 4 accusations</a></li>
+      <li><a href="#s3">3 · The bench rules: 12 rulings, 1 cheque</a></li>
+      <li><a href="#s4">4 · Architecture: 4 stages, 1 explodes</a></li>
+      <li><a href="#s5">5 · Number crunching: 14 calls & 4.5s latency</a></li>
+      <li><a href="#s6">6 · Capacity estimation: 35 KB / dispute, 380 GB / yr</a></li>
+      <li><a href="#s7">7 · Production shape: Sync intake, async queue</a></li>
+      <li><a href="#s8">8 · The agentic loop: Pseudocode & 5 landmines</a></li>
+      <li><a href="#s9">9 · The prompts: Extract, Judge, Settle</a></li>
+      <li><a href="#s10">10 · Judgement calls: 4 decisions people get wrong</a></li>
+      <li><a href="#s11">11 · Future extensions: Multi-model bench & tools</a></li>
+      <li><a href="#s12">12 · Where else this fits: 6 production use cases</a></li>
+    </ul>
+  </nav>
 
-<section>
-  <div class="col">
-    <p class="kicker">The hook</p>
+  <main>
+
+  <!-- ================= SECTION S1 ================= -->
+  <section id="s1">
+    <div class="kicker">Section 1 · The hook</div>
+    <div class="col">
+    
     <h2>Why does a serious court seat <em>three</em> judges?</h2>
     <p class="lede">Not because three people are smarter than one. Because one judge can have a bad day, misread a document, or carry a blind spot — and there is no way to tell from the outside which day it was. So you seat three, let them rule independently, and count.</p>
     <p>A <strong>2–1 split is information</strong>. It tells you the case was genuinely hard, in a way that a single confident ruling never could. A <strong>3–0 ruling is information too</strong> — it tells you this one was clear.</p>
@@ -340,11 +1046,12 @@ footer{border-top:3px double var(--ink); margin-top:40px; padding-top:22px; font
       <p>Temperature is set per stage, not once. Verification samples need <strong>T &gt; 0</strong>, roughly 0.5–0.8 — at T = 0 all three judges return byte-identical answers and the bench is theatre. Push past 0.8 and rulings go incoherent. Synthesis runs at <strong>low temperature</strong>: that stage writes the customer-facing message and must not invent anything.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">The case</p>
+  </section>
+  <!-- ================= SECTION S2 ================= -->
+  <section id="s2">
+    <div class="kicker">Section 2 · The case</div>
+    <div class="col">
+    
     <h2>One angry paragraph, four separate accusations</h2>
     <p>Everything below follows this single dispute. Real ones carry 1–8 grievances; this one has four.</p>
   </div>
@@ -390,11 +1097,12 @@ footer{border-top:3px double var(--ink); margin-top:40px; padding-top:22px; font
       <p>A rule that says “do not use pronouns” tells the model what <em>not</em> to do without telling it what to do instead. Name the operation — this is <strong>co-reference resolution</strong>, a task the model already knows by name — and give it the order's line items to resolve against. A prohibition produces refusals; a procedure produces work.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">The bench rules</p>
+  </section>
+  <!-- ================= SECTION S3 ================= -->
+  <section id="s3">
+    <div class="kicker">Section 3 · The bench rules</div>
+    <div class="col">
+    
     <h2>Four grievances, twelve rulings, one cheque</h2>
     <p>Each grievance goes to the bench <strong>three times, independently</strong> — no shared history, no chaining. Each judge sees the grievance <em>and the evidence snapshot</em>. Twelve calls.</p>
   </div>
@@ -450,11 +1158,12 @@ footer{border-top:3px double var(--ink); margin-top:40px; padding-top:22px; font
       <p><strong>The synthesis prompt must say “treat all verdicts as final.”</strong> Without that line, the model re-litigates the bench's ruling while writing the summary — quietly turning a 1–2 <span class="v esc">escalate</span> into an <span class="v up">upheld</span> because the complaint <em>reads</em> sympathetic. One sentence in the prompt is what makes the majority actually be the majority.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Architecture</p>
+  </section>
+  <!-- ================= SECTION S4 ================= -->
+  <section id="s4">
+    <div class="kicker">Section 4 · Architecture</div>
+    <div class="col">
+    
     <h2>Four stages, one of which <em>explodes</em></h2>
     <p>The pipeline has exactly four logical components. Three of them are a single LLM call each, no matter what you feed them. The fourth is <em>N × K</em> of them.</p>
   </div>
@@ -687,11 +1396,12 @@ message: "We've refunded…"</div></dd></div>
       <figcaption>The blue slivers at both ends are identical in all three bars. Adding grievances or raising K stretches only the middle. That asymmetry is why every operational lever — batch size, worker cap, retry policy, the partial-settlement rule — is aimed at stage 3 and ignores the rest.</figcaption>
     </figure>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Number crunching</p>
+  </section>
+  <!-- ================= SECTION S5 ================= -->
+  <section id="s5">
+    <div class="kicker">Section 5 · Number crunching</div>
+    <div class="col">
+    
     <h2>14 calls, and where they go</h2>
     <p>The formula fits in your head, which is the point of writing it down:</p>
     <div class="calc">calls = <b>1</b><i> (extract)</i>  +  <b>N × K</b><i> (judge)</i>  +  <b>1</b><i> (settle)</i>
@@ -801,11 +1511,12 @@ settlement      <i>1.0 sec</i>
       <p>The person on the other end. A journalist submitting an article will accept “come back in two minutes.” A customer who just got the wrong dinner will not — every extra second on that spinner is a support ticket you are about to receive anyway. <strong>The architecture is identical; the latency budget is a product decision, not an engineering one.</strong></p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Capacity estimation</p>
+  </section>
+  <!-- ================= SECTION S6 ================= -->
+  <section id="s6">
+    <div class="kicker">Section 6 · Capacity estimation</div>
+    <div class="col">
+    
     <h2>35 KB a dispute, 380 GB a year</h2>
     <p class="lede">The question is narrower than it looks. Not “how big is our data” — but: <em>when one dispute settles, which rows did we just write?</em></p>
     <p>Four tables. Count the rows in each.</p>
@@ -867,11 +1578,12 @@ settlement      <i>1.0 sec</i>
       <p>Because storage is cheap and <em>queries</em> are not. 380 GB of raw JSON in your hot path slows every dashboard and every scan that touches the table. Retention is rarely about the disk bill — it is about keeping the working set small enough to stay fast.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Production shape</p>
+  </section>
+  <!-- ================= SECTION S7 ================= -->
+  <section id="s7">
+    <div class="kicker">Section 7 · Production shape</div>
+    <div class="col">
+    
     <h2>Submission is synchronous. The work is not.</h2>
     <p>Think of a dry cleaner. You hand over a shirt, they write ticket #47, you leave — thirty seconds. The cleaning takes two days. You come back with the ticket and ask if it is ready.</p>
     <p>Nobody would accept the alternative: <em>standing at the counter for two days</em> because the only way to get your shirt back is to still be there when it is done. That is what a synchronous design is, and at 200 disputes a minute it fails four different ways at once — held-open connections timing out, needing every server and every LLM credit simultaneously, losing all work on a crash, and having nowhere to put a burst.</p>
@@ -985,17 +1697,23 @@ settlement      <i>1.0 sec</i>
       <p>The API does two things — write the row, then enqueue the id. If the write succeeds and the enqueue fails, you have a dispute stored that no worker will ever touch, stuck on <code>RECEIVED</code> forever while a customer refreshes. Fix it with a <strong>transactional outbox</strong>, or run CDC off the disputes table so the database write <em>is</em> the queue event.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">The agentic loop</p>
+  </section>
+  <!-- ================= SECTION S8 ================= -->
+  <section id="s8">
+    <div class="kicker">Section 8 · The agentic loop</div>
+    <div class="col">
+    
     <h2>Twenty lines, five landmines</h2>
     <p>The pseudocode is the happy path. The annotations are where the money lives.</p>
   </div>
 
   <div class="col">
-<pre><code><span class="marker">1</span><span class="c-hi">dispute_id = hash(complaint_text + order_id)</span>
+<div class="codeblock">
+      <div class="cb-head">
+        <div class="dots"><i></i><i></i><i></i><span class="cb-label">pseudocode · agentic loop</span></div>
+        <button class="copybtn">Copy</button>
+      </div>
+      <pre><code><span class="marker">1</span><span class="c-hi">dispute_id = hash(complaint_text + order_id)</span>
 
 <span class="marker">1</span><span class="c-hi"><span class="c-key">if</span> ledger.get(dispute_id).status == SETTLED:</span>
 <span class="marker"> </span><span class="c-hi">    <span class="c-key">return</span> ledger.get(dispute_id).settlement  <span class="c-dim"># never pay twice</span></span>
@@ -1022,6 +1740,7 @@ settlement      <i>1.0 sec</i>
 <span class="marker"> </span>message = settlement_writer.run(complaint_text, verdicts, amount)
 <span class="marker"> </span>payments.refund(dispute_id, amount)   <span class="c-dim"># idempotency key = dispute_id</span>
 <span class="marker"> </span>ledger.save(dispute_id, message, status=SETTLED)</code></pre>
+    </div>
 
     <div class="annos">
       <div class="anno"><span class="n">1</span><span class="t"><b>Idempotency is not an optimisation here — it is the product</b>The complaint's own text is its key. In the fact-checker, a duplicate run wasted API credits. Here it <em>wires money out of the company twice</em>. The same key is also passed to the payments API, so even a double call at that layer settles once.</span></div>
@@ -1049,18 +1768,24 @@ settlement      <i>1.0 sec</i>
       <p>No. And the reason is not that the model might be wrong — it is that <strong>an unbounded automated payout is an unbounded loss when something eventually goes wrong</strong>: a prompt injection in the complaint text, a pricing bug, a bad deploy. The cap does not express distrust of the model. It caps your blast radius. Every agent that can spend money needs one.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">The prompts</p>
+  </section>
+  <!-- ================= SECTION S9 ================= -->
+  <section id="s9">
+    <div class="kicker">Section 9 · The prompts</div>
+    <div class="col">
+    
     <h2>Three prompts, and the one line in each that does the work</h2>
   </div>
 
   <div class="col">
     <div class="prompt">
       <h4>1 · Extraction <span>— the hardest one to get right</span></h4>
-<pre><code>You are a precise dispute-intake assistant.
+<div class="codeblock">
+      <div class="cb-head">
+        <div class="dots"><i></i><i></i><i></i><span class="cb-label">prompt · 1 · extraction</span></div>
+        <button class="copybtn">Copy</button>
+      </div>
+      <pre><code>You are a precise dispute-intake assistant.
 
 Given a customer complaint and the order's line items,
 extract every atomic, checkable grievance.
@@ -1086,12 +1811,18 @@ Schema:
 
 Complaint:  {{complaint_text}}
 Order:      {{line_items_json}}</code></pre>
+    </div>
       <p class="why"><strong>“Do NOT judge — only extract.”</strong> Without it the model helpfully pre-filters: it silently drops “the delivery guy was rude” because it senses there is no evidence for it, and the grievance never reaches the bench that would have <em>rejected</em> it on the 5★ rating. Extraction and judgement are separate stages, and the prompt has to say so. <strong>The spans</strong> are what let the reply underline the exact sentence that was rejected.</p>
     </div>
 
     <div class="prompt">
       <h4>2 · Judging <span>— run K times per grievance</span></h4>
-<pre><code>You are an impartial claims adjudicator.
+<div class="codeblock">
+      <div class="cb-head">
+        <div class="dots"><i></i><i></i><i></i><span class="cb-label">prompt · 2 · judging (K runs)</span></div>
+        <button class="copybtn">Copy</button>
+      </div>
+      <pre><code>You are an impartial claims adjudicator.
 Rule on the following grievance using ONLY the evidence given.
 
 Grievance: {{grievance_text}}
@@ -1115,12 +1846,18 @@ Schema:
   "confidence": &lt;float 0.0 to 1.0&gt;,
   "evidence_cited": "&lt;which field(s) decided it&gt;",
   "reasoning": "&lt;one to three sentences&gt;" }</code></pre>
+    </div>
       <p class="why"><strong>“Silent evidence means ESCALATE, never REJECTED.”</strong> This single line is the asymmetry from earlier, written into the prompt. Absence of proof is not proof of absence — and the cheaper mistake is sending a case to a human, not refusing an honest customer. <strong><code>evidence_cited</code></strong> earns its place too: it forces the model to name the field it used, which makes a bad ruling debuggable instead of mysterious.</p>
     </div>
 
     <div class="prompt">
       <h4>3 · Settlement <span>— once, at low temperature</span></h4>
-<pre><code>You are a customer-support writer for a food delivery app.
+<div class="codeblock">
+      <div class="cb-head">
+        <div class="dots"><i></i><i></i><i></i><span class="cb-label">prompt · 3 · settlement</span></div>
+        <button class="copybtn">Copy</button>
+      </div>
+      <pre><code>You are a customer-support writer for a food delivery app.
 
 Below is a customer's complaint, the final ruling on each
 grievance, and the refund amount already calculated.
@@ -1140,6 +1877,7 @@ Rules:
 Complaint: {{complaint_text}}
 Rulings:   {{verdicts_json}}
 Amount:    {{refund_amount}}</code></pre>
+    </div>
       <p class="why"><strong>“Treat all rulings as final”</strong> is the most valuable sentence across all three prompts. Without it the model re-litigates the bench while writing — a sympathetic complaint quietly turns a 1–2 <span class="v esc">escalate</span> into an <span class="v up">upheld</span> in the prose, and now your message promises a refund your ledger says you are not paying. <strong>“Do not state any amount other than the one given”</strong> is the same defence pointed at the number.</p>
     </div>
 
@@ -1152,11 +1890,12 @@ Amount:    {{refund_amount}}</code></pre>
     </div>
     <p style="font-size:14.5px; color:var(--ink-2)">Note what the message does <em>not</em> do: it doesn't mention g4 at all. Silently dropping a rejected grievance is a deliberate product choice — telling a customer “we checked and you're wrong about the delivery partner” wins you nothing. <strong>The bench's ruling is for your ledger; the customer gets the outcome.</strong></p>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Judgement calls</p>
+  </section>
+  <!-- ================= SECTION S10 ================= -->
+  <section id="s10">
+    <div class="kicker">Section 10 · Judgement calls</div>
+    <div class="col">
+    
     <h2>Four decisions people get wrong</h2>
   </div>
   <div class="col">
@@ -1193,11 +1932,12 @@ Amount:    {{refund_amount}}</code></pre>
       <p>No — the test was incomplete, and this system is what exposes it. Caching needs homogeneity <strong>and</strong> context-independence. Fact-checking claims are context-free but the corpus is long-tailed. Refund grievances repeat constantly but each one is bound to its own order. Neither caches — for opposite reasons. <em>That</em> is the lesson worth carrying out of both case studies.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Where it goes next</p>
+  </section>
+  <!-- ================= SECTION S11 ================= -->
+  <section id="s11">
+    <div class="kicker">Section 11 · Future extensions</div>
+    <div class="col">
+    
     <h2>Two extensions worth the money</h2>
 
     <h3>Seat judges from different courts</h3>
@@ -1212,11 +1952,12 @@ Amount:    {{refund_amount}}</code></pre>
       <p>The moment judges fetch their own evidence you have <strong>lost reproducibility</strong> — two runs can see different data. So a tool-using version must log every tool call and its response into the snapshot as it goes. You are not removing the frozen evidence; you are building it lazily.</p>
     </div>
   </div>
-</section>
-
-<section>
-  <div class="col">
-    <p class="kicker">Where else this shape fits</p>
+  </section>
+  <!-- ================= SECTION S12 ================= -->
+  <section id="s12">
+    <div class="kicker">Section 12 · Where else this fits</div>
+    <div class="col">
+    
     <h2>Six places to seat a bench</h2>
     <p>Dispute resolution is one instance of a general pattern: <em>when the cost of being wrong exceeds the cost of asking again, ask again and count.</em></p>
     <div class="tablewrap">
@@ -1238,7 +1979,7 @@ Amount:    {{refund_amount}}</code></pre>
       <p><code>1 + N×K + 1</code>. A sequential barrier followed by a fan-out. A vote computed in code. A third verdict that means “a human decides.” Checkpoint after every stage, key everything by a content hash, back off with jitter, and never let the model near the arithmetic. <strong>Everything else was a parameter.</strong></p>
     </div>
   </div>
-</section>
+  </section>
 
 <footer>
   <div class="col">
@@ -1247,4 +1988,58 @@ Amount:    {{refund_amount}}</code></pre>
   </div>
 </footer>
 
-</main>
+  </main>
+</div>
+
+<script>
+// Reading Progress Bar
+const prog = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const sc = doc.scrollTop;
+  const max = doc.scrollHeight - doc.clientHeight;
+  if (prog && max > 0) {
+    prog.style.width = (sc / max * 100) + '%';
+  }
+}, { passive: true });
+
+// Copy button functionality
+document.querySelectorAll('.copybtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const pre = btn.closest('.codeblock').querySelector('pre');
+    if (pre) {
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+    }
+  });
+});
+
+// Active link highlighting in TOC on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav.toc a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === '#' + id) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(sec => observer.observe(sec));
+</script>
+</body>
+</html>
