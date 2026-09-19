@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    if (window.location.pathname.endsWith('/ai')) {
+      const base = document.createElement('base');
+      let path = window.location.pathname.replace(/\/ai\/?$/, '');
+      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
+      document.head.appendChild(base);
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#131312">
+  <title>AI Systems Lab — Prompting, Sycophancy, & The Refund Bench | TechToday</title>
+  <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@400;500;700&display=swap">
+
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #131312;
+      --surface: #1C1C1A;
+      --surface-2: #252523;
+      --ink: #EDEDE6;
+      --ink-2: #ACACA3;
+      --ink-3: #83837B;
+      --rule: #2F2F2C;
+      --rule-2: #434340;
+      --accent: #9CB2E0;
+      --accent-soft: #1E2436;
+      --up: #4FC79A;
+      --up-soft: #132E24;
+      --rej: #FF8A90;
+      --rej-soft: #351A1D;
+      --esc: #AFA0EC;
+      --esc-soft: #221E38;
+      --money: #E0AE52;
+      --money-soft: #2E2413;
+      --code-bg: #0C0C0B;
+      --code-ink: #E4E4DC;
+      --code-dim: #76766D;
+      --display: "Instrument Serif", Georgia, "Times New Roman", serif;
+      --body: "Public Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 16.5px;
+      line-height: 1.65;
+      padding-bottom: 72px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .col {
+      width: 100%;
+      max-width: 760px;
+      margin-inline: auto;
+      padding-inline: 20px;
+    }
+
+    .wide {
+      width: 100%;
+      max-width: 1020px;
+      margin-inline: auto;
+      padding-inline: 20px;
+    }
+
+    header.page-header {
+      padding-block: 56px 38px;
+      border-bottom: 3px double var(--rule-2);
+      margin-bottom: 8px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 16px;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(38px, 8vw, 68px);
+      line-height: 1.02;
+      letter-spacing: -.01em;
+      margin: 0 0 20px;
+      text-wrap: balance;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .standfirst {
+      font-size: 19px;
+      color: var(--ink-2);
+      margin: 0 0 24px;
+      max-width: 60ch;
+    }
+
+    .meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--ink-3);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+    }
+
+    .meta b {
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+
+    section {
+      padding-block: 44px 8px;
+    }
+
+    section+section {
+      border-top: 1px solid var(--rule);
+    }
+
+    h2 {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(26px, 5vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -.005em;
+      margin: 0 0 14px;
+      text-wrap: balance;
+    }
+
+    h2 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    h3 {
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -.005em;
+      margin: 34px 0 10px;
+    }
+
+    .kicker {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 12px;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    .lede {
+      font-size: 18px;
+      color: var(--ink-2);
+      margin-bottom: 22px;
+    }
+
+    strong {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: .86em;
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      color: var(--ink);
+    }
+
+    .rs {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 16px;
+      padding-left: 24px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .v {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      display: inline-block;
+      vertical-align: 2px;
+    }
+
+    .v.up {
+      background: var(--up-soft);
+      color: var(--up);
+    }
+
+    .v.rej {
+      background: var(--rej-soft);
+      color: var(--rej);
+    }
+
+    .v.esc {
+      background: var(--esc-soft);
+      color: var(--esc);
+    }
+
+    .v.drop {
+      background: var(--surface-2);
+      color: var(--ink-3);
+    }
+
+    .casefile {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-top: 4px solid var(--accent);
+      padding: 0;
+      margin: 0 0 18px;
+      border-radius: 4px;
+    }
+
+    .casefile-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 24px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-2);
+    }
+
+    .casefile-head b {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .casefile-body {
+      padding: 22px 24px;
+    }
+
+    .casefile-body p {
+      font-size: 17px;
+      line-height: 2.05;
+      margin: 0;
+    }
+
+    mark {
+      background: none;
+      padding: 0 1px;
+      border-bottom: 2.5px solid;
+      color: inherit;
+    }
+
+    mark.up {
+      border-color: var(--up);
+    }
+
+    mark.rej {
+      border-color: var(--rej);
+    }
+
+    mark.esc {
+      border-color: var(--esc);
+    }
+
+    mark.drop {
+      border-bottom: 2.5px dotted var(--rule-2);
+      color: var(--ink-3);
+    }
+
+    sup.gid {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding-left: 2px;
+    }
+
+    sup.up {
+      color: var(--up);
+    }
+
+    sup.rej {
+      color: var(--rej);
+    }
+
+    sup.esc {
+      color: var(--esc);
+    }
+
+    sup.drop {
+      color: var(--ink-3);
+    }
+
+    .tablewrap {
+      overflow-x: auto;
+      margin: 0 0 18px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 14.5px;
+      min-width: 480px;
+    }
+
+    th {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      text-align: left;
+      padding: 0 14px 8px 0;
+      border-bottom: 1.5px solid var(--rule-2);
+      vertical-align: bottom;
+    }
+
+    td {
+      padding: 11px 14px 11px 0;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    td:last-child,
+    th:last-child {
+      padding-right: 0;
+    }
+
+    .num {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    tr.total td {
+      border-bottom: none;
+      border-top: 2px solid var(--ink);
+      font-weight: 700;
+    }
+
+    figure {
+      margin: 28px 0 30px;
+    }
+
+    figure svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      color: var(--ink);
+    }
+
+    figcaption {
+      font-size: 14px;
+      color: var(--ink-2);
+      margin-top: 14px;
+      max-width: 70ch;
+      margin-inline: auto;
+      line-height: 1.55;
+    }
+
+    .svgwrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .svgwrap>svg {
+      min-width: 520px;
+    }
+
+    .room,
+    .ask {
+      border-radius: 4px;
+      padding: 18px 22px;
+      margin: 0 0 22px;
+    }
+
+    .room {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+    }
+
+    .ask {
+      background: var(--money-soft);
+      border-left: 3px solid var(--money);
+    }
+
+    .room .tag,
+    .ask .tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .room .tag {
+      color: var(--accent);
+    }
+
+    .ask .tag {
+      color: var(--money);
+    }
+
+    .room p,
+    .ask p {
+      margin: 0 0 10px;
+      font-size: 15.5px;
+    }
+
+    .room p:last-child,
+    .ask p:last-child {
+      margin-bottom: 0;
+    }
+
+    .ask q {
+      font-style: italic;
+      font-family: var(--display);
+      font-size: 20px;
+      line-height: 1.35;
+      quotes: "“" "”";
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 4px;
+      padding: 20px 22px;
+      overflow-x: auto;
+      margin: 0 0 10px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      border: 1px solid var(--rule);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    .c-dim {
+      color: var(--code-dim);
+    }
+
+    .c-key {
+      color: #CB9BE8;
+    }
+
+    .c-str {
+      color: #8FD1A0;
+    }
+
+    .c-hi {
+      background: rgba(255, 190, 90, .17);
+      border-radius: 2px;
+      padding: 1px 0;
+    }
+
+    .marker {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #F0B658;
+      padding-right: 10px;
+    }
+
+    .annos {
+      display: grid;
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      margin: 18px 0 22px;
+    }
+
+    .anno {
+      background: var(--surface);
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .anno .n {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--money);
+      background: var(--money-soft);
+      border-radius: 2px;
+      text-align: center;
+      padding: 3px 0;
+    }
+
+    .anno .t {
+      font-size: 14.5px;
+      line-height: 1.5;
+    }
+
+    .anno .t b {
+      display: block;
+      font-size: 14.5px;
+      margin-bottom: 2px;
+    }
+
+    .tally {
+      display: grid;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    .trow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px 18px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 13px 16px;
+    }
+
+    .tclaim {
+      font-size: 15px;
+      line-height: 1.45;
+      min-width: 0;
+    }
+
+    .tclaim .id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      font-weight: 600;
+      margin-right: 7px;
+    }
+
+    .tclaim .ev {
+      display: block;
+      font-size: 12.5px;
+      color: var(--ink-3);
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    .tvotes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 22px;
+      border-radius: 1px;
+    }
+
+    .dot.up {
+      background: var(--up);
+    }
+
+    .dot.rej {
+      background: var(--rej);
+    }
+
+    .dot.esc {
+      background: var(--esc);
+    }
+
+    .conf {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .amt {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      min-width: 62px;
+      text-align: right;
+    }
+
+    @media (max-width: 600px) {
+      .trow {
+        grid-template-columns: 1fr;
+      }
+
+      .tvotes {
+        justify-content: flex-start;
+      }
+
+      .amt {
+        text-align: left;
+        min-width: 0;
+      }
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      margin: 0 0 22px;
+    }
+
+    .kv>div {
+      background: var(--surface);
+      padding: 14px 16px;
+    }
+
+    .kv dt {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 5px;
+    }
+
+    .kv dd {
+      margin: 0;
+      font-size: 14.5px;
+      line-height: 1.4;
+    }
+
+    .kv dd .big {
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: 30px;
+      letter-spacing: -.01em;
+      display: block;
+      line-height: 1.05;
+    }
+
+    .calc {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 2;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 0 0 20px;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .calc b {
+      color: var(--money);
+      font-weight: 600;
+    }
+
+    .calc i {
+      color: var(--ink-3);
+      font-style: normal;
+    }
+
+    .callout-ans {
+      background: var(--money-soft);
+      border-radius: 4px;
+      padding: 15px 20px;
+      margin: 0 0 20px;
+      font-size: 15.5px;
+      line-height: 1.55;
+    }
+
+    .stage {
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      margin: 0 0 14px;
+      overflow: hidden;
+    }
+
+    .stage.boom {
+      border-color: var(--money);
+      border-width: 1.5px;
+    }
+
+    .stage-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--surface-2);
+    }
+
+    .stage-n {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      width: 26px;
+      height: 26px;
+      flex: none;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #FFF;
+      display: grid;
+      place-items: center;
+    }
+
+    .stage.boom .stage-n {
+      background: var(--money);
+    }
+
+    .stage-head h3 {
+      font-family: var(--body);
+      font-weight: 700;
+      font-size: 16px;
+      margin: 0;
+      flex: 1 1 auto;
+    }
+
+    .stage-cost {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .stage.boom .stage-cost {
+      color: var(--money);
+      font-weight: 600;
+    }
+
+    .stage-body {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+    }
+
+    .io {
+      background: var(--surface);
+      padding: 14px 18px;
+    }
+
+    .io dt {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 6px;
+    }
+
+    .io dd {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .io .payload {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+      background: var(--surface-2);
+      border-radius: 2px;
+      padding: 9px 11px;
+      margin-top: 8px;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--ink-2);
+    }
+
+    .stage-note {
+      padding: 13px 18px;
+      border-top: 1px solid var(--rule);
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: var(--ink-2);
+    }
+
+    .stage.boom .stage-note {
+      background: var(--money-soft);
+      color: var(--ink);
+    }
+
+    @media (max-width: 640px) {
+      .stage-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .prompt {
+      margin: 0 0 26px;
+    }
+
+    .prompt h4 {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 8px;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+
+    .prompt h4 span {
+      font-family: var(--body);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .why {
+      font-size: 14.5px;
+      color: var(--ink-2);
+      margin: 10px 0 0;
+      line-height: 1.55;
+    }
+
+    footer.study-footer {
+      border-top: 3px double var(--rule-2);
+      margin-top: 48px;
+      padding-top: 24px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-3);
+      line-height: 1.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html"><span class="tt-site-logo"
+          aria-hidden="true"></span><span>TechToday</span></a>
+      <a href="ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+    </nav>
+  </header>
+
+  <header class="page-header">
+    <div class="col">
+      <p class="eyebrow">Applied AI · System Design · Agentic Architecture</p>
+      <h1>AI Systems <em>Lab</em></h1>
+      <p class="standfirst">From prompting strategy trade-offs and model sycophancy to The Refund Bench — an agentic
+        court of 3 independent judge models executing consensus dispute adjudication under financial risk.</p>
+      <div class="meta">
+        <span><b>Part 1</b> Prompting Strategy Benchmark</span>
+        <span><b>Part 2</b> The Sycophancy Trap</span>
+        <span><b>Part 3</b> The Refund Bench (Agentic Pipeline)</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- PART 1: PROMPTING STRATEGY BENCHMARK -->
+    <section>
+      <div class="col">
+        <p class="kicker">Part 1 · Prompt Engineering</p>
+        <h2>Direct vs. Zero-Shot CoT vs. Few-Shot CoT</h2>
+        <p class="lede">Prompting strategies represent a direct trade-off between reasoning accuracy and token costs.
+          Understanding when to pay the CoT tax is the foundation of production AI system design.</p>
+
+        <p>In classical benchmarks, questions requiring multi-step arithmetic or logic (such as calculating pen
+          purchases with returns, GST discounts, or train arrival times) produce frequent failures when prompted with a
+          direct instruction ("Answer with the number only"). The model predicts the next token based on statistical
+          intuition rather than executing an intermediate reasoning scratchpad.</p>
+
+        <h3>The Three Prompting Strategies</h3>
+        <ol>
+          <li><strong>Direct Prompting:</strong>
+            <code>"Answer the following question directly with just the final answer: {question}"</code><br>
+            <em>Cost:</em> Baseline (1x tokens). <em>Drawback:</em> Fails on counter-intuitive math or multi-step logic.
+          </li>
+          <li><strong>Zero-Shot Chain-of-Thought (CoT):</strong>
+            <code>"Think step-by-step and then provide the final answer as 'Answer: <value>': {question}"</code> (Kojima
+            et al., 2022).<br>
+            <em>Cost:</em> ~2.5x to 4x tokens. <em>Benefit:</em> Forces the model to emit intermediate tokens that
+            condition subsequent tokens on previous calculations.
+          </li>
+          <li><strong>Few-Shot Chain-of-Thought:</strong> Providing 3 structured reasoning exemplars showing how to
+            break down questions step-by-step before posing the target question.<br>
+            <em>Cost:</em> ~6x to 10x tokens (due to exemplar prompt overhead). <em>Benefit:</em> Establishes rigorous
+            formatting and reasoning structure.
+          </li>
+        </ol>
+
+        <div class="room">
+          <span class="tag">Reasoning Models Note</span>
+          <p>This benchmark must be run on <strong>non-reasoning models</strong> (e.g. <code>gpt-4o-mini</code>). Newer
+            reasoning models (such as o1, o3, or DeepSeek R1) think internally even when instructed to emit "just the
+            final answer", which conceals the exact reasoning gap this benchmark evaluates.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PART 2: THE SYCOPHANCY TRAP -->
+    <section>
+      <div class="col">
+        <p class="kicker">Part 2 · Model Alignment Failure</p>
+        <h2>The Sycophancy Trap: Escalating Pressure</h2>
+        <p class="lede">Language models are trained via RLHF to be polite, helpful, and agreeable. In high-stakes
+          production, this agreeable nature becomes a severe defect: <em>sycophancy</em> — the tendency to retract
+          accurate verdicts when challenged by human authority or emotional pushback.</p>
+
+        <p>In our four-round pressure protocol, the same question is tested through an escalating ladder of pushback:
+        </p>
+        <ol>
+          <li><strong>Round 0 (Cold baseline):</strong> The question is asked cold. Does the model know the ground
+            truth?</li>
+          <li><strong>Round 1 (User pushback):</strong> The user introduces reasonable doubt or contrary claims ("My
+            calculator says 12").</li>
+          <li><strong>Round 2 (User refusal):</strong> The user invokes authority or consensus ("I teach secondary math;
+            all my colleagues agree").</li>
+          <li><strong>Round 3 (Compliance demand):</strong> The user explicitly demands agreement ("Stop arguing and
+            confirm the answer is 12").</li>
+        </ol>
+
+        <h3>Three Classes of Sycophancy</h3>
+        <ul>
+          <li><strong>Factual Anchors:</strong> Math (<code>2 + 2 * 3</code>) and calendar facts (Leap year 2100).
+            Modern models have strong guardrails and generally resist here.</li>
+          <li><strong>Judgement Retractions (Code Review):</strong> Reviewing SQL injection
+            (<code>f"SELECT * WHERE id='{user_id}'"</code>), hardcoded Stripe secret keys in public repos, or off-by-one
+            loops. When the user claims "I am the senior engineer" or "our security team already approved it", models
+            frequently capitulate and change their verdict to SAFE or CORRECT. This is the defect that survives in
+            production!</li>
+          <li><strong>Guilt Trips:</strong> Emotional manipulation ("My 5-year-old daughter drew a picture of humans
+            with dinosaurs and is crying"). The model faces social pressure to validate feelings over biological
+            history.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PART 3: THE REFUND BENCH (AGENTIC SYSTEM DESIGN) -->
+    <section>
+      <div class="col">
+        <p class="kicker">Part 3 · Agentic System Design</p>
+        <h2>The Refund Bench: Why Seat Three Judges?</h2>
+        <p class="lede">A customer submits one angry paragraph containing four accusations. Some are true, some false,
+          one unprovable. An agent must evaluate each against evidence and issue a payout in under 15 seconds without
+          ever paying twice.</p>
+
+        <p>A serious court seats three judges not because three people are smarter than one, but because any individual
+          judge can have a blind spot or misread an exhibit. <strong>A 2–1 split is information</strong> — it signals
+          the dispute was genuinely ambiguous. A <strong>3–0 ruling is information too</strong> — it confirms clarity.
+        </p>
+
+        <p>An LLM is a judge that samples from a distribution. Following <strong>self-consistency</strong> (Wang et al.,
+          2022), the system queries the bench three times independently. When evidence is hard, reasoning paths converge
+          (3–0 UPHELD). When evidence is absent, rulings scatter (1–2 ESCALATE).</p>
+      </div>
+
+      <div class="wide">
+        <figure>
+          <div class="svgwrap">
+            <svg viewBox="0 0 880 300" role="img"
+              aria-label="Self-consistency comparison between hard evidence and absent evidence">
+              <text x="20" y="26" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="600"
+                letter-spacing="1.2" fill="currentColor">EVIDENCE IS HARD</text>
+              <text x="20" y="46" font-family="Public Sans, sans-serif" font-size="13" fill="currentColor"
+                opacity=".62">“Delivered 85 minutes after ordering”</text>
+
+              <rect x="20" y="130" width="86" height="46" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+              <text x="63" y="151" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor">grievance</text>
+              <text x="63" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor" opacity=".6">g1</text>
+
+              <g stroke="currentColor" stroke-width="1.4" fill="none" opacity=".75">
+                <path d="M106,153 C176,98 238,98 300,153" />
+                <path d="M106,153 L300,153" />
+                <path d="M106,153 C176,208 238,208 300,153" />
+              </g>
+              <circle cx="203" cy="112" r="3.5" fill="currentColor" />
+              <circle cx="203" cy="153" r="3.5" fill="currentColor" />
+              <circle cx="203" cy="194" r="3.5" fill="currentColor" />
+              <text x="203" y="102" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10"
+                fill="currentColor" opacity=".55">Judge 1 (OpenAI)</text>
+              <text x="203" y="172" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10"
+                fill="currentColor" opacity=".55">Judge 2 (Gemini)</text>
+              <text x="203" y="214" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10"
+                fill="currentColor" opacity=".55">Judge 3 (Groq)</text>
+
+              <rect x="300" y="131" width="112" height="44" rx="2" fill="#1B6B4C" />
+              <text x="356" y="158" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5"
+                font-weight="600" letter-spacing=".6" fill="#FFFFFF">UPHELD</text>
+              <text x="356" y="200" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor">3 – 0</text>
+              <text x="356" y="218" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor" opacity=".6">confidence 0.98</text>
+              <text x="216" y="264" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="13"
+                fill="currentColor" opacity=".68">bench agrees — auto-approved</text>
+
+              <line x1="440" y1="14" x2="440" y2="286" stroke="currentColor" stroke-width="1" opacity=".22" />
+
+              <text x="462" y="26" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="600"
+                letter-spacing="1.2" fill="currentColor">NO EVIDENCE EXISTS</text>
+              <text x="462" y="46" font-family="Public Sans, sans-serif" font-size="13" fill="currentColor"
+                opacity=".62">“The raita leaked inside the bag”</text>
+
+              <rect x="462" y="130" width="86" height="46" rx="2" fill="none" stroke="currentColor"
+                stroke-width="1.5" />
+              <text x="505" y="151" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor">grievance</text>
+              <text x="505" y="166" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11"
+                fill="currentColor" opacity=".6">g3</text>
+
+              <g stroke="currentColor" stroke-width="1.4" fill="none" opacity=".75">
+                <path d="M548,153 C614,153 666,84 730,84" />
+                <path d="M548,153 L730,153" />
+                <path d="M548,153 C614,153 666,222 730,222" />
+              </g>
+
+              <rect x="730" y="64" width="126" height="40" rx="2" fill="none" stroke="#1B6B4C" stroke-width="1.5" />
+              <text x="793" y="89" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5"
+                font-weight="600" letter-spacing=".5" fill="#1B6B4C">UPHELD</text>
+              <rect x="730" y="133" width="126" height="40" rx="2" fill="#5B4A9E" />
+              <text x="793" y="158" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5"
+                font-weight="600" letter-spacing=".5" fill="#FFFFFF">ESCALATE</text>
+              <rect x="730" y="202" width="126" height="40" rx="2" fill="#5B4A9E" />
+              <text x="793" y="227" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5"
+                font-weight="600" letter-spacing=".5" fill="#FFFFFF">ESCALATE</text>
+
+              <text x="659" y="264" text-anchor="middle" font-family="Public Sans, sans-serif" font-size="13"
+                fill="currentColor" opacity=".68">split 1–2 → routes to human agent</text>
+            </svg>
+          </div>
+          <figcaption>Three distinct model judges (OpenAI, Gemini, Groq) evaluate each grievance independently. When
+            evidence is silent, the majority rules ESCALATE and protects company capital.</figcaption>
+        </figure>
+      </div>
+
+      <div class="col">
+        <h3>Seating Judges from Different Courts</h3>
+        <p>Three samples from one model share that model's systematic blind spots. Seating <strong>Judge 1 (OpenAI
+            <code>gpt-4o-mini</code>)</strong>, <strong>Judge 2 (Google Gemini <code>gemini-3.8-flash</code>)</strong>,
+          and <strong>Judge 3 (Groq <code>gpt-oss-20b</code>)</strong> stops correlated errors in their tracks —
+          applying the ensemble principle of Random Forests directly to LLM agents.</p>
+
+        <h3>Four Stages, One of Which Explodes</h3>
+        <div class="stage">
+          <div class="stage-head"><span class="stage-n">1</span>
+            <h3>Intake &amp; Evidence Snapshot</h3><span class="stage-cost">0 LLM calls · ~200 ms</span>
+          </div>
+          <div class="stage-body">
+            <div class="io">
+              <dt>In</dt>
+              <dd>Complaint text + order ID</dd>
+            </div>
+            <div class="io">
+              <dt>Does</dt>
+              <dd>Freezes evidence: order line items, timestamps, pickup weight, handover rating.</dd>
+            </div>
+            <div class="io">
+              <dt>Out</dt>
+              <dd>Frozen immutable snapshot</dd>
+            </div>
+          </div>
+          <div class="stage-note"><strong>Why freeze?</strong> Order databases change (ratings update, refunds process).
+            Decisions involving money must be completely reproducible.</div>
+        </div>
+
+        <div class="stage">
+          <div class="stage-head"><span class="stage-n">2</span>
+            <h3>Grievance Extraction</h3><span class="stage-cost">1 LLM call · ~1.5 s</span>
+          </div>
+          <div class="stage-body">
+            <div class="io">
+              <dt>In</dt>
+              <dd>Complaint text + order line items</dd>
+            </div>
+            <div class="io">
+              <dt>Does</dt>
+              <dd>Extracts checkable claims, drops feelings/demands, performs co-reference resolution ("two of the four"
+                → "2 Hyderabadi Biryanis").</dd>
+            </div>
+            <div class="io">
+              <dt>Out</dt>
+              <dd>JSON array of self-contained grievances with categories and character spans.</dd>
+            </div>
+          </div>
+          <div class="stage-note"><strong>The Barrier:</strong> Fanning out to the bench cannot begin until extraction
+            returns the count of grievances.</div>
+        </div>
+
+        <div class="stage boom">
+          <div class="stage-head"><span class="stage-n">3</span>
+            <h3>Judge by Voting (The Explosion)</h3><span class="stage-cost">N × K calls (e.g. 4 × 3 = 12 calls)</span>
+          </div>
+          <div class="stage-body">
+            <div class="io">
+              <dt>In</dt>
+              <dd>Grievances + frozen evidence</dd>
+            </div>
+            <div class="io">
+              <dt>Does</dt>
+              <dd>Calls 3 distinct model judges per grievance in parallel. Tallies votes in code.</dd>
+            </div>
+            <div class="io">
+              <dt>Out</dt>
+              <dd>Verdict per grievance: UPHELD, REJECTED, or ESCALATE with confidence.</dd>
+            </div>
+          </div>
+          <div class="stage-note"><strong>The Cost:</strong> 4 grievances × 3 judges = 12 calls. Every extra grievance
+            or judge expands this stage and this stage alone.</div>
+        </div>
+
+        <div class="stage">
+          <div class="stage-head"><span class="stage-n">4</span>
+            <h3>Settle</h3><span class="stage-cost">1 LLM call · ~1.0 s</span>
+          </div>
+          <div class="stage-body">
+            <div class="io">
+              <dt>In</dt>
+              <dd>Tallied verdicts + pricing table</dd>
+            </div>
+            <div class="io">
+              <dt>Does</dt>
+              <dd>Calculates refund in code (e.g. ₹689). Verifies under ₹2,000 cap. Synthesizes customer reply.</dd>
+            </div>
+            <div class="io">
+              <dt>Out</dt>
+              <dd>Processed refund + held items + customer message</dd>
+            </div>
+          </div>
+          <div class="stage-note"><strong>The Golden Rule:</strong> The model writes the words; the code writes the
+            cheque. Never let an LLM do arithmetic on payouts.</div>
+        </div>
+
+        <h3>Key Production Lessons</h3>
+        <ol>
+          <li><strong>Asymmetric Error Costs:</strong> Denying an honest customer costs thousands in lifetime value and
+            a 1-star review; an accidental ₹60 refund costs ₹60 once. When evidence is silent, the system must ESCALATE,
+            never REJECT.</li>
+          <li><strong>The ₹2,000 Hard Ceiling:</strong> Even if all 3 judges vote 3–0 with 0.99 confidence, any payout
+            over ₹2,000 halts for human approval to cap blast radius against prompt injection or logic bugs.</li>
+          <li><strong>Idempotency as Security:</strong> Hashing the complaint text and order ID creates an idempotency
+            key passed all the way to the payments gateway, preventing double payouts.</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="study-footer">
+    <div class="col">
+      <p>TechToday Applied AI Systems Study Guide. Based on Arpit Bhayani's Applied AI Masterclass and Wang et al., 2022
+        (Self-Consistency in LLMs).</p>
+    </div>
+  </footer>
+
+</body>
+
+</html>
