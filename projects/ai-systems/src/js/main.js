@@ -135,10 +135,6 @@ function escapeHtml(str) {
 
 function renderLatex(latex, isDisplay) {
     let trimmed = latex.trim();
-    // If inline math contains \frac, use \displaystyle so numerator/denominator aren't microscopic
-    if (!isDisplay && trimmed.includes("\\frac")) {
-        trimmed = `\\displaystyle ${trimmed}`;
-    }
     if (window.katex) {
         try {
             return window.katex.renderToString(trimmed, {
