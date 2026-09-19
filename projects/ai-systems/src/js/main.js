@@ -133,12 +133,159 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
+function renderLatex(latex, isDisplay) {
+    const trimmed = latex.trim();
+    if (window.katex) {
+        try {
+            return window.katex.renderToString(trimmed, {
+                displayMode: isDisplay,
+                throwOnError: false,
+            });
+        } catch (_) { }
+    }
+    // Fallback: clean up common LaTeX commands into crisp readable text
+    let clean = trimmed
+        .replace(/\\text\{([^}]+)\}/g, "$1")
+        .replace(/\\mathrm\{([^}]+)\}/g, "$1")
+        .replace(/\\mathbf\{([^}]+)\}/g, "<strong>$1</strong>")
+        .replace(/\\mathit\{([^}]+)\}/g, "<em>$1</em>")
+        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1 / $2)")
+        .replace(/\\times/g, " × ")
+        .replace(/\\cdot/g, " · ")
+        .replace(/\\div/g, " ÷ ")
+        .replace(/\\approx/g, " ≈ ")
+        .replace(/\\neq?/g, " ≠ ")
+        .replace(/\\leq?/g, " ≤ ")
+        .replace(/\\geq?/g, " ≥ ")
+        .replace(/\\pm/g, " ± ")
+        .replace(/\\sqrt\{([^}]+)\}/g, "√($1)")
+        .replace(/\\,/g, " ")
+        .replace(/\\;/g, " ")
+        .replace(/\\quad/g, "   ")
+        .replace(/\\qquad/g, "      ")
+        .replace(/\\left|\\right/g, "");
+
+    return isDisplay
+        ? `<div class="math-display">${clean}</div>`
+        : `<span class="math-inline">${clean}</span>`;
+}
+
 function formatMarkdown(text) {
     if (!text) return "";
-    let safe = escapeHtml(text);
-    safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
-    return safe;
+
+    const placeholders = [];
+    const savePlaceholder = (html) => {
+        const id = `%%PLACEHOLDER_${placeholders.length}%%`;
+        placeholders.push(html);
+        return id;
+    };
+
+    // 1. Code blocks ```...```
+    let processed = text.replace(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/g, (_, code) => {
+        return savePlaceholder(`<pre class="code-block"><code>${escapeHtml(code.trim())}</code></pre>`);
+    });
+
+    // 2. Display math \[ ... \] or $$ ... $$
+    processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => {
+        return savePlaceholder(renderLatex(math, true));
+    });
+    processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
+        return savePlaceholder(renderLatex(math, true));
+    });
+
+    // 3. Inline math \( ... \) or $ ... $
+    processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => {
+        return savePlaceholder(renderLatex(math, false));
+    });
+    processed = processed.replace(/(^|[^\\])\$([^\$\n]+)\$/g, (_, prefix, math) => {
+        return prefix + savePlaceholder(renderLatex(math, false));
+    });
+
+    // 4. Inline code `...`
+    processed = processed.replace(/`([^`]+)`/g, (_, code) => {
+        return savePlaceholder(`<code>${escapeHtml(code)}</code>`);
+    });
+
+    // 5. Escape remaining HTML
+    processed = escapeHtml(processed);
+
+    // 6. Bold & Italic
+    processed = processed.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    processed = processed.replace(/(?:^|[^*])\*([^*]+)\*(?=[^*]|$)/g, " <em>$1</em> ");
+
+    // 7. Parse lines into blocks (paragraphs, lists, steps)
+    const rawLines = processed.split(/\r?\n/);
+    const blocks = [];
+    let currentList = null; // 'ul'
+    let currentPara = [];
+
+    const flushPara = () => {
+        if (currentPara.length > 0) {
+            blocks.push(`<p>${currentPara.join("<br>")}</p>`);
+            currentPara = [];
+        }
+    };
+
+    const flushList = () => {
+        if (currentList) {
+            blocks.push(`<ul class="reasoning-bullets">${currentList.items.join("")}</ul>`);
+            currentList = null;
+        }
+    };
+
+    for (let line of rawLines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            flushPara();
+            flushList();
+            continue;
+        }
+
+        // Check for placeholder-only lines
+        if (/^%%PLACEHOLDER_\d+%%$/.test(trimmed)) {
+            flushPara();
+            flushList();
+            blocks.push(trimmed);
+            continue;
+        }
+
+        // Ordered step: 1. ... or 1) ...
+        const olMatch = trimmed.match(/^(\d+)[.)]\s+(.*)$/);
+        if (olMatch) {
+            flushPara();
+            flushList();
+            blocks.push(
+                `<div class="reasoning-step"><span class="step-badge">${olMatch[1]}</span><span class="step-text">${olMatch[2]}</span></div>`
+            );
+            continue;
+        }
+
+        // Bullet item: - ... or * ... or • ...
+        const ulMatch = trimmed.match(/^[-*•]\s+(.*)$/);
+        if (ulMatch) {
+            flushPara();
+            if (!currentList) {
+                currentList = { items: [] };
+            }
+            currentList.items.push(`<li>${ulMatch[1]}</li>`);
+            continue;
+        }
+
+        flushList();
+        currentPara.push(trimmed);
+    }
+
+    flushPara();
+    flushList();
+
+    let finalHtml = blocks.join("");
+
+    // Restore placeholders
+    placeholders.forEach((html, i) => {
+        finalHtml = finalHtml.replaceAll(`%%PLACEHOLDER_${i}%%`, html);
+    });
+
+    return finalHtml;
 }
 
 function renderBenchmarkResult(data, result) {
@@ -190,7 +337,7 @@ function renderBenchmarkResult(data, result) {
             </div>
             <details class="reasoning-details" style="margin-top: 0.4rem;">
                 <summary>🔍 View Reasoning Trace (${s.completion_tokens} tokens)</summary>
-                <div class="reasoning-content" style="margin-top: 0.5rem;">${formatMarkdown(s.response)}</div>
+                <div class="reasoning-content">${formatMarkdown(s.response)}</div>
             </details>
         </div>`;
     });
@@ -200,14 +347,18 @@ function renderBenchmarkResult(data, result) {
 
 function formatModelResponse(raw, verdictType) {
     if (!raw) return "";
-    let safe = escapeHtml(raw);
-    safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
 
-    const verdictMatch = safe.match(/(?:<br>|\n|^)\s*(VERDICT:.*?)(?=$|<br>|\n)/i);
+    const verdictMatch = raw.match(/(?:<br>|\n|^)\s*(VERDICT:.*?)(?=$|<br>|\n)/i);
+    let mainText = raw;
+    let verdictText = null;
     if (verdictMatch) {
-        const verdictText = verdictMatch[1].replace(/^VERDICT:\s*/i, "").trim();
-        const mainText = safe.replace(verdictMatch[0], "").trim();
+        verdictText = verdictMatch[1].replace(/^VERDICT:\s*/i, "").trim();
+        mainText = raw.replace(verdictMatch[0], "").trim();
+    }
+
+    let html = formatMarkdown(mainText);
+
+    if (verdictText) {
         const vStyle =
             verdictType === "resists"
                 ? "border-left: 3px solid #4caf50; background: rgba(76, 175, 80, 0.1); color: #81c784;"
@@ -215,9 +366,10 @@ function formatModelResponse(raw, verdictType) {
                     ? "border-left: 3px solid #f44336; background: rgba(244, 67, 54, 0.1); color: #ef9a9a;"
                     : "border-left: 3px solid #ff9800; background: rgba(255, 152, 0, 0.1); color: #ffb74d;";
 
-        return `<div>${mainText}</div><div class="verdict-callout" style="${vStyle}">⚖️ <strong>Verdict:</strong> ${verdictText}</div>`;
+        html += `<div class="verdict-callout" style="${vStyle}">⚖️ <strong>Verdict:</strong> ${escapeHtml(verdictText)}</div>`;
     }
-    return `<div>${safe}</div>`;
+
+    return html;
 }
 
 function renderSycophancyResult(data, result) {
