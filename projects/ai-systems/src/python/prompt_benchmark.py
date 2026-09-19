@@ -166,7 +166,7 @@ def run_benchmark_for_question(question_input: str, model_choice: str = None) ->
         ),
         (
             "Zero-Shot CoT",
-            f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>': {question}",
+            f"Answer the following question. Think step-by-step under 'Thought:' showing each calculation as a concise numbered step (1., 2., ...), and then provide the final answer as 'Answer: <value>': {question}",
         ),
         (
             "Few-Shot CoT",
