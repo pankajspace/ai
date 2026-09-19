@@ -41,6 +41,15 @@ def enforce_rate_limit():
             return resp
 
 
+@bp.after_request
+def add_no_cache_headers(response):
+    """Disable client-side caching for HTML, CSS, and JS to prevent stale UI."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
