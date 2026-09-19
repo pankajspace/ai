@@ -5,10 +5,11 @@ Supports OpenAI, Google Gemini, and Groq/Grok OpenAI-compatible clients.
 """
 
 import os
-from dotenv import load_dotenv, find_dotenv
+
+from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv(find_dotenv())
+load_dotenv()
 
 
 def get_env(name: str, default: str = "") -> str:
@@ -17,9 +18,8 @@ def get_env(name: str, default: str = "") -> str:
 
 
 OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
-GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-2.0-flash")
-_raw_grok = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
-GROK_MODEL = f"openai/{_raw_grok}" if _raw_grok.startswith("gpt-oss-") else _raw_grok
+GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-3.8-flash")
+GROK_MODEL = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
 
 _openai_client = None
 _gemini_client = None

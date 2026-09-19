@@ -147,15 +147,21 @@ Source files under `src/` are bind-mounted into the container, so code edits tak
 
 The self-provisioning deploy workflow creates the ECR repository, seeds the image, writes `~/secrets/ai-systems.env`, drops the Nginx location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting enabled: 10 requests upfront, 1r/m refill), auto-ensures the `app-locations/*.conf` include and `00-rate-limit.conf`, and creates the per-project Compose service on EC2 automatically on every push.
 
-**One manual step**: If `OPENAI_API_KEY` is not already in `techtoday/secrets`, add it locally as the `techtoday` IAM user before the first deploy:
+**One manual step**: If any of the 3 provider keys or model names are not already in `techtoday/secrets`, add them locally as the `techtoday` IAM user before the first deploy:
+
+- `OPENAI_API_KEY` (usually already present)
+- `GROQ_API_KEY` (usually already present from basic/interviewiq)
+- `GEMINI_API_KEY` (new for AI Systems)
+- `GEMINI_MODEL`: `gemini-3.8-flash`
+- `GROK_MODEL`: `openai/gpt-oss-20b`
 
 ```bash
 CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
-UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['OPENAI_API_KEY']='your-key'; print(json.dumps(d))")
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['GEMINI_API_KEY']='your-gemini-key'; d['GEMINI_MODEL']='gemini-3.8-flash'; d['GROK_MODEL']='openai/gpt-oss-20b'; print(json.dumps(d))")
 aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
 ```
 
-If `OPENAI_API_KEY` already exists in `techtoday/secrets`, no manual AWS steps are needed.
+If all keys already exist in `techtoday/secrets`, no manual AWS steps are needed.
 
 ---
 
