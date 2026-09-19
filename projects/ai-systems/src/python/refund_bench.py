@@ -225,6 +225,7 @@ Schema:
             return {
                 "judge_id": judge["id"],
                 "judge_name": judge["name"],
+                "is_fallback": False,
                 "provider": judge["provider"],
                 "model": judge["model"],
                 "ruling": ruling,
@@ -250,7 +251,8 @@ Schema:
                     ruling = "ESCALATE"
                 return {
                     "judge_id": judge["id"],
-                    "judge_name": f"{judge['name']} [via fallback]",
+                    "judge_name": judge["name"],
+                    "is_fallback": True,
                     "provider": judge["provider"],
                     "model": judge["model"],
                     "ruling": ruling,
@@ -264,6 +266,7 @@ Schema:
     return {
         "judge_id": judge["id"],
         "judge_name": judge["name"],
+        "is_fallback": False,
         "provider": judge["provider"],
         "model": judge["model"],
         "ruling": "ESCALATE",

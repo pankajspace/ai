@@ -67,6 +67,12 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/info/<path:filename>")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
 @bp.route("/benchmark", methods=["POST"])
 def benchmark_route():
     """Run Prompting Strategy Benchmark (Direct vs Zero-Shot CoT vs Few-Shot CoT)."""

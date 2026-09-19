@@ -36,9 +36,42 @@ Core logic is adapted from the study materials under `study/08-ai-systems/`:
 1. `GET /`: Serves the single-page application UI with environment-injected API prefix.
 2. `GET /css/<path:filename>`: Serves static stylesheets.
 3. `GET /js/<path:filename>`: Serves static JavaScript files.
-4. `POST /benchmark`: Expects `{"message": "<question_or_preset>"}` and returns benchmark metrics across strategies.
-5. `POST /sycophancy`: Expects `{"message": "<case_id_or_question>"}` and returns round-by-round pushback evaluation.
-6. `POST /refund`: Expects `{"message": "<complaint_text>"}` and returns grievance extractions, bench tallies, settlement amounts, and synthesized communication.
+4. `GET /info/<path:filename>`: Serves dedicated "How this demo works" explainer pages from `src/info/`.
+5. `POST /benchmark`: Expects `{"message": "<question_or_preset>"}` and returns benchmark metrics across strategies.
+6. `POST /sycophancy`: Expects `{"message": "<case_id_or_question>"}` and returns round-by-round pushback evaluation.
+7. `POST /refund`: Expects `{"message": "<complaint_text>"}` and returns grievance extractions, bench tallies, settlement amounts, and synthesized communication.
+
+---
+
+## Project Structure
+
+```text
+projects/ai-systems/
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+├── README.md
+└── src/
+    ├── index.html            # Main UI with ⓘ info links on each demo card
+    ├── css/
+    │   ├── style.css         # Dark theme styling, badges, KPIs, chat bubbles
+    │   └── info.css          # Styles for explainer pages (flows, code blocks, copy btn)
+    ├── js/
+    │   ├── main.js           # Frontend API calls and custom output renderers
+    │   └── info.js           # Syntax highlighting & clipboard copy buttons
+    ├── info/                 # Dedicated "How this works" explainer pages
+    │   ├── benchmark.html    # Prompting Benchmark explainer (Direct vs Zero-Shot vs Few-Shot)
+    │   ├── sycophancy.html   # Sycophancy Trap explainer (4-round pressure protocol)
+    │   └── refund.html       # The Refund Bench explainer (4-stage multi-judge pipeline)
+    └── python/
+        ├── app.py            # Flask server, blueprint routing & rate limiter
+        ├── prompt_benchmark.py # Strategy benchmarking & token multiplier calculations
+        ├── sycophancy.py     # 4-round pressure dialogue runner & verdict classification
+        ├── refund_bench.py   # 4-stage dispute resolution & 3-judge model evaluation
+        ├── config.py         # Multi-provider client initializers (OpenAI, Gemini, Groq)
+        └── rate_limiter.py   # Sliding window IP-based rate limiting
+```
 
 ---
 

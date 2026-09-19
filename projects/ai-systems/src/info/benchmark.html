@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Prompting Benchmark · AI Systems Lab</title>
+    <meta name="description"
+        content="How the Prompting Benchmark works: Direct vs Zero-Shot CoT vs Few-Shot CoT with token economics and accuracy trade-offs." />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>AI Systems Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; AI Systems Lab</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>⚖️ Prompting Benchmark</h1>
+                <p class="subtitle">Direct vs Zero-Shot CoT vs Few-Shot CoT (GPT-4o-mini via OpenAI API)</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    When language models solve multi-step reasoning problems (math, logic, multi-stage arithmetic),
+                    the prompt strategy determines whether the model answers correctly and how many tokens it consumes.
+                    This benchmark evaluates three foundational prompting strategies side-by-side on the exact same
+                    question:
+                </p>
+                <ul>
+                    <li><strong>Direct:</strong> Instructs the model to output only the final answer without any
+                        intermediate steps.</li>
+                    <li><strong>Zero-Shot Chain of Thought (CoT):</strong> Uses Kojima et al.'s classic trigger
+                        <em>"Think step-by-step"</em> to force the model to verbalize its reasoning before asserting
+                        the answer.
+                    </li>
+                    <li><strong>Few-Shot Chain of Thought:</strong> Supplies demonstration exemplars illustrating
+                        structured step-by-step deductions and explicit <code>Answer: &lt;value&gt;</code> formatting.
+                    </li>
+                </ul>
+
+                <h2>Theory &amp; Concepts</h2>
+                <p><strong>Autoregressive Computation and the Token-Accuracy Trade-off</strong></p>
+                <p>
+                    Language models generate tokens autoregressively: each token depends on the preceding sequence of
+                    tokens. When a model is asked to provide a direct answer to a complex arithmetic question, it must
+                    predict the final numerical answer in its very first generated token without any intermediate
+                    scratchpad.
+                </p>
+                <ul>
+                    <li><strong>Direct Prompting (Low Cost, High Risk):</strong> The model performs all computation
+                        implicitly inside its feedforward layers in a single forward pass. For simple facts this is
+                        fast and cheap, but on multi-step problems (e.g. rate problems, nested percentages, time math)
+                        non-reasoning models frequently fail.</li>
+                    <li><strong>Zero-Shot CoT (The Scratchpad Effect):</strong> By prompting the model to think
+                        step-by-step, each reasoning step is written out into the context window. The next step is then
+                        conditioned on the previous intermediate calculation, allowing complex problems to decompose
+                        into simple arithmetic steps. This increases token consumption by 5x–8x but drastically
+                        increases
+                        accuracy.</li>
+                    <li><strong>Few-Shot CoT (Consistency &amp; Calibration):</strong> Exemplars teach the model both
+                        the
+                        depth of reasoning required and the exact output format, reducing regex parsing errors in
+                        downstream automated pipelines.</li>
+                </ul>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <span class="flow-title">🧑 Browser</span>
+                        <span class="flow-detail">Select preset or enter reasoning question</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /benchmark</span>
+                        <span class="flow-detail">Flask route in app.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">run_benchmark_for_question()</span>
+                        <span class="flow-detail">Executes 3 prompts in prompt_benchmark.py</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">OpenAI API</span>
+                        <span class="flow-detail">GPT-4o-mini generates answers &amp; tokens</span>
+                    </div>
+                    <div class="flow-arrow">&rarr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">🧑 Browser</span>
+                        <span class="flow-detail">Renders comparison cards, tokens &amp; latency</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />question or preset] -->|POST /benchmark| B[app.py<br />benchmark_route]
+                        B -->|question_input| C[prompt_benchmark.py<br />run_benchmark_for_question]
+                        C -->|prompt: Direct| D[OpenAI API<br />gpt-4o-mini]
+                        C -->|prompt: Zero-Shot CoT| D
+                        C -->|prompt: Few-Shot CoT| D
+                        D -->|response, tokens, latency| C
+                        C -->|extract_final_answer & evaluate_accuracy| C
+                        C -->|strategies array + token multipliers| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Executes the three prompting strategies and computes token multipliers.</span>
+                <pre><code class="language-python">import re
+import time
+from config import get_openai_client, OPENAI_MODEL
+
+TEMPERATURE = 0.7
+
+
+def run_benchmark_for_question(question_input: str) -> dict:
+    """Runs Direct, Zero-Shot CoT, and Few-Shot CoT for a given question or preset."""
+    matched_preset = None
+    cleaned_input = question_input.strip()
+
+    # Step 1: Match against preset bank or evaluate raw user question
+    for preset in BENCHMARK_DATA:
+        if cleaned_input.lower() == preset["id"] or cleaned_input == preset["question"]:
+            matched_preset = preset
+            break
+
+    if matched_preset:
+        question = matched_preset["question"]
+        expected_answer = matched_preset["answer"]
+    else:
+        question = cleaned_input
+        expected_answer = None
+
+    # Step 2: Define prompt templates for the 3 strategies
+    strategies = [
+        (
+            "Direct",
+            f"Answer the following question directly with just the final answer: {question}",
+        ),
+        (
+            "Zero-Shot CoT",
+            f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>': {question}",
+        ),
+        (
+            "Few-Shot CoT",
+            f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>'.\n\n{FEW_SHOT_EXAMPLES}\n\nQuestion: {question}",
+        ),
+    ]
+
+    results = []
+    baseline_tokens = None
+
+    # Step 3: Run each strategy sequentially and measure tokens and latency
+    for name, prompt in strategies:
+        start_time = time.time()
+        resp_text, p_tok, c_tok = get_model_response(prompt)
+        elapsed = time.time() - start_time
+        total_tokens = p_tok + c_tok
+        extracted = extract_final_answer(resp_text)
+
+        is_correct = None
+        if expected_answer:
+            is_correct = evaluate_accuracy(resp_text, expected_answer)
+
+        if name == "Direct":
+            baseline_tokens = max(total_tokens, 1)
+
+        token_mult = (
+            round(total_tokens / baseline_tokens, 1) if baseline_tokens else 1.0
+        )
+
+        results.append(
+            {
+                "name": name,
+                "response": resp_text,
+                "extracted_answer": extracted,
+                "prompt_tokens": p_tok,
+                "completion_tokens": c_tok,
+                "total_tokens": total_tokens,
+                "token_multiplier": token_mult,
+                "latency_seconds": round(elapsed, 2),
+                "is_correct": is_correct,
+            }
+        )
+
+    return {
+        "question": question,
+        "expected_answer": expected_answer[0] if isinstance(expected_answer, list) else (expected_answer or "N/A"),
+        "strategies": results,
+    }</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the benchmark over HTTP as <code>POST /benchmark</code>.</span>
+                <pre><code class="language-python">@bp.route("/benchmark", methods=["POST"])
+def benchmark_route():
+    """Run Prompting Strategy Benchmark (Direct vs Zero-Shot CoT vs Few-Shot CoT)."""
+    data = request.get_json(force=True) or {}
+    message = (data.get("message") or data.get("question") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+
+    try:
+        results = run_benchmark_for_question(message)
+        return jsonify({"result": results})
+    except Exception as e:
+        return jsonify({"error": f"Benchmark evaluation failed: {str(e)}"}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

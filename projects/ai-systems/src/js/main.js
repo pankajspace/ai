@@ -126,92 +126,128 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
+function formatMarkdown(text) {
+    if (!text) return "";
+    let safe = escapeHtml(text);
+    safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+    return safe;
+}
+
 function renderBenchmarkResult(data, result) {
     const res = data.result || {};
     const strategies = res.strategies || [];
-    let html = `<div style="display: flex; flex-direction: column; gap: 0.75rem;">`;
+    let html = "";
 
     if (res.expected_answer && res.expected_answer !== "N/A") {
-        html += `<div style="font-size: 0.85rem; color: var(--text-muted);">
-            Expected Answer: <strong style="color: var(--accent);">${escapeHtml(res.expected_answer)}</strong>
+        html += `
+        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+            <span>Expected Answer:</span>
+            <span class="badge badge-info" style="font-size: 0.85rem;">${escapeHtml(res.expected_answer)}</span>
         </div>`;
     }
 
     strategies.forEach((s) => {
         const accBadge =
             s.is_correct === true
-                ? `<span style="color: #4caf50; font-weight: bold; margin-left: 0.5rem;">✓ Correct</span>`
+                ? `<span class="badge badge-success">✓ Correct</span>`
                 : s.is_correct === false
-                    ? `<span style="color: #f44336; font-weight: bold; margin-left: 0.5rem;">✗ Incorrect</span>`
+                    ? `<span class="badge badge-danger">✗ Incorrect</span>`
                     : "";
 
         html += `
-        <div style="background: var(--bg-elevated-2); padding: 0.75rem 1rem; border-radius: 4px; border-left: 3px solid var(--accent);">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.4rem;">
-                <strong>${escapeHtml(s.name)}</strong>
-                <span style="font-size: 0.8rem; color: var(--text-muted); font-family: monospace;">
-                    ${s.total_tokens} tokens (${s.token_multiplier}x baseline) · ${s.latency_seconds}s
-                </span>
+        <div class="output-card">
+            <div class="output-card-header">
+                <div class="output-card-title">
+                    <span>${escapeHtml(s.name)}</span>
+                    ${accBadge}
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span class="badge badge-neutral badge-mono">${s.total_tokens} tokens (${s.token_multiplier}x)</span>
+                    <span class="badge badge-neutral badge-mono">⏱️ ${s.latency_seconds}s</span>
+                </div>
             </div>
-            <div style="font-size: 0.85rem; margin-bottom: 0.3rem;">
-                Stated Answer: <code>${escapeHtml(s.extracted_answer || "(empty)")}</code> ${accBadge}
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-top: 0.1rem;">
+                <span style="color: var(--text-muted); font-size: 0.8rem;">Stated Answer:</span>
+                <span class="badge badge-neutral badge-mono" style="font-size: 0.85rem; color: #fff; background: var(--bg); border: 1px solid var(--border);">${escapeHtml(s.extracted_answer || "(none)")}</span>
             </div>
-            <details style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
-                <summary style="cursor: pointer;">View full model output</summary>
-                <pre style="margin-top: 0.4rem; white-space: pre-wrap; font-family: monospace; font-size: 0.8rem; background: var(--bg); padding: 0.5rem; border-radius: 3px;">${escapeHtml(s.response)}</pre>
+            <details class="reasoning-details">
+                <summary>▶ View reasoning trace & raw output</summary>
+                <div class="reasoning-content">${formatMarkdown(s.response)}</div>
             </details>
         </div>`;
     });
 
-    html += `</div>`;
     result.innerHTML = html;
+}
+
+function formatModelResponse(raw) {
+    if (!raw) return "";
+    let safe = escapeHtml(raw);
+    safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    safe = safe.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+    const verdictMatch = safe.match(/(?:<br>|\n|^)\s*(VERDICT:.*?)(?=$|<br>|\n)/i);
+    if (verdictMatch) {
+        const verdictText = verdictMatch[1].replace(/^VERDICT:\s*/i, "").trim();
+        const mainText = safe.replace(verdictMatch[0], "").trim();
+        return `<div>${mainText}</div><div class="verdict-callout">⚖️ <strong>Verdict:</strong> ${verdictText}</div>`;
+    }
+    return `<div>${safe}</div>`;
 }
 
 function renderSycophancyResult(data, result) {
     const res = data.result || {};
     const rounds = res.rounds || [];
-    const verdictColor = res.first_cave_round !== null ? "#f44336" : "#4caf50";
+    const isCapitulated = res.first_cave_round !== null;
+
+    const bannerClass = isCapitulated ? "status-banner status-banner-danger" : "status-banner status-banner-success";
+    const bannerIcon = isCapitulated ? "⚠️" : "🛡️";
 
     let html = `
-    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        <div style="padding: 0.5rem 0.8rem; background: var(--bg-elevated-2); border-radius: 4px; border-left: 3px solid ${verdictColor};">
-            <div style="font-weight: 600; color: ${verdictColor};">${escapeHtml(res.summary)}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-                Case: ${escapeHtml(res.case_label)} (${escapeHtml(res.case_type)}) · Correct: <strong>${escapeHtml(res.correct_answer)}</strong>
-            </div>
+    <div class="${bannerClass}">
+        <div class="status-banner-title">
+            <span>${bannerIcon}</span>
+            <span>${escapeHtml(res.summary)}</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+        <div class="status-banner-meta">
+            <span class="badge badge-neutral">Case: ${escapeHtml(res.case_label)}</span>
+            <span class="badge badge-neutral">Type: ${escapeHtml(res.case_type)}</span>
+            <span class="badge badge-info">Ground Truth: ${escapeHtml(res.correct_answer)}</span>
+        </div>
+    </div>
+    <div class="chat-thread">`;
 
     rounds.forEach((r) => {
-        const badgeColor =
-            r.verdict === "resists"
-                ? "#4caf50"
-                : r.verdict === "capitulates"
-                    ? "#f44336"
-                    : "#ff9800";
-        const badgeIcon =
-            r.verdict === "resists"
-                ? "✓ resists"
-                : r.verdict === "capitulates"
-                    ? "✗ capitulates"
-                    : "? unclear";
+        let badgeHtml = "";
+        if (r.verdict === "resists") {
+            badgeHtml = `<span class="badge badge-success">✓ Resisted</span>`;
+        } else if (r.verdict === "capitulates") {
+            badgeHtml = `<span class="badge badge-danger">✗ Capitulated</span>`;
+        } else {
+            badgeHtml = `<span class="badge badge-warning">? Unclear</span>`;
+        }
 
         html += `
-        <div style="background: var(--bg-elevated); padding: 0.6rem 0.8rem; border-radius: 4px; border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
-                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent);">${escapeHtml(r.label)}</span>
-                <span style="font-size: 0.75rem; font-weight: 600; color: ${badgeColor}; font-family: monospace; text-transform: uppercase;">${badgeIcon}</span>
+        <div class="chat-round">
+            <div class="chat-round-header">
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text);">${escapeHtml(r.label)}</span>
+                ${badgeHtml}
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">
-                <strong>User:</strong> ${escapeHtml(r.user_prompt)}
-            </div>
-            <div style="font-size: 0.85rem; color: var(--text);">
-                <strong>Model:</strong> ${escapeHtml(r.model_response)}
+            <div class="chat-round-body">
+                <div class="chat-msg chat-msg-user">
+                    <div class="chat-sender">👤 User</div>
+                    <div style="color: var(--text);">${escapeHtml(r.user_prompt)}</div>
+                </div>
+                <div class="chat-msg chat-msg-model">
+                    <div class="chat-sender">🤖 Model</div>
+                    <div style="color: var(--text);">${formatModelResponse(r.model_response)}</div>
+                </div>
             </div>
         </div>`;
     });
 
-    html += `</div></div>`;
+    html += `</div>`;
     result.innerHTML = html;
 }
 
@@ -220,80 +256,104 @@ function renderRefundResult(data, result) {
     const grievances = res.grievances || [];
 
     let html = `
-    <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; background: var(--bg-elevated-2); padding: 0.85rem 1rem; border-radius: 4px;">
-            <div>
-                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Auto-Approved</span>
-                <strong style="font-size: 1.4rem; color: #4caf50;">₹${Number(res.total_approved_refund || 0).toFixed(0)}</strong>
-            </div>
-            <div>
-                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Held For Review</span>
-                <strong style="font-size: 1.4rem; color: #ff9800;">₹${Number(res.total_held_for_review || 0).toFixed(0)}</strong>
-            </div>
-            <div>
-                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Auto-Approve Cap</span>
-                <span style="font-size: 1.1rem; color: var(--text); font-family: monospace;">₹${Number(res.auto_approval_cap || 2000).toFixed(0)}</span>
-            </div>
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <span class="kpi-label">Auto-Approved</span>
+            <span class="kpi-value" style="color: #4caf50;">₹${Number(res.total_approved_refund || 0).toFixed(0)}</span>
+            <span class="kpi-subtext">Immediate credit to original method</span>
         </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Held For Review</span>
+            <span class="kpi-value" style="color: #ff9800;">₹${Number(res.total_held_for_review || 0).toFixed(0)}</span>
+            <span class="kpi-subtext">Escalated to restaurant / supervisor</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Auto-Approve Cap</span>
+            <span class="kpi-value badge-mono" style="color: var(--text);">₹${Number(res.auto_approval_cap || 2000).toFixed(0)}</span>
+            <span class="kpi-subtext">Safe policy ceiling per dispute</span>
+        </div>
+    </div>
 
-        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">Grievance Rulings (3 Distinct Model Judges: OpenAI · Gemini · Groq)</div>`;
+    <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-top: 0.4rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <span>⚖️ Grievance Rulings</span>
+        <span class="badge badge-neutral badge-mono">3 Model Judges: OpenAI · Gemini · Groq</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.65rem;">`;
 
     grievances.forEach((g) => {
-        const verdictStyle =
+        const verdictBadgeClass =
             g.verdict === "UPHELD"
-                ? "background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid #4caf50;"
+                ? "badge-success"
                 : g.verdict === "REJECTED"
-                    ? "background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid #f44336;"
-                    : "background: rgba(255, 152, 0, 0.15); color: #ff9800; border: 1px solid #ff9800;";
+                    ? "badge-danger"
+                    : "badge-warning";
 
-        const amountStr =
+        const amountBadge =
             g.refund_amount > 0
-                ? `<span style="color: #4caf50; font-weight: bold;">+₹${g.refund_amount.toFixed(0)}</span>`
+                ? `<span class="badge badge-success">+₹${g.refund_amount.toFixed(0)}</span>`
                 : g.held_amount > 0
-                    ? `<span style="color: #ff9800; font-weight: bold;">₹${g.held_amount.toFixed(0)} (held)</span>`
-                    : `<span style="color: var(--text-muted);">₹0</span>`;
+                    ? `<span class="badge badge-warning">₹${g.held_amount.toFixed(0)} (held)</span>`
+                    : `<span class="badge badge-neutral">₹0</span>`;
 
-        let individualHtml = `<div style="margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 0.35rem;">`;
+        let judgesHtml = `<div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.35rem;">`;
         (g.individual_rulings || []).forEach((r) => {
-            const rColor =
+            const rBadgeClass =
                 r.ruling === "UPHELD"
-                    ? "#4caf50"
+                    ? "badge-success"
                     : r.ruling === "REJECTED"
-                        ? "#f44336"
-                        : "#ff9800";
-            individualHtml += `
-            <div style="font-size: 0.78rem; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.3rem;">
-                <span style="color: var(--text); font-weight: 500;">
-                    ${escapeHtml(r.judge_name)}: <strong style="color: ${rColor};">${escapeHtml(r.ruling)}</strong> <span style="color: var(--text-muted); font-size: 0.72rem;">(conf: ${r.confidence})</span>
-                </span>
-                <span style="color: var(--text-muted); font-size: 0.75rem; font-style: italic;">${escapeHtml(r.reasoning || r.evidence_cited)}</span>
+                        ? "badge-danger"
+                        : "badge-warning";
+
+            const fallbackBadge = r.is_fallback
+                ? `<span class="badge badge-neutral badge-mono" style="font-size: 0.65rem;" title="Evaluated via fallback client">fallback</span>`
+                : "";
+
+            judgesHtml += `
+            <div class="output-subcard">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.4rem;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text);">${escapeHtml(r.judge_name)}</span>
+                        ${fallbackBadge}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="badge ${rBadgeClass}">${escapeHtml(r.ruling)}</span>
+                        <span class="badge badge-neutral badge-mono">conf: ${r.confidence}</span>
+                    </div>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; font-style: italic;">
+                    ${escapeHtml(r.reasoning || r.evidence_cited)}
+                </div>
             </div>`;
         });
-        individualHtml += `</div>`;
+        judgesHtml += `</div>`;
 
         html += `
-        <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: 4px; border: 1px solid var(--border);">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); font-family: monospace;">${escapeHtml(g.grievance_id)} · ${escapeHtml(g.category)}</span>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">${escapeHtml(g.vote_split)} (conf: ${g.confidence})</span>
-                    <span style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 3px; ${verdictStyle}">${escapeHtml(g.verdict)}</span>
-                    ${amountStr}
+        <div class="output-card">
+            <div class="output-card-header">
+                <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span class="badge badge-neutral badge-mono">${escapeHtml(g.grievance_id)}</span>
+                    <span class="badge badge-info">${escapeHtml(g.category)}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span class="badge badge-neutral badge-mono">${escapeHtml(g.vote_split)} (conf: ${g.confidence})</span>
+                    <span class="badge ${verdictBadgeClass}">${escapeHtml(g.verdict)}</span>
+                    ${amountBadge}
                 </div>
             </div>
-            <div style="font-size: 0.85rem; color: var(--text);">${escapeHtml(g.text)}</div>
-            ${individualHtml}
+            <div style="font-size: 0.875rem; color: var(--text); padding: 0.5rem 0.7rem; background: var(--bg); border-radius: 4px; border-left: 2px solid var(--border);">
+                “${escapeHtml(g.text)}”
+            </div>
+            ${judgesHtml}
         </div>`;
     });
 
     html += `
-        </div>
+    </div>
 
-        <div style="background: var(--bg-elevated-2); padding: 0.85rem 1rem; border-radius: 4px; border-left: 3px solid #2196f3;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: #2196f3; margin-bottom: 0.3rem;">Outbound Customer Response (Synthesized)</div>
-            <div style="font-size: 0.85rem; line-height: 1.5; color: var(--text); font-style: italic;">"${escapeHtml(res.customer_message)}"</div>
-        </div>
+    <div class="customer-message-card">
+        <div class="customer-message-header">✉️ Outbound Customer Message (Synthesized)</div>
+        <div class="customer-message-body">“${escapeHtml(res.customer_message)}”</div>
     </div>`;
 
     result.innerHTML = html;

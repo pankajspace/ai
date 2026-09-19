@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — The Refund Bench · AI Systems Lab</title>
+    <meta name="description"
+        content="How The Refund Bench works: 4-stage agentic dispute resolution pipeline, 3 distinct foundation model judges (OpenAI, Gemini, Groq), and deterministic settlement." />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>AI Systems Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; AI Systems Lab</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🏛️ The Refund Bench</h1>
+                <p class="subtitle">4-Stage Agentic Dispute Resolution &amp; Multi-Judge System (OpenAI · Gemini · Groq)
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    In consumer platforms like food delivery, ride hailing, and e-commerce, customer complaints are
+                    messy,
+                    emotional, and often conflate multiple independent issues into a single angry paragraph.
+                    Attempting to resolve disputes using a single monolithic LLM prompt fails due to hallucinated refund
+                    policies,
+                    arithmetic mistakes, vulnerability to prompt injection, and correlated errors.
+                </p>
+                <p>
+                    <strong>The Refund Bench</strong> solves this with an industrial 4-stage agentic pipeline:
+                </p>
+                <ul>
+                    <li><strong>Stage 1 (Intake &amp; Evidence Freeze):</strong> Freezes immutable transactional facts
+                        from
+                        the database (order items, GPS logs, restaurant handoff timestamps, delivery SLA) into an
+                        unalterable context envelope.</li>
+                    <li><strong>Stage 2 (Atomic Grievance Extraction):</strong> An intake LLM resolves pronouns
+                        (co-reference resolution)
+                        and breaks the complaint into atomic, verifiable claim units (e.g.
+                        <code>g1: LATE_DELIVERY</code>, <code>g2: MISSING_ITEM</code>)
+                        while discarding insults and demands.</li>
+                    <li><strong>Stage 3 (The Multi-Judge Bench):</strong> Evaluates each grievance across <strong>3
+                            distinct model families</strong>
+                        (OpenAI <code>gpt-4o-mini</code>, Google Gemini <code>gemini-2.0-flash</code>, and Groq
+                        <code>gpt-oss-20b</code>)
+                        using self-consistency voting with majority consensus calculated in code.</li>
+                    <li><strong>Stage 4 (Code Settlement &amp; Guardrails):</strong> Deterministic Python code computes
+                        refund amounts
+                        based on actual line-item prices, enforces a hard ₹2,000 auto-approval ceiling, and synthesizes
+                        an empathetic customer email.</li>
+                </ul>
+
+                <h2>Theory &amp; Concepts</h2>
+                <p><strong>Self-Consistency and Uncorrelated Error Distributions</strong></p>
+                <p>
+                    This architecture leverages core distributed AI systems principles:
+                </p>
+                <ul>
+                    <li><strong>Why 3 Distinct Judge Models?</strong> Querying the same model three times (e.g.
+                        GPT-4o-mini thrice)
+                        risks correlated errors—systematic biases or blind spots shared by that specific training
+                        checkpoint.
+                        By seating <strong>OpenAI, Gemini, and Groq</strong> as the 3 judges, the system samples
+                        independent probability
+                        distributions. If Gemini misses a nuance, OpenAI and Groq provide the consensus majority.</li>
+                    <li><strong>Separation of Fact-Finding and Money Movement:</strong> LLMs are notorious for
+                        hallucinating arithmetic
+                        and calculating incorrect totals. In The Refund Bench, LLMs <em>only</em> output categorical
+                        verdicts
+                        (<code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code>). The actual rupee
+                        calculation is performed by
+                        pure deterministic Python code using ground-truth order item prices.</li>
+                    <li><strong>The Auto-Approve Cap (₹2,000 Financial Guardrail):</strong> Even if all 3 judges uphold
+                        every grievance,
+                        if the total refund exceeds the ₹2,000 policy threshold, the entire payout is automatically
+                        routed to human operations
+                        for supervisor sign-off, protecting the platform from catastrophic adversarial abuse.</li>
+                </ul>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">Stage 1: Evidence Freeze</span>
+                        <span class="flow-detail">Pull immutable order, driver GPS, SLA &amp; fee records</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Stage 2: Grievance Extraction</span>
+                        <span class="flow-detail">OpenAI extracts atomic claims with co-reference resolution</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">Judge 1 (OpenAI)</span>
+                            <span class="flow-detail">gpt-4o-mini</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">Judge 2 (Gemini)</span>
+                            <span class="flow-detail">gemini-2.0-flash</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">Judge 3 (Groq)</span>
+                            <span class="flow-detail">gpt-oss-20b</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Stage 4: Code Settlement</span>
+                        <span class="flow-detail">Majority tally + code pricing + ₹2,000 cap check</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+                        flowchart TD
+                        A[Browser<br />complaint text] -->|POST /refund| B[app.py<br />refund_route]
+                        B -->|complaint| C[refund_bench.py<br />adjudicate_dispute]
+                        C -->|complaint + line_items| D[Stage 2: OpenAI<br />stage2_extract_grievances]
+                        D -->|atomic grievances JSON| C
+                        C -->|grievances + evidence| E[Stage 3: Multi-Judge Bench]
+                        E -->|grievance g_i| J1[Judge 1: OpenAI]
+                        E -->|grievance g_i| J2[Judge 2: Gemini]
+                        E -->|grievance g_i| J3[Judge 3: Groq]
+                        J1 -->|ruling 1| E
+                        J2 -->|ruling 2| E
+                        J3 -->|ruling 3| E
+                        E -->|majority vote in Python| C
+                        C -->|tallied grievances| F[Stage 4: Code Settlement<br />pricing + ₹2,000 cap]
+                        F -->|verdicts summary| G[OpenAI: Customer Message]
+                        G -->|empathetic message| F
+                        F -->|settlement payload| B
+                        B -->|JSON result| A
+                    </div>
+                </div>
+
+                <h2>Backend</h2>
+                <span class="file-label">Coordinates grievance extraction, 3-model judge bench, and deterministic
+                    settlement.</span>
+                <pre><code class="language-python">def adjudicate_dispute(complaint_text: str) -> dict:
+    """Executes the complete 4-stage Refund Bench agentic dispute pipeline."""
+    # Stage 1: Freeze immutable transactional evidence from databases
+    evidence = stage1_intake(complaint_text)
+
+    # Stage 2: Extract atomic, checkable grievances with co-reference resolution
+    grievances = stage2_extract_grievances(
+        complaint_text, evidence.get("line_items", [])
+    )
+
+    # Stage 3: Multi-Judge evaluation across 3 distinct foundation models
+    judged_grievances = stage3_judge_bench(grievances, evidence)
+
+    # Stage 4: Deterministic settlement calculation, cap enforcement, and message synthesis
+    settlement = stage4_settle(complaint_text, judged_grievances, evidence)
+
+    return settlement
+
+
+def stage3_judge_bench(grievances: list, evidence: dict) -> list:
+    """Runs the 3 distinct judge models per grievance and tallies majority verdict."""
+    judges = get_bench_judges()
+    judged_grievances = []
+
+    for g in grievances:
+        rulings = []
+        for judge in judges:
+            # Query each model (OpenAI, Gemini, Groq) with frozen evidence
+            r = judge_single_grievance(g["text"], evidence, judge)
+            rulings.append(r)
+
+        # Tally majority vote deterministically in code
+        votes = {"UPHELD": 0, "REJECTED": 0, "ESCALATE": 0}
+        for r in rulings:
+            ruling = r.get("ruling", "ESCALATE")
+            votes[ruling] = votes.get(ruling, 0) + 1
+
+        sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
+        majority_ruling = sorted_votes[0][0]
+
+        # Calculate code-driven refund pricing from line-item database
+        category = g.get("category", "")
+        amount, held_amount = 0.0, 0.0
+
+        if category == "LATE_DELIVERY" and majority_ruling == "UPHELD":
+            amount = evidence.get("fees", {}).get("delivery_fee", 49.0)
+        elif category == "MISSING_ITEM" and majority_ruling == "UPHELD":
+            amount = 2 * 320.0  # 2 units missing @ ₹320
+        elif category == "PACKAGING" and majority_ruling == "UPHELD":
+            amount = 60.0       # raita leaked
+
+        judged_grievances.append({
+            "grievance_id": g.get("grievance_id"),
+            "text": g.get("text"),
+            "category": category,
+            "individual_rulings": rulings,
+            "vote_split": f"{votes['UPHELD']}U / {votes['REJECTED']}R / {votes['ESCALATE']}E",
+            "verdict": majority_ruling,
+            "refund_amount": amount,
+            "held_amount": held_amount,
+        })
+
+    return judged_grievances</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes The Refund Bench over HTTP as <code>POST /refund</code>.</span>
+                <pre><code class="language-python">@bp.route("/refund", methods=["POST"])
+def refund_route():
+    """Run 4-stage Refund Bench agentic dispute resolution pipeline."""
+    data = request.get_json(force=True) or {}
+    message = (data.get("message") or data.get("complaint") or "").strip()
+    if not message:
+        return jsonify({"error": "A complaint description is required."}), 400
+
+    try:
+        results = adjudicate_dispute(message)
+        return jsonify({"result": results})
+    except Exception as e:
+        return jsonify({"error": f"Refund adjudication failed: {str(e)}"}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 TechToday.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "14px",
+            },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
