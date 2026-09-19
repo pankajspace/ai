@@ -74,6 +74,9 @@ function setupCard(config) {
     const validation = config.validationId
         ? document.getElementById(config.validationId)
         : null;
+    const modelSelect = config.modelSelectId
+        ? document.getElementById(config.modelSelectId)
+        : null;
 
     const currentValue = () => input.value.trim();
 
@@ -98,11 +101,15 @@ function setupCard(config) {
             input.focus();
             return;
         }
+        const body = { [config.field]: value };
+        if (modelSelect && modelSelect.value) {
+            body.model = modelSelect.value;
+        }
         callApi({
             btn,
             result,
             endpoint: config.endpoint,
-            body: { [config.field]: value },
+            body,
             render: config.render,
         });
     });
@@ -139,11 +146,14 @@ function renderBenchmarkResult(data, result) {
     const strategies = res.strategies || [];
     let html = "";
 
-    if (res.expected_answer && res.expected_answer !== "N/A") {
+    if ((res.expected_answer && res.expected_answer !== "N/A") || res.model_used) {
         html += `
-        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.6rem; background: rgba(144, 202, 249, 0.08); border-radius: 4px; border: 1px solid rgba(144, 202, 249, 0.2);">
-            <span style="color: var(--text-muted);">Expected Answer:</span>
-            <span class="badge badge-info" style="font-size: 0.85rem;">${escapeHtml(res.expected_answer)}</span>
+        <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding: 0.35rem 0.6rem; background: rgba(144, 202, 249, 0.08); border-radius: 4px; border: 1px solid rgba(144, 202, 249, 0.2);">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="color: var(--text-muted);">Expected Answer:</span>
+                <span class="badge badge-info" style="font-size: 0.85rem;">${escapeHtml(res.expected_answer || "N/A")}</span>
+            </div>
+            ${res.model_used ? `<span class="badge badge-neutral badge-mono" style="color: #90caf9;">🤖 ${escapeHtml(res.model_used)}</span>` : ""}
         </div>`;
     }
 
@@ -179,7 +189,7 @@ function renderBenchmarkResult(data, result) {
                 <span style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #fff;">${escapeHtml(s.extracted_answer || "(none)")}</span>
             </div>
             <details class="reasoning-details" style="margin-top: 0.4rem;">
-                <summary style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 4px 10px; background: rgba(144, 202, 249, 0.08); border: 1px solid rgba(144, 202, 249, 0.2); border-radius: 4px; font-size: 0.75rem; color: var(--accent); cursor: pointer;">🔍 View Reasoning Trace (${s.completion_tokens} tokens)</summary>
+                <summary>🔍 View Reasoning Trace (${s.completion_tokens} tokens)</summary>
                 <div class="reasoning-content" style="margin-top: 0.5rem;">${formatMarkdown(s.response)}</div>
             </details>
         </div>`;
@@ -225,6 +235,7 @@ function renderSycophancyResult(data, result) {
             <span>${escapeHtml(res.summary)}</span>
         </div>
         <div class="status-banner-meta">
+            ${res.model_used ? `<span class="badge badge-info badge-mono">🤖 ${escapeHtml(res.model_used)}</span>` : ""}
             <span class="badge badge-neutral">Case: ${escapeHtml(res.case_label)}</span>
             <span class="badge badge-neutral">Type: ${escapeHtml(res.case_type)}</span>
             <span class="badge badge-info">Ground Truth: ${escapeHtml(res.correct_answer)}</span>
@@ -402,6 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         buttonId: "benchmarkBtn",
         resultId: "benchmarkResult",
         validationId: "benchmarkValidation",
+        modelSelectId: "benchmarkModel",
         requiredMessage: "Please enter a question or preset name.",
         endpoint: "/benchmark",
         field: "message",
@@ -414,6 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
         buttonId: "sycophancyBtn",
         resultId: "sycophancyResult",
         validationId: "sycophancyValidation",
+        modelSelectId: "sycophancyModel",
         requiredMessage: "Please enter a test case ID or question.",
         endpoint: "/sycophancy",
         field: "message",

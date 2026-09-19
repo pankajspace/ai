@@ -7,7 +7,7 @@ Reports answers, reasoning traces, token usage, and latency.
 
 import re
 import time
-from config import get_openai_client, OPENAI_MODEL
+from config import get_openai_client, OPENAI_MODEL, get_client_and_model
 
 TEMPERATURE = 0.7
 
@@ -65,12 +65,13 @@ Answer: 60
 """
 
 
-def get_model_response(prompt: str):
+def get_model_response(prompt: str, client=None, model_name: str = None):
     """Sends a prompt to the model and returns response text and token counts."""
-    client = get_openai_client()
+    if client is None or model_name is None:
+        client, model_name, _ = get_client_and_model()
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=model_name,
             messages=[{"role": "user", "content": prompt}],
             temperature=TEMPERATURE,
         )
@@ -139,8 +140,9 @@ def evaluate_accuracy(response_text: str, correct_answer) -> bool:
     return False
 
 
-def run_benchmark_for_question(question_input: str) -> dict:
+def run_benchmark_for_question(question_input: str, model_choice: str = None) -> dict:
     """Runs Direct, Zero-Shot CoT, and Few-Shot CoT for a given question or preset."""
+    client, model_name, provider = get_client_and_model(model_choice)
     matched_preset = None
     cleaned_input = question_input.strip()
 
@@ -177,7 +179,9 @@ def run_benchmark_for_question(question_input: str) -> dict:
 
     for name, prompt in strategies:
         start_time = time.time()
-        resp_text, p_tok, c_tok = get_model_response(prompt)
+        resp_text, p_tok, c_tok = get_model_response(
+            prompt, client=client, model_name=model_name
+        )
         elapsed = time.time() - start_time
         total_tokens = p_tok + c_tok
         extracted = extract_final_answer(resp_text)
@@ -220,6 +224,7 @@ def run_benchmark_for_question(question_input: str) -> dict:
     return {
         "question": question,
         "expected_answer": expected_label,
+        "model_used": f"{provider} ({model_name})",
         "strategies": results,
     }
 

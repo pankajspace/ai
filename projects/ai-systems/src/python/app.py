@@ -90,8 +90,9 @@ def benchmark_route():
     if not message:
         return jsonify({"error": "A question is required."}), 400
 
+    model_choice = data.get("model")
     try:
-        results = run_benchmark_for_question(message)
+        results = run_benchmark_for_question(message, model_choice=model_choice)
         return jsonify({"result": results})
     except Exception as e:
         return jsonify({"error": f"Benchmark evaluation failed: {str(e)}"}), 500
@@ -105,8 +106,9 @@ def sycophancy_route():
     if not message:
         return jsonify({"error": "A test case ID or question is required."}), 400
 
+    model_choice = data.get("model")
     try:
-        results = run_sycophancy_test(message)
+        results = run_sycophancy_test(message, model_choice=model_choice)
         return jsonify({"result": results})
     except Exception as e:
         return jsonify({"error": f"Sycophancy test failed: {str(e)}"}), 500

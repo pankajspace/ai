@@ -73,3 +73,23 @@ def get_grok_client() -> OpenAI:
         )
         _grok_client = OpenAI(api_key=api_key, base_url=base_url)
     return _grok_client
+
+
+def get_client_and_model(model_choice: str = None):
+    """Returns (client, model_name, provider_name) based on user selection or defaults.
+
+    Supports:
+      - 'openai' -> (get_openai_client(), OPENAI_MODEL, "OpenAI")
+      - 'gemini' -> (get_gemini_client(), GEMINI_MODEL, "Gemini")
+      - 'groq'   -> (get_grok_client(), GROK_MODEL, "Groq")
+      - 'gpt-4o' -> (get_openai_client(), "gpt-4o", "OpenAI")
+    """
+    choice = (model_choice or "openai").lower().strip()
+    if "gemini" in choice:
+        return get_gemini_client(), GEMINI_MODEL, "Gemini"
+    elif "groq" in choice or "grok" in choice or "llama" in choice or "oss" in choice:
+        return get_grok_client(), GROK_MODEL, "Groq"
+    elif "gpt-4o" in choice and "mini" not in choice:
+        return get_openai_client(), "gpt-4o", "OpenAI"
+    else:
+        return get_openai_client(), OPENAI_MODEL, "OpenAI"

@@ -9,7 +9,7 @@ Executes four rounds of conversation per question under escalating pressure:
 """
 
 import re
-from config import get_openai_client, OPENAI_MODEL
+from config import get_openai_client, OPENAI_MODEL, get_client_and_model
 
 TEMPERATURE = 0.7
 
@@ -138,12 +138,15 @@ CONCESSION_PHRASES = (
 )
 
 
-def chat(messages, system_prompt=DEFAULT_SYSTEM_PROMPT) -> str:
+def chat(
+    messages, system_prompt=DEFAULT_SYSTEM_PROMPT, client=None, model_name: str = None
+) -> str:
     """Sends messages to the model and returns stripped response text."""
-    client = get_openai_client()
+    if client is None or model_name is None:
+        client, model_name, _ = get_client_and_model()
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=model_name,
             messages=[{"role": "system", "content": system_prompt}] + messages,
             temperature=TEMPERATURE,
         )
@@ -237,8 +240,9 @@ def verdict(response: str, correct_answer: str, capitulation_markers: list) -> s
     return "unclear"
 
 
-def run_sycophancy_test(case_input: str) -> dict:
+def run_sycophancy_test(case_input: str, model_choice: str = None) -> dict:
     """Runs a 4-round pressure sequence for a test case ID or query."""
+    client, model_name, provider = get_client_and_model(model_choice)
     cleaned = case_input.strip()
     selected_case = None
 
@@ -256,7 +260,7 @@ def run_sycophancy_test(case_input: str) -> dict:
         selected_case = TEST_CASES[0]
 
     history = [{"role": "user", "content": decorate(selected_case["question"], selected_case)}]
-    baseline = chat(history)
+    baseline = chat(history, client=client, model_name=model_name)
     responses = [baseline]
 
     rounds = [
@@ -278,7 +282,7 @@ def run_sycophancy_test(case_input: str) -> dict:
             {"role": "assistant", "content": responses[-1]},
             {"role": "user", "content": decorate(push, selected_case)},
         ]
-        resp = chat(history)
+        resp = chat(history, client=client, model_name=model_name)
         responses.append(resp)
         v = verdict(
             resp,
@@ -313,6 +317,7 @@ def run_sycophancy_test(case_input: str) -> dict:
         "case_type": selected_case["type"],
         "correct_answer": selected_case["correct_answer"],
         "demanded_answer": selected_case["capitulation_markers"][0],
+        "model_used": f"{provider} ({model_name})",
         "rounds": rounds,
         "first_cave_round": first_cave,
         "summary": outcome,
