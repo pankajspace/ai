@@ -1,0 +1,30 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    command: python src/python/app.py
+    ports:
+      - "8087:5000"
+    volumes:
+      - ./src:/app/src
+
+  benchmark:
+    build: .
+    env_file: .env
+    command: python src/python/prompt_benchmark.py
+    volumes:
+      - ./src:/app/src
+
+  sycophancy:
+    build: .
+    env_file: .env
+    command: python src/python/sycophancy.py
+    volumes:
+      - ./src:/app/src
+
+  refund:
+    build: .
+    env_file: .env
+    command: python src/python/refund_bench.py
+    volumes:
+      - ./src:/app/src
