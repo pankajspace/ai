@@ -16,10 +16,10 @@ def get_env(name: str, default: str = "") -> str:
     return os.environ.get(name, default)
 
 
-# Model names from .env
 OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
 GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-2.0-flash")
-GROK_MODEL = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "gpt-oss-20b")
+_raw_grok = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
+GROK_MODEL = f"openai/{_raw_grok}" if _raw_grok.startswith("gpt-oss-") else _raw_grok
 
 _openai_client = None
 _gemini_client = None

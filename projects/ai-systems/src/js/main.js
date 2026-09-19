@@ -134,7 +134,11 @@ function escapeHtml(str) {
 }
 
 function renderLatex(latex, isDisplay) {
-    const trimmed = latex.trim();
+    let trimmed = latex.trim();
+    // If inline math contains \frac, use \displaystyle so numerator/denominator aren't microscopic
+    if (!isDisplay && trimmed.includes("\\frac")) {
+        trimmed = `\\displaystyle ${trimmed}`;
+    }
     if (window.katex) {
         try {
             return window.katex.renderToString(trimmed, {
@@ -145,6 +149,7 @@ function renderLatex(latex, isDisplay) {
     }
     // Fallback: clean up common LaTeX commands into crisp readable text
     let clean = trimmed
+        .replace(/\\displaystyle/g, "")
         .replace(/\\text\{([^}]+)\}/g, "$1")
         .replace(/\\mathrm\{([^}]+)\}/g, "$1")
         .replace(/\\mathbf\{([^}]+)\}/g, "<strong>$1</strong>")
@@ -209,9 +214,9 @@ function formatMarkdown(text) {
     // 5. Escape remaining HTML
     processed = escapeHtml(processed);
 
-    // 6. Bold & Italic
+    // 6. Bold & Italic (strict italic so '5 * 5' is not italicized)
     processed = processed.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    processed = processed.replace(/(?:^|[^*])\*([^*]+)\*(?=[^*]|$)/g, " <em>$1</em> ");
+    processed = processed.replace(/(^|[^\s*])\*([^\s*](?:[^*]*?[^\s*])?)\*(?=[^\s*]|$)/g, "$1<em>$2</em>");
 
     // 7. Parse lines into blocks (paragraphs, lists, steps)
     const rawLines = processed.split(/\r?\n/);
