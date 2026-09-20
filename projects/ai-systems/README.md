@@ -80,7 +80,7 @@ projects/ai-systems/
 1. `OPENAI_API_KEY` (required): API key for OpenAI chat completions (`gpt-4o-mini`), used by Judge 1 and the extraction/settlement stages.
 2. `OPENAI_MODEL` (optional): Model name override for OpenAI, defaults to `gpt-4o-mini`.
 3. `GEMINI_API_KEY` (optional/recommended): API key for Google Gemini, used by Judge 2 via Google's OpenAI-compatible endpoint.
-4. `GEMINI_MODEL` (optional): Model name override for Gemini, defaults to `gemini-2.0-flash` / `gemini-3.8-flash`.
+4. `GEMINI_MODEL` (optional): Model name override for Gemini, defaults to `gemini-2.0-flash`.
 5. `GROK_API_KEY` (optional/recommended): API key for Groq/Grok, used by Judge 3 via Groq's OpenAI-compatible endpoint.
 6. `GROK_MODEL` (optional): Model name override for Groq/Grok, defaults to `gpt-oss-20b`.
 7. `.env` is gitignored and must never be committed.
@@ -152,12 +152,12 @@ The self-provisioning deploy workflow creates the ECR repository, seeds the imag
 - `OPENAI_API_KEY` (usually already present)
 - `GROQ_API_KEY` (usually already present from basic/interviewiq)
 - `GEMINI_API_KEY` (new for AI Systems)
-- `GEMINI_MODEL`: `gemini-3.8-flash`
+- `GEMINI_MODEL`: `gemini-2.0-flash`
 - `GROK_MODEL`: `openai/gpt-oss-20b`
 
 ```bash
 CURRENT=$(aws secretsmanager get-secret-value --secret-id techtoday/secrets --query SecretString --output text)
-UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['GEMINI_API_KEY']='your-gemini-key'; d['GEMINI_MODEL']='gemini-3.8-flash'; d['GROK_MODEL']='openai/gpt-oss-20b'; print(json.dumps(d))")
+UPDATED=$(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); d['GEMINI_API_KEY']='your-gemini-key'; d['GEMINI_MODEL']='gemini-2.0-flash'; d['GROK_MODEL']='openai/gpt-oss-20b'; print(json.dumps(d))")
 aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-string "$UPDATED"
 ```
 

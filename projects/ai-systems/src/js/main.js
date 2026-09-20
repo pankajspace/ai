@@ -306,8 +306,10 @@ function renderBenchmarkResult(data, result) {
     }
 
     strategies.forEach((s) => {
-        const accBadge =
-            s.is_correct === true
+        const isError = s.response && s.response.startsWith("Error:");
+        const accBadge = isError
+            ? `<span class="badge badge-danger">⚠️ API Error</span>`
+            : s.is_correct === true
                 ? `<span class="badge badge-success">✓ Correct</span>`
                 : s.is_correct === false
                     ? `<span class="badge badge-danger">✗ Incorrect</span>`
@@ -333,11 +335,11 @@ function renderBenchmarkResult(data, result) {
                 </div>
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 0.5rem 0.8rem; border-radius: 5px; border: 1px solid rgba(255,255,255,0.06); margin: 0.2rem 0;">
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Stated Answer:</span>
-                <span style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #fff;">${escapeHtml(s.extracted_answer || "(none)")}</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">${isError ? "Status:" : "Stated Answer:"}</span>
+                <span style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: ${isError ? "#ef5350" : "#fff"};">${escapeHtml(s.extracted_answer || "(none)")}</span>
             </div>
             <details class="reasoning-details" style="margin-top: 0.4rem;">
-                <summary>🔍 View Reasoning Trace (${s.completion_tokens} tokens)</summary>
+                <summary>${isError ? "⚠️ View Error Details" : `🔍 View Reasoning Trace (${s.completion_tokens} tokens)`}</summary>
                 <div class="reasoning-content">${formatMarkdown(s.response)}</div>
             </details>
         </div>`;

@@ -9,6 +9,7 @@ Executes four rounds of conversation per question under escalating pressure:
 """
 
 import re
+import time
 from config import get_openai_client, OPENAI_MODEL, get_client_and_model
 
 TEMPERATURE = 0.7
@@ -141,18 +142,38 @@ CONCESSION_PHRASES = (
 def chat(
     messages, system_prompt=DEFAULT_SYSTEM_PROMPT, client=None, model_name: str = None
 ) -> str:
-    """Sends messages to the model and returns stripped response text."""
+    """Sends messages to the model and returns stripped response text with retry on rate limits."""
     if client is None or model_name is None:
         client, model_name, _ = get_client_and_model()
-    try:
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "system", "content": system_prompt}] + messages,
-            temperature=TEMPERATURE,
-        )
-        return (response.choices[0].message.content or "").strip()
-    except Exception as e:
-        return f"Error: {e}"
+    max_retries = 3
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "system", "content": system_prompt}] + messages,
+                temperature=TEMPERATURE,
+            )
+            return (response.choices[0].message.content or "").strip()
+        except Exception as e:
+            last_error = e
+            err_msg = str(e)
+            if (
+                "429" in err_msg or "resource_exhausted" in err_msg.lower()
+            ) and attempt < max_retries - 1:
+                delay = 3.0 * (attempt + 1)
+                retry_match = re.search(
+                    r"retry\s+in\s+([0-9.]+)\s*s", err_msg, re.IGNORECASE
+                )
+                if retry_match:
+                    try:
+                        delay = max(float(retry_match.group(1)) + 0.5, delay)
+                    except ValueError:
+                        pass
+                time.sleep(min(delay, 10.0))
+                continue
+            return f"Error: {e}"
+    return f"Error: {last_error}"
 
 
 def decorate(text: str, case: dict) -> str:

@@ -66,27 +66,49 @@ Answer: 60
 
 
 def get_model_response(prompt: str, client=None, model_name: str = None):
-    """Sends a prompt to the model and returns response text and token counts."""
+    """Sends a prompt to the model and returns response text and token counts with retry on rate limits."""
     if client is None or model_name is None:
         client, model_name, _ = get_client_and_model()
-    try:
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=TEMPERATURE,
-        )
-        usage = response.usage
-        return (
-            response.choices[0].message.content or "",
-            usage.prompt_tokens if usage else 0,
-            usage.completion_tokens if usage else 0,
-        )
-    except Exception as e:
-        return f"Error: {e}", 0, 0
+    max_retries = 3
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=TEMPERATURE,
+            )
+            usage = response.usage
+            return (
+                response.choices[0].message.content or "",
+                usage.prompt_tokens if usage else 0,
+                usage.completion_tokens if usage else 0,
+            )
+        except Exception as e:
+            last_error = e
+            err_msg = str(e)
+            if (
+                "429" in err_msg or "resource_exhausted" in err_msg.lower()
+            ) and attempt < max_retries - 1:
+                delay = 3.0 * (attempt + 1)
+                retry_match = re.search(
+                    r"retry\s+in\s+([0-9.]+)\s*s", err_msg, re.IGNORECASE
+                )
+                if retry_match:
+                    try:
+                        delay = max(float(retry_match.group(1)) + 0.5, delay)
+                    except ValueError:
+                        pass
+                time.sleep(min(delay, 10.0))
+                continue
+            return f"Error: {e}", 0, 0
+    return f"Error: {last_error}", 0, 0
 
 
 def extract_final_answer(response_text: str) -> str:
     """Isolates the model's stated final answer from a full response."""
+    if response_text.startswith("Error:"):
+        return "(API Error)"
     text = response_text.strip()
     matches = list(re.finditer(r"answer\s*:", text, flags=re.IGNORECASE))
     if matches:
@@ -177,7 +199,9 @@ def run_benchmark_for_question(question_input: str, model_choice: str = None) ->
     results = []
     baseline_tokens = None
 
-    for name, prompt in strategies:
+    for idx, (name, prompt) in enumerate(strategies):
+        if idx > 0:
+            time.sleep(1.0)
         start_time = time.time()
         resp_text, p_tok, c_tok = get_model_response(
             prompt, client=client, model_name=model_name

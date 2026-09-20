@@ -18,7 +18,7 @@ def get_env(name: str, default: str = "") -> str:
 
 
 OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
-GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-2.0-flash")
 GROK_MODEL = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
 
 _openai_client = None
