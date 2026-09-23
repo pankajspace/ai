@@ -121,3 +121,20 @@ docker stop <container_id>
 docker kill <container_id>
 ```
 
+## Docker Compose
+```bash
+# Check Docker Compose version
+docker-compose --version
+
+# Build and run services defined in docker-compose.yml
+docker-compose up --build
+
+# Run services defined in docker-compose.yml without rebuilding
+docker-compose up
+
+# List the status of all services defined in docker-compose.yml
+docker-compose ps
+
+# Stop services defined in docker-compose.yml
+docker-compose down
+```
