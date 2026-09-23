@@ -1198,7 +1198,3 @@ Three calls: add, query, delete.
 **You shipped**
 
 A real "Chat with your PDF" — on LinkedIn. 🎉
-
----
-
-TechToday AI Study Library — RAG & Embeddings · Scaler Academy Class 3

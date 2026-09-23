@@ -1216,7 +1216,3 @@ system / user / assistant.
 **You shipped**
 
 A real Gradio app — and posted it. 🎉
-
----
-
-TechToday AI Study Library — LLMs & Prompting · Scaler Academy Class 1

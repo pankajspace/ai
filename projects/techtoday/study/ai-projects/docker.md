@@ -1146,7 +1146,3 @@ These come up in real ML/AI engineering interviews. If you can answer eight of t
 "Writing code is half the job. Making it run anywhere in the world — that's engineering. Docker is the box that carries your work to the world."
 
 **Where to go next:** Kubernetes — for when you have 10,000 boxes to manage instead of three. Everything you learned here (images, ports, volumes, service names, readiness) maps directly onto it. You've already done the hard part. 🐳
-
----
-
-TechToday AI Study Library — Dockerize Everything Revision Guide · Made with 🐳 for **Future with Shivank**

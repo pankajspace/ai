@@ -707,7 +707,3 @@ Several agents handing work to each other — once one agent feels easy.
 > **A note on theory**
 >
 > We're deliberately deferring the deep "how models are built" topics — attention, training, scaling — until you're comfortable building. They'll land as "*oh, that's why it works*" instead of abstract lecture.
-
----
-
-TechToday AI Study Library — LangChain & Agents · Scaler Academy Class 2

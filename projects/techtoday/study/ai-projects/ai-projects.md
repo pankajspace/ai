@@ -66,7 +66,3 @@ AI mock-interview coach with a ReAct tool-calling agent — real-time STAR, rele
 Shipment exception triage with compensation policy, escalation routing, generated communication drafts, and live daily ledger plus KPI aggregation.
 
 [Open project →](https://app.techtoday.click/shipment-exception-desk/)
-
----
-
-© 2026 TechToday.

@@ -1165,7 +1165,3 @@ env | grep AWS               # what credentials are actually set?
 3. A tool is just a Python function plus a decorator, type hints, and a good docstring.
 4. The docstring is the model's user manual — write it for the model, not for yourself.
 5. Build small, single-purpose tools; the agent handles the sequencing.
-
----
-
-TechToday AI Study Library — AI Agents on AWS (Strands SDK + Amazon Bedrock) · Future with Shivank
