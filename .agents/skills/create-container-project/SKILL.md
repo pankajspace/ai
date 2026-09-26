@@ -37,8 +37,8 @@ Proceed without extra questions if you have enough information.
    - `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
    - the `index()` route injecting `data-api-base="<PATH_PREFIX>"`
    - static routes for `/css/<path:filename>` and `/js/<path:filename>`
-   - one `POST` route per feature that validates a non-empty input (→ `400`), wraps the feature call in `try/except` (→ `500`), and returns `{"result": ...}`.
-7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card.
+   - one `POST` route per feature that validates a non-empty input (→ `400`), validates any dropdown choices against an allowlist (→ `400`, see **Dropdowns for Choices**), wraps the feature call in `try/except` (→ `500`), and returns `{"result": ...}`.
+7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card — with a dropdown for every discrete choice in the feature code.
 8. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
 9. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
 10. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting: 10 requests upfront, 1r/m continuous refill, 429 status on excess), and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
@@ -74,7 +74,7 @@ Every project must share one look and feel and present each feature as an intera
 
 ### CSS — copy verbatim, never restyle
 
-Copy `projects/template/src/css/style.css` unchanged into the new project. The only permitted edit is the top-of-file header comment naming the project. Do not fork colors, fonts, spacing, the CSS variables (`--bg`, `--bg-elevated`, `--accent`, `--text`, `--border`), the `.grid`, `.card`, `.card-wide`, `.spinner`, `.validation`, `.result`, or `.error` rules. If a design change is genuinely needed, change the template and re-copy so all projects stay in sync — do not patch one project.
+Copy `projects/template/src/css/style.css` unchanged into the new project. The only permitted edits are the top-of-file header comment naming the project and the two opt-in blocks documented in skills: the `.options`/`.option` dropdown row (see **Dropdowns for Choices**) and the `.info-link` icon (see the `code-explainer` skill). Do not fork colors, fonts, spacing, the CSS variables (`--bg`, `--bg-elevated`, `--accent`, `--text`, `--border`), the `.grid`, `.card`, `.card-wide`, `.spinner`, `.validation`, `.result`, or `.error` rules. If a design change is genuinely needed, change the template and re-copy so all projects stay in sync — do not patch one project.
 
 ### index.html — keep the shell, swap the cards
 
@@ -119,6 +119,150 @@ setupCard({
 ```
 
 Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (10 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
+
+### Dropdowns for Choices
+
+Whenever a feature's code has a discrete choice that changes the outcome — a strategy, prompt variant, preset question/case, temperature, number of rounds, judge/provider layout, threshold, failure mode, model — expose it as a dropdown on that card so visitors can re-run and **see the difference**. Do not hide such choices as hardcoded constants or make users type magic preset IDs into a text box. Only offer values the code genuinely supports; do not invent options the source material has no basis for.
+
+**Which choices to expose** (scan each feature module for these):
+
+1. A set of compared strategies/conditions → `All` (default, the full comparison) plus each one individually.
+2. Each axis of a factorial design (e.g. names × descriptions) → one dropdown per axis with `Both` plus each level.
+3. Preset inputs (questions, test cases, sample complaints) → a picker. If the feature only accepts presets, the `<select>` **replaces** the text input and takes its `<name>Input` id. If free text is also valid, keep the text box and add a preset picker that fills it, with a final `Custom…` option.
+4. Sampling knobs (`temperature`) → a small fixed set such as `0`, `0.7`, `1.2`.
+5. Counts and thresholds (rounds, judges, caps, which call fails) → a small fixed set including the original value as the default.
+
+The default `selected` option must reproduce the original behaviour exactly, so a request without the extra fields behaves as before.
+
+**index.html** — place a labelled row of dropdowns between the card `<p>` and the input:
+
+```html
+<div class="options">
+    <label class="option">Strategy
+        <select id="fooStrategy">
+            <option value="all" selected>All three</option>
+            <option value="A">A · Unconstrained</option>
+        </select>
+    </label>
+    <label class="option">Temperature
+        <select id="fooTemperature">
+            <option value="0">0</option>
+            <option value="0.7" selected>0.7</option>
+            <option value="1.2">1.2</option>
+        </select>
+    </label>
+</div>
+```
+
+Name each select `<name><Choice>` (e.g. `cotStrategy`, `routingNames`). Update the card text and button label so they no longer state a fixed count or setting ("Run extractions", not "Run 15 extractions").
+
+A preset picker that fills a text box uses `data-target` on the `<select>` and `data-text` on each option (empty `data-text` = the Custom option):
+
+```html
+<select id="fooPreset" data-target="fooInput">
+    <option selected data-text="Full preset question text…">Short label</option>
+    <option data-text="">Custom question…</option>
+</select>
+```
+
+**style.css** — add this block once, directly above `/* Form controls */` (a project that already has a `.model-select-wrap`/`.model-select` pattern may reuse it instead, wrapping several wraps in a flex-wrap row):
+
+```css
+/* A row of labelled dropdowns that vary one choice in the demo. */
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.option select {
+    background: var(--bg-elevated-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+}
+
+.option select:hover,
+.option select:focus {
+    border-color: var(--accent);
+}
+```
+
+**main.js** — extend `setupCard` with one optional `selects` map (JSON body key → select id); this is the only permitted change to the shared helpers. In the click handler, replace the inline body with:
+
+```js
+const body = { [config.field]: value };
+// config.selects maps a JSON body key to the id of a <select> on the card.
+for (const [key, id] of Object.entries(config.selects || {})) {
+    body[key] = document.getElementById(id).value;
+}
+callApi({ btn, result, endpoint: config.endpoint, body, render: config.render });
+```
+
+and pass it per card: `selects: { strategy: "fooStrategy", temperature: "fooTemperature" }`. A `<select>` used as the card input works with `setupCard` unchanged (it fires `input` and has a non-empty `value`). Only when a card has a preset picker, add this helper and call `bindPresetSelects()` first in the `DOMContentLoaded` handler:
+
+```js
+function bindPresetSelects() {
+    document.querySelectorAll("select[data-target]").forEach((select) => {
+        const target = document.getElementById(select.dataset.target);
+        const apply = () => {
+            const text = select.selectedOptions[0].dataset.text || "";
+            target.value = text;
+            target.dispatchEvent(new Event("input"));
+            if (!text) target.focus();
+        };
+        select.addEventListener("change", apply);
+        // Hand-editing the text switches the picker to its Custom option.
+        target.addEventListener("input", () => {
+            if (target.value !== (select.selectedOptions[0].dataset.text || "")) {
+                select.value = [...select.options].find((o) => !o.dataset.text)?.value ?? select.value;
+            }
+        });
+        apply();
+    });
+}
+```
+
+**Backend** — the dropdown values are untrusted input. Validate each against an allowlist defined next to the feature code and return `400` for anything else:
+
+1. Define the allowed values as module constants beside the feature, e.g. `STRATEGY_CHOICES = ("all", "A", "B", "C")`, `TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}` (shared ones in `config.py`). Map strings to numbers through a dict; never `float()`/`int()` raw input.
+2. In `app.py` add two helpers and use them in every route that takes choices:
+   ```python
+   def read_choice(name: str, allowed, default: str) -> str | None:
+       """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+       data = request.get_json(force=True, silent=True) or {}
+       value = str(data.get(name) or default)
+       return value if value in allowed else None
+
+
+   def invalid_choice(name: str, allowed):
+       return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+   ```
+   Route pattern: validate `message` (→ 400), then each choice (`if value is None: return invalid_choice(...)`), then call the feature inside `try/except` (→ 500).
+3. Add keyword parameters with the original values as defaults to the feature function (`run_foo(message, strategy="all", temperature=0.7)`), and thread them down to the model call instead of reading module constants.
+4. Make the report adapt to a subset: summary lines, lifts, trade-offs, or multipliers that need a comparison partner are printed only when that partner ran; otherwise print a one-line tip (e.g. "pick 'Both' to see the trade-off") or return `null` (and have the renderer omit it) instead of a misleading number.
+5. Keep the worst-case choice inside the 60 s Nginx proxy timeout: count the model calls of the largest option and run independent calls in parallel with `concurrent.futures.ThreadPoolExecutor` (cap `max_workers` around 8).
+
+**README** — in the Routes list, document every optional body field with its allowed values and default, and state that invalid values return `400`.
 
 ### Working-demo requirement
 
@@ -196,7 +340,8 @@ Run the cheapest relevant checks after editing:
 4. If a workflow was generated, confirm no `PROJECT_NAME` or `HOSTPORT` placeholders remain and that every workflow/file named by the README exists.
 5. Confirm the README has concrete start, deploy, verification, rollback, manual-fallback, and troubleshooting commands, and that intentionally incomplete deployment is stated as such.
 6. Search the README for stray placeholders (`<project-name>`, `<local-port>`, `PROJECT_NAME`, `HOSTPORT`, generic feature-service names) and remove them unless part of a labeled template example.
-7. Verify UI consistency against the template: `style.css` differs from `projects/template/src/css/style.css` only in the header comment; `index.html` keeps the template head/nav/hero/footer shell and `data-api-base=""`; `main.js` keeps the shared `setLoading`/`callApi`/`setupCard`/`renderText` helpers unchanged. Confirm every feature card has the full `<name>Input`/`<name>Validation`/`<name>Btn`/`<name>Result` set, each `setupCard` `endpoint` maps to a real `POST` route in `app.py`, and no card is static, read-only, or a source-code viewer.
+7. Verify UI consistency against the template: `style.css` differs from `projects/template/src/css/style.css` only in the header comment and the documented opt-in blocks (`.options`/`.option`, `.info-link`); `index.html` keeps the template head/nav/hero/footer shell and `data-api-base=""`; `main.js` keeps the shared `setLoading`/`callApi`/`setupCard`/`renderText` helpers unchanged apart from the optional `selects` map. Confirm every feature card has the full `<name>Input`/`<name>Validation`/`<name>Btn`/`<name>Result` set, each `setupCard` `endpoint` maps to a real `POST` route in `app.py`, and no card is static, read-only, or a source-code viewer.
+8. Verify dropdowns: every discrete choice in the feature code is exposed on its card; each `selects` key matches a field the route reads; defaults reproduce the original behaviour; an out-of-allowlist value returns `400` (test with Flask's `test_client()`, sending a distinct `X-Real-IP` header per request because the SQLite rate limiter in `/tmp` persists across processes); preset pickers fill their text box and switch to Custom on manual edits; and the dropdown rows do not overflow their cards.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless the user explicitly asks. Local repo changes come first; production wiring is a separate step.
 
