@@ -9,6 +9,7 @@
 6. [Project: InterIQ](study/06-project-interiq/project-interiq.md) : 29-08-2026
 7. [Project: Shipment Exception Desk](study/07-project-shipment-exception-desk/project-shipment-exception-desk.md) : 05-09-2026
 8. [AI Systems](study/08-ai-systems/ai-systems.md) : 19-09-2026
+9. [AI Systems](study/09-ai-systems/ai-systems.md) : 26-09-2026
 
 # Projects
 
