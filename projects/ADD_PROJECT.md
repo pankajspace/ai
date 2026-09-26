@@ -10,8 +10,8 @@ The day-to-day branch flow for every project is in [DEPLOYMENT.md](DEPLOYMENT.md
 
 The current next available values are:
 
-1. Local development port: `8088`.
-2. EC2 host port: `5008`.
+1. Local development port: `8089`.
+2. EC2 host port: `5009`.
 After adding a project, advance the local and EC2 values in this section so the
 next project does not reuse them.
 

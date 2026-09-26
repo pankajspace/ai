@@ -1,0 +1,30 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    command: python src/python/app.py
+    ports:
+      - "8088:5000"
+    volumes:
+      - ./src:/app/src
+
+  # One-off CLI services: run a feature directly and print its text report.
+  variance:
+    build: .
+    env_file: .env
+    command: python src/python/variance.py
+
+  cot:
+    build: .
+    env_file: .env
+    command: python src/python/cot.py
+
+  routing:
+    build: .
+    env_file: .env
+    command: python src/python/tool_routing.py
+
+  errors:
+    build: .
+    env_file: .env
+    command: python src/python/tool_errors.py
