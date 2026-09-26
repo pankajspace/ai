@@ -29,22 +29,34 @@ The first DSA crash course taught you the containers. This one teaches the **mov
 
 1. [Read the Constraints First](#0-read-the-constraints-first)
 2. [The Contribution Technique](#1-contribution-technique)
-3. [Prefix Sums, Carry Forward & Sliding Windows](#2-prefix-sums-carry-forward-and-sliding-windows)
-4. [Kadane, Intervals & Boyer–Moore](#3-kadane-intervals-and-boyer-moore)
-5. [Two Pointers](#4-two-pointers)
-6. [Matrix Walks](#5-matrix-walks)
-7. [Bits, Primes & Counting](#6-bits-primes-and-counting)
-8. [Recursion & Backtracking](#7-recursion-and-backtracking)
-9. [Hashing](#8-hashing)
-10. [Sorting Beyond the Library Call](#9-sorting-beyond-the-library-call)
-11. [Binary Search on Arrays and on Answers](#10-binary-search-on-arrays-and-answers)
-12. [Linked Lists](#11-linked-lists)
-13. [Stacks & Queues](#12-stacks-and-queues)
-14. [Trees, BSTs, Morris & LCA](#13-trees-bsts-morris-and-lca)
-15. [Heaps & Greedy](#14-heaps-and-greedy)
-16. [Dynamic Programming](#15-dynamic-programming)
-17. [Graphs](#16-graphs)
-18. [The Whole Thing on One Page](#17-the-whole-thing-on-one-page)
+3. [Prefix Sums](#2-prefix-sums)
+4. [Carry Forward](#3-carry-forward)
+5. [Sliding Window](#4-sliding-window)
+6. [Kadane's Algorithm](#5-kadanes-algorithm)
+7. [Merging Intervals](#6-merging-intervals)
+8. [Boyer–Moore Voting](#7-boyer-moore-voting)
+9. [Two Pointers](#8-two-pointers)
+10. [Matrix Walks](#9-matrix-walks)
+11. [Bit Manipulation](#10-bit-manipulation)
+12. [Prime Numbers](#11-prime-numbers)
+13. [Combinatorics](#12-combinatorics)
+14. [Recursion](#13-recursion)
+15. [Backtracking](#14-backtracking)
+16. [Hashing](#15-hashing)
+17. [Sorting Beyond the Library Call](#16-sorting-beyond-the-library-call)
+18. [Binary Search on Arrays and on Answers](#17-binary-search-on-arrays-and-answers)
+19. [Linked Lists](#18-linked-lists)
+20. [Stacks](#19-stacks)
+21. [Queues & Deques](#20-queues-and-deques)
+22. [Binary Trees](#21-binary-trees)
+23. [Binary Search Trees](#22-binary-search-trees)
+24. [Morris Traversal](#23-morris-traversal)
+25. [Lowest Common Ancestor](#24-lowest-common-ancestor)
+26. [Heaps](#25-heaps)
+27. [Greedy Algorithms](#26-greedy-algorithms)
+28. [Dynamic Programming](#27-dynamic-programming)
+29. [Graphs](#28-graphs)
+30. [The Whole Thing on One Page](#29-the-whole-thing-on-one-page)
 
 <a id="0-read-the-constraints-first"></a>
 
@@ -258,18 +270,17 @@ console.log(sumOfSubmatricesSums([[1, 2], [3, 4]]));        // 40
 | Sum of all subarray sums | `A[i] × (i+1) × (n-i)` | `O(N)` |
 | Sum of all submatrix sums | top-left choices × bottom-right choices | `O(N·M)` |
 | Minimize the cost to empty an array | sort descending; `A[i]` is paid `i + 1` times | `O(N log N)` |
-| Subarrays with OR 1 | count the complement — all-zero runs — instead (§6) | `O(N)` |
+| Subarrays with OR 1 | count the complement — all-zero runs — instead (§10) | `O(N)` |
 
-<a id="2-prefix-sums-carry-forward-and-sliding-windows"></a>
+<a id="2-prefix-sums"></a>
 
-### Prefix Sums, Carry Forward & Sliding Windows
+### Prefix Sums
 
 - **Build prefix** `O(N)`
 - **Range query** `O(1)`
 - **Q range updates** `O(N + Q)`
-- **Slide a window** `O(1)`
 
-Four techniques, one instinct: **never recompute something you had a moment ago.** A prefix array remembers every running total, so any range sum is one subtraction. A difference array defers range updates and settles them in one sweep. Carry forward keeps a single running fact (a count, a last-seen index). A sliding window keeps the sum of the current range and adjusts it by one element at each end.
+A prefix array remembers every running total, so any range sum becomes one subtraction instead of a loop. Run the same idea backwards and you get a **difference array**, which defers many range updates and settles them all in one sweep. Both follow one instinct: **never recompute something you had a moment ago.**
 
 > **Analogy** 🚗
 >
@@ -371,11 +382,30 @@ function performQueries(arr, queries) {
 console.log(performQueries([1, 2, 3, 4, 5], [[0, 2, 2], [1, 3, 3], [2, 4, 4]])); // [3, 7, 12, 11, 9]
 ```
 
-<a id="carry-forward"></a>
+**From the notes — prefix sum problems**
 
-#### Carry forward — one running fact
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Range sum query | prefix sum | `O(N + Q)` |
+| In-place prefix sum | overwrite `A[i] += A[i-1]` | `O(N)`, `O(1)` space |
+| Zero-based queries I, II, III (beggars) | difference array + prefix sweep | `O(N + Q)` |
 
-Carry forward is the lightest version: instead of a whole array, carry **one number** from left to right. To count pairs `(i, j)` with `i < j`, `A[i] = 'a'` and `A[j] = 'g'`, you do not need to look back for every `g` — just remember how many `a`s you have passed.
+<a id="3-carry-forward"></a>
+
+### Carry Forward
+
+- **Time** `O(N)`
+- **Extra space** `O(1)`
+
+Carry forward is the lightest cousin of a prefix sum: instead of a whole array, carry **one number** from left to right — a count, a running sum, a last-seen index — and update it as each element passes.
+
+> **Analogy** 🔢
+>
+> **Picture it — a doorman's tally counter**
+>
+> The doorman does not re-count the room every time someone asks how many guests are inside. One click per arrival, and the answer is always in hand.
+
+To count pairs `(i, j)` with `i < j`, `A[i] = 'a'` and `A[j] = 'g'`, you do not need to look back for every `g` — just remember how many `a`s you have passed.
 
 **Interview question**
 
@@ -414,9 +444,27 @@ function countOfPairs(A) {
 console.log(countOfPairs(['b', 'a', 'a', 'g', 'd', 'c', 'a', 'g'])); // 5
 ```
 
-<a id="sliding-windows"></a>
+**From the notes — carry-forward problems**
 
-#### Sliding windows — fixed and dynamic
+| Problem | What is carried | Complexity |
+| --- | --- | --- |
+| Count "ag" pairs | number of `a`s seen so far | `O(N)` |
+| Smallest subarray containing min and max | last-seen index of each | `O(N)` |
+| Subarray sums starting at an index; sum of all subarray sums | the running sum | `O(N)` / `O(N^2)` |
+
+<a id="4-sliding-window"></a>
+
+### Sliding Window
+
+- **Slide one step** `O(1)`
+- **Whole pass** `O(N)`
+- **Extra space** `O(1)`
+
+> **Analogy** 🚆
+>
+> **Picture it — the view from a train window**
+>
+> As the train moves, one tree leaves the frame on the left and one enters on the right. You never re-look at the whole landscape — you only notice what changed at the edges.
 
 A **fixed** window of size `K` slides one step at a time: subtract the element that leaves, add the element that enters. A **dynamic** window grows its right edge every step and shrinks its left edge only while the window breaks the rule. Both touch each element at most twice, so both are `O(n)`.
 
@@ -502,34 +550,24 @@ console.log(countSubarraysWithSum([1, 11, 2, 3, 15], 10)); // 4
 
 > **Warning**
 >
-> A dynamic window only works when shrinking always moves the sum in one direction — i.e. **non-negative values**. With negatives, "sum too big, shrink" is no longer safe. The notes switch tools there: prefix sums plus a hash map for exact sums (§8), or a balanced BST for "largest sum ≤ K".
+> A dynamic window only works when shrinking always moves the sum in one direction — i.e. **non-negative values**. With negatives, "sum too big, shrink" is no longer safe. The notes switch tools there: prefix sums plus a hash map for exact sums (§15), or a balanced BST for "largest sum ≤ K".
 
-**From the notes — prefix, carry-forward and window problems**
+**From the notes — sliding window problems**
 
-| Problem | Technique | Complexity |
+| Problem | Window | Complexity |
 | --- | --- | --- |
-| Range sum query, in-place prefix sum | prefix sum | `O(N + Q)` |
-| Zero-based queries I, II, III (beggars) | difference array + prefix sweep | `O(N + Q)` |
-| Count "ag" pairs | carry forward a count | `O(N)` |
-| Smallest subarray containing min and max | carry forward last-seen indices | `O(N)` |
-| Subarray sums starting at an index | carry forward the running sum | `O(N)` |
-| Max sum / given sum with length K | fixed sliding window | `O(N)` |
-| Max subarray sum ≤ K (positive) | dynamic window, track best | `O(N)` |
-| Count subarrays with sum < K (positive) | dynamic window, add `end - start + 1` | `O(N)` |
+| Count subarrays of length K | fixed | `O(N)` |
+| Max sum / given sum with length K | fixed | `O(N)` |
+| Max subarray sum ≤ K (positive) | dynamic, track best | `O(N)` |
+| Count subarrays with sum < K (positive) | dynamic, add `end - start + 1` | `O(N)` |
 
-<a id="3-kadane-intervals-and-boyer-moore"></a>
+<a id="5-kadanes-algorithm"></a>
 
-### Kadane, Intervals & Boyer–Moore
+### Kadane's Algorithm
 
-- **Kadane** `O(N)`
-- **Merge intervals** `O(N log N)`
-- **Majority vote** `O(N)`
-
-Three one-pass algorithms that each carry a tiny amount of state and make a **local, greedy decision** at every element. Kadane decides *extend or restart*. Interval merging decides *overlap or close*. Boyer–Moore decides *vote for or cancel against*.
-
-<a id="kadane"></a>
-
-#### Kadane's algorithm — extend or restart
+- **Time** `O(N)`
+- **Extra space** `O(1)`
+- **Decision per element** `extend or restart`
 
 At every index, the best subarray **ending here** either continues the best subarray ending at the previous index, or starts fresh at this element: `current = max(A[i], current + A[i])`. The overall answer is the best `current` ever seen. If the running sum drops below zero, it is dead weight for anything that follows — drop it.
 
@@ -675,9 +713,26 @@ console.log(flip("111")); // []
 console.log(flip("000")); // [1, 3]
 ```
 
-<a id="merge-intervals"></a>
+**From the notes — Kadane problems**
 
-#### Merging overlapping intervals
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Maximum subarray sum (brute → prefix → carry → Kadane) | extend or restart | `O(N^3)` → `O(N)` |
+| Max subarray sum and the subarray itself | Kadane + `temp_start` | `O(N)` |
+| Flip — maximise 1s in a binary string | Kadane on `0 → +1`, `1 → -1` | `O(N)` |
+
+<a id="6-merging-intervals"></a>
+
+### Merging Intervals
+
+- **Sort by start** `O(N log N)`
+- **Sweep** `O(N)`
+
+> **Analogy** 📅
+>
+> **Picture it — tidying a shared calendar**
+>
+> Lay the bookings out in start order. Any meeting that begins before the previous one has ended simply extends that busy block; a gap means the block is finished.
 
 Sort by start time and the problem becomes a single sweep: keep one "open" interval. If the next interval starts **at or before** the open interval's end, they overlap — stretch the end to the larger of the two. Otherwise the open interval is finished; emit it and open the next one. Sorting is the expensive part, `O(N log N)`; the sweep is `O(N)`.
 
@@ -730,9 +785,18 @@ console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]])); // [[1, 6], [8
 >
 > Use `max(last_end, curr_end)`, not `curr_end`. An interval like `[1, 10]` followed by `[2, 3]` overlaps but ends *earlier* — overwriting the end would shrink the merged interval.
 
-<a id="boyer-moore"></a>
+**From the notes — interval problems**
 
-#### Boyer–Moore voting — find the majority in O(1) space
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Merge overlapping intervals | sort by start, sweep | `O(N log N)` |
+
+<a id="7-boyer-moore-voting"></a>
+
+### Boyer–Moore Voting
+
+- **Two passes** `O(N)`
+- **Extra space** `O(1)`
 
 A **majority element** appears more than `n / 2` times. Pass 1 keeps a candidate and a counter: a matching element votes `+1`, a different element cancels one vote, and when the counter hits zero the next element becomes the new candidate. Pass 2 counts the candidate to confirm it really is a majority.
 
@@ -789,17 +853,13 @@ console.log(findMajorityElement([1, 2, 3, 4]));          // null
 >
 > Pass 1 always leaves *some* candidate, even when no majority exists (`[1, 2, 3, 4]` leaves `4`). Skipping the verification pass is the classic bug.
 
-**From the notes — one-pass greedy problems**
+**From the notes — majority problems**
 
 | Problem | Technique | Complexity |
 | --- | --- | --- |
-| Maximum subarray sum (brute → prefix → carry → Kadane) | extend or restart | `O(N^3)` → `O(N)` |
-| Max subarray sum and the subarray itself | Kadane + `temp_start` | `O(N)` |
-| Flip — maximise 1s in a binary string | Kadane on `0 → +1`, `1 → -1` | `O(N)` |
-| Merge overlapping intervals | sort by start, sweep | `O(N log N)` |
-| Majority element | Boyer–Moore voting | `O(N)`, `O(1)` space |
+| Majority element (more than n/2 times) | Boyer–Moore voting | `O(N)`, `O(1)` space |
 
-<a id="4-two-pointers"></a>
+<a id="8-two-pointers"></a>
 
 ### Two Pointers
 
@@ -1077,7 +1137,7 @@ console.log(longestPalindromeSubstring("babad"));   // 3
 | Palindrome check, reverse vowels | opposite ends | `O(N)` |
 | Longest palindromic substring | outward from each centre | `O(N^2)` |
 
-<a id="5-matrix-walks"></a>
+<a id="9-matrix-walks"></a>
 
 ### Matrix Walks
 
@@ -1272,14 +1332,13 @@ console.log(rotateMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // [[7, 4, 1], [8,
 | Row-wise and column-wise sums, diagonals, anti-diagonals | plain nested loops | `O(N·M)` |
 | Transpose; rotate 90° clockwise | swap above diagonal, then reverse rows | `O(N^2)`, `O(1)` space |
 
-<a id="6-bits-primes-and-counting"></a>
+<a id="10-bit-manipulation"></a>
 
-### Bits, Primes & Counting
+### Bit Manipulation
 
 - **XOR cancels** `x ^ x = 0`
-- **Check bit i** `O(1)`
+- **Check / set / toggle bit i** `O(1)`
 - **Count set bits** `O(log N)`
-- **Sieve to N** `O(N log log N)`
 
 Integers are arrays of bits, and bitwise operators edit all 32 positions in one instruction. The single most useful fact is that **XOR cancels pairs**: `x ^ x = 0` and `x ^ 0 = x`, and the order of XORs does not matter. The second is that `1 << i` is a mask with only bit `i` set, so every single-bit edit is one operator away.
 
@@ -1432,9 +1491,21 @@ function subarraysWithOR1(A) {
 console.log(subarraysWithOR1([0, 0, 1, 1, 0])); // 11
 ```
 
-<a id="sieve"></a>
+**From the notes — bit manipulation problems**
 
-#### Primes and the Sieve of Eratosthenes
+| Problem | Idea | Complexity |
+| --- | --- | --- |
+| Binary ↔ decimal conversion | repeated `% base`, place values | `O(log N)` |
+| Even/odd, set bit, count set bits | masks with `1 << i` | `O(1)` / `O(log N)` |
+| Single Number I, II, III | XOR cancel; bit counts mod 3; split by differing bit | `O(N)`, `O(1)` space |
+| Subarrays with OR 0 / OR 1 | count zero runs, complement | `O(N)` |
+
+<a id="11-prime-numbers"></a>
+
+### Prime Numbers
+
+- **Prime check** `O(√N)`
+- **All primes to N** `O(N log log N)`
 
 Checking one number for primality needs divisors only up to `√n`: factors come in pairs `(i, n/i)` and one of each pair is `≤ √n`. For **all** primes up to `N`, sieve instead: every time you meet an unmarked number `p`, it is prime, so cross out its multiples. Start crossing at `p × p` — every smaller multiple `p × k` with `k < p` was already crossed out by `k`'s own prime factor.
 
@@ -1474,9 +1545,23 @@ function sieveOfEratosthenes(n) {
 console.log(sieveOfEratosthenes(30)); // [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 ```
 
-<a id="combinatorics"></a>
+**From the notes — prime problems**
 
-#### Combinatorics in five rules
+| Problem | Idea | Complexity |
+| --- | --- | --- |
+| Count factors; prime check | test divisors up to `√n` | `O(√N)` |
+| Count primes below N (checking each number) | prime check per number | `O(N√N)` |
+| Primes from 1 to N; find all primes | Sieve of Eratosthenes | `O(N log log N)` |
+
+<a id="12-combinatorics"></a>
+
+### Combinatorics
+
+- **Permutations** `nPr = n!/(n-r)!`
+- **Combinations** `nCr = n!/(r!(n-r)!)`
+- **Pascal's triangle** `O(N^2)`
+
+Counting problems ask "how many ways?" without listing the ways. Almost all of them reduce to five rules:
 
 1. **Addition rule (OR)** — choose one of several alternatives: add the counts.
 2. **Multiplication rule (AND)** — make choices in sequence: multiply the counts. A restaurant with 3 starters, 2 mains and 2 desserts offers `3 × 2 × 2 = 12` meal combos.
@@ -1519,16 +1604,10 @@ function printPascalTriangle(n, M = 1_000_000_007) {
 console.log(printPascalTriangle(5)); // [[1,0,0,0,0], [1,1,0,0,0], [1,2,1,0,0], [1,3,3,1,0], [1,4,6,4,1]]
 ```
 
-**From the notes — bits, primes and counting problems**
+**From the notes — combinatorics problems**
 
 | Problem | Idea | Complexity |
 | --- | --- | --- |
-| Binary ↔ decimal conversion | repeated `% base`, place values | `O(log N)` |
-| Even/odd, set bit, count set bits | masks with `1 << i` | `O(1)` / `O(log N)` |
-| Single Number I, II, III | XOR cancel; bit counts mod 3; split by differing bit | `O(N)`, `O(1)` space |
-| Subarrays with OR 0 / OR 1 | count zero runs, complement | `O(N)` |
-| Count factors, prime check | test divisors up to `√n` | `O(√N)` |
-| All primes to N | Sieve of Eratosthenes | `O(N log log N)` |
 | Most varied meal combo | multiplication rule | `O(N)` |
 | Pascal's triangle, `nCr % M` | Pascal's identity | `O(N^2)` |
 
@@ -1540,14 +1619,13 @@ console.log(printPascalTriangle(5)); // [[1,0,0,0,0], [1,1,0,0,0], [1,2,1,0,0], 
 
 The four general-purpose tools: recursion to break problems down, hashing to remember what you have seen, sorting to create order you can exploit, and binary search to exploit it.
 
-<a id="7-recursion-and-backtracking"></a>
+<a id="13-recursion"></a>
 
-### Recursion & Backtracking
+### Recursion
 
 - **Time** `calls × work per call`
 - **Space** `deepest call chain`
-- **Subsets** `O(2^N · N)`
-- **Permutations** `O(N! · N)`
+- **Fast power** `O(log N)`
 
 The notes give recursion three steps, and the order matters:
 
@@ -1612,9 +1690,28 @@ console.log(fastPower(2, 10)); // 1024
 console.log(fastPower(3, 5));  // 243
 ```
 
-<a id="backtracking"></a>
+**From the notes — recursion problems**
 
-#### Backtracking — recursion that undoes its choices
+| Problem | Pattern | Complexity |
+| --- | --- | --- |
+| Sum of 1..N, factorial, sum of digits | linear recursion | `O(N)` / `O(log N)` |
+| Print 1..N, N..1, both in one function | work before vs. after the call | `O(N)` |
+| Fibonacci — plain / memo / tabulation | tree recursion → DP | `O(2^N)` → `O(N)` |
+| Power, fast power | halve the exponent | `O(N)` → `O(log N)` |
+
+<a id="14-backtracking"></a>
+
+### Backtracking
+
+- **Subsets** `O(2^N · N)`
+- **Permutations** `O(N! · N)`
+- **Valid parentheses** `O(4^n/√n)`
+
+> **Analogy** 🧶
+>
+> **Picture it — exploring a maze with a ball of string**
+>
+> At every fork you pick a corridor and unroll string behind you. At a dead end you wind the string back to the last fork and try the next corridor. Winding back is the "undo" — without it you could never try the other branches.
 
 Backtracking builds a solution one choice at a time, recurses, then **undoes** the choice before trying the next one. Compared with plain recursion, it only builds calls that can still lead to a valid answer. The notes name two styles:
 
@@ -1780,19 +1877,15 @@ console.log(permutations("ABC")); // ['ABC', 'ACB', 'BAC', 'BCA', 'CBA', 'CAB']
 >
 > Appending `current` instead of a **copy** of it is the most common backtracking bug: every stored answer is the same list object, and after all the pops they are all empty.
 
-**From the notes — recursion and backtracking problems**
+**From the notes — backtracking problems**
 
 | Problem | Pattern | Complexity |
 | --- | --- | --- |
-| Sum of 1..N, factorial, sum of digits | linear recursion | `O(N)` / `O(log N)` |
-| Print 1..N, N..1, both in one function | work before vs. after the call | `O(N)` |
-| Fibonacci — plain / memo / tabulation | tree recursion → DP | `O(2^N)` → `O(N)` |
-| Power, fast power | halve the exponent | `O(N)` → `O(log N)` |
 | Print valid parentheses (proactive, reactive, stack, DP) | backtracking with counts | `O(4^n/√n)` |
 | Generate all subsets | take / leave | `O(2^N · N)` |
 | Permutations (visited array, swapping) | choose / undo | `O(N! · N)` |
 
-<a id="8-hashing"></a>
+<a id="15-hashing"></a>
 
 ### Hashing
 
@@ -2061,7 +2154,7 @@ console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
 | Element exists in Q queries | direct address table | `O(N + Q)` |
 | Implement a hash map | array of chains + rehash | `O(1)` average |
 
-<a id="9-sorting-beyond-the-library-call"></a>
+<a id="16-sorting-beyond-the-library-call"></a>
 
 ### Sorting Beyond the Library Call
 
@@ -2295,7 +2388,7 @@ console.log(largestNumber([10, 5, 2, 8, 200]));      // 85220010
 | Noble integers (distinct / duplicates) | sort, compare value to count of smaller | `O(N log N)` |
 | Minimise cost to empty an array | sort descending + contribution | `O(N log N)` |
 
-<a id="10-binary-search-on-arrays-and-answers"></a>
+<a id="17-binary-search-on-arrays-and-answers"></a>
 
 ### Binary Search on Arrays and on Answers
 
@@ -2586,7 +2679,7 @@ console.log(aggressiveCows([1, 2, 8, 4, 9], 3)); // 3
 
 Nodes joined by pointers. The advanced tricks here are all about what you can do with **two** pointers, **one** stack, or **zero** extra memory.
 
-<a id="11-linked-lists"></a>
+<a id="18-linked-lists"></a>
 
 ### Linked Lists
 
@@ -2969,21 +3062,20 @@ console.log(cache.get(2), cache.get(3));     // -1 30
 | LRU cache | DLL + hash map | `O(1)` per op |
 | Detect cycle; cycle start; remove cycle | Floyd | `O(N)`, `O(1)` |
 
-<a id="12-stacks-and-queues"></a>
+<a id="19-stacks"></a>
 
-### Stacks & Queues
+### Stacks
 
 - **push / pop / peek** `O(1)`
 - **Nearest smaller for every index** `O(N)`
-- **Sliding window maximum** `O(N)`
 
-A **stack** answers "what is the most recent unmatched thing?" — the last opened bracket, the last operand, the closest smaller value to the left. A **queue** answers "what arrived first?" A **deque** does both ends, which is exactly what a sliding window needs: new elements join at the back, expired ones leave at the front.
+A **stack** answers "what is the most recent unmatched thing?" — the last opened bracket, the last operand, the closest smaller value to the left. Everything happens at one end, the top, so every operation is `O(1)`.
 
 > **Analogy** 🍽️
 >
-> **Picture it — a pile of plates vs. a line of shoppers**
+> **Picture it — a pile of plates**
 >
-> You take plates off the top of the pile — the last one washed is the first one used. Shoppers leave the checkout line from the front. A deque is a line where people can also give up and leave from the back.
+> You take plates off the top of the pile — the last one washed is the first one used. Nobody pulls a plate from the middle.
 
 <a id="expression-evaluation"></a>
 
@@ -3099,9 +3191,29 @@ console.log(nearestSmallerOnLeft([4, 5, 2, 10, 8])); // [-1, 0, -1, 2, 2]
 | Nearest smaller on the right | right → left | `≥` current |
 | Nearest greater on the right | right → left | `≤` current |
 
-<a id="queues-and-deques"></a>
+**From the notes — stack problems**
 
-#### Queues, deques and the sliding-window maximum
+| Problem | Structure | Complexity |
+| --- | --- | --- |
+| Stack on a static / dynamic array | array + top index | `O(1)` per op |
+| Balanced parentheses | stack of openers | `O(N)` |
+| Evaluate postfix | operand stack | `O(N)` |
+| Nearest smaller / greater on left / right | monotonic stack | `O(N)` |
+
+<a id="20-queues-and-deques"></a>
+
+### Queues & Deques
+
+- **enqueue / dequeue** `O(1)`
+- **Sliding window maximum** `O(N)`
+
+A **queue** answers "what arrived first?" A **deque** works at both ends, which is exactly what a sliding window needs: new elements join at the back, expired ones leave at the front.
+
+> **Analogy** 🛒
+>
+> **Picture it — a line of shoppers**
+>
+> Shoppers join at the back and leave the checkout from the front. A deque is a line where people can also give up and leave from the back.
 
 The notes build a queue four ways: a dynamic array, a singly linked list with a **tail** pointer (`O(1)` enqueue at the tail, dequeue at the head), and two stacks — either **push-efficient** (move everything only when popping from an empty out-stack, amortised `O(1)`) or **pop-efficient**. A **deque** built on a doubly linked list gives `O(1)` at both ends.
 
@@ -3156,34 +3268,29 @@ console.log(slidingWindowMax([1, 3, -1, -3, 5, 3, 6, 7], 3)); // [3, 3, 5, 5, 6,
 >
 > `Array.prototype.shift()` in JavaScript is `O(n)` — it re-indexes the array. A queue built on `shift()` inside a loop quietly becomes `O(n²)`. Use a head index (as above), a linked list, or `collections.deque` in Python.
 
-**From the notes — stack and queue problems**
+**From the notes — queue and deque problems**
 
 | Problem | Structure | Complexity |
 | --- | --- | --- |
-| Stack on a static / dynamic array | array + top index | `O(1)` per op |
-| Balanced parentheses | stack of openers | `O(N)` |
-| Evaluate postfix | operand stack | `O(N)` |
-| Nearest smaller / greater on left / right | monotonic stack | `O(N)` |
 | Queue on array, linked list with tail, two stacks | — | `O(1)` amortised |
 | Double-ended queue | doubly linked list | `O(1)` per op |
 | Sliding window maximum; parking ice-cream truck | monotonic deque | `O(N)` |
 
-<a id="13-trees-bsts-morris-and-lca"></a>
+<a id="21-binary-trees"></a>
 
-### Trees, BSTs, Morris & LCA
+### Binary Trees
 
 - **Any traversal** `O(N)`
-- **BST search / insert / delete** `O(H)`
-- **Morris inorder space** `O(1)`
-- **LCA in a BST** `O(H)`
+- **Recursion stack** `O(H)`
+- **Level-order queue** `O(W)`
 
-Tree problems split into two shapes. **Level-by-level** problems (left view, right view, level order, next pointers) use a queue and process one level per outer loop. **Recursive** problems (height, diameter, LCA, path sum) ask each child for a summary and combine the two answers at the parent. BSTs add one superpower: an **inorder walk visits values in sorted order**, and at every node you know which side a value must be on.
+Tree problems split into two shapes. **Level-by-level** problems (left view, right view, level order, next pointers) use a queue and process one level per outer loop. **Recursive** problems (height, diameter, path sum) ask each child for a summary and combine the two answers at the parent.
 
 > **Analogy** 🏢
 >
 > **Picture it — a company org chart**
 >
-> Level order is a roll call floor by floor. Recursion is every manager asking their two direct reports for a headcount and adding themselves. The lowest common ancestor of two employees is the most junior manager both of them report up to.
+> Level order is a roll call floor by floor. Recursion is every manager asking their two direct reports for a headcount and adding themselves.
 
 > **Interactive animation:** `traversal` (option=level) — rendered by the page script in the HTML version.
 
@@ -3261,9 +3368,32 @@ console.log(leftRightView(root)); // [[1, 2, 4], [1, 3, 7]]
 
 The **top view** and **bottom view** add a column number: root at `0`, left child at `col - 1`, right child at `col + 1`. In level order, the **first** node seen in each column is the top view; the **last** is the bottom view. Grouping every node by column gives the **vertical order traversal**.
 
-<a id="bst-operations"></a>
+> **Warning**
+>
+> The notes' first diameter solution calls `height()` from every node, which is `O(n²)`. Compute height and diameter in the **same** post-order pass — `diameter = max(diameter, left_h + right_h)` right before returning `1 + max(left_h, right_h)` — and it drops to `O(n)`. The same "return one thing, update a global with another" shape solves path sums and balanced-tree checks.
 
-#### BST operations
+**From the notes — binary tree problems**
+
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Pre-, in-, post-order; iterative inorder | recursion; explicit stack | `O(N)` |
+| Level order; left and right view; next pointers | queue, one level per loop | `O(N)` |
+| Vertical order; top view; bottom view | level order + column index | `O(N)` |
+| Invert a tree; height in edges / nodes | recursion | `O(N)` |
+| Diameter | height + diameter in one pass | `O(N)` |
+| Path sum; node-to-root path | recursion carrying the path | `O(N)` |
+
+<a id="22-binary-search-trees"></a>
+
+### Binary Search Trees
+
+- **Search / insert / delete** `O(H)`
+- **Balanced height** `O(log N)`
+- **Validate** `O(N)`
+
+A BST adds one rule to a binary tree: everything in a node's left subtree is smaller and everything in its right subtree is larger. That gives two superpowers — at every node you know which side a value must be on, and an **inorder walk visits values in sorted order**.
+
+> **Interactive animation:** `bst-search` — rendered by the page script in the HTML version.
 
 Search and insert walk one path. Delete has three cases, and the third is the one people fumble:
 
@@ -3343,9 +3473,21 @@ console.log(isValidBST(bst));              // true
 console.log(deleteNode(bst, 2).left.val);  // 3
 ```
 
-<a id="morris-traversal"></a>
+**From the notes — BST problems**
 
-#### Morris inorder traversal — O(1) space
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| BST search, insert, min, max, delete | walk one path | `O(H)` |
+| Check BST | bounds, or strictly increasing inorder | `O(N)` |
+| Sorted array → balanced BST | middle as root, recurse | `O(N)` |
+| k-th smallest in a BST | inorder, stop at k | `O(H + k)` |
+
+<a id="23-morris-traversal"></a>
+
+### Morris Traversal
+
+- **Time** `O(N)`
+- **Extra space** `O(1)`
 
 Recursive and stack-based inorder both use `O(h)` memory to remember **where to return** after finishing a left subtree. Morris stores that return address inside the tree itself. Before descending left from `curr`, find its **inorder predecessor** — the rightmost node of the left subtree — and point that node's empty `right` at `curr`. That temporary link is a **thread**. Later, when the walk reaches the predecessor and follows its `right`, it arrives back at `curr`, sees the thread already exists, removes it, visits `curr` and goes right.
 
@@ -3436,9 +3578,26 @@ console.log(morrisInorder(tree)); // [40, 20, 70, 50, 80, 10, 30, 90, 60]
 
 Because a BST's inorder is sorted, Morris gives two more problems for free: the **k-th smallest** element is the k-th value visited, and **recovering a BST with two swapped nodes** means spotting the one or two places where the inorder sequence goes down (`prev > curr`) and swapping the first `prev` with the last `curr`.
 
-<a id="lowest-common-ancestor"></a>
+**From the notes — Morris problems**
 
-#### Lowest common ancestor
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Morris inorder traversal | threads to inorder predecessors | `O(N)`, `O(1)` |
+| k-th smallest element in a BST | Morris, stop at the k-th visit | `O(N)`, `O(1)` |
+| Recover a BST with two swapped nodes | Morris + first/last inversion | `O(N)`, `O(1)` |
+
+<a id="24-lowest-common-ancestor"></a>
+
+### Lowest Common Ancestor
+
+- **In a BST** `O(H)`
+- **In a binary tree** `O(N)`
+
+> **Analogy** 🌳
+>
+> **Picture it — a family tree**
+>
+> Two cousins trace their parents, grandparents and great-grandparents upwards. The first person who appears on both lists is their lowest common ancestor.
 
 In a **BST**, walk from the root: if both values are smaller, go left; if both are larger, go right; otherwise the two values split here (or one of them *is* here), so this node is the LCA. That is `O(h)` time and `O(1)` space.
 
@@ -3512,25 +3671,13 @@ console.log(lcaBST(bst6, 0, 4).val);          // 2
 console.log(lcaBinaryTree(tree, 70, 40).val); // 20
 ```
 
-> **Warning**
->
-> The notes' first diameter solution calls `height()` from every node, which is `O(n²)`. Compute height and diameter in the **same** post-order pass — `diameter = max(diameter, left_h + right_h)` right before returning `1 + max(left_h, right_h)` — and it drops to `O(n)`. The same "return one thing, update a global with another" shape solves path sums and balanced-tree checks.
-
-**From the notes — tree problems**
+**From the notes — LCA problems**
 
 | Problem | Technique | Complexity |
 | --- | --- | --- |
-| Pre-, in-, post-order; iterative inorder | recursion; explicit stack | `O(N)` |
-| Level order; left and right view; next pointers | queue, one level per loop | `O(N)` |
-| Vertical order; top view; bottom view | level order + column index | `O(N)` |
-| Invert a tree; height in edges / nodes | recursion | `O(N)` |
-| Diameter | height + diameter in one pass | `O(N)` |
-| Path sum; node-to-root path | recursion carrying the path | `O(N)` |
-| BST search, insert, min, max, delete | walk one path | `O(H)` |
-| Check BST; sorted array → balanced BST | bounds; middle as root | `O(N)` |
-| k-th smallest in a BST | inorder (or Morris), stop at k | `O(H + k)` |
-| Morris inorder; recover a BST | threads to predecessors | `O(N)`, `O(1)` |
-| LCA in a BST; LCA in a binary tree | steer by value; recurse both sides | `O(H)`; `O(N)` |
+| Node-to-root path | recursion, record on the way back | `O(N)` |
+| LCA in a BST (path tracing; optimised walk) | compare paths; steer by value | `O(N)`; `O(H)` |
+| LCA in a binary tree ("we are all connected") | node-to-root paths, or recurse both sides | `O(N)` |
 
 ---
 
@@ -3540,9 +3687,9 @@ console.log(lcaBinaryTree(tree, 70, 40).val); // 20
 
 The heavyweight patterns: always grab the best item (heaps and greedy), remember every subproblem (DP), and walk networks of relationships (graphs).
 
-<a id="14-heaps-and-greedy"></a>
+<a id="25-heaps"></a>
 
-### Heaps & Greedy
+### Heaps
 
 - **Peek min / max** `O(1)`
 - **Push / pop** `O(log N)`
@@ -3734,9 +3881,28 @@ const mf = new MedianFinder();
 console.log([5, 15, 1, 3].map((x) => (mf.addNum(x), mf.findMedian()))); // [5, 10, 5, 4]
 ```
 
-<a id="greedy"></a>
+**From the notes — heap problems**
 
-#### Greedy — take the locally best choice, never look back
+| Problem | Technique | Complexity |
+| --- | --- | --- |
+| Insert / extract in a min-heap; min- and max-heap classes | sift up / sift down | `O(log N)` |
+| Priority queue; heap queries | binary heap | `O(Q log N)` |
+| Build a heap from an array (min / max) | sift down from `n/2 - 1` | `O(N)` |
+| Heap sort | build max-heap, swap root to end | `O(N log N)`, `O(1)` |
+| Median of a stream | max-heap + min-heap | `O(log N)` per insert |
+
+<a id="26-greedy-algorithms"></a>
+
+### Greedy Algorithms
+
+- **Sort, then sweep** `O(N log N)`
+- **Heap-driven choices** `O(N log N)`
+
+> **Analogy** 🪙
+>
+> **Picture it — paying with the biggest coin first**
+>
+> A cashier handing back change grabs the largest coin that fits, again and again, and never reconsiders. With everyday coin sets that is optimal; with odd denominations it can fail — which is exactly why every greedy rule needs a reason it is safe.
 
 A greedy algorithm makes the choice that looks best **right now** and never revisits it. It is correct only when you can argue that some optimal answer starts with that choice — usually by showing that swapping any other first choice for the greedy one never makes things worse. Heaps and sorting are how greedy algorithms find "the best choice right now" quickly.
 
@@ -3868,20 +4034,16 @@ console.log(activitySelection([[1, 2], [2, 3], [3, 6], [6, 7], [8, 9], [1, 9]]))
 >
 > Greedy by the obvious key is often wrong. Activity selection by **shortest duration** or **earliest start** both fail on small counter-examples; only **earliest end** is provably safe. Always try to break your greedy rule with a three-item example before coding it.
 
-**From the notes — heap and greedy problems**
+**From the notes — greedy problems**
 
-| Problem | Technique | Complexity |
+| Problem | Greedy choice | Complexity |
 | --- | --- | --- |
-| Insert / extract in a min-heap; min- and max-heap classes | sift up / sift down | `O(log N)` |
-| Priority queue; heap queries | binary heap | `O(Q log N)` |
-| Build a heap from an array (min / max) | sift down from `n/2 - 1` | `O(N)` |
-| Heap sort | build max-heap, swap root to end | `O(N log N)`, `O(1)` |
-| Median of a stream | max-heap + min-heap | `O(log N)` per insert |
-| Connecting the ropes | greedy, min-heap | `O(N log N)` |
-| Activity selection / finish maximum jobs | greedy, sort by end | `O(N log N)` |
-| Job scheduling with deadlines | sort by deadline + min-heap | `O(N log N)` |
+| Connecting the ropes | join the two shortest (min-heap) | `O(N log N)` |
+| Activity selection / finish maximum jobs | earliest end first | `O(N log N)` |
+| Job scheduling with deadlines | sort by deadline, keep best profits in a min-heap | `O(N log N)` |
+| Fractional knapsack (§27) | best value per weight first | `O(N log N)` |
 
-<a id="15-dynamic-programming"></a>
+<a id="27-dynamic-programming"></a>
 
 ### Dynamic Programming
 
@@ -4051,7 +4213,7 @@ console.log(uniquePaths(3, 3));   // 6
 console.log(countUniqueBSTs(3));  // 5
 ```
 
-The unique-BST count is the **Catalan** recurrence `C(n) = Σ C(i) · C(n-1-i)`: pick a root, and the left and right subtrees are independent smaller problems. The same numbers count valid parenthesis strings from §7.
+The unique-BST count is the **Catalan** recurrence `C(n) = Σ C(i) · C(n-1-i)`: pick a root, and the left and right subtrees are independent smaller problems. The same numbers count valid parenthesis strings from §14.
 
 <a id="knapsack"></a>
 
@@ -4195,7 +4357,7 @@ console.log(fractionalKnapsack([200, 250, 150], [20, 50, 10], 70)); // 550
 | Unbounded knapsack | `dp[w]`, low → high | `O(N·W)` |
 | Fractional knapsack | greedy by ratio | `O(N log N)` |
 
-<a id="16-graphs"></a>
+<a id="28-graphs"></a>
 
 ### Graphs
 
@@ -4653,7 +4815,7 @@ function dijkstra(n, edges, source) {
   }
   const dist = new Array(n).fill(Infinity);
   dist[source] = 0;
-  const heap = new MinHeap((a, b) => a[0] - b[0]);   // the MinHeap class from §14
+  const heap = new MinHeap((a, b) => a[0] - b[0]);   // the MinHeap class from §25
   heap.push([0, source]);
   while (heap.size()) {
     const [d, u] = heap.pop();
@@ -4693,43 +4855,50 @@ console.log(dijkstra(7, roads, 0)); // [0, 10, 20, 30, 32, 35, 38]
 
 ---
 
-<a id="17-the-whole-thing-on-one-page"></a>
+<a id="29-the-whole-thing-on-one-page"></a>
 
 ## The Whole Thing on One Page
 
-Most of interview problem-solving is **recognition**: noticing which of about twenty signals is in the problem statement. This table is the index to the whole course.
+Most of interview problem-solving is **recognition**: noticing which of about thirty signals is in the problem statement. This table is the index to the whole course.
 
 | If the problem says… | Reach for | Cost | Section |
 | --- | --- | --- | --- |
 | "sum over all subarrays / submatrices" | contribution counting | `O(N)` | §1 |
 | "many range sum queries" | prefix sums | `O(N + Q)` | §2 |
 | "many range updates, read once" | difference array | `O(N + Q)` | §2 |
-| "contiguous, length K" | fixed sliding window | `O(N)` | §2 |
-| "longest / count subarrays with a limit, all positive" | dynamic sliding window | `O(N)` | §2 |
-| "maximum subarray sum" | Kadane | `O(N)` | §3 |
-| "overlapping intervals" | sort by start, sweep | `O(N log N)` | §3 |
-| "appears more than n/2 times" | Boyer–Moore | `O(N)` | §3 |
-| "sorted array, pair with sum / difference" | two pointers | `O(N)` | §4 |
-| "row- and column-sorted matrix" | staircase search | `O(N + M)` | §5 |
-| "every element twice except one" | XOR | `O(N)` | §6 |
-| "all primes up to N" | sieve | `O(N log log N)` | §6 |
-| "all subsets / permutations / combinations" | backtracking | `O(2^N)` / `O(N!)` | §7 |
-| "subarray with sum K, negatives allowed" | prefix sums + hash map | `O(N)` | §8 |
-| "values in a small range" | count sort | `O(N + K)` | §9 |
-| "arrange to form the largest …" | custom comparator | `O(N log N)` | §9 |
-| "minimum possible maximum" / "maximum possible minimum" | binary search on the answer | `O(N log R)` | §10 |
-| "middle, cycle, palindrome of a linked list" | slow / fast pointers | `O(N)`, `O(1)` | §11 |
-| "O(1) get and put with eviction" | hash map + DLL (LRU) | `O(1)` | §11 |
-| "nearest smaller / greater element" | monotonic stack | `O(N)` | §12 |
-| "max of every window" | monotonic deque | `O(N)` | §12 |
-| "inorder with O(1) space" | Morris traversal | `O(N)`, `O(1)` | §13 |
-| "k smallest / largest, running median" | heap(s) | `O(N log K)` | §14 |
-| "count ways / min cost, choices overlap" | dynamic programming | states × transitions | §15 |
-| "budget, weights, values" | knapsack | `O(N·W)` | §15 |
-| "fewest steps in a grid or unweighted graph" | BFS / multi-source BFS | `O(V + E)` | §16 |
-| "prerequisites / build order" | topological sort | `O(V + E)` | §16 |
-| "connect everything cheaply" | MST (Kruskal / Prim) | `O(E log E)` | §16 |
-| "cheapest route, non-negative weights" | Dijkstra | `O((V + E) log V)` | §16 |
+| "count pairs where one comes before the other" | carry forward | `O(N)` | §3 |
+| "contiguous, length K" | fixed sliding window | `O(N)` | §4 |
+| "longest / count subarrays with a limit, all positive" | dynamic sliding window | `O(N)` | §4 |
+| "maximum subarray sum" | Kadane | `O(N)` | §5 |
+| "overlapping intervals" | sort by start, sweep | `O(N log N)` | §6 |
+| "appears more than n/2 times" | Boyer–Moore | `O(N)` | §7 |
+| "sorted array, pair with sum / difference" | two pointers | `O(N)` | §8 |
+| "row- and column-sorted matrix" | staircase search | `O(N + M)` | §9 |
+| "every element twice except one" | XOR | `O(N)` | §10 |
+| "all primes up to N" | sieve | `O(N log log N)` | §11 |
+| "number of ways to choose, nCr mod M" | Pascal's identity | `O(N^2)` | §12 |
+| "power in logarithmic time" | recursion, halve the exponent | `O(log N)` | §13 |
+| "all subsets / permutations / combinations" | backtracking | `O(2^N)` / `O(N!)` | §14 |
+| "subarray with sum K, negatives allowed" | prefix sums + hash map | `O(N)` | §15 |
+| "values in a small range" | count sort | `O(N + K)` | §16 |
+| "arrange to form the largest …" | custom comparator | `O(N log N)` | §16 |
+| "minimum possible maximum" / "maximum possible minimum" | binary search on the answer | `O(N log R)` | §17 |
+| "middle, cycle, palindrome of a linked list" | slow / fast pointers | `O(N)`, `O(1)` | §18 |
+| "O(1) get and put with eviction" | hash map + DLL (LRU) | `O(1)` | §18 |
+| "nearest smaller / greater element" | monotonic stack | `O(N)` | §19 |
+| "max of every window" | monotonic deque | `O(N)` | §20 |
+| "left / right / top view of a tree" | level order (+ column index) | `O(N)` | §21 |
+| "validate, delete or k-th smallest in a BST" | BST ordering, inorder | `O(H)` / `O(N)` | §22 |
+| "inorder with O(1) space" | Morris traversal | `O(N)`, `O(1)` | §23 |
+| "lowest common ancestor" | steer by value / recurse both sides | `O(H)` / `O(N)` | §24 |
+| "k smallest / largest, running median" | heap(s) | `O(N log K)` | §25 |
+| "maximum jobs / minimum joining cost" | greedy with sort or heap | `O(N log N)` | §26 |
+| "count ways / min cost, choices overlap" | dynamic programming | states × transitions | §27 |
+| "budget, weights, values" | knapsack | `O(N·W)` | §27 |
+| "fewest steps in a grid or unweighted graph" | BFS / multi-source BFS | `O(V + E)` | §28 |
+| "prerequisites / build order" | topological sort | `O(V + E)` | §28 |
+| "connect everything cheaply" | MST (Kruskal / Prim) | `O(E log E)` | §28 |
+| "cheapest route, non-negative weights" | Dijkstra | `O((V + E) log V)` | §28 |
 
 ```mermaid
 flowchart TD

@@ -36,22 +36,34 @@
 <ol class="table-of-contents table-of-contents-numbered">
 <li><a href="#0-read-the-constraints-first">Read the Constraints First</a></li>
 <li><a href="#1-contribution-technique">The Contribution Technique</a></li>
-<li><a href="#2-prefix-sums-carry-forward-and-sliding-windows">Prefix Sums, Carry Forward &amp; Sliding Windows</a></li>
-<li><a href="#3-kadane-intervals-and-boyer-moore">Kadane, Intervals &amp; Boyer–Moore</a></li>
-<li><a href="#4-two-pointers">Two Pointers</a></li>
-<li><a href="#5-matrix-walks">Matrix Walks</a></li>
-<li><a href="#6-bits-primes-and-counting">Bits, Primes &amp; Counting</a></li>
-<li><a href="#7-recursion-and-backtracking">Recursion &amp; Backtracking</a></li>
-<li><a href="#8-hashing">Hashing</a></li>
-<li><a href="#9-sorting-beyond-the-library-call">Sorting Beyond the Library Call</a></li>
-<li><a href="#10-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers</a></li>
-<li><a href="#11-linked-lists">Linked Lists</a></li>
-<li><a href="#12-stacks-and-queues">Stacks &amp; Queues</a></li>
-<li><a href="#13-trees-bsts-morris-and-lca">Trees, BSTs, Morris &amp; LCA</a></li>
-<li><a href="#14-heaps-and-greedy">Heaps &amp; Greedy</a></li>
-<li><a href="#15-dynamic-programming">Dynamic Programming</a></li>
-<li><a href="#16-graphs">Graphs</a></li>
-<li><a href="#17-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+<li><a href="#2-prefix-sums">Prefix Sums</a></li>
+<li><a href="#3-carry-forward">Carry Forward</a></li>
+<li><a href="#4-sliding-window">Sliding Window</a></li>
+<li><a href="#5-kadanes-algorithm">Kadane's Algorithm</a></li>
+<li><a href="#6-merging-intervals">Merging Intervals</a></li>
+<li><a href="#7-boyer-moore-voting">Boyer–Moore Voting</a></li>
+<li><a href="#8-two-pointers">Two Pointers</a></li>
+<li><a href="#9-matrix-walks">Matrix Walks</a></li>
+<li><a href="#10-bit-manipulation">Bit Manipulation</a></li>
+<li><a href="#11-prime-numbers">Prime Numbers</a></li>
+<li><a href="#12-combinatorics">Combinatorics</a></li>
+<li><a href="#13-recursion">Recursion</a></li>
+<li><a href="#14-backtracking">Backtracking</a></li>
+<li><a href="#15-hashing">Hashing</a></li>
+<li><a href="#16-sorting-beyond-the-library-call">Sorting Beyond the Library Call</a></li>
+<li><a href="#17-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers</a></li>
+<li><a href="#18-linked-lists">Linked Lists</a></li>
+<li><a href="#19-stacks">Stacks</a></li>
+<li><a href="#20-queues-and-deques">Queues &amp; Deques</a></li>
+<li><a href="#21-binary-trees">Binary Trees</a></li>
+<li><a href="#22-binary-search-trees">Binary Search Trees</a></li>
+<li><a href="#23-morris-traversal">Morris Traversal</a></li>
+<li><a href="#24-lowest-common-ancestor">Lowest Common Ancestor</a></li>
+<li><a href="#25-heaps">Heaps</a></li>
+<li><a href="#26-greedy-algorithms">Greedy Algorithms</a></li>
+<li><a href="#27-dynamic-programming">Dynamic Programming</a></li>
+<li><a href="#28-graphs">Graphs</a></li>
+<li><a href="#29-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
 </ol>
 
 <!-- ============================================================ 1 -->
@@ -237,19 +249,18 @@ console.log(sumOfSubmatricesSums([[1, 2], [3, 4]]));        // 40
 <tr><td>Sum of all subarray sums</td><td><code>A[i] × (i+1) × (n-i)</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
 <tr><td>Sum of all submatrix sums</td><td>top-left choices × bottom-right choices</td><td><code class="big-o o-good">O(N·M)</code></td></tr>
 <tr><td>Minimize the cost to empty an array</td><td>sort descending; <code>A[i]</code> is paid <code>i + 1</code> times</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
-<tr><td>Subarrays with OR 1</td><td>count the complement — all-zero runs — instead (§6)</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Subarrays with OR 1</td><td>count the complement — all-zero runs — instead (§10)</td><td><code class="big-o o-good">O(N)</code></td></tr>
 </tbody>
 </table>
 
 <!-- ============================================================ 3 -->
-<h3 id="2-prefix-sums-carry-forward-and-sliding-windows">Prefix Sums, Carry Forward &amp; Sliding Windows<a class="headerlink" href="#2-prefix-sums-carry-forward-and-sliding-windows" title="Permanent link">#</a></h3>
+<h3 id="2-prefix-sums">Prefix Sums<a class="headerlink" href="#2-prefix-sums" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Build prefix</b> <code class="big-o o-good">O(N)</code></li>
 <li><b>Range query</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Q range updates</b> <code class="big-o o-good">O(N + Q)</code></li>
-<li><b>Slide a window</b> <code class="big-o o-great">O(1)</code></li>
 </ul>
-<p>Four techniques, one instinct: <strong>never recompute something you had a moment ago.</strong> A prefix array remembers every running total, so any range sum is one subtraction. A difference array defers range updates and settles them in one sweep. Carry forward keeps a single running fact (a count, a last-seen index). A sliding window keeps the sum of the current range and adjusts it by one element at each end.</p>
+<p>A prefix array remembers every running total, so any range sum becomes one subtraction instead of a loop. Run the same idea backwards and you get a <strong>difference array</strong>, which defers many range updates and settles them all in one sweep. Both follow one instinct: <strong>never recompute something you had a moment ago.</strong></p>
 <div class="analogy">
 <span class="analogy-icon">🚗</span>
 <div class="analogy-body"><b>Picture it — the car's odometer</b><p>You never measure the road between two towns. You read the odometer at each town and subtract. A prefix sum array is the odometer: <code>P[i]</code> is the total distance up to index <code>i</code>, and the sum of <code>A[l..r]</code> is <code>P[r] - P[l-1]</code>.</p></div>
@@ -334,9 +345,29 @@ function performQueries(arr, queries) {
 console.log(performQueries([1, 2, 3, 4, 5], [[0, 2, 2], [1, 3, 3], [2, 4, 4]])); // [3, 7, 12, 11, 9]
 </code></pre></div>
 </div>
+<p><strong>From the notes — prefix sum problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Range sum query</td><td>prefix sum</td><td><code class="big-o o-good">O(N + Q)</code></td></tr>
+<tr><td>In-place prefix sum</td><td>overwrite <code>A[i] += A[i-1]</code></td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
+<tr><td>Zero-based queries I, II, III (beggars)</td><td>difference array + prefix sweep</td><td><code class="big-o o-good">O(N + Q)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="carry-forward">Carry forward — one running fact<a class="headerlink" href="#carry-forward" title="Permanent link">#</a></h4>
-<p>Carry forward is the lightest version: instead of a whole array, carry <strong>one number</strong> from left to right. To count pairs <code>(i, j)</code> with <code>i &lt; j</code>, <code>A[i] = 'a'</code> and <code>A[j] = 'g'</code>, you do not need to look back for every <code>g</code> — just remember how many <code>a</code>s you have passed.</p>
+
+<!-- ============================================================ 4 -->
+<h3 id="3-carry-forward">Carry Forward<a class="headerlink" href="#3-carry-forward" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Time</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
+</ul>
+<p>Carry forward is the lightest cousin of a prefix sum: instead of a whole array, carry <strong>one number</strong> from left to right — a count, a running sum, a last-seen index — and update it as each element passes.</p>
+<div class="analogy">
+<span class="analogy-icon">🔢</span>
+<div class="analogy-body"><b>Picture it — a doorman's tally counter</b><p>The doorman does not re-count the room every time someone asks how many guests are inside. One click per arrival, and the answer is always in hand.</p></div>
+</div>
+<p>To count pairs <code>(i, j)</code> with <code>i &lt; j</code>, <code>A[i] = 'a'</code> and <code>A[j] = 'g'</code>, you do not need to look back for every <code>g</code> — just remember how many <code>a</code>s you have passed.</p>
 <div class="worked">
 <b>Interview question</b>
 <p class="worked-q">Count the pairs <code>(i, j)</code> with <code>i &lt; j</code>, <code>A[i] = 'a'</code> and <code>A[j] = 'g'</code>. <code>['b','a','a','g','d','c','a','g']</code> → <code>5</code>.</p>
@@ -370,8 +401,28 @@ function countOfPairs(A) {
 console.log(countOfPairs(['b', 'a', 'a', 'g', 'd', 'c', 'a', 'g'])); // 5
 </code></pre></div>
 </div>
+<p><strong>From the notes — carry-forward problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>What is carried</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Count "ag" pairs</td><td>number of <code>a</code>s seen so far</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Smallest subarray containing min and max</td><td>last-seen index of each</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Subarray sums starting at an index; sum of all subarray sums</td><td>the running sum</td><td><code class="big-o o-good">O(N)</code> / <code class="big-o o-bad">O(N^2)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="sliding-windows">Sliding windows — fixed and dynamic<a class="headerlink" href="#sliding-windows" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 5 -->
+<h3 id="4-sliding-window">Sliding Window<a class="headerlink" href="#4-sliding-window" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Slide one step</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>Whole pass</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
+</ul>
+<div class="analogy">
+<span class="analogy-icon">🚆</span>
+<div class="analogy-body"><b>Picture it — the view from a train window</b><p>As the train moves, one tree leaves the frame on the left and one enters on the right. You never re-look at the whole landscape — you only notice what changed at the edges.</p></div>
+</div>
 <p>A <strong>fixed</strong> window of size <code>K</code> slides one step at a time: subtract the element that leaves, add the element that enters. A <strong>dynamic</strong> window grows its right edge every step and shrinks its left edge only while the window breaks the rule. Both touch each element at most twice, so both are <code>O(n)</code>.</p>
 <div class="viz" data-viz="sliding-window"></div>
 <div class="code-tabs" data-label="Fixed window — maximum sum of any K consecutive values">
@@ -447,32 +498,26 @@ console.log(countSubarraysWithSum([1, 11, 2, 3, 15], 10)); // 4
 </div>
 </div>
 <div class="callout callout-warn">
-<p>A dynamic window only works when shrinking always moves the sum in one direction — i.e. <strong>non-negative values</strong>. With negatives, "sum too big, shrink" is no longer safe. The notes switch tools there: prefix sums plus a hash map for exact sums (§8), or a balanced BST for "largest sum ≤ K".</p>
+<p>A dynamic window only works when shrinking always moves the sum in one direction — i.e. <strong>non-negative values</strong>. With negatives, "sum too big, shrink" is no longer safe. The notes switch tools there: prefix sums plus a hash map for exact sums (§15), or a balanced BST for "largest sum ≤ K".</p>
 </div>
-<p><strong>From the notes — prefix, carry-forward and window problems</strong></p>
+<p><strong>From the notes — sliding window problems</strong></p>
 <table>
-<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<thead><tr><th>Problem</th><th>Window</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Range sum query, in-place prefix sum</td><td>prefix sum</td><td><code class="big-o o-good">O(N + Q)</code></td></tr>
-<tr><td>Zero-based queries I, II, III (beggars)</td><td>difference array + prefix sweep</td><td><code class="big-o o-good">O(N + Q)</code></td></tr>
-<tr><td>Count "ag" pairs</td><td>carry forward a count</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Smallest subarray containing min and max</td><td>carry forward last-seen indices</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Subarray sums starting at an index</td><td>carry forward the running sum</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Max sum / given sum with length K</td><td>fixed sliding window</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Max subarray sum ≤ K (positive)</td><td>dynamic window, track best</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Count subarrays with sum &lt; K (positive)</td><td>dynamic window, add <code>end - start + 1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Count subarrays of length K</td><td>fixed</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Max sum / given sum with length K</td><td>fixed</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Max subarray sum ≤ K (positive)</td><td>dynamic, track best</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Count subarrays with sum &lt; K (positive)</td><td>dynamic, add <code>end - start + 1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
 </tbody>
 </table>
 
-<!-- ============================================================ 4 -->
-<h3 id="3-kadane-intervals-and-boyer-moore">Kadane, Intervals &amp; Boyer–Moore<a class="headerlink" href="#3-kadane-intervals-and-boyer-moore" title="Permanent link">#</a></h3>
+<!-- ============================================================ 6 -->
+<h3 id="5-kadanes-algorithm">Kadane's Algorithm<a class="headerlink" href="#5-kadanes-algorithm" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
-<li><b>Kadane</b> <code class="big-o o-good">O(N)</code></li>
-<li><b>Merge intervals</b> <code class="big-o o-ok">O(N log N)</code></li>
-<li><b>Majority vote</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Time</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>Decision per element</b> <code>extend or restart</code></li>
 </ul>
-<p>Three one-pass algorithms that each carry a tiny amount of state and make a <strong>local, greedy decision</strong> at every element. Kadane decides <em>extend or restart</em>. Interval merging decides <em>overlap or close</em>. Boyer–Moore decides <em>vote for or cancel against</em>.</p>
-<h4 id="kadane">Kadane's algorithm — extend or restart<a class="headerlink" href="#kadane" title="Permanent link">#</a></h4>
 <p>At every index, the best subarray <strong>ending here</strong> either continues the best subarray ending at the previous index, or starts fresh at this element: <code>current = max(A[i], current + A[i])</code>. The overall answer is the best <code>current</code> ever seen. If the running sum drops below zero, it is dead weight for anything that follows — drop it.</p>
 <div class="analogy">
 <span class="analogy-icon">🎒</span>
@@ -606,8 +651,27 @@ console.log(flip("111")); // []
 console.log(flip("000")); // [1, 3]
 </code></pre></div>
 </div>
+<p><strong>From the notes — Kadane problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Maximum subarray sum (brute → prefix → carry → Kadane)</td><td>extend or restart</td><td><code class="big-o o-bad">O(N^3)</code> → <code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Max subarray sum and the subarray itself</td><td>Kadane + <code>temp_start</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Flip — maximise 1s in a binary string</td><td>Kadane on <code>0 → +1</code>, <code>1 → -1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="merge-intervals">Merging overlapping intervals<a class="headerlink" href="#merge-intervals" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 7 -->
+<h3 id="6-merging-intervals">Merging Intervals<a class="headerlink" href="#6-merging-intervals" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Sort by start</b> <code class="big-o o-ok">O(N log N)</code></li>
+<li><b>Sweep</b> <code class="big-o o-good">O(N)</code></li>
+</ul>
+<div class="analogy">
+<span class="analogy-icon">📅</span>
+<div class="analogy-body"><b>Picture it — tidying a shared calendar</b><p>Lay the bookings out in start order. Any meeting that begins before the previous one has ended simply extends that busy block; a gap means the block is finished.</p></div>
+</div>
 <p>Sort by start time and the problem becomes a single sweep: keep one "open" interval. If the next interval starts <strong>at or before</strong> the open interval's end, they overlap — stretch the end to the larger of the two. Otherwise the open interval is finished; emit it and open the next one. Sorting is the expensive part, <code>O(N log N)</code>; the sweep is <code>O(N)</code>.</p>
 <div class="viz" data-viz="merge-intervals"></div>
 <div class="code-tabs" data-label="Answer — merge overlapping intervals">
@@ -654,7 +718,20 @@ console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]])); // [[1, 6], [8
 <div class="callout callout-tip">
 <p>Use <code>max(last_end, curr_end)</code>, not <code>curr_end</code>. An interval like <code>[1, 10]</code> followed by <code>[2, 3]</code> overlaps but ends <em>earlier</em> — overwriting the end would shrink the merged interval.</p>
 </div>
-<h4 id="boyer-moore">Boyer–Moore voting — find the majority in O(1) space<a class="headerlink" href="#boyer-moore" title="Permanent link">#</a></h4>
+<p><strong>From the notes — interval problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Merge overlapping intervals</td><td>sort by start, sweep</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 8 -->
+<h3 id="7-boyer-moore-voting">Boyer–Moore Voting<a class="headerlink" href="#7-boyer-moore-voting" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Two passes</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
+</ul>
 <p>A <strong>majority element</strong> appears more than <code>n / 2</code> times. Pass 1 keeps a candidate and a counter: a matching element votes <code>+1</code>, a different element cancels one vote, and when the counter hits zero the next element becomes the new candidate. Pass 2 counts the candidate to confirm it really is a majority.</p>
 <div class="analogy">
 <span class="analogy-icon">🗳️</span>
@@ -703,20 +780,16 @@ console.log(findMajorityElement([1, 2, 3, 4]));          // null
 <div class="callout callout-warn">
 <p>Pass 1 always leaves <em>some</em> candidate, even when no majority exists (<code>[1, 2, 3, 4]</code> leaves <code>4</code>). Skipping the verification pass is the classic bug.</p>
 </div>
-<p><strong>From the notes — one-pass greedy problems</strong></p>
+<p><strong>From the notes — majority problems</strong></p>
 <table>
 <thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Maximum subarray sum (brute → prefix → carry → Kadane)</td><td>extend or restart</td><td><code class="big-o o-bad">O(N^3)</code> → <code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Max subarray sum and the subarray itself</td><td>Kadane + <code>temp_start</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Flip — maximise 1s in a binary string</td><td>Kadane on <code>0 → +1</code>, <code>1 → -1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Merge overlapping intervals</td><td>sort by start, sweep</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
-<tr><td>Majority element</td><td>Boyer–Moore voting</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
+<tr><td>Majority element (more than n/2 times)</td><td>Boyer–Moore voting</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
 </tbody>
 </table>
 
-<!-- ============================================================ 5 -->
-<h3 id="4-two-pointers">Two Pointers<a class="headerlink" href="#4-two-pointers" title="Permanent link">#</a></h3>
+<!-- ============================================================ 9 -->
+<h3 id="8-two-pointers">Two Pointers<a class="headerlink" href="#8-two-pointers" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Pair sum in sorted array</b> <code class="big-o o-good">O(N)</code></li>
 <li><b>Rain water</b> <code class="big-o o-good">O(N)</code></li>
@@ -970,8 +1043,8 @@ console.log(longestPalindromeSubstring("babad"));   // 3
 </tbody>
 </table>
 
-<!-- ============================================================ 6 -->
-<h3 id="5-matrix-walks">Matrix Walks<a class="headerlink" href="#5-matrix-walks" title="Permanent link">#</a></h3>
+<!-- ============================================================ 10 -->
+<h3 id="9-matrix-walks">Matrix Walks<a class="headerlink" href="#9-matrix-walks" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Staircase search</b> <code class="big-o o-good">O(N + M)</code></li>
 <li><b>Spiral print</b> <code class="big-o o-good">O(N·M)</code></li>
@@ -1135,13 +1208,12 @@ console.log(rotateMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // [[7, 4, 1], [8,
 </tbody>
 </table>
 
-<!-- ============================================================ 7 -->
-<h3 id="6-bits-primes-and-counting">Bits, Primes &amp; Counting<a class="headerlink" href="#6-bits-primes-and-counting" title="Permanent link">#</a></h3>
+<!-- ============================================================ 11 -->
+<h3 id="10-bit-manipulation">Bit Manipulation<a class="headerlink" href="#10-bit-manipulation" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>XOR cancels</b> <code>x ^ x = 0</code></li>
-<li><b>Check bit i</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>Check / set / toggle bit i</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Count set bits</b> <code class="big-o o-great">O(log N)</code></li>
-<li><b>Sieve to N</b> <code class="big-o o-ok">O(N log log N)</code></li>
 </ul>
 <p>Integers are arrays of bits, and bitwise operators edit all 32 positions in one instruction. The single most useful fact is that <strong>XOR cancels pairs</strong>: <code>x ^ x = 0</code> and <code>x ^ 0 = x</code>, and the order of XORs does not matter. The second is that <code>1 &lt;&lt; i</code> is a mask with only bit <code>i</code> set, so every single-bit edit is one operator away.</p>
 <div class="analogy">
@@ -1279,7 +1351,23 @@ function subarraysWithOR1(A) {
 console.log(subarraysWithOR1([0, 0, 1, 1, 0])); // 11
 </code></pre></div>
 </div>
-<h4 id="sieve">Primes and the Sieve of Eratosthenes<a class="headerlink" href="#sieve" title="Permanent link">#</a></h4>
+<p><strong>From the notes — bit manipulation problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Idea</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Binary ↔ decimal conversion</td><td>repeated <code>% base</code>, place values</td><td><code class="big-o o-great">O(log N)</code></td></tr>
+<tr><td>Even/odd, set bit, count set bits</td><td>masks with <code>1 &lt;&lt; i</code></td><td><code class="big-o o-great">O(1)</code> / <code class="big-o o-great">O(log N)</code></td></tr>
+<tr><td>Single Number I, II, III</td><td>XOR cancel; bit counts mod 3; split by differing bit</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
+<tr><td>Subarrays with OR 0 / OR 1</td><td>count zero runs, complement</td><td><code class="big-o o-good">O(N)</code></td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 12 -->
+<h3 id="11-prime-numbers">Prime Numbers<a class="headerlink" href="#11-prime-numbers" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Prime check</b> <code class="big-o o-good">O(√N)</code></li>
+<li><b>All primes to N</b> <code class="big-o o-ok">O(N log log N)</code></li>
+</ul>
 <p>Checking one number for primality needs divisors only up to <code>√n</code>: factors come in pairs <code>(i, n/i)</code> and one of each pair is <code>≤ √n</code>. For <strong>all</strong> primes up to <code>N</code>, sieve instead: every time you meet an unmarked number <code>p</code>, it is prime, so cross out its multiples. Start crossing at <code>p × p</code> — every smaller multiple <code>p × k</code> with <code>k &lt; p</code> was already crossed out by <code>k</code>'s own prime factor.</p>
 <div class="viz" data-viz="sieve"></div>
 <div class="code-tabs" data-label="Answer — Sieve of Eratosthenes">
@@ -1314,7 +1402,24 @@ function sieveOfEratosthenes(n) {
 console.log(sieveOfEratosthenes(30)); // [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 </code></pre></div>
 </div>
-<h4 id="combinatorics">Combinatorics in five rules<a class="headerlink" href="#combinatorics" title="Permanent link">#</a></h4>
+<p><strong>From the notes — prime problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Idea</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Count factors; prime check</td><td>test divisors up to <code>√n</code></td><td><code class="big-o o-good">O(√N)</code></td></tr>
+<tr><td>Count primes below N (checking each number)</td><td>prime check per number</td><td><code class="big-o o-good">O(N√N)</code></td></tr>
+<tr><td>Primes from 1 to N; find all primes</td><td>Sieve of Eratosthenes</td><td><code class="big-o o-ok">O(N log log N)</code></td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 13 -->
+<h3 id="12-combinatorics">Combinatorics<a class="headerlink" href="#12-combinatorics" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Permutations</b> <code>nPr = n!/(n-r)!</code></li>
+<li><b>Combinations</b> <code>nCr = n!/(r!(n-r)!)</code></li>
+<li><b>Pascal's triangle</b> <code class="big-o o-bad">O(N^2)</code></li>
+</ul>
+<p>Counting problems ask "how many ways?" without listing the ways. Almost all of them reduce to five rules:</p>
 <ol>
 <li><strong>Addition rule (OR)</strong> — choose one of several alternatives: add the counts.</li>
 <li><strong>Multiplication rule (AND)</strong> — make choices in sequence: multiply the counts. A restaurant with 3 starters, 2 mains and 2 desserts offers <code>3 × 2 × 2 = 12</code> meal combos.</li>
@@ -1354,16 +1459,10 @@ function printPascalTriangle(n, M = 1_000_000_007) {
 console.log(printPascalTriangle(5)); // [[1,0,0,0,0], [1,1,0,0,0], [1,2,1,0,0], [1,3,3,1,0], [1,4,6,4,1]]
 </code></pre></div>
 </div>
-<p><strong>From the notes — bits, primes and counting problems</strong></p>
+<p><strong>From the notes — combinatorics problems</strong></p>
 <table>
 <thead><tr><th>Problem</th><th>Idea</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Binary ↔ decimal conversion</td><td>repeated <code>% base</code>, place values</td><td><code class="big-o o-great">O(log N)</code></td></tr>
-<tr><td>Even/odd, set bit, count set bits</td><td>masks with <code>1 &lt;&lt; i</code></td><td><code class="big-o o-great">O(1)</code> / <code class="big-o o-great">O(log N)</code></td></tr>
-<tr><td>Single Number I, II, III</td><td>XOR cancel; bit counts mod 3; split by differing bit</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
-<tr><td>Subarrays with OR 0 / OR 1</td><td>count zero runs, complement</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Count factors, prime check</td><td>test divisors up to <code>√n</code></td><td><code class="big-o o-good">O(√N)</code></td></tr>
-<tr><td>All primes to N</td><td>Sieve of Eratosthenes</td><td><code class="big-o o-ok">O(N log log N)</code></td></tr>
 <tr><td>Most varied meal combo</td><td>multiplication rule</td><td><code class="big-o o-good">O(N)</code></td></tr>
 <tr><td>Pascal's triangle, <code>nCr % M</code></td><td>Pascal's identity</td><td><code class="big-o o-bad">O(N^2)</code></td></tr>
 </tbody>
@@ -1372,13 +1471,12 @@ console.log(printPascalTriangle(5)); // [[1,0,0,0,0], [1,1,0,0,0], [1,2,1,0,0], 
 <h2 id="unit-2">Unit 2 — Recursion, Hashing, Sorting &amp; Searching<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
 <p>The four general-purpose tools: recursion to break problems down, hashing to remember what you have seen, sorting to create order you can exploit, and binary search to exploit it.</p>
 
-<!-- ============================================================ 8 -->
-<h3 id="7-recursion-and-backtracking">Recursion &amp; Backtracking<a class="headerlink" href="#7-recursion-and-backtracking" title="Permanent link">#</a></h3>
+<!-- ============================================================ 14 -->
+<h3 id="13-recursion">Recursion<a class="headerlink" href="#13-recursion" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Time</b> <code>calls × work per call</code></li>
 <li><b>Space</b> <code>deepest call chain</code></li>
-<li><b>Subsets</b> <code class="big-o o-bad">O(2^N · N)</code></li>
-<li><b>Permutations</b> <code class="big-o o-bad">O(N! · N)</code></li>
+<li><b>Fast power</b> <code class="big-o o-great">O(log N)</code></li>
 </ul>
 <p>The notes give recursion three steps, and the order matters:</p>
 <ol>
@@ -1435,8 +1533,29 @@ console.log(fastPower(2, 10)); // 1024
 console.log(fastPower(3, 5));  // 243
 </code></pre></div>
 </div>
+<p><strong>From the notes — recursion problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Pattern</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Sum of 1..N, factorial, sum of digits</td><td>linear recursion</td><td><code class="big-o o-good">O(N)</code> / <code class="big-o o-great">O(log N)</code></td></tr>
+<tr><td>Print 1..N, N..1, both in one function</td><td>work before vs. after the call</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Fibonacci — plain / memo / tabulation</td><td>tree recursion → DP</td><td><code class="big-o o-bad">O(2^N)</code> → <code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Power, fast power</td><td>halve the exponent</td><td><code class="big-o o-good">O(N)</code> → <code class="big-o o-great">O(log N)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="backtracking">Backtracking — recursion that undoes its choices<a class="headerlink" href="#backtracking" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 15 -->
+<h3 id="14-backtracking">Backtracking<a class="headerlink" href="#14-backtracking" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Subsets</b> <code class="big-o o-bad">O(2^N · N)</code></li>
+<li><b>Permutations</b> <code class="big-o o-bad">O(N! · N)</code></li>
+<li><b>Valid parentheses</b> <code class="big-o o-bad">O(4^n/√n)</code></li>
+</ul>
+<div class="analogy">
+<span class="analogy-icon">🧶</span>
+<div class="analogy-body"><b>Picture it — exploring a maze with a ball of string</b><p>At every fork you pick a corridor and unroll string behind you. At a dead end you wind the string back to the last fork and try the next corridor. Winding back is the "undo" — without it you could never try the other branches.</p></div>
+</div>
 <p>Backtracking builds a solution one choice at a time, recurses, then <strong>undoes</strong> the choice before trying the next one. Compared with plain recursion, it only builds calls that can still lead to a valid answer. The notes name two styles:</p>
 <ul class="card-grid">
 <li class="is-good"><b>Strength — proactive</b>Check the rule <em>before</em> making a call, so invalid branches are never created. Fewer calls; the rule lives in the loop.</li>
@@ -1590,22 +1709,18 @@ console.log(permutations("ABC")); // ['ABC', 'ACB', 'BAC', 'BCA', 'CBA', 'CAB']
 <div class="callout callout-warn">
 <p>Appending <code>current</code> instead of a <strong>copy</strong> of it is the most common backtracking bug: every stored answer is the same list object, and after all the pops they are all empty.</p>
 </div>
-<p><strong>From the notes — recursion and backtracking problems</strong></p>
+<p><strong>From the notes — backtracking problems</strong></p>
 <table>
 <thead><tr><th>Problem</th><th>Pattern</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Sum of 1..N, factorial, sum of digits</td><td>linear recursion</td><td><code class="big-o o-good">O(N)</code> / <code class="big-o o-great">O(log N)</code></td></tr>
-<tr><td>Print 1..N, N..1, both in one function</td><td>work before vs. after the call</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Fibonacci — plain / memo / tabulation</td><td>tree recursion → DP</td><td><code class="big-o o-bad">O(2^N)</code> → <code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Power, fast power</td><td>halve the exponent</td><td><code class="big-o o-good">O(N)</code> → <code class="big-o o-great">O(log N)</code></td></tr>
 <tr><td>Print valid parentheses (proactive, reactive, stack, DP)</td><td>backtracking with counts</td><td><code class="big-o o-bad">O(4^n/√n)</code></td></tr>
 <tr><td>Generate all subsets</td><td>take / leave</td><td><code class="big-o o-bad">O(2^N · N)</code></td></tr>
 <tr><td>Permutations (visited array, swapping)</td><td>choose / undo</td><td><code class="big-o o-bad">O(N! · N)</code></td></tr>
 </tbody>
 </table>
 
-<!-- ============================================================ 9 -->
-<h3 id="8-hashing">Hashing<a class="headerlink" href="#8-hashing" title="Permanent link">#</a></h3>
+<!-- ============================================================ 16 -->
+<h3 id="15-hashing">Hashing<a class="headerlink" href="#15-hashing" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>get / set / has (average)</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Worst case</b> <code class="big-o o-good">O(n)</code></li>
@@ -1850,8 +1965,8 @@ console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
 </table>
 </div>
 
-<!-- ============================================================ 10 -->
-<h3 id="9-sorting-beyond-the-library-call">Sorting Beyond the Library Call<a class="headerlink" href="#9-sorting-beyond-the-library-call" title="Permanent link">#</a></h3>
+<!-- ============================================================ 17 -->
+<h3 id="16-sorting-beyond-the-library-call">Sorting Beyond the Library Call<a class="headerlink" href="#16-sorting-beyond-the-library-call" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Count sort</b> <code class="big-o o-good">O(N + K)</code></li>
 <li><b>Merge sort</b> <code class="big-o o-ok">O(N log N)</code></li>
@@ -2060,8 +2175,8 @@ console.log(largestNumber([10, 5, 2, 8, 200]));      // 85220010
 </table>
 </div>
 
-<!-- ============================================================ 11 -->
-<h3 id="10-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers<a class="headerlink" href="#10-binary-search-on-arrays-and-answers" title="Permanent link">#</a></h3>
+<!-- ============================================================ 18 -->
+<h3 id="17-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers<a class="headerlink" href="#17-binary-search-on-arrays-and-answers" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>On a sorted array</b> <code class="big-o o-great">O(log N)</code></li>
 <li><b>On an answer range</b> <code class="big-o o-ok">O(N log(range))</code></li>
@@ -2326,8 +2441,8 @@ console.log(aggressiveCows([1, 2, 8, 4, 9], 3)); // 3
 <h2 id="unit-3">Unit 3 — Linked Structures<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
 <p>Nodes joined by pointers. The advanced tricks here are all about what you can do with <strong>two</strong> pointers, <strong>one</strong> stack, or <strong>zero</strong> extra memory.</p>
 
-<!-- ============================================================ 12 -->
-<h3 id="11-linked-lists">Linked Lists<a class="headerlink" href="#11-linked-lists" title="Permanent link">#</a></h3>
+<!-- ============================================================ 19 -->
+<h3 id="18-linked-lists">Linked Lists<a class="headerlink" href="#18-linked-lists" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Find middle / detect cycle</strong> <code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</li>
 <li><strong>Insert / delete at a known node (DLL)</strong> <code class="big-o o-great">O(1)</code></li>
@@ -2681,17 +2796,16 @@ console.log(cache.get(2), cache.get(3));     // -1 30
 </tbody>
 </table>
 
-<!-- ============================================================ 13 -->
-<h3 id="12-stacks-and-queues">Stacks &amp; Queues<a class="headerlink" href="#12-stacks-and-queues" title="Permanent link">#</a></h3>
+<!-- ============================================================ 20 -->
+<h3 id="19-stacks">Stacks<a class="headerlink" href="#19-stacks" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>push / pop / peek</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Nearest smaller for every index</b> <code class="big-o o-good">O(N)</code></li>
-<li><b>Sliding window maximum</b> <code class="big-o o-good">O(N)</code></li>
 </ul>
-<p>A <strong>stack</strong> answers "what is the most recent unmatched thing?" — the last opened bracket, the last operand, the closest smaller value to the left. A <strong>queue</strong> answers "what arrived first?" A <strong>deque</strong> does both ends, which is exactly what a sliding window needs: new elements join at the back, expired ones leave at the front.</p>
+<p>A <strong>stack</strong> answers "what is the most recent unmatched thing?" — the last opened bracket, the last operand, the closest smaller value to the left. Everything happens at one end, the top, so every operation is <code>O(1)</code>.</p>
 <div class="analogy">
 <span class="analogy-icon">🍽️</span>
-<div class="analogy-body"><b>Picture it — a pile of plates vs. a line of shoppers</b><p>You take plates off the top of the pile — the last one washed is the first one used. Shoppers leave the checkout line from the front. A deque is a line where people can also give up and leave from the back.</p></div>
+<div class="analogy-body"><b>Picture it — a pile of plates</b><p>You take plates off the top of the pile — the last one washed is the first one used. Nobody pulls a plate from the middle.</p></div>
 </div>
 <h4 id="expression-evaluation">Brackets and postfix expressions<a class="headerlink" href="#expression-evaluation" title="Permanent link">#</a></h4>
 <p>For balanced brackets, push every opener; on a closer, the top of the stack <strong>must</strong> be its matching opener. For expressions, the notes compare three notations:</p>
@@ -2789,8 +2903,29 @@ console.log(nearestSmallerOnLeft([4, 5, 2, 10, 8])); // [-1, 0, -1, 2, 2]
 <tr><td>Nearest greater on the right</td><td>right → left</td><td><code>≤</code> current</td></tr>
 </tbody>
 </table>
+<p><strong>From the notes — stack problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Structure</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Stack on a static / dynamic array</td><td>array + top index</td><td><code class="big-o o-great">O(1)</code> per op</td></tr>
+<tr><td>Balanced parentheses</td><td>stack of openers</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Evaluate postfix</td><td>operand stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Nearest smaller / greater on left / right</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="queues-and-deques">Queues, deques and the sliding-window maximum<a class="headerlink" href="#queues-and-deques" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 21 -->
+<h3 id="20-queues-and-deques">Queues &amp; Deques<a class="headerlink" href="#20-queues-and-deques" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>enqueue / dequeue</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>Sliding window maximum</b> <code class="big-o o-good">O(N)</code></li>
+</ul>
+<p>A <strong>queue</strong> answers "what arrived first?" A <strong>deque</strong> works at both ends, which is exactly what a sliding window needs: new elements join at the back, expired ones leave at the front.</p>
+<div class="analogy">
+<span class="analogy-icon">🛒</span>
+<div class="analogy-body"><b>Picture it — a line of shoppers</b><p>Shoppers join at the back and leave the checkout from the front. A deque is a line where people can also give up and leave from the back.</p></div>
+</div>
 <p>The notes build a queue four ways: a dynamic array, a singly linked list with a <strong>tail</strong> pointer (<code>O(1)</code> enqueue at the tail, dequeue at the head), and two stacks — either <strong>push-efficient</strong> (move everything only when popping from an empty out-stack, amortised <code>O(1)</code>) or <strong>pop-efficient</strong>. A <strong>deque</strong> built on a doubly linked list gives <code>O(1)</code> at both ends.</p>
 <p>For the maximum of every window of size <code>k</code>, keep a deque of <strong>indices whose values are decreasing</strong>. A new element evicts everything smaller from the back — those can never be a maximum while it is in the window. The front is the current maximum; drop it once its index slides out of the window.</p>
 <div class="viz" data-viz="window-max"></div>
@@ -2838,32 +2973,27 @@ console.log(slidingWindowMax([1, 3, -1, -3, 5, 3, 6, 7], 3)); // [3, 3, 5, 5, 6,
 <div class="callout callout-warn">
 <p><code>Array.prototype.shift()</code> in JavaScript is <code>O(n)</code> — it re-indexes the array. A queue built on <code>shift()</code> inside a loop quietly becomes <code>O(n²)</code>. Use a head index (as above), a linked list, or <code>collections.deque</code> in Python.</p>
 </div>
-<p><strong>From the notes — stack and queue problems</strong></p>
+<p><strong>From the notes — queue and deque problems</strong></p>
 <table>
 <thead><tr><th>Problem</th><th>Structure</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Stack on a static / dynamic array</td><td>array + top index</td><td><code class="big-o o-great">O(1)</code> per op</td></tr>
-<tr><td>Balanced parentheses</td><td>stack of openers</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Evaluate postfix</td><td>operand stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Nearest smaller / greater on left / right</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
 <tr><td>Queue on array, linked list with tail, two stacks</td><td>—</td><td><code class="big-o o-great">O(1)</code> amortised</td></tr>
 <tr><td>Double-ended queue</td><td>doubly linked list</td><td><code class="big-o o-great">O(1)</code> per op</td></tr>
 <tr><td>Sliding window maximum; parking ice-cream truck</td><td>monotonic deque</td><td><code class="big-o o-good">O(N)</code></td></tr>
 </tbody>
 </table>
 
-<!-- ============================================================ 14 -->
-<h3 id="13-trees-bsts-morris-and-lca">Trees, BSTs, Morris &amp; LCA<a class="headerlink" href="#13-trees-bsts-morris-and-lca" title="Permanent link">#</a></h3>
+<!-- ============================================================ 22 -->
+<h3 id="21-binary-trees">Binary Trees<a class="headerlink" href="#21-binary-trees" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Any traversal</b> <code class="big-o o-good">O(N)</code></li>
-<li><b>BST search / insert / delete</b> <code class="big-o o-great">O(H)</code></li>
-<li><b>Morris inorder space</b> <code class="big-o o-great">O(1)</code></li>
-<li><b>LCA in a BST</b> <code class="big-o o-great">O(H)</code></li>
+<li><b>Recursion stack</b> <code class="big-o o-great">O(H)</code></li>
+<li><b>Level-order queue</b> <code class="big-o o-good">O(W)</code></li>
 </ul>
-<p>Tree problems split into two shapes. <strong>Level-by-level</strong> problems (left view, right view, level order, next pointers) use a queue and process one level per outer loop. <strong>Recursive</strong> problems (height, diameter, LCA, path sum) ask each child for a summary and combine the two answers at the parent. BSTs add one superpower: an <strong>inorder walk visits values in sorted order</strong>, and at every node you know which side a value must be on.</p>
+<p>Tree problems split into two shapes. <strong>Level-by-level</strong> problems (left view, right view, level order, next pointers) use a queue and process one level per outer loop. <strong>Recursive</strong> problems (height, diameter, path sum) ask each child for a summary and combine the two answers at the parent.</p>
 <div class="analogy">
 <span class="analogy-icon">🏢</span>
-<div class="analogy-body"><b>Picture it — a company org chart</b><p>Level order is a roll call floor by floor. Recursion is every manager asking their two direct reports for a headcount and adding themselves. The lowest common ancestor of two employees is the most junior manager both of them report up to.</p></div>
+<div class="analogy-body"><b>Picture it — a company org chart</b><p>Level order is a roll call floor by floor. Recursion is every manager asking their two direct reports for a headcount and adding themselves.</p></div>
 </div>
 <div class="viz" data-viz="traversal" data-option="level"></div>
 <div class="worked">
@@ -2936,7 +3066,31 @@ console.log(leftRightView(root)); // [[1, 2, 4], [1, 3, 7]]
 </div>
 <p>The <strong>top view</strong> and <strong>bottom view</strong> add a column number: root at <code>0</code>, left child at <code>col - 1</code>, right child at <code>col + 1</code>. In level order, the <strong>first</strong> node seen in each column is the top view; the <strong>last</strong> is the bottom view. Grouping every node by column gives the <strong>vertical order traversal</strong>.</p>
 </div>
-<h4 id="bst-operations">BST operations<a class="headerlink" href="#bst-operations" title="Permanent link">#</a></h4>
+<div class="callout callout-warn">
+<p>The notes' first diameter solution calls <code>height()</code> from every node, which is <code>O(n²)</code>. Compute height and diameter in the <strong>same</strong> post-order pass — <code>diameter = max(diameter, left_h + right_h)</code> right before returning <code>1 + max(left_h, right_h)</code> — and it drops to <code>O(n)</code>. The same "return one thing, update a global with another" shape solves path sums and balanced-tree checks.</p>
+</div>
+<p><strong>From the notes — binary tree problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Pre-, in-, post-order; iterative inorder</td><td>recursion; explicit stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Level order; left and right view; next pointers</td><td>queue, one level per loop</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Vertical order; top view; bottom view</td><td>level order + column index</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Invert a tree; height in edges / nodes</td><td>recursion</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Diameter</td><td>height + diameter in one pass</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Path sum; node-to-root path</td><td>recursion carrying the path</td><td><code class="big-o o-good">O(N)</code></td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 23 -->
+<h3 id="22-binary-search-trees">Binary Search Trees<a class="headerlink" href="#22-binary-search-trees" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Search / insert / delete</b> <code class="big-o o-great">O(H)</code></li>
+<li><b>Balanced height</b> <code class="big-o o-great">O(log N)</code></li>
+<li><b>Validate</b> <code class="big-o o-good">O(N)</code></li>
+</ul>
+<p>A BST adds one rule to a binary tree: everything in a node's left subtree is smaller and everything in its right subtree is larger. That gives two superpowers — at every node you know which side a value must be on, and an <strong>inorder walk visits values in sorted order</strong>.</p>
+<div class="viz" data-viz="bst-search"></div>
 <p>Search and insert walk one path. Delete has three cases, and the third is the one people fumble:</p>
 <figure class="figure mermaid-fig">
 <pre class="mermaid">
@@ -3011,7 +3165,23 @@ console.log(isValidBST(bst));              // true
 console.log(deleteNode(bst, 2).left.val);  // 3
 </code></pre></div>
 </div>
-<h4 id="morris-traversal">Morris inorder traversal — O(1) space<a class="headerlink" href="#morris-traversal" title="Permanent link">#</a></h4>
+<p><strong>From the notes — BST problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>BST search, insert, min, max, delete</td><td>walk one path</td><td><code class="big-o o-great">O(H)</code></td></tr>
+<tr><td>Check BST</td><td>bounds, or strictly increasing inorder</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Sorted array → balanced BST</td><td>middle as root, recurse</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>k-th smallest in a BST</td><td>inorder, stop at k</td><td><code class="big-o o-good">O(H + k)</code></td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 24 -->
+<h3 id="23-morris-traversal">Morris Traversal<a class="headerlink" href="#23-morris-traversal" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Time</b> <code class="big-o o-good">O(N)</code></li>
+<li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
+</ul>
 <p>Recursive and stack-based inorder both use <code>O(h)</code> memory to remember <strong>where to return</strong> after finishing a left subtree. Morris stores that return address inside the tree itself. Before descending left from <code>curr</code>, find its <strong>inorder predecessor</strong> — the rightmost node of the left subtree — and point that node's empty <code>right</code> at <code>curr</code>. That temporary link is a <strong>thread</strong>. Later, when the walk reaches the predecessor and follows its <code>right</code>, it arrives back at <code>curr</code>, sees the thread already exists, removes it, visits <code>curr</code> and goes right.</p>
 <p>The rule at each node, straight from the notes:</p>
 <ol>
@@ -3091,8 +3261,27 @@ console.log(morrisInorder(tree)); // [40, 20, 70, 50, 80, 10, 30, 90, 60]
 </code></pre></div>
 </div>
 <p>Because a BST's inorder is sorted, Morris gives two more problems for free: the <strong>k-th smallest</strong> element is the k-th value visited, and <strong>recovering a BST with two swapped nodes</strong> means spotting the one or two places where the inorder sequence goes down (<code>prev &gt; curr</code>) and swapping the first <code>prev</code> with the last <code>curr</code>.</p>
+<p><strong>From the notes — Morris problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Morris inorder traversal</td><td>threads to inorder predecessors</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
+<tr><td>k-th smallest element in a BST</td><td>Morris, stop at the k-th visit</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
+<tr><td>Recover a BST with two swapped nodes</td><td>Morris + first/last inversion</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="lowest-common-ancestor">Lowest common ancestor<a class="headerlink" href="#lowest-common-ancestor" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 25 -->
+<h3 id="24-lowest-common-ancestor">Lowest Common Ancestor<a class="headerlink" href="#24-lowest-common-ancestor" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>In a BST</b> <code class="big-o o-great">O(H)</code></li>
+<li><b>In a binary tree</b> <code class="big-o o-good">O(N)</code></li>
+</ul>
+<div class="analogy">
+<span class="analogy-icon">🌳</span>
+<div class="analogy-body"><b>Picture it — a family tree</b><p>Two cousins trace their parents, grandparents and great-grandparents upwards. The first person who appears on both lists is their lowest common ancestor.</p></div>
+</div>
 <p>In a <strong>BST</strong>, walk from the root: if both values are smaller, go left; if both are larger, go right; otherwise the two values split here (or one of them <em>is</em> here), so this node is the LCA. That is <code>O(h)</code> time and <code>O(1)</code> space.</p>
 <p>In a <strong>general binary tree</strong> there is no ordering to steer by. The notes show two methods: build both <strong>node-to-root paths</strong> and find where they diverge, or recurse — ask each subtree whether it contains <code>p</code> or <code>q</code>; the first node that hears "yes" from both sides is the LCA.</p>
 <figure class="figure mermaid-fig">
@@ -3161,32 +3350,21 @@ console.log(lcaBST(bst6, 0, 4).val);          // 2
 console.log(lcaBinaryTree(tree, 70, 40).val); // 20
 </code></pre></div>
 </div>
-<div class="callout callout-warn">
-<p>The notes' first diameter solution calls <code>height()</code> from every node, which is <code>O(n²)</code>. Compute height and diameter in the <strong>same</strong> post-order pass — <code>diameter = max(diameter, left_h + right_h)</code> right before returning <code>1 + max(left_h, right_h)</code> — and it drops to <code>O(n)</code>. The same "return one thing, update a global with another" shape solves path sums and balanced-tree checks.</p>
-</div>
-<p><strong>From the notes — tree problems</strong></p>
+<p><strong>From the notes — LCA problems</strong></p>
 <table>
 <thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Pre-, in-, post-order; iterative inorder</td><td>recursion; explicit stack</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Level order; left and right view; next pointers</td><td>queue, one level per loop</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Vertical order; top view; bottom view</td><td>level order + column index</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Invert a tree; height in edges / nodes</td><td>recursion</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Diameter</td><td>height + diameter in one pass</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Path sum; node-to-root path</td><td>recursion carrying the path</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>BST search, insert, min, max, delete</td><td>walk one path</td><td><code class="big-o o-great">O(H)</code></td></tr>
-<tr><td>Check BST; sorted array → balanced BST</td><td>bounds; middle as root</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>k-th smallest in a BST</td><td>inorder (or Morris), stop at k</td><td><code class="big-o o-good">O(H + k)</code></td></tr>
-<tr><td>Morris inorder; recover a BST</td><td>threads to predecessors</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
-<tr><td>LCA in a BST; LCA in a binary tree</td><td>steer by value; recurse both sides</td><td><code class="big-o o-great">O(H)</code>; <code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Node-to-root path</td><td>recursion, record on the way back</td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>LCA in a BST (path tracing; optimised walk)</td><td>compare paths; steer by value</td><td><code class="big-o o-good">O(N)</code>; <code class="big-o o-great">O(H)</code></td></tr>
+<tr><td>LCA in a binary tree ("we are all connected")</td><td>node-to-root paths, or recurse both sides</td><td><code class="big-o o-good">O(N)</code></td></tr>
 </tbody>
 </table>
 <hr />
 <h2 id="unit-4">Unit 4 — Heaps, Greedy, DP &amp; Graphs<a class="headerlink" href="#unit-4" title="Permanent link">#</a></h2>
 <p>The heavyweight patterns: always grab the best item (heaps and greedy), remember every subproblem (DP), and walk networks of relationships (graphs).</p>
 
-<!-- ============================================================ 15 -->
-<h3 id="14-heaps-and-greedy">Heaps &amp; Greedy<a class="headerlink" href="#14-heaps-and-greedy" title="Permanent link">#</a></h3>
+<!-- ============================================================ 26 -->
+<h3 id="25-heaps">Heaps<a class="headerlink" href="#25-heaps" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Peek min / max</strong> <code class="big-o o-great">O(1)</code></li>
 <li><strong>Push / pop</strong> <code class="big-o o-great">O(log N)</code></li>
@@ -3353,8 +3531,29 @@ const mf = new MedianFinder();
 console.log([5, 15, 1, 3].map((x) =&gt; (mf.addNum(x), mf.findMedian()))); // [5, 10, 5, 4]
 </code></pre></div>
 </div>
+<p><strong>From the notes — heap problems</strong></p>
+<table>
+<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<tbody>
+<tr><td>Insert / extract in a min-heap; min- and max-heap classes</td><td>sift up / sift down</td><td><code class="big-o o-great">O(log N)</code></td></tr>
+<tr><td>Priority queue; heap queries</td><td>binary heap</td><td><code class="big-o o-ok">O(Q log N)</code></td></tr>
+<tr><td>Build a heap from an array (min / max)</td><td>sift down from <code>n/2 - 1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
+<tr><td>Heap sort</td><td>build max-heap, swap root to end</td><td><code class="big-o o-ok">O(N log N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
+<tr><td>Median of a stream</td><td>max-heap + min-heap</td><td><code class="big-o o-great">O(log N)</code> per insert</td></tr>
+</tbody>
+</table>
 </div>
-<h4 id="greedy">Greedy — take the locally best choice, never look back<a class="headerlink" href="#greedy" title="Permanent link">#</a></h4>
+
+<!-- ============================================================ 27 -->
+<h3 id="26-greedy-algorithms">Greedy Algorithms<a class="headerlink" href="#26-greedy-algorithms" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>Sort, then sweep</b> <code class="big-o o-ok">O(N log N)</code></li>
+<li><b>Heap-driven choices</b> <code class="big-o o-ok">O(N log N)</code></li>
+</ul>
+<div class="analogy">
+<span class="analogy-icon">🪙</span>
+<div class="analogy-body"><b>Picture it — paying with the biggest coin first</b><p>A cashier handing back change grabs the largest coin that fits, again and again, and never reconsiders. With everyday coin sets that is optimal; with odd denominations it can fail — which is exactly why every greedy rule needs a reason it is safe.</p></div>
+</div>
 <p>A greedy algorithm makes the choice that looks best <strong>right now</strong> and never revisits it. It is correct only when you can argue that some optimal answer starts with that choice — usually by showing that swapping any other first choice for the greedy one never makes things worse. Heaps and sorting are how greedy algorithms find "the best choice right now" quickly.</p>
 <figure class="figure mermaid-fig">
 <pre class="mermaid">
@@ -3475,23 +3674,19 @@ console.log(activitySelection([[1, 2], [2, 3], [3, 6], [6, 7], [8, 9], [1, 9]]))
 <div class="callout callout-warn">
 <p>Greedy by the obvious key is often wrong. Activity selection by <strong>shortest duration</strong> or <strong>earliest start</strong> both fail on small counter-examples; only <strong>earliest end</strong> is provably safe. Always try to break your greedy rule with a three-item example before coding it.</p>
 </div>
-<p><strong>From the notes — heap and greedy problems</strong></p>
+<p><strong>From the notes — greedy problems</strong></p>
 <table>
-<thead><tr><th>Problem</th><th>Technique</th><th>Complexity</th></tr></thead>
+<thead><tr><th>Problem</th><th>Greedy choice</th><th>Complexity</th></tr></thead>
 <tbody>
-<tr><td>Insert / extract in a min-heap; min- and max-heap classes</td><td>sift up / sift down</td><td><code class="big-o o-great">O(log N)</code></td></tr>
-<tr><td>Priority queue; heap queries</td><td>binary heap</td><td><code class="big-o o-ok">O(Q log N)</code></td></tr>
-<tr><td>Build a heap from an array (min / max)</td><td>sift down from <code>n/2 - 1</code></td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Heap sort</td><td>build max-heap, swap root to end</td><td><code class="big-o o-ok">O(N log N)</code>, <code class="big-o o-great">O(1)</code></td></tr>
-<tr><td>Median of a stream</td><td>max-heap + min-heap</td><td><code class="big-o o-great">O(log N)</code> per insert</td></tr>
-<tr><td>Connecting the ropes</td><td>greedy, min-heap</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
-<tr><td>Activity selection / finish maximum jobs</td><td>greedy, sort by end</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
-<tr><td>Job scheduling with deadlines</td><td>sort by deadline + min-heap</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
+<tr><td>Connecting the ropes</td><td>join the two shortest (min-heap)</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
+<tr><td>Activity selection / finish maximum jobs</td><td>earliest end first</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
+<tr><td>Job scheduling with deadlines</td><td>sort by deadline, keep best profits in a min-heap</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
+<tr><td>Fractional knapsack (§27)</td><td>best value per weight first</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
 </tbody>
 </table>
 
-<!-- ============================================================ 16 -->
-<h3 id="15-dynamic-programming">Dynamic Programming<a class="headerlink" href="#15-dynamic-programming" title="Permanent link">#</a></h3>
+<!-- ============================================================ 28 -->
+<h3 id="27-dynamic-programming">Dynamic Programming<a class="headerlink" href="#27-dynamic-programming" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Time</strong> <code>states × work per state</code></li>
 <li><strong>Fibonacci</strong> <code class="big-o o-bad">O(2^N)</code> → <code class="big-o o-good">O(N)</code></li>
@@ -3643,7 +3838,7 @@ console.log(uniquePaths(3, 3));   // 6
 console.log(countUniqueBSTs(3));  // 5
 </code></pre></div>
 </div>
-<p>The unique-BST count is the <strong>Catalan</strong> recurrence <code>C(n) = Σ C(i) · C(n-1-i)</code>: pick a root, and the left and right subtrees are independent smaller problems. The same numbers count valid parenthesis strings from §7.</p>
+<p>The unique-BST count is the <strong>Catalan</strong> recurrence <code>C(n) = Σ C(i) · C(n-1-i)</code>: pick a root, and the left and right subtrees are independent smaller problems. The same numbers count valid parenthesis strings from §14.</p>
 <h4 id="knapsack">The knapsack family<a class="headerlink" href="#knapsack" title="Permanent link">#</a></h4>
 <p>Items have a weight and a value; the bag has a capacity. Three variants, three different tools:</p>
 <table>
@@ -3778,8 +3973,8 @@ console.log(fractionalKnapsack([200, 250, 150], [20, 50, 10], 70)); // 550
 </tbody>
 </table>
 
-<!-- ============================================================ 17 -->
-<h3 id="16-graphs">Graphs<a class="headerlink" href="#16-graphs" title="Permanent link">#</a></h3>
+<!-- ============================================================ 29 -->
+<h3 id="28-graphs">Graphs<a class="headerlink" href="#28-graphs" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>BFS / DFS</b> <code class="big-o o-good">O(V + E)</code></li>
 <li><b>Dijkstra</b> <code class="big-o o-ok">O((V + E) log V)</code></li>
@@ -4191,7 +4386,7 @@ function dijkstra(n, edges, source) {
   }
   const dist = new Array(n).fill(Infinity);
   dist[source] = 0;
-  const heap = new MinHeap((a, b) =&gt; a[0] - b[0]);   // the MinHeap class from §14
+  const heap = new MinHeap((a, b) =&gt; a[0] - b[0]);   // the MinHeap class from §25
   heap.push([0, source]);
   while (heap.size()) {
     const [d, u] = heap.pop();
@@ -4232,41 +4427,48 @@ console.log(dijkstra(7, roads, 0)); // [0, 10, 20, 30, 32, 35, 38]
 </table>
 <hr />
 
-<!-- ============================================================ 18 -->
-<h2 id="17-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink" href="#17-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
-<p>Most of interview problem-solving is <strong>recognition</strong>: noticing which of about twenty signals is in the problem statement. This table is the index to the whole course.</p>
+<!-- ============================================================ 30 -->
+<h2 id="29-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink" href="#29-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+<p>Most of interview problem-solving is <strong>recognition</strong>: noticing which of about thirty signals is in the problem statement. This table is the index to the whole course.</p>
 <table>
 <thead><tr><th>If the problem says…</th><th>Reach for</th><th>Cost</th><th>Section</th></tr></thead>
 <tbody>
 <tr><td>"sum over all subarrays / submatrices"</td><td>contribution counting</td><td><code class="big-o o-good">O(N)</code></td><td>§1</td></tr>
 <tr><td>"many range sum queries"</td><td>prefix sums</td><td><code class="big-o o-good">O(N + Q)</code></td><td>§2</td></tr>
 <tr><td>"many range updates, read once"</td><td>difference array</td><td><code class="big-o o-good">O(N + Q)</code></td><td>§2</td></tr>
-<tr><td>"contiguous, length K"</td><td>fixed sliding window</td><td><code class="big-o o-good">O(N)</code></td><td>§2</td></tr>
-<tr><td>"longest / count subarrays with a limit, all positive"</td><td>dynamic sliding window</td><td><code class="big-o o-good">O(N)</code></td><td>§2</td></tr>
-<tr><td>"maximum subarray sum"</td><td>Kadane</td><td><code class="big-o o-good">O(N)</code></td><td>§3</td></tr>
-<tr><td>"overlapping intervals"</td><td>sort by start, sweep</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§3</td></tr>
-<tr><td>"appears more than n/2 times"</td><td>Boyer–Moore</td><td><code class="big-o o-good">O(N)</code></td><td>§3</td></tr>
-<tr><td>"sorted array, pair with sum / difference"</td><td>two pointers</td><td><code class="big-o o-good">O(N)</code></td><td>§4</td></tr>
-<tr><td>"row- and column-sorted matrix"</td><td>staircase search</td><td><code class="big-o o-good">O(N + M)</code></td><td>§5</td></tr>
-<tr><td>"every element twice except one"</td><td>XOR</td><td><code class="big-o o-good">O(N)</code></td><td>§6</td></tr>
-<tr><td>"all primes up to N"</td><td>sieve</td><td><code class="big-o o-ok">O(N log log N)</code></td><td>§6</td></tr>
-<tr><td>"all subsets / permutations / combinations"</td><td>backtracking</td><td><code class="big-o o-bad">O(2^N)</code> / <code class="big-o o-bad">O(N!)</code></td><td>§7</td></tr>
-<tr><td>"subarray with sum K, negatives allowed"</td><td>prefix sums + hash map</td><td><code class="big-o o-good">O(N)</code></td><td>§8</td></tr>
-<tr><td>"values in a small range"</td><td>count sort</td><td><code class="big-o o-good">O(N + K)</code></td><td>§9</td></tr>
-<tr><td>"arrange to form the largest …"</td><td>custom comparator</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§9</td></tr>
-<tr><td>"minimum possible maximum" / "maximum possible minimum"</td><td>binary search on the answer</td><td><code class="big-o o-ok">O(N log R)</code></td><td>§10</td></tr>
-<tr><td>"middle, cycle, palindrome of a linked list"</td><td>slow / fast pointers</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§11</td></tr>
-<tr><td>"O(1) get and put with eviction"</td><td>hash map + DLL (LRU)</td><td><code class="big-o o-great">O(1)</code></td><td>§11</td></tr>
-<tr><td>"nearest smaller / greater element"</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td><td>§12</td></tr>
-<tr><td>"max of every window"</td><td>monotonic deque</td><td><code class="big-o o-good">O(N)</code></td><td>§12</td></tr>
-<tr><td>"inorder with O(1) space"</td><td>Morris traversal</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§13</td></tr>
-<tr><td>"k smallest / largest, running median"</td><td>heap(s)</td><td><code class="big-o o-ok">O(N log K)</code></td><td>§14</td></tr>
-<tr><td>"count ways / min cost, choices overlap"</td><td>dynamic programming</td><td>states × transitions</td><td>§15</td></tr>
-<tr><td>"budget, weights, values"</td><td>knapsack</td><td><code class="big-o o-good">O(N·W)</code></td><td>§15</td></tr>
-<tr><td>"fewest steps in a grid or unweighted graph"</td><td>BFS / multi-source BFS</td><td><code class="big-o o-good">O(V + E)</code></td><td>§16</td></tr>
-<tr><td>"prerequisites / build order"</td><td>topological sort</td><td><code class="big-o o-good">O(V + E)</code></td><td>§16</td></tr>
-<tr><td>"connect everything cheaply"</td><td>MST (Kruskal / Prim)</td><td><code class="big-o o-ok">O(E log E)</code></td><td>§16</td></tr>
-<tr><td>"cheapest route, non-negative weights"</td><td>Dijkstra</td><td><code class="big-o o-ok">O((V + E) log V)</code></td><td>§16</td></tr>
+<tr><td>"count pairs where one comes before the other"</td><td>carry forward</td><td><code class="big-o o-good">O(N)</code></td><td>§3</td></tr>
+<tr><td>"contiguous, length K"</td><td>fixed sliding window</td><td><code class="big-o o-good">O(N)</code></td><td>§4</td></tr>
+<tr><td>"longest / count subarrays with a limit, all positive"</td><td>dynamic sliding window</td><td><code class="big-o o-good">O(N)</code></td><td>§4</td></tr>
+<tr><td>"maximum subarray sum"</td><td>Kadane</td><td><code class="big-o o-good">O(N)</code></td><td>§5</td></tr>
+<tr><td>"overlapping intervals"</td><td>sort by start, sweep</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§6</td></tr>
+<tr><td>"appears more than n/2 times"</td><td>Boyer–Moore</td><td><code class="big-o o-good">O(N)</code></td><td>§7</td></tr>
+<tr><td>"sorted array, pair with sum / difference"</td><td>two pointers</td><td><code class="big-o o-good">O(N)</code></td><td>§8</td></tr>
+<tr><td>"row- and column-sorted matrix"</td><td>staircase search</td><td><code class="big-o o-good">O(N + M)</code></td><td>§9</td></tr>
+<tr><td>"every element twice except one"</td><td>XOR</td><td><code class="big-o o-good">O(N)</code></td><td>§10</td></tr>
+<tr><td>"all primes up to N"</td><td>sieve</td><td><code class="big-o o-ok">O(N log log N)</code></td><td>§11</td></tr>
+<tr><td>"number of ways to choose, nCr mod M"</td><td>Pascal's identity</td><td><code class="big-o o-bad">O(N^2)</code></td><td>§12</td></tr>
+<tr><td>"power in logarithmic time"</td><td>recursion, halve the exponent</td><td><code class="big-o o-great">O(log N)</code></td><td>§13</td></tr>
+<tr><td>"all subsets / permutations / combinations"</td><td>backtracking</td><td><code class="big-o o-bad">O(2^N)</code> / <code class="big-o o-bad">O(N!)</code></td><td>§14</td></tr>
+<tr><td>"subarray with sum K, negatives allowed"</td><td>prefix sums + hash map</td><td><code class="big-o o-good">O(N)</code></td><td>§15</td></tr>
+<tr><td>"values in a small range"</td><td>count sort</td><td><code class="big-o o-good">O(N + K)</code></td><td>§16</td></tr>
+<tr><td>"arrange to form the largest …"</td><td>custom comparator</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§16</td></tr>
+<tr><td>"minimum possible maximum" / "maximum possible minimum"</td><td>binary search on the answer</td><td><code class="big-o o-ok">O(N log R)</code></td><td>§17</td></tr>
+<tr><td>"middle, cycle, palindrome of a linked list"</td><td>slow / fast pointers</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§18</td></tr>
+<tr><td>"O(1) get and put with eviction"</td><td>hash map + DLL (LRU)</td><td><code class="big-o o-great">O(1)</code></td><td>§18</td></tr>
+<tr><td>"nearest smaller / greater element"</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td><td>§19</td></tr>
+<tr><td>"max of every window"</td><td>monotonic deque</td><td><code class="big-o o-good">O(N)</code></td><td>§20</td></tr>
+<tr><td>"left / right / top view of a tree"</td><td>level order (+ column index)</td><td><code class="big-o o-good">O(N)</code></td><td>§21</td></tr>
+<tr><td>"validate, delete or k-th smallest in a BST"</td><td>BST ordering, inorder</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§22</td></tr>
+<tr><td>"inorder with O(1) space"</td><td>Morris traversal</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§23</td></tr>
+<tr><td>"lowest common ancestor"</td><td>steer by value / recurse both sides</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§24</td></tr>
+<tr><td>"k smallest / largest, running median"</td><td>heap(s)</td><td><code class="big-o o-ok">O(N log K)</code></td><td>§25</td></tr>
+<tr><td>"maximum jobs / minimum joining cost"</td><td>greedy with sort or heap</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§26</td></tr>
+<tr><td>"count ways / min cost, choices overlap"</td><td>dynamic programming</td><td>states × transitions</td><td>§27</td></tr>
+<tr><td>"budget, weights, values"</td><td>knapsack</td><td><code class="big-o o-good">O(N·W)</code></td><td>§27</td></tr>
+<tr><td>"fewest steps in a grid or unweighted graph"</td><td>BFS / multi-source BFS</td><td><code class="big-o o-good">O(V + E)</code></td><td>§28</td></tr>
+<tr><td>"prerequisites / build order"</td><td>topological sort</td><td><code class="big-o o-good">O(V + E)</code></td><td>§28</td></tr>
+<tr><td>"connect everything cheaply"</td><td>MST (Kruskal / Prim)</td><td><code class="big-o o-ok">O(E log E)</code></td><td>§28</td></tr>
+<tr><td>"cheapest route, non-negative weights"</td><td>Dijkstra</td><td><code class="big-o o-ok">O((V + E) log V)</code></td><td>§28</td></tr>
 </tbody>
 </table>
 <figure class="figure mermaid-fig">
