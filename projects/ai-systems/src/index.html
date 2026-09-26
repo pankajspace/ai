@@ -11,7 +11,7 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <link rel="stylesheet" href="css/style.css?v=8" />
+    <link rel="stylesheet" href="css/style.css?v=9" />
 </head>
 
 <body data-api-base="">
@@ -45,19 +45,57 @@
                             <a class="info-link" href="info/benchmark.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Compare Direct, Zero-Shot CoT, and Few-Shot CoT on multi-step reasoning questions. Enter a
-                            question or preset name (pens, discount, factory, train, printers) to evaluate answers and
-                            token costs.</p>
-                        <div class="model-select-wrap">
-                            <label for="benchmarkModel" class="model-select-label">Model:</label>
-                            <select id="benchmarkModel" class="model-select">
-                                <option value="openai" selected>OpenAI (gpt-4o-mini)</option>
-                                <option value="gemini">Google Gemini (gemini-3.6-flash)</option>
-                                <option value="groq">Groq (openai/gpt-oss-20b)</option>
-                            </select>
+                        <p>Compare Direct, Zero-Shot CoT, and Few-Shot CoT on multi-step reasoning questions. Pick a
+                            preset (scored against its known answer) or choose Custom and type your own.</p>
+                        <div class="select-row">
+                            <div class="model-select-wrap">
+                                <label for="benchmarkModel" class="model-select-label">Model:</label>
+                                <select id="benchmarkModel" class="model-select">
+                                    <option value="openai" selected>OpenAI (gpt-4o-mini)</option>
+                                    <option value="gemini">Google Gemini (gemini-3.6-flash)</option>
+                                    <option value="groq">Groq (openai/gpt-oss-20b)</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="benchmarkPreset" class="model-select-label">Question:</label>
+                                <select id="benchmarkPreset" class="model-select" data-target="benchmarkInput">
+                                    <option
+                                        data-text="A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)">
+                                        Pens (change from 500)</option>
+                                    <option
+                                        data-text="A jacket is priced at 4000 rupees. A 25% discount is applied, then a further 10% off the reduced price, and finally 18% GST is added to that result. What is the final price? (Answer with the number only)">
+                                        Discount + GST</option>
+                                    <option
+                                        data-text="A factory produces 2000 units in a day. 8% fail quality control. Of the units that pass, 15% are exported and the rest are sold domestically. How many units are sold domestically? (Answer with the number only)">
+                                        Factory output</option>
+                                    <option
+                                        data-text="A train departs at 14:35. The journey takes 3 hours 50 minutes, then it waits 25 minutes at a junction, then continues for a further 1 hour 40 minutes. What time does it arrive? (Answer in 24-hour HH:MM format)">
+                                        Train arrival time</option>
+                                    <option selected
+                                        data-text="Three printers together print 90 pages in 6 minutes. At the same rate per printer, how many pages would 5 printers print in 10 minutes? (Answer with the number only)">
+                                        Printers rate</option>
+                                    <option data-text="">Custom question…</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="benchmarkStrategy" class="model-select-label">Strategy:</label>
+                                <select id="benchmarkStrategy" class="model-select">
+                                    <option value="all" selected>All three</option>
+                                    <option value="direct">Direct</option>
+                                    <option value="zero_shot">Zero-Shot CoT</option>
+                                    <option value="few_shot">Few-Shot CoT</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="benchmarkTemperature" class="model-select-label">Temperature:</label>
+                                <select id="benchmarkTemperature" class="model-select">
+                                    <option value="0">0</option>
+                                    <option value="0.7" selected>0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </div>
                         </div>
-                        <input type="text" id="benchmarkInput"
-                            placeholder="e.g. pens, discount, or: Three printers print 90 pages in 6 min..."
+                        <input type="text" id="benchmarkInput" placeholder="Type your own multi-step question…"
                             value="Three printers together print 90 pages in 6 minutes. At the same rate per printer, how many pages would 5 printers print in 10 minutes?" />
                         <span class="validation" id="benchmarkValidation"></span>
                         <button id="benchmarkBtn" disabled>Compare Strategies</button>
@@ -71,20 +109,45 @@
                             <a class="info-link" href="info/sycophancy.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Four rounds per question under escalating user pressure (cold question, pushback, refusal,
-                            compliance demand). Enter a preset ID (math_order, leap_year, sql_injection,
-                            hardcoded_secret, off_by_one, dinosaurs).</p>
-                        <div class="model-select-wrap">
-                            <label for="sycophancyModel" class="model-select-label">Model:</label>
-                            <select id="sycophancyModel" class="model-select">
-                                <option value="openai" selected>OpenAI (gpt-4o-mini)</option>
-                                <option value="gemini">Google Gemini (gemini-3.6-flash)</option>
-                                <option value="groq">Groq (openai/gpt-oss-20b)</option>
-                            </select>
+                        <p>A cold question followed by up to three rounds of escalating user pressure (pushback,
+                            refusal, compliance demand). Pick a case and how hard to push.</p>
+                        <div class="select-row">
+                            <div class="model-select-wrap">
+                                <label for="sycophancyModel" class="model-select-label">Model:</label>
+                                <select id="sycophancyModel" class="model-select">
+                                    <option value="openai" selected>OpenAI (gpt-4o-mini)</option>
+                                    <option value="gemini">Google Gemini (gemini-3.6-flash)</option>
+                                    <option value="groq">Groq (openai/gpt-oss-20b)</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="sycophancyInput" class="model-select-label">Question:</label>
+                                <select id="sycophancyInput" class="model-select">
+                                    <option value="math_order" selected>Math gaslight · 2 + 2 × 3</option>
+                                    <option value="leap_year">Plausible correction · Feb 2100</option>
+                                    <option value="sql_injection">Authority · SQL injection review</option>
+                                    <option value="hardcoded_secret">Authority · live key in public repo</option>
+                                    <option value="off_by_one">Authority · off-by-one loop</option>
+                                    <option value="dinosaurs">Guilt trip · humans + dinosaurs</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="sycophancyPushbacks" class="model-select-label">Pushbacks:</label>
+                                <select id="sycophancyPushbacks" class="model-select">
+                                    <option value="1">1 · pushback</option>
+                                    <option value="2">2 · + refusal</option>
+                                    <option value="3" selected>3 · + compliance demand</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="sycophancyTemperature" class="model-select-label">Temperature:</label>
+                                <select id="sycophancyTemperature" class="model-select">
+                                    <option value="0">0</option>
+                                    <option value="0.7" selected>0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </div>
                         </div>
-                        <input type="text" id="sycophancyInput"
-                            placeholder="e.g. math_order, sql_injection, hardcoded_secret, dinosaurs"
-                            value="math_order" />
                         <span class="validation" id="sycophancyValidation"></span>
                         <button id="sycophancyBtn" disabled>Run Pressure Test</button>
                         <div class="result" id="sycophancyResult"></div>
@@ -98,9 +161,46 @@
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
                         <p>Four-stage agentic dispute resolution pipeline: freezes evidence, extracts atomic grievances
-                            with co-reference resolution, runs 3 distinct judge models (OpenAI, Gemini, Groq) with
-                            self-consistency voting, and
-                            settles with code pricing under a ₹2,000 cap.</p>
+                            with co-reference resolution, runs a bench of judge models with majority voting, and
+                            settles with code pricing under an auto-approval cap. Change the bench or the cap and
+                            re-run to see how rulings and payouts shift.</p>
+                        <div class="select-row">
+                            <div class="model-select-wrap">
+                                <label for="refundPreset" class="model-select-label">Complaint:</label>
+                                <select id="refundPreset" class="model-select" data-target="refundInput">
+                                    <option selected
+                                        data-text="Ordered at 8:15pm and the food showed up at 9:40pm. We had guests over, it was embarrassing. Two of the four were missing completely. The raita had leaked all over the inside of the bag. And the delivery guy was rude when I asked him about it. Honestly the worst experience I've had on this app — refund everything.">
+                                        Canonical · late, missing, leak, rude</option>
+                                    <option
+                                        data-text="I placed my order at 8:15pm and it only arrived at 9:40pm, way past the promised time. Please refund the delivery fee.">
+                                        Late delivery only</option>
+                                    <option
+                                        data-text="Nothing arrived at all — all four biryanis, both salans and the raita were missing. The delivery guy was rude and threw the bag at me. I want every rupee back.">
+                                        Exaggerated · evidence contradicts</option>
+                                    <option
+                                        data-text="The biryani was cold and far too salty, and the salan tasted stale. Not what I expect for this price.">
+                                        Unverifiable · taste and temperature</option>
+                                    <option data-text="">Custom complaint…</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="refundBench" class="model-select-label">Judge bench:</label>
+                                <select id="refundBench" class="model-select">
+                                    <option value="single">1 judge · OpenAI</option>
+                                    <option value="openai3">3 judges · OpenAI × 3</option>
+                                    <option value="mixed3" selected>3 judges · OpenAI, Gemini, Groq</option>
+                                    <option value="mixed5">5 judges · mixed providers</option>
+                                </select>
+                            </div>
+                            <div class="model-select-wrap">
+                                <label for="refundCap" class="model-select-label">Auto-approve cap:</label>
+                                <select id="refundCap" class="model-select">
+                                    <option value="500">₹500</option>
+                                    <option value="2000" selected>₹2,000</option>
+                                    <option value="5000">₹5,000</option>
+                                </select>
+                            </div>
+                        </div>
                         <textarea id="refundInput" rows="4"
                             placeholder="Enter customer complaint paragraph...">Ordered at 8:15pm and the food showed up at 9:40pm. We had guests over, it was embarrassing. Two of the four were missing completely. The raita had leaked all over the inside of the bag. And the delivery guy was rude when I asked him about it. Honestly the worst experience I've had on this app — refund everything.</textarea>
                         <span class="validation" id="refundValidation"></span>
@@ -118,7 +218,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js?v=6"></script>
+    <script src="js/main.js?v=7"></script>
 </body>
 
 </html>

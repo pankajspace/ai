@@ -21,6 +21,9 @@ OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
 GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-3.6-flash")
 GROK_MODEL = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
 
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
 _openai_client = None
 _gemini_client = None
 _grok_client = None

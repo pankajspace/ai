@@ -13,10 +13,11 @@ from pathlib import Path
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
-from prompt_benchmark import run_benchmark_for_question
+from config import TEMPERATURE_CHOICES
+from prompt_benchmark import STRATEGY_CHOICES, run_benchmark_for_question
 from rate_limiter import check_rate_limit
-from refund_bench import adjudicate_dispute
-from sycophancy import run_sycophancy_test
+from refund_bench import BENCH_CHOICES, CAP_CHOICES, adjudicate_dispute
+from sycophancy import PUSHBACK_CHOICES, run_sycophancy_test
 
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 
@@ -82,6 +83,16 @@ def info(filename):
     return app.send_static_file(os.path.join("info", filename))
 
 
+def read_choice(data: dict, name: str, allowed, default: str):
+    """Return a dropdown value, ``default`` if absent, or None if it is not allowed."""
+    value = str(data.get(name) or default)
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(allowed)}."}), 400
+
+
 @bp.route("/benchmark", methods=["POST"])
 def benchmark_route():
     """Run Prompting Strategy Benchmark (Direct vs Zero-Shot CoT vs Few-Shot CoT)."""
@@ -89,10 +100,21 @@ def benchmark_route():
     message = (data.get("message") or data.get("question") or "").strip()
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    strategy = read_choice(data, "strategy", STRATEGY_CHOICES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", STRATEGY_CHOICES)
+    temperature = read_choice(data, "temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
 
     model_choice = data.get("model")
     try:
-        results = run_benchmark_for_question(message, model_choice=model_choice)
+        results = run_benchmark_for_question(
+            message,
+            model_choice=model_choice,
+            strategy=strategy,
+            temperature=TEMPERATURE_CHOICES[temperature],
+        )
         return jsonify({"result": results})
     except Exception as e:
         return jsonify({"error": f"Benchmark evaluation failed: {str(e)}"}), 500
@@ -100,15 +122,26 @@ def benchmark_route():
 
 @bp.route("/sycophancy", methods=["POST"])
 def sycophancy_route():
-    """Run 4-round escalating pushback sycophancy evaluation."""
+    """Run the escalating pushback sycophancy evaluation."""
     data = request.get_json(force=True) or {}
     message = (data.get("message") or data.get("case_id") or "").strip()
     if not message:
         return jsonify({"error": "A test case ID or question is required."}), 400
+    pushbacks = read_choice(data, "pushbacks", PUSHBACK_CHOICES, "3")
+    if pushbacks is None:
+        return invalid_choice("pushbacks", PUSHBACK_CHOICES)
+    temperature = read_choice(data, "temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
 
     model_choice = data.get("model")
     try:
-        results = run_sycophancy_test(message, model_choice=model_choice)
+        results = run_sycophancy_test(
+            message,
+            model_choice=model_choice,
+            pushbacks=int(pushbacks),
+            temperature=TEMPERATURE_CHOICES[temperature],
+        )
         return jsonify({"result": results})
     except Exception as e:
         return jsonify({"error": f"Sycophancy test failed: {str(e)}"}), 500
@@ -121,9 +154,15 @@ def refund_route():
     message = (data.get("message") or data.get("complaint") or "").strip()
     if not message:
         return jsonify({"error": "A complaint description is required."}), 400
+    bench = read_choice(data, "bench", BENCH_CHOICES, "mixed3")
+    if bench is None:
+        return invalid_choice("bench", BENCH_CHOICES)
+    cap = read_choice(data, "cap", CAP_CHOICES, "2000")
+    if cap is None:
+        return invalid_choice("cap", CAP_CHOICES)
 
     try:
-        results = adjudicate_dispute(message)
+        results = adjudicate_dispute(message, bench=bench, cap=CAP_CHOICES[cap])
         return jsonify({"result": results})
     except Exception as e:
         return jsonify({"error": f"Refund adjudication failed: {str(e)}"}), 500

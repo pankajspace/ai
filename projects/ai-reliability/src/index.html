@@ -42,13 +42,32 @@
                             <a class="info-link" href="info/variance.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Extracts sentiment and entities from a review 5 times under each of three strategies
-                            (unconstrained, prompt asks for JSON, API-enforced schema) at temperature 0.7, then
-                            grades every output with a strict <code>json.loads()</code> parser.</p>
+                        <p>Extracts sentiment and entities from a review 5 times per strategy (unconstrained, prompt
+                            asks for JSON, API-enforced schema), then grades every output with a strict
+                            <code>json.loads()</code> parser. Try temperature 0 vs 1.2 to see what randomness does
+                            and does not fix.
+                        </p>
+                        <div class="options">
+                            <label class="option">Strategy
+                                <select id="varianceStrategy">
+                                    <option value="all" selected>All three</option>
+                                    <option value="A">A · Unconstrained</option>
+                                    <option value="B">B · Prompt asks for JSON</option>
+                                    <option value="C">C · Schema enforced</option>
+                                </select>
+                            </label>
+                            <label class="option">Temperature
+                                <select id="varianceTemperature">
+                                    <option value="0">0</option>
+                                    <option value="0.7" selected>0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </label>
+                        </div>
                         <textarea id="varianceInput" rows="3"
                             placeholder="Paste a customer review…">The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the design though!</textarea>
                         <span class="validation" id="varianceValidation"></span>
-                        <button id="varianceBtn" disabled>Run 15 extractions</button>
+                        <button id="varianceBtn" disabled>Run extractions</button>
                         <div class="result" id="varianceResult"></div>
                     </div>
 
@@ -58,11 +77,33 @@
                             <a class="info-link" href="info/cot.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Runs one multi-step reasoning problem 5 times with a direct prompt and 5 times with
-                            "think step by step", scoring only the final line. Presets: <code>grid</code>,
-                            <code>family</code>, <code>schedule</code>, <code>inventory</code>, <code>boxes</code>.
-                        </p>
-                        <input type="text" id="cotInput" placeholder="e.g. family" value="family" />
+                        <p>Runs a multi-step reasoning problem 5 times per strategy — a direct prompt and
+                            "think step by step" — scoring only the final line.</p>
+                        <div class="options">
+                            <label class="option">Problem
+                                <select id="cotInput">
+                                    <option value="grid">Spatial navigation (grid)</option>
+                                    <option value="family" selected>Relational logic (family tree)</option>
+                                    <option value="schedule">Temporal scheduling</option>
+                                    <option value="inventory">Inventory state tracking</option>
+                                    <option value="boxes">Logic puzzle (truth-tellers)</option>
+                                </select>
+                            </label>
+                            <label class="option">Strategy
+                                <select id="cotStrategy">
+                                    <option value="both" selected>Both</option>
+                                    <option value="direct">Direct only</option>
+                                    <option value="cot">CoT only</option>
+                                </select>
+                            </label>
+                            <label class="option">Temperature
+                                <select id="cotTemperature">
+                                    <option value="0">0</option>
+                                    <option value="0.7" selected>0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </label>
+                        </div>
                         <span class="validation" id="cotValidation"></span>
                         <button id="cotBtn" disabled>Compare strategies</button>
                         <div class="result" id="cotResult"></div>
@@ -75,8 +116,24 @@
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
                         <p>Offers three weather tools (current, forecast, history) under a 2x2 of descriptive vs
-                            opaque names and loose vs tight descriptions. Your question is routed under all four,
-                            then 12 labelled queries fill in the accuracy matrix.</p>
+                            opaque names and loose vs tight descriptions. Your question is routed under each selected
+                            condition, then 12 labelled queries score its accuracy.</p>
+                        <div class="options">
+                            <label class="option">Tool names
+                                <select id="routingNames">
+                                    <option value="both" selected>Both</option>
+                                    <option value="descriptive">Descriptive</option>
+                                    <option value="opaque">Opaque</option>
+                                </select>
+                            </label>
+                            <label class="option">Descriptions
+                                <select id="routingDescriptions">
+                                    <option value="both" selected>Both</option>
+                                    <option value="loose">Loose</option>
+                                    <option value="tight">Tight</option>
+                                </select>
+                            </label>
+                        </div>
                         <input type="text" id="routingInput" placeholder="e.g. Will it snow in Oslo this weekend?"
                             value="Will it snow in Oslo this weekend?" />
                         <span class="validation" id="routingValidation"></span>
@@ -90,9 +147,25 @@
                             <a class="info-link" href="info/errors.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>An agent answers with a <code>get_weather</code> tool whose second call always returns
-                            HTTP 503. Compare a plain prompt with one that demands error reporting: did the model
-                            admit the failure, give the code, or invent weather? Ask about two or more cities.</p>
+                        <p>An agent answers with a <code>get_weather</code> tool that returns HTTP 503 on the chosen
+                            call. Compare a plain prompt with one that demands error reporting: did the model admit the
+                            failure, give the code, or invent weather? Ask about two or more cities.</p>
+                        <div class="options">
+                            <label class="option">System prompt
+                                <select id="errorsPrompt">
+                                    <option value="both" selected>Both</option>
+                                    <option value="A">A · No error guidance</option>
+                                    <option value="B">B · Explicit error guidance</option>
+                                </select>
+                            </label>
+                            <label class="option">Failing call
+                                <select id="errorsFailOnCall">
+                                    <option value="1">1st call</option>
+                                    <option value="2" selected>2nd call</option>
+                                    <option value="0">None (control)</option>
+                                </select>
+                            </label>
+                        </div>
                         <input type="text" id="errorsInput"
                             placeholder="e.g. What is the current weather in Tokyo and London?"
                             value="What is the current weather in Tokyo and London?" />

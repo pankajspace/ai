@@ -10,6 +10,8 @@ Implements the four-stage pipeline:
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
+
 from config import (
     OPENAI_MODEL,
     GEMINI_MODEL,
@@ -20,6 +22,20 @@ from config import (
 )
 
 AUTO_APPROVE_CAP = 2000.0
+
+# Cap values selectable from the UI, keyed by the string the browser sends.
+CAP_CHOICES = {"500": 500.0, "2000": 2000.0, "5000": 5000.0}
+
+# Judge bench layouts: which provider sits in each seat.
+BENCH_CHOICES = {
+    "single": {"label": "1 judge: OpenAI", "seats": ["openai"]},
+    "openai3": {"label": "3 judges: OpenAI × 3 (self-consistency)", "seats": ["openai"] * 3},
+    "mixed3": {"label": "3 judges: OpenAI · Gemini · Groq", "seats": ["openai", "gemini", "grok"]},
+    "mixed5": {
+        "label": "5 judges: OpenAI · Gemini · Groq · OpenAI · Gemini",
+        "seats": ["openai", "gemini", "grok", "openai", "gemini"],
+    },
+}
 
 DEFAULT_ORDER_EVIDENCE = {
     "order_id": "ord_d7a41c39",
@@ -59,31 +75,26 @@ CANONICAL_COMPLAINT = (
 )
 
 
-def get_bench_judges():
-    """Returns the 3 distinct judge configurations from .env."""
-    return [
-        {
-            "id": "judge_openai",
-            "name": f"Judge 1 (OpenAI · {OPENAI_MODEL})",
-            "provider": "OpenAI",
-            "model": OPENAI_MODEL,
-            "client_fn": get_openai_client,
-        },
-        {
-            "id": "judge_gemini",
-            "name": f"Judge 2 (Gemini · {GEMINI_MODEL})",
-            "provider": "Gemini",
-            "model": GEMINI_MODEL,
-            "client_fn": get_gemini_client,
-        },
-        {
-            "id": "judge_grok",
-            "name": f"Judge 3 (Groq · {GROK_MODEL})",
-            "provider": "Groq",
-            "model": GROK_MODEL,
-            "client_fn": get_grok_client,
-        },
-    ]
+def get_bench_judges(bench: str = "mixed3"):
+    """Returns one judge configuration per seat of the selected bench layout."""
+    providers = {
+        "openai": ("OpenAI", OPENAI_MODEL, get_openai_client),
+        "gemini": ("Gemini", GEMINI_MODEL, get_gemini_client),
+        "grok": ("Groq", GROK_MODEL, get_grok_client),
+    }
+    judges = []
+    for seat, key in enumerate(BENCH_CHOICES[bench]["seats"], start=1):
+        provider, model, client_fn = providers[key]
+        judges.append(
+            {
+                "id": f"judge_{seat}_{key}",
+                "name": f"Judge {seat} ({provider} · {model})",
+                "provider": provider,
+                "model": model,
+                "client_fn": client_fn,
+            }
+        )
+    return judges
 
 
 def extract_json(text: str):
@@ -276,16 +287,19 @@ Schema:
     }
 
 
-def stage3_judge_bench(grievances: list, evidence: dict) -> list:
-    """Runs the 3 distinct judge models per grievance and tallies majority verdict."""
-    judges = get_bench_judges()
+def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") -> list:
+    """Runs every judge on every grievance (in parallel) and tallies the majority verdict."""
+    judges = get_bench_judges(bench)
+    pairs = [(g, judge) for g in grievances for judge in judges]
+    # Judges share no history, so all rulings can run concurrently within the proxy timeout.
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        all_rulings = list(
+            pool.map(lambda p: judge_single_grievance(p[0]["text"], evidence, p[1]), pairs)
+        )
     judged_grievances = []
 
-    for g in grievances:
-        rulings = []
-        for judge in judges:
-            r = judge_single_grievance(g["text"], evidence, judge)
-            rulings.append(r)
+    for gi, g in enumerate(grievances):
+        rulings = all_rulings[gi * len(judges):(gi + 1) * len(judges)]
 
         # Tally majority vote in code
         votes = {"UPHELD": 0, "REJECTED": 0, "ESCALATE": 0}
@@ -346,13 +360,15 @@ def stage3_judge_bench(grievances: list, evidence: dict) -> list:
     return judged_grievances
 
 
-def stage4_settle(complaint_text: str, judged_grievances: list, evidence: dict) -> dict:
+def stage4_settle(
+    complaint_text: str, judged_grievances: list, evidence: dict, cap: float = AUTO_APPROVE_CAP
+) -> dict:
     """Computes settlement totals, checks auto-approval cap, and synthesizes customer message."""
     total_approved = sum(g["refund_amount"] for g in judged_grievances)
     total_held = sum(g["held_amount"] for g in judged_grievances)
 
     escalated_to_human = False
-    if total_approved > AUTO_APPROVE_CAP:
+    if total_approved > cap:
         escalated_to_human = True
         total_held += total_approved
         total_approved = 0.0
@@ -408,15 +424,17 @@ Held for review: ₹{total_held:.0f}"""
         "dispute_id": evidence.get("order_id", "ord_9841"),
         "total_approved_refund": total_approved,
         "total_held_for_review": total_held,
-        "auto_approval_cap": AUTO_APPROVE_CAP,
+        "auto_approval_cap": cap,
         "cap_exceeded": escalated_to_human,
         "customer_message": customer_message,
         "grievances": judged_grievances,
     }
 
 
-def adjudicate_dispute(complaint_text: str) -> dict:
-    """Executes the full 4-stage Refund Bench pipeline with 3 distinct judge models."""
+def adjudicate_dispute(
+    complaint_text: str, bench: str = "mixed3", cap: float = AUTO_APPROVE_CAP
+) -> dict:
+    """Executes the full 4-stage Refund Bench pipeline with the selected judge bench and cap."""
     cleaned_complaint = (complaint_text or "").strip()
     if not cleaned_complaint:
         cleaned_complaint = CANONICAL_COMPLAINT
@@ -428,11 +446,12 @@ def adjudicate_dispute(complaint_text: str) -> dict:
         cleaned_complaint, evidence["line_items"]
     )
 
-    # Stage 3: Multi-Judge Bench across 3 distinct models
-    judged_grievances = stage3_judge_bench(grievances, evidence)
+    # Stage 3: Multi-Judge Bench
+    judged_grievances = stage3_judge_bench(grievances, evidence, bench)
 
     # Stage 4: Settle
-    settlement = stage4_settle(cleaned_complaint, judged_grievances, evidence)
+    settlement = stage4_settle(cleaned_complaint, judged_grievances, evidence, cap)
+    settlement["bench_label"] = BENCH_CHOICES[bench]["label"]
     return settlement
 
 

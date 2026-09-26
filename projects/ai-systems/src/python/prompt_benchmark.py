@@ -11,6 +11,8 @@ from config import get_openai_client, OPENAI_MODEL, get_client_and_model
 
 TEMPERATURE = 0.7
 
+STRATEGY_CHOICES = ("all", "direct", "zero_shot", "few_shot")
+
 # Preset benchmark questions from study material
 BENCHMARK_DATA = [
     {
@@ -65,7 +67,7 @@ Answer: 60
 """
 
 
-def get_model_response(prompt: str, client=None, model_name: str = None):
+def get_model_response(prompt: str, client=None, model_name: str = None, temperature: float = TEMPERATURE):
     """Sends a prompt to the model and returns response text and token counts with retry on rate limits."""
     if client is None or model_name is None:
         client, model_name, _ = get_client_and_model()
@@ -76,7 +78,7 @@ def get_model_response(prompt: str, client=None, model_name: str = None):
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=TEMPERATURE,
+                temperature=temperature,
             )
             usage = response.usage
             return (
@@ -162,8 +164,13 @@ def evaluate_accuracy(response_text: str, correct_answer) -> bool:
     return False
 
 
-def run_benchmark_for_question(question_input: str, model_choice: str = None) -> dict:
-    """Runs Direct, Zero-Shot CoT, and Few-Shot CoT for a given question or preset."""
+def run_benchmark_for_question(
+    question_input: str,
+    model_choice: str = None,
+    strategy: str = "all",
+    temperature: float = TEMPERATURE,
+) -> dict:
+    """Runs the selected strategy (or all three) for a given question or preset."""
     client, model_name, provider = get_client_and_model(model_choice)
     matched_preset = None
     cleaned_input = question_input.strip()
@@ -183,28 +190,33 @@ def run_benchmark_for_question(question_input: str, model_choice: str = None) ->
 
     strategies = [
         (
+            "direct",
             "Direct",
             f"Answer the following question directly with just the final answer: {question}",
         ),
         (
+            "zero_shot",
             "Zero-Shot CoT",
             f"Answer the following question. Think step-by-step under 'Thought:' showing each calculation as a concise numbered step (1., 2., ...), and then provide the final answer as 'Answer: <value>': {question}",
         ),
         (
+            "few_shot",
             "Few-Shot CoT",
             f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>'.\n\n{FEW_SHOT_EXAMPLES}\n\nQuestion: {question}",
         ),
     ]
+    if strategy != "all":
+        strategies = [s for s in strategies if s[0] == strategy]
 
     results = []
     baseline_tokens = None
 
-    for idx, (name, prompt) in enumerate(strategies):
+    for idx, (_, name, prompt) in enumerate(strategies):
         if idx > 0:
             time.sleep(1.0)
         start_time = time.time()
         resp_text, p_tok, c_tok = get_model_response(
-            prompt, client=client, model_name=model_name
+            prompt, client=client, model_name=model_name, temperature=temperature
         )
         elapsed = time.time() - start_time
         total_tokens = p_tok + c_tok
@@ -217,8 +229,9 @@ def run_benchmark_for_question(question_input: str, model_choice: str = None) ->
         if name == "Direct":
             baseline_tokens = max(total_tokens, 1)
 
+        # Multipliers are relative to Direct, so they are None when Direct was not run.
         token_mult = (
-            round(total_tokens / baseline_tokens, 1) if baseline_tokens else 1.0
+            round(total_tokens / baseline_tokens, 1) if baseline_tokens else None
         )
 
         results.append(
@@ -249,6 +262,7 @@ def run_benchmark_for_question(question_input: str, model_choice: str = None) ->
         "question": question,
         "expected_answer": expected_label,
         "model_used": f"{provider} ({model_name})",
+        "temperature": temperature,
         "strategies": results,
     }
 

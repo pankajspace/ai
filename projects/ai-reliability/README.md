@@ -70,10 +70,12 @@ unexpected failure, and share the 10-POSTs-per-hour-per-IP rate limit (`429`).
 2. `GET /css/<path:filename>` — stylesheets.
 3. `GET /js/<path:filename>` — scripts.
 4. `GET /info/<path:filename>` — "how this demo works" explainer pages.
-5. `POST /variance` — `message` is a customer review (truncated to 1,000 chars). 15 model calls.
-6. `POST /cot` — `message` is a preset name: `grid`, `family`, `schedule`, `inventory`, or `boxes`. 10 model calls.
-7. `POST /routing` — `message` is a weather question (truncated to 300 chars). 52 model calls.
-8. `POST /errors` — `message` is a weather question (truncated to 300 chars). 2 agent loops, up to 6 model calls each.
+5. `POST /variance` — `message` is a customer review (truncated to 1,000 chars). Optional `strategy`: `all` (default), `A`, `B`, `C`; `temperature`: `0`, `0.7` (default), `1.2`. 5 model calls per strategy.
+6. `POST /cot` — `message` is a preset: `grid`, `family`, `schedule`, `inventory`, or `boxes`. Optional `strategy`: `both` (default), `direct`, `cot`; `temperature`: `0`, `0.7` (default), `1.2`. 5 model calls per strategy.
+7. `POST /routing` — `message` is a weather question (truncated to 300 chars). Optional `names`: `both` (default), `descriptive`, `opaque`; `descriptions`: `both` (default), `loose`, `tight`. 13 model calls per condition (up to 52).
+8. `POST /errors` — `message` is a weather question (truncated to 300 chars). Optional `prompt`: `both` (default), `A`, `B`; `fail_on_call`: `1`, `2` (default), `0` (no failure). Up to 6 model calls per scenario.
+
+Each tile exposes these options as dropdowns; an invalid value returns `400`.
 
 ### Project Structure
 
@@ -171,8 +173,10 @@ curl -s -X POST http://localhost:8088/cot \
   -H "Content-Type: application/json" -d '{"message":"family"}'
 ```
 
-The project keeps no persistent data; the in-memory rate limiter resets on
-container restart (`docker compose restart web`).
+The project keeps no business data. The rate limiter stores request timestamps
+in SQLite at `/tmp/ai_rate_limit.db` inside the container; it survives
+`docker compose restart web` and is cleared by recreating the container
+(`docker compose down && docker compose up web`).
 
 ---
 

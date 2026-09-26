@@ -27,6 +27,9 @@ CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
 # the 60 s Nginx proxy timeout without hammering the provider.
 MAX_WORKERS = 8
 
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
 _client = None
 
 

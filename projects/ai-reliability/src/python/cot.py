@@ -14,6 +14,8 @@ RUNS_PER_STRATEGY = 5
 TEMPERATURE = 0.7
 TAIL_LINES = 1
 
+STRATEGY_CHOICES = ("both", "direct", "cot")
+
 PROBLEMS = {
     "grid": {
         "title": "Spatial Navigation (Grid)",
@@ -88,14 +90,14 @@ def cot_prompt(question: str) -> str:
     )
 
 
-def ask(prompt: str) -> tuple[str, float]:
+def ask(prompt: str, temperature: float = TEMPERATURE) -> tuple[str, float]:
     """Return (response_text, elapsed_seconds); failures become 'Error: ...'."""
     start = time.perf_counter()
     try:
         response = get_openai_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=TEMPERATURE,
+            temperature=temperature,
         )
         text = (response.choices[0].message.content or "").strip()
     except Exception as e:
@@ -114,38 +116,44 @@ def is_correct(response: str, correct_answers: list[str]) -> bool:
     return any(ans.lower() in tail for ans in correct_answers)
 
 
-def run_cot(problem_key: str) -> str:
-    """Run Direct vs CoT on one preset problem and return a text report."""
+def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPERATURE) -> str:
+    """Run Direct and/or CoT on one preset problem and return a text report."""
     problem = PROBLEMS[problem_key]
-    prompts = [direct_prompt(problem["question"])] * RUNS_PER_STRATEGY + [
-        cot_prompt(problem["question"])
-    ] * RUNS_PER_STRATEGY
-    outputs = parallel_map(ask, prompts)
+    strategies = [("direct", "Direct", direct_prompt), ("cot", "CoT   ", cot_prompt)]
+    if strategy != "both":
+        strategies = [s for s in strategies if s[0] == strategy]
 
-    direct, cot = outputs[:RUNS_PER_STRATEGY], outputs[RUNS_PER_STRATEGY:]
-    d_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in direct)
-    c_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in cot)
-    d_t = sum(t for _, t in direct) / len(direct)
-    c_t = sum(t for _, t in cot) / len(cot)
+    prompts = [fn(problem["question"]) for _, _, fn in strategies for _ in range(RUNS_PER_STRATEGY)]
+    outputs = parallel_map(lambda p: ask(p, temperature), prompts)
 
     def last_line(text: str) -> str:
         lines = [ln for ln in text.splitlines() if ln.strip()]
         return (lines[-1] if lines else text)[:200]
 
-    lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
-    latency = (c_t / d_t - 1) * 100 if d_t else 0
-    return "\n".join([
-        f"{problem['title']} · {RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {TEMPERATURE}",
+    lines = [
+        f"{problem['title']} · {RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
         f"Correct answer: {problem['correct_answers'][0]}",
         f"Why: {problem['explanation']}",
         "",
-        f"Direct  {bar(d_ok, RUNS_PER_STRATEGY)} · avg {d_t:.1f}s",
-        f"  sample final line: {last_line(direct[0][0])}",
-        f"CoT     {bar(c_ok, RUNS_PER_STRATEGY)} · avg {c_t:.1f}s",
-        f"  sample final line: {last_line(cot[0][0])}",
-        "",
-        f"Trade-off: CoT bought {lift:+.0f}pp accuracy for {latency:+.0f}% latency.",
-    ])
+    ]
+    stats = {}
+    for i, (key, label, _) in enumerate(strategies):
+        runs = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
+        ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in runs)
+        avg_t = sum(t for _, t in runs) / len(runs)
+        stats[key] = (ok, avg_t)
+        lines.append(f"{label}  {bar(ok, RUNS_PER_STRATEGY)} · avg {avg_t:.1f}s")
+        lines.append(f"  sample final line: {last_line(runs[0][0])}")
+
+    lines.append("")
+    if len(stats) == 2:
+        (d_ok, d_t), (c_ok, c_t) = stats["direct"], stats["cot"]
+        lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
+        latency = (c_t / d_t - 1) * 100 if d_t else 0
+        lines.append(f"Trade-off: CoT bought {lift:+.0f}pp accuracy for {latency:+.0f}% latency.")
+    else:
+        lines.append("Tip: pick 'Both' to see the accuracy-for-latency trade-off.")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":

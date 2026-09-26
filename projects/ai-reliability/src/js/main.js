@@ -98,11 +98,16 @@ function setupCard(config) {
             input.focus();
             return;
         }
+        const body = { [config.field]: value };
+        // config.selects maps a JSON body key to the id of a <select> on the card.
+        for (const [key, id] of Object.entries(config.selects || {})) {
+            body[key] = document.getElementById(id).value;
+        }
         callApi({
             btn,
             result,
             endpoint: config.endpoint,
-            body: { [config.field]: value },
+            body,
             render: config.render,
         });
     });
@@ -121,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requiredMessage: "Please enter a customer review.",
         endpoint: "/variance",
         field: "message",
+        selects: { strategy: "varianceStrategy", temperature: "varianceTemperature" },
         render: renderText,
     });
     setupCard({
@@ -128,9 +134,10 @@ document.addEventListener("DOMContentLoaded", () => {
         buttonId: "cotBtn",
         resultId: "cotResult",
         validationId: "cotValidation",
-        requiredMessage: "Please enter a problem name.",
+        requiredMessage: "Please choose a problem.",
         endpoint: "/cot",
         field: "message",
+        selects: { strategy: "cotStrategy", temperature: "cotTemperature" },
         render: renderText,
     });
     setupCard({
@@ -141,6 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requiredMessage: "Please enter a weather question.",
         endpoint: "/routing",
         field: "message",
+        selects: { names: "routingNames", descriptions: "routingDescriptions" },
         render: renderText,
     });
     setupCard({
@@ -151,6 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requiredMessage: "Please enter a weather question.",
         endpoint: "/errors",
         field: "message",
+        selects: { prompt: "errorsPrompt", fail_on_call: "errorsFailOnCall" },
         render: renderText,
     });
 });

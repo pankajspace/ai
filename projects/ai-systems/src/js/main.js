@@ -105,6 +105,10 @@ function setupCard(config) {
         if (modelSelect && modelSelect.value) {
             body.model = modelSelect.value;
         }
+        // config.selects maps a JSON body key to the id of a <select> on the card.
+        for (const [key, id] of Object.entries(config.selects || {})) {
+            body[key] = document.getElementById(id).value;
+        }
         callApi({
             btn,
             result,
@@ -112,6 +116,29 @@ function setupCard(config) {
             body,
             render: config.render,
         });
+    });
+}
+
+/**
+ * Preset dropdowns (select[data-target]) copy the chosen option's data-text
+ * into their target input; an empty data-text is the "Custom" option.
+ */
+function bindPresetSelects() {
+    document.querySelectorAll("select[data-target]").forEach((select) => {
+        const target = document.getElementById(select.dataset.target);
+        const apply = () => {
+            const text = select.selectedOptions[0].dataset.text || "";
+            target.value = text;
+            target.dispatchEvent(new Event("input"));
+            if (!text) target.focus();
+        };
+        select.addEventListener("change", apply);
+        target.addEventListener("input", () => {
+            if (target.value !== (select.selectedOptions[0].dataset.text || "")) {
+                select.value = [...select.options].find((o) => !o.dataset.text)?.value ?? select.value;
+            }
+        });
+        apply();
     });
 }
 
@@ -330,7 +357,7 @@ function renderBenchmarkResult(data, result) {
                     ${accBadge}
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                    <span class="badge badge-neutral badge-mono">${s.total_tokens} tokens (${s.token_multiplier}x)</span>
+                    <span class="badge badge-neutral badge-mono">${s.total_tokens} tokens${s.token_multiplier != null ? ` (${s.token_multiplier}x)` : ""}</span>
                     <span class="badge badge-neutral badge-mono">⏱️ ${s.latency_seconds}s</span>
                 </div>
             </div>
@@ -456,7 +483,7 @@ function renderRefundResult(data, result) {
 
     <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-top: 0.4rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
         <span>⚖️ Grievance Rulings</span>
-        <span class="badge badge-neutral badge-mono">3 Model Judges: OpenAI · Gemini · Groq</span>
+        <span class="badge badge-neutral badge-mono">${escapeHtml(res.bench_label || "3 judges: OpenAI · Gemini · Groq")}</span>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 0.65rem;">`;
@@ -562,6 +589,8 @@ function renderRefundResult(data, result) {
 // ---------------------------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
+    bindPresetSelects();
+
     // Feature 1: Prompting Benchmark
     setupCard({
         inputId: "benchmarkInput",
@@ -569,7 +598,8 @@ document.addEventListener("DOMContentLoaded", () => {
         resultId: "benchmarkResult",
         validationId: "benchmarkValidation",
         modelSelectId: "benchmarkModel",
-        requiredMessage: "Please enter a question or preset name.",
+        selects: { strategy: "benchmarkStrategy", temperature: "benchmarkTemperature" },
+        requiredMessage: "Please pick a preset or type a question.",
         endpoint: "/benchmark",
         field: "message",
         render: renderBenchmarkResult,
@@ -582,7 +612,8 @@ document.addEventListener("DOMContentLoaded", () => {
         resultId: "sycophancyResult",
         validationId: "sycophancyValidation",
         modelSelectId: "sycophancyModel",
-        requiredMessage: "Please enter a test case ID or question.",
+        selects: { pushbacks: "sycophancyPushbacks", temperature: "sycophancyTemperature" },
+        requiredMessage: "Please choose a test case.",
         endpoint: "/sycophancy",
         field: "message",
         render: renderSycophancyResult,
@@ -594,6 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
         buttonId: "refundBtn",
         resultId: "refundResult",
         validationId: "refundValidation",
+        selects: { bench: "refundBench", cap: "refundCap" },
         requiredMessage: "Please enter a complaint description.",
         endpoint: "/refund",
         field: "message",

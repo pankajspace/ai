@@ -37,9 +37,11 @@ Core logic is adapted from the study materials under `study/08-ai-systems/`:
 2. `GET /css/<path:filename>`: Serves static stylesheets.
 3. `GET /js/<path:filename>`: Serves static JavaScript files.
 4. `GET /info/<path:filename>`: Serves dedicated "How this demo works" explainer pages from `src/info/`.
-5. `POST /benchmark`: Expects `{"message": "<question_or_preset>"}` and returns benchmark metrics across strategies.
-6. `POST /sycophancy`: Expects `{"message": "<case_id_or_question>"}` and returns round-by-round pushback evaluation.
-7. `POST /refund`: Expects `{"message": "<complaint_text>"}` and returns grievance extractions, bench tallies, settlement amounts, and synthesized communication.
+5. `POST /benchmark`: Expects `{"message": "<question_or_preset>"}` plus optional `model` (`openai`, `gemini`, `groq`), `strategy` (`all` default, `direct`, `zero_shot`, `few_shot`), and `temperature` (`0`, `0.7` default, `1.2`); returns benchmark metrics per strategy.
+6. `POST /sycophancy`: Expects `{"message": "<case_id>"}` plus optional `model`, `pushbacks` (`1`, `2`, `3` default), and `temperature` (`0`, `0.7` default, `1.2`); returns round-by-round pushback evaluation.
+7. `POST /refund`: Expects `{"message": "<complaint_text>"}` plus optional `bench` (`single`, `openai3`, `mixed3` default, `mixed5`) and `cap` (`500`, `2000` default, `5000`); returns grievance extractions, bench tallies, settlement amounts, and synthesized communication. Judge calls run in parallel.
+
+Each tile exposes these options as dropdowns (plus preset question/complaint pickers that fill the text box); invalid values return `400`.
 
 ---
 

@@ -21,6 +21,8 @@ RUNS_PER_STRATEGY = 5
 TEMPERATURE = 0.7
 MAX_REVIEW_CHARS = 1000
 
+STRATEGY_CHOICES = ("all", "A", "B", "C")
+
 DEFAULT_REVIEW = (
     "The new smartphone is amazing, the camera quality is top-notch but the "
     "battery life is a bit disappointing. I love the design though!"
@@ -54,12 +56,12 @@ def build_prompts(review: str) -> tuple[str, str]:
     return task, constrained
 
 
-def call_model(prompt: str, response_format: dict | None = None) -> str:
+def call_model(prompt: str, response_format: dict | None = None, temperature: float = TEMPERATURE) -> str:
     """Return the model's text, or a string starting with 'Error:' on failure."""
     kwargs = {
         "model": CHAT_MODEL,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": TEMPERATURE,
+        "temperature": temperature,
     }
     if response_format is not None:
         kwargs["response_format"] = response_format
@@ -108,25 +110,27 @@ def metrics(responses: list[str]) -> dict:
     }
 
 
-def run_variance(review: str) -> str:
-    """Run all three strategies on ``review`` and return a text report."""
+def run_variance(review: str, strategy: str = "all", temperature: float = TEMPERATURE) -> str:
+    """Run the selected strategy (or all three) on ``review`` and return a text report."""
     review = review.strip()[:MAX_REVIEW_CHARS]
     unconstrained, constrained = build_prompts(review)
     strategies = [
-        ("A · Unconstrained prompt", unconstrained, None),
-        ("B · Prompt asks for JSON", constrained, None),
-        ("C · Schema enforced by API", constrained, SCHEMA_FORMAT),
+        ("A", "A · Unconstrained prompt", unconstrained, None),
+        ("B", "B · Prompt asks for JSON", constrained, None),
+        ("C", "C · Schema enforced by API", constrained, SCHEMA_FORMAT),
     ]
+    if strategy != "all":
+        strategies = [s for s in strategies if s[0] == strategy]
 
-    jobs = [(p, fmt) for _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
+    jobs = [(p, fmt, temperature) for _, _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
     outputs = parallel_map(lambda job: call_model(*job), jobs)
 
     lines = [
-        f"{RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {TEMPERATURE}",
+        f"{RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
         "",
     ]
     schema_scores = []
-    for i, (label, _, _) in enumerate(strategies):
+    for i, (_, label, _, _) in enumerate(strategies):
         responses = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
         m = metrics(responses)
         schema_scores.append(m["schema"])
@@ -141,11 +145,14 @@ def run_variance(review: str) -> str:
         lines.append(f"  sample: {sample[:300]}{'…' if len(sample) > 300 else ''}")
         lines.append("")
 
-    lines.append(
-        f"Takeaway: usable output went {schema_scores[0]}% → {schema_scores[1]}% → {schema_scores[2]}% "
-        "at the same temperature. Determinism came from narrowing what the model "
-        "was allowed to emit, not from turning down randomness."
-    )
+    if len(schema_scores) == 3:
+        lines.append(
+            f"Takeaway: usable output went {schema_scores[0]}% → {schema_scores[1]}% → {schema_scores[2]}% "
+            "at the same temperature. Determinism came from narrowing what the model "
+            "was allowed to emit, not from turning down randomness."
+        )
+    else:
+        lines.append("Tip: re-run at another temperature, or pick 'All three' to compare strategies.")
     return "\n".join(lines)
 
 

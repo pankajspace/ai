@@ -19,10 +19,13 @@ from pathlib import Path
 from flask import Blueprint, Flask, jsonify, request
 from flask_cors import CORS
 
+from config import TEMPERATURE_CHOICES
 from cot import PROBLEMS, run_cot
+from cot import STRATEGY_CHOICES as COT_STRATEGIES
 from rate_limiter import check_rate_limit
-from tool_errors import run_error_injection
-from tool_routing import run_routing
+from tool_errors import FAIL_ON_CALL_LABELS, PROMPT_CHOICES, run_error_injection
+from tool_routing import DESCRIPTION_CHOICES, NAME_CHOICES, run_routing
+from variance import STRATEGY_CHOICES as VARIANCE_STRATEGIES
 from variance import run_variance
 
 # ---------------------------------------------------------------------------
@@ -102,14 +105,31 @@ def read_message() -> str:
     return str(data.get("message") or "").strip()
 
 
+def read_choice(name: str, allowed, default: str) -> str | None:
+    """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+
+
 @bp.route("/variance", methods=["POST"])
 def variance_route():
     """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
     message = read_message()
     if not message:
         return jsonify({"error": "A customer review is required."}), 400
+    strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
-        return jsonify({"result": run_variance(message)})
+        return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
         app.logger.exception("variance failed")
         return jsonify({"error": "Variance test failed. Please try again later."}), 500
@@ -123,8 +143,14 @@ def cot_route():
         return jsonify({"error": "A problem name is required."}), 400
     if message not in PROBLEMS:
         return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    strategy = read_choice("strategy", COT_STRATEGIES, "both")
+    if strategy is None:
+        return invalid_choice("strategy", COT_STRATEGIES)
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
-        return jsonify({"result": run_cot(message)})
+        return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
         app.logger.exception("cot failed")
         return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
@@ -136,8 +162,14 @@ def routing_route():
     message = read_message()
     if not message:
         return jsonify({"error": "A weather question is required."}), 400
+    names = read_choice("names", NAME_CHOICES, "both")
+    if names is None:
+        return invalid_choice("names", NAME_CHOICES)
+    descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
+    if descriptions is None:
+        return invalid_choice("descriptions", DESCRIPTION_CHOICES)
     try:
-        return jsonify({"result": run_routing(message)})
+        return jsonify({"result": run_routing(message, names, descriptions)})
     except Exception:
         app.logger.exception("routing failed")
         return jsonify({"error": "Routing test failed. Please try again later."}), 500
@@ -149,8 +181,15 @@ def errors_route():
     message = read_message()
     if not message:
         return jsonify({"error": "A weather question is required."}), 400
+    prompt = read_choice("prompt", PROMPT_CHOICES, "both")
+    if prompt is None:
+        return invalid_choice("prompt", PROMPT_CHOICES)
+    fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
+    fail_on_call = read_choice("fail_on_call", fail_choices, "2")
+    if fail_on_call is None:
+        return invalid_choice("fail_on_call", fail_choices)
     try:
-        return jsonify({"result": run_error_injection(message)})
+        return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
     except Exception:
         app.logger.exception("error injection failed")
         return jsonify({"error": "Error-injection test failed. Please try again later."}), 500

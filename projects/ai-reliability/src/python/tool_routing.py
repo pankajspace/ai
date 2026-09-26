@@ -59,6 +59,9 @@ CONDITIONS = [
     ("D", "opaque", "tight"),
 ]
 
+NAME_CHOICES = ("both", *NAME_SETS)
+DESCRIPTION_CHOICES = ("both", *DESCRIPTION_SETS)
+
 # A balanced subset of the study prototype's 50 labelled queries.
 SAMPLE_QUERIES = [
     ("Is it raining in London at the moment?", "current"),
@@ -117,38 +120,52 @@ def select_tool(query: str, name_style: str, desc_style: str) -> str:
         return "(error)"
 
 
-def run_routing(query: str) -> str:
-    """Route ``query`` under all four conditions and score the labelled sample."""
+def run_routing(query: str, names: str = "both", descriptions: str = "both") -> str:
+    """Route ``query`` under the selected conditions and score the labelled sample."""
     query = query.strip()[:MAX_QUERY_CHARS]
-    jobs = [(query, n, d) for _, n, d in CONDITIONS]
-    jobs += [(q, n, d) for _, n, d in CONDITIONS for q, _ in SAMPLE_QUERIES]
+    conditions = [
+        c for c in CONDITIONS
+        if names in ("both", c[1]) and descriptions in ("both", c[2])
+    ]
+    jobs = [(query, n, d) for _, n, d in conditions]
+    jobs += [(q, n, d) for _, n, d in conditions for q, _ in SAMPLE_QUERIES]
     picks = parallel_map(lambda job: select_tool(*job), jobs)
 
-    yours, sample = picks[: len(CONDITIONS)], picks[len(CONDITIONS):]
+    yours, sample = picks[: len(conditions)], picks[len(conditions):]
     total = len(SAMPLE_QUERIES)
     scores = {}
-    for i, (label, _, _) in enumerate(CONDITIONS):
+    for i, (label, _, _) in enumerate(conditions):
         chunk = sample[i * total:(i + 1) * total]
         scores[label] = sum(p == exp for p, (_, exp) in zip(chunk, SAMPLE_QUERIES))
 
     lines = [f"Your question · {CHAT_MODEL} · temperature {TEMPERATURE} · tool_choice=required"]
-    for (label, n, d), pick in zip(CONDITIONS, yours):
+    for (label, n, d), pick in zip(conditions, yours):
         tool_name = NAME_SETS[n].get(pick, pick)
         lines.append(f"  {label} {n} names + {d} descs → {tool_name} ({pick})")
 
     lines += ["", f"Routing accuracy on {total} labelled queries"]
-    for label, n, d in CONDITIONS:
+    for label, n, d in conditions:
         lines.append(f"  {label} {n:<11} + {d:<5}  {bar(scores[label], total)}")
+
+    lifts = [
+        ("Description lift with self-explanatory names", "B", "A"),
+        ("Description lift with opaque names", "D", "C"),
+        ("Name lift with vague descriptions", "A", "C"),
+        ("Name lift with tight descriptions", "B", "D"),
+    ]
+    lift_lines = [
+        f"{text}: {scores[hi] - scores[lo]:+d}" for text, hi, lo in lifts if hi in scores and lo in scores
+    ]
+    if lift_lines:
+        lines += [""] + lift_lines
+
+    lines.append("")
+    if len(scores) < 4:
+        lines.append("Tip: set both dropdowns to 'Both' for the full 2x2 and a verdict.")
+        return "\n".join(lines)
 
     desc_lift_desc = scores["B"] - scores["A"]
     desc_lift_opaque = scores["D"] - scores["C"]
-    lines += [
-        "",
-        f"Description lift with self-explanatory names: {desc_lift_desc:+d}",
-        f"Description lift with opaque names: {desc_lift_opaque:+d}",
-        f"Name lift with vague descriptions: {scores['A'] - scores['C']:+d}",
-        "",
-    ]
     if desc_lift_opaque > desc_lift_desc:
         lines.append(
             "Verdict: descriptions are load-bearing - but only when the names are not "
