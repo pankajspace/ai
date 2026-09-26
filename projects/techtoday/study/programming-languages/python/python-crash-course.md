@@ -116,10 +116,13 @@ type(age)             # <class 'int'>
 isinstance(age, int)  # True
 
 int("42")             # 42
+int(3.9)              # 3      (truncates toward zero)
+int("ff", 16)         # 255    (parse in base 16)
 str(100)              # '100'
 float("3.14")         # 3.14
 bool(0)               # False  (0, "", [], None → falsy)
 bool("hi")            # True
+# int("abc")          ❌ ValueError: invalid literal for int()
 ```
 
 <a id="3-operators"></a>
@@ -146,6 +149,8 @@ Also note that variable assignment (using `=`) is a **statement** (an action), n
 5 // 3    # 1                   (floor div)
 5 % 3     # 2                   (modulo)
 5 ** 3    # 125                 (power)
+-7 // 2   # -4                  (floors toward -infinity)
+-7 % 2    # 1                   (sign follows the divisor)
 
 # Comparison → returns bool
 5 == 5    # True
@@ -219,6 +224,14 @@ s.replace("World", "Python")   # 'Hello, Python!'
 s.startswith("Hello")          # True
 s.find("World")                # 7  (-1 if not found)
 s.count("l")                   # 3
+"cabbage".strip("abc")         # 'ge'  (strips any of a, b, c from both ends)
+"test_login".removeprefix("test_")  # 'login'  (Python 3.9+)
+"report.csv".removesuffix(".csv")   # 'report'
+
+# str ↔ bytes
+"café".encode("utf-8")         # b'caf\xc3\xa9'  (5 bytes)
+b"caf\xc3\xa9".decode("utf-8") # 'café'
+len("café")                    # 4  (characters, not bytes)
 
 # f-strings (formatted strings — use these!)
 name, age = "Alice", 30
@@ -253,7 +266,15 @@ A list is a **dynamic array of references** (a continuous block of memory that p
 There is one trap you need to internalise early: `lst.sort()` sorts **in place and returns `None`**, while `sorted(lst)` leaves the original alone and returns a brand new list. Writing `x = lst.sort()` is a very common bug because `x` will end up being `None`! The same rule applies to `reverse()`, `append()`, and every other method that changes a list in place.
 
 ```
+# Create
+empty = []                # or list()
+list("abc")               # ['a', 'b', 'c']
+list(range(5))            # [0, 1, 2, 3, 4]
+list((1, 2, 3))           # [1, 2, 3]  (from a tuple)
+[0] * 3                   # [0, 0, 0]
+
 nums = [1, 2, 3, 4, 5]
+backup = nums.copy()      # shallow copy (same as nums[:] or list(nums))
 
 # Access
 nums[0]          # 1
@@ -305,7 +326,16 @@ point = (3, 4)
 x, y = point             # x = 3, y = 4
 single = (42,)           # trailing comma needed for a 1-item tuple!
 
+# Create
+empty = ()               # or tuple()
+tuple([1, 2, 3])         # (1, 2, 3)  (from a list)
+tuple("abc")             # ('a', 'b', 'c')
+pair = 1, 2              # (1, 2)  — the comma makes the tuple
+oops = 5,                # (5,)    — a stray comma, not an int!
+
 point[0]                 # 3
+point.count(3)           # 1
+point.index(4)           # 1
 # point[0] = 5           ❌ TypeError — immutable
 ```
 
@@ -322,6 +352,13 @@ Each key is **hashed** (scrambled into a unique number) to find its exact slot i
 Match the access method to your intent: use `d[key]` when a missing key is genuinely a bug that should crash your program, use `d.get(key, default)` when absence is expected and normal, and use `d.setdefault(key, []).append(x)` when you are building lists per key. Remember too that `.keys()`, `.values()`, and `.items()` return live **views** (windows into the dictionary's current state), so mutating (changing) the dict while looping through one of these views will raise a `RuntimeError`.
 
 ```
+# Create
+empty = {}                                  # or dict()
+dict(name="Alice", age=30)                  # {'name': 'Alice', 'age': 30}
+dict([("name", "Alice"), ("age", 30)])      # same — from (key, value) pairs
+dict(zip(["name", "age"], ["Alice", 30]))   # same — from two parallel lists
+dict.fromkeys(["a", "b"], 0)                # {'a': 0, 'b': 0}
+
 person = {"name": "Alice", "age": 30}
 
 # Access
@@ -332,6 +369,13 @@ person.get("email", "N/A")     # 'N/A'  (safe access)
 person["age"] = 31             # update
 person["email"] = "a@b.com"    # add new key
 person                         # {'name': 'Alice', 'age': 31, 'email': 'a@b.com'}
+person.keys()                  # dict_keys(['name', 'age', 'email'])
+person.values()                # dict_values(['Alice', 31, 'a@b.com'])
+
+# Build lists per key
+groups = {}
+groups.setdefault("admins", []).append("Alice")
+groups                         # {'admins': ['Alice']}
 
 # Remove
 del person["email"]
@@ -364,10 +408,14 @@ The trade-off is no order and no indexing (trying to do `s[0]` raises a `TypeErr
 ```
 s = {1, 2, 3}
 empty = set()             # NOT {} — that's an empty dict!
+set([1, 2, 2, 3])         # {1, 2, 3}  (from a list)
+set("hello")              # {'h', 'e', 'l', 'o'}  (order varies)
+frozenset([1, 2])         # frozenset({1, 2})  — immutable, hashable
 
 s.add(4)
 s.discard(2)              # no error if missing
-s                         # {1, 3, 4}
+s.remove(3)               # KeyError if missing
+s                         # {1, 4}
 
 # Set math
 a = {1, 2, 3}
@@ -375,6 +423,8 @@ b = {3, 4, 5}
 a | b                     # {1, 2, 3, 4, 5}  union
 a & b                     # {3}              intersection
 a - b                     # {1, 2}           difference
+a ^ b                     # {1, 2, 4, 5}     symmetric difference
+{1, 2} <= a               # True             subset
 
 # Deduplicate a list
 unique = list(set([1, 1, 2, 2, 3]))
@@ -1124,6 +1174,11 @@ all(x > 0 for x in nums)               # False
 min(nums)                              # -2
 max(nums)                              # 7
 sum(nums)                              # 9
+len(nums)                              # 4
+abs(-5)                                # 5
+round(3.14159, 2)                      # 3.14
+divmod(17, 5)                          # (3, 2)  → (quotient, remainder)
+list(reversed(nums))                   # [-2, 3, 7, 1]
 
 items = [{"name": "b"}, {"name": "a"}]
 sorted(items, key=lambda x: x["name"]) # [{'name': 'a'}, {'name': 'b'}]

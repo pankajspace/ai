@@ -206,11 +206,18 @@ isinstance(42, int) # True
 
 # Casting
 int("42")           # 42
+int(3.9)            # 3      (truncates toward zero)
+int("ff", 16)       # 255    (parse in base 16)
+int("0b101", 0)     # 5      (base 0 = read the prefix)
 float("3.14")       # 3.14
 str(100)            # "100"
 bool(0)             # False  (0, "", [], None are falsy)
 bool(1)             # True   (everything else is truthy)
 list("abc")         # ['a', 'b', 'c']
+tuple([1, 2, 3])    # (1, 2, 3)
+set([1, 1, 2])      # {1, 2}
+dict([("a", 1)])    # {'a': 1}
+# int("abc")        # ❌ ValueError: invalid literal for int()
 ```
 
 <a id="3-operators"></a>
@@ -237,6 +244,16 @@ The two division operators exist for a reason. `/` is **true division** and alwa
 5 // 3    # 1    Floor division (integer)
 5 % 3     # 2    Modulo (remainder)
 5 ** 3    # 125  Exponentiation
+
+-7 // 2   # -4   floors toward -infinity (not -3)
+-7 % 2    # 1    result takes the divisor's sign
+2 + 1.5   # 3.5  int + float → float
+
+# Numeric built-ins
+abs(-5)             # 5
+round(3.14159, 2)   # 3.14
+divmod(17, 5)       # (3, 2)  → (quotient, remainder)
+pow(2, 10)          # 1024
 ```
 
 <a id="comparison"></a>
@@ -430,6 +447,18 @@ s.capitalize()          # "  hello, world!  "
 s.replace("World", "Python")  # "  Hello, Python!  "
 s.split(",")            # ['  Hello', ' World!  ']
 ",".join(["a", "b"])    # "a,b"
+"a  b".split()          # ['a', 'b']        any whitespace run
+"a  b".split(" ")       # ['a', '', 'b']    each single space
+"one\ntwo".splitlines() # ['one', 'two']
+
+"cabbage".strip("abc")              # "ge"      strips a character SET
+"test_login".removeprefix("test_")  # "login"   exact prefix (3.9+)
+"report.csv".removesuffix(".csv")   # "report"  exact suffix (3.9+)
+
+# str ↔ bytes
+data = "café".encode("utf-8")   # b'caf\xc3\xa9'  (5 bytes)
+data.decode("utf-8")            # "café"
+len("café"), len(data)          # (4, 5)
 
 s.find("World")         # 9   (index, or -1 if not found)
 s.index("World")        # 9   (raises ValueError if not found)
@@ -481,6 +510,17 @@ Because a list stores references (pointers to objects) rather than the values th
 nums = [1, 2, 3, 4, 5]
 mixed = [1, "two", 3.0, True, [5, 6]]  # can mix types
 
+# Create
+empty = []                  # or list()
+list("abc")                 # ['a', 'b', 'c']
+list(range(1, 6))           # [1, 2, 3, 4, 5]
+list((1, 2, 3))             # [1, 2, 3]  from a tuple
+list({"a": 1, "b": 2})      # ['a', 'b'] from dict keys
+[0] * 3                     # [0, 0, 0]
+
+# Copy (shallow — inner objects are shared)
+backup = nums.copy()        # same as nums[:] or list(nums)
+
 # Access
 nums[0]          # 1
 nums[-1]         # 5
@@ -524,11 +564,19 @@ Two details catch people out. First, it is the **comma**, not the parentheses, t
 ```
 point = (3, 4)
 single = (42,)            # trailing comma needed for single-element tuple
-empty = ()
+empty = ()                # or tuple()
+
+# Create from any iterable
+tuple([1, 2, 3])          # (1, 2, 3)
+tuple("abc")              # ('a', 'b', 'c')
+pair = 1, 2               # (1, 2)  — the comma makes the tuple
+oops = 5,                 # (5,)    — stray comma, not an int!
 
 x, y = point              # unpacking: x=3, y=4
 
 point[0]                   # 3
+point.count(3)             # 1
+point.index(4)             # 1
 # point[0] = 5            # ❌ TypeError — tuples are immutable
 
 # Tuples are great for:
@@ -551,7 +599,13 @@ Sets shine whenever a problem is naturally phrased in the language of set theory
 fruits = {"apple", "banana", "cherry"}
 empty_set = set()          # NOT {} — that's an empty dict!
 
+# Create from any iterable
+set([1, 2, 2, 3])          # {1, 2, 3}
+set("hello")               # {'h', 'e', 'l', 'o'}  (order varies)
+set(range(3))              # {0, 1, 2}
+
 fruits.add("date")
+fruits.update(["fig", "kiwi"])  # add many at once
 fruits.discard("banana")   # no error if missing
 fruits.remove("apple")     # KeyError if missing
 
@@ -563,6 +617,11 @@ a | b          # {1, 2, 3, 4, 5, 6}   union
 a & b          # {3, 4}               intersection
 a - b          # {1, 2}               difference
 a ^ b          # {1, 2, 5, 6}         symmetric difference
+
+# Method forms accept any iterable, not just sets
+a.union([7, 8])            # {1, 2, 3, 4, 7, 8}
+a.intersection([3, 9])     # {3}
+a.difference(range(3))     # {3, 4}
 
 a.issubset(b)      # False
 a.issuperset(b)    # False
@@ -582,6 +641,9 @@ A frozenset is simply an immutable set. Because it can never change, it is **has
 fs = frozenset([1, 2, 3])
 # fs.add(4)   # ❌ AttributeError — frozensets are immutable
 # Can be used as dict keys or set members (hashable)
+empty_fs = frozenset()
+routes = {frozenset({"NYC", "LA"}): 2450}
+routes[frozenset({"LA", "NYC"})]   # 2450  (order doesn't matter)
 ```
 
 <a id="dictionaries--key-value-pairs"></a>
@@ -602,6 +664,14 @@ person = {
     "age": 30,
     "hobbies": ["reading", "chess"]
 }
+
+# Other ways to create a dict
+empty = {}                                  # or dict()
+dict(name="Alice", age=30)                  # {'name': 'Alice', 'age': 30}
+dict([("name", "Alice"), ("age", 30)])      # from (key, value) pairs
+dict(zip(["name", "age"], ["Alice", 30]))   # from two parallel lists
+dict(person, age=31)                        # copy of person with age overridden
+dict.fromkeys(["a", "b"], 0)                # {'a': 0, 'b': 0}
 
 # Access
 person["name"]                 # "Alice"
@@ -636,6 +706,15 @@ person.values()            # dict_values(['Alice', 30, ['reading', 'chess']])
 person.items()             # dict_items([('name', 'Alice'), ('age', 30), ('hobbies', ['reading', 'chess'])])
 person.update({"age": 32, "city": "NYC"})
 person                     # {'name': 'Alice', 'age': 32, 'hobbies': ['reading', 'chess'], 'city': 'NYC'}
+person.setdefault("country", "US")   # 'US'  (inserted because missing)
+person.setdefault("city", "LA")      # 'NYC' (existing value kept)
+snapshot = person.copy()             # shallow copy
+
+# Accumulate lists per key
+groups = {}
+for name, team in [("Alice", "red"), ("Bob", "blue"), ("Cara", "red")]:
+    groups.setdefault(team, []).append(name)
+groups                     # {'red': ['Alice', 'Cara'], 'blue': ['Bob']}
 
 # Check membership
 "name" in person           # True (checks keys)

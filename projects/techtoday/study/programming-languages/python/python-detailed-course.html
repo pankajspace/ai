@@ -595,11 +595,18 @@ python<span class="w"> </span>my_script.py
 
 <span class="c1"># Casting</span>
 <span class="nb">int</span><span class="p">(</span><span class="s2">&quot;42&quot;</span><span class="p">)</span>           <span class="c1"># 42</span>
+<span class="nb">int</span><span class="p">(</span><span class="mf">3.9</span><span class="p">)</span>            <span class="c1"># 3      (truncates toward zero)</span>
+<span class="nb">int</span><span class="p">(</span><span class="s2">&quot;ff&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>       <span class="c1"># 255    (parse in base 16)</span>
+<span class="nb">int</span><span class="p">(</span><span class="s2">&quot;0b101&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>     <span class="c1"># 5      (base 0 = read the prefix)</span>
 <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;3.14&quot;</span><span class="p">)</span>       <span class="c1"># 3.14</span>
 <span class="nb">str</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>            <span class="c1"># &quot;100&quot;</span>
 <span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>             <span class="c1"># False  (0, &quot;&quot;, [], None are falsy)</span>
 <span class="nb">bool</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>             <span class="c1"># True   (everything else is truthy)</span>
 <span class="nb">list</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>         <span class="c1"># [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>    <span class="c1"># (1, 2, 3)</span>
+<span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>      <span class="c1"># {1, 2}</span>
+<span class="nb">dict</span><span class="p">([(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>    <span class="c1"># {&#39;a&#39;: 1}</span>
+<span class="c1"># int(&quot;abc&quot;)        # ❌ ValueError: invalid literal for int()</span>
 </code></pre>
             </div>
 
@@ -642,6 +649,16 @@ python<span class="w"> </span>my_script.py
 <span class="mi">5</span> <span class="o">//</span> <span class="mi">3</span>    <span class="c1"># 1    Floor division (integer)</span>
 <span class="mi">5</span> <span class="o">%</span> <span class="mi">3</span>     <span class="c1"># 2    Modulo (remainder)</span>
 <span class="mi">5</span> <span class="o">**</span> <span class="mi">3</span>    <span class="c1"># 125  Exponentiation</span>
+
+<span class="o">-</span><span class="mi">7</span> <span class="o">//</span> <span class="mi">2</span>   <span class="c1"># -4   floors toward -infinity (not -3)</span>
+<span class="o">-</span><span class="mi">7</span> <span class="o">%</span> <span class="mi">2</span>    <span class="c1"># 1    result takes the divisor&#39;s sign</span>
+<span class="mi">2</span> <span class="o">+</span> <span class="mf">1.5</span>   <span class="c1"># 3.5  int + float → float</span>
+
+<span class="c1"># Numeric built-ins</span>
+<span class="nb">abs</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>             <span class="c1"># 5</span>
+<span class="nb">round</span><span class="p">(</span><span class="mf">3.14159</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>   <span class="c1"># 3.14</span>
+<span class="nb">divmod</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>       <span class="c1"># (3, 2)  → (quotient, remainder)</span>
+<span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>          <span class="c1"># 1024</span>
 </code></pre>
             </div>
 
@@ -910,6 +927,18 @@ python<span class="w"> </span>my_script.py
 <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;World&quot;</span><span class="p">,</span> <span class="s2">&quot;Python&quot;</span><span class="p">)</span>  <span class="c1"># &quot;  Hello, Python!  &quot;</span>
 <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>            <span class="c1"># [&#39;  Hello&#39;, &#39; World!  &#39;]</span>
 <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>    <span class="c1"># &quot;a,b&quot;</span>
+<span class="s2">&quot;a  b&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>          <span class="c1"># [&#39;a&#39;, &#39;b&#39;]        any whitespace run</span>
+<span class="s2">&quot;a  b&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>       <span class="c1"># [&#39;a&#39;, &#39;&#39;, &#39;b&#39;]    each single space</span>
+<span class="s2">&quot;one</span><span class="se">\n</span><span class="s2">two&quot;</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span> <span class="c1"># [&#39;one&#39;, &#39;two&#39;]</span>
+
+<span class="s2">&quot;cabbage&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>              <span class="c1"># &quot;ge&quot;      strips a character SET</span>
+<span class="s2">&quot;test_login&quot;</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;test_&quot;</span><span class="p">)</span>  <span class="c1"># &quot;login&quot;   exact prefix (3.9+)</span>
+<span class="s2">&quot;report.csv&quot;</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span>   <span class="c1"># &quot;report&quot;  exact suffix (3.9+)</span>
+
+<span class="c1"># str ↔ bytes</span>
+<span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;café&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>   <span class="c1"># b&#39;caf\xc3\xa9&#39;  (5 bytes)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>            <span class="c1"># &quot;café&quot;</span>
+<span class="nb">len</span><span class="p">(</span><span class="s2">&quot;café&quot;</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>          <span class="c1"># (4, 5)</span>
 
 <span class="n">s</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;World&quot;</span><span class="p">)</span>         <span class="c1"># 9   (index, or -1 if not found)</span>
 <span class="n">s</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;World&quot;</span><span class="p">)</span>        <span class="c1"># 9   (raises ValueError if not found)</span>
@@ -996,6 +1025,17 @@ python<span class="w"> </span>my_script.py
                 <pre><span></span><code><span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">mixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>  <span class="c1"># can mix types</span>
 
+<span class="c1"># Create</span>
+<span class="n">empty</span> <span class="o">=</span> <span class="p">[]</span>                  <span class="c1"># or list()</span>
+<span class="nb">list</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>                 <span class="c1"># [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+<span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>           <span class="c1"># [1, 2, 3, 4, 5]</span>
+<span class="nb">list</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>             <span class="c1"># [1, 2, 3]  from a tuple</span>
+<span class="nb">list</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>      <span class="c1"># [&#39;a&#39;, &#39;b&#39;] from dict keys</span>
+<span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span>                     <span class="c1"># [0, 0, 0]</span>
+
+<span class="c1"># Copy (shallow — inner objects are shared)</span>
+<span class="n">backup</span> <span class="o">=</span> <span class="n">nums</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>        <span class="c1"># same as nums[:] or list(nums)</span>
+
 <span class="c1"># Access</span>
 <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>          <span class="c1"># 1</span>
 <span class="n">nums</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>         <span class="c1"># 5</span>
@@ -1049,11 +1089,19 @@ python<span class="w"> </span>my_script.py
             <div class="highlight">
                 <pre><span></span><code><span class="n">point</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">single</span> <span class="o">=</span> <span class="p">(</span><span class="mi">42</span><span class="p">,)</span>            <span class="c1"># trailing comma needed for single-element tuple</span>
-<span class="n">empty</span> <span class="o">=</span> <span class="p">()</span>
+<span class="n">empty</span> <span class="o">=</span> <span class="p">()</span>                <span class="c1"># or tuple()</span>
+
+<span class="c1"># Create from any iterable</span>
+<span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>          <span class="c1"># (1, 2, 3)</span>
+<span class="nb">tuple</span><span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">)</span>              <span class="c1"># (&#39;a&#39;, &#39;b&#39;, &#39;c&#39;)</span>
+<span class="n">pair</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span>               <span class="c1"># (1, 2)  — the comma makes the tuple</span>
+<span class="n">oops</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>                 <span class="c1"># (5,)    — stray comma, not an int!</span>
 
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">point</span>              <span class="c1"># unpacking: x=3, y=4</span>
 
 <span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>                   <span class="c1"># 3</span>
+<span class="n">point</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>             <span class="c1"># 1</span>
+<span class="n">point</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>             <span class="c1"># 1</span>
 <span class="c1"># point[0] = 5            # ❌ TypeError — tuples are immutable</span>
 
 <span class="c1"># Tuples are great for:</span>
@@ -1086,7 +1134,13 @@ python<span class="w"> </span>my_script.py
                 <pre><span></span><code><span class="n">fruits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;apple&quot;</span><span class="p">,</span> <span class="s2">&quot;banana&quot;</span><span class="p">,</span> <span class="s2">&quot;cherry&quot;</span><span class="p">}</span>
 <span class="n">empty_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>          <span class="c1"># NOT {} — that&#39;s an empty dict!</span>
 
+<span class="c1"># Create from any iterable</span>
+<span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>          <span class="c1"># {1, 2, 3}</span>
+<span class="nb">set</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">)</span>               <span class="c1"># {&#39;h&#39;, &#39;e&#39;, &#39;l&#39;, &#39;o&#39;}  (order varies)</span>
+<span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>              <span class="c1"># {0, 1, 2}</span>
+
 <span class="n">fruits</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+<span class="n">fruits</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="s2">&quot;fig&quot;</span><span class="p">,</span> <span class="s2">&quot;kiwi&quot;</span><span class="p">])</span>  <span class="c1"># add many at once</span>
 <span class="n">fruits</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s2">&quot;banana&quot;</span><span class="p">)</span>   <span class="c1"># no error if missing</span>
 <span class="n">fruits</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;apple&quot;</span><span class="p">)</span>     <span class="c1"># KeyError if missing</span>
 
@@ -1098,6 +1152,11 @@ python<span class="w"> </span>my_script.py
 <span class="n">a</span> <span class="o">&amp;</span> <span class="n">b</span>          <span class="c1"># {3, 4}               intersection</span>
 <span class="n">a</span> <span class="o">-</span> <span class="n">b</span>          <span class="c1"># {1, 2}               difference</span>
 <span class="n">a</span> <span class="o">^</span> <span class="n">b</span>          <span class="c1"># {1, 2, 5, 6}         symmetric difference</span>
+
+<span class="c1"># Method forms accept any iterable, not just sets</span>
+<span class="n">a</span><span class="o">.</span><span class="n">union</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>            <span class="c1"># {1, 2, 3, 4, 7, 8}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">intersection</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>     <span class="c1"># {3}</span>
+<span class="n">a</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>     <span class="c1"># {3, 4}</span>
 
 <span class="n">a</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>      <span class="c1"># False</span>
 <span class="n">a</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>    <span class="c1"># False</span>
@@ -1116,6 +1175,9 @@ python<span class="w"> </span>my_script.py
                 <pre><span></span><code><span class="n">fs</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="c1"># fs.add(4)   # ❌ AttributeError — frozensets are immutable</span>
 <span class="c1"># Can be used as dict keys or set members (hashable)</span>
+<span class="n">empty_fs</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">()</span>
+<span class="n">routes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;NYC&quot;</span><span class="p">,</span> <span class="s2">&quot;LA&quot;</span><span class="p">}):</span> <span class="mi">2450</span><span class="p">}</span>
+<span class="n">routes</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;LA&quot;</span><span class="p">,</span> <span class="s2">&quot;NYC&quot;</span><span class="p">})]</span>   <span class="c1"># 2450  (order doesn&#39;t matter)</span>
 </code></pre>
             </div>
 
@@ -1153,6 +1215,14 @@ python<span class="w"> </span>my_script.py
     <span class="s2">&quot;hobbies&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;reading&quot;</span><span class="p">,</span> <span class="s2">&quot;chess&quot;</span><span class="p">]</span>
 <span class="p">}</span>
 
+<span class="c1"># Other ways to create a dict</span>
+<span class="n">empty</span> <span class="o">=</span> <span class="p">{}</span>                                  <span class="c1"># or dict()</span>
+<span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>                  <span class="c1"># {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: 30}</span>
+<span class="nb">dict</span><span class="p">([(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Alice&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)])</span>      <span class="c1"># from (key, value) pairs</span>
+<span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;age&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="mi">30</span><span class="p">]))</span>   <span class="c1"># from two parallel lists</span>
+<span class="nb">dict</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="mi">31</span><span class="p">)</span>                        <span class="c1"># copy of person with age overridden</span>
+<span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>                <span class="c1"># {&#39;a&#39;: 0, &#39;b&#39;: 0}</span>
+
 <span class="c1"># Access</span>
 <span class="n">person</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>                 <span class="c1"># &quot;Alice&quot;</span>
 <span class="n">person</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;N/A&quot;</span><span class="p">)</span>    <span class="c1"># &quot;N/A&quot;  (default if key missing)</span>
@@ -1186,6 +1256,15 @@ python<span class="w"> </span>my_script.py
 <span class="n">person</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>             <span class="c1"># dict_items([(&#39;name&#39;, &#39;Alice&#39;), (&#39;age&#39;, 30), (&#39;hobbies&#39;, [&#39;reading&#39;, &#39;chess&#39;])])</span>
 <span class="n">person</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;city&quot;</span><span class="p">:</span> <span class="s2">&quot;NYC&quot;</span><span class="p">})</span>
 <span class="n">person</span>                     <span class="c1"># {&#39;name&#39;: &#39;Alice&#39;, &#39;age&#39;: 32, &#39;hobbies&#39;: [&#39;reading&#39;, &#39;chess&#39;], &#39;city&#39;: &#39;NYC&#39;}</span>
+<span class="n">person</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;country&quot;</span><span class="p">,</span> <span class="s2">&quot;US&quot;</span><span class="p">)</span>   <span class="c1"># &#39;US&#39;  (inserted because missing)</span>
+<span class="n">person</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;LA&quot;</span><span class="p">)</span>      <span class="c1"># &#39;NYC&#39; (existing value kept)</span>
+<span class="n">snapshot</span> <span class="o">=</span> <span class="n">person</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>             <span class="c1"># shallow copy</span>
+
+<span class="c1"># Accumulate lists per key</span>
+<span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">team</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Cara&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">)]:</span>
+    <span class="n">groups</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">team</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="n">groups</span>                     <span class="c1"># {&#39;red&#39;: [&#39;Alice&#39;, &#39;Cara&#39;], &#39;blue&#39;: [&#39;Bob&#39;]}</span>
 
 <span class="c1"># Check membership</span>
 <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">person</span>           <span class="c1"># True (checks keys)</span>
