@@ -1,0 +1,34 @@
+🚀 Day 9 — I built AI Reliability Lab: four experiments that measure how an LLM becomes a dependable software component.
+
+One good answer from a model proves nothing. So every demo runs the same task many times, scores the outputs in code, and shows the spread, not one lucky run. 🎯
+
+What AI Reliability Lab does:
+🎲 Variance & Determinism: one extraction under three setups (plain prompt, "reply in JSON", API-enforced schema), each output checked by a strict json.loads() parser.
+🧠 Chain-of-Thought vs Direct: logic puzzles answered with and without "think step by step", scoring only the final line, with the latency cost alongside.
+🧭 Tool Schema Calibration: a 2x2 grid of descriptive vs. opaque tool names and loose vs. tight descriptions, to find out what the model actually uses to pick a tool.
+🚨 Tool Error Injection: a weather tool that fails with HTTP 503 on purpose. Did the model admit the failure, report the error code, or invent the weather?
+
+Every tile has dropdowns (strategy, temperature, problem, naming style, failing call) so you can change one thing and watch the result move.
+
+The 4 big ideas that clicked for me today:
+1) Reliability comes from limiting the output format, not from lowering temperature. Asking nicely for JSON still fails some of the time; a schema enforced by the API does not.
+2) Step-by-step reasoning makes answers more reliable, but it costs time and tokens. Measure the gain before paying for it.
+3) Tool names can hide weak descriptions. Rename tools generically (or mount an MCP server with tools called query/search) and the description is all the model has left.
+4) Silent failure is the real risk. A vague apology is a UX problem; an invented temperature for a city the API never returned is an incident.
+
+Built with:
+🐍 Python + Flask
+🤖 OpenAI gpt-4o-mini (non-reasoning, on purpose) with parallel calls
+📦 Docker behind shared Nginx routing with rate limiting
+ⓘ An explainer page per demo: request flow, code flow, real source
+
+And that's the real unlock here: I'm learning straight from @Shivank Agrawal, an industry expert who doesn't just teach theory but builds real AI systems every day and shows us exactly how they work. 🙌
+
+This is Day 9 of my AI Engineering journey with @Scaler, and it changed how I judge an AI feature: not "did it work once?" but "how often does it work, and what happens when it doesn't?"
+
+🔗 Try it live: https://app.techtoday.click/ai-reliability/
+📚 How it works: https://techtoday.click/info/ai-reliability.html
+
+👉 What's the worst silent failure you've seen an LLM make in production?
+
+#AIEngineering #LLM #PromptEngineering #AgenticAI #MCP #OpenAI #Python #Docker #BuildInPublic #100DaysOfCode
