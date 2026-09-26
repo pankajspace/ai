@@ -17,6 +17,12 @@ Visual crash course with real-world analogies, animated diagrams, and Python/JS 
 
 [Start learning →](dsa-crash-course.html)
 
+### DSA Advanced Crash Course
+
+The patterns that replace brute force: contribution counting, prefix sums and sliding windows, Kadane, two pointers, backtracking, hashing, binary search on answers, linked-list tricks, Morris traversal, heaps, DP and graphs.
+
+[Start learning →](dsa-advanced-crash-course.html)
+
 ### DSA Detailed Course
 
 Comprehensive study covering 38 sections: dynamic programming, graphs, heaps, union-find, topological sort, monotonic stacks, and interview patterns.

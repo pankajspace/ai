@@ -150,6 +150,10 @@ body.is-crash .study>h1:first-child::before {
     content: "DSA crash course";
 }
 
+body.is-crash.is-advanced .study>h1:first-child::before {
+    content: "DSA advanced crash course";
+}
+
 .lede {
     max-width: 74ch;
     margin: 0 0 40px;
@@ -633,6 +637,94 @@ pre code {
     white-space: pre;
 }
 
+/* ------------------------------------------------ mermaid diagrams */
+
+:not(pre)>code {
+    overflow-wrap: anywhere;
+}
+
+.mermaid-fig .mm-wrap {
+    overflow-x: auto;
+}
+
+pre.mermaid {
+    margin: 0;
+    text-align: left;
+}
+
+.mm-svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.mm-node rect,
+.mm-node polygon,
+.mm-node circle {
+    fill: var(--surface-raised);
+    stroke: var(--blue);
+    stroke-width: 1.4;
+}
+
+.mm-node.mm-hl rect,
+.mm-node.mm-hl polygon,
+.mm-node.mm-hl circle {
+    fill: rgba(224, 175, 104, 0.14);
+    stroke: var(--accent);
+}
+
+.mm-node.mm-good rect,
+.mm-node.mm-good polygon,
+.mm-node.mm-good circle {
+    fill: rgba(115, 201, 145, 0.12);
+    stroke: var(--green);
+}
+
+.mm-node.mm-bad rect,
+.mm-node.mm-bad polygon,
+.mm-node.mm-bad circle {
+    fill: rgba(244, 135, 113, 0.12);
+    stroke: var(--red);
+}
+
+.mm-text {
+    fill: var(--text);
+    font-size: 12.5px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.mm-edge {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.4;
+}
+
+.mm-edge.is-dashed {
+    stroke-dasharray: 5 4;
+}
+
+.mm-edge.is-thick {
+    stroke: var(--accent);
+    stroke-width: 2.4;
+}
+
+.mm-arrowhead {
+    fill: var(--muted);
+}
+
+.mm-edge-bg {
+    fill: var(--surface);
+    stroke: var(--line);
+}
+
+.mm-edge-label {
+    fill: var(--accent-bright);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
 /* ----------------------------------------------------- visualisations */
 
 .viz {
@@ -1047,6 +1139,140 @@ pre code {
 .e-done {
     stroke: var(--green);
     stroke-width: 2.5;
+    fill: none;
+}
+
+/* advanced-course widgets: labelled rows, chips, svg boxes, threads */
+
+.vstack {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.vrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+}
+
+.vrow-label {
+    min-width: 84px;
+    color: var(--muted);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    text-align: right;
+}
+
+@media (max-width: 600px) {
+    .vrow-label {
+        min-width: 0;
+        max-width: 64px;
+        font-size: 10px;
+    }
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 28px;
+}
+
+.chip {
+    padding: 4px 10px;
+    color: var(--text);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.chip.is-act {
+    color: var(--page);
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.chip.is-cmp {
+    color: var(--page);
+    background: var(--blue);
+    border-color: var(--blue);
+}
+
+.chip.is-done {
+    color: var(--page);
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.chip.is-out {
+    color: var(--page);
+    background: var(--red);
+    border-color: var(--red);
+    text-decoration: line-through;
+}
+
+.chip.is-ghost {
+    color: var(--muted);
+    background: transparent;
+    border-style: dashed;
+}
+
+.vz-rect {
+    fill: var(--surface-raised);
+    stroke: var(--line);
+    stroke-width: 1.5;
+}
+
+.vz-rect.is-act {
+    fill: rgba(224, 175, 104, 0.3);
+    stroke: var(--accent);
+}
+
+.vz-rect.is-cmp {
+    fill: rgba(140, 200, 255, 0.22);
+    stroke: var(--blue);
+}
+
+.vz-rect.is-done {
+    fill: rgba(115, 201, 145, 0.25);
+    stroke: var(--green);
+}
+
+.vz-rect.is-out {
+    fill: rgba(244, 135, 113, 0.22);
+    stroke: var(--red);
+}
+
+.vz-water {
+    fill: rgba(140, 200, 255, 0.45);
+    stroke: none;
+}
+
+.vz-text {
+    fill: var(--text);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.vz-text.is-muted {
+    fill: var(--muted);
+    font-size: 10.5px;
+}
+
+.e-thread {
+    stroke: var(--violet);
+    stroke-width: 2;
+    stroke-dasharray: 5 4;
     fill: none;
 }
 
