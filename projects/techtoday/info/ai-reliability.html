@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — AI Reliability Lab · TechToday</title>
+    <meta name="description"
+        content="How the AI Reliability Lab works: four measured demos of output constraints, chain-of-thought, tool schema routing, and tool error handling." />
+    <link rel="icon" href="../logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>🎯 AI Reliability Lab</h1>
+                <p class="subtitle">Output Constraints · Chain-of-Thought · Tool Schema Routing · Tool Error Handling
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    <strong>AI Reliability Lab</strong> measures the levers that turn an LLM from a flaky text
+                    generator into a dependable software component. Every demo runs the same task many times under
+                    contrasting conditions and scores the outputs automatically, so you see a
+                    <strong>distribution</strong> rather than one lucky or unlucky example.
+                </p>
+                <p>
+                    All four demos use <strong>gpt-4o-mini</strong>, a non-reasoning model, on purpose: reasoning
+                    models think internally even when told not to, which erases the gaps being measured. API calls
+                    inside a demo run in parallel (up to 8 at a time) so each click finishes inside the 60-second
+                    proxy timeout.
+                </p>
+
+                <h2>Theory &amp; Concepts</h2>
+
+                <p><strong>1. 🎲 Variance &amp; Determinism — constrain the output, not the temperature</strong></p>
+                <p>
+                    The same extraction runs 5 times under each of three strategies at temperature 0.7: an
+                    unconstrained prompt, a prompt that asks for JSON, and an API-enforced strict JSON schema. A strict
+                    <code>json.loads()</code> parser grades every output. Reliability comes from narrowing what the
+                    model is allowed to emit — a structural guarantee — not from persuasion or lower randomness.
+                </p>
+
+                <p><strong>2. 🧠 Chain-of-Thought vs Direct — reasoning as a reliability lever</strong></p>
+                <p>
+                    A multi-step puzzle runs 5 times with "no working" and 5 times with "think step by step". Only the
+                    final line is scored, so CoT is never credited for a candidate it later rejected. The report puts
+                    the accuracy gain next to the latency cost.
+                </p>
+
+                <p><strong>3. 🧭 Tool Schema Calibration — what does the model route on?</strong></p>
+                <p>
+                    Three weather tools with identical parameters are offered under a 2x2 of descriptive vs opaque
+                    names and loose vs tight descriptions, with <code>tool_choice="required"</code>. When names are
+                    self-explanatory the model routes on the name; rename tools generically and the description is
+                    the only signal left.
+                </p>
+
+                <p><strong>4. 🚨 Tool Error Injection — does the model admit a failure?</strong></p>
+                <p>
+                    An agent's second <code>get_weather</code> call always returns HTTP 503. Under a plain prompt and
+                    a must-report-errors prompt, each answer is scored for admitting the failure, surfacing the error
+                    code, and — the production risk — inventing weather for the city the API never answered.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">🧑 Browser</span>
+                        <span class="flow-detail">Pick a demo tile, enter input, click its button</span>
+                    </div>
+                    <div class="flow-arrow-down">↓</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Nginx /ai-reliability/</span>
+                        <span class="flow-detail">Rate limit, proxy to the container</span>
+                    </div>
+                    <div class="flow-arrow-down">↓</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Flask Blueprint</span>
+                        <span class="flow-detail">10 POSTs/hour/IP · validate input (400)</span>
+                    </div>
+                    <div class="flow-arrow-down">↓</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">POST /variance</span>
+                            <span class="flow-detail">15 calls</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /cot</span>
+                            <span class="flow-detail">10 calls</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /routing</span>
+                            <span class="flow-detail">52 calls</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /errors</span>
+                            <span class="flow-detail">2 agent loops</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">↓</div>
+                    <div class="flow-step">
+                        <span class="flow-title">OpenAI API · gpt-4o-mini</span>
+                        <span class="flow-detail">Parallel calls via parallel_map()</span>
+                    </div>
+                    <div class="flow-arrow-down">↓</div>
+                    <div class="flow-step">
+                        <span class="flow-title">🧑 Browser</span>
+                        <span class="flow-detail">Scored text report in the tile</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <!-- beautify ignore:start -->
+                <!-- prettier-ignore -->
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A[Browser<br/>demo input] -->|POST| B[app.py<br/>Blueprint + rate limit]
+    B -->|review| V[variance.py<br/>run_variance]
+    B -->|preset| C[cot.py<br/>run_cot]
+    B -->|question| R[tool_routing.py<br/>run_routing]
+    B -->|question| E[tool_errors.py<br/>run_error_injection]
+    V -->|jobs| P[config.py<br/>parallel_map]
+    C -->|jobs| P
+    R -->|jobs| P
+    E -->|scenarios| P
+    P -->|prompts / tools| O[OpenAI API<br/>gpt-4o-mini]
+    O -->|responses| P
+    P -->|results| V
+    P -->|results| C
+    P -->|results| R
+    P -->|results| E
+    V -->|report| B
+    C -->|report| B
+    R -->|report| B
+    E -->|report| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+                <!-- beautify ignore:end -->
+
+                <h2>Shared configuration</h2>
+                <span class="file-label">config.py — one OpenAI client, the model name, and the parallel runner every
+                    demo uses</span>
+                <pre><code class="language-python"># A NON-reasoning model: reasoning models think internally even when told not
+# to, which erases the gaps these demos measure.
+CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
+
+# Upper bound on parallel API calls per request; keeps each demo well under
+# the 60 s Nginx proxy timeout without hammering the provider.
+MAX_WORKERS = 8
+
+_client = None
+
+
+def get_openai_client() -> OpenAI:
+    """Return a shared OpenAI client built from OPENAI_API_KEY."""
+    global _client
+    if _client is None:
+        api_key = get_env("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
+    return _client
+
+
+def parallel_map(fn, items):
+    """Run ``fn`` over ``items`` concurrently, preserving input order."""
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        return list(pool.map(fn, items))</code></pre>
+
+                <h2>API routes</h2>
+                <span class="file-label">app.py — rate limiting and one validated POST route per demo</span>
+                <pre><code class="language-python">@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+def read_message() -> str:
+    """Return the trimmed ``message`` field from the JSON body, or ''."""
+    data = request.get_json(force=True, silent=True) or {}
+    return str(data.get("message") or "").strip()
+
+
+@bp.route("/cot", methods=["POST"])
+def cot_route():
+    """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    message = read_message().lower()
+    if not message:
+        return jsonify({"error": "A problem name is required."}), 400
+    if message not in PROBLEMS:
+        return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    try:
+        return jsonify({"result": run_cot(message)})
+    except Exception:
+        app.logger.exception("cot failed")
+        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
+
+# /variance, /routing and /errors follow the same validate → run → report pattern.</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                edgeLabelBackground: "#1e1e1e",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "12px",
+            },
+            flowchart: { nodeSpacing: 34, rankSpacing: 60, padding: 16 },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

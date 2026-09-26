@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Variance &amp; Determinism · AI Reliability Lab</title>
+    <meta name="description"
+        content="How the Variance & Determinism demo works: unconstrained vs prompt-JSON vs schema-enforced output, graded by a strict parser." />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>AI Reliability Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F3B2; Variance &amp; Determinism</h1>
+                <p class="subtitle">gpt-4o-mini · temperature 0.7 · 3 strategies × 5 runs · strict json.loads() grading
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    The same extraction task — "give me the sentiment and entities of this review" — is sent
+                    15 times: 5 runs each under three strategies. Every response is then handed to a
+                    <strong>strict downstream parser</strong> that simply calls <code>json.loads()</code> with no
+                    fence stripping, no repair, and no retry, exactly like a real pipeline would.
+                </p>
+                <p>
+                    Temperature stays at <strong>0.7</strong> for all three strategies. The only variable is how
+                    tightly the output is constrained, so any difference in reliability comes from the constraint,
+                    not from turning down randomness.
+                </p>
+
+                <h2>Theory &amp; Concepts</h2>
+                <p><strong>1. A correct answer can still be unusable</strong></p>
+                <p>
+                    Unconstrained, the model usually understands the review perfectly — and answers in prose. To a
+                    program that expects JSON, that is a crash on every run. The model is not wrong; it is unusable
+                    as a software component.
+                </p>
+                <p><strong>2. Persuasion vs. structural guarantee</strong></p>
+                <ul>
+                    <li><strong>A · Unconstrained:</strong> high variance, near-0% parseable.</li>
+                    <li><strong>B · Prompt asks for JSON:</strong> most runs parse, but anything short of 100% is a
+                        silent failure rate you must wrap in retry and repair code (markdown fences, extra prose).</li>
+                    <li><strong>C · Schema enforced:</strong> <code>response_format</code> with a strict JSON schema
+                        constrains decoding itself, so every run parses and matches the shape.</li>
+                </ul>
+                <p><strong>3. Metrics reported</strong></p>
+                <ul>
+                    <li><strong>Unique responses / consistency:</strong> how many distinct strings came back, and the
+                        share taken by the most common one.</li>
+                    <li><strong>Parses as JSON / matches schema:</strong> what a downstream consumer actually
+                        experiences. API failures are excluded so infrastructure errors are not mistaken for model
+                        behaviour.</li>
+                </ul>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Paste a review, click “Run 15 extractions”</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /variance</span>
+                        <span class="flow-detail">Flask route validates the review</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">run_variance()</span>
+                        <span class="flow-detail">Builds 15 jobs, runs them in parallel (max 8)</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">A · 5 runs</span>
+                            <span class="flow-detail">Plain prompt</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">B · 5 runs</span>
+                            <span class="flow-detail">Prompt asks for JSON</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">C · 5 runs</span>
+                            <span class="flow-detail">json_schema, strict</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">parse_downstream() + metrics()</span>
+                        <span class="flow-detail">Strict grading per strategy</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Text report with metrics, samples, takeaway</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <!-- beautify ignore:start -->
+                <!-- prettier-ignore -->
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A[Browser<br/>review] -->|POST /variance| B[app.py<br/>variance_route]
+    B -->|review| C[variance.py<br/>run_variance]
+    C -->|review| P[build_prompts]
+    P -->|plain + JSON prompts| C
+    C -->|15 jobs| D[config.py<br/>parallel_map]
+    D -->|prompt, format| E[call_model]
+    E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
+    F -->|text| E
+    E -->|15 responses| C
+    C -->|responses| G[metrics<br/>parse_downstream]
+    G -->|unique, parse%, schema%| C
+    C -->|text report| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+                <!-- beautify ignore:end -->
+
+                <h2>Backend</h2>
+                <span class="file-label">Builds the prompts, calls the model, and grades each output like a strict
+                    pipeline.</span>
+                <pre><code class="language-python">RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "sentiment": {"type": "string", "enum": ["Positive", "Negative", "Mixed"]},
+        "entities": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["sentiment", "entities"],
+    "additionalProperties": False,
+}
+
+SCHEMA_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {"name": "review_extraction", "strict": True, "schema": RESPONSE_SCHEMA},
+}
+
+
+def build_prompts(review: str) -> tuple[str, str]:
+    """Return (unconstrained_prompt, json_prompt) for a review."""
+    task = f"Extract the sentiment and key entities from this customer review: '{review}'"
+    constrained = (
+        f"{task}\n"
+        "Output only a JSON object with the keys 'sentiment' and 'entities'. "
+        "'sentiment' should be a string (Positive, Negative, or Mixed). "
+        "'entities' should be a list of strings."
+    )
+    return task, constrained
+
+
+def call_model(prompt: str, response_format: dict | None = None) -> str:
+    """Return the model's text, or a string starting with 'Error:' on failure."""
+    kwargs = {
+        "model": CHAT_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": TEMPERATURE,
+    }
+    if response_format is not None:
+        kwargs["response_format"] = response_format
+    try:
+        response = get_openai_client().chat.completions.create(**kwargs)
+        return (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def parse_downstream(raw: str) -> tuple[bool, bool]:
+    """Return (parsed_ok, schema_ok) the way a strict pipeline would see it."""
+    if raw.startswith("Error:"):
+        return False, False
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, ValueError):
+        return False, False
+    if not isinstance(data, dict):
+        return True, False
+    sentiment = data.get("sentiment")
+    entities = data.get("entities")
+    schema_ok = (
+        sentiment in ("Positive", "Negative", "Mixed")
+        and isinstance(entities, list)
+        and all(isinstance(e, str) for e in entities)
+    )
+    return True, schema_ok
+
+
+def metrics(responses: list[str]) -> dict:
+    """Variance and downstream-reliability metrics; API errors are excluded."""
+    valid = [r for r in responses if not r.startswith("Error:")]
+    errors = len(responses) - len(valid)
+    if not valid:
+        return {"unique": 0, "consistency": 0, "parse": 0, "schema": 0, "total": 0, "errors": errors}
+    verdicts = [parse_downstream(r) for r in valid]
+    n = len(valid)
+    return {
+        "unique": len(Counter(valid)),
+        "consistency": round(Counter(valid).most_common(1)[0][1] / n * 100),
+        "parse": round(sum(p for p, _ in verdicts) / n * 100),
+        "schema": round(sum(s for _, s in verdicts) / n * 100),
+        "total": n,
+        "errors": errors,
+    }</code></pre>
+
+                <h2>Orchestration</h2>
+                <span class="file-label">Fans the 15 runs out in parallel, then summarises each strategy.</span>
+                <pre><code class="language-python">def run_variance(review: str) -> str:
+    """Run all three strategies on ``review`` and return a text report."""
+    review = review.strip()[:MAX_REVIEW_CHARS]
+    unconstrained, constrained = build_prompts(review)
+    strategies = [
+        ("A · Unconstrained prompt", unconstrained, None),
+        ("B · Prompt asks for JSON", constrained, None),
+        ("C · Schema enforced by API", constrained, SCHEMA_FORMAT),
+    ]
+
+    jobs = [(p, fmt) for _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
+    outputs = parallel_map(lambda job: call_model(*job), jobs)
+    ...</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the demo as <code>POST /variance</code>.</span>
+                <pre><code class="language-python">@bp.route("/variance", methods=["POST"])
+def variance_route():
+    """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A customer review is required."}), 400
+    try:
+        return jsonify({"result": run_variance(message)})
+    except Exception:
+        app.logger.exception("variance failed")
+        return jsonify({"error": "Variance test failed. Please try again later."}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                edgeLabelBackground: "#1e1e1e",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "12px",
+            },
+            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

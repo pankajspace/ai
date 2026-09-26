@@ -69,10 +69,11 @@ unexpected failure, and share the 10-POSTs-per-hour-per-IP rate limit (`429`).
 1. `GET /` — single-page UI with the `PATH_PREFIX` injected into `data-api-base`.
 2. `GET /css/<path:filename>` — stylesheets.
 3. `GET /js/<path:filename>` — scripts.
-4. `POST /variance` — `message` is a customer review (truncated to 1,000 chars). 15 model calls.
-5. `POST /cot` — `message` is a preset name: `grid`, `family`, `schedule`, `inventory`, or `boxes`. 10 model calls.
-6. `POST /routing` — `message` is a weather question (truncated to 300 chars). 52 model calls.
-7. `POST /errors` — `message` is a weather question (truncated to 300 chars). 2 agent loops, up to 6 model calls each.
+4. `GET /info/<path:filename>` — "how this demo works" explainer pages.
+5. `POST /variance` — `message` is a customer review (truncated to 1,000 chars). 15 model calls.
+6. `POST /cot` — `message` is a preset name: `grid`, `family`, `schedule`, `inventory`, or `boxes`. 10 model calls.
+7. `POST /routing` — `message` is a weather question (truncated to 300 chars). 52 model calls.
+8. `POST /errors` — `message` is a weather question (truncated to 300 chars). 2 agent loops, up to 6 model calls each.
 
 ### Project Structure
 
@@ -86,9 +87,12 @@ projects/ai-reliability/
 ├── deploy.yml.template     # source of .github/workflows/deploy-ai-reliability.yml
 ├── linkedin.txt
 └── src/
-    ├── index.html          # four demo tiles
-    ├── css/style.css       # shared TechToday dark theme (template copy)
+    ├── index.html          # four demo tiles, each title with an ⓘ link to its explainer
+    ├── css/style.css       # shared TechToday dark theme + .info-link icon
+    ├── css/info.css        # explainer page layout, flow diagrams, code blocks
     ├── js/main.js          # setupCard() wiring for each tile
+    ├── js/info.js          # syntax highlighting + Copy button on explainer code
+    ├── info/               # one explainer per demo: variance, cot, routing, errors
     └── python/
         ├── app.py          # Flask Blueprint, PATH_PREFIX, rate limit, routes
         ├── config.py       # .env loading, OpenAI client, parallel_map, bar

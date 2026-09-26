@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Tool Schema Calibration · AI Reliability Lab</title>
+    <meta name="description"
+        content="How the Tool Schema Calibration demo works: a 2x2 of tool names vs descriptions to find which signal an LLM routes on." />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>AI Reliability Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F9ED; Tool Schema Calibration</h1>
+                <p class="subtitle">gpt-4o-mini · temperature 0 · tool_choice="required" · names × descriptions 2x2
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    The model is offered three weather tools — current, forecast, and history — that take the
+                    <strong>same parameters</strong>. The only things that differ are each tool's
+                    <strong>name</strong> and <strong>description</strong>. Crossing two naming styles with two
+                    description styles gives four conditions, and the demo measures how often the model picks the
+                    right tool in each.
+                </p>
+                <p>
+                    Your own question is routed under all four conditions so you can see the choices side by side,
+                    then 12 labelled queries (4 per tool) fill in the accuracy matrix.
+                </p>
+
+                <h2>Theory &amp; Concepts</h2>
+                <p><strong>1. The 2x2 design</strong></p>
+                <ul>
+                    <li><strong>A · descriptive names + loose descriptions</strong> —
+                        <code>get_weather_forecast</code> / "Get weather data for a city."
+                    </li>
+                    <li><strong>B · descriptive names + tight descriptions</strong> — names plus "Use only for
+                        'tomorrow', 'next week'…"</li>
+                    <li><strong>C · opaque names + loose descriptions</strong> — <code>weather_service_b</code> /
+                        vague prose. No real signal at all.</li>
+                    <li><strong>D · opaque names + tight descriptions</strong> — the description is the only signal.
+                    </li>
+                </ul>
+                <p><strong>2. Why the names had to vary too</strong></p>
+                <p>
+                    An earlier version varied only the descriptions while the names stayed
+                    <code>get_weather_current/_forecast/_history</code>. Those names already encode the distinction,
+                    so the model routed on the name and scored near 100% either way. Crossing names with descriptions
+                    separates the two signals.
+                </p>
+                <p><strong>3. Forced tool choice</strong></p>
+                <p>
+                    <code>tool_choice="required"</code> makes the model pick one of the three tools. That isolates
+                    "which tool" from "whether to call a tool at all" — two different bugs with different fixes.
+                    Temperature 0 keeps the schema text as the only variable.
+                </p>
+                <p><strong>4. The practical lesson</strong></p>
+                <p>
+                    Descriptions look optional right up until someone renames a tool, or you mount an MCP server whose
+                    tools are called <code>query</code>, <code>search</code>, and <code>execute</code>. Condition C
+                    is what that feels like.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Type a weather question, click “Route question”</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /routing</span>
+                        <span class="flow-detail">Flask route validates the question</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">run_routing()</span>
+                        <span class="flow-detail">52 routing calls in parallel (max 8)</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">Your question × 4</span>
+                            <span class="flow-detail">One pick per condition</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">12 labelled × 4</span>
+                            <span class="flow-detail">Accuracy per condition</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">Signal attribution</span>
+                        <span class="flow-detail">Description lift, name lift, verdict</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Picks, accuracy bars, verdict</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <!-- beautify ignore:start -->
+                <!-- prettier-ignore -->
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A[Browser<br/>question] -->|POST /routing| B[app.py<br/>routing_route]
+    B -->|question| C[tool_routing.py<br/>run_routing]
+    C -->|52 jobs| D[config.py<br/>parallel_map]
+    D -->|query, name style, desc style| E[select_tool]
+    E -->|styles| G[build_condition]
+    G -->|tools + lookup| E
+    E -->|tools, tool_choice=required| F[OpenAI API<br/>gpt-4o-mini]
+    F -->|function name| E
+    E -->|canonical slot| C
+    C -->|text report| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+                <!-- beautify ignore:end -->
+
+                <h2>Tool definitions</h2>
+                <span class="file-label">Names and descriptions are the only things that change between
+                    conditions.</span>
+                <pre><code class="language-python">NAME_SETS = {
+    "descriptive": {
+        "current": "get_weather_current",
+        "forecast": "get_weather_forecast",
+        "history": "get_weather_history",
+    },
+    # plausible but uninformative - the shape real MCP servers often ship with
+    "opaque": {
+        "current": "weather_service_a",
+        "forecast": "weather_service_b",
+        "history": "weather_service_c",
+    },
+}
+
+DESCRIPTION_SETS = {
+    "loose": {
+        "current": "Get weather information for a location.",
+        "forecast": "Get weather data for a city.",
+        "history": "Fetch weather records for a specific area.",
+    },
+    "tight": {
+        "current": (
+            "Get CURRENT, REAL-TIME weather conditions for a specific location. "
+            "Use only for queries about 'now', 'today', or current status."
+        ),
+        "forecast": (
+            "Get FUTURE weather predictions and forecasts. Use only for queries "
+            "about 'tomorrow', 'next week', 'upcoming', or future dates."
+        ),
+        "history": (
+            "Fetch HISTORICAL weather records from the past. Use only for queries "
+            "about yesterday, last year, or specific past dates."
+        ),
+    },
+}
+
+CONDITIONS = [
+    ("A", "descriptive", "loose"),
+    ("B", "descriptive", "tight"),
+    ("C", "opaque", "loose"),
+    ("D", "opaque", "tight"),
+]</code></pre>
+
+                <h2>Backend</h2>
+                <span class="file-label">Builds one condition's tools and asks the model to route a query.</span>
+                <pre><code class="language-python">def build_condition(name_style: str, desc_style: str) -> tuple[list, dict]:
+    """Return (tools, lookup) where lookup maps emitted names to canonical slots."""
+    names = NAME_SETS[name_style]
+    descs = DESCRIPTION_SETS[desc_style]
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": names[c],
+                "description": descs[c],
+                "parameters": {
+                    "type": "object",
+                    "properties": {"location": {"type": "string", "description": "The city name."}},
+                    "required": ["location"],
+                },
+            },
+        }
+        for c in CANONICAL
+    ]
+    return tools, {names[c]: c for c in CANONICAL}
+
+
+def select_tool(query: str, name_style: str, desc_style: str) -> str:
+    """Return the canonical slot the model routed to, '(no call)', or '(error)'."""
+    tools, lookup = build_condition(name_style, desc_style)
+    try:
+        response = get_openai_client().chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": query}],
+            tools=tools,
+            tool_choice="required",
+            temperature=TEMPERATURE,
+        )
+        calls = response.choices[0].message.tool_calls
+        if not calls:
+            return "(no call)"
+        return lookup.get(calls[0].function.name, calls[0].function.name)
+    except Exception:
+        return "(error)"</code></pre>
+
+                <h2>Orchestration</h2>
+                <span class="file-label">Routes your question and the labelled sample, then scores each
+                    condition.</span>
+                <pre><code class="language-python">def run_routing(query: str) -> str:
+    """Route ``query`` under all four conditions and score the labelled sample."""
+    query = query.strip()[:MAX_QUERY_CHARS]
+    jobs = [(query, n, d) for _, n, d in CONDITIONS]
+    jobs += [(q, n, d) for _, n, d in CONDITIONS for q, _ in SAMPLE_QUERIES]
+    picks = parallel_map(lambda job: select_tool(*job), jobs)
+
+    yours, sample = picks[: len(CONDITIONS)], picks[len(CONDITIONS):]
+    total = len(SAMPLE_QUERIES)
+    scores = {}
+    for i, (label, _, _) in enumerate(CONDITIONS):
+        chunk = sample[i * total:(i + 1) * total]
+        scores[label] = sum(p == exp for p, (_, exp) in zip(chunk, SAMPLE_QUERIES))
+    ...
+    desc_lift_desc = scores["B"] - scores["A"]
+    desc_lift_opaque = scores["D"] - scores["C"]</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the demo as <code>POST /routing</code>.</span>
+                <pre><code class="language-python">@bp.route("/routing", methods=["POST"])
+def routing_route():
+    """Route a weather question under the names x descriptions 2x2."""
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    try:
+        return jsonify({"result": run_routing(message)})
+    except Exception:
+        app.logger.exception("routing failed")
+        return jsonify({"error": "Routing test failed. Please try again later."}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                edgeLabelBackground: "#1e1e1e",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "12px",
+            },
+            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How it works — Chain-of-Thought vs Direct · AI Reliability Lab</title>
+    <meta name="description"
+        content="How the Chain-of-Thought vs Direct demo works: repeated runs of a reasoning puzzle, final-line scoring, and the accuracy-for-latency trade-off." />
+    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/info.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="nav container">
+            <a href="../" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>AI Reliability Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Go Back</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>&#x1F9E0; Chain-of-Thought vs Direct</h1>
+                <p class="subtitle">gpt-4o-mini (non-reasoning) · temperature 0.7 · 2 prompts × 5 runs · final-line
+                    scoring</p>
+            </div>
+        </section>
+
+        <section>
+            <div class="container info-content">
+
+                <h2>Concept</h2>
+                <p>
+                    One multi-step reasoning puzzle is asked 10 times: 5 times with a prompt that forbids working
+                    ("answer in one short sentence") and 5 times with "think step by step, then state your final
+                    answer on the last line". Each response is scored automatically against a known answer, and the
+                    report shows accuracy, average latency, and the trade-off between them.
+                </p>
+                <p>
+                    The demo deliberately uses a <strong>non-reasoning</strong> model. Reasoning models think
+                    internally even when told not to show working, which would erase the gap this demo measures.
+                </p>
+
+                <h2>Theory &amp; Concepts</h2>
+                <p><strong>1. CoT is a reliability lever, not a style choice</strong></p>
+                <p>
+                    Each puzzle (grid navigation, family tree, scheduling constraints, inventory state, truth-teller
+                    boxes) needs several dependent steps. A direct answer has to get all of them right in one jump;
+                    CoT forces the model to commit to intermediate state, which catches compounding errors before
+                    they reach the final answer.
+                </p>
+                <p><strong>2. Distributions, not anecdotes</strong></p>
+                <p>
+                    At temperature 0.7 a single run can be lucky or unlucky. Repeating each strategy and showing the
+                    hit rate makes the difference visible as a distribution.
+                </p>
+                <p><strong>3. Score only the final line</strong></p>
+                <p>
+                    A CoT trace often raises a candidate answer and then rejects it. Matching anywhere in the text
+                    would credit CoT for an answer it explicitly discarded, inflating the very number being measured.
+                    Both prompts ask for the answer at the end, so only the last non-empty line is checked.
+                </p>
+                <p><strong>4. The cost side</strong></p>
+                <p>
+                    CoT produces many more tokens, so it is slower and more expensive. The report prints the
+                    accuracy gain in percentage points next to the latency increase so the trade-off is explicit.
+                </p>
+
+                <h2>Request flow</h2>
+                <div class="flow-diagram flow-vertical">
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Enter a preset (grid, family, schedule, inventory, boxes)</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">POST /cot</span>
+                        <span class="flow-detail">Flask route rejects unknown presets with 400</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">run_cot()</span>
+                        <span class="flow-detail">10 prompts in parallel</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-branch">
+                        <div class="flow-step">
+                            <span class="flow-title">Direct × 5</span>
+                            <span class="flow-detail">No working allowed</span>
+                        </div>
+                        <div class="flow-step">
+                            <span class="flow-title">CoT × 5</span>
+                            <span class="flow-detail">Think step by step</span>
+                        </div>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">is_correct()</span>
+                        <span class="flow-detail">Final line vs accepted answers</span>
+                    </div>
+                    <div class="flow-arrow-down">&darr;</div>
+                    <div class="flow-step">
+                        <span class="flow-title">&#x1F9D1; Browser</span>
+                        <span class="flow-detail">Accuracy bars, latency, trade-off</span>
+                    </div>
+                </div>
+
+                <h2>Code flow</h2>
+                <!-- beautify ignore:start -->
+                <!-- prettier-ignore -->
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    A[Browser<br/>preset name] -->|POST /cot| B[app.py<br/>cot_route]
+    B -->|problem key| C[cot.py<br/>run_cot]
+    C -->|question| P[direct_prompt<br/>cot_prompt]
+    P -->|10 prompts| C
+    C -->|prompts| D[config.py<br/>parallel_map]
+    D -->|prompt| E[ask]
+    E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
+    F -->|text| E
+    E -->|text + seconds| C
+    C -->|response| G[is_correct]
+    G -->|pass / fail| C
+    C -->|text report| B
+    B -->|JSON result| A
+                    </div>
+                </div>
+                <!-- beautify ignore:end -->
+
+                <h2>Backend</h2>
+                <span class="file-label">The two prompt strategies, the timed call, and final-line scoring.</span>
+                <pre><code class="language-python">def direct_prompt(question: str) -> str:
+    return f"{question}\n\nAnswer in one short sentence only. Do not show any working or reasoning."
+
+
+def cot_prompt(question: str) -> str:
+    return (
+        f"{question}\n\n"
+        "Think step by step. Show each step of your reasoning clearly, "
+        "then state your final answer on the last line."
+    )
+
+
+def ask(prompt: str) -> tuple[str, float]:
+    """Return (response_text, elapsed_seconds); failures become 'Error: ...'."""
+    start = time.perf_counter()
+    try:
+        response = get_openai_client().chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=TEMPERATURE,
+        )
+        text = (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        text = f"Error: {e}"
+    return text, time.perf_counter() - start
+
+
+def is_correct(response: str, correct_answers: list[str]) -> bool:
+    """Score only the final non-empty line(s) against the accepted answers."""
+    if response.startswith("Error:"):
+        return False
+    lines = [ln for ln in response.splitlines() if ln.strip()]
+    if not lines:
+        return False
+    tail = "\n".join(lines[-TAIL_LINES:]).lower()
+    return any(ans.lower() in tail for ans in correct_answers)</code></pre>
+
+                <h2>Orchestration</h2>
+                <span class="file-label">Runs both strategies in parallel and computes accuracy and latency.</span>
+                <pre><code class="language-python">def run_cot(problem_key: str) -> str:
+    """Run Direct vs CoT on one preset problem and return a text report."""
+    problem = PROBLEMS[problem_key]
+    prompts = [direct_prompt(problem["question"])] * RUNS_PER_STRATEGY + [
+        cot_prompt(problem["question"])
+    ] * RUNS_PER_STRATEGY
+    outputs = parallel_map(ask, prompts)
+
+    direct, cot = outputs[:RUNS_PER_STRATEGY], outputs[RUNS_PER_STRATEGY:]
+    d_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in direct)
+    c_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in cot)
+    d_t = sum(t for _, t in direct) / len(direct)
+    c_t = sum(t for _, t in cot) / len(cot)
+    ...
+    lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
+    latency = (c_t / d_t - 1) * 100 if d_t else 0</code></pre>
+
+                <h2>API route</h2>
+                <span class="file-label">Exposes the demo as <code>POST /cot</code>; only preset problems can be
+                    scored.</span>
+                <pre><code class="language-python">@bp.route("/cot", methods=["POST"])
+def cot_route():
+    """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    message = read_message().lower()
+    if not message:
+        return jsonify({"error": "A problem name is required."}), 400
+    if message not in PROBLEMS:
+        return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    try:
+        return jsonify({"result": run_cot(message)})
+    except Exception:
+        app.logger.exception("cot failed")
+        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500</code></pre>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "base",
+            themeVariables: {
+                background: "#1e1e1e",
+                primaryColor: "#2a2a2a",
+                primaryTextColor: "#e0e0e0",
+                primaryBorderColor: "#90caf9",
+                lineColor: "#90caf9",
+                secondaryColor: "#2a2a2a",
+                tertiaryColor: "#2a2a2a",
+                edgeLabelBackground: "#1e1e1e",
+                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
+                fontSize: "12px",
+            },
+            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
+        });
+    </script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -90,6 +90,12 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/info/<path:filename>")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
 def read_message() -> str:
     """Return the trimmed ``message`` field from the JSON body, or ''."""
     data = request.get_json(force=True, silent=True) or {}
