@@ -1303,40 +1303,41 @@ console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
 
 **Top Interview Question 1**
 
-*Group a list of words so that anagrams end up together: `["eat", "tea", "tan", "ate", "nat", "bat"]` becomes `[["eat", "tea", "ate"], ["tan", "nat"], ["bat"]]`.*
+*Given two strings `ransom_note` and `magazine`, decide whether the note can be built from the magazine's letters, using each magazine letter at most once. `"aa"` from `"aab"` works; `"aa"` from `"ab"` does not.*
 
-Comparing every word with every other is `O(n²·L)`. The move is to build a **canonical key** that all anagrams share — the sorted letters, or a 26-slot letter count — and use it as a dictionary key. One pass, `O(n·L log L)`.
+Searching the magazine for every letter of the note is `O(n·m)`. Use the key-value side of a hash table instead: count every magazine letter once into a dictionary, then walk the note and spend one copy per letter. The moment a count hits zero, the note is impossible. One pass over each string, `O(n + m)`.
 
-**Answer — group anagrams by canonical key**
+**Answer — ransom note with a letter count**
 
 ```python
-from collections import defaultdict
+from collections import Counter
 
-def group_anagrams(words):
-    """O(n * L log L) time. Anagrams collapse onto the same sorted-letters key."""
-    buckets = defaultdict(list)
-    for word in words:
-        key = "".join(sorted(word))     # "tea" and "eat" both become "aet"
-        buckets[key].append(word)
-    return list(buckets.values())
+def can_construct(ransom_note, magazine):
+    """O(n + m) time. Count the magazine once, then spend letters from it."""
+    supply = Counter(magazine)          # letter -> copies still available
+    for ch in ransom_note:
+        if supply[ch] == 0:
+            return False                # ran out of this letter
+        supply[ch] -= 1
+    return True
 
-print(group_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"]))
-# [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]
+print(can_construct("aa", "aab"))   # True
+print(can_construct("aa", "ab"))    # False
 ```
 
 ```javascript
-function groupAnagrams(words) {         // O(n * L log L) time
-  const buckets = new Map();
-  for (const word of words) {
-    const key = [...word].sort().join("");   // "tea" and "eat" -> "aet"
-    if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(word);
+function canConstruct(ransomNote, magazine) {  // O(n + m) time
+  const supply = new Map();                    // letter -> copies still available
+  for (const ch of magazine) supply.set(ch, (supply.get(ch) ?? 0) + 1);
+  for (const ch of ransomNote) {
+    if (!supply.get(ch)) return false;         // ran out of this letter
+    supply.set(ch, supply.get(ch) - 1);
   }
-  return [...buckets.values()];
+  return true;
 }
 
-console.log(groupAnagrams(["eat", "tea", "tan", "ate", "nat", "bat"]));
-// [['eat','tea','ate'], ['tan','nat'], ['bat']]
+console.log(canConstruct("aa", "aab"));   // true
+console.log(canConstruct("aa", "ab"));    // false
 ```
 
 **Top Interview Question 2**
@@ -2236,77 +2237,59 @@ const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];   // grid neighbours
 
 **Top Interview Question 1**
 
-*Given a grid of `"1"` (land) and `"0"` (water), count the islands. An island is land connected horizontally or vertically.*
+*Given a grid of `1` (land) and `0` (water) containing exactly one island — land connected horizontally or vertically — return the island's perimeter.*
 
 The insight that unlocks a whole family of problems: **a grid is a graph**. Every cell is a vertex, and its up/down/left/right neighbours are its edges — nobody has to hand you an adjacency list.
 
-The answer is "count the connected components". Walk the grid; each time you meet land you have not seen before, that is a new island, and you flood-fill the whole thing so it is never counted twice. Sinking each visited cell to `"0"` is the cheapest possible visited set.
+Here you only need to look at those edges. Every land cell brings 4 sides; wherever two land cells touch, the shared side disappears from both of them. So count land cells and shared sides — checking only up and left counts each shared side exactly once — and the answer is `4 × land − 2 × shared`.
 
-**Answer — number of islands**
+**Answer — island perimeter by counting edges**
 
 ```python
-def count_islands(grid):
-    """O(rows * cols) - every cell is visited at most once."""
-    if not grid:
-        return 0
-    rows, cols = len(grid), len(grid[0])
-    islands = 0
+def island_perimeter(grid):
+    """O(rows * cols) - one look at each cell and its up/left neighbours."""
+    land = shared = 0
+    for r in range(len(grid)):
+        for c in range(len(grid[0])):
+            if grid[r][c] == 1:
+                land += 1
+                if r > 0 and grid[r - 1][c] == 1:
+                    shared += 1         # touches the land cell above
+                if c > 0 and grid[r][c - 1] == 1:
+                    shared += 1         # touches the land cell to the left
+    return 4 * land - 2 * shared        # each shared side hides two edges
 
-    def sink(r, c):
-        """Flood-fill this island so it is never counted again."""
-        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != "1":
-            return                      # off the grid, or water/already sunk
-        grid[r][c] = "0"                # mark visited by sinking the land
-        sink(r + 1, c); sink(r - 1, c)
-        sink(r, c + 1); sink(r, c - 1)
-
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == "1":       # unvisited land = a brand new island
-                islands += 1
-                sink(r, c)
-    return islands
-
-print(count_islands([["1", "1", "0", "0"],
-                     ["1", "1", "0", "0"],
-                     ["0", "0", "1", "0"]]))     # 2
+print(island_perimeter([[0, 1, 0, 0],
+                        [1, 1, 1, 0],
+                        [0, 1, 0, 0],
+                        [1, 1, 0, 0]]))     # 16
 ```
 
 ```javascript
-function countIslands(grid) {           // O(rows * cols)
-  if (!grid.length) return 0;
-  const rows = grid.length;
-  const cols = grid[0].length;
-  let islands = 0;
-
-  const sink = (r, c) => {              // flood-fill one island
-    if (r < 0 || r >= rows || c < 0 || c >= cols || grid[r][c] !== "1") return;
-    grid[r][c] = "0";                   // mark visited by sinking the land
-    sink(r + 1, c); sink(r - 1, c);
-    sink(r, c + 1); sink(r, c - 1);
-  };
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (grid[r][c] === "1") {         // unvisited land = a new island
-        islands++;
-        sink(r, c);
-      }
+function islandPerimeter(grid) {        // O(rows * cols)
+  let land = 0, shared = 0;
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[0].length; c++) {
+      if (grid[r][c] !== 1) continue;
+      land++;
+      if (r > 0 && grid[r - 1][c] === 1) shared++;   // touches the cell above
+      if (c > 0 && grid[r][c - 1] === 1) shared++;   // touches the cell to the left
     }
   }
-  return islands;
+  return 4 * land - 2 * shared;         // each shared side hides two edges
 }
 
-console.log(countIslands([["1","1","0","0"],
-                          ["1","1","0","0"],
-                          ["0","0","1","0"]]));  // 2
+console.log(islandPerimeter([[0, 1, 0, 0],
+                             [1, 1, 1, 0],
+                             [0, 1, 0, 0],
+                             [1, 1, 0, 0]]));   // 16
 ```
 
 **Top Interview Question 2**
 
 *Given a starting pixel in a grid of colours, change that pixel and every pixel connected to it (up, down, left, right) that shares the starting colour, to a new colour.*
 
-This is the same connected-component walk as counting islands, but instead of only counting you actively repaint each cell as you visit it — the repainting doubles as the visited check, since a neighbour is only worth visiting if it still has the old colour.
+This time you actually walk from cell to connected cell — a connected-component DFS — repainting each cell as you visit it. The repainting doubles as the visited check, since a neighbour is only worth visiting if it still has the old colour.
 
 **Answer — flood fill by connected-component DFS**
 
@@ -2720,60 +2703,43 @@ console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
 
 **Top Interview Question 1**
 
-*A sorted array was rotated at some unknown pivot — for example `[4, 5, 6, 7, 0, 1, 2]`. Find a target in `O(log n)`.*
+*Given a sorted list of lowercase letters and a `target` letter, return the smallest letter in the list that is strictly greater than `target`. If there is none, wrap around and return the first letter. `["c", "f", "j"]` with `"c"` → `"f"`; with `"j"` → `"c"`.*
 
-The array is no longer fully sorted, so plain binary search breaks. But here is the key observation: however you cut it at `mid`, **at least one half is still properly sorted**.
+A linear scan works but ignores the sorting. Binary search for the **first position whose letter is greater than the target**: whenever `letters[mid] <= target`, the answer lies strictly right of `mid`; otherwise `mid` itself might be it, so keep it in range. If `lo` runs off the end, nothing was larger, and `lo % len(letters)` wraps back to index `0`.
 
-Work out which half is the clean one by comparing `nums[lo]` with `nums[mid]`. If the target lies inside that sorted half's range, search there; otherwise it must be in the messy half. You still halve the range every step, so it stays logarithmic.
-
-**Answer — search a rotated sorted array**
+**Answer — next greatest letter by binary search**
 
 ```python
-def search_rotated(nums, target):
-    """O(log n). One half of any split is always properly sorted."""
-    lo, hi = 0, len(nums) - 1
-    while lo <= hi:
+def next_greatest_letter(letters, target):
+    """O(log n). First letter strictly greater than target, wrapping around."""
+    lo, hi = 0, len(letters)
+    while lo < hi:
         mid = lo + (hi - lo) // 2
-        if nums[mid] == target:
-            return mid
+        if letters[mid] <= target:
+            lo = mid + 1            # mid is too small - the answer is to its right
+        else:
+            hi = mid                # mid might BE the answer - keep it in range
+    return letters[lo % len(letters)]   # off the end wraps back to the first letter
 
-        if nums[lo] <= nums[mid]:               # LEFT half is sorted
-            if nums[lo] <= target < nums[mid]:
-                hi = mid - 1                    # target is inside it
-            else:
-                lo = mid + 1                    # must be in the messy half
-        else:                                   # RIGHT half is sorted
-            if nums[mid] < target <= nums[hi]:
-                lo = mid + 1
-            else:
-                hi = mid - 1
-    return -1
-
-print(search_rotated([4, 5, 6, 7, 0, 1, 2], 0))     # 4
-print(search_rotated([4, 5, 6, 7, 0, 1, 2], 3))     # -1
+print(next_greatest_letter(["c", "f", "j"], "a"))   # c
+print(next_greatest_letter(["c", "f", "j"], "c"))   # f
+print(next_greatest_letter(["c", "f", "j"], "j"))   # c  (wrapped around)
 ```
 
 ```javascript
-function searchRotated(nums, target) {  // O(log n)
-  let lo = 0;
-  let hi = nums.length - 1;
-  while (lo <= hi) {
+function nextGreatestLetter(letters, target) {   // O(log n)
+  let lo = 0, hi = letters.length;
+  while (lo < hi) {
     const mid = lo + ((hi - lo) >> 1);
-    if (nums[mid] === target) return mid;
-
-    if (nums[lo] <= nums[mid]) {        // LEFT half is sorted
-      if (nums[lo] <= target && target < nums[mid]) hi = mid - 1;
-      else lo = mid + 1;                // must be in the messy half
-    } else {                            // RIGHT half is sorted
-      if (nums[mid] < target && target <= nums[hi]) lo = mid + 1;
-      else hi = mid - 1;
-    }
+    if (letters[mid] <= target) lo = mid + 1;    // too small - answer is to the right
+    else hi = mid;                               // mid might be the answer
   }
-  return -1;
+  return letters[lo % letters.length];           // off the end wraps to the first letter
 }
 
-console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 0));   // 4
-console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 3));   // -1
+console.log(nextGreatestLetter(["c", "f", "j"], "a"));   // c
+console.log(nextGreatestLetter(["c", "f", "j"], "c"));   // f
+console.log(nextGreatestLetter(["c", "f", "j"], "j"));   // c
 ```
 
 **Top Interview Question 2**
@@ -3138,58 +3104,38 @@ Two words get used constantly when comparing sorts. A sort is **stable** if item
 
 **Top Interview Question 1**
 
-*Sort an array containing only the values `0`, `1` and `2` in a single pass, in place. This is the "Dutch national flag" problem.*
+*Move all the even numbers in an array to the front, followed by all the odd numbers, in place. Any order within each group is fine. `[3, 1, 2, 4]` can become `[2, 4, 3, 1]`.*
 
-Calling `sort()` works but wastes the biggest clue in the question: there are only **three** distinct values. That extra information beats the `n log n` comparison barrier.
+Calling `sort()` with a parity key works in `O(n log n)`, but there are only **two** categories, so a full sort is overkill. This is exactly the **partition** step at the heart of quicksort: keep a `write` pointer marking where the next even number belongs, scan with `i`, and swap every even value you find down to `write`. One pass, `O(n)`, no extra memory.
 
-Partition the array using Dijkstra's Dutch National Flag algorithm: keep three pointers. Everything before `low` is a 0, everything after `high` is a 2, and `i` scans the unknown middle. Note the asymmetry: after swapping with `high` you must *not* advance `i`, because the value you just pulled in from the right has never been examined.
-
-**Answer — sort colors in one pass**
+**Answer — sort array by parity with one partition pass**
 
 ```python
-def sort_colors(nums):
-    """O(n) time, O(1) space, single pass. Values must be 0, 1 or 2."""
-    low, i, high = 0, 0, len(nums) - 1
+def sort_array_by_parity(nums):
+    """O(n) time, O(1) space. One quicksort-style partition pass."""
+    write = 0                       # everything before write is even
+    for i in range(len(nums)):
+        if nums[i] % 2 == 0:
+            nums[write], nums[i] = nums[i], nums[write]
+            write += 1
+    return nums
 
-    while i <= high:
-        if nums[i] == 0:
-            nums[low], nums[i] = nums[i], nums[low]
-            low += 1
-            i += 1              # the swapped-in value was already checked
-        elif nums[i] == 2:
-            nums[i], nums[high] = nums[high], nums[i]
-            high -= 1           # do NOT advance i - that value is unseen
-        else:                   # nums[i] == 1, already in the middle band
-            i += 1
-
-data = [2, 0, 2, 1, 1, 0]
-sort_colors(data)
-print(data)                     # [0, 0, 1, 1, 2, 2]
+print(sort_array_by_parity([3, 1, 2, 4]))   # [2, 4, 3, 1]
 ```
 
 ```javascript
-function sortColors(nums) {     // O(n) time, O(1) space, single pass
-  let low = 0;
-  let i = 0;
-  let high = nums.length - 1;
-
-  while (i <= high) {
-    if (nums[i] === 0) {
-      [nums[low], nums[i]] = [nums[i], nums[low]];
-      low++;
-      i++;                      // swapped-in value was already checked
-    } else if (nums[i] === 2) {
-      [nums[i], nums[high]] = [nums[high], nums[i]];
-      high--;                   // do NOT advance i - that value is unseen
-    } else {
-      i++;                      // a 1 is already in the middle band
+function sortArrayByParity(nums) {      // O(n) time, O(1) space
+  let write = 0;                        // everything before write is even
+  for (let i = 0; i < nums.length; i++) {
+    if (nums[i] % 2 === 0) {
+      [nums[write], nums[i]] = [nums[i], nums[write]];
+      write++;
     }
   }
+  return nums;
 }
 
-const data = [2, 0, 2, 1, 1, 0];
-sortColors(data);
-console.log(data);              // [0, 0, 1, 1, 2, 2]
+console.log(sortArrayByParity([3, 1, 2, 4]));   // [2, 4, 3, 1]
 ```
 
 **Top Interview Question 2**
@@ -3298,38 +3244,43 @@ Almost every algorithm is built on one of four mindsets. Recognising which one a
 
 **Top Interview Question 1**
 
-*Each entry of an array is the maximum jump length from that index. Starting at index 0, can you reach the last index? `[2, 3, 1, 1, 4]` is reachable; `[3, 2, 1, 0, 4]` is not.*
+*You load boxes onto a truck that holds at most `truck_size` boxes. `box_types[i] = [count, units_per_box]` means there are `count` boxes that each hold `units_per_box` units. Return the maximum total units you can load. `[[1, 3], [2, 2], [3, 1]]` with room for 4 boxes → `8`.*
 
-Exploring every jump sequence is exponential. Greedily track the **furthest index reachable so far**: if the loop ever stands on an index beyond that reach, the array is broken there and no later element can help. One pass, `O(n)`.
+Every box takes exactly one slot, so the only difference between boxes is how many units they carry. That makes the greedy rule safe: sort the box types by units per box, richest first, and keep loading until the truck is full. Swapping any loaded box for a poorer one could only lower the total.
 
-**Answer — jump game by furthest reach**
+**Answer — maximum units on a truck, richest boxes first**
 
 ```python
-def can_jump(nums):
-    """O(n) time, O(1) space. Track only the furthest index still reachable."""
-    reach = 0
-    for i, jump in enumerate(nums):
-        if i > reach:
-            return False            # stranded - nothing earlier could get here
-        reach = max(reach, i + jump)
-    return True
+def maximum_units(box_types, truck_size):
+    """O(n log n) time (sorting dominates). Fill each slot with the richest box left."""
+    units = 0
+    for count, per_box in sorted(box_types, key=lambda b: b[1], reverse=True):
+        take = min(count, truck_size)   # as many of this type as still fit
+        units += take * per_box
+        truck_size -= take
+        if truck_size == 0:
+            break                       # the truck is full
+    return units
 
-print(can_jump([2, 3, 1, 1, 4]))    # True
-print(can_jump([3, 2, 1, 0, 4]))    # False - the 0 at index 3 is a wall
+print(maximum_units([[1, 3], [2, 2], [3, 1]], 4))              # 8
+print(maximum_units([[5, 10], [2, 5], [4, 7], [3, 9]], 10))    # 91
 ```
 
 ```javascript
-function canJump(nums) {            // O(n) time, O(1) space
-  let reach = 0;
-  for (let i = 0; i < nums.length; i++) {
-    if (i > reach) return false;    // stranded before this index
-    reach = Math.max(reach, i + nums[i]);
+function maximumUnits(boxTypes, truckSize) {    // O(n log n) time (sorting dominates)
+  const byValue = [...boxTypes].sort((a, b) => b[1] - a[1]);
+  let units = 0;
+  for (const [count, perBox] of byValue) {
+    const take = Math.min(count, truckSize);    // as many as still fit
+    units += take * perBox;
+    truckSize -= take;
+    if (truckSize === 0) break;                 // the truck is full
   }
-  return true;
+  return units;
 }
 
-console.log(canJump([2, 3, 1, 1, 4]));   // true
-console.log(canJump([3, 2, 1, 0, 4]));   // false
+console.log(maximumUnits([[1, 3], [2, 2], [3, 1]], 4));             // 8
+console.log(maximumUnits([[5, 10], [2, 5], [4, 7], [3, 9]], 10));   // 91
 ```
 
 **Top Interview Question 2**
@@ -3444,53 +3395,62 @@ All of it runs on **recursion** — a function that calls itself on a smaller in
 
 **Top Interview Question 1**
 
-*Sort an array in guaranteed `O(n log n)` time without relying on the language's built-in sort.*
+*Given an array sorted in ascending order, build a height-balanced binary search tree from it — one where the two subtrees of every node differ in height by at most one.*
 
-This is divide and conquer in its purest form: split the array in half, sort each half by the same method, then **merge** two sorted halves in linear time. The recursion is `log n` deep and each level does `O(n)` merging work, which is exactly where `O(n log n)` comes from. Merge sort is also stable.
+Divide and conquer in its purest form. The **middle** element must be the root: everything to its left is smaller and becomes the left subtree, everything to its right is larger and becomes the right subtree, and the two halves are the same size so the tree stays balanced. Build each half by the same method; the base case is an empty range, which is an empty tree. Every element becomes a node exactly once, so it is `O(n)`.
 
-**Answer — merge sort**
+**Answer — sorted array to balanced BST**
 
 ```python
-def merge_sort(nums):
-    """O(n log n) time, O(n) space. Stable: equal values keep their order."""
-    if len(nums) <= 1:
-        return nums                     # base case: already sorted
-    mid = len(nums) // 2
-    left = merge_sort(nums[:mid])       # divide
-    right = merge_sort(nums[mid:])
-    return merge(left, right)           # conquer
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
 
-def merge(left, right):
-    """Linear-time merge of two sorted lists."""
-    out, i, j = [], 0, 0
-    while i < len(left) and j < len(right):
-        if left[i] <= right[j]:         # <= is what keeps the sort stable
-            out.append(left[i]); i += 1
-        else:
-            out.append(right[j]); j += 1
-    return out + left[i:] + right[j:]   # one side is empty by now
+def sorted_array_to_bst(nums):
+    """O(n) time, O(log n) stack depth. The middle element becomes the root."""
+    def build(lo, hi):
+        if lo > hi:
+            return None                         # base case: empty range, empty tree
+        mid = (lo + hi) // 2
+        return TreeNode(nums[mid],
+                        build(lo, mid - 1),     # left half: all smaller
+                        build(mid + 1, hi))     # right half: all larger
+    return build(0, len(nums) - 1)
 
-print(merge_sort([5, 2, 9, 1, 5, 6]))   # [1, 2, 5, 5, 6, 9]
+def inorder(node):
+    return inorder(node.left) + [node.value] + inorder(node.right) if node else []
+
+root = sorted_array_to_bst([-10, -3, 0, 5, 9])
+print(root.value)       # 0
+print(inorder(root))    # [-10, -3, 0, 5, 9] - an in-order walk of a BST is sorted
 ```
 
 ```javascript
-function mergeSort(nums) {              // O(n log n) time, O(n) space, stable
-  if (nums.length <= 1) return nums;    // base case
-  const mid = nums.length >> 1;
-  return merge(mergeSort(nums.slice(0, mid)), mergeSort(nums.slice(mid)));
-}
-
-function merge(left, right) {           // linear-time merge of two sorted arrays
-  const out = [];
-  let i = 0, j = 0;
-  while (i < left.length && j < right.length) {
-    if (left[i] <= right[j]) out.push(left[i++]);   // <= keeps it stable
-    else out.push(right[j++]);
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
   }
-  return out.concat(left.slice(i), right.slice(j));
 }
 
-console.log(mergeSort([5, 2, 9, 1, 5, 6]));   // [1, 2, 5, 5, 6, 9]
+function sortedArrayToBST(nums) {       // O(n) time, O(log n) stack depth
+  const build = (lo, hi) => {
+    if (lo > hi) return null;           // base case: empty range, empty tree
+    const mid = (lo + hi) >> 1;
+    return new TreeNode(nums[mid],
+                        build(lo, mid - 1),    // left half: all smaller
+                        build(mid + 1, hi));   // right half: all larger
+  };
+  return build(0, nums.length - 1);
+}
+
+const inorder = (node) =>
+  node ? [...inorder(node.left), node.value, ...inorder(node.right)] : [];
+
+const root = sortedArrayToBST([-10, -3, 0, 5, 9]);
+console.log(root.value);      // 0
+console.log(inorder(root));   // [-10, -3, 0, 5, 9]
 ```
 
 **Top Interview Question 2**
@@ -3822,7 +3782,7 @@ def backtrack(state):
                 state.pop() # 3. un-choose
 ```
 
-**Top Interview Question 1**
+**Question**
 
 *How do you generate all possible subsets (the power set) of a collection using backtracking?*
 
@@ -3872,6 +3832,79 @@ function subsets(nums) {                // all 2^n subsets
 }
 
 console.log(subsets([1, 2, 3]).length); // 8
+```
+
+**Top Interview Question 1**
+
+*Given the root of a binary tree, return every root-to-leaf path as a string, such as `"1->2->5"`.*
+
+This is the choose / explore / un-choose skeleton on a tree. Push the current node onto a shared `path` (choose), recurse into its children (explore), then pop it off before returning (un-choose) so the sibling branch starts from a clean path. Whenever the node is a leaf, the path is complete — record it. Each node is visited once, `O(n)` calls.
+
+**Answer — binary tree paths by backtracking**
+
+```python
+class TreeNode:
+    def __init__(self, value, left=None, right=None):
+        self.value, self.left, self.right = value, left, right
+
+def binary_tree_paths(root):
+    """Every root-to-leaf path. Choose the node, explore its children, un-choose."""
+    paths, path = [], []
+
+    def go(node):
+        if node is None:
+            return
+        path.append(str(node.value))            # 1. choose
+        if node.left is None and node.right is None:
+            paths.append("->".join(path))       # a leaf completes one path
+        else:
+            go(node.left)                       # 2. explore
+            go(node.right)
+        path.pop()                              # 3. un-choose
+
+    go(root)
+    return paths
+
+#      1
+#     / \
+#    2   3
+#     \
+#      5
+tree = TreeNode(1, TreeNode(2, None, TreeNode(5)), TreeNode(3))
+print(binary_tree_paths(tree))      # ['1->2->5', '1->3']
+```
+
+```javascript
+class TreeNode {
+  constructor(value, left = null, right = null) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+function binaryTreePaths(root) {        // choose, explore, un-choose
+  const paths = [];
+  const path = [];
+
+  const go = (node) => {
+    if (!node) return;
+    path.push(String(node.value));              // 1. choose
+    if (!node.left && !node.right) {
+      paths.push(path.join("->"));              // a leaf completes one path
+    } else {
+      go(node.left);                            // 2. explore
+      go(node.right);
+    }
+    path.pop();                                 // 3. un-choose
+  };
+
+  go(root);
+  return paths;
+}
+
+const tree = new TreeNode(1, new TreeNode(2, null, new TreeNode(5)), new TreeNode(3));
+console.log(binaryTreePaths(tree));   // ['1->2->5', '1->3']
 ```
 
 **Top Interview Question 2**
