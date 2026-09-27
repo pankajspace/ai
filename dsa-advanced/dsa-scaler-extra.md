@@ -436,7 +436,7 @@ public static int maxSubarraySumSliding(int[] A, int K) {
 
 #### 4. Using Two Pointers T(n), S(1)
 
-## 3. Interview Problems 1
+## 3. Interview Problems
 
 ### 1. Minimum Meeting Rooms (Max Overlap of Meetings) | Two Pointers + Sorting **O(N), O(N)**
 
@@ -454,30 +454,28 @@ public static int maxSubarraySumSliding(int[] A, int K) {
 
 ### 8. Minimum Window Substring | Sliding Window + Frequency Counts **O(N), O(N)**
 
-## 4. Interview Problems 2
+### 9. Number of Islands | DFS | BFS **O(N), O(N)**
 
-### 1. Number of Islands | DFS | BFS **O(N), O(N)**
+### 10. Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph) **O(N), O(N)**
 
-### 2. Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph) **O(N), O(N)**
+### 11. Minimum Jumps to Reach End | Dynamic Programming | Greedy (Optimized) **O(N), O(N)**
 
-### 3. Minimum Jumps to Reach End | Dynamic Programming | Greedy (Optimized) **O(N), O(N)**
+### 12. Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass **O(N), O(N)**
 
-### 4. Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass **O(N), O(N)**
+### 13. Stock Buy Sell-I (One Transaction) **O(N), O(N)**
 
-### 5. Stock Buy Sell-I (One Transaction) **O(N), O(N)**
+### 14. Stock Buy Sell-II (Multiple Transactions) **O(N), O(N)**
 
-### 6. Stock Buy Sell-II (Multiple Transactions) **O(N), O(N)**
+### 15. Stock Buy Sell-III (At Most Two Transactions) **O(N), O(N)**
 
-### 7. Stock Buy Sell-III (At Most Two Transactions) **O(N), O(N)**
+### 16. Stock Buy Sell-IV (At Most K Transactions) **O(N), O(N)**
 
-### 8. Stock Buy Sell-IV (At Most K Transactions) **O(N), O(N)**
+### 17. Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming **O(N), O(N)**
 
-### 9. Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming **O(N), O(N)**
+### 18. Shortest Distance in a Maze | Dijkstra's Algorithm **O(N), O(N)**
 
-### 10. Shortest Distance in a Maze | Dijkstra's Algorithm **O(N), O(N)**
+### 19. Number of Islands | DFS | BFS **O(N), O(N)**
 
-### 11. Number of Islands | DFS | BFS **O(N), O(N)**
+### 20. Jump Game 2 | Dynamic Programming | Greedy Approach **O(N), O(N)**
 
-### 12. Jump Game 2 | Dynamic Programming | Greedy Approach **O(N), O(N)**
-
-### 13. Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid **O(N), O(N)**
+### 21. Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid **O(N), O(N)**
