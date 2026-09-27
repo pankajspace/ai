@@ -69,7 +69,8 @@ The first DSA crash course taught you the containers. This one teaches the **mov
 40. [Multiple Approaches: Target Sum / Subset Sum](#39-multiple-approaches-target-sum-subset-sum)
 41. [Multiple Approaches: Print Valid Parentheses](#40-multiple-approaches-print-valid-parentheses)
 42. [Graphs](#41-graphs)
-43. [The Whole Thing on One Page](#42-the-whole-thing-on-one-page)
+43. [Interview Problems](#42-interview-problems)
+44. [The Whole Thing on One Page](#43-the-whole-thing-on-one-page)
 
 <a id="0-read-the-constraints-first"></a>
 
@@ -98,7 +99,30 @@ Every advanced problem hands you its answer in the constraints line. An online j
 | `n ≤ 10^7` | `O(n)` | one pass: prefix sums, two pointers, Kadane |
 | larger | `O(log n)` or `O(1)` | maths, binary search, formulas |
 
-The notes list ten growth rates. Memorise their order, fastest first: `O(1)` → `O(log log n)` → `O(log n)` → `O(√n)` → `O(n)` → `O(n log n)` → `O(n^2)` → `O(n^3)` → `O(2^n)` → `O(n!)`.
+#### The 10 Growth Rates (Fastest to Slowest)
+1. `O(1)` — Constant time: unaffected by input size.
+2. `O(log log n)` — Double logarithmic time: grows imperceptibly (e.g. Interpolation Search on uniform data, prime factor sieving steps).
+3. `O(log n)` — Logarithmic time: dividing search space in half (e.g. Binary Search, divide and conquer).
+4. `O(√n)` — Square root time: factors appear in pairs up to `√n` (e.g. trial division prime check).
+5. `O(n)` — Linear time: single pass over the data (e.g. prefix sums, two pointers, Kadane's algorithm).
+6. `O(n log n)` — Linearithmic time: optimal comparison sorts (e.g. Merge Sort, Heap Sort).
+7. `O(n^2)` — Quadratic time: examining all pairs or nested loops (e.g. bubble sort, pair iterations, 2-D DP).
+8. `O(n^3)` — Cubic time: examining all triplets or matrix multiplication (e.g. Floyd-Warshall).
+9. `O(2^n)` — Exponential time: examining all subsets or binary recursion trees.
+10. `O(n!)` — Factorial time: generating all permutations (e.g. Traveling Salesperson brute force).
+
+> **Numbers & Ranges Mental Model**
+>
+> 1. Sum of first N natural numbers: `N(N + 1) / 2`.
+> 2. `[a, b]` inclusive range: `b - a + 1` elements.
+> 3. `(a, b)` exclusive range: `b - a - 1` elements.
+> 4. `0` is neither prime nor composite: it has infinitely many factors (`0 × k = 0` for all integers `k`).
+> 5. `1` is neither prime nor composite: it has only 1 distinct factor (itself).
+
+> **Logarithms Mental Model**
+>
+> 1. `2^3 = 8` means `∛8 = 2` means `log₂(8) = 3` (you can halve an array of size 8 exactly 3 times before reaching size 1).
+> 2. `3^4 = 81` means `∜81 = 3` means `log₃(81) = 4`.
 
 ```mermaid
 flowchart LR
@@ -505,7 +529,11 @@ Each pattern in this unit replaces a loop over *all subarrays* or *all pairs* wi
 - **Subarrays of size N** `N(N+1)/2`
 - **Print every subarray** `O(N^3)`
 
-Two warm-ups underpin everything in this unit. **Reversal** with two indices swapping inward is the building block of in-place rotation. **Subarrays** — contiguous slices `A[i..j]` — are what almost every array problem quantifies over, and there are exactly `N(N+1)/2` of them: `N` choices of start, and for start `i`, `N - i` choices of end.
+Two warm-ups underpin everything in this unit. **Reversal** with two indices swapping inward is the building block of in-place rotation. **Subarrays** — contiguous slices `A[i..j]` — are what almost every array problem quantifies over:
+
+1. **Total subarrays in an array of size N:** `N(N + 1) / 2`. For example, `[1, 2, 3]` has `3 × 4 / 2 = 6` subarrays: `[1]`, `[1, 2]`, `[1, 2, 3]`, `[2]`, `[2, 3]`, `[3]`.
+2. **Total subarrays of fixed size K:** `N - K + 1`. For example, an array of size 5 has `5 - 3 + 1 = 3` subarrays of size 3 (e.g. `[1, 2, 3, 4, 5]` with K=3 has `[1, 2, 3]`, `[2, 3, 4]`, `[3, 4, 5]`).
+3. **Length of a subarray:** `end - start + 1`. Because indices are inclusive `[start, end]`, the element count is `end - start + 1`.
 
 > **Analogy** 📚
 >
@@ -1909,66 +1937,6 @@ console.log(subarrayWithGivenSum([4, 3, 2, 6, 1], 3, 11)); // 1
 // - Only uses a few variables (currentSum, start, end).
 ```
 
-**Problem — Minimum window substring**
-
-*Given strings `s` and `t`, return the shortest substring of `s` that contains every character of `t` (with multiplicity). `s = "ADOBECODEBANC"`, `t = "ABC"` → `"BANC"`.*
-
-Count what `t` needs in a frequency map. Grow the right edge; when the window covers every needed character (`missing == 0`), shrink from the left as far as it stays valid, recording the best window. Each index enters and leaves once: `O(|s| + |t|)`. The notes list this twice (frequency maps / frequency counts); it is one problem.
-
-**Solution**
-
-```python
-from collections import Counter
-
-
-def min_window(s, t):
-    need = Counter(t)
-    missing = len(t)                      # characters of t still uncovered
-    best = (0, float("inf"))
-    left = 0
-    for right, ch in enumerate(s):
-        if need[ch] > 0:
-            missing -= 1
-        need[ch] -= 1
-        while missing == 0:               # window covers t: try to shrink it
-            if right - left < best[1] - best[0]:
-                best = (left, right)
-            need[s[left]] += 1
-            if need[s[left]] > 0:
-                missing += 1
-            left += 1
-    return "" if best[1] == float("inf") else s[best[0]:best[1] + 1]
-
-
-print(min_window("ADOBECODEBANC", "ABC"))  # BANC
-print(min_window("a", "aa"))               # (empty string)
-```
-
-```javascript
-function minWindow(s, t) {
-  const need = new Map();
-  for (const ch of t) need.set(ch, (need.get(ch) || 0) + 1);
-  let missing = t.length;               // characters of t still uncovered
-  let best = [0, Infinity];
-  let left = 0;
-  for (let right = 0; right < s.length; right++) {
-    const ch = s[right];
-    if ((need.get(ch) || 0) > 0) missing--;
-    need.set(ch, (need.get(ch) || 0) - 1);
-    while (missing === 0) {             // window covers t: try to shrink it
-      if (right - left < best[1] - best[0]) best = [left, right];
-      need.set(s[left], need.get(s[left]) + 1);
-      if (need.get(s[left]) > 0) missing++;
-      left++;
-    }
-  }
-  return best[1] === Infinity ? "" : s.slice(best[0], best[1] + 1);
-}
-
-console.log(minWindow("ADOBECODEBANC", "ABC")); // BANC
-console.log(minWindow("a", "aa"));              // (empty string)
-```
-
 <a id="7-multiple-approaches-maximum-subarray-sum-of-length-k"></a>
 
 ### Multiple Approaches: Maximum Subarray Sum of Length K
@@ -2311,7 +2279,16 @@ console.log(maxSumAtMostK([5, -4, 5], 5));       // 5
 - **Extra space** `O(1)`
 - **Decision per element** `extend or restart`
 
-At every index, the best subarray **ending here** either continues the best subarray ending at the previous index, or starts fresh at this element: `current = max(A[i], current + A[i])`. The overall answer is the best `current` ever seen. If the running sum drops below zero, it is dead weight for anything that follows — drop it.
+At every index, the best subarray **ending here** either continues the best subarray ending at the previous index, or starts fresh at this element: `currentBest = max(A[i], currentBest + A[i])`. The overall answer is `globalBest = max(globalBest, currentBest)`. If `currentBest + A[i]` becomes worse than `A[i]` alone, the accumulated subarray is a net drag — discard it and restart.
+
+#### When to Use Kadane's Algorithm
+Kadane's applies whenever a problem asks for an **optimal contiguous subarray** and at each index you can make an **"extend or restart"** decision.
+
+1. **Contiguous subarray?** If yes, Kadane's is a prime candidate.
+2. **Local extend or restart decision?** At each index, decide whether continuing the accumulated subarray helps or hurts.
+3. **Problem transformation:** Map values to gains/losses (for example, in the Flip 0s to 1s problem, map `0 → +1` and `1 → -1`, then apply Kadane's to maximize 1s).
+4. **Structural condition:** When looking for longest increasing/decreasing contiguous subarray, restart when the monotonic condition breaks.
+5. **Sign-flipping behavior:** When multiplying numbers (Max Product Subarray), track both minimum and maximum because multiplying by a negative flips minimum to maximum.
 
 > **Analogy** 🎒
 >
@@ -2823,54 +2800,6 @@ console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]])); // [[1, 6], [8
 | Problem | Technique | Complexity |
 | --- | --- | --- |
 | Merge overlapping intervals | sort by start, sweep | `O(N log N)` |
-
-#### More problems from the notes
-
-Every remaining problem from the revision notes for this topic, each with a solution in Python and JavaScript.
-
-**Problem — Minimum meeting rooms (Meeting Rooms II)**
-
-*Given meeting intervals `[start, end)`, return the minimum number of rooms so no two overlapping meetings share a room. `[[0,30],[5,10],[15,20]]` → `2`.*
-
-The answer is the maximum number of meetings running at once. Sort all start times and all end times separately and sweep with two pointers: a start before the next end needs a new room; otherwise a room frees up. `O(n log n)`. The notes list this as both "Minimum Meeting Rooms" and "Meeting Rooms II".
-
-**Solution**
-
-```python
-def min_meeting_rooms(intervals):
-    starts = sorted(s for s, _ in intervals)
-    ends = sorted(e for _, e in intervals)
-    rooms = best = 0
-    j = 0
-    for s in starts:
-        if s < ends[j]:        # a meeting starts before the earliest one ends
-            rooms += 1
-        else:                  # reuse the room that just freed up
-            j += 1
-        best = max(best, rooms)
-    return best
-
-
-print(min_meeting_rooms([[0, 30], [5, 10], [15, 20]]))  # 2
-print(min_meeting_rooms([[7, 10], [2, 4]]))             # 1
-```
-
-```javascript
-function minMeetingRooms(intervals) {
-  const starts = intervals.map((iv) => iv[0]).sort((a, b) => a - b);
-  const ends = intervals.map((iv) => iv[1]).sort((a, b) => a - b);
-  let rooms = 0, best = 0, j = 0;
-  for (const s of starts) {
-    if (s < ends[j]) rooms++;   // a meeting starts before the earliest one ends
-    else j++;                   // reuse the room that just freed up
-    best = Math.max(best, rooms);
-  }
-  return best;
-}
-
-console.log(minMeetingRooms([[0, 30], [5, 10], [15, 20]])); // 2
-console.log(minMeetingRooms([[7, 10], [2, 4]]));            // 1
-```
 
 <a id="12-boyer-moore-voting"></a>
 
@@ -4648,7 +4577,19 @@ console.log(longestCommonPrefix(["flower", "flow", "flight"])); // fl
 - **Check / set / toggle bit i** `O(1)`
 - **Count set bits** `O(log N)`
 
-Integers are arrays of bits, and bitwise operators edit all 32 positions in one instruction. The single most useful fact is that **XOR cancels pairs**: `x ^ x = 0` and `x ^ 0 = x`, and the order of XORs does not matter. The second is that `1 << i` is a mask with only bit `i` set, so every single-bit edit is one operator away.
+Integers are arrays of bits, and bitwise operators edit all 32 positions in one instruction.
+
+#### Decimal vs Binary System
+1. **Decimal (Base 10):** Digits `0-9`. Positional powers: `10^0 = 1`, `10^1 = 10`, `10^2 = 100`, `10^3 = 1000`. E.g. `1234 = (1×10³) + (2×10²) + (3×10¹) + (4×10⁰)`.
+2. **Binary (Base 2):** Digits `0, 1`. Positional powers: `2^0 = 1`, `2^1 = 2`, `2^2 = 4`, `2^3 = 8`, `2^4 = 16`, `2^5 = 32`. E.g. `1011₂ = (1×2³) + (0×2²) + (1×2¹) + (1×2⁰) = 8 + 0 + 2 + 1 = 11`.
+
+#### Bitwise Truth Table & Operations
+1. **AND (`&`):** `1 & 1 = 1`; any `0` input results in `0`.
+2. **OR (`|`):** `0 | 0 = 0`; any `1` input results in `1`.
+3. **XOR (`^`):** `1` when inputs differ (`0 ^ 1 = 1`, `1 ^ 0 = 1`); `0` when identical (`0 ^ 0 = 0`, `1 ^ 1 = 0`). Hence `x ^ x = 0` and `x ^ 0 = x` (cancels duplicates).
+4. **NOT (`~`):** Inverts every bit. In two's complement arithmetic, `~x = -(x + 1)` (e.g. `~5 = -6`).
+5. **Left Shift (`x << k`):** Shifts bits left by `k`, equivalent to `x × 2^k` (e.g. `5 << 1 = 10`).
+6. **Right Shift (`x >> k`):** Shifts bits right by `k`, equivalent to `x // 2^k` (e.g. `5 >> 1 = 2`).
 
 > **Analogy** 💡
 >
@@ -4846,6 +4787,10 @@ function binaryToDecimal(n) {
 
     decimalNumber += lastDigit * multiplier;
     multiplier *= base; // 1, 2, 4, 8, 16, ...
+    // Alternative way:
+    // let position = 0;
+    // decimalNumber += lastDigit * Math.pow(base, position);
+    // position += 1;
   }
   console.log(decimalNumber);
   return decimalNumber;
@@ -4887,6 +4832,10 @@ function decimalToBinary(n) {
 
     binaryNumber += lastDigit * multiplier;
     multiplier *= base;
+    // Alternative way:
+    // let position = 0;
+    // binaryNumber += lastDigit * Math.pow(base, position);
+    // position += 1;
   }
   console.log(binaryNumber);
   return binaryNumber;
@@ -5187,7 +5136,13 @@ console.log(subarraysWithOR0([0, 1]));          // 1   (run of 1 zero  → 1*2/2
 - **Prime check** `O(√N)`
 - **All primes to N** `O(N log log N)`
 
-Checking one number for primality needs divisors only up to `√n`: factors come in pairs `(i, n/i)` and one of each pair is `≤ √n`. For **all** primes up to `N`, sieve instead: every time you meet an unmarked number `p`, it is prime, so cross out its multiples. Start crossing at `p × p` — every smaller multiple `p × k` with `k < p` was already crossed out by `k`'s own prime factor.
+Checking one number for primality needs divisors only up to `√n`: factors come in pairs `(i, n/i)` and one of each pair is `≤ √n`.
+
+> **Special Numbers Rule**
+>
+> 1. `0` is neither prime nor composite: it has infinitely many factors (`0 × k = 0` for all integers `k`).
+> 2. `1` is neither prime nor composite: it has only 1 distinct positive factor (itself).
+> 3. Prime numbers begin strictly at `2` (the smallest and only even prime). For **all** primes up to `N`, sieve instead: every time you meet an unmarked number `p`, it is prime, so cross out its multiples. Start crossing at `p × p` — every smaller multiple `p × k` with `k < p` was already crossed out by `k`'s own prime factor.
 
 > **Interactive animation:** `sieve` — rendered by the page script in the HTML version.
 
@@ -5848,8 +5803,24 @@ The four general-purpose tools: recursion to break problems down, hashing to rem
 The notes give recursion three steps, and the order matters:
 
 1. **Expectation** — fix exactly what the function returns for its inputs, and never change that meaning midway. `sum(n)` returns `1 + … + n`.
-2. **Main logic** — solve the problem *assuming the smaller call already works*. This is the **recursive leap of faith**: do not trace the inner call in your head, just use its answer. `sum(n) = n + sum(n - 1)`.
+2. **Main logic** — solve the problem *assuming the smaller call already works*. This is the **recursive leap of faith**: do not trace the inner call in your head, just combine its result. `sum(n) = n + sum(n - 1)`.
 3. **Base case** — the smallest input you answer directly, with no further call. `sum(0) = 0`.
+
+#### Things to Check Before Running Recursive Code
+1. **Strict progression:** Every recursive call must move strictly closer to the base case (`sum(n - 1)`, not `sum(n)`).
+2. **Complete base coverage:** The base case must cover all ways recursion can terminate (e.g. `fib` requires `n <= 1`, both `0` and `1`, not just `n == 0`).
+3. **Input guards:** Guard edge inputs (`negative n`, empty array, out-of-bounds index).
+4. **Execution ordering:** Work placed *before* the recursive call executes top-down; work placed *after* executes bottom-up upon returning.
+5. **Memoization:** If the recursion tree evaluates identical subproblems (like Fibonacci), add memoization to cut complexity from exponential to linear.
+
+#### Time & Space Complexity in Recursion
+1. **Time Complexity:** Total function calls × work done per call.
+2. **Space Complexity:** Maximum depth of the call stack (+ any auxiliary structures).
+3. **Factorial `fact(n)`:** Single call per level (`fact(5) → fact(4) → ... → fact(1)`). Total calls: `n`, work per call: `O(1)`. `TC = O(n)`, `SC = O(n)`.
+4. **Fibonacci `fib(n)`:** Branches into 2 recursive calls per level. `TC = O(2^n)`. But **`SC = O(n)`**, NOT `O(2^n)`! The call stack explores one path down to the base case (DFS-like) and pops finished frames before exploring adjacent branches. At most `n` frames live on the stack simultaneously.
+
+#### Recursion vs Iteration
+Every problem that can be solved using recursion can also be solved using iteration. Converting a recursive solution to an iterative one involves using explicit data structures (like stacks or queues) to simulate the call stack.
 
 > **Analogy** 🪆
 >
@@ -6287,7 +6258,15 @@ Three words that sound alike decide which template you need:
 | Subsequence | yes — keep original order | no | `[1, 3]` | `2^n` |
 | Subarray | yes | yes | `[2, 3]` | `n(n+1)/2` |
 
-From "banana", `"bna"` is a valid subset and subsequence but not a subarray; `"nab"` is only a subset. Think of three nested rings: subset (loosest) ⊃ subsequence ⊃ subarray (strictest).
+#### The 3-Ring Mental Model: Subset vs Subsequence vs Subarray
+1. **Outermost Ring — Subset (Least Restrictive):** Any combination of elements. Order does not matter (`{1, 2}` is identical to `{2, 1}`). Total subsets for size `N`: `2^N`.
+2. **Middle Ring — Subsequence (Moderately Restrictive):** Elements selected in their original relative order. Can delete elements, but cannot reorder them (`[1, 2]` is different from `[2, 1]`). Total subsequences for size `N`: `2^N`.
+3. **Innermost Ring — Subarray (Most Restrictive):** Contiguous slice of elements. No elements can be omitted in between; order is strictly preserved. Total subarrays for size `N`: `N(N + 1) / 2`.
+
+*Example with string `'banana'`:*
+- `'bna'` is a valid subset and a valid subsequence, but NOT a subarray (letters are non-contiguous).
+- `'nab'` is a valid subset, but NOT a subsequence or subarray (relative order was violated).
+- `'ana'` is a valid subset, subsequence, AND contiguous subarray.
 
 > **Interactive animation:** `backtracking` — rendered by the page script in the HTML version.
 
@@ -6775,7 +6754,22 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
 - **Space** `O(n)`
 - **Direct address table** `O(1)` time, `O(max_val)` space
 
-When a problem asks *"Have I seen this before?"* or *"Does a valid pair or complement exist?"*, you do not need to store values, counts, or indices. You only need a collection of unique elements with instant membership testing. A **HashSet** provides average `O(1)` insertion, lookup, and deletion by passing elements through a hash function into buckets, resolving collisions via chaining.
+When a problem asks *"Have I seen this before?"* or *"Does a valid pair or complement exist?"*, you do not need to store values, counts, or indices. You only need a collection of unique elements with instant membership testing.
+
+#### Collision and the Pigeonhole Principle
+A Direct Address Table allocates one index per value (`table[val]`), which wastes enormous memory when values reach `10^9`. Hashing solves this by using a fixed table of size `M` and mapping keys with a hash function `key % M`.
+
+Because the number of possible keys `N` exceeds the table size `M`, collisions are mathematically inevitable by the **Pigeonhole Principle**: if you have 11 pigeons and 10 holes, at least one hole must contain more than one pigeon.
+
+Collision resolution falls into two families:
+1. **Open Hashing (Chaining):** Each bucket holds an auxiliary data structure (a linked list or dynamic array) storing all colliding elements.
+2. **Closed Hashing (Open Addressing):** All elements live inside the table itself. Collisions probe subsequent slots via Linear Probing (`(h + i) % M`), Quadratic Probing (`(h + i^2) % M`), or Double Hashing.
+
+#### Core HashSet Operations
+1. `add(value)`: Add value to set — Time Complexity average `O(1)`, worst `O(n)`.
+2. `delete(value)`: Remove value from set — Time Complexity average `O(1)`, worst `O(n)`.
+3. `has(value)`: Check presence — Time Complexity average `O(1)`, worst `O(n)`.
+4. `size`: Number of elements — Time Complexity `O(1)`.
 
 > **Analogy** 📋
 >
@@ -7014,6 +7008,21 @@ console.log(checkElementsDAT([2, 4, 11, 15, 6, 8, 14, 9], [4, 10, 17, 14])); // 
 - **Rehash threshold** `λ > 2.0`
 
 When you need to remember *more* than just existence — such as frequency of occurrences, earliest index seen, latest index seen, or key-to-value associations — reach for a **HashMap**. A hash map maps keys to values through an array of buckets, resolving collisions via chaining. When the load factor `λ = n / buckets` exceeds a threshold, it automatically **rehashes**: doubling bucket capacity and re-distributing keys to preserve `O(1)` average lookup time.
+
+#### Core HashMap Operations
+1. `set(key, value)`: Associate value with key — Time Complexity average `O(1)`, worst `O(n)`.
+2. `get(key)`: Retrieve value for key — Time Complexity average `O(1)`, worst `O(n)`.
+3. `delete(key)`: Remove key-value pair — Time Complexity average `O(1)`, worst `O(n)`.
+4. `has(key)`: Check if key exists — Time Complexity average `O(1)`, worst `O(n)`.
+5. `size`: Number of key-value pairs — Time Complexity `O(1)`.
+
+#### Load Factor & Rehashing Mechanics
+1. **Load Factor (λ):** Average number of elements per bucket, defined as `λ = total_elements / number_of_buckets`. For example, 11 elements in 10 buckets gives `λ = 1.1`.
+2. **Threshold:** A predefined limit (typically 0.75 in standard HashMaps, or 2.0 in custom implementations).
+3. **Rehashing Procedure:** When `λ > threshold`:
+   - Allocate a new hash table with double the capacity (`2 × M`).
+   - Re-insert every key from the old table using `key % (2M)`.
+   - Brings `λ` back down, keeping lookups and insertions at average `O(1)`.
 
 > **Analogy** 🧥
 >
@@ -7277,7 +7286,6 @@ console.log(countPairsSum([1, 2, 1, 2], 3)); // 4
 2. **Count subarrays with sum 0** — Maintain prefix sum counts seeded with `{0: 1}`. Add `freq[curr_sum]` at each step. `O(n)`.
 3. **Check subarray with sum K exists** — Maintain running sum; check if `curr_sum == K` or `map.has(curr_sum - K)`. `O(n)`.
 4. **Common elements in 2 arrays** — Count frequencies of the smaller array into a map. Scan the larger array, outputting on positive count and decrementing. `O(n + m)`.
-5. **Minimum distance between equal elements (Shaggy and distances)** — Map storing the last-seen index of each element. When an element repeats, minimize `i - last_seen[x]`. `O(n)`.
 
 **Problem — Frequency queries**
 
@@ -7478,45 +7486,6 @@ console.log(commonElements([1, 2, 2, 1], [2, 3, 1, 2])); // [2, 1, 2]
 console.log(commonElements([2, 1, 4, 10], [3, 6, 2, 10, 10])); // [2, 10]
 ```
 
-**Problem — Minimum distance between equal elements (Shaggy and distances)**
-
-*Return the smallest `j - i` such that `A[i] == A[j]` and `i ≠ j`, or `-1` if every value is unique. `[7, 1, 3, 4, 1, 7]` → `3`.*
-
-Walk once, remembering the **last index** each value was seen at. When a value repeats, the gap to its last occurrence is a candidate; the closest pair is always between consecutive occurrences, so the last index is all you need. `O(n)`.
-
-**Solution**
-
-```python
-def min_distance_equal(arr):
-    last_seen = {}
-    best = float("inf")
-    for i, x in enumerate(arr):
-        if x in last_seen:
-            best = min(best, i - last_seen[x])
-        last_seen[x] = i                  # only the most recent index matters
-    return -1 if best == float("inf") else best
-
-
-print(min_distance_equal([7, 1, 3, 4, 1, 7]))  # 3
-print(min_distance_equal([1, 2, 3]))           # -1
-```
-
-```javascript
-function minDistanceEqual(arr) {
-  const lastSeen = new Map();
-  let best = Infinity;
-  arr.forEach((x, i) => {
-    if (lastSeen.has(x)) best = Math.min(best, i - lastSeen.get(x));
-    lastSeen.set(x, i);                  // only the most recent index matters
-  });
-  return best === Infinity ? -1 : best;
-}
-
-console.log(minDistanceEqual([7, 1, 3, 4, 1, 7])); // 3
-console.log(minDistanceEqual([1, 2, 3]));          // -1
-```
-
-
 <a id="24-sorting-beyond-the-library-call"></a>
 
 ### Sorting Beyond the Library Call
@@ -7530,8 +7499,9 @@ You will almost always call the built-in sort. You still need to know how the cl
 
 Two properties decide which sort a situation needs:
 
-- **Strength — stable** — Equal elements keep their original relative order. Merge sort and count sort are stable; quick sort and heap sort are not.
-- **Strength — in-place** — Needs only `O(1)` (or `O(log n)` stack) extra memory. Quick sort and heap sort are in-place; merge sort needs an `O(n)` buffer.
+1. **Stable Sort:** Equal elements preserve their relative order from the original array. For example, sorting `[{name: 'A', age: 20}, {name: 'B', age: 20}]` by age leaves `'A'` before `'B'`. Merge Sort and Count Sort are stable; Quick Sort and Heap Sort are not.
+2. **In-place Sort:** Modifies the array in place, requiring only `O(1)` auxiliary memory (or `O(log n)` stack space). Quick Sort and Heap Sort are in-place; Merge Sort requires an `O(n)` auxiliary buffer.
+3. **Ideal range for Count Sort:** Worth reaching for when elements are integers in range `A[i] <= 10^6` and frequencies are `A[i] <= 10^6`. Outside this range, the auxiliary counting array exceeds memory limits.
 
 ```mermaid
 flowchart TD
@@ -8235,6 +8205,12 @@ console.log(countNobleIntegers([-10, 1, 1, 2, 4, 4, 4, 8, 10])); // 5 // [1, 1, 
 - **Extra space** `O(1)`
 
 The notes put it precisely: to search you need **a target and a search space**. Binary search does not need a sorted array — it needs a way to look at the middle and **throw away half** of the space with certainty. On a sorted array the rule is "too small → go right". On an unsorted array it can be "the slope goes down → a valley is to the right". On an **answer range** it is "this answer is feasible → try a smaller one".
+
+#### Midpoint Overflow Optimization
+In languages with fixed-width integers, `(lo + hi) // 2` can overflow 32-bit signed integer limits when `lo + hi > 2^31 - 1`.
+Always compute midpoint as:
+- **Python:** `mid = lo + (hi - lo) // 2`
+- **JavaScript:** `const mid = lo + Math.floor((hi - lo) / 2);`
 
 > **Analogy** 📖
 >
@@ -9182,10 +9158,28 @@ def pair_sum_brute(arr, target):
             if arr[i] + arr[j] == target:
                 return True
     return False
+
+
+print(pair_sum_brute([1, 2, 3, 4, 5], 6))   # True
+print(pair_sum_brute([1, 2, 3, 4, 5], 10))  # False
 ```
 
 ```javascript
-// Using Brute Force:
+// Using Brute Force: Time Complexity O(n^2), Space Complexity O(1)
+function pairSumBrute(arr, target) {
+  const n = arr.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (arr[i] + arr[j] === target) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+console.log(pairSumBrute([1, 2, 3, 4, 5], 6));  // true
+console.log(pairSumBrute([1, 2, 3, 4, 5], 10)); // false
 ```
 
 For each `A[i]`, binary-search the rest of the array for `K - A[i]`. Uses the sortedness, but only one element at a time.
@@ -9199,7 +9193,7 @@ def pair_sum_bs(arr, target):
         # binary search in arr[i+1:]
         lo, hi = i + 1, len(arr) - 1
         while lo <= hi:
-            mid = (lo + hi) // 2
+            mid = lo + (hi - lo) // 2
             if arr[mid] == comp:
                 return True
             elif arr[mid] < comp:
@@ -9207,10 +9201,35 @@ def pair_sum_bs(arr, target):
             else:
                 hi = mid - 1
     return False
+
+
+print(pair_sum_bs([1, 2, 3, 4, 5], 6))   # True
+print(pair_sum_bs([1, 2, 3, 4, 5], 10))  # False
 ```
 
 ```javascript
-// Using Binary Search:
+// Using Binary Search: Time Complexity O(n log n), Space Complexity O(1)
+function pairSumBinarySearch(arr, target) {
+  for (let i = 0; i < arr.length; i++) {
+    const comp = target - arr[i];
+    // binary search in arr[i+1 ... n-1]
+    let lo = i + 1, hi = arr.length - 1;
+    while (lo <= hi) {
+      const mid = lo + Math.floor((hi - lo) / 2);
+      if (arr[mid] === comp) {
+        return true;
+      } else if (arr[mid] < comp) {
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+  }
+  return false;
+}
+
+console.log(pairSumBinarySearch([1, 2, 3, 4, 5], 6));  // true
+console.log(pairSumBinarySearch([1, 2, 3, 4, 5], 10)); // false
 ```
 
 Remember what has been seen; each element asks whether its complement already appeared. Linear time, but `O(N)` memory — and it works on unsorted input too.
@@ -9225,10 +9244,27 @@ def pair_sum_set(arr, target):
             return True
         seen.add(num)
     return False
+
+
+print(pair_sum_set([1, 2, 3, 4, 5], 6))   # True
+print(pair_sum_set([1, 2, 3, 4, 5], 10))  # False
 ```
 
 ```javascript
-// Using Hash Set:
+// Using Hash Set: Time Complexity O(n), Space Complexity O(n)
+function pairSumHashSet(arr, target) {
+  const seen = new Set();
+  for (const num of arr) {
+    if (seen.has(target - num)) {
+      return true;
+    }
+    seen.add(num);
+  }
+  return false;
+}
+
+console.log(pairSumHashSet([1, 2, 3, 4, 5], 6));  // true
+console.log(pairSumHashSet([1, 2, 3, 4, 5], 10)); // false
 ```
 
 One pointer at each end: too small moves the left pointer right, too big moves the right pointer left. Linear time and constant memory — the best answer when the array is sorted.
@@ -9402,6 +9438,14 @@ Most linked-list problems are solved by **pointers moving at different speeds** 
 > **Picture it — two runners on a track**
 >
 > One runner jogs, the other sprints at double speed. On a straight road the sprinter simply finishes first. On a looped track the sprinter comes round and taps the jogger on the shoulder — that tap *proves* there is a loop, without anyone painting marks on the ground.
+
+#### 6 Core Linked List Operations
+1. `append(val)`: Add a new node at the end. Time Complexity `O(1)` if a tail pointer is maintained; `O(n)` if traversing from head. Space Complexity `O(1)`.
+2. `insertAtPosition(pos, val)`: Insert a node at a specific 0-based position. Time Complexity `O(n)`, Space Complexity `O(1)`.
+3. `getNodeAtPosition(pos)`: Retrieve the node reference at position `pos`. Time Complexity `O(n)`, Space Complexity `O(1)`.
+4. `deleteNode(val)`: Remove the first node matching `val`. Time Complexity `O(n)`, Space Complexity `O(1)`.
+5. `isValuePresent(val)`: Check if a value exists in the list. Time Complexity `O(n)`, Space Complexity `O(1)`.
+6. `getSize()`: Number of nodes. Time Complexity `O(1)` if counter is maintained; `O(n)` if counting nodes manually. Space Complexity `O(1)`.
 
 **Building blocks — node, reverse, middle**
 
@@ -10631,6 +10675,24 @@ console.log(hasCycle(head)); // Output: true
 
 A **stack** answers "what is the most recent unmatched thing?" — the last opened bracket, the last operand, the closest smaller value to the left. Everything happens at one end, the top, so every operation is `O(1)`.
 
+#### 5 Core Stack Operations
+1. `push(x)`: Add element `x` to the top of the stack. Time Complexity `O(1)`, Space Complexity `O(1)`.
+2. `pop()`: Remove and return the top element. Time Complexity `O(1)`, Space Complexity `O(1)`.
+3. `peek()` / `top()`: Access the top element without removing it. Time Complexity `O(1)`, Space Complexity `O(1)`.
+4. `size()`: Number of elements currently in the stack. Time Complexity `O(1)`.
+5. `isEmpty()`: Return whether the stack holds zero elements. Time Complexity `O(1)`.
+
+#### Infix vs Postfix vs Prefix Notation
+1. **Infix:** Operator placed between operands (e.g. `A + B`). Requires operator precedence rules and parentheses.
+2. **Postfix (Reverse Polish Notation):** Operator placed after operands (e.g. `A B +`). Ideal for evaluation using a single operand stack.
+3. **Prefix (Polish Notation):** Operator placed before operands (e.g. `+ A B`).
+
+*Evaluation Example:*
+- Infix: `1 + 2 + 3 * 4 - 5 / 6 + 7 - 8 * 9`
+- Postfix: `1 2 + 3 4 * + 5 6 / - 7 + 8 9 * -`
+- Prefix: `- + - + + 1 2 * 3 4 / 5 6 7 * 8 9`
+- Result: `50.833`
+
 > **Analogy** 🍽️
 >
 > **Picture it — a pile of plates**
@@ -11239,6 +11301,13 @@ A **queue** answers "what arrived first?" A **deque** works at both ends, which 
 > Shoppers join at the back and leave the checkout from the front. A deque is a line where people can also give up and leave from the back.
 
 The notes build a queue four ways: a dynamic array, a singly linked list with a **tail** pointer (`O(1)` enqueue at the tail, dequeue at the head), and two stacks — either **push-efficient** (move everything only when popping from an empty out-stack, amortised `O(1)`) or **pop-efficient**. A **deque** built on a doubly linked list gives `O(1)` at both ends.
+
+#### 5 Core Queue Operations (Using Singly Linked List + Tail)
+1. `enqueue(x)`: Add an element to the rear of the queue. Time Complexity `O(1)`, Space Complexity `O(1)`.
+2. `dequeue()`: Remove and return the element at the front. Time Complexity `O(1)`, Space Complexity `O(1)`.
+3. `peek()` / `front()`: Inspect the front element without removing it. Time Complexity `O(1)`, Space Complexity `O(1)`.
+4. `isEmpty()`: Check if the queue contains zero elements. Time Complexity `O(1)`.
+5. `size()`: Number of elements currently in the queue. Time Complexity `O(1)`.
 
 For the maximum of every window of size `k`, keep a deque of **indices whose values are decreasing**. A new element evicts everything smaller from the back — those can never be a maximum while it is in the window. The front is the current maximum; drop it once its index slides out of the window.
 
@@ -15153,7 +15222,24 @@ The heavyweight patterns: always grab the best item (heaps and greedy), remember
 - **Build from an array** `O(N)`
 - **Heap sort** `O(N log N)`, `O(1)` space
 
-A **heap** is a complete binary tree — every level full except the last, which fills left to right — where every parent is `≤` its children (min-heap) or `≥` them (max-heap). Completeness means it packs into an array with no gaps: the children of index `i` are `2i + 1` and `2i + 2`, and its parent is `(i - 1) // 2`. Push appends at the end and **sifts up**; pop moves the last element to the root and **sifts down**. Both walk one root-to-leaf path, so both are `O(log n)`.
+A **heap** is a complete binary tree packed into a contiguous array, governed by two strict properties:
+
+1. **Complete Binary Tree (Structural Property):** Every level is completely filled, except possibly the last level, which must be filled strictly from left to right. This guarantees zero gaps when stored in a flat array.
+2. **Heap Order Property:**
+   - **Min-Heap:** The value of every parent node is less than or equal to its children (`parent <= left && parent <= right`). The minimum element is always at the root (`index 0`).
+   - **Max-Heap:** The value of every parent node is greater than or equal to its children (`parent >= left && parent >= right`). The maximum element is always at the root (`index 0`).
+3. **Index Mapping Formula (0-indexed array):**
+   - **Parent index:** `(i - 1) // 2` (integer division).
+   - **Left child index:** `2 * i + 1`.
+   - **Right child index:** `2 * i + 2`.
+4. **Why an Array Representation?**
+   - No pointer memory overhead (saves 16 bytes per node).
+   - Cache-friendly contiguous memory access.
+   - The tree structure is guaranteed to remain a balanced complete binary tree.
+5. **Stability:** Heap Sort is **unstable** because swapping the root with the last leaf element scrambles the original relative order of duplicate keys.
+6. **Median of a Sorted Array:**
+   - Odd length: `A[N // 2]` is the unique middle element.
+   - Even length: Lower Median (first middle `A[N // 2 - 1]`), Upper Median (second middle `A[N // 2]`), or Average Median (`(lower + upper) / 2`).
 
 > **Analogy** 🏥
 >
@@ -16665,47 +16751,6 @@ console.log("Sorted:", arr); // [1, 2, 5, 6, 7, 9, 10, 13, 14]
  */
 ```
 
-**Problem — Sort a K-sorted array (K Places Apart)**
-
-*Every element is at most `K` positions away from where it belongs in sorted order. Sort the array. `[6, 5, 3, 2, 8, 10, 9]`, `K = 3` → `[2, 3, 5, 6, 8, 9, 10]`.*
-
-The smallest remaining element must be among the next `K + 1` candidates, so keep a min-heap of size `K + 1`: push the next element, pop the minimum into the output. `O(n log K)` instead of `O(n log n)`. The notes list this twice ("K-Sorted Array" and "K Places Apart").
-
-**Solution**
-
-```python
-import heapq
-
-
-def sort_k_sorted(arr, k):
-    heap = arr[:k + 1]
-    heapq.heapify(heap)
-    result = []
-    for x in arr[k + 1:]:
-        result.append(heapq.heappushpop(heap, x))   # smallest of the window of k + 1
-    while heap:
-        result.append(heapq.heappop(heap))
-    return result
-
-
-print(sort_k_sorted([6, 5, 3, 2, 8, 10, 9], 3))  # [2, 3, 5, 6, 8, 9, 10]
-```
-
-```javascript
-function sortKSorted(arr, k) {
-  const heap = new MinHeap();            // the MinHeap class from the Heaps section
-  const result = [];
-  for (const x of arr) {
-    heap.push(x);
-    if (heap.size() > k) result.push(heap.pop()); // smallest of the window of k + 1
-  }
-  while (heap.size()) result.push(heap.pop());
-  return result;
-}
-
-console.log(sortKSorted([6, 5, 3, 2, 8, 10, 9], 3)); // [2, 3, 5, 6, 8, 9, 10]
-```
-
 <a id="36-greedy-algorithms"></a>
 
 ### Greedy Algorithms
@@ -16857,87 +16902,6 @@ console.log(activitySelection([[1, 2], [2, 3], [3, 6], [6, 7], [8, 9], [1, 9]]))
 | Activity selection / finish maximum jobs | earliest end first | `O(N log N)` |
 | Job scheduling with deadlines | sort by deadline, keep best profits in a min-heap | `O(N log N)` |
 | Fractional knapsack (§37) | best value per weight first | `O(N log N)` |
-
-#### More problems from the notes
-
-Every remaining problem from the revision notes for this topic, each with a solution in Python and JavaScript.
-
-**Problem — Minimum jumps to reach the end (Jump Game II)**
-
-*`A[i]` is the maximum jump length from index `i`. Return the fewest jumps from index 0 to the last index. `[2, 3, 1, 1, 4]` → `2`.*
-
-DP works — `dp[i]` = fewest jumps to reach `i`, relaxing every reachable index — but is `O(n²)`. The greedy view is BFS by levels: all indices reachable with `j` jumps form a range; the farthest index reachable from that range ends the next level. Count levels until the range covers the end. `O(n)`. The notes list this as both "Minimum Jumps" and "Jump Game 2".
-
-**Approach 1 — DP — O(n²)**
-
-```python
-def min_jumps_dp(arr):
-    n = len(arr)
-    dp = [float("inf")] * n
-    dp[0] = 0
-    for i in range(n):
-        for step in range(1, arr[i] + 1):
-            if i + step < n:
-                dp[i + step] = min(dp[i + step], dp[i] + 1)
-    return dp[-1] if dp[-1] != float("inf") else -1
-
-
-print(min_jumps_dp([2, 3, 1, 1, 4]))  # 2
-```
-
-```javascript
-function minJumpsDP(arr) {
-  const n = arr.length;
-  const dp = new Array(n).fill(Infinity);
-  dp[0] = 0;
-  for (let i = 0; i < n; i++) {
-    for (let step = 1; step <= arr[i] && i + step < n; step++) {
-      dp[i + step] = Math.min(dp[i + step], dp[i] + 1);
-    }
-  }
-  return dp[n - 1] === Infinity ? -1 : dp[n - 1];
-}
-
-console.log(minJumpsDP([2, 3, 1, 1, 4])); // 2
-```
-
-**Approach 2 — Greedy — O(n)**
-
-```python
-def min_jumps_greedy(arr):
-    jumps = 0
-    current_end = farthest = 0
-    for i in range(len(arr) - 1):
-        farthest = max(farthest, i + arr[i])
-        if i == current_end:              # finished every index reachable with `jumps`
-            if farthest == current_end:
-                return -1                 # stuck
-            jumps += 1
-            current_end = farthest
-    return jumps
-
-
-print(min_jumps_greedy([2, 3, 1, 1, 4]))  # 2
-print(min_jumps_greedy([3, 2, 1, 0, 4]))  # -1
-```
-
-```javascript
-function minJumpsGreedy(arr) {
-  let jumps = 0, currentEnd = 0, farthest = 0;
-  for (let i = 0; i < arr.length - 1; i++) {
-    farthest = Math.max(farthest, i + arr[i]);
-    if (i === currentEnd) {              // finished every index reachable with `jumps`
-      if (farthest === currentEnd) return -1;
-      jumps++;
-      currentEnd = farthest;
-    }
-  }
-  return jumps;
-}
-
-console.log(minJumpsGreedy([2, 3, 1, 1, 4])); // 2
-console.log(minJumpsGreedy([3, 2, 1, 0, 4])); // -1
-```
 
 <a id="37-multiple-approaches-connecting-the-ropes"></a>
 
@@ -17250,7 +17214,13 @@ flowchart TD
     X2 --> X1["fact(1)"]
 ```
 
-*Left: `fib(2)` is needed by two callers — overlapping subproblems, so caching pays. Right: factorial is a straight line where each value is needed once — caching only wastes memory. The notes list factorial, permutations and plain tree traversal as places where DP does not apply.*
+*Left: `fib(2)` is needed by two callers — overlapping subproblems, so caching pays. Right: factorial is a straight line where each value is needed once — caching only wastes memory.*
+
+#### Where DP CANNOT Be Applied (And Why)
+To use Dynamic Programming, a problem must satisfy two criteria: **Optimal Substructure** and **Overlapping Subproblems**.
+1. **Factorial (`n! = n × (n - 1)!`):** The dependency graph is a **straight line** (`fact(5) → fact(4) → fact(3) → fact(2) → fact(1)`), not a branching tree. Once `fact(3)` returns to `fact(4)`, it is **never asked for again**. Storing it in a table is wasted memory because no other calculation needs it.
+2. **Generating Permutations:** Every permutation is unique. There are no shared, overlapping states.
+3. **Binary Tree Traversal:** Every node in preorder/inorder/postorder is visited exactly once; subproblems do not overlap.
 
 Every DP answer is five decisions, and writing them down before coding is most of the work:
 
@@ -18622,172 +18592,6 @@ const capacity4 = 8;
 console.log("Max Value (Unbounded Tabulation):", unboundedKnapsackTabulation(weights4, values4, capacity4)); // 10
 ```
 
-**Problem — Stock buy and sell I — one transaction**
-
-*`prices[i]` is the price on day `i`. Buy once and sell once later to maximise profit (or 0). `[7, 1, 5, 3, 6, 4]` → `5`.*
-
-Carry the cheapest price so far; selling today earns `price - min_price`. Keep the best. `O(n)`.
-
-**Solution**
-
-```python
-def max_profit_one(prices):
-    min_price = float("inf")
-    best = 0
-    for p in prices:
-        min_price = min(min_price, p)
-        best = max(best, p - min_price)
-    return best
-
-
-print(max_profit_one([7, 1, 5, 3, 6, 4]))  # 5
-```
-
-```javascript
-function maxProfitOne(prices) {
-  let minPrice = Infinity, best = 0;
-  for (const p of prices) {
-    minPrice = Math.min(minPrice, p);
-    best = Math.max(best, p - minPrice);
-  }
-  return best;
-}
-
-console.log(maxProfitOne([7, 1, 5, 3, 6, 4])); // 5
-```
-
-**Problem — Stock buy and sell II — unlimited transactions (peak–valley)**
-
-*Buy and sell as many times as you like (holding at most one share). `[7, 1, 5, 3, 6, 4]` → `7`.*
-
-Peak–valley: buy at every valley and sell at the next peak. Summing every positive day-to-day rise gives exactly the same total in a single pass — the greedy view. The DP view tracks two states per day, *holding* and *not holding*. The notes list this as "Maximum Profit from Stock Prices", "Stock Buy Sell-II" and "Best Time to Buy and Sell Stock (Greedy / DP)".
-
-**Approach 1 — Greedy — sum every rise**
-
-```python
-def max_profit_unlimited(prices):
-    return sum(max(0, prices[i] - prices[i - 1]) for i in range(1, len(prices)))
-
-
-print(max_profit_unlimited([7, 1, 5, 3, 6, 4]))  # 7
-```
-
-```javascript
-function maxProfitUnlimited(prices) {
-  let profit = 0;
-  for (let i = 1; i < prices.length; i++) profit += Math.max(0, prices[i] - prices[i - 1]);
-  return profit;
-}
-
-console.log(maxProfitUnlimited([7, 1, 5, 3, 6, 4])); // 7
-```
-
-**Approach 2 — DP — holding / not holding**
-
-```python
-def max_profit_unlimited_dp(prices):
-    hold, free = float("-inf"), 0
-    for p in prices:
-        hold, free = max(hold, free - p), max(free, hold + p)
-    return free
-
-
-print(max_profit_unlimited_dp([7, 1, 5, 3, 6, 4]))  # 7
-```
-
-```javascript
-function maxProfitUnlimitedDP(prices) {
-  let hold = -Infinity, free = 0;
-  for (const p of prices) [hold, free] = [Math.max(hold, free - p), Math.max(free, hold + p)];
-  return free;
-}
-
-console.log(maxProfitUnlimitedDP([7, 1, 5, 3, 6, 4])); // 7
-```
-
-**Problem — Stock buy and sell III — at most two transactions**
-
-*Maximise profit with at most two buy/sell pairs. `[3, 3, 5, 0, 0, 3, 1, 4]` → `6`.*
-
-Four running states: best balance after the first buy, first sell, second buy, second sell. Each day updates them in that order; the second buy starts from the first sell's profit. `O(n)`, `O(1)`.
-
-**Solution**
-
-```python
-def max_profit_two(prices):
-    buy1 = buy2 = float("-inf")
-    sell1 = sell2 = 0
-    for p in prices:
-        buy1 = max(buy1, -p)
-        sell1 = max(sell1, buy1 + p)
-        buy2 = max(buy2, sell1 - p)        # second buy is funded by the first profit
-        sell2 = max(sell2, buy2 + p)
-    return sell2
-
-
-print(max_profit_two([3, 3, 5, 0, 0, 3, 1, 4]))  # 6
-```
-
-```javascript
-function maxProfitTwo(prices) {
-  let buy1 = -Infinity, buy2 = -Infinity, sell1 = 0, sell2 = 0;
-  for (const p of prices) {
-    buy1 = Math.max(buy1, -p);
-    sell1 = Math.max(sell1, buy1 + p);
-    buy2 = Math.max(buy2, sell1 - p);    // second buy is funded by the first profit
-    sell2 = Math.max(sell2, buy2 + p);
-  }
-  return sell2;
-}
-
-console.log(maxProfitTwo([3, 3, 5, 0, 0, 3, 1, 4])); // 6
-```
-
-**Problem — Stock buy and sell IV — at most K transactions**
-
-*Maximise profit with at most `K` transactions. `K = 2`, `[3, 2, 6, 5, 0, 3]` → `7`.*
-
-Generalise part III to arrays `buy[1..K]` and `sell[1..K]`. If `K ≥ n / 2`, the limit never binds and the unlimited greedy answer applies. `O(n · K)`.
-
-**Solution**
-
-```python
-def max_profit_k(k, prices):
-    if k >= len(prices) // 2:              # limit never binds: unlimited transactions
-        return sum(max(0, prices[i] - prices[i - 1]) for i in range(1, len(prices)))
-    buy = [float("-inf")] * (k + 1)
-    sell = [0] * (k + 1)
-    for p in prices:
-        for t in range(1, k + 1):
-            buy[t] = max(buy[t], sell[t - 1] - p)
-            sell[t] = max(sell[t], buy[t] + p)
-    return sell[k]
-
-
-print(max_profit_k(2, [3, 2, 6, 5, 0, 3]))  # 7
-```
-
-```javascript
-function maxProfitK(k, prices) {
-  if (k >= Math.floor(prices.length / 2)) {   // limit never binds
-    let profit = 0;
-    for (let i = 1; i < prices.length; i++) profit += Math.max(0, prices[i] - prices[i - 1]);
-    return profit;
-  }
-  const buy = new Array(k + 1).fill(-Infinity);
-  const sell = new Array(k + 1).fill(0);
-  for (const p of prices) {
-    for (let t = 1; t <= k; t++) {
-      buy[t] = Math.max(buy[t], sell[t - 1] - p);
-      sell[t] = Math.max(sell[t], buy[t] + p);
-    }
-  }
-  return sell[k];
-}
-
-console.log(maxProfitK(2, [3, 2, 6, 5, 0, 3])); // 7
-```
-
 <a id="39-multiple-approaches-target-sum-subset-sum"></a>
 
 ### Multiple Approaches: Target Sum / Subset Sum
@@ -19336,7 +19140,38 @@ printValidParenthesisDP(3); // ()()(), ()(()), (())(), (()()), ((()))
 - **Kruskal MST** `O(E log E)`
 - **Topological sort** `O(V + E)`
 
-A graph is vertices joined by edges. The notes classify graphs along five axes, and each one changes which algorithm is legal: **directed or undirected**, **connected or disconnected**, **weighted or unweighted**, **cyclic or acyclic** (a directed acyclic graph is a DAG), and **degree** — in-degree and out-degree for directed graphs. A **simple graph** has no self-loops and no parallel edges. Store sparse graphs as an **adjacency list** (`O(V + E)` space); an adjacency matrix costs `O(V²)` but answers "is there an edge?" in `O(1)`.
+A **graph** is a non-linear data structure consisting of **Vertices** (nodes) and **Edges** connecting pairs of vertices.
+
+#### Real-World Applications
+1. **Computer Networks:** Computers/routers are vertices; network cables or wireless links are edges.
+2. **Social Networks:** People are vertices; friend or follower relationships are edges.
+3. **Google Maps / Navigation:** Intersections/cities are vertices; roads are edges with travel time/distance as weights.
+
+#### Core Terminology
+- **Vertex:** A node in the graph (e.g. `0, 1, 2, 3`).
+- **Edge:** A link between two vertices (e.g. edge `0-1`).
+- **Neighbors:** The set of vertices directly connected to a vertex by an edge.
+
+#### 6 Fundamental Properties & Types of Graphs
+1. **Directed vs. Undirected:**
+   - *Undirected:* Edges are bidirectional. Edge `(u, v)` implies `(v, u)`.
+   - *Directed:* Edges have a specific direction (`u → v` does not imply `v → u`).
+2. **Connected vs. Disconnected:**
+   - *Connected:* A path exists between every pair of vertices.
+   - *Disconnected:* The graph is split into two or more isolated components.
+3. **Weighted vs. Unweighted:**
+   - *Unweighted:* All edges have uniform cost (count of edges).
+   - *Weighted:* Each edge carries a numerical cost/distance/weight.
+4. **Cyclic vs. Acyclic:**
+   - *Cyclic:* Contains at least one path starting and ending at the same node without repeating edges.
+   - *Acyclic:* Contains no cycles. A directed acyclic graph is called a **DAG**.
+5. **Degree, In-degree, and Out-degree:**
+   - *Degree (Undirected):* Total edges connected to a vertex (count of neighbors).
+   - *In-degree (Directed):* Number of incoming edges arriving at a vertex.
+   - *Out-degree (Directed):* Number of outgoing edges leaving a vertex.
+6. **Simple Graph:** A graph with no self-loops (edges from a vertex to itself) and no parallel/multiple edges between the same pair of vertices.
+
+Store sparse graphs as an **adjacency list** (`O(V + E)` space); an adjacency matrix costs `O(V²)` but answers "is there an edge?" in `O(1)`.
 
 > **Analogy** 🗺️
 >
@@ -21220,16 +21055,436 @@ console.log(solution(A2, B2)); // expected output: []
 // The adjacency list requires O(A + M) space. The in-degree array and result array require O(A) space. The min-heap can store up to O(A) nodes.
 ```
 
-**Problem — Number of islands**
+---
 
-*In a grid of `'1'` (land) and `'0'` (water), count the islands — groups of land connected up, down, left or right.*
+<a id="42-interview-problems"></a>
 
-Scan every cell; each unvisited land cell starts a new island, and a DFS or BFS from it marks the whole island visited so it is never counted again. Every cell is visited once: `O(R · C)`. The notes list DFS and BFS versions (and the problem twice).
+### Interview Problems
 
-**Approach 1 — DFS**
+- **Curated core problems** `21 problems`
+- **Techniques** `Two Pointers, Heaps, Hash Maps, Sliding Window, DFS, BFS, Dijkstra, Greedy, DP`
+
+The problems in this section are drawn directly from the interview revision notes. Each represents a classic, high-frequency interview pattern that combines fundamental data structures with algorithmic techniques.
+
+1. **Minimum Meeting Rooms (Max Overlap of Meetings) | Two Pointers + Sorting** `O(N log N), O(N)`
+2. **Sort a K-Sorted (Nearly Sorted) Array | Min-Heap (Priority Queue)** `O(N log K), O(K)`
+3. **Minimum Distance Between Equal Elements | Hash Map (Last-Seen Index)** `O(N), O(N)`
+4. **Minimum Window Substring | Sliding Window + Frequency Maps** `O(|S| + |T|), O(Σ)`
+5. **Shaggy and distances | Hash Map (last-seen index) + Single Pass** `O(N), O(N)`
+6. **K Places Apart | Min-Heap of size (B+1)** `O(N log B), O(B)`
+7. **Meeting Rooms II | Two-Pointer Sweep over Sorted Start/End Times** `O(N log N), O(N)`
+8. **Minimum Window Substring | Sliding Window + Frequency Counts** `O(|S| + |T|), O(1) aux`
+9. **Number of Islands | DFS** `O(R · C), O(R · C)`
+10. **Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph)** `O(R · C), O(R · C)`
+11. **Minimum Jumps to Reach End | Dynamic Programming** `O(N^2), O(N)`
+12. **Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass** `O(N), O(1)`
+13. **Stock Buy Sell-I (One Transaction)** `O(N), O(1)`
+14. **Stock Buy Sell-II (Multiple Transactions)** `O(N), O(1)`
+15. **Stock Buy Sell-III (At Most Two Transactions)** `O(N), O(1)`
+16. **Stock Buy Sell-IV (At Most K Transactions)** `O(N · K), O(K)`
+17. **Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming** `O(N), O(1)`
+18. **Shortest Distance in a Maze | Dijkstra's Algorithm** `O(R · C log(R · C)), O(R · C)`
+19. **Number of Islands | BFS** `O(R · C), O(R · C)`
+20. **Jump Game 2 | Dynamic Programming | Greedy Approach** `O(N), O(1)`
+21. **Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid** `O(X · Y · N), O(X · Y)`
+
+**Problem 1 — Minimum Meeting Rooms (Max Overlap of Meetings) | Two Pointers + Sorting**
+
+*Given meeting intervals [start, end), find the minimum number of meeting rooms required so that no two overlapping meetings share a room. [[0, 30], [5, 10], [15, 20]] -> 2.*
+
+The answer is the maximum number of meetings running at once. Sort all start times and all end times separately. Sweep with two pointers: whenever a meeting starts before the earliest ending meeting finishes (start[i] < end[j]), increment room count. Otherwise, advance the end pointer as a room is freed. O(N log N) time, O(N) space.
+
+**Solution**
+
+```python
+def min_meeting_rooms(intervals):
+    starts = sorted(s for s, _ in intervals)
+    ends = sorted(e for _, e in intervals)
+    rooms = best = 0
+    j = 0
+    for s in starts:
+        if s < ends[j]:
+            rooms += 1
+        else:
+            j += 1
+        best = max(best, rooms)
+    return best
+
+
+print(min_meeting_rooms([[0, 30], [5, 10], [15, 20]]))  # 2
+print(min_meeting_rooms([[7, 10], [2, 4]]))             # 1
+```
+
+```javascript
+function minMeetingRooms(intervals) {
+  const starts = intervals.map((iv) => iv[0]).sort((a, b) => a - b);
+  const ends = intervals.map((iv) => iv[1]).sort((a, b) => a - b);
+  let rooms = 0, best = 0, j = 0;
+  for (const s of starts) {
+    if (s < ends[j]) rooms++;
+    else j++;
+    best = Math.max(best, rooms);
+  }
+  return best;
+}
+
+console.log(minMeetingRooms([[0, 30], [5, 10], [15, 20]])); // 2
+console.log(minMeetingRooms([[7, 10], [2, 4]]));            // 1
+```
+
+**Problem 2 — Sort a K-Sorted (Nearly Sorted) Array | Min-Heap (Priority Queue)**
+
+*Every element is at most K positions away from where it belongs in sorted order. Sort the array. [6, 5, 3, 2, 8, 10, 9], K = 3 -> [2, 3, 5, 6, 8, 9, 10].*
+
+The smallest remaining element must be among the next K + 1 candidates. Maintain a min-heap of size K + 1: push the next element, pop the minimum into the output. O(N log K) time instead of O(N log N).
+
+**Solution**
+
+```python
+import heapq
+
+
+def sort_k_sorted(arr, k):
+    heap = arr[:k + 1]
+    heapq.heapify(heap)
+    result = []
+    for x in arr[k + 1:]:
+        result.append(heapq.heappushpop(heap, x))
+    while heap:
+        result.append(heapq.heappop(heap))
+    return result
+
+
+print(sort_k_sorted([6, 5, 3, 2, 8, 10, 9], 3))  # [2, 3, 5, 6, 8, 9, 10]
+```
+
+```javascript
+function sortKSorted(arr, k) {
+  const heap = new MinHeap(); // MinHeap priority queue
+  const result = [];
+  for (const x of arr) {
+    heap.push(x);
+    if (heap.size() > k) result.push(heap.pop());
+  }
+  while (heap.size()) result.push(heap.pop());
+  return result;
+}
+
+console.log(sortKSorted([6, 5, 3, 2, 8, 10, 9], 3)); // [2, 3, 5, 6, 8, 9, 10]
+```
+
+**Problem 3 — Minimum Distance Between Equal Elements | Hash Map (Last-Seen Index)**
+
+*Return the smallest distance |j - i| such that A[i] == A[j] and i != j, or -1 if every value is unique. [7, 1, 3, 4, 1, 7] -> 3.*
+
+Single pass keeping a hash map of each element's last-seen index. When an element repeats, candidate distance is i - last_seen[x]. The closest pair of equal elements is always between consecutive occurrences. O(N) time, O(N) space.
+
+**Solution**
+
+```python
+def min_distance_equal(arr):
+    last_seen = {}
+    best = float("inf")
+    for i, x in enumerate(arr):
+        if x in last_seen:
+            best = min(best, i - last_seen[x])
+        last_seen[x] = i
+    return -1 if best == float("inf") else best
+
+
+print(min_distance_equal([7, 1, 3, 4, 1, 7]))  # 3
+print(min_distance_equal([1, 2, 3]))           # -1
+```
+
+```javascript
+function minDistanceEqual(arr) {
+  const lastSeen = new Map();
+  let best = Infinity;
+  arr.forEach((x, i) => {
+    if (lastSeen.has(x)) best = Math.min(best, i - lastSeen.get(x));
+    lastSeen.set(x, i);
+  });
+  return best === Infinity ? -1 : best;
+}
+
+console.log(minDistanceEqual([7, 1, 3, 4, 1, 7])); // 3
+console.log(minDistanceEqual([1, 2, 3]));          // -1
+```
+
+**Problem 4 — Minimum Window Substring | Sliding Window + Frequency Maps**
+
+*Given strings s and t, return the shortest substring of s that contains every character of t (with multiplicity). s = 'ADOBECODEBANC', t = 'ABC' -> 'BANC'.*
+
+Count characters in t using a frequency map. Expand the right pointer; when all characters are covered (missing == 0), shrink from the left as far as possible while maintaining coverage. O(|S| + |T|) time.
+
+**Solution**
+
+```python
+from collections import Counter
+
+
+def min_window_map(s, t):
+    need = Counter(t)
+    missing = len(t)
+    best = (0, float("inf"))
+    left = 0
+    for right, ch in enumerate(s):
+        if need[ch] > 0:
+            missing -= 1
+        need[ch] -= 1
+        while missing == 0:
+            if right - left < best[1] - best[0]:
+                best = (left, right)
+            need[s[left]] += 1
+            if need[s[left]] > 0:
+                missing += 1
+            left += 1
+    return "" if best[1] == float("inf") else s[best[0]:best[1] + 1]
+
+
+print(min_window_map("ADOBECODEBANC", "ABC"))  # BANC
+print(min_window_map("a", "aa"))               # (empty string)
+```
+
+```javascript
+function minWindowMap(s, t) {
+  const need = new Map();
+  for (const ch of t) need.set(ch, (need.get(ch) || 0) + 1);
+  let missing = t.length;
+  let best = [0, Infinity];
+  let left = 0;
+  for (let right = 0; right < s.length; right++) {
+    const ch = s[right];
+    if ((need.get(ch) || 0) > 0) missing--;
+    need.set(ch, (need.get(ch) || 0) - 1);
+    while (missing === 0) {
+      if (right - left < best[1] - best[0]) best = [left, right];
+      need.set(s[left], need.get(s[left]) + 1);
+      if (need.get(s[left]) > 0) missing++;
+      left++;
+    }
+  }
+  return best[1] === Infinity ? "" : s.slice(best[0], best[1] + 1);
+}
+
+console.log(minWindowMap("ADOBECODEBANC", "ABC")); // BANC
+console.log(minWindowMap("a", "aa"));              // (empty string)
+```
+
+**Problem 5 — Shaggy and distances | Hash Map (last-seen index) + Single Pass**
+
+*Shaggy has an array A consisting of N elements. We call a pair of distinct indices (i, j) special if A[i] == A[j]. Find the minimum distance |i - j| among all special pairs, or return -1 if no special pair exists.*
+
+Direct implementation of the Shaggy problem: iterate through array A in a single pass. For each element, look up its previous index in the map, minimize the distance, and overwrite its last-seen index. O(N) time and O(N) space.
+
+**Solution**
+
+```python
+def shaggy_and_distances(arr):
+    pos = {}
+    ans = float("inf")
+    for i, val in enumerate(arr):
+        if val in pos:
+            ans = min(ans, i - pos[val])
+        pos[val] = i
+    return -1 if ans == float("inf") else ans
+
+
+print(shaggy_and_distances([7, 1, 3, 4, 1, 7]))  # 3
+print(shaggy_and_distances([1, 1]))              # 1
+print(shaggy_and_distances([1, 2, 3]))           # -1
+```
+
+```javascript
+function shaggyAndDistances(arr) {
+  const pos = new Map();
+  let ans = Infinity;
+  for (let i = 0; i < arr.length; i++) {
+    const val = arr[i];
+    if (pos.has(val)) {
+      ans = Math.min(ans, i - pos.get(val));
+    }
+    pos.set(val, i);
+  }
+  return ans === Infinity ? -1 : ans;
+}
+
+console.log(shaggyAndDistances([7, 1, 3, 4, 1, 7])); // 3
+console.log(shaggyAndDistances([1, 1]));              // 1
+console.log(shaggyAndDistances([1, 2, 3]));           // -1
+```
+
+**Problem 6 — K Places Apart | Min-Heap of size (B+1)**
+
+*Given array A of size N and integer B, sort the array where each element is displaced at most B places away from its target sorted position. A = [2, 1, 17, 10, 21, 95], B = 2 -> [1, 2, 10, 17, 21, 95].*
+
+Initialize a min-heap with the first B + 1 elements. For each remaining element, push it into the min-heap and pop the minimum element into the result array. Finally, extract all remaining elements from the heap. O(N log B) time and O(B) space.
+
+**Solution**
+
+```python
+import heapq
+
+
+def k_places_apart(arr, b):
+    heap = arr[:b + 1]
+    heapq.heapify(heap)
+    result = []
+    for i in range(b + 1, len(arr)):
+        result.append(heapq.heappushpop(heap, arr[i]))
+    while heap:
+        result.append(heapq.heappop(heap))
+    return result
+
+
+print(k_places_apart([2, 1, 17, 10, 21, 95], 2))  # [1, 2, 10, 17, 21, 95]
+```
+
+```javascript
+function kPlacesApart(arr, b) {
+  const heap = new MinHeap();
+  const result = [];
+  const limit = Math.min(b + 1, arr.length);
+  for (let i = 0; i < limit; i++) heap.push(arr[i]);
+  for (let i = limit; i < arr.length; i++) {
+    result.push(heap.pop());
+    heap.push(arr[i]);
+  }
+  while (heap.size()) result.push(heap.pop());
+  return result;
+}
+
+console.log(kPlacesApart([2, 1, 17, 10, 21, 95], 2)); // [1, 2, 10, 17, 21, 95]
+```
+
+**Problem 7 — Meeting Rooms II | Two-Pointer Sweep over Sorted Start/End Times**
+
+*Given meeting intervals [[start_i, end_i]], return the minimum conference rooms required so no two overlapping meetings share a room. [[1, 18], [18, 23], [15, 29], [4, 15], [2, 11], [5, 13]] -> 4.*
+
+Sort starts and ends separately. Walk two pointers across both sorted arrays: when start < end, a room must be allocated; otherwise an existing room has been vacated and is reused. O(N log N) time.
+
+**Solution**
+
+```python
+def meeting_rooms_two_pointer(intervals):
+    starts = sorted(iv[0] for iv in intervals)
+    ends = sorted(iv[1] for iv in intervals)
+    rooms = max_rooms = 0
+    e_ptr = 0
+    for s in starts:
+        if s < ends[e_ptr]:
+            rooms += 1
+            max_rooms = max(max_rooms, rooms)
+        else:
+            e_ptr += 1
+    return max_rooms
+
+
+print(meeting_rooms_two_pointer([[1, 18], [18, 23], [15, 29], [4, 15], [2, 11], [5, 13]]))  # 4
+```
+
+```javascript
+function meetingRoomsTwoPointer(intervals) {
+  const starts = intervals.map(iv => iv[0]).sort((a, b) => a - b);
+  const ends = intervals.map(iv => iv[1]).sort((a, b) => a - b);
+  let rooms = 0, maxRooms = 0, e = 0;
+  for (const s of starts) {
+    if (s < ends[e]) {
+      rooms++;
+      maxRooms = Math.max(maxRooms, rooms);
+    } else {
+      e++;
+    }
+  }
+  return maxRooms;
+}
+
+console.log(meetingRoomsTwoPointer([[1, 18], [18, 23], [15, 29], [4, 15], [2, 11], [5, 13]])); // 4
+```
+
+**Problem 8 — Minimum Window Substring | Sliding Window + Frequency Counts**
+
+*Find minimum window substring using an array-based frequency table (size 128) instead of a hash map to achieve O(1) auxiliary space overhead. S = 'ADOBECODEBANC', T = 'ABC' -> 'BANC'.*
+
+Use 128-element integer arrays for target character counts and current window character counts. Maintain matched_chars to check validity in O(1) time without map overhead. O(|S| + |T|) time and O(1) auxiliary memory.
+
+**Solution**
+
+```python
+def min_window_counts(s, t):
+    if not s or not t:
+        return ""
+    target = [0] * 128
+    window = [0] * 128
+    for ch in t:
+        target[ord(ch)] += 1
+    required = sum(1 for c in target if c > 0)
+    formed = 0
+    left = 0
+    best = (float("inf"), 0, 0)
+    for right, ch in enumerate(s):
+        code = ord(ch)
+        window[code] += 1
+        if target[code] > 0 and window[code] == target[code]:
+            formed += 1
+        while left <= right and formed == required:
+            if (right - left + 1) < best[0]:
+                best = (right - left + 1, left, right)
+            left_code = ord(s[left])
+            window[left_code] -= 1
+            if target_code := target[left_code]:
+                if window[left_code] < target_code:
+                    formed -= 1
+            left += 1
+    return "" if best[0] == float("inf") else s[best[1]:best[2] + 1]
+
+
+print(min_window_counts("ADOBECODEBANC", "ABC"))  # BANC
+```
+
+```javascript
+function minWindowCounts(s, t) {
+  if (!s || !t) return "";
+  const target = new Int32Array(128);
+  const window = new Int32Array(128);
+  for (let i = 0; i < t.length; i++) target[t.charCodeAt(i)]++;
+  let required = 0;
+  for (let i = 0; i < 128; i++) if (target[i] > 0) required++;
+  let formed = 0, left = 0;
+  let minLen = Infinity, start = 0;
+  for (let right = 0; right < s.length; right++) {
+    const code = s.charCodeAt(right);
+    window[code]++;
+    if (target[code] > 0 && window[code] === target[code]) formed++;
+    while (left <= right && formed === required) {
+      if (right - left + 1 < minLen) {
+        minLen = right - left + 1;
+        start = left;
+      }
+      const lCode = s.charCodeAt(left);
+      window[lCode]--;
+      if (target[lCode] > 0 && window[lCode] < target[lCode]) formed--;
+      left++;
+    }
+  }
+  return minLen === Infinity ? "" : s.slice(start, start + minLen);
+}
+
+console.log(minWindowCounts("ADOBECODEBANC", "ABC")); // BANC
+```
+
+**Problem 9 — Number of Islands | DFS**
+
+*In a grid of '1' (land) and '0' (water), count the islands using recursive Depth-First Search. An island is surrounded by water and formed by connecting adjacent lands horizontally or vertically.*
+
+Scan every cell. Each unvisited land cell starts a new island; invoke DFS to sink all connected land cells in 4 directions by marking them visited. O(R · C) time and O(R · C) recursion space.
+
+**Solution**
 
 ```python
 def num_islands_dfs(grid):
+    if not grid or not grid[0]:
+        return 0
     rows, cols = len(grid), len(grid[0])
     seen = [[False] * cols for _ in range(rows)]
 
@@ -21244,7 +21499,7 @@ def num_islands_dfs(grid):
     for r in range(rows):
         for c in range(cols):
             if grid[r][c] == "1" and not seen[r][c]:
-                count += 1                # a new island: sink all of it
+                count += 1
                 dfs(r, c)
     return count
 
@@ -21255,6 +21510,7 @@ print(num_islands_dfs(grid))  # 2
 
 ```javascript
 function numIslandsDFS(grid) {
+  if (!grid || !grid.length) return 0;
   const rows = grid.length, cols = grid[0].length;
   const seen = Array.from({ length: rows }, () => new Array(cols).fill(false));
   const dfs = (r, c) => {
@@ -21266,7 +21522,7 @@ function numIslandsDFS(grid) {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (grid[r][c] === "1" && !seen[r][c]) {
-        count++;                         // a new island: sink all of it
+        count++;
         dfs(r, c);
       }
     }
@@ -21278,13 +21534,419 @@ const grid = [["1", "1", "0", "0"], ["1", "0", "0", "1"], ["0", "0", "1", "1"]];
 console.log(numIslandsDFS(grid)); // 2
 ```
 
-**Approach 2 — BFS**
+**Problem 10 — Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph)**
+
+*A ball rolls in a maze until hitting a wall. Return the minimum number of roll moves/turns to stop at dest, or -1 if impossible.*
+
+When counting distinct roll moves (each continuous slide in one direction counts as 1 move), all transitions have equal weight of 1. Standard BFS over stopping coordinates finds the fewest moves in O(R · C) time.
+
+**Solution**
+
+```python
+from collections import deque
+
+
+def shortest_distance_maze_bfs(maze, start, dest):
+    rows, cols = len(maze), len(maze[0])
+    queue = deque([(start[0], start[1], 0)])
+    seen = {(start[0], start[1])}
+    while queue:
+        r, c, moves = queue.popleft()
+        if [r, c] == dest:
+            return moves
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r, c
+            while 0 <= nr + dr < rows and 0 <= nc + dc < cols and maze[nr + dr][nc + dc] == 0:
+                nr += dr
+                nc += dc
+            if (nr, nc) not in seen:
+                seen.add((nr, nc))
+                queue.append((nr, nc, moves + 1))
+    return -1
+
+
+maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]]
+print(shortest_distance_maze_bfs(maze, [0, 4], [4, 4]))  # 3 moves
+```
+
+```javascript
+function shortestDistanceMazeBFS(maze, start, dest) {
+  const rows = maze.length, cols = maze[0].length;
+  const queue = [[start[0], start[1], 0]];
+  const seen = new Set([`${start[0]},${start[1]}`]);
+  for (let head = 0; head < queue.length; head++) {
+    const [r, c, moves] = queue[head];
+    if (r === dest[0] && c === dest[1]) return moves;
+    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      let nr = r, nc = c;
+      while (nr + dr >= 0 && nr + dr < rows && nc + dc >= 0 && nc + dc < cols && maze[nr + dr][nc + dc] === 0) {
+        nr += dr; nc += dc;
+      }
+      const key = `${nr},${nc}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        queue.push([nr, nc, moves + 1]);
+      }
+    }
+  }
+  return -1;
+}
+
+const maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]];
+console.log(shortestDistanceMazeBFS(maze, [0, 4], [4, 4])); // 3 moves
+```
+
+**Problem 11 — Minimum Jumps to Reach End | Dynamic Programming**
+
+*A[i] is the maximum jump length from index i. Return the fewest jumps from index 0 to the last index using bottom-up DP. [2, 3, 1, 1, 4] -> 2.*
+
+Define dp[i] as the minimum jumps needed to reach index i. Initialize dp[0] = 0 and all other positions to infinity. For each index i, iterate through all reachable destinations i + step and relax dp[i + step]. O(N^2) time, O(N) space.
+
+**Solution**
+
+```python
+def min_jumps_dp(arr):
+    n = len(arr)
+    dp = [float("inf")] * n
+    dp[0] = 0
+    for i in range(n):
+        if dp[i] == float("inf"):
+            continue
+        for step in range(1, arr[i] + 1):
+            if i + step < n:
+                dp[i + step] = min(dp[i + step], dp[i] + 1)
+    return dp[-1] if dp[-1] != float("inf") else -1
+
+
+print(min_jumps_dp([2, 3, 1, 1, 4]))  # 2
+print(min_jumps_dp([3, 2, 1, 0, 4]))  # -1
+```
+
+```javascript
+function minJumpsDP(arr) {
+  const n = arr.length;
+  const dp = new Array(n).fill(Infinity);
+  dp[0] = 0;
+  for (let i = 0; i < n; i++) {
+    if (dp[i] === Infinity) continue;
+    for (let step = 1; step <= arr[i] && i + step < n; step++) {
+      dp[i + step] = Math.min(dp[i + step], dp[i] + 1);
+    }
+  }
+  return dp[n - 1] === Infinity ? -1 : dp[n - 1];
+}
+
+console.log(minJumpsDP([2, 3, 1, 1, 4])); // 2
+console.log(minJumpsDP([3, 2, 1, 0, 4])); // -1
+```
+
+**Problem 12 — Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass**
+
+*Find maximum profit from stock prices with unlimited buy-sell transactions using the Peak Valley single-pass approach. [7, 1, 5, 3, 6, 4] -> 7.*
+
+Buy at every valley and sell at the next peak. In a single pass, every day where prices[i] > prices[i - 1] contributes prices[i] - prices[i - 1] to the total profit. O(N) time and O(1) space.
+
+**Solution**
+
+```python
+def max_profit_peak_valley(prices):
+    profit = 0
+    for i in range(1, len(prices)):
+        if prices[i] > prices[i - 1]:
+            profit += prices[i] - prices[i - 1]
+    return profit
+
+
+print(max_profit_peak_valley([7, 1, 5, 3, 6, 4]))  # 7
+print(max_profit_peak_valley([1, 2, 3, 4, 5]))     # 4
+print(max_profit_peak_valley([7, 6, 4, 3, 1]))     # 0
+```
+
+```javascript
+function maxProfitPeakValley(prices) {
+  let profit = 0;
+  for (let i = 1; i < prices.length; i++) {
+    if (prices[i] > prices[i - 1]) {
+      profit += prices[i] - prices[i - 1];
+    }
+  }
+  return profit;
+}
+
+console.log(maxProfitPeakValley([7, 1, 5, 3, 6, 4])); // 7
+console.log(maxProfitPeakValley([1, 2, 3, 4, 5]));     // 4
+console.log(maxProfitPeakValley([7, 6, 4, 3, 1]));     // 0
+```
+
+**Problem 13 — Stock Buy Sell-I (One Transaction)**
+
+*prices[i] is the price on day i. Buy once and sell once later to maximise profit (or 0). [7, 1, 5, 3, 6, 4] -> 5.*
+
+Track the lowest price seen so far as min_price. On each day, the prospective profit is price - min_price. Keep the global maximum. O(N) time and O(1) auxiliary space.
+
+**Solution**
+
+```python
+def stock_buy_sell_one(prices):
+    min_price = float("inf")
+    best = 0
+    for p in prices:
+        min_price = min(min_price, p)
+        best = max(best, p - min_price)
+    return best
+
+
+print(stock_buy_sell_one([7, 1, 5, 3, 6, 4]))  # 5
+print(stock_buy_sell_one([7, 6, 4, 3, 1]))     # 0
+```
+
+```javascript
+function stockBuySellOne(prices) {
+  let minPrice = Infinity, best = 0;
+  for (const p of prices) {
+    minPrice = Math.min(minPrice, p);
+    best = Math.max(best, p - minPrice);
+  }
+  return best;
+}
+
+console.log(stockBuySellOne([7, 1, 5, 3, 6, 4])); // 5
+console.log(stockBuySellOne([7, 6, 4, 3, 1]));     // 0
+```
+
+**Problem 14 — Stock Buy Sell-II (Multiple Transactions)**
+
+*Find maximum profit with unlimited transactions using the two-state DP machine (hold / free). [7, 1, 5, 3, 6, 4] -> 7.*
+
+Track two states: hold (max balance while owning a share) and free (max balance with cash). hold = max(hold, free - p), free = max(free, hold + p). O(N) time and O(1) space.
+
+**Solution**
+
+```python
+def stock_buy_sell_multi_dp(prices):
+    hold, free = float("-inf"), 0
+    for p in prices:
+        hold, free = max(hold, free - p), max(free, hold + p)
+    return free
+
+
+print(stock_buy_sell_multi_dp([7, 1, 5, 3, 6, 4]))  # 7
+```
+
+```javascript
+function stockBuySellMultiDP(prices) {
+  let hold = -Infinity, free = 0;
+  for (const p of prices) {
+    [hold, free] = [Math.max(hold, free - p), Math.max(free, hold + p)];
+  }
+  return free;
+}
+
+console.log(stockBuySellMultiDP([7, 1, 5, 3, 6, 4])); // 7
+```
+
+**Problem 15 — Stock Buy Sell-III (At Most Two Transactions)**
+
+*Maximise profit with at most two buy/sell pairs. [3, 3, 5, 0, 0, 3, 1, 4] -> 6.*
+
+Four running states: best balance after first buy, first sell, second buy (funded by first profit), and second sell. Update each day in sequence. O(N) time and O(1) space.
+
+**Solution**
+
+```python
+def stock_buy_sell_three(prices):
+    buy1 = buy2 = float("-inf")
+    sell1 = sell2 = 0
+    for p in prices:
+        buy1 = max(buy1, -p)
+        sell1 = max(sell1, buy1 + p)
+        buy2 = max(buy2, sell1 - p)
+        sell2 = max(sell2, buy2 + p)
+    return sell2
+
+
+print(stock_buy_sell_three([3, 3, 5, 0, 0, 3, 1, 4]))  # 6
+```
+
+```javascript
+function stockBuySellThree(prices) {
+  let buy1 = -Infinity, buy2 = -Infinity, sell1 = 0, sell2 = 0;
+  for (const p of prices) {
+    buy1 = Math.max(buy1, -p);
+    sell1 = Math.max(sell1, buy1 + p);
+    buy2 = Math.max(buy2, sell1 - p);
+    sell2 = Math.max(sell2, buy2 + p);
+  }
+  return sell2;
+}
+
+console.log(stockBuySellThree([3, 3, 5, 0, 0, 3, 1, 4])); // 6
+```
+
+**Problem 16 — Stock Buy Sell-IV (At Most K Transactions)**
+
+*Maximise profit with at most K transactions. K = 2, [3, 2, 6, 5, 0, 3] -> 7.*
+
+Generalize to arrays buy[1..K] and sell[1..K]. If K >= N / 2, the transaction limit never binds and greedy applies. O(N · K) time and O(K) space.
+
+**Solution**
+
+```python
+def stock_buy_sell_k(k, prices):
+    if k >= len(prices) // 2:
+        return sum(max(0, prices[i] - prices[i - 1]) for i in range(1, len(prices)))
+    buy = [float("-inf")] * (k + 1)
+    sell = [0] * (k + 1)
+    for p in prices:
+        for t in range(1, k + 1):
+            buy[t] = max(buy[t], sell[t - 1] - p)
+            sell[t] = max(sell[t], buy[t] + p)
+    return sell[k]
+
+
+print(stock_buy_sell_k(2, [3, 2, 6, 5, 0, 3]))  # 7
+```
+
+```javascript
+function stockBuySellK(k, prices) {
+  if (k >= Math.floor(prices.length / 2)) {
+    let profit = 0;
+    for (let i = 1; i < prices.length; i++) profit += Math.max(0, prices[i] - prices[i - 1]);
+    return profit;
+  }
+  const buy = new Array(k + 1).fill(-Infinity);
+  const sell = new Array(k + 1).fill(0);
+  for (const p of prices) {
+    for (let t = 1; t <= k; t++) {
+      buy[t] = Math.max(buy[t], sell[t - 1] - p);
+      sell[t] = Math.max(sell[t], buy[t] + p);
+    }
+  }
+  return sell[k];
+}
+
+console.log(stockBuySellK(2, [3, 2, 6, 5, 0, 3])); // 7
+```
+
+**Problem 17 — Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming**
+
+*Compare the Peak-Valley Greedy approach and the 2-state Dynamic Programming approach for stock trading side by side to verify equivalence.*
+
+Greedy captures all positive day-to-day differentials directly. DP models decision transitions between holding equity versus liquid cash. Both yield identical maximal profit in O(N) time and O(1) space.
+
+**Solution**
+
+```python
+def stock_compare_greedy_dp(prices):
+    # Method 1: Peak-Valley Greedy
+    greedy_profit = sum(max(0, prices[i] - prices[i - 1]) for i in range(1, len(prices)))
+
+    # Method 2: Dynamic Programming
+    hold, free = float("-inf"), 0
+    for p in prices:
+        hold, free = max(hold, free - p), max(free, hold + p)
+
+    return {"greedy": greedy_profit, "dp": free}
+
+
+print(stock_compare_greedy_dp([7, 1, 5, 3, 6, 4]))  # {'greedy': 7, 'dp': 7}
+```
+
+```javascript
+function stockCompareGreedyDP(prices) {
+  let greedy = 0;
+  for (let i = 1; i < prices.length; i++) greedy += Math.max(0, prices[i] - prices[i - 1]);
+
+  let hold = -Infinity, free = 0;
+  for (const p of prices) {
+    [hold, free] = [Math.max(hold, free - p), Math.max(free, hold + p)];
+  }
+
+  return { greedy, dp: free };
+}
+
+console.log(stockCompareGreedyDP([7, 1, 5, 3, 6, 4])); // { greedy: 7, dp: 7 }
+```
+
+**Problem 18 — Shortest Distance in a Maze | Dijkstra's Algorithm**
+
+*A ball rolls in a grid maze until hitting a wall. Return the fewest total cells travelled from start to stop exactly at dest, or -1.*
+
+Every stop point is a vertex; rolling in each of the 4 directions gives a weighted edge equal to the number of cells rolled. Since edge weights differ, use Dijkstra with a min-priority queue. O(R · C log(R · C)) time.
+
+**Solution**
+
+```python
+import heapq
+
+
+def shortest_distance_maze_dijkstra(maze, start, dest):
+    rows, cols = len(maze), len(maze[0])
+    dist = {tuple(start): 0}
+    heap = [(0, start[0], start[1])]
+    while heap:
+        d, r, c = heapq.heappop(heap)
+        if [r, c] == dest:
+            return d
+        if d > dist.get((r, c), float("inf")):
+            continue
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc, steps = r, c, 0
+            while 0 <= nr + dr < rows and 0 <= nc + dc < cols and maze[nr + dr][nc + dc] == 0:
+                nr, nc, steps = nr + dr, nc + dc, steps + 1
+            if d + steps < dist.get((nr, nc), float("inf")):
+                dist[(nr, nc)] = d + steps
+                heapq.heappush(heap, (d + steps, nr, nc))
+    return -1
+
+
+maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]]
+print(shortest_distance_maze_dijkstra(maze, [0, 4], [4, 4]))  # 12 cells rolled
+```
+
+```javascript
+function shortestDistanceMazeDijkstra(maze, start, dest) {
+  const rows = maze.length, cols = maze[0].length;
+  const dist = new Map([[start.join(), 0]]);
+  const heap = new MinHeap((a, b) => a[0] - b[0]);
+  heap.push([0, start[0], start[1]]);
+  while (heap.size()) {
+    const [d, r, c] = heap.pop();
+    if (r === dest[0] && c === dest[1]) return d;
+    if (d > (dist.get(`${r},${c}`) ?? Infinity)) continue;
+    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      let nr = r, nc = c, steps = 0;
+      while (nr + dr >= 0 && nr + dr < rows && nc + dc >= 0 && nc + dc < cols && maze[nr + dr][nc + dc] === 0) {
+        nr += dr; nc += dc; steps++;
+      }
+      if (d + steps < (dist.get(`${nr},${nc}`) ?? Infinity)) {
+        dist.set(`${nr},${nc}`, d + steps);
+        heap.push([d + steps, nr, nc]);
+      }
+    }
+  }
+  return -1;
+}
+
+const maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]];
+console.log(shortestDistanceMazeDijkstra(maze, [0, 4], [4, 4])); // 12 cells rolled
+```
+
+**Problem 19 — Number of Islands | BFS**
+
+*Count connected islands in a 2D binary grid using iterative Breadth-First Search with a queue.*
+
+Whenever an unvisited land cell '1' is encountered, increment the island count, add it to a queue, and explore all 4-directional connected land cells layer by layer using BFS. O(R · C) time.
+
+**Solution**
 
 ```python
 from collections import deque
 
 
 def num_islands_bfs(grid):
+    if not grid or not grid[0]:
+        return 0
     rows, cols = len(grid), len(grid[0])
     seen = set()
     count = 0
@@ -21309,6 +21971,7 @@ print(num_islands_bfs([["1", "1", "0", "0"], ["1", "0", "0", "1"], ["0", "0", "1
 
 ```javascript
 function numIslandsBFS(grid) {
+  if (!grid || !grid.length) return 0;
   const rows = grid.length, cols = grid[0].length;
   const seen = new Set();
   const key = (r, c) => r * cols + c;
@@ -21336,77 +21999,57 @@ function numIslandsBFS(grid) {
 console.log(numIslandsBFS([["1", "1", "0", "0"], ["1", "0", "0", "1"], ["0", "0", "1", "1"]])); // 2
 ```
 
-**Problem — Shortest distance in a maze (rolling ball)**
+**Problem 20 — Jump Game 2 | Dynamic Programming | Greedy Approach**
 
-*A ball in a grid maze (`0` open, `1` wall) rolls in one direction until it hits a wall. Return the fewest cells travelled from `start` to stop exactly at `dest`, or `-1`.*
+*Solve Jump Game II in linear time: determine the minimum jumps to reach the last index using the Greedy level-by-level BFS reach window. [2, 3, 1, 1, 4] -> 2.*
 
-Every stop point is a vertex; rolling from it in each of the four directions gives an edge whose weight is the number of cells rolled. Edge weights differ, so use Dijkstra. If you only count **moves** (every roll costs 1), plain BFS suffices — the notes list both variants.
+The greedy view is BFS by levels: indices reachable with current jump count form a range [0, current_end]. The farthest reachable index from that range sets the boundary for the next jump. O(N) time and O(1) space.
 
-**Solution — Dijkstra over stop points**
+**Solution**
 
 ```python
-import heapq
+def jump_game_two_greedy(arr):
+    jumps = 0
+    current_end = farthest = 0
+    for i in range(len(arr) - 1):
+        farthest = max(farthest, i + arr[i])
+        if i == current_end:
+            if farthest == current_end:
+                return -1
+            jumps += 1
+            current_end = farthest
+    return jumps
 
 
-def shortest_distance(maze, start, dest):
-    rows, cols = len(maze), len(maze[0])
-    dist = {tuple(start): 0}
-    heap = [(0, start[0], start[1])]
-    while heap:
-        d, r, c = heapq.heappop(heap)
-        if [r, c] == dest:
-            return d
-        if d > dist.get((r, c), float("inf")):
-            continue
-        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            nr, nc, steps = r, c, 0
-            while 0 <= nr + dr < rows and 0 <= nc + dc < cols and maze[nr + dr][nc + dc] == 0:
-                nr, nc, steps = nr + dr, nc + dc, steps + 1   # roll until a wall
-            if d + steps < dist.get((nr, nc), float("inf")):
-                dist[(nr, nc)] = d + steps
-                heapq.heappush(heap, (d + steps, nr, nc))
-    return -1
-
-
-maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]]
-print(shortest_distance(maze, [0, 4], [4, 4]))  # 12
+print(jump_game_two_greedy([2, 3, 1, 1, 4]))  # 2
+print(jump_game_two_greedy([3, 2, 1, 0, 4]))  # -1
 ```
 
 ```javascript
-function shortestDistance(maze, start, dest) {
-  const rows = maze.length, cols = maze[0].length;
-  const dist = new Map([[start.join(), 0]]);
-  const heap = new MinHeap((a, b) => a[0] - b[0]);   // the MinHeap class from the Heaps section
-  heap.push([0, start[0], start[1]]);
-  while (heap.size()) {
-    const [d, r, c] = heap.pop();
-    if (r === dest[0] && c === dest[1]) return d;
-    if (d > (dist.get(`${r},${c}`) ?? Infinity)) continue;
-    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      let nr = r, nc = c, steps = 0;
-      while (nr + dr >= 0 && nr + dr < rows && nc + dc >= 0 && nc + dc < cols && maze[nr + dr][nc + dc] === 0) {
-        nr += dr; nc += dc; steps++;     // roll until a wall
-      }
-      if (d + steps < (dist.get(`${nr},${nc}`) ?? Infinity)) {
-        dist.set(`${nr},${nc}`, d + steps);
-        heap.push([d + steps, nr, nc]);
-      }
+function jumpGameTwoGreedy(arr) {
+  let jumps = 0, currentEnd = 0, farthest = 0;
+  for (let i = 0; i < arr.length - 1; i++) {
+    farthest = Math.max(farthest, i + arr[i]);
+    if (i === currentEnd) {
+      if (farthest === currentEnd) return -1;
+      jumps++;
+      currentEnd = farthest;
     }
   }
-  return -1;
+  return jumps;
 }
 
-const maze = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [1, 1, 0, 1, 1], [0, 0, 0, 0, 0]];
-console.log(shortestDistance(maze, [0, 4], [4, 4])); // 12
+console.log(jumpGameTwoGreedy([2, 3, 1, 1, 4])); // 2
+console.log(jumpGameTwoGreedy([3, 2, 1, 0, 4])); // -1
 ```
 
-**Problem — Valid path through a field of circles**
+**Problem 21 — Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid**
 
-*A rectangle spans `(0, 0)` to `(x, y)`. There are `N` circles of radius `R` at given centres. Moving one step in any of 8 directions between integer points, can you get from `(0, 0)` to `(x, y)` without touching a circle?*
+*A rectangle spans (0, 0) to (x, y) with N circles of radius R at given centres. Can you reach (x, y) from (0, 0) via 8-directional moves without touching any circle? (2, 3), R=1, [2], [3] -> 'NO'.*
 
-Treat integer points as grid cells. A point is blocked if it lies within distance `R` of any centre. BFS from `(0, 0)` over unblocked neighbours in 8 directions. The notes give two variants: check blocking on the fly, or precompute an obstacle grid first (faster when points are visited repeatedly). `O(x · y · N)`.
+Pre-compute an obstacle grid where blocked[i][j] indicates whether (i, j) lies within distance R of any circle center. Then run an 8-directional BFS from (0, 0) to verify reachability to (x, y). O(X · Y · N) time and O(X · Y) space.
 
-**Solution — BFS with a precomputed obstacle grid**
+**Solution**
 
 ```python
 from collections import deque
@@ -21432,7 +22075,7 @@ def valid_path(x, y, r, centres_x, centres_y):
     return "NO"
 
 
-print(valid_path(2, 3, 1, [2], [3]))  # NO  (the destination is inside a circle)
+print(valid_path(2, 3, 1, [2], [3]))  # NO
 print(valid_path(5, 5, 1, [2], [2]))  # YES
 ```
 
@@ -21463,10 +22106,9 @@ function validPath(x, y, r, centresX, centresY) {
 console.log(validPath(2, 3, 1, [2], [3])); // NO
 console.log(validPath(5, 5, 1, [2], [2])); // YES
 ```
-
 ---
 
-<a id="42-the-whole-thing-on-one-page"></a>
+<a id="43-the-whole-thing-on-one-page"></a>
 
 ## The Whole Thing on One Page
 
