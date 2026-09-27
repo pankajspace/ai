@@ -1,11 +1,11 @@
 <!--
-Source: dsa-advanced-crash-course.html
-Title: DSA Advanced Crash Course | TechToday
+Source: dsa-advanced-course.html
+Title: DSA Advanced Course | TechToday
 Description: The advanced DSA patterns interviews actually test — contribution counting, prefix sums, Kadane, two pointers, backtracking, hashing, binary search on answers, linked-list tricks, Morris traversal, heaps, DP and graphs — animated, diagrammed and coded in Python and JavaScript.
 Theme-color: #0b0d10
 Stylesheets: dsa-study.css, ../../site-header.css
 Scripts: dsa-study.js
-Body-class: is-crash is-advanced
+Body-class: is-advanced
 Back-href: dsa-courses.html
 Back-label: DSA Courses
 Footer: DSA Advanced
@@ -13,7 +13,7 @@ Footer: DSA Advanced
 
 Navigation: [TechToday](../../index.html) · [← DSA Courses](dsa-courses.html)
 
-<a id="dsa-advanced-crash-course"></a>
+<a id="dsa-advanced-course"></a>
 
 # Advanced Data Structures & Algorithms
 

@@ -1883,7 +1883,7 @@ VIZ.bits = {
 };
 
 /* ==========================================================================
-   Advanced crash course widgets
+   Advanced course widgets
    ========================================================================== */
 
 const rowHTML = (label, inner) => `<div class="vrow"><span class="vrow-label">${label}</span>${inner}</div>`;

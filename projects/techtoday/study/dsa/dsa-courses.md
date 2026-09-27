@@ -17,11 +17,11 @@ Visual crash course with real-world analogies, animated diagrams, and Python/JS 
 
 [Start learning →](dsa-crash-course.html)
 
-### DSA Advanced Crash Course
+### DSA Advanced Course
 
 The patterns that replace brute force: contribution counting, prefix sums and sliding windows, Kadane, two pointers, backtracking, hashing, binary search on answers, linked-list tricks, Morris traversal, heaps, DP and graphs.
 
-[Start learning →](dsa-advanced-crash-course.html)
+[Start learning →](dsa-advanced-course.html)
 
 ### DSA Detailed Course
 

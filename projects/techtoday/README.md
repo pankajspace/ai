@@ -138,7 +138,7 @@ projects/techtoday/
     │   ├── docker/              ← developer-centric crash course
     │   └── kubernetes/          ← developer-centric crash course
     ├── distributed-communication-patterns/ ← distributed-communication-patterns-courses.html catalog + crash course + detailed course
-    ├── dsa/                     ← dsa-courses.html catalog + crash, advanced crash and detailed courses
+    ├── dsa/                     ← dsa-courses.html catalog + crash, advanced and detailed courses
     ├── fde/                     ← fde-courses.html catalog + crash course + detailed course + advanced course
     ├── git/                     ← git-courses.html catalog + crash course + detailed course
     ├── networking/              ← networking-courses.html catalog + crash course + detailed course
