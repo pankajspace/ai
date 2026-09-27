@@ -748,6 +748,151 @@ function countAllSubarrays(A) {
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Sum of Max &amp; Min in an Array</b>
+<p class="worked-q">Find the sum of the maximum and minimum elements in an integer array.</p>
+<p><strong>Approach:</strong> Traverse the array in a single pass, tracking running minimum and maximum values. Return <code>min_val + max_val</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def sum_of_max_min(A):
+    min_val = float(&#x27;inf&#x27;)
+    max_val = float(&#x27;-inf&#x27;)
+    for x in A:
+        if x &lt; min_val:
+            min_val = x
+        if x &gt; max_val:
+            max_val = x
+    return min_val + max_val
+
+print(sum_of_max_min([-2, 1, -4, 5, 3]))  # 1
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function sumOfMaxMin(A) {
+  let minVal = Infinity;
+  let maxVal = -Infinity;
+  for (const x of A) {
+    if (x &lt; minVal) minVal = x;
+    if (x &gt; maxVal) maxVal = x;
+  }
+  return minVal + maxVal;
+}
+
+console.log(sumOfMaxMin([-2, 1, -4, 5, 3])); // 1
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Time to Equality</b>
+<p class="worked-q">Given an integer array A, find the minimum time in seconds to make all elements equal. In one second, any element can be incremented by 1.</p>
+<p><strong>Approach:</strong> To minimize operations, bring all elements up to the maximum element <code>M = max(A)</code>. Total time is <code>sum(M - A[i])</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def time_to_equality(A):
+    max_elem = max(A)
+    return sum(max_elem - x for x in A)
+
+print(time_to_equality([2, 4, 1, 3, 2]))  # 8
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function timeToEquality(A) {
+  const maxElem = Math.max(...A);
+  let totalTime = 0;
+  for (const x of A) {
+    totalTime += maxElem - x;
+  }
+  return totalTime;
+}
+
+console.log(timeToEquality([2, 4, 1, 3, 2])); // 8
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Length of Longest Consecutive 1s (Replacement of 0 to 1 Once)</b>
+<p class="worked-q">Given a binary array, find the maximum consecutive 1s that can be formed by replacing at most one 0 with 1.</p>
+<p><strong>Approach:</strong> Use a sliding window tracking <code>zero_count</code>. When <code>zero_count &gt; 1</code>, shrink the window from the left. Window size is <code>right - left + 1</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def longest_consecutive_ones_replacement(A):
+    n = len(A)
+    left = 0
+    zero_count = 0
+    max_len = 0
+    for right in range(n):
+        if A[right] == 0:
+            zero_count += 1
+        while zero_count &gt; 1:
+            if A[left] == 0:
+                zero_count -= 1
+            left += 1
+        max_len = max(max_len, right - left + 1)
+    return max_len
+
+print(longest_consecutive_ones_replacement([1, 1, 0, 1, 1, 0, 1]))  # 5
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function longestConsecutiveOnesReplacement(A) {
+  const n = A.length;
+  let left = 0, zeroCount = 0, maxLen = 0;
+  for (let right = 0; right &lt; n; right++) {
+    if (A[right] === 0) zeroCount++;
+    while (zeroCount &gt; 1) {
+      if (A[left] === 0) zeroCount--;
+      left++;
+    }
+    maxLen = Math.max(maxLen, right - left + 1);
+  }
+  return maxLen;
+}
+
+console.log(longestConsecutiveOnesReplacement([1, 1, 0, 1, 1, 0, 1])); // 5
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Add One To Number</b>
+<p class="worked-q">Given a non-negative number represented as an array of digits, increment the number by one and return the digits array without leading zeroes.</p>
+<p><strong>Approach:</strong> Add 1 to the last digit, propagate the carry backwards towards the front. Prepend carry if non-zero, then strip leading zeroes.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code> extra.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def add_one_to_number(digits):
+    result = list(digits)
+    n = len(result)
+    carry = 1
+    for i in range(n - 1, -1, -1):
+        total = result[i] + carry
+        result[i] = total % 10
+        carry = total // 10
+    if carry &gt; 0:
+        result.insert(0, carry)
+    first_non_zero = 0
+    while first_non_zero &lt; len(result) - 1 and result[first_non_zero] == 0:
+        first_non_zero += 1
+    return result[first_non_zero:]
+
+print(add_one_to_number([1, 2, 9]))     # [1, 3, 0]
+print(add_one_to_number([0, 3, 7, 9]))  # [3, 8, 0]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function addOneToNumber(digits) {
+  const result = [...digits];
+  let carry = 1;
+  for (let i = result.length - 1; i &gt;= 0; i--) {
+    const total = result[i] + carry;
+    result[i] = total % 10;
+    carry = Math.floor(total / 10);
+  }
+  if (carry &gt; 0) result.unshift(carry);
+  let start = 0;
+  while (start &lt; result.length - 1 &amp;&amp; result[start] === 0) start++;
+  return result.slice(start);
+}
+
+console.log(addOneToNumber([1, 2, 9]));    // [1, 3, 0]
+console.log(addOneToNumber([0, 3, 7, 9])); // [3, 8, 0]
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 3 -->
 <h3 id="2-contribution-technique">The Contribution Technique<a class="headerlink" href="#2-contribution-technique" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -1184,6 +1329,43 @@ console.log(performQueries([0, 0, 0, 0, 0, 0, 0], queries)); // [4, 6, 7, 7, 5, 
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Equilibrium Index of an Array</b>
+<p class="worked-q">Find the first index i such that the sum of elements at lower indices equals the sum of elements at higher indices.</p>
+<p><strong>Approach:</strong> Calculate total sum once. Iterate through the array maintaining <code>left_sum</code>; the right sum is <code>total_sum - left_sum - A[i]</code>. If <code>left_sum == right_sum</code>, return <code>i</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def find_equilibrium_index(A):
+    total_sum = sum(A)
+    left_sum = 0
+    for i, x in enumerate(A):
+        right_sum = total_sum - left_sum - x
+        if left_sum == right_sum:
+            return i
+        left_sum += x
+    return -1
+
+print(find_equilibrium_index([-7, 1, 5, 2, -4, 3, 0]))  # 3 (A[3] = 2)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function findEquilibriumIndex(A) {
+  const totalSum = A.reduce((acc, val) =&gt; acc + val, 0);
+  let leftSum = 0;
+  for (let i = 0; i &lt; A.length; i++) {
+    const rightSum = totalSum - leftSum - A[i];
+    if (leftSum === rightSum) return i;
+    leftSum += A[i];
+  }
+  return -1;
+}
+
+console.log(findEquilibriumIndex([-7, 1, 5, 2, -4, 3, 0])); // 3
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 5 -->
 <h3 id="4-carry-forward">Carry Forward<a class="headerlink" href="#4-carry-forward" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -1410,6 +1592,77 @@ console.log("smallestSubarrayContainingMinMax", smallestSubarrayContainingMinMax
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Leaders in an Array</b>
+<p class="worked-q">An element is a leader if strictly greater than all elements to its right. Find all leaders in the array.</p>
+<p><strong>Approach:</strong> Scan from right to left while maintaining <code>max_so_far</code>. If <code>A[i] &gt; max_so_far</code>, <code>A[i]</code> is a leader; update <code>max_so_far</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code> extra.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def find_leaders(A):
+    leaders = []
+    max_so_far = float(&#x27;-inf&#x27;)
+    for i in range(len(A) - 1, -1, -1):
+        if A[i] &gt; max_so_far:
+            leaders.append(A[i])
+            max_so_far = A[i]
+    leaders.reverse()
+    return leaders
+
+print(find_leaders([16, 17, 4, 3, 5, 2]))  # [17, 5, 2]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function findLeaders(A) {
+  const leaders = [];
+  let maxSoFar = -Infinity;
+  for (let i = A.length - 1; i &gt;= 0; i--) {
+    if (A[i] &gt; maxSoFar) {
+      leaders.push(A[i]);
+      maxSoFar = A[i];
+    }
+  }
+  leaders.reverse();
+  return leaders;
+}
+
+console.log(findLeaders([16, 17, 4, 3, 5, 2])); // [17, 5, 2]
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Best Time to Buy and Sell Stocks I</b>
+<p class="worked-q">Find the maximum profit possible from a single buy and sell transaction given daily stock prices.</p>
+<p><strong>Approach:</strong> Carry the minimum price seen so far as you sweep left to right. At each day <code>i</code>, calculate <code>prices[i] - min_price</code> and maximize.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def max_profit_stock_i(prices):
+    min_price = float(&#x27;inf&#x27;)
+    max_profit = 0
+    for p in prices:
+        if p &lt; min_price:
+            min_price = p
+        elif p - min_price &gt; max_profit:
+            max_profit = p - min_price
+    return max_profit
+
+print(max_profit_stock_i([7, 1, 5, 3, 6, 4]))  # 5 (buy at 1, sell at 6)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function maxProfitStockI(prices) {
+  let minPrice = Infinity;
+  let maxProfit = 0;
+  for (const p of prices) {
+    if (p &lt; minPrice) minPrice = p;
+    else if (p - minPrice &gt; maxProfit) maxProfit = p - minPrice;
+  }
+  return maxProfit;
+}
+
+console.log(maxProfitStockI([7, 1, 5, 3, 6, 4])); // 5
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 6 -->
 <h3 id="5-multiple-approaches-sum-of-all-subarray-sums">Multiple Approaches: Sum of All Subarray Sums<a class="headerlink" href="#5-multiple-approaches-sum-of-all-subarray-sums" title="Permanent link">#</a></h3>
@@ -2332,6 +2585,108 @@ console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Maximum Subarray Sum with Indices</b>
+<p class="worked-q">Find the maximum subarray sum along with the exact start and end indices of the subarray.</p>
+<p><strong>Approach:</strong> Kadane's algorithm tracking <code>temp_start</code> whenever <code>current_sum</code> resets to 0. Update <code>start = temp_start</code> and <code>end = i</code> when a new global maximum is reached.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def max_subarray_with_indices(A):
+    max_sum = float(&#x27;-inf&#x27;)
+    curr_sum = 0
+    start = end = temp_start = 0
+    for i, x in enumerate(A):
+        curr_sum += x
+        if curr_sum &gt; max_sum:
+            max_sum = curr_sum
+            start = temp_start
+            end = i
+        if curr_sum &lt; 0:
+            curr_sum = 0
+            temp_start = i + 1
+    return max_sum, start, end
+
+print(max_subarray_with_indices([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # (6, 3, 6)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function maxSubarrayWithIndices(A) {
+  let maxSum = -Infinity, currSum = 0;
+  let start = 0, end = 0, tempStart = 0;
+  for (let i = 0; i &lt; A.length; i++) {
+    currSum += A[i];
+    if (currSum &gt; maxSum) {
+      maxSum = currSum;
+      start = tempStart;
+      end = i;
+    }
+    if (currSum &lt; 0) {
+      currSum = 0;
+      tempStart = i + 1;
+    }
+  }
+  return { maxSum, start, end };
+}
+
+console.log(maxSubarrayWithIndices([-2, 1, -3, 4, -1, 2, 1, -5, 4])); // { maxSum: 6, start: 3, end: 6 }
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Flip (Maximize 1s in Binary String)</b>
+<p class="worked-q">Find the 1-based indices [L, R] to flip bits (0 to 1 and 1 to 0) in a binary string so that the total number of 1s in the string is maximized.</p>
+<p><strong>Approach:</strong> Transform each <code>'0'</code> to <code>+1</code> and each <code>'1'</code> to <code>-1</code>. Run Kadane to find the subarray with maximum positive sum. If no positive sum exists, return empty array.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def flip_binary_string(S):
+    max_gain = 0
+    curr_gain = 0
+    start = end = temp_start = 0
+    has_positive = False
+    for i, ch in enumerate(S):
+        val = 1 if ch == &#x27;0&#x27; else -1
+        curr_gain += val
+        if curr_gain &gt; max_gain:
+            max_gain = curr_gain
+            start = temp_start
+            end = i
+            has_positive = True
+        if curr_gain &lt; 0:
+            curr_gain = 0
+            temp_start = i + 1
+    return [start + 1, end + 1] if has_positive else []
+
+print(flip_binary_string(&#x27;010&#x27;))   # [1, 1]
+print(flip_binary_string(&#x27;111&#x27;))   # []
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function flipBinaryString(S) {
+  let maxGain = 0, currGain = 0;
+  let start = 0, end = 0, tempStart = 0;
+  let hasPositive = false;
+  for (let i = 0; i &lt; S.length; i++) {
+    const val = S[i] === &#x27;0&#x27; ? 1 : -1;
+    currGain += val;
+    if (currGain &gt; maxGain) {
+      maxGain = currGain;
+      start = tempStart;
+      end = i;
+      hasPositive = true;
+    }
+    if (currGain &lt; 0) {
+      currGain = 0;
+      tempStart = i + 1;
+    }
+  }
+  return hasPositive ? [start + 1, end + 1] : [];
+}
+
+console.log(flipBinaryString(&#x27;010&#x27;)); // [1, 1]
+console.log(flipBinaryString(&#x27;111&#x27;)); // []
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 11 -->
 <h3 id="10-multiple-approaches-maximum-subarray-sum">Multiple Approaches: Maximum Subarray Sum<a class="headerlink" href="#10-multiple-approaches-maximum-subarray-sum" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -2717,6 +3072,65 @@ console.log(findMajorityElement([1, 2, 3, 4]));          // null
 <tr><td>Majority element (more than n/2 times)</td><td>Boyer–Moore voting</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</td></tr>
 </tbody>
 </table>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. N/3 Repeat Number (Majority Element II)</b>
+<p class="worked-q">Find all elements in an array that appear strictly more than floor(N/3) times.</p>
+<p><strong>Approach:</strong> At most 2 such elements can exist. Maintain two candidates and counters using generalized Boyer-Moore voting. Confirm frequencies in a second pass.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def repeated_number_n_by_3(A):
+    cand1, cand2 = None, None
+    count1, count2 = 0, 0
+    for x in A:
+        if x == cand1:
+            count1 += 1
+        elif x == cand2:
+            count2 += 1
+        elif count1 == 0:
+            cand1, count1 = x, 1
+        elif count2 == 0:
+            cand2, count2 = x, 1
+        else:
+            count1 -= 1
+            count2 -= 1
+
+    # Second pass validation
+    c1 = sum(1 for x in A if x == cand1)
+    c2 = sum(1 for x in A if x == cand2)
+    res = []
+    n = len(A)
+    if c1 &gt; n // 3: res.append(cand1)
+    if cand2 != cand1 and c2 &gt; n // 3: res.append(cand2)
+    return res
+
+print(repeated_number_n_by_3([1, 2, 3, 1, 1]))  # [1]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function repeatedNumberNBy3(A) {
+  let cand1 = null, cand2 = null, count1 = 0, count2 = 0;
+  for (const x of A) {
+    if (x === cand1) count1++;
+    else if (x === cand2) count2++;
+    else if (count1 === 0) { cand1 = x; count1 = 1; }
+    else if (count2 === 0) { cand2 = x; count2 = 1; }
+    else { count1--; count2--; }
+  }
+  const n = A.length;
+  const c1 = A.filter(x =&gt; x === cand1).length;
+  const c2 = A.filter(x =&gt; x === cand2).length;
+  const res = [];
+  if (c1 &gt; Math.floor(n / 3)) res.push(cand1);
+  if (cand2 !== cand1 &amp;&amp; c2 &gt; Math.floor(n / 3)) res.push(cand2);
+  return res;
+}
+
+console.log(repeatedNumberNBy3([1, 2, 3, 1, 1])); // [1]
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 14 -->
 <h3 id="13-two-pointers">Two Pointers<a class="headerlink" href="#13-two-pointers" title="Permanent link">#</a></h3>
@@ -3393,6 +3807,188 @@ console.log(reverseVowels("casio")); // cosia
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. 3 Sum (Triplet Sum to Zero)</b>
+<p class="worked-q">Given an integer array A, find all unique triplets [A[i], A[j], A[k]] such that A[i] + A[j] + A[k] = 0.</p>
+<p><strong>Approach:</strong> Sort the array. Iterate index <code>i</code>, then run two pointers <code>left = i + 1, right = n - 1</code> checking <code>A[i] + A[left] + A[right] == 0</code>. Skip duplicate elements at all three pointers.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-medium">O(N^2)</code>, Space <code class="big-o o-great">O(1)</code> extra.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def three_sum(A):
+    A.sort()
+    n = len(A)
+    triplets = []
+    for i in range(n - 2):
+        if i &gt; 0 and A[i] == A[i - 1]:
+            continue
+        left, right = i + 1, n - 1
+        while left &lt; right:
+            s = A[i] + A[left] + A[right]
+            if s == 0:
+                triplets.append([A[i], A[left], A[right]])
+                while left &lt; right and A[left] == A[left + 1]: left += 1
+                while left &lt; right and A[right] == A[right - 1]: right -= 1
+                left += 1
+                right -= 1
+            elif s &lt; 0:
+                left += 1
+            else:
+                right -= 1
+    return triplets
+
+print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1, -1, 2], [-1, 0, 1]]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function threeSum(A) {
+  A.sort((a, b) =&gt; a - b);
+  const n = A.length;
+  const triplets = [];
+  for (let i = 0; i &lt; n - 2; i++) {
+    if (i &gt; 0 &amp;&amp; A[i] === A[i - 1]) continue;
+    let left = i + 1, right = n - 1;
+    while (left &lt; right) {
+      const s = A[i] + A[left] + A[right];
+      if (s === 0) {
+        triplets.push([A[i], A[left], A[right]]);
+        while (left &lt; right &amp;&amp; A[left] === A[left + 1]) left++;
+        while (left &lt; right &amp;&amp; A[right] === A[right - 1]) right--;
+        left++;
+        right--;
+      } else if (s &lt; 0) {
+        left++;
+      } else {
+        right--;
+      }
+    }
+  }
+  return triplets;
+}
+
+console.log(threeSum([-1, 0, 1, 2, -1, -4])); // [[-1, -1, 2], [-1, 0, 1]]
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Another Count Rectangles</b>
+<p class="worked-q">Given a sorted array A and limit B, count pairs (i, j) with i &lt;= j such that A[i] * A[j] &lt; B.</p>
+<p><strong>Approach:</strong> Two pointers <code>left = 0, right = n - 1</code>. If <code>A[left] * A[right] &lt; B</code>, then <code>A[left]</code> can pair with all elements from <code>left</code> to <code>right</code>, then <code>left++</code>; otherwise <code>right--</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def count_rectangles(A, B, MOD=1_000_000_007):
+    left, right = 0, len(A) - 1
+    count = 0
+    while left &lt;= right:
+        if A[left] * A[right] &lt; B:
+            count = (count + (right - left + 1) * 2 - 1) % MOD
+            left += 1
+        else:
+            right -= 1
+    return count
+
+print(count_rectangles([1, 2, 3, 4, 5], 5))  # 7
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function countRectangles(A, B, MOD = 1000000007) {
+  let left = 0, right = A.length - 1;
+  let count = 0;
+  while (left &lt;= right) {
+    if (A[left] * A[right] &lt; B) {
+      count = (count + (right - left + 1) * 2 - 1) % MOD;
+      left++;
+    } else {
+      right--;
+    }
+  }
+  return count;
+}
+
+console.log(countRectangles([1, 2, 3, 4, 5], 5)); // 7
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Lucky Numbers (Sieve of Eratosthenes)</b>
+<p class="worked-q">A lucky number is a positive integer that has exactly two distinct prime factors. Find the count of lucky numbers &lt;= A.</p>
+<p><strong>Approach:</strong> Use a modified Sieve of Eratosthenes array <code>primes[x]</code>. For each prime <code>p</code>, increment <code>primes[k*p]</code> for all its multiples. Count numbers <code>x</code> where <code>primes[x] == 2</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(A log log A)</code>, Space <code class="big-o o-good">O(A)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def count_lucky_numbers(A):
+    prime_factors = [0] * (A + 1)
+    for i in range(2, A + 1):
+        if prime_factors[i] == 0:  # i is prime
+            for j in range(i, A + 1, i):
+                prime_factors[j] += 1
+    return sum(1 for i in range(1, A + 1) if prime_factors[i] == 2)
+
+print(count_lucky_numbers(12))  # 3 (6=2*3, 10=2*5, 12=2^2*3)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function countLuckyNumbers(A) {
+  const primeFactors = new Array(A + 1).fill(0);
+  for (let i = 2; i &lt;= A; i++) {
+    if (primeFactors[i] === 0) {
+      for (let j = i; j &lt;= A; j += i) {
+        primeFactors[j]++;
+      }
+    }
+  }
+  let lucky = 0;
+  for (let i = 1; i &lt;= A; i++) {
+    if (primeFactors[i] === 2) lucky++;
+  }
+  return lucky;
+}
+
+console.log(countLuckyNumbers(12)); // 3
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Excel Column Title and Number</b>
+<p class="worked-q">Convert between 1-based integer column numbers and Excel spreadsheet title strings (e.g. 28 &lt;-&gt; &#x27;AB&#x27;).</p>
+<p><strong>Approach:</strong> Number to Title: while <code>A &gt; 0</code>, take <code>(A - 1) % 26</code> as char and <code>A = (A - 1) // 26</code>. Title to Number: <code>ans = ans * 26 + (ord(c) - ord('A') + 1)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(log_{26} A)</code> / <code class="big-o o-good">O(len(S))</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def excel_column_title(A):
+    res = []
+    while A &gt; 0:
+        rem = (A - 1) % 26
+        res.append(chr(ord(&#x27;A&#x27;) + rem))
+        A = (A - 1) // 26
+    return &#x27;&#x27;.join(reversed(res))
+
+def excel_column_number(S):
+    ans = 0
+    for ch in S:
+        ans = ans * 26 + (ord(ch) - ord(&#x27;A&#x27;) + 1)
+    return ans
+
+print(excel_column_title(28))       # &#x27;AB&#x27;
+print(excel_column_number(&#x27;AB&#x27;))     # 28
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function excelColumnTitle(A) {
+  const res = [];
+  while (A &gt; 0) {
+    const rem = (A - 1) % 26;
+    res.push(String.fromCharCode(65 + rem));
+    A = Math.floor((A - 1) / 26);
+  }
+  return res.reverse().join(&#x27;&#x27;);
+}
+
+function excelColumnNumber(S) {
+  let ans = 0;
+  for (let i = 0; i &lt; S.length; i++) {
+    ans = ans * 26 + (S.charCodeAt(i) - 65 + 1);
+  }
+  return ans;
+}
+
+console.log(excelColumnTitle(28));     // &#x27;AB&#x27;
+console.log(excelColumnNumber(&#x27;AB&#x27;));   // 28
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 15 -->
 <h3 id="14-matrix-walks">Matrix Walks<a class="headerlink" href="#14-matrix-walks" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -4063,6 +4659,56 @@ console.log(printBoundary(matrix)); // [1, 2, 3, 4, 8, 12, 16, 15, 14, 13, 9, 5]
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Matrix Basic Operations (Column Sum, Scalar Product, Matrix Addition, Minor Diagonal)</b>
+<p class="worked-q">Implement essential matrix walks: column-wise sums, scalar multiplication, element-wise addition, and minor (anti-) diagonal sum.</p>
+<p><strong>Approach:</strong> Iterate row-major or column-major according to the formula: <code>col_sum[j] = sum(A[i][j])</code>, <code>minor_diag = sum(A[i][N - 1 - i])</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-great">O(1)</code> extra.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def column_sum(A):
+    rows, cols = len(A), len(A[0])
+    return [sum(A[r][c] for r in range(rows)) for c in range(cols)]
+
+def minor_diagonal_sum(A):
+    n = len(A)
+    return sum(A[i][n - 1 - i] for i in range(n))
+
+mat = [[1, 2, 3],
+       [4, 5, 6],
+       [7, 8, 9]]
+print(column_sum(mat))          # [12, 15, 18]
+print(minor_diagonal_sum(mat))  # 15 (3 + 5 + 7)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function columnSum(A) {
+  const rows = A.length, cols = A[0].length;
+  const res = new Array(cols).fill(0);
+  for (let c = 0; c &lt; cols; c++) {
+    for (let r = 0; r &lt; rows; r++) {
+      res[c] += A[r][c];
+    }
+  }
+  return res;
+}
+
+function minorDiagonalSum(A) {
+  const n = A.length;
+  let sum = 0;
+  for (let i = 0; i &lt; n; i++) {
+    sum += A[i][n - 1 - i];
+  }
+  return sum;
+}
+
+const mat = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+console.log(columnSum(mat));          // [12, 15, 18]
+console.log(minorDiagonalSum(mat));   // 15
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 16 -->
 <h3 id="15-strings">Strings<a class="headerlink" href="#15-strings" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -4301,6 +4947,41 @@ console.log(longestCommonPrefix(["flower", "flow", "flight"])); // fl
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Check Alphanumeric String</b>
+<p class="worked-q">Given a character array / string, return 1 if all characters are alphanumeric (letters or digits), else return 0.</p>
+<p><strong>Approach:</strong> Scan characters verifying each is within <code>'a'..'z'</code>, <code>'A'..'Z'</code>, or <code>'0'..'9'</code>. Return 0 on first non-alphanumeric character.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def is_alphanumeric(A):
+    for ch in A:
+        if not ((&#x27;a&#x27; &lt;= ch &lt;= &#x27;z&#x27;) or (&#x27;A&#x27; &lt;= ch &lt;= &#x27;Z&#x27;) or (&#x27;0&#x27; &lt;= ch &lt;= &#x27;9&#x27;)):
+            return 0
+    return 1
+
+print(is_alphanumeric([&#x27;S&#x27;, &#x27;c&#x27;, &#x27;a&#x27;, &#x27;l&#x27;, &#x27;e&#x27;, &#x27;r&#x27;, &#x27;1&#x27;]))  # 1
+print(is_alphanumeric([&#x27;S&#x27;, &#x27;c&#x27;, &#x27;a&#x27;, &#x27;l&#x27;, &#x27;e&#x27;, &#x27;r&#x27;, &#x27;#&#x27;]))  # 0
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function isAlphanumeric(A) {
+  for (let i = 0; i &lt; A.length; i++) {
+    const code = A[i].charCodeAt(0);
+    const isUpper = code &gt;= 65 &amp;&amp; code &lt;= 90;
+    const isLower = code &gt;= 97 &amp;&amp; code &lt;= 122;
+    const isDigit = code &gt;= 48 &amp;&amp; code &lt;= 57;
+    if (!isUpper &amp;&amp; !isLower &amp;&amp; !isDigit) return 0;
+  }
+  return 1;
+}
+
+console.log(isAlphanumeric([&#x27;S&#x27;, &#x27;c&#x27;, &#x27;a&#x27;, &#x27;l&#x27;, &#x27;e&#x27;, &#x27;r&#x27;, &#x27;1&#x27;])); // 1
+console.log(isAlphanumeric([&#x27;S&#x27;, &#x27;c&#x27;, &#x27;a&#x27;, &#x27;l&#x27;, &#x27;e&#x27;, &#x27;r&#x27;, &#x27;#&#x27;])); // 0
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 17 -->
 <h3 id="16-bit-manipulation">Bit Manipulation<a class="headerlink" href="#16-bit-manipulation" title="Permanent link">#</a></h3>
@@ -4816,6 +5497,111 @@ console.log(subarraysWithOR0([0, 1]));          // 1   (run of 1 zero  → 1*2/2
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Find n-th Magic Number</b>
+<p class="worked-q">A magic number is a power of 5 or a sum of unique powers of 5 (5, 25, 30, 125, 130...). Find the n-th magic number.</p>
+<p><strong>Approach:</strong> The bits of <code>n</code> correspond to powers of 5. While <code>n &gt; 0</code>, if the last bit is 1, add current power of 5 to the answer. Multiply power by 5 and shift <code>n &gt;&gt;= 1</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def nth_magic_number(n):
+    ans = 0
+    power = 5
+    while n &gt; 0:
+        if n &amp; 1:
+            ans += power
+        power *= 5
+        n &gt;&gt;= 1
+    return ans
+
+print(nth_magic_number(3))  # 30 (5 + 25)
+print(nth_magic_number(10)) # 650 (25 + 625)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function nthMagicNumber(n) {
+  let ans = 0, power = 5;
+  while (n &gt; 0) {
+    if (n &amp; 1) ans += power;
+    power *= 5;
+    n &gt;&gt;= 1;
+  }
+  return ans;
+}
+
+console.log(nthMagicNumber(3));  // 30
+console.log(nthMagicNumber(10)); // 650
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Min XOR Value in an Array</b>
+<p class="worked-q">Given an integer array, find the minimum XOR value of any two distinct elements.</p>
+<p><strong>Approach:</strong> Sort the array. The minimum XOR value between any two numbers must occur between two adjacent elements in the sorted array.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def min_xor_value(A):
+    A.sort()
+    min_xor = float(&#x27;inf&#x27;)
+    for i in range(len(A) - 1):
+        min_xor = min(min_xor, A[i] ^ A[i + 1])
+    return min_xor
+
+print(min_xor_value([0, 2, 5, 7]))  # 2 (0 ^ 2)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function minXorValue(A) {
+  A.sort((a, b) =&gt; a - b);
+  let minXor = Infinity;
+  for (let i = 0; i &lt; A.length - 1; i++) {
+    minXor = Math.min(minXor, A[i] ^ A[i + 1]);
+  }
+  return minXor;
+}
+
+console.log(minXorValue([0, 2, 5, 7])); // 2
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Strange Equality</b>
+<p class="worked-q">Given integer A, find X and Y such that X is greatest integer &lt; A with A + X == A ^ X, and Y is smallest integer &gt; A with A + Y == A ^ Y. Return X ^ Y.</p>
+<p><strong>Approach:</strong> <code>A + K == A ^ K</code> means <code>A &amp; K == 0</code>. <code>X</code> is formed by turning all unset bits of <code>A</code> to 1. <code>Y</code> is the next power of 2 strictly greater than <code>A</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(log A)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def strange_equality(A):
+    bit_count = 0
+    temp = A
+    x = 0
+    while temp &gt; 0:
+        if not (temp &amp; 1):
+            x |= (1 &lt;&lt; bit_count)
+        bit_count += 1
+        temp &gt;&gt;= 1
+    y = 1 &lt;&lt; bit_count
+    return x ^ y
+
+print(strange_equality(5))  # 10 (X=2, Y=8, 2 ^ 8 = 10)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function strangeEquality(A) {
+  let bitCount = 0;
+  let temp = A;
+  let x = 0;
+  while (temp &gt; 0) {
+    if ((temp &amp; 1) === 0) {
+      x |= (1 &lt;&lt; bitCount);
+    }
+    bitCount++;
+    temp &gt;&gt;= 1;
+  }
+  const y = 1 &lt;&lt; bitCount;
+  return x ^ y;
+}
+
+console.log(strangeEquality(5)); // 10
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 18 -->
 <h3 id="17-prime-numbers">Prime Numbers<a class="headerlink" href="#17-prime-numbers" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -5172,6 +5958,61 @@ console.log(findAllPrimes(12)); // [2, 3, 5, 7, 11]
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Permutations (nPr) and Combinations Modulo M</b>
+<p class="worked-q">Calculate arrangements nPr = n! / (n - r)! and combinations nCr % M using Pascal&#x27;s identity without factorials.</p>
+<p><strong>Approach:</strong> Use 1D space-optimized Pascal identity <code>dp[j] = (dp[j] + dp[j - 1]) % M</code> from <code>j = r</code> down to 1.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(n * r)</code>, Space <code class="big-o o-good">O(r)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def compute_ncr_mod_m(n, r, m=1_000_000_007):
+    if r &lt; 0 or r &gt; n: return 0
+    r = min(r, n - r)
+    dp = [0] * (r + 1)
+    dp[0] = 1
+    for i in range(1, n + 1):
+        for j in range(min(i, r), 0, -1):
+            dp[j] = (dp[j] + dp[j - 1]) % m
+    return dp[r]
+
+def compute_npr(n, r):
+    if r &lt; 0 or r &gt; n: return 0
+    ans = 1
+    for i in range(n, n - r, -1):
+        ans *= i
+    return ans
+
+print(compute_ncr_mod_m(5, 2))  # 10
+print(compute_npr(5, 2))        # 20
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function computeNcrModM(n, r, m = 1000000007) {
+  if (r &lt; 0 || r &gt; n) return 0;
+  r = Math.min(r, n - r);
+  const dp = new Array(r + 1).fill(0);
+  dp[0] = 1;
+  for (let i = 1; i &lt;= n; i++) {
+    for (let j = Math.min(i, r); j &gt; 0; j--) {
+      dp[j] = (dp[j] + dp[j - 1]) % m;
+    }
+  }
+  return dp[r];
+}
+
+function computeNpr(n, r) {
+  if (r &lt; 0 || r &gt; n) return 0;
+  let ans = 1;
+  for (let i = n; i &gt; n - r; i--) ans *= i;
+  return ans;
+}
+
+console.log(computeNcrModM(5, 2)); // 10
+console.log(computeNpr(5, 2));     // 20
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 19 -->
 <h3 id="18-combinatorics">Combinatorics<a class="headerlink" href="#18-combinatorics" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -5268,6 +6109,137 @@ console.log(mostVariedMealCombo([[3, 2, 2], [4, 3, 3], [1, 1, 1]])); // 1 // Res
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. GCD of Array and Largest Coprime Divisor</b>
+<p class="worked-q">Find the GCD of an entire array, and find the largest divisor X of A such that gcd(X, B) == 1.</p>
+<p><strong>Approach:</strong> Array GCD: <code>g = gcd(g, A[i])</code>. Coprime Divisor: while <code>gcd(A, B) != 1</code>, divide <code>A //= gcd(A, B)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log(max_val))</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import math
+
+def gcd_of_array(A):
+    g = A[0]
+    for x in A[1:]:
+        g = math.gcd(g, x)
+    return g
+
+def largest_coprime_divisor(A, B):
+    while math.gcd(A, B) != 1:
+        A //= math.gcd(A, B)
+    return A
+
+print(gcd_of_array([12, 18, 24]))         # 6
+print(largest_coprime_divisor(30, 12))    # 5
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function gcd(a, b) {
+  while (b) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+function gcdOfArray(A) {
+  let g = A[0];
+  for (let i = 1; i &lt; A.length; i++) g = gcd(g, A[i]);
+  return g;
+}
+
+function largestCoprimeDivisor(A, B) {
+  while (gcd(A, B) !== 1) {
+    A = Math.floor(A / gcd(A, B));
+  }
+  return A;
+}
+
+console.log(gcdOfArray([12, 18, 24]));       // 6
+console.log(largestCoprimeDivisor(30, 12));  // 5
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. A, B and Modulo</b>
+<p class="worked-q">Given positive integers A and B, find the greatest integer M such that A % M = B % M.</p>
+<p><strong>Approach:</strong> <code>A % M = B % M</code> implies <code>(A - B) % M = 0</code>. The greatest positive integer that divides <code>A - B</code> is <code>abs(A - B)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(1)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def ab_and_modulo(A, B):
+    return abs(A - B)
+
+print(ab_and_modulo(5, 10))  # 5 (5 % 5 == 10 % 5 == 0)
+print(ab_and_modulo(10, 3))  # 7 (10 % 7 == 3 % 7 == 3)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function abAndModulo(A, B) {
+  return Math.abs(A - B);
+}
+
+console.log(abAndModulo(5, 10)); // 5
+console.log(abAndModulo(10, 3)); // 7
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Delete One to Maximize GCD</b>
+<p class="worked-q">Delete exactly one element from an array such that the GCD of the remaining elements is maximized.</p>
+<p><strong>Approach:</strong> Precompute prefix GCD and suffix GCD arrays in <code>O(N)</code>. For each index <code>i</code>, GCD excluding <code>A[i]</code> is <code>gcd(prefix[i - 1], suffix[i + 1])</code>. Take the maximum.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import math
+
+def delete_one_maximize_gcd(A):
+    n = len(A)
+    prefix_gcd = [0] * n
+    suffix_gcd = [0] * n
+    prefix_gcd[0] = A[0]
+    for i in range(1, n):
+        prefix_gcd[i] = math.gcd(prefix_gcd[i - 1], A[i])
+    suffix_gcd[n - 1] = A[n - 1]
+    for i in range(n - 2, -1, -1):
+        suffix_gcd[i] = math.gcd(suffix_gcd[i + 1], A[i])
+
+    max_gcd = max(suffix_gcd[1], prefix_gcd[n - 2])
+    for i in range(1, n - 1):
+        curr_gcd = math.gcd(prefix_gcd[i - 1], suffix_gcd[i + 1])
+        max_gcd = max(max_gcd, curr_gcd)
+    return max_gcd
+
+print(delete_one_maximize_gcd([12, 15, 18]))  # 6 (delete 15 -&gt; gcd(12, 18) = 6)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function gcd(a, b) {
+  while (b) {
+    const t = b;
+    b = a % b;
+    a = t;
+  }
+  return a;
+}
+
+function deleteOneMaximizeGcd(A) {
+  const n = A.length;
+  const prefixGcd = new Array(n).fill(0);
+  const suffixGcd = new Array(n).fill(0);
+  prefixGcd[0] = A[0];
+  for (let i = 1; i &lt; n; i++) prefixGcd[i] = gcd(prefixGcd[i - 1], A[i]);
+  suffixGcd[n - 1] = A[n - 1];
+  for (let i = n - 2; i &gt;= 0; i--) suffixGcd[i] = gcd(suffixGcd[i + 1], A[i]);
+
+  let maxGcd = Math.max(suffixGcd[1], prefixGcd[n - 2]);
+  for (let i = 1; i &lt; n - 1; i++) {
+    const currGcd = gcd(prefixGcd[i - 1], suffixGcd[i + 1]);
+    maxGcd = Math.max(maxGcd, currGcd);
+  }
+  return maxGcd;
+}
+
+console.log(deleteOneMaximizeGcd([12, 15, 18])); // 6
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 20 -->
 <h3 id="19-multiple-approaches-pascals-triangle-and-ncr-mod-m">Multiple Approaches: Pascal's Triangle and nCr mod M<a class="headerlink" href="#19-multiple-approaches-pascals-triangle-and-ncr-mod-m" title="Permanent link">#</a></h3>
@@ -5840,6 +6812,65 @@ console.log(power(2, 0)); // 1
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Factorial of a Number</b>
+<p class="worked-q">Compute the factorial of a non-negative integer n using recursion.</p>
+<p><strong>Approach:</strong> Base case: <code>0! = 1</code>. Recursive step: <code>n! = n * factorial(n - 1)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code> call stack.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def factorial(n):
+    if n &lt;= 1:
+        return 1
+    return n * factorial(n - 1)
+
+print(factorial(5))  # 120
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function factorial(n) {
+  if (n &lt;= 1) return 1;
+  return n * factorial(n - 1);
+}
+
+console.log(factorial(5)); // 120
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Tower of Hanoi</b>
+<p class="worked-q">Print all moves to transfer n disks from peg A to peg C using peg B as auxiliary, without placing a larger disk on a smaller disk.</p>
+<p><strong>Approach:</strong> Recursive recurrence: Move <code>n - 1</code> disks from A to B using C. Move disk <code>n</code> from A to C. Move <code>n - 1</code> disks from B to C using A. Total moves = <code>2^n - 1</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-bad">O(2^N)</code>, Space <code class="big-o o-good">O(N)</code> call stack.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def tower_of_hanoi(n, src, dst, aux, moves=None):
+    if moves is None: moves = []
+    if n == 1:
+        moves.append(f&quot;Move disk 1 from {src} to {dst}&quot;)
+        return moves
+    tower_of_hanoi(n - 1, src, aux, dst, moves)
+    moves.append(f&quot;Move disk {n} from {src} to {dst}&quot;)
+    tower_of_hanoi(n - 1, aux, dst, src, moves)
+    return moves
+
+print(tower_of_hanoi(3, &#x27;A&#x27;, &#x27;C&#x27;, &#x27;B&#x27;))
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function towerOfHanoi(n, src, dst, aux, moves = []) {
+  if (n === 1) {
+    moves.push(`Move disk 1 from ${src} to ${dst}`);
+    return moves;
+  }
+  towerOfHanoi(n - 1, src, aux, dst, moves);
+  moves.push(`Move disk ${n} from ${src} to ${dst}`);
+  towerOfHanoi(n - 1, aux, dst, src, moves);
+  return moves;
+}
+
+console.log(towerOfHanoi(3, &#x27;A&#x27;, &#x27;C&#x27;, &#x27;B&#x27;));
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 22 -->
 <h3 id="21-backtracking">Backtracking<a class="headerlink" href="#21-backtracking" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -6330,6 +7361,94 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Letter Phone</b>
+<p class="worked-q">Given a digit string, return all possible letter combinations that the number could represent from phone keypad buttons.</p>
+<p><strong>Approach:</strong> Backtracking: define mapping from digits to character sets. At index <code>idx</code>, loop through characters for <code>digits[idx]</code>, append, recurse for <code>idx + 1</code>, and backtrack.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-bad">O(4^N)</code>, Space <code class="big-o o-good">O(N)</code> recursion stack.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def letter_phone(digits):
+    mapping = {
+        &#x27;0&#x27;: &#x27;0&#x27;, &#x27;1&#x27;: &#x27;1&#x27;, &#x27;2&#x27;: &#x27;abc&#x27;, &#x27;3&#x27;: &#x27;def&#x27;, &#x27;4&#x27;: &#x27;ghi&#x27;,
+        &#x27;5&#x27;: &#x27;jkl&#x27;, &#x27;6&#x27;: &#x27;mno&#x27;, &#x27;7&#x27;: &#x27;pqrs&#x27;, &#x27;8&#x27;: &#x27;tuv&#x27;, &#x27;9&#x27;: &#x27;wxyz&#x27;
+    }
+    result = []
+    def backtrack(idx, path):
+        if idx == len(digits):
+            result.append(&#x27;&#x27;.join(path))
+            return
+        for ch in mapping.get(digits[idx], &#x27;&#x27;):
+            path.append(ch)
+            backtrack(idx + 1, path)
+            path.pop()
+
+    if digits:
+        backtrack(0, [])
+    return result
+
+print(letter_phone(&#x27;23&#x27;))  # [&#x27;ad&#x27;, &#x27;ae&#x27;, &#x27;af&#x27;, &#x27;bd&#x27;, &#x27;be&#x27;, &#x27;bf&#x27;, &#x27;cd&#x27;, &#x27;ce&#x27;, &#x27;cf&#x27;]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function letterPhone(digits) {
+  const map = {
+    &#x27;0&#x27;: &#x27;0&#x27;, &#x27;1&#x27;: &#x27;1&#x27;, &#x27;2&#x27;: &#x27;abc&#x27;, &#x27;3&#x27;: &#x27;def&#x27;, &#x27;4&#x27;: &#x27;ghi&#x27;,
+    &#x27;5&#x27;: &#x27;jkl&#x27;, &#x27;6&#x27;: &#x27;mno&#x27;, &#x27;7&#x27;: &#x27;pqrs&#x27;, &#x27;8&#x27;: &#x27;tuv&#x27;, &#x27;9&#x27;: &#x27;wxyz&#x27;
+  };
+  const result = [];
+  function backtrack(idx, path) {
+    if (idx === digits.length) {
+      result.push(path.join(&#x27;&#x27;));
+      return;
+    }
+    const letters = map[digits[idx]] || &#x27;&#x27;;
+    for (let i = 0; i &lt; letters.length; i++) {
+      path.push(letters[i]);
+      backtrack(idx + 1, path);
+      path.pop();
+    }
+  }
+  if (digits.length) backtrack(0, []);
+  return result;
+}
+
+console.log(letterPhone(&#x27;23&#x27;)); // [&#x27;ad&#x27;, &#x27;ae&#x27;, &#x27;af&#x27;, &#x27;bd&#x27;, &#x27;be&#x27;, &#x27;bf&#x27;, &#x27;cd&#x27;, &#x27;ce&#x27;, &#x27;cf&#x27;]
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Kth Symbol in Grammar</b>
+<p class="worked-q">Row 1 is &#x27;0&#x27;. Subsequent rows replace &#x27;0&#x27; with &#x27;01&#x27; and &#x27;1&#x27; with &#x27;10&#x27;. Given row n and 1-based index k, find the symbol at (n, k).</p>
+<p><strong>Approach:</strong> Row <code>n</code> has <code>2^(n - 1)</code> characters. The first half is identical to row <code>n - 1</code>. The second half is inverted. If <code>k &lt;= mid</code>, return <code>solve(n - 1, k)</code>; else <code>1 - solve(n - 1, k - mid)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code> recursion stack.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def kth_grammar(n, k):
+    if n == 1 and k == 1:
+        return 0
+    mid = 1 &lt;&lt; (n - 2)
+    if k &lt;= mid:
+        return kth_grammar(n - 1, k)
+    else:
+        return 1 - kth_grammar(n - 1, k - mid)
+
+print(kth_grammar(4, 5))  # 1
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function kthGrammar(n, k) {
+  if (n === 1 &amp;&amp; k === 1) return 0;
+  const mid = 1 &lt;&lt; (n - 2);
+  if (k &lt;= mid) {
+    return kthGrammar(n - 1, k);
+  } else {
+    return 1 - kthGrammar(n - 1, k - mid);
+  }
+}
+
+console.log(kthGrammar(4, 5)); // 1
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 23 -->
 <h3 id="22-hashing-set">Hashing (Set)<a class="headerlink" href="#22-hashing-set" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -6557,6 +7676,52 @@ function checkElementsDAT(arr, queries) {
 console.log(checkElementsDAT([2, 4, 11, 15, 6, 8, 14, 9], [4, 10, 17, 14])); // [true, false, false, true]
 </code></pre></div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Colorful Number</b>
+<p class="worked-q">A number is colorful if products of all contiguous subsegments of its digits are mutually distinct. Check if a number is colorful.</p>
+<p><strong>Approach:</strong> Extract all digits. Iterate all contiguous subarrays <code>digits[i..j]</code>, compute their running product, and insert into a Hash Set. If a product has been seen before, return 0; otherwise return 1.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(1)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def is_colorful(A):
+    s = str(A)
+    seen = set()
+    n = len(s)
+    for i in range(n):
+        prod = 1
+        for j in range(i, n):
+            prod *= int(s[j])
+            if prod in seen:
+                return 0
+            seen.add(prod)
+    return 1
+
+print(is_colorful(3245))  # 1
+print(is_colorful(236))   # 0 (2*3 = 6, 6 already exists)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function isColorful(A) {
+  const s = String(A);
+  const seen = new Set();
+  const n = s.length;
+  for (let i = 0; i &lt; n; i++) {
+    let prod = 1;
+    for (let j = i; j &lt; n; j++) {
+      prod *= Number(s[j]);
+      if (seen.has(prod)) return 0;
+      seen.add(prod);
+    }
+  }
+  return 1;
+}
+
+console.log(isColorful(3245)); // 1
+console.log(isColorful(236));  // 0
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 24 -->
 <h3 id="23-hashing-map">Hashing (Map)<a class="headerlink" href="#23-hashing-map" title="Permanent link">#</a></h3>
@@ -6995,6 +8160,36 @@ console.log(commonElements([1, 2, 2, 1], [2, 3, 1, 2])); // [2, 1, 2]
 console.log(commonElements([2, 1, 4, 10], [3, 6, 2, 10, 10])); // [2, 10]
 </code></pre></div>
 </div>
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Frequency of Query Elements</b>
+<p class="worked-q">Given an array A of N integers and Q queries in array B, find the frequency of each queried element in A.</p>
+<p><strong>Approach:</strong> Build a frequency hash map from array <code>A</code> in <code>O(N)</code>. For each query in <code>B</code>, lookup count in <code>O(1)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N + Q)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">from collections import Counter
+
+def query_frequencies(A, B):
+    freq = Counter(A)
+    return [freq.get(q, 0) for q in B]
+
+print(query_frequencies([1, 2, 1, 3, 4, 2], [1, 2, 5]))  # [2, 2, 0]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function queryFrequencies(A, B) {
+  const freq = new Map();
+  for (const x of A) {
+    freq.set(x, (freq.get(x) || 0) + 1);
+  }
+  return B.map(q =&gt; freq.get(q) || 0);
+}
+
+console.log(queryFrequencies([1, 2, 1, 3, 4, 2], [1, 2, 5])); // [2, 2, 0]
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 25 -->
 <h3 id="24-sorting-beyond-the-library-call">Sorting Beyond the Library Call<a class="headerlink" href="#24-sorting-beyond-the-library-call" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -7654,6 +8849,231 @@ console.log(countNobleIntegers([-10, 1, 1, 2, 4, 4, 4, 8, 10])); // 5 // [1, 1, 
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Noble Integers (With Duplicates)</b>
+<p class="worked-q">An element A[i] is noble if the count of elements strictly greater than A[i] equals A[i]. Find if any noble element exists.</p>
+<p><strong>Approach:</strong> Sort the array. For index <code>i</code>, if <code>A[i] == A[i + 1]</code>, skip to the rightmost duplicate. If <code>A[i] == n - 1 - i</code>, return 1.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def has_noble_integer(A):
+    A.sort()
+    n = len(A)
+    for i in range(n):
+        if i &lt; n - 1 and A[i] == A[i + 1]:
+            continue
+        if A[i] == n - 1 - i:
+            return 1
+    return -1
+
+print(has_noble_integer([3, 2, 1, 3]))  # 1 (A[1]=2 has 2 greater elements)
+print(has_noble_integer([1, 1, 3, 3]))  # -1
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function hasNobleInteger(A) {
+  A.sort((a, b) =&gt; a - b);
+  const n = A.length;
+  for (let i = 0; i &lt; n; i++) {
+    if (i &lt; n - 1 &amp;&amp; A[i] === A[i + 1]) continue;
+    if (A[i] === n - 1 - i) return 1;
+  }
+  return -1;
+}
+
+console.log(hasNobleInteger([3, 2, 1, 3])); // 1
+console.log(hasNobleInteger([1, 1, 3, 3])); // -1
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Check Anagrams</b>
+<p class="worked-q">Given two strings A and B, determine if they are anagrams of each other.</p>
+<p><strong>Approach:</strong> If lengths differ, return 0. Build a 26-element character frequency array: increment for string A and decrement for string B. All counts must be 0.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def are_anagrams(A, B):
+    if len(A) != len(B):
+        return 0
+    freq = [0] * 26
+    for ch in A:
+        freq[ord(ch) - ord(&#x27;a&#x27;)] += 1
+    for ch in B:
+        freq[ord(ch) - ord(&#x27;a&#x27;)] -= 1
+        if freq[ord(ch) - ord(&#x27;a&#x27;)] &lt; 0:
+            return 0
+    return 1
+
+print(are_anagrams(&#x27;cat&#x27;, &#x27;act&#x27;))  # 1
+print(are_anagrams(&#x27;cat&#x27;, &#x27;dog&#x27;))  # 0
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function areAnagrams(A, B) {
+  if (A.length !== B.length) return 0;
+  const freq = new Array(26).fill(0);
+  for (let i = 0; i &lt; A.length; i++) {
+    freq[A.charCodeAt(i) - 97]++;
+  }
+  for (let i = 0; i &lt; B.length; i++) {
+    freq[B.charCodeAt(i) - 97]--;
+    if (freq[B.charCodeAt(i) - 97] &lt; 0) return 0;
+  }
+  return 1;
+}
+
+console.log(areAnagrams(&#x27;cat&#x27;, &#x27;act&#x27;)); // 1
+console.log(areAnagrams(&#x27;cat&#x27;, &#x27;dog&#x27;)); // 0
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Max Chunks To Make Sorted (I and II)</b>
+<p class="worked-q">Find the maximum number of chunks into which the array can be partitioned such that sorting each chunk individually sorts the entire array.</p>
+<p><strong>Approach:</strong> Version I: split when <code>max_so_far == i</code>. Version II: split when <code>prefix_max[i] &lt;= suffix_min[i + 1]</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def max_chunks_i(A):
+    chunks = 0
+    max_val = 0
+    for i, x in enumerate(A):
+        max_val = max(max_val, x)
+        if max_val == i:
+            chunks += 1
+    return chunks
+
+def max_chunks_ii(A):
+    n = len(A)
+    suffix_min = [0] * n
+    suffix_min[-1] = A[-1]
+    for i in range(n - 2, -1, -1):
+        suffix_min[i] = min(suffix_min[i + 1], A[i])
+
+    chunks = 0
+    prefix_max = float(&#x27;-inf&#x27;)
+    for i in range(n - 1):
+        prefix_max = max(prefix_max, A[i])
+        if prefix_max &lt;= suffix_min[i + 1]:
+            chunks += 1
+    return chunks + 1
+
+print(max_chunks_i([1, 0, 2, 3, 4]))   # 4
+print(max_chunks_ii([2, 1, 3, 4, 4]))  # 4
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function maxChunksI(A) {
+  let chunks = 0, maxVal = 0;
+  for (let i = 0; i &lt; A.length; i++) {
+    maxVal = Math.max(maxVal, A[i]);
+    if (maxVal === i) chunks++;
+  }
+  return chunks;
+}
+
+function maxChunksII(A) {
+  const n = A.length;
+  const suffixMin = new Array(n).fill(0);
+  suffixMin[n - 1] = A[n - 1];
+  for (let i = n - 2; i &gt;= 0; i--) {
+    suffixMin[i] = Math.min(suffixMin[i + 1], A[i]);
+  }
+  let chunks = 0, prefixMax = -Infinity;
+  for (let i = 0; i &lt; n - 1; i++) {
+    prefixMax = Math.max(prefixMax, A[i]);
+    if (prefixMax &lt;= suffixMin[i + 1]) chunks++;
+  }
+  return chunks + 1;
+}
+
+console.log(maxChunksI([1, 0, 2, 3, 4]));   // 4
+console.log(maxChunksII([2, 1, 3, 4, 4]));  // 4
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Wave Array and Tens Digit Sorting</b>
+<p class="worked-q">Wave Array: arrange A[0] &gt;= A[1] &lt;= A[2] &gt;= A[3]... Tens Digit Sorting: sort by tens digit ascending, breaking ties by value descending.</p>
+<p><strong>Approach:</strong> Wave Array: sort ascending, swap adjacent elements. Tens Digit: custom comparator on tens digit.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def wave_array(A):
+    A.sort()
+    for i in range(0, len(A) - 1, 2):
+        A[i], A[i + 1] = A[i + 1], A[i]
+    return A
+
+def tens_digit_sort(A):
+    def key_fn(x):
+        tens = (abs(x) // 10) % 10
+        return (tens, -x)
+    return sorted(A, key=key_fn)
+
+print(wave_array([1, 2, 3, 4]))            # [2, 1, 4, 3]
+print(tens_digit_sort([15, 11, 7, 25, 21])) # [7, 15, 11, 25, 21]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function waveArray(A) {
+  A.sort((a, b) =&gt; a - b);
+  for (let i = 0; i &lt; A.length - 1; i += 2) {
+    const t = A[i];
+    A[i] = A[i + 1];
+    A[i + 1] = t;
+  }
+  return A;
+}
+
+function tensDigitSort(A) {
+  return [...A].sort((a, b) =&gt; {
+    const tensA = Math.floor(Math.abs(a) / 10) % 10;
+    const tensB = Math.floor(Math.abs(b) / 10) % 10;
+    if (tensA !== tensB) return tensA - tensB;
+    return b - a; // tie breaker descending
+  });
+}
+
+console.log(waveArray([1, 2, 3, 4]));             // [2, 1, 4, 3]
+console.log(tensDigitSort([15, 11, 7, 25, 21]));  // [7, 15, 11, 25, 21]
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>5. Partition 0s and 1s</b>
+<p class="worked-q">Given an array of 0s and 1s, sort them in-place with all 0s on the left and all 1s on the right.</p>
+<p><strong>Approach:</strong> Two pointers <code>left = 0, right = n - 1</code>. Swap when <code>A[left] == 1</code> and <code>A[right] == 0</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def sort_01(A):
+    left, right = 0, len(A) - 1
+    while left &lt; right:
+        if A[left] == 1 and A[right] == 0:
+            A[left], A[right] = A[right], A[left]
+            left += 1
+            right -= 1
+        else:
+            if A[left] == 0: left += 1
+            if A[right] == 1: right -= 1
+    return A
+
+print(sort_01([1, 0, 1, 0, 1, 0]))  # [0, 0, 0, 1, 1, 1]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function sort01(A) {
+  let left = 0, right = A.length - 1;
+  while (left &lt; right) {
+    if (A[left] === 1 &amp;&amp; A[right] === 0) {
+      const t = A[left];
+      A[left] = A[right];
+      A[right] = t;
+      left++;
+      right--;
+    } else {
+      if (A[left] === 0) left++;
+      if (A[right] === 1) right--;
+    }
+  }
+  return A;
+}
+
+console.log(sort01([1, 0, 1, 0, 1, 0])); // [0, 0, 0, 1, 1, 1]
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 26 -->
 <h3 id="25-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers<a class="headerlink" href="#25-binary-search-on-arrays-and-answers" title="Permanent link">#</a></h3>
@@ -8543,6 +9963,180 @@ console.log(allocateBooks([12, 15, 78], 4)); // -1
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Search in Rotated Sorted Array</b>
+<p class="worked-q">Given an array sorted in ascending order and rotated at an unknown pivot, find the index of target B in O(log N) time.</p>
+<p><strong>Approach:</strong> Binary search: determine which half is sorted, check if target lies within that half, and halve the search interval.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def search_rotated_array(A, target):
+    low, high = 0, len(A) - 1
+    while low &lt;= high:
+        mid = (low + high) // 2
+        if A[mid] == target:
+            return mid
+        # Left half sorted
+        if A[low] &lt;= A[mid]:
+            if A[low] &lt;= target &lt; A[mid]:
+                high = mid - 1
+            else:
+                low = mid + 1
+        # Right half sorted
+        else:
+            if A[mid] &lt; target &lt;= A[high]:
+                low = mid + 1
+            else:
+                high = mid - 1
+    return -1
+
+print(search_rotated_array([4, 5, 6, 7, 0, 1, 2], 0))  # 4
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function searchRotatedArray(A, target) {
+  let low = 0, high = A.length - 1;
+  while (low &lt;= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (A[mid] === target) return mid;
+    if (A[low] &lt;= A[mid]) {
+      if (A[low] &lt;= target &amp;&amp; target &lt; A[mid]) {
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    } else {
+      if (A[mid] &lt; target &amp;&amp; target &lt;= A[high]) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+  }
+  return -1;
+}
+
+console.log(searchRotatedArray([4, 5, 6, 7, 0, 1, 2], 0)); // 4
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Ath Magical Number</b>
+<p class="worked-q">A number is magical if divisible by B or C. Find the A-th magical number modulo 1,000,000,007.</p>
+<p><strong>Approach:</strong> Binary search on answer range using inclusion-exclusion: <code>count(X) = X//B + X//C - X//LCM(B, C)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(log(A * min(B, C)))</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import math
+
+def ath_magical_number(A, B, C, MOD=1_000_000_007):
+    lcm_bc = (B * C) // math.gcd(B, C)
+    low = min(B, C)
+    high = A * min(B, C)
+    ans = high
+    while low &lt;= high:
+        mid = (low + high) // 2
+        count = (mid // B) + (mid // C) - (mid // lcm_bc)
+        if count &gt;= A:
+            ans = mid
+            high = mid - 1
+        else:
+            low = mid + 1
+    return ans % MOD
+
+print(ath_magical_number(4, 2, 3))  # 6 (magical numbers: 2, 3, 4, 6)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function gcd(a, b) {
+  while (b) { const t = b; b = a % b; a = t; }
+  return a;
+}
+
+function athMagicalNumber(A, B, C, MOD = 1000000007) {
+  const lcmBC = (B * C) / gcd(B, C);
+  let low = Math.min(B, C);
+  let high = A * Math.min(B, C);
+  let ans = high;
+  while (low &lt;= high) {
+    const mid = Math.floor((low + high) / 2);
+    const count = Math.floor(mid / B) + Math.floor(mid / C) - Math.floor(mid / lcmBC);
+    if (count &gt;= A) {
+      ans = mid;
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return ans % MOD;
+}
+
+console.log(athMagicalNumber(4, 2, 3)); // 6
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Aggressive Cows (Largest Minimum Distance)</b>
+<p class="worked-q">Place C cows into N stalls such that the minimum distance between any two cows is as large as possible.</p>
+<p><strong>Approach:</strong> Sort stalls. Binary search on distance. Greedy check: place cows whenever distance from last cow is at least candidate distance.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log(max_dist))</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def aggressive_cows(stalls, cows):
+    stalls.sort()
+    def can_place(dist):
+        placed = 1
+        last_pos = stalls[0]
+        for pos in stalls[1:]:
+            if pos - last_pos &gt;= dist:
+                placed += 1
+                last_pos = pos
+                if placed == cows:
+                    return True
+        return False
+
+    low = 1
+    high = stalls[-1] - stalls[0]
+    best_dist = 1
+    while low &lt;= high:
+        mid = (low + high) // 2
+        if can_place(mid):
+            best_dist = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+    return best_dist
+
+print(aggressive_cows([1, 2, 4, 8, 9], 3))  # 3
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function aggressiveCows(stalls, cows) {
+  stalls.sort((a, b) =&gt; a - b);
+  function canPlace(dist) {
+    let placed = 1, lastPos = stalls[0];
+    for (let i = 1; i &lt; stalls.length; i++) {
+      if (stalls[i] - lastPos &gt;= dist) {
+        placed++;
+        lastPos = stalls[i];
+        if (placed === cows) return true;
+      }
+    }
+    return false;
+  }
+  let low = 1, high = stalls[stalls.length - 1] - stalls[0];
+  let bestDist = 1;
+  while (low &lt;= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (canPlace(mid)) {
+      bestDist = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return bestDist;
+}
+
+console.log(aggressiveCows([1, 2, 4, 8, 9], 3)); // 3
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 27 -->
 <h3 id="26-multiple-approaches-pair-with-a-given-sum">Multiple Approaches: Pair With a Given Sum<a class="headerlink" href="#26-multiple-approaches-pair-with-a-given-sum" title="Permanent link">#</a></h3>
@@ -9989,6 +11583,109 @@ console.log(hasCycle(head)); // Output: true
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Real-Life Application: Spotify Music Manager (Doubly Linked List)</b>
+<p class="worked-q">Implement a music playlist manager supporting play, next, prev, and addSong operations in O(1) time.</p>
+<p><strong>Approach:</strong> Maintain a Doubly Linked List with <code>prev</code> and <code>next</code> pointers, along with <code>head</code>, <code>tail</code>, and <code>current</code> track pointers.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(1)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">class SongNode:
+    def __init__(self, name):
+        self.name = name
+        self.prev = None
+        self.next = None
+
+class MusicManager:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.curr = None
+
+    def add_song(self, name):
+        node = SongNode(name)
+        if not self.head:
+            self.head = self.tail = self.curr = node
+        else:
+            self.tail.next = node
+            node.prev = self.tail
+            self.tail = node
+
+    def play_next(self):
+        if self.curr and self.curr.next:
+            self.curr = self.curr.next
+        return self.curr.name if self.curr else None
+
+    def play_prev(self):
+        if self.curr and self.curr.prev:
+            self.curr = self.curr.prev
+        return self.curr.name if self.curr else None
+
+    def current_song(self):
+        return self.curr.name if self.curr else None
+
+player = MusicManager()
+player.add_song(&#x27;Song A&#x27;)
+player.add_song(&#x27;Song B&#x27;)
+player.add_song(&#x27;Song C&#x27;)
+print(player.current_song()) # Song A
+print(player.play_next())    # Song B
+print(player.play_prev())    # Song A
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">class SongNode {
+  constructor(name) {
+    this.name = name;
+    this.prev = null;
+    this.next = null;
+  }
+}
+
+class MusicManager {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+    this.curr = null;
+  }
+
+  addSong(name) {
+    const node = new SongNode(name);
+    if (!this.head) {
+      this.head = this.tail = this.curr = node;
+    } else {
+      this.tail.next = node;
+      node.prev = this.tail;
+      this.tail = node;
+    }
+  }
+
+  playNext() {
+    if (this.curr &amp;&amp; this.curr.next) this.curr = this.curr.next;
+    return this.curr ? this.curr.name : null;
+  }
+
+  playPrev() {
+    if (this.curr &amp;&amp; this.curr.prev) this.curr = this.curr.prev;
+    return this.curr ? this.curr.name : null;
+  }
+
+  currentSong() {
+    return this.curr ? this.curr.name : null;
+  }
+}
+
+const player = new MusicManager();
+player.addSong(&#x27;Song A&#x27;);
+player.addSong(&#x27;Song B&#x27;);
+player.addSong(&#x27;Song C&#x27;);
+console.log(player.currentSong()); // Song A
+console.log(player.playNext());    // Song B
+console.log(player.playPrev());    // Song A
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 30 -->
 <h3 id="29-stacks">Stacks<a class="headerlink" href="#29-stacks" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -10569,6 +12266,290 @@ console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, 
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Min Stack (O(1) Retrieval)</b>
+<p class="worked-q">Design a stack that supports push, pop, top, and retrieving the minimum element in O(1) time.</p>
+<p><strong>Approach:</strong> Maintain a secondary stack <code>min_stack</code> storing the running minimum value at each depth.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-great">O(1)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">class MinStack:
+    def __init__(self):
+        self.stack = []
+        self.min_stack = []
+
+    def push(self, val):
+        self.stack.append(val)
+        if not self.min_stack or val &lt;= self.min_stack[-1]:
+            self.min_stack.append(val)
+
+    def pop(self):
+        if not self.stack: return None
+        val = self.stack.pop()
+        if val == self.min_stack[-1]:
+            self.min_stack.pop()
+        return val
+
+    def top(self):
+        return self.stack[-1] if self.stack else -1
+
+    def get_min(self):
+        return self.min_stack[-1] if self.min_stack else -1
+
+ms = MinStack()
+ms.push(-2)
+ms.push(0)
+ms.push(-3)
+print(ms.get_min()) # -3
+ms.pop()
+print(ms.top())     # 0
+print(ms.get_min()) # -2
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">class MinStack {
+  constructor() {
+    this.stack = [];
+    this.minStack = [];
+  }
+
+  push(val) {
+    this.stack.push(val);
+    if (!this.minStack.length || val &lt;= this.minStack[this.minStack.length - 1]) {
+      this.minStack.push(val);
+    }
+  }
+
+  pop() {
+    if (!this.stack.length) return null;
+    const val = this.stack.pop();
+    if (val === this.minStack[this.minStack.length - 1]) {
+      this.minStack.pop();
+    }
+    return val;
+  }
+
+  top() {
+    return this.stack.length ? this.stack[this.stack.length - 1] : -1;
+  }
+
+  getMin() {
+    return this.minStack.length ? this.minStack[this.minStack.length - 1] : -1;
+  }
+}
+
+const ms = new MinStack();
+ms.push(-2);
+ms.push(0);
+ms.push(-3);
+console.log(ms.getMin()); // -3
+ms.pop();
+console.log(ms.top());    // 0
+console.log(ms.getMin()); // -2
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Redundant Braces</b>
+<p class="worked-q">Given an algebraic expression string A, determine if it has redundant brackets.</p>
+<p><strong>Approach:</strong> Push opening braces and operators onto the stack. On <code>')'</code>, pop until <code>'('</code>; if no operator was enclosed, braces are redundant.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def has_redundant_braces(A):
+    stack = []
+    operators = {&#x27;+&#x27;, &#x27;-&#x27;, &#x27;*&#x27;, &#x27;/&#x27;}
+    for ch in A:
+        if ch in &#x27;({[+-*/&#x27;:
+            stack.append(ch)
+        elif ch in &#x27;)}]&#x27;:
+            has_op = False
+            while stack and stack[-1] not in &#x27;({[&#x27;:
+                top = stack.pop()
+                if top in operators:
+                    has_op = True
+            if stack:
+                stack.pop() # pop matching opening brace
+            if not has_op:
+                return 1
+    return 0
+
+print(has_redundant_braces(&#x27;((a+b))&#x27;))  # 1 (redundant)
+print(has_redundant_braces(&#x27;(a+(b*c))&#x27;)) # 0 (not redundant)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function hasRedundantBraces(A) {
+  const stack = [];
+  const operators = new Set([&#x27;+&#x27;, &#x27;-&#x27;, &#x27;*&#x27;, &#x27;/&#x27;]);
+  for (let i = 0; i &lt; A.length; i++) {
+    const ch = A[i];
+    if (ch === &#x27;(&#x27; || operators.has(ch)) {
+      stack.push(ch);
+    } else if (ch === &#x27;)&#x27;) {
+      let hasOp = false;
+      while (stack.length &amp;&amp; stack[stack.length - 1] !== &#x27;(&#x27;) {
+        const top = stack.pop();
+        if (operators.has(top)) hasOp = true;
+      }
+      if (stack.length) stack.pop();
+      if (!hasOp) return 1;
+    }
+  }
+  return 0;
+}
+
+console.log(hasRedundantBraces(&#x27;((a+b))&#x27;));  // 1
+console.log(hasRedundantBraces(&#x27;(a+(b*c))&#x27;)); // 0
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Largest Rectangle in Histogram</b>
+<p class="worked-q">Find the largest rectangular area possible in a given histogram where each bar has width 1.</p>
+<p><strong>Approach:</strong> Monotonic increasing stack storing bar indices. Pop shorter bars to calculate rectangle areas bounded by previous and next smaller indices.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def largest_rectangle_histogram(A):
+    stack = []
+    max_area = 0
+    n = len(A)
+    for i in range(n + 1):
+        h = 0 if i == n else A[i]
+        while stack and h &lt; A[stack[-1]]:
+            height = A[stack.pop()]
+            width = i if not stack else (i - stack[-1] - 1)
+            max_area = max(max_area, height * width)
+        stack.append(i)
+    return max_area
+
+print(largest_rectangle_histogram([2, 1, 5, 6, 2, 3]))  # 10 (bars 5 and 6)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function largestRectangleHistogram(A) {
+  const stack = [];
+  let maxArea = 0;
+  const n = A.length;
+  for (let i = 0; i &lt;= n; i++) {
+    const h = i === n ? 0 : A[i];
+    while (stack.length &amp;&amp; h &lt; A[stack[stack.length - 1]]) {
+      const height = A[stack.pop()];
+      const width = !stack.length ? i : (i - stack[stack.length - 1] - 1);
+      maxArea = Math.max(maxArea, height * width);
+    }
+    stack.push(i);
+  }
+  return maxArea;
+}
+
+console.log(largestRectangleHistogram([2, 1, 5, 6, 2, 3])); // 10
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Double Character Trouble and Subarray MAX - MIN</b>
+<p class="worked-q">Double Character Trouble: recursively remove adjacent duplicates from a string. MAX - MIN: sum of (max - min) across all subarrays.</p>
+<p><strong>Approach:</strong> Duplicates: stack cancellation. MAX - MIN: contribution technique using next/previous greater and smaller indices via monotonic stack.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def double_character_trouble(s):
+    stack = []
+    for ch in s:
+        if stack and stack[-1] == ch:
+            stack.pop()
+        else:
+            stack.append(ch)
+    return &#x27;&#x27;.join(stack)
+
+def max_minus_min_subarrays(A):
+    n = len(A)
+    # Contribution as maximum
+    prev_g = [-1] * n
+    next_g = [n] * n
+    st = []
+    for i in range(n):
+        while st and A[st[-1]] &lt;= A[i]: st.pop()
+        prev_g[i] = st[-1] if st else -1
+        st.append(i)
+    st = []
+    for i in range(n - 1, -1, -1):
+        while st and A[st[-1]] &lt; A[i]: st.pop()
+        next_g[i] = st[-1] if st else n
+        st.append(i)
+
+    # Contribution as minimum
+    prev_s = [-1] * n
+    next_s = [n] * n
+    st = []
+    for i in range(n):
+        while st and A[st[-1]] &gt;= A[i]: st.pop()
+        prev_s[i] = st[-1] if st else -1
+        st.append(i)
+    st = []
+    for i in range(n - 1, -1, -1):
+        while st and A[st[-1]] &gt; A[i]: st.pop()
+        next_s[i] = st[-1] if st else n
+        st.append(i)
+
+    total = 0
+    for i in range(n):
+        max_contrib = (i - prev_g[i]) * (next_g[i] - i) * A[i]
+        min_contrib = (i - prev_s[i]) * (next_s[i] - i) * A[i]
+        total += max_contrib - min_contrib
+    return total
+
+print(double_character_trouble(&#x27;abccba&#x27;))  # &#x27;&#x27;
+print(max_minus_min_subarrays([4, 7, 3, 8])) # 34
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function doubleCharacterTrouble(s) {
+  const stack = [];
+  for (let i = 0; i &lt; s.length; i++) {
+    if (stack.length &amp;&amp; stack[stack.length - 1] === s[i]) {
+      stack.pop();
+    } else {
+      stack.push(s[i]);
+    }
+  }
+  return stack.join(&#x27;&#x27;);
+}
+
+function maxMinusMinSubarrays(A) {
+  const n = A.length;
+  const prevG = new Array(n).fill(-1), nextG = new Array(n).fill(n);
+  const prevS = new Array(n).fill(-1), nextS = new Array(n).fill(n);
+  let st = [];
+  for (let i = 0; i &lt; n; i++) {
+    while (st.length &amp;&amp; A[st[st.length - 1]] &lt;= A[i]) st.pop();
+    prevG[i] = st.length ? st[st.length - 1] : -1;
+    st.push(i);
+  }
+  st = [];
+  for (let i = n - 1; i &gt;= 0; i--) {
+    while (st.length &amp;&amp; A[st[st.length - 1]] &lt; A[i]) st.pop();
+    nextG[i] = st.length ? st[st.length - 1] : n;
+    st.push(i);
+  }
+  st = [];
+  for (let i = 0; i &lt; n; i++) {
+    while (st.length &amp;&amp; A[st[st.length - 1]] &gt;= A[i]) st.pop();
+    prevS[i] = st.length ? st[st.length - 1] : -1;
+    st.push(i);
+  }
+  st = [];
+  for (let i = n - 1; i &gt;= 0; i--) {
+    while (st.length &amp;&amp; A[st[st.length - 1]] &gt; A[i]) st.pop();
+    nextS[i] = st.length ? st[st.length - 1] : n;
+    st.push(i);
+  }
+  let total = 0;
+  for (let i = 0; i &lt; n; i++) {
+    total += (i - prevG[i]) * (nextG[i] - i) * A[i] - (i - prevS[i]) * (nextS[i] - i) * A[i];
+  }
+  return total;
+}
+
+console.log(doubleCharacterTrouble(&#x27;abccba&#x27;)); // &#x27;&#x27;
+console.log(maxMinusMinSubarrays([4, 7, 3, 8])); // 34
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 31 -->
 <h3 id="30-queues-and-deques">Queues &amp; Deques<a class="headerlink" href="#30-queues-and-deques" title="Permanent link">#</a></h3>
@@ -11355,6 +13336,51 @@ console.log(maxSlidingWindow(A2, B2)); // [7, 7, 7, 7]
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Real-Time Stock Trading Alerts (Sliding Window Maximum)</b>
+<p class="worked-q">Given daily stock prices and window size B, output the maximum price in each moving window of size B using a monotonic deque.</p>
+<p><strong>Approach:</strong> Monotonic double-ended queue storing indices in decreasing order of element value. Window max is at the front.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(B)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">from collections import deque
+
+def sliding_window_max(A, B):
+    dq = deque()
+    result = []
+    for i, x in enumerate(A):
+        # Remove elements out of window
+        while dq and dq[0] &lt;= i - B:
+            dq.popleft()
+        # Maintain monotonic decreasing order
+        while dq and A[dq[-1]] &lt;= x:
+            dq.pop()
+        dq.append(i)
+        if i &gt;= B - 1:
+            result.append(A[dq[0]])
+    return result
+
+print(sliding_window_max([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function slidingWindowMax(A, B) {
+  const dq = [];
+  const result = [];
+  for (let i = 0; i &lt; A.length; i++) {
+    while (dq.length &amp;&amp; dq[0] &lt;= i - B) dq.shift();
+    while (dq.length &amp;&amp; A[dq[dq.length - 1]] &lt;= A[i]) dq.pop();
+    dq.push(i);
+    if (i &gt;= B - 1) result.push(A[dq[0]]);
+  }
+  return result;
+}
+
+console.log(slidingWindowMax([1, 3, -1, -3, 5, 3, 6, 7], 3)); // [3, 3, 5, 5, 6, 7]
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 32 -->
 <h3 id="31-binary-trees">Binary Trees<a class="headerlink" href="#31-binary-trees" title="Permanent link">#</a></h3>
@@ -13029,6 +15055,115 @@ console.log(nodeToRootPath(root, B)); // [40, 45, 30, 50]
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Deserialize Binary Tree and Populate Next Right Pointers</b>
+<p class="worked-q">Deserialize: Reconstruct a binary tree from level-order array with -1 for nulls. Next Pointers: Populate each next pointer to point to its next right node in O(1) space.</p>
+<p><strong>Approach:</strong> Deserialize via queue level-order traversal. Next pointer threading using level-by-level links.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code> / <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">from collections import deque
+
+class TreeNode:
+    def __init__(self, val=0):
+        self.val = val
+        self.left = None
+        self.right = None
+        self.next = None
+
+def deserialize_binary_tree(A):
+    if not A or A[0] == -1: return None
+    root = TreeNode(A[0])
+    q = deque([root])
+    i = 1
+    while q and i &lt; len(A):
+        curr = q.popleft()
+        if i &lt; len(A) and A[i] != -1:
+            curr.left = TreeNode(A[i])
+            q.append(curr.left)
+        i += 1
+        if i &lt; len(A) and A[i] != -1:
+            curr.right = TreeNode(A[i])
+            q.append(curr.right)
+        i += 1
+    return root
+
+def connect_next_pointers(root):
+    if not root: return None
+    curr = root
+    while curr:
+        dummy = TreeNode(0)
+        tail = dummy
+        while curr:
+            if curr.left:
+                tail.next = curr.left
+                tail = tail.next
+            if curr.right:
+                tail.next = curr.right
+                tail = tail.next
+            curr = curr.next
+        curr = dummy.next
+    return root
+
+tree = deserialize_binary_tree([1, 2, 3, 4, 5, -1, 6])
+connect_next_pointers(tree)
+print(tree.left.next.val)  # 3
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">class TreeNode {
+  constructor(val = 0) {
+    this.val = val;
+    this.left = null;
+    this.right = null;
+    this.next = null;
+  }
+}
+
+function deserializeBinaryTree(A) {
+  if (!A.length || A[0] === -1) return null;
+  const root = new TreeNode(A[0]);
+  const q = [root];
+  let i = 1;
+  while (q.length &amp;&amp; i &lt; A.length) {
+    const curr = q.shift();
+    if (i &lt; A.length &amp;&amp; A[i] !== -1) {
+      curr.left = new TreeNode(A[i]);
+      q.push(curr.left);
+    }
+    i++;
+    if (i &lt; A.length &amp;&amp; A[i] !== -1) {
+      curr.right = new TreeNode(A[i]);
+      q.push(curr.right);
+    }
+    i++;
+  }
+  return root;
+}
+
+function connectNextPointers(root) {
+  if (!root) return null;
+  let curr = root;
+  while (curr) {
+    const dummy = new TreeNode(0);
+    let tail = dummy;
+    while (curr) {
+      if (curr.left) { tail.next = curr.left; tail = tail.next; }
+      if (curr.right) { tail.next = curr.right; tail = tail.next; }
+      curr = curr.next;
+    }
+    curr = dummy.next;
+  }
+  return root;
+}
+
+const tree = deserializeBinaryTree([1, 2, 3, 4, 5, -1, 6]);
+connectNextPointers(tree);
+console.log(tree.left.next.val); // 3
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 33 -->
 <h3 id="32-binary-search-trees">Binary Search Trees<a class="headerlink" href="#32-binary-search-trees" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -13844,6 +15979,97 @@ test(bst3, 2, null); // out of range
 </div>
 </div>
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Two Sum in BST</b>
+<p class="worked-q">Given a Binary Search Tree and target sum K, return 1 if there exist two distinct nodes whose values sum to K, else 0.</p>
+<p><strong>Approach:</strong> Two BST iterators (forward and backward inorder) simulating two pointers in <code>O(H)</code> space.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(H)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">class BSTIterator:
+    def __init__(self, root, forward=True):
+        self.stack = []
+        self.forward = forward
+        self._push_all(root)
+
+    def _push_all(self, node):
+        while node:
+            self.stack.append(node)
+            node = node.left if self.forward else node.right
+
+    def has_next(self):
+        return len(self.stack) &gt; 0
+
+    def next_val(self):
+        node = self.stack.pop()
+        if self.forward:
+            self._push_all(node.right)
+        else:
+            self._push_all(node.left)
+        return node.val
+
+def two_sum_bst(root, target):
+    if not root: return 0
+    it_fwd = BSTIterator(root, True)
+    it_bwd = BSTIterator(root, False)
+    left = it_fwd.next_val()
+    right = it_bwd.next_val()
+    while left &lt; right:
+        s = left + right
+        if s == target:
+            return 1
+        elif s &lt; target:
+            left = it_fwd.next_val() if it_fwd.has_next() else right
+        else:
+            right = it_bwd.next_val() if it_bwd.has_next() else left
+    return 0
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">class BSTIterator {
+  constructor(root, forward = true) {
+    this.stack = [];
+    this.forward = forward;
+    this._pushAll(root);
+  }
+
+  _pushAll(node) {
+    while (node) {
+      this.stack.push(node);
+      node = this.forward ? node.left : node.right;
+    }
+  }
+
+  hasNext() {
+    return this.stack.length &gt; 0;
+  }
+
+  nextVal() {
+    const node = this.stack.pop();
+    if (this.forward) this._pushAll(node.right);
+    else this._pushAll(node.left);
+    return node.val;
+  }
+}
+
+function twoSumBST(root, target) {
+  if (!root) return 0;
+  const itFwd = new BSTIterator(root, true);
+  const itBwd = new BSTIterator(root, false);
+  let left = itFwd.nextVal();
+  let right = itBwd.nextVal();
+  while (left &lt; right) {
+    const s = left + right;
+    if (s === target) return 1;
+    else if (s &lt; target) left = itFwd.hasNext() ? itFwd.nextVal() : right;
+    else right = itBwd.hasNext() ? itBwd.nextVal() : left;
+  }
+  return 0;
+}
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 34 -->
 <h3 id="33-morris-traversal">Morris Traversal<a class="headerlink" href="#33-morris-traversal" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -14101,6 +16327,53 @@ console.log('After :', inorderList(root)); // [1, 2, 3, 4]
 </code></pre></div>
 </div>
 </div>
+
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Path Sum and LCA in BST</b>
+<p class="worked-q">Path Sum: check if any root-to-leaf path sums to S. LCA in BST: find Lowest Common Ancestor of two values in BST.</p>
+<p><strong>Approach:</strong> Path Sum: root-to-leaf DFS. LCA in BST: binary search tree split walk.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code> / <code class="big-o o-great">O(H)</code>, Space <code class="big-o o-good">O(H)</code> / <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def has_path_sum(root, target_sum):
+    if not root: return False
+    if not root.left and not root.right:
+        return root.val == target_sum
+    rem = target_sum - root.val
+    return has_path_sum(root.left, rem) or has_path_sum(root.right, rem)
+
+def lca_in_bst(root, val1, val2):
+    curr = root
+    while curr:
+        if val1 &lt; curr.val and val2 &lt; curr.val:
+            curr = curr.left
+        elif val1 &gt; curr.val and val2 &gt; curr.val:
+            curr = curr.right
+        else:
+            return curr.val
+    return -1
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function hasPathSum(root, targetSum) {
+  if (!root) return false;
+  if (!root.left &amp;&amp; !root.right) return root.val === targetSum;
+  const rem = targetSum - root.val;
+  return hasPathSum(root.left, rem) || hasPathSum(root.right, rem);
+}
+
+function lcaInBST(root, val1, val2) {
+  let curr = root;
+  while (curr) {
+    if (val1 &lt; curr.val &amp;&amp; val2 &lt; curr.val) curr = curr.left;
+    else if (val1 &gt; curr.val &amp;&amp; val2 &gt; curr.val) curr = curr.right;
+    else return curr.val;
+  }
+  return -1;
+}
+</code></pre></div>
+</div>
+</div>
+
 
 <!-- ============================================================ 35 -->
 <h3 id="34-lowest-common-ancestor">Lowest Common Ancestor<a class="headerlink" href="#34-lowest-common-ancestor" title="Permanent link">#</a></h3>
@@ -15827,6 +18100,121 @@ console.log("Sorted:", arr); // [1, 2, 5, 6, 7, 9, 10, 13, 14]
 </code></pre></div>
 </div>
 </div>
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Misha and Candies</b>
+<p class="worked-q">Misha has candy boxes. In each step, she picks the box with the minimum candies x (if x &lt;= B), eats floor(x/2) candies, and gives the remaining ceil(x/2) to the next box with the minimum candies. Return total candies eaten.</p>
+<p><strong>Approach:</strong> Maintain a Min-Heap of candy boxes. Pop minimum box, consume <code>floor(x/2)</code>, give remainder to the next minimum box in the heap.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import heapq
+
+def misha_and_candies(A, B):
+    heapq.heapify(A)
+    total_eaten = 0
+    while A and A[0] &lt;= B:
+        x = heapq.heappop(A)
+        eaten = x // 2
+        total_eaten += eaten
+        rem = x - eaten
+        if A and rem &gt; 0:
+            next_box = heapq.heappop(A)
+            heapq.heappush(A, next_box + rem)
+    return total_eaten
+
+print(misha_and_candies([3, 2, 3], 2))  # 2
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">class MinHeap {
+  constructor() { this.heap = []; }
+  push(val) {
+    this.heap.push(val);
+    let idx = this.heap.length - 1;
+    while (idx &gt; 0) {
+      let p = Math.floor((idx - 1) / 2);
+      if (this.heap[p] &lt;= this.heap[idx]) break;
+      [this.heap[p], this.heap[idx]] = [this.heap[idx], this.heap[p]];
+      idx = p;
+    }
+  }
+  pop() {
+    if (!this.heap.length) return null;
+    const top = this.heap[0];
+    const end = this.heap.pop();
+    if (this.heap.length) {
+      this.heap[0] = end;
+      let idx = 0;
+      while (true) {
+        let left = 2 * idx + 1, right = 2 * idx + 2, sm = idx;
+        if (left &lt; this.heap.length &amp;&amp; this.heap[left] &lt; this.heap[sm]) sm = left;
+        if (right &lt; this.heap.length &amp;&amp; this.heap[right] &lt; this.heap[sm]) sm = right;
+        if (sm === idx) break;
+        [this.heap[idx], this.heap[sm]] = [this.heap[sm], this.heap[idx]];
+        idx = sm;
+      }
+    }
+    return top;
+  }
+  peek() { return this.heap.length ? this.heap[0] : null; }
+  size() { return this.heap.length; }
+}
+
+function mishaAndCandies(A, B) {
+  const pq = new MinHeap();
+  for (const x of A) pq.push(x);
+  let totalEaten = 0;
+  while (pq.size() &amp;&amp; pq.peek() &lt;= B) {
+    const x = pq.pop();
+    const eaten = Math.floor(x / 2);
+    totalEaten += eaten;
+    const rem = x - eaten;
+    if (pq.size() &amp;&amp; rem &gt; 0) {
+      const nextBox = pq.pop();
+      pq.push(nextBox + rem);
+    }
+  }
+  return totalEaten;
+}
+
+console.log(mishaAndCandies([3, 2, 3], 2)); // 2
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Maximum Array Sum After B Negations</b>
+<p class="worked-q">Given an integer array A, modify the array by negating an element B times such that the sum of the array is maximized.</p>
+<p><strong>Approach:</strong> Min-Heap: pop the minimum element, negate it, push it back. Repeat B times.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N + B log N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import heapq
+
+def max_array_sum_after_b_negations(A, B):
+    heapq.heapify(A)
+    for _ in range(B):
+        x = heapq.heappop(A)
+        heapq.heappush(A, -x)
+    return sum(A)
+
+print(max_array_sum_after_b_negations([24, -68, -29, -9, 84], 4))  # 196
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function maxArraySumAfterBNegations(A, B) {
+  const pq = new MinHeap();
+  for (const x of A) pq.push(x);
+  for (let i = 0; i &lt; B; i++) {
+    const x = pq.pop();
+    pq.push(-x);
+  }
+  let sum = 0;
+  while (pq.size()) sum += pq.pop();
+  return sum;
+}
+
+console.log(maxArraySumAfterBNegations([24, -68, -29, -9, 84], 4)); // 196
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 37 -->
 <h3 id="36-greedy-algorithms">Greedy Algorithms<a class="headerlink" href="#36-greedy-algorithms" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -15967,6 +18355,116 @@ console.log(activitySelection([[1, 2], [2, 3], [3, 6], [6, 7], [8, 9], [1, 9]]))
 <tr><td>Fractional knapsack (§37)</td><td>best value per weight first</td><td><code class="big-o o-ok">O(N log N)</code></td></tr>
 </tbody>
 </table>
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Assign Mice to Holes</b>
+<p class="worked-q">N mice and N holes are on a line. Each minute a mouse can move 1 unit. Minimize the maximum time any mouse takes to reach a hole.</p>
+<p><strong>Approach:</strong> Greedy: Sort both mice and holes. Assign <code>i</code>-th mouse to <code>i</code>-th hole; answer is <code>max(|mice[i] - holes[i]|)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def assign_mice_to_holes(mice, holes):
+    mice.sort()
+    holes.sort()
+    return max(abs(m - h) for m, h in zip(mice, holes))
+
+print(assign_mice_to_holes([-4, 2, 3], [0, -2, 4]))  # 2
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function assignMiceToHoles(mice, holes) {
+  mice.sort((a, b) =&gt; a - b);
+  holes.sort((a, b) =&gt; a - b);
+  let maxTime = 0;
+  for (let i = 0; i &lt; mice.length; i++) {
+    maxTime = Math.max(maxTime, Math.abs(mice[i] - holes[i]));
+  }
+  return maxTime;
+}
+
+console.log(assignMiceToHoles([-4, 2, 3], [0, -2, 4])); // 2
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Distribute Candy</b>
+<p class="worked-q">N children stand in a line with rating scores. Each child must get at least 1 candy, and children with higher ratings than neighbors must get more candies than their neighbor. Find minimum total candies.</p>
+<p><strong>Approach:</strong> Two passes: left-to-right check then right-to-left check, taking the maximum of required constraints.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def distribute_candy(ratings):
+    n = len(ratings)
+    candies = [1] * n
+    for i in range(1, n):
+        if ratings[i] &gt; ratings[i - 1]:
+            candies[i] = candies[i - 1] + 1
+    for i in range(n - 2, -1, -1):
+        if ratings[i] &gt; ratings[i + 1]:
+            candies[i] = max(candies[i], candies[i + 1] + 1)
+    return sum(candies)
+
+print(distribute_candy([1, 2]))     # 3 ([1, 2])
+print(distribute_candy([1, 5, 2, 1])) # 7 ([1, 3, 2, 1])
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function distributeCandy(ratings) {
+  const n = ratings.length;
+  const candies = new Array(n).fill(1);
+  for (let i = 1; i &lt; n; i++) {
+    if (ratings[i] &gt; ratings[i - 1]) candies[i] = candies[i - 1] + 1;
+  }
+  for (let i = n - 2; i &gt;= 0; i--) {
+    if (ratings[i] &gt; ratings[i + 1]) candies[i] = Math.max(candies[i], candies[i + 1] + 1);
+  }
+  return candies.reduce((acc, c) =&gt; acc + c, 0);
+}
+
+console.log(distributeCandy([1, 2]));       // 3
+console.log(distributeCandy([1, 5, 2, 1])); // 7
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Flipkart Inventory Management (Job Sequencing with Deadlines &amp; Profit)</b>
+<p class="worked-q">Given jobs with deadlines and profits, each taking 1 unit of time, find the maximum profit obtainable without exceeding deadlines.</p>
+<p><strong>Approach:</strong> Sort jobs by deadline ascending. Maintain a Min-Heap of accepted profits; replace smaller profits when deadline limit is met.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">import heapq
+
+def job_sequencing_profit(deadlines, profits):
+    jobs = sorted(zip(deadlines, profits), key=lambda x: x[0])
+    min_heap = []
+    for d, p in jobs:
+        if len(min_heap) &lt; d:
+            heapq.heappush(min_heap, p)
+        elif min_heap and p &gt; min_heap[0]:
+            heapq.heappop(min_heap)
+            heapq.heappush(min_heap, p)
+    return sum(min_heap)
+
+print(job_sequencing_profit([1, 4, 3, 2], [10, 20, 30, 40]))  # 100
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function jobSequencingProfit(deadlines, profits) {
+  const jobs = deadlines.map((d, i) =&gt; [d, profits[i]]);
+  jobs.sort((a, b) =&gt; a[0] - b[0]);
+  const pq = new MinHeap();
+  for (const [d, p] of jobs) {
+    if (pq.size() &lt; d) {
+      pq.push(p);
+    } else if (pq.size() &amp;&amp; p &gt; pq.peek()) {
+      pq.pop();
+      pq.push(p);
+    }
+  }
+  let total = 0;
+  while (pq.size()) total += pq.pop();
+  return total;
+}
+
+console.log(jobSequencingProfit([1, 4, 3, 2], [10, 20, 30, 40])); // 100
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 38 -->
 <h3 id="37-multiple-approaches-connecting-the-ropes">Multiple Approaches: Connecting the Ropes<a class="headerlink" href="#37-multiple-approaches-connecting-the-ropes" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -17583,6 +20081,228 @@ console.log("Max Value (Unbounded Tabulation):", unboundedKnapsackTabulation(wei
 </code></pre></div>
 </div>
 </div>
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Unique Paths in a Grid</b>
+<p class="worked-q">A robot starts at (0, 0) of an m x n grid and wants to reach (m - 1, n - 1), moving only down or right. Find the number of unique paths.</p>
+<p><strong>Approach:</strong> 1D space-optimized DP: <code>dp[j] = dp[j] + dp[j - 1]</code> for rows 1 to m - 1.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(m * n)</code>, Space <code class="big-o o-good">O(n)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def unique_paths(m, n):
+    dp = [1] * n
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[j] += dp[j - 1]
+    return dp[-1]
+
+print(unique_paths(3, 7))  # 28
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function uniquePaths(m, n) {
+  const dp = new Array(n).fill(1);
+  for (let i = 1; i &lt; m; i++) {
+    for (let j = 1; j &lt; n; j++) {
+      dp[j] += dp[j - 1];
+    }
+  }
+  return dp[n - 1];
+}
+
+console.log(uniquePaths(3, 7)); // 28
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Catalan Numbers, Unique BSTs, and Intersecting Chords</b>
+<p class="worked-q">Find the count of structurally unique BSTs with N keys, or the number of ways to draw N non-intersecting chords between 2N points on a circle.</p>
+<p><strong>Approach:</strong> Catalan Recurrence: <code>dp[i] = sum(dp[j] * dp[i - 1 - j])</code> modulo 1,000,000,007.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-medium">O(N^2)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def catalan_number(n, MOD=1_000_000_007):
+    dp = [0] * (n + 1)
+    dp[0] = dp[1] = 1
+    for i in range(2, n + 1):
+        for j in range(i):
+            dp[i] = (dp[i] + dp[j] * dp[i - 1 - j]) % MOD
+    return dp[n]
+
+print(catalan_number(3))  # 5 (5 unique BSTs for 3 nodes)
+print(catalan_number(4))  # 14
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function catalanNumber(n, MOD = 1000000007) {
+  const dp = new Array(n + 1).fill(0);
+  dp[0] = 1;
+  if (n &gt;= 1) dp[1] = 1;
+  for (let i = 2; i &lt;= n; i++) {
+    for (let j = 0; j &lt; i; j++) {
+      dp[i] = (dp[i] + (dp[j] * dp[i - 1 - j]) % MOD) % MOD;
+    }
+  }
+  return dp[n];
+}
+
+console.log(catalanNumber(3)); // 5
+console.log(catalanNumber(4)); // 14
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Max Rectangle in Binary Matrix</b>
+<p class="worked-q">Given a 2D binary matrix of 0s and 1s, find the largest area of a rectangle containing only 1s.</p>
+<p><strong>Approach:</strong> Row-by-row histogram accumulation + monotonic stack Largest Rectangle in Histogram.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-good">O(M)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def maximal_rectangle(matrix):
+    if not matrix: return 0
+    cols = len(matrix[0])
+    heights = [0] * (cols + 1)
+    max_area = 0
+    for row in matrix:
+        for c in range(cols):
+            heights[c] = heights[c] + 1 if row[c] == 1 else 0
+        # Histogram on heights
+        stack = []
+        for i in range(cols + 1):
+            while stack and heights[i] &lt; heights[stack[-1]]:
+                h = heights[stack.pop()]
+                w = i if not stack else (i - stack[-1] - 1)
+                max_area = max(max_area, h * w)
+            stack.append(i)
+    return max_area
+
+mat = [
+    [0, 1, 1, 0],
+    [1, 1, 1, 1],
+    [1, 1, 1, 1],
+    [1, 1, 0, 0]
+]
+print(maximal_rectangle(mat))  # 8
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function maximalRectangle(matrix) {
+  if (!matrix.length) return 0;
+  const cols = matrix[0].length;
+  const heights = new Array(cols + 1).fill(0);
+  let maxArea = 0;
+  for (const row of matrix) {
+    for (let c = 0; c &lt; cols; c++) {
+      heights[c] = row[c] === 1 ? heights[c] + 1 : 0;
+    }
+    const stack = [];
+    for (let i = 0; i &lt;= cols; i++) {
+      while (stack.length &amp;&amp; heights[i] &lt; heights[stack[stack.length - 1]]) {
+        const h = heights[stack.pop()];
+        const w = !stack.length ? i : (i - stack[stack.length - 1] - 1);
+        maxArea = Math.max(maxArea, h * w);
+      }
+      stack.push(i);
+    }
+  }
+  return maxArea;
+}
+
+const mat = [
+  [0, 1, 1, 0],
+  [1, 1, 1, 1],
+  [1, 1, 1, 1],
+  [1, 1, 0, 0]
+];
+console.log(maximalRectangle(mat)); // 8
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Ways to Decode (Decode Ways)</b>
+<p class="worked-q">A message containing digits from 0-9 is decoded to letters A-Z (1-&gt;A, 26-&gt;Z). Find the total number of ways to decode the string modulo 1,000,000,007.</p>
+<p><strong>Approach:</strong> 1D DP tracking single-digit and valid two-digit decodings modulo 1,000,000,007.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def num_decodings(s, MOD=1_000_000_007):
+    if not s or s[0] == &#x27;0&#x27;: return 0
+    prev2, prev1 = 1, 1
+    for i in range(1, len(s)):
+        curr = 0
+        if s[i] != &#x27;0&#x27;:
+            curr = (curr + prev1) % MOD
+        two_digit = int(s[i - 1:i + 1])
+        if 10 &lt;= two_digit &lt;= 26:
+            curr = (curr + prev2) % MOD
+        prev2, prev1 = prev1, curr
+    return prev1
+
+print(num_decodings(&#x27;12&#x27;))   # 2 (&#x27;AB&#x27;, &#x27;L&#x27;)
+print(num_decodings(&#x27;226&#x27;))  # 3 (&#x27;BZ&#x27;, &#x27;VF&#x27;, &#x27;BBF&#x27;)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function numDecodings(s, MOD = 1000000007) {
+  if (!s.length || s[0] === &#x27;0&#x27;) return 0;
+  let prev2 = 1, prev1 = 1;
+  for (let i = 1; i &lt; s.length; i++) {
+    let curr = 0;
+    if (s[i] !== &#x27;0&#x27;) curr = (curr + prev1) % MOD;
+    const twoDigit = Number(s.slice(i - 1, i + 1));
+    if (twoDigit &gt;= 10 &amp;&amp; twoDigit &lt;= 26) curr = (curr + prev2) % MOD;
+    prev2 = prev1;
+    prev1 = curr;
+  }
+  return prev1;
+}
+
+console.log(numDecodings(&#x27;12&#x27;));  // 2
+console.log(numDecodings(&#x27;226&#x27;)); // 3
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>5. Cutting a Rod and Friends Pairing (Let&#x27;s Party)</b>
+<p class="worked-q">Cutting a Rod: Unbounded knapsack maximizing profit from cutting rod of length N. Friends Pairing: N friends can stay single or pair up.</p>
+<p><strong>Approach:</strong> Cutting a Rod: unbounded knapsack DP. Friends Pairing: involution recurrence <code>dp[i] = dp[i - 1] + (i - 1)*dp[i - 2]</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-medium">O(N^2)</code> / <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code> / <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def cut_rod(prices, n):
+    dp = [0] * (n + 1)
+    for i in range(1, n + 1):
+        for j in range(i, n + 1):
+            dp[j] = max(dp[j], prices[i - 1] + dp[j - i])
+    return dp[n]
+
+def friends_pairing(n, MOD=10003):
+    if n &lt;= 2: return n
+    p2, p1 = 1, 2
+    for i in range(3, n + 1):
+        curr = (p1 + (i - 1) * p2) % MOD
+        p2, p1 = p1, curr
+    return p1
+
+print(cut_rod([1, 5, 8, 9, 10, 17, 17, 20], 8)) # 22
+print(friends_pairing(3))                         # 4 (1-2-3, (1,2)-3, (1,3)-2, (2,3)-1)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function cutRod(prices, n) {
+  const dp = new Array(n + 1).fill(0);
+  for (let i = 1; i &lt;= n; i++) {
+    for (let j = i; j &lt;= n; j++) {
+      dp[j] = Math.max(dp[j], prices[i - 1] + dp[j - i]);
+    }
+  }
+  return dp[n];
+}
+
+function friendsPairing(n, MOD = 10003) {
+  if (n &lt;= 2) return n;
+  let p2 = 1, p1 = 2;
+  for (let i = 3; i &lt;= n; i++) {
+    const curr = (p1 + (i - 1) * p2) % MOD;
+    p2 = p1;
+    p1 = curr;
+  }
+  return p1;
+}
+
+console.log(cutRod([1, 5, 8, 9, 10, 17, 17, 20], 8)); // 22
+console.log(friendsPairing(3));                        // 4
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 40 -->
 <h3 id="39-multiple-approaches-target-sum-subset-sum">Multiple Approaches: Target Sum / Subset Sum<a class="headerlink" href="#39-multiple-approaches-target-sum-subset-sum" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -19933,6 +22653,198 @@ console.log(solution(A2, B2)); // expected output: []
 </div>
 <hr />
 
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Multisource BFS</b>
+<p class="worked-q">Given an N x M matrix of 0s and 1s, find the shortest distance from each cell to the nearest 0.</p>
+<p><strong>Approach:</strong> Multisource BFS: initialize queue with all 0-cells simultaneously and expand outward level-by-level.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-good">O(N * M)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">from collections import deque
+
+def update_matrix_nearest_zero(mat):
+    rows, cols = len(mat), len(mat[0])
+    dist = [[float(&#x27;inf&#x27;)] * cols for _ in range(rows)]
+    q = deque()
+    for r in range(rows):
+        for c in range(cols):
+            if mat[r][c] == 0:
+                dist[r][c] = 0
+                q.append((r, c))
+
+    dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    while q:
+        r, c = q.popleft()
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if 0 &lt;= nr &lt; rows and 0 &lt;= nc &lt; cols:
+                if dist[nr][nc] &gt; dist[r][c] + 1:
+                    dist[nr][nc] = dist[r][c] + 1
+                    q.append((nr, nc))
+    return dist
+
+print(update_matrix_nearest_zero([[0, 0, 0], [0, 1, 0], [1, 1, 1]]))
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function updateMatrixNearestZero(mat) {
+  const rows = mat.length, cols = mat[0].length;
+  const dist = Array.from({ length: rows }, () =&gt; new Array(cols).fill(Infinity));
+  const q = [];
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (mat[r][c] === 0) {
+        dist[r][c] = 0;
+        q.push([r, c]);
+      }
+    }
+  }
+  const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+  while (q.length) {
+    const [r, c] = q.shift();
+    for (const [dr, dc] of dirs) {
+      const nr = r + dr, nc = c + dc;
+      if (nr &gt;= 0 &amp;&amp; nr &lt; rows &amp;&amp; nc &gt;= 0 &amp;&amp; nc &lt; cols) {
+        if (dist[nr][nc] &gt; dist[r][c] + 1) {
+          dist[nr][nc] = dist[r][c] + 1;
+          q.push([nr, nc]);
+        }
+      }
+    }
+  }
+  return dist;
+}
+
+console.log(updateMatrixNearestZero([[0, 0, 0], [0, 1, 0], [1, 1, 1]]));
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Capture Regions on Board (Surrounded Regions)</b>
+<p class="worked-q">Given an N x M board with &#x27;X&#x27; and &#x27;O&#x27;, capture all regions surrounded by &#x27;X&#x27; by converting &#x27;O&#x27; to &#x27;X&#x27;.</p>
+<p><strong>Approach:</strong> Reverse thinking: flood fill from boundary 'O' cells marking safe cells. Turn unvisited 'O' to 'X'.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-good">O(N * M)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def solve_surrounded_regions(board):
+    if not board: return board
+    rows, cols = len(board), len(board[0])
+    def dfs(r, c):
+        if r &lt; 0 or r &gt;= rows or c &lt; 0 or c &gt;= cols or board[r][c] != &#x27;O&#x27;:
+            return
+        board[r][c] = &#x27;#&#x27;
+        for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            dfs(r + dr, c + dc)
+
+    for r in range(rows):
+        if board[r][0] == &#x27;O&#x27;: dfs(r, 0)
+        if board[r][cols - 1] == &#x27;O&#x27;: dfs(r, cols - 1)
+    for c in range(cols):
+        if board[0][c] == &#x27;O&#x27;: dfs(0, c)
+        if board[rows - 1][c] == &#x27;O&#x27;: dfs(rows - 1, c)
+
+    for r in range(rows):
+        for c in range(cols):
+            if board[r][c] == &#x27;O&#x27;: board[r][c] = &#x27;X&#x27;
+            elif board[r][c] == &#x27;#&#x27;: board[r][c] = &#x27;O&#x27;
+    return board
+
+b = [[&#x27;X&#x27;, &#x27;X&#x27;, &#x27;X&#x27;, &#x27;X&#x27;],
+     [&#x27;X&#x27;, &#x27;O&#x27;, &#x27;O&#x27;, &#x27;X&#x27;],
+     [&#x27;X&#x27;, &#x27;X&#x27;, &#x27;O&#x27;, &#x27;X&#x27;],
+     [&#x27;X&#x27;, &#x27;O&#x27;, &#x27;X&#x27;, &#x27;X&#x27;]]
+print(solve_surrounded_regions(b))
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function solveSurroundedRegions(board) {
+  if (!board.length) return board;
+  const rows = board.length, cols = board[0].length;
+  function dfs(r, c) {
+    if (r &lt; 0 || r &gt;= rows || c &lt; 0 || c &gt;= cols || board[r][c] !== &#x27;O&#x27;) return;
+    board[r][c] = &#x27;#&#x27;;
+    dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
+  }
+  for (let r = 0; r &lt; rows; r++) {
+    if (board[r][0] === &#x27;O&#x27;) dfs(r, 0);
+    if (board[r][cols - 1] === &#x27;O&#x27;) dfs(r, cols - 1);
+  }
+  for (let c = 0; c &lt; cols; c++) {
+    if (board[0][c] === &#x27;O&#x27;) dfs(0, c);
+    if (board[rows - 1][c] === &#x27;O&#x27;) dfs(rows - 1, c);
+  }
+  for (let r = 0; r &lt; rows; r++) {
+    for (let c = 0; c &lt; cols; c++) {
+      if (board[r][c] === &#x27;O&#x27;) board[r][c] = &#x27;X&#x27;;
+      else if (board[r][c] === &#x27;#&#x27;) board[r][c] = &#x27;O&#x27;;
+    }
+  }
+  return board;
+}
+
+const b = [
+  [&#x27;X&#x27;, &#x27;X&#x27;, &#x27;X&#x27;, &#x27;X&#x27;],
+  [&#x27;X&#x27;, &#x27;O&#x27;, &#x27;O&#x27;, &#x27;X&#x27;],
+  [&#x27;X&#x27;, &#x27;X&#x27;, &#x27;O&#x27;, &#x27;X&#x27;],
+  [&#x27;X&#x27;, &#x27;O&#x27;, &#x27;X&#x27;, &#x27;X&#x27;]
+];
+console.log(solveSurroundedRegions(b));
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Knight On Chess Board</b>
+<p class="worked-q">Find the minimum number of steps for a knight on an N x M chessboard to move from (x1, y1) to (x2, y2). Return -1 if unreachable.</p>
+<p><strong>Approach:</strong> BFS with standard 8 knight moves. First visit to target gives shortest path in unweighted graph.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-good">O(N * M)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">from collections import deque
+
+def knight_min_moves(N, M, x1, y1, x2, y2):
+    if (x1, y1) == (x2, y2): return 0
+    visited = [[False] * (M + 1) for _ in range(N + 1)]
+    q = deque([(x1, y1, 0)])
+    visited[x1][y1] = True
+    moves = [(2, 1), (2, -1), (-2, 1), (-2, -1),
+             (1, 2), (1, -2), (-1, 2), (-1, -2)]
+    while q:
+        r, c, d = q.popleft()
+        if (r, c) == (x2, y2):
+            return d
+        for dr, dc in moves:
+            nr, nc = r + dr, c + dc
+            if 1 &lt;= nr &lt;= N and 1 &lt;= nc &lt;= M and not visited[nr][nc]:
+                visited[nr][nc] = True
+                q.append((nr, nc, d + 1))
+    return -1
+
+print(knight_min_moves(8, 8, 1, 1, 8, 8))  # 6
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function knightMinMoves(N, M, x1, y1, x2, y2) {
+  if (x1 === x2 &amp;&amp; y1 === y2) return 0;
+  const visited = Array.from({ length: N + 1 }, () =&gt; new Array(M + 1).fill(false));
+  const q = [[x1, y1, 0]];
+  visited[x1][y1] = true;
+  const moves = [
+    [2, 1], [2, -1], [-2, 1], [-2, -1],
+    [1, 2], [1, -2], [-1, 2], [-1, -2]
+  ];
+  while (q.length) {
+    const [r, c, d] = q.shift();
+    if (r === x2 &amp;&amp; c === y2) return d;
+    for (const [dr, dc] of moves) {
+      const nr = r + dr, nc = c + dc;
+      if (nr &gt;= 1 &amp;&amp; nr &lt;= N &amp;&amp; nc &gt;= 1 &amp;&amp; nc &lt;= M &amp;&amp; !visited[nr][nc]) {
+        visited[nr][nc] = true;
+        q.push([nr, nc, d + 1]);
+      }
+    }
+  }
+  return -1;
+}
+
+console.log(knightMinMoves(8, 8, 1, 1, 8, 8)); // 6
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 43 -->
 <h3 id="42-interview-problems">Interview Problems<a class="headerlink" href="#42-interview-problems" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
@@ -20921,6 +23833,209 @@ console.log(validPath(5, 5, 1, [2], [2])); // YES
 </div>
 </div>
 <hr />
+
+<h4>Additional problems from the notes</h4>
+<div class="worked">
+<b>1. Amazing Subarrays</b>
+<p class="worked-q">Given a string S, return the number of substrings starting with a vowel (A, E, I, O, U, a, e, i, o, u) modulo 10,003.</p>
+<p><strong>Approach:</strong> If character <code>S[i]</code> is a vowel, it can begin <code>n - i</code> substrings. Sum over all vowels modulo 10,003.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def amazing_subarrays(S, MOD=10003):
+    vowels = set(&#x27;aeiouAEIOU&#x27;)
+    n = len(S)
+    count = 0
+    for i, ch in enumerate(S):
+        if ch in vowels:
+            count = (count + (n - i)) % MOD
+    return count
+
+print(amazing_subarrays(&#x27;ABEC&#x27;))  # 6 (&#x27;A&#x27;, &#x27;AB&#x27;, &#x27;ABE&#x27;, &#x27;ABEC&#x27;, &#x27;E&#x27;, &#x27;EC&#x27;)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function amazingSubarrays(S, MOD = 10003) {
+  const vowels = new Set(&#x27;aeiouAEIOU&#x27;);
+  const n = S.length;
+  let count = 0;
+  for (let i = 0; i &lt; n; i++) {
+    if (vowels.has(S[i])) {
+      count = (count + (n - i)) % MOD;
+    }
+  }
+  return count;
+}
+
+console.log(amazingSubarrays(&#x27;ABEC&#x27;)); // 6
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>2. Sum of All Submatrices (MathLand and Sum)</b>
+<p class="worked-q">Given an N x M matrix of integers, find the sum of all possible submatrices.</p>
+<p><strong>Approach:</strong> Contribution technique: each element contributes <code>(i + 1) * (j + 1) * (N - i) * (M - j) * A[i][j]</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N * M)</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def sum_of_all_submatrices(A):
+    n, m = len(A), len(A[0])
+    total = 0
+    for i in range(n):
+        for j in range(m):
+            contrib = (i + 1) * (j + 1) * (n - i) * (m - j)
+            total += contrib * A[i][j]
+    return total
+
+print(sum_of_all_submatrices([[1, 1], [1, 1]]))  # 16
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function sumOfAllSubmatrices(A) {
+  const n = A.length, m = A[0].length;
+  let total = 0;
+  for (let i = 0; i &lt; n; i++) {
+    for (let j = 0; j &lt; m; j++) {
+      const contrib = (i + 1) * (j + 1) * (n - i) * (m - j);
+      total += contrib * A[i][j];
+    }
+  }
+  return total;
+}
+
+console.log(sumOfAllSubmatrices([[1, 1], [1, 1]])); // 16
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>3. Daily Temperatures (Warmer and Lower Days)</b>
+<p class="worked-q">Given daily temperatures, find the number of days you have to wait after the i-th day to experience a warmer (or lower) temperature. If no such day exists, output 0.</p>
+<p><strong>Approach:</strong> Monotonic stack storing day indices. Resolve waiting days when a warmer temperature is encountered.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def daily_temperatures(temperatures):
+    n = len(temperatures)
+    ans = [0] * n
+    stack = []
+    for i, t in enumerate(temperatures):
+        while stack and temperatures[stack[-1]] &lt; t:
+            prev_idx = stack.pop()
+            ans[prev_idx] = i - prev_idx
+        stack.append(i)
+    return ans
+
+print(daily_temperatures([73, 74, 75, 71, 69, 72, 76, 73]))  # [1, 1, 4, 2, 1, 1, 0, 0]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function dailyTemperatures(temperatures) {
+  const n = temperatures.length;
+  const ans = new Array(n).fill(0);
+  const stack = [];
+  for (let i = 0; i &lt; n; i++) {
+    while (stack.length &amp;&amp; temperatures[stack[stack.length - 1]] &lt; temperatures[i]) {
+      const prevIdx = stack.pop();
+      ans[prevIdx] = i - prevIdx;
+    }
+    stack.push(i);
+  }
+  return ans;
+}
+
+console.log(dailyTemperatures([73, 74, 75, 71, 69, 72, 76, 73])); // [1, 1, 4, 2, 1, 1, 0, 0]
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>4. Banana Eating Competition (Koko Eating Bananas)</b>
+<p class="worked-q">N piles of bananas with H hours to eat all. Find minimum integer eating speed K (bananas/hr) to eat all piles within H hours.</p>
+<p><strong>Approach:</strong> Binary search on answer speed range <code>[1, max(piles)]</code>. Feasibility test sums ceiling division hours.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N log(max_pile))</code>, Space <code class="big-o o-great">O(1)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def min_eating_speed(piles, H):
+    def can_eat(speed):
+        return sum((p + speed - 1) // speed for p in piles) &lt;= H
+
+    low, high = 1, max(piles)
+    ans = high
+    while low &lt;= high:
+        mid = (low + high) // 2
+        if can_eat(mid):
+            ans = mid
+            high = mid - 1
+        else:
+            low = mid + 1
+    return ans
+
+print(min_eating_speed([3, 6, 7, 11], 8))  # 4
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function minEatingSpeed(piles, H) {
+  function canEat(speed) {
+    let hours = 0;
+    for (const p of piles) hours += Math.ceil(p / speed);
+    return hours &lt;= H;
+  }
+  let low = 1, high = Math.max(...piles);
+  let ans = high;
+  while (low &lt;= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (canEat(mid)) {
+      ans = mid;
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return ans;
+}
+
+console.log(minEatingSpeed([3, 6, 7, 11], 8)); // 4
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>5. Minimum Bracket Reversals (Compiler Error)</b>
+<p class="worked-q">Given a bracket string of &#x27;{&#x27; and &#x27;}&#x27;, find minimum bracket reversals to make it balanced, or -1 if impossible.</p>
+<p><strong>Approach:</strong> Stack cancellation of balanced pairs. Reversals for leftover unmatched brackets: <code>ceil(open/2) + ceil(close/2)</code>.</p>
+<p><strong>Complexity:</strong> Time <code class="big-o o-good">O(N)</code>, Space <code class="big-o o-good">O(N)</code>.</p>
+<div class="code-tabs" data-label="Solution">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">def min_bracket_reversals(s):
+    if len(s) % 2 != 0: return -1
+    stack = []
+    for ch in s:
+        if ch == &#x27;{&#x27;:
+            stack.append(ch)
+        else:
+            if stack and stack[-1] == &#x27;{&#x27;:
+                stack.pop()
+            else:
+                stack.append(ch)
+
+    close_count = sum(1 for ch in stack if ch == &#x27;}&#x27;)
+    open_count = len(stack) - close_count
+    return (open_count + 1) // 2 + (close_count + 1) // 2
+
+print(min_bracket_reversals(&#x27;}{{}}{{{&#x27;))  # 3
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">function minBracketReversals(s) {
+  if (s.length % 2 !== 0) return -1;
+  const stack = [];
+  for (let i = 0; i &lt; s.length; i++) {
+    const ch = s[i];
+    if (ch === &#x27;{&#x27;) {
+      stack.push(ch);
+    } else {
+      if (stack.length &amp;&amp; stack[stack.length - 1] === &#x27;{&#x27;) {
+        stack.pop();
+      } else {
+        stack.push(ch);
+      }
+    }
+  }
+  let closeCount = 0;
+  for (const ch of stack) if (ch === &#x27;}&#x27;) closeCount++;
+  const openCount = stack.length - closeCount;
+  return Math.ceil(openCount / 2) + Math.ceil(closeCount / 2);
+}
+
+console.log(minBracketReversals(&#x27;}{{}}{{{&#x27;)); // 3
+</code></pre></div>
+</div>
+</div>
+
+
 <!-- ============================================================ 44 -->
 <h2 id="43-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink" href="#43-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
 <p>Most of interview problem-solving is <strong>recognition</strong>: noticing which of about thirty signals is in the problem statement. This table is the index to the whole course.</p>
