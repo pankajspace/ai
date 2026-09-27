@@ -56,26 +56,27 @@
 <li><a href="#19-multiple-approaches-pascals-triangle-and-ncr-mod-m">Multiple Approaches: Pascal's Triangle and nCr mod M</a></li>
 <li><a href="#20-recursion">Recursion</a></li>
 <li><a href="#21-backtracking">Backtracking</a></li>
-<li><a href="#22-hashing">Hashing</a></li>
-<li><a href="#23-sorting-beyond-the-library-call">Sorting Beyond the Library Call</a></li>
-<li><a href="#24-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers</a></li>
-<li><a href="#25-multiple-approaches-pair-with-a-given-sum">Multiple Approaches: Pair With a Given Sum</a></li>
-<li><a href="#26-multiple-approaches-the-unique-element-among-pairs">Multiple Approaches: The Unique Element Among Pairs</a></li>
-<li><a href="#27-linked-lists">Linked Lists</a></li>
-<li><a href="#28-stacks">Stacks</a></li>
-<li><a href="#29-queues-and-deques">Queues &amp; Deques</a></li>
-<li><a href="#30-binary-trees">Binary Trees</a></li>
-<li><a href="#31-binary-search-trees">Binary Search Trees</a></li>
-<li><a href="#32-morris-traversal">Morris Traversal</a></li>
-<li><a href="#33-lowest-common-ancestor">Lowest Common Ancestor</a></li>
-<li><a href="#34-heaps">Heaps</a></li>
-<li><a href="#35-greedy-algorithms">Greedy Algorithms</a></li>
-<li><a href="#36-multiple-approaches-connecting-the-ropes">Multiple Approaches: Connecting the Ropes</a></li>
-<li><a href="#37-dynamic-programming">Dynamic Programming</a></li>
-<li><a href="#38-multiple-approaches-target-sum-subset-sum">Multiple Approaches: Target Sum / Subset Sum</a></li>
-<li><a href="#39-multiple-approaches-print-valid-parentheses">Multiple Approaches: Print Valid Parentheses</a></li>
-<li><a href="#40-graphs">Graphs</a></li>
-<li><a href="#41-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+<li><a href="#22-hashing-set">Hashing (Set)</a></li>
+<li><a href="#23-hashing-map">Hashing (Map)</a></li>
+<li><a href="#24-sorting-beyond-the-library-call">Sorting Beyond the Library Call</a></li>
+<li><a href="#25-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers</a></li>
+<li><a href="#26-multiple-approaches-pair-with-a-given-sum">Multiple Approaches: Pair With a Given Sum</a></li>
+<li><a href="#27-multiple-approaches-the-unique-element-among-pairs">Multiple Approaches: The Unique Element Among Pairs</a></li>
+<li><a href="#28-linked-lists">Linked Lists</a></li>
+<li><a href="#29-stacks">Stacks</a></li>
+<li><a href="#30-queues-and-deques">Queues &amp; Deques</a></li>
+<li><a href="#31-binary-trees">Binary Trees</a></li>
+<li><a href="#32-binary-search-trees">Binary Search Trees</a></li>
+<li><a href="#33-morris-traversal">Morris Traversal</a></li>
+<li><a href="#34-lowest-common-ancestor">Lowest Common Ancestor</a></li>
+<li><a href="#35-heaps">Heaps</a></li>
+<li><a href="#36-greedy-algorithms">Greedy Algorithms</a></li>
+<li><a href="#37-multiple-approaches-connecting-the-ropes">Multiple Approaches: Connecting the Ropes</a></li>
+<li><a href="#38-dynamic-programming">Dynamic Programming</a></li>
+<li><a href="#39-multiple-approaches-target-sum-subset-sum">Multiple Approaches: Target Sum / Subset Sum</a></li>
+<li><a href="#40-multiple-approaches-print-valid-parentheses">Multiple Approaches: Print Valid Parentheses</a></li>
+<li><a href="#41-graphs">Graphs</a></li>
+<li><a href="#42-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
 </ol>
 
 <!-- ============================================================ 1 -->
@@ -6291,16 +6292,228 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
 </div>
 
 <!-- ============================================================ 23 -->
-<h3 id="22-hashing">Hashing<a class="headerlink" href="#22-hashing" title="Permanent link">#</a></h3>
+<h3 id="22-hashing-set">Hashing (Set)<a class="headerlink" href="#22-hashing-set" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
-<li><b>get / set / has (average)</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>add / delete / has (average)</b> <code class="big-o o-great">O(1)</code></li>
+<li><b>Worst case</b> <code class="big-o o-good">O(n)</code></li>
+<li><b>Space</b> <code class="big-o o-good">O(n)</code></li>
+<li><b>Direct address table</b> <code>O(1) time, O(M) space</code></li>
+</ul>
+<p>When a problem asks <em>"Have I seen this before?"</em> or <em>"Does a valid pair or complement exist?"</em>, you do not need to store values, counts, or indices. You only need a collection of unique elements with instant membership testing. A <strong>HashSet</strong> provides average <code>O(1)</code> insertion, lookup, and deletion by passing elements through a hash function into buckets, resolving collisions via chaining.</p>
+<div class="analogy">
+<span class="analogy-icon">📋</span>
+<div class="analogy-body"><b>Picture it — a velvet rope and a guest list</b><p>The bouncer at a club holds a clipboard with the names of invitees. When a guest arrives, the bouncer scans the list in one quick glance (<code>has</code>). If the name is already checked in or absent, the bouncer acts immediately. No drinks ordered, seat numbers, or visit counts are recorded — only presence or absence matters.</p></div>
+</div>
+<div class="viz" data-viz="hash-table"></div>
+<div class="callout callout-key">
+<b>HashSet operations:</b>
+<ol>
+<li><code>add(value)</code> — Add the value to the set: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>delete(value)</code> — Delete the value from the set: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>has(value)</code> — Check if the value is present in the set: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>size</code> — Get the count of unique elements in the set: Time Complexity <code class="big-o o-great">O(1)</code>.</li>
+</ol>
+</div>
+<div class="callout callout-tip">
+<p><strong>Check before inserting:</strong> When looking for a pair <code>(x, y)</code> satisfying a condition (like <code>x + y = K</code> or a repeat character), check whether the complement exists in the set <em>before</em> adding the current element. This prevents an element from pairing with itself and guarantees a single <code>O(n)</code> pass.</p>
+</div>
+<div class="worked">
+<b>Interview question</b>
+<p class="worked-q">Find the length of the longest substring with no repeated character. <code>"cbaabcfedfgh"</code> &rarr; <code>6</code> (<code>"abcfed"</code>).</p>
+<p>Use a sliding window maintained by a hash set. Extend the right pointer; whenever <code>s[right]</code> is already in the set, evict characters from <code>s[left]</code> and increment <code>left</code> until the duplicate is removed. The set always represents the unique characters in the current window.</p>
+<div class="code-tabs" data-label="Answer — longest substring without repeating characters">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def length_of_longest_substring(s):
+    window = set()
+    left = best = 0
+    for right, ch in enumerate(s):
+        while ch in window:          # evict until ch is unique again
+            window.remove(s[left])
+            left += 1
+        window.add(ch)
+        best = max(best, right - left + 1)
+    return best
+
+
+print(length_of_longest_substring("cbaabcfedfgh"))  # 6
+print(length_of_longest_substring("abcabcbb"))      # 3
+print(length_of_longest_substring("pwwkew"))        # 3
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function lengthOfLongestSubstring(s) {
+  const window = new Set();
+  let start = 0;
+  let best = 0;
+  for (let end = 0; end &lt; s.length; end++) {
+    while (window.has(s[end])) {    // evict until s[end] is unique again
+      window.delete(s[start]);
+      start++;
+    }
+    window.add(s[end]);
+    best = Math.max(best, end - start + 1);
+  }
+  return best;
+}
+
+console.log(lengthOfLongestSubstring("cbaabcfedfgh")); // 6
+console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
+console.log(lengthOfLongestSubstring("pwwkew"));       // 3
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>Interview question</b>
+<p class="worked-q">Given an array and target <code>K</code>, determine if there exist two elements at distinct indices such that <code>A[i] + A[j] = K</code> (Good Pair).</p>
+<p>For each element <code>x</code>, its complement is <code>K - x</code>. Maintain a set of numbers visited so far. Check <code>seen.has(K - x)</code> before inserting <code>x</code>; if found, return <code>1</code>. If the loop finishes, return <code>0</code>.</p>
+<div class="code-tabs" data-label="Answer — pair with sum K exists (good pair)">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def good_pair(arr, K):
+    seen = set()
+    for num in arr:
+        complement = K - num
+        if complement in seen:
+            return 1
+        seen.add(num)
+    return 0
+
+
+print(good_pair([1, 2, 3, 4], 7))   # 1
+print(good_pair([1, 2, 4, 3], 2))   # 0
+print(good_pair([1, 9, 3, 4], 4))   # 1
+print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function goodPair(arr, K) {
+  let set = new Set();
+
+  for (let elem of arr) {
+    let complement = K - elem;
+    if (set.has(complement)) {
+      return 1; // good pair found
+    }
+    set.add(elem);
+  }
+
+  return 0; // no good pair found
+}
+
+console.log(goodPair([1, 2, 3, 4], 7)); // 1
+console.log(goodPair([1, 2, 4, 3], 2)); // 0
+console.log(goodPair([1, 9, 3, 4], 4)); // 1
+console.log(goodPair([-2, 1, 5, 8], 3)); // 1 (pair -2, 5)
+</code></pre></div>
+</div>
+</div>
+<div class="worked">
+<b>Interview question</b>
+<p class="worked-q">Check if there exists a non-empty contiguous subarray whose sum is 0.</p>
+<p>The sum of subarray <code>A[i..j]</code> equals prefix sum <code>P[j] - P[i-1]</code>. If <code>P[j] == P[i-1]</code>, or if any <code>P[j] == 0</code>, the subarray sums to 0. Carry forward the running cumulative sum in a Set. If the current sum is 0 or already exists in the set, a zero-sum subarray is found.</p>
+<div class="code-tabs" data-label="Answer — check if subarray with sum 0 exists">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def subarray_sum_zero(arr):
+    seen_sums = set()
+    curr_sum = 0
+    for num in arr:
+        curr_sum += num
+        if curr_sum == 0 or curr_sum in seen_sums:
+            return True
+        seen_sums.add(curr_sum)
+    return False
+
+
+print(subarray_sum_zero([1, 2, 3, 4, 5]))                    # False
+print(subarray_sum_zero([4, -1, 1]))                         # True
+print(subarray_sum_zero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])) # True
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function subarraySumZero(arr) {
+  let set = new Set();
+  let sum = 0;
+
+  for (const num of arr) {
+    sum += num;
+
+    if (sum === 0 || set.has(sum)) {
+      return true;
+    }
+
+    set.add(sum);
+  }
+
+  return false;
+}
+
+console.log(subarraySumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // true
+console.log(subarraySumZero([1, 2, 3, 4, 5])); // false
+</code></pre></div>
+</div>
+</div>
+<h4>More problems from the notes — Set</h4>
+<ol>
+<li><b>Count of distinct elements</b> &mdash; Insert all elements into a Set; return <code>set.size</code> or <code>len(set)</code>. Takes <code>O(n)</code> time, <code>O(n)</code> space.</li>
+<li><b>Element-exists queries with a Direct Address Table</b> &mdash; When the maximum element <code>M</code> is small, allocate an array of size <code>M + 1</code> filled with <code>0</code>. Set <code>dat[x] = 1</code> for each element in <code>arr</code>. Each query is an <code>O(1)</code> index lookup. When values are unbounded or negative, use a Set instead.</li>
+</ol>
+<div class="code-tabs" data-label="Problem — Count of distinct elements">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def count_distinct(arr):
+    # Python built-in set automatically stores unique elements
+    return len(set(arr))
+
+
+print(count_distinct([1, 2, 2, 3, 4, 4, 5]))  # 5
+print(count_distinct([2, 6, 3, 8, 2, 8, 2, 8, 10, 6]))  # 5
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function countDistinct(arr) {
+  const set = new Set(arr);
+  return set.size;
+}
+
+const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6];
+console.log(countDistinct(arr)); // 5
+console.log(countDistinct([1, 2, 2, 3, 4, 4, 5])); // 5
+</code></pre></div>
+</div>
+<div class="code-tabs" data-label="Problem — Element-exists queries with a Direct Address Table">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def check_elements_queries(arr, queries):
+    elements_set = set(arr)
+    return [q in elements_set for q in queries]
+
+
+print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function checkElementsDAT(arr, queries) {
+  let maxVal = -1;
+  for (let i = 0; i &lt; arr.length; i++) {
+    if (arr[i] &gt; maxVal) maxVal = arr[i];
+  }
+
+  const dat = new Array(maxVal + 1).fill(0);
+  for (let i = 0; i &lt; arr.length; i++) {
+    dat[arr[i]] = 1;
+  }
+
+  return queries.map((q) =&gt; (q &lt;= maxVal &amp;&amp; dat[q] === 1));
+}
+
+console.log(checkElementsDAT([2, 4, 11, 15, 6, 8, 14, 9], [4, 10, 17, 14])); // [true, false, false, true]
+</code></pre></div>
+</div>
+
+<!-- ============================================================ 24 -->
+<h3 id="23-hashing-map">Hashing (Map)<a class="headerlink" href="#23-hashing-map" title="Permanent link">#</a></h3>
+<ul class="meta-strip">
+<li><b>get / set / delete (average)</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Worst case</b> <code class="big-o o-good">O(n)</code></li>
 <li><b>Load factor</b> <code>λ = n / buckets</code></li>
+<li><b>Rehash threshold</b> <code>λ &gt; 2.0</code></li>
 </ul>
-<p>A <strong>direct address table</strong> stores value <code>v</code> at index <code>v</code> — instant, but a value of <code>10^9</code> needs a billion slots. Hashing keeps a small, fixed number of buckets and maps any key into range with a hash function, typically <code>key % size</code>. With 10 buckets, <code>21 → 1</code>, <code>42 → 2</code>, <code>37 → 7</code>… and <code>41 → 1</code> too — a <strong>collision</strong>. The notes resolve collisions with <strong>chaining</strong>: each bucket holds a linked list.</p>
+<p>When you need to remember <em>more</em> than just existence — such as frequency of occurrences, earliest index seen, latest index seen, or key-to-value associations — reach for a <strong>HashMap</strong>. A hash map maps keys to values through an array of buckets, resolving collisions via chaining. When the load factor <code>λ = n / buckets</code> exceeds a threshold, it automatically <strong>rehashes</strong>: doubling bucket capacity and re-distributing keys to preserve <code>O(1)</code> average lookup time.</p>
 <div class="analogy">
 <span class="analogy-icon">🧥</span>
-<div class="analogy-body"><b>Picture it — a coat check with ten hooks</b><p>The attendant hangs your coat on hook <code>ticket % 10</code>. Two guests can share a hook — the coats just hang one behind the other. Finding your coat means going to one hook and flipping through a few coats, not searching the whole room. If every hook gets crowded, the attendant installs twice as many hooks and re-hangs everything.</p></div>
+<div class="analogy-body"><b>Picture it — a coat check with ten hooks</b><p>The attendant hangs your coat on hook <code>ticket % 10</code>. Two guests can share a hook — the coats just hang one behind the other. Handing in your ticket (key) gets your specific coat (value). If every hook gets crowded, the attendant installs twice as many hooks and re-hangs everything.</p></div>
 </div>
 <div class="ascii">index | chain                       load factor λ = elements / buckets
 ------+---------------------           = 11 / 10 = 1.1
@@ -6312,6 +6525,16 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
   9   | 99 → 59</div>
 <div class="viz" data-viz="rehash"></div>
 <p>The average chain length <strong>is</strong> the load factor. Keep <code>λ</code> below a constant and each lookup scans a constant number of nodes, so <code>get</code> and <code>put</code> stay <code>O(1)</code> on average. Rehashing costs <code>O(n)</code>, but because the table doubles it happens exponentially rarely — the same amortised argument as a growing array.</p>
+<div class="callout callout-key">
+<b>HashMap operations:</b>
+<ol>
+<li><code>set(key, value)</code> / <code>put(key, value)</code> — Set the value for the key: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>get(key)</code> — Get the value for the key: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>delete(key)</code> — Delete the key-value pair: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>has(key)</code> — Check if the key is present in the hashmap: Time Complexity <code class="big-o o-great">O(1)</code> on average, <code class="big-o o-good">O(n)</code> in worst case.</li>
+<li><code>size</code> — Get the size (count of entries) of the hashmap: Time Complexity <code class="big-o o-great">O(1)</code>.</li>
+</ol>
+</div>
 <div class="code-tabs" data-label="A hash map from scratch — array of chains with rehashing">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 class HashMap:
@@ -6403,7 +6626,7 @@ console.log(m.get("plum"), m.bucket.length); // 5 8
 <div class="viz" data-viz="prefix-hash"></div>
 <div class="worked">
 <b>Interview question</b>
-<p class="worked-q">Count the subarrays whose sum is exactly <code>K</code>. Negatives allowed. <code>[2, 3, 9, -4, 1, 5, 6, 2, 5]</code>, <code>K = 11</code> → <code>3</code> (<code>[2,3,9,-4,1]</code>, <code>[9,-4,1,5]</code>, <code>[5,6]</code>).</p>
+<p class="worked-q">Count the subarrays whose sum is exactly <code>K</code>. Negatives allowed. <code>[2, 3, 9, -4, 1, 5, 6, 2, 5]</code>, <code>K = 11</code> &rarr; <code>3</code> (<code>[2,3,9,-4,1]</code>, <code>[9,-4,1,5]</code>, <code>[5,6]</code>).</p>
 <p>Walk once, keeping the running sum. At each index add <code>freq[sum - K]</code> — the number of earlier prefixes that would make the gap exactly <code>K</code> — then record the current sum. Storing <strong>counts</strong> rather than a set matters: with zeros or negatives, the same prefix sum can occur many times, and each occurrence starts a different subarray.</p>
 <div class="code-tabs" data-label="Answer — count subarrays with sum K">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
@@ -6419,6 +6642,7 @@ def count_subarrays_with_sum_k(arr, k):
 
 
 print(count_subarrays_with_sum_k([2, 3, 9, -4, 1, 5, 6, 2, 5], 11))  # 3
+print(count_subarrays_with_sum_k([1, 0, 1], 1))                     # 4
 print(count_subarrays_with_sum_k([0, 0, 0], 0))                     # 6
 </code></pre></div>
 <div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
@@ -6435,13 +6659,14 @@ function countSubarraysWithSumK(arr, k) {
 }
 
 console.log(countSubarraysWithSumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // 3
+console.log(countSubarraysWithSumK([1, 0, 1], 1));                    // 4
 console.log(countSubarraysWithSumK([0, 0, 0], 0));                    // 6
 </code></pre></div>
 </div>
 </div>
 <div class="worked">
 <b>Interview question</b>
-<p class="worked-q">Return the length of the longest subarray whose sum is 0. <code>[15, -2, 2, -8, 1, 7, 10, 23]</code> → <code>5</code> (<code>[-2, 2, -8, 1, 7]</code>).</p>
+<p class="worked-q">Return the length of the longest subarray whose sum is 0. <code>[15, -2, 2, -8, 1, 7, 10, 23]</code> &rarr; <code>5</code> (<code>[-2, 2, -8, 1, 7]</code>).</p>
 <p>Two equal prefix sums mean everything between them cancels. For the <strong>longest</strong> gap, store only the <strong>first</strong> index at which each prefix sum appears, and never overwrite it. Seed <code>{0: -1}</code> so a zero-sum prefix counts from index 0.</p>
 <div class="code-tabs" data-label="Answer — longest zero-sum subarray">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
@@ -6479,245 +6704,19 @@ console.log(longestSubarrayZeroSum([15, -2, 2, -8, 1, 7, 10, 23])); // 5
 </div>
 <div class="worked">
 <b>Interview question</b>
-<p class="worked-q">Find the length of the longest substring with no repeated character. <code>"cbaabcfedfgh"</code> → <code>6</code> (<code>"abcfed"</code>).</p>
-<p>A hash <strong>set</strong> holds the characters in the current window. Extend the right edge; while the new character is already in the set, evict characters from the left. The window is always duplicate-free, and each character enters and leaves once — <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Answer — longest substring without repeating characters">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def length_of_longest_substring(s):
-    window = set()
-    left = best = 0
-    for right, ch in enumerate(s):
-        while ch in window:          # evict until ch is unique again
-            window.remove(s[left])
-            left += 1
-        window.add(ch)
-        best = max(best, right - left + 1)
-    return best
-
-
-print(length_of_longest_substring("cbaabcfedfgh"))  # 6
-print(length_of_longest_substring("abcabcbb"))      # 3
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-function lengthOfLongestSubstring(s) {
-  const window = new Set();
-  let start = 0;
-  let best = 0;
-  for (let end = 0; end &lt; s.length; end++) {
-    while (window.has(s[end])) {    // evict until s[end] is unique again
-      window.delete(s[start]);
-      start++;
-    }
-    window.add(s[end]);
-    best = Math.max(best, end - start + 1);
-  }
-  return best;
-}
-
-console.log(lengthOfLongestSubstring("cbaabcfedfgh")); // 6
-console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
-</code></pre></div>
-</div>
-<p><strong>From the notes — hashing problems</strong></p>
-<table>
-<thead><tr><th>Problem</th><th>Structure</th><th>Complexity</th></tr></thead>
-<tbody>
-<tr><td>Count distinct elements</td><td>set</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Pair with sum K exists (good pair)</td><td>set of complements</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Subarray with sum 0 exists</td><td>set of prefix sums</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Longest substring without repeats</td><td>set + two pointers</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Frequency queries; common elements of two arrays</td><td>map of counts</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Count pairs with sum K</td><td>map of counts</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Count subarrays with sum 0 / sum K; subarray with sum K exists</td><td>map of prefix counts</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Longest zero-sum subarray</td><td>map of first prefix index</td><td><code class="big-o o-good">O(N)</code></td></tr>
-<tr><td>Element exists in Q queries</td><td>direct address table</td><td><code class="big-o o-good">O(N + Q)</code></td></tr>
-<tr><td>Implement a hash map</td><td>array of chains + rehash</td><td><code class="big-o o-great">O(1)</code> average</td></tr>
-</tbody>
-</table>
-</div>
-<h4 id="more-problems-from-the-notes">More problems from the notes<a class="headerlink" href="#more-problems-from-the-notes" title="Permanent link">#</a></h4>
-<p>Every remaining problem from the revision notes for this topic, each with a solution in Python and JavaScript.</p>
-<div class="worked">
-<b>Problem — Count distinct elements</b>
-<p class="worked-q">Return the number of distinct values in an array.</p>
-<p>Insert everything into a set; its size is the answer. <code>O(n)</code> average.</p>
-<div class="code-tabs" data-label="Solution">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def count_distinct(arr):
-    # Python built-in set automatically stores unique elements
-    return len(set(arr))
-
-print(count_distinct([1, 2, 2, 3, 4, 4, 5]))  # 5
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-function countDistinct(arr) {
-  const set = new Set(arr);
-  return set.size;
-}
-const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6]
-console.log(countDistinct(arr)); // 5
-</code></pre></div>
-</div>
-</div>
-<div class="worked">
-<b>Problem — Good pair — does a pair with sum K exist?</b>
-<p class="worked-q">Is there a pair <code>i ≠ j</code> with <code>A[i] + A[j] = K</code>?</p>
-<p>Walk once; before inserting <code>x</code>, check whether <code>K - x</code> is already in the set. Checking before inserting stops an element pairing with itself. <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Solution">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def good_pair(arr, K):
-    seen = set()
-    for num in arr:
-        complement = K - num
-        if complement in seen:
-            return 1
-        seen.add(num)
-    return 0
-
-print(good_pair([1, 2, 3, 4], 7))   # 1
-print(good_pair([1, 2, 4, 3], 2))   # 0
-print(good_pair([1, 9, 3, 4], 4))   # 1
-print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-function goodPair(arr, K) {
-    let set = new Set();
-
-    for (let elem of arr) {
-        let complement = K - elem;
-        if (set.has(complement)) {
-            return 1; // good pair found
-        }
-        set.add(elem);
-    }
-
-    return 0; // no good pair found
-}
-
-console.log(goodPair([1, 2, 3, 4], 7)); // 1
-console.log(goodPair([1, 2, 4, 3], 2)); // 0
-console.log(goodPair([1, 9, 3, 4], 4)); // 1
-console.log(goodPair([-2, 1, 5, 8], 3)); // 1 (pair -2, 5)
-</code></pre></div>
-</div>
-</div>
-<div class="worked">
-<b>Problem — Does a zero-sum subarray exist?</b>
-<p class="worked-q">Is there a non-empty subarray whose sum is 0?</p>
-<p>Two equal prefix sums mean the elements between them sum to 0. Keep prefix sums in a set (plus the empty prefix 0) and stop at the first repeat. <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Solution">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def subarray_sum_k(arr, K):
-    seen_sums = set()
-    curr_sum = K
-
-    for num in arr:
-        curr_sum += num
-        # If prefix sum is K or was seen before, subarray sum is K
-        if curr_sum == K or curr_sum in seen_sums:
-            return 1
-        seen_sums.add(curr_sum)
-
-    return 0
-
-print(subarray_sum_k([1, 2, 3, 4, 5], 0))  # 0
-print(subarray_sum_k([4, -1, 1], 0))       # 1
-print(subarray_sum_k([1, -1], 0))          # 1
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-function subarraySumZero(arr) {
-  // Create a Set to store the prefix sums encountered so far.
-  let set = new Set();
-
-  // Initialize the cumulative sum to K.
-  let sum = 0;
-
-  // Iterate through each number in the input array.
-  for (const num of arr) {
-    // Add the current number to the cumulative sum.
-    // We call this Carry Forward technique.
-    sum += num;
-
-    if (sum === 0 || set.has(sum)) {
-      // Found a subarray with sum 0.
-      return true;
-    }
-
-    // Add the current cumulative sum to the set for future checks.
-    set.add(sum);
-  }
-
-  // If the loop finishes without finding a subarray with sum 0, return false.
-  return false;
-}
-
-console.log(subarraySumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // true
-
-console.log(subarraySumZero([1, 2, 3, 4, 5])); // false
-
-// We iterate through the array once. Set operations (add, has) are O(1) on average.
-// In the worst case, the set will store n distinct prefix sums.
-</code></pre></div>
-</div>
-</div>
-<div class="worked">
-<b>Problem — Frequency queries</b>
-<p class="worked-q">Given an array and a list of queries, return how many times each queried value occurs.</p>
-<p>Count every value once into a map; each query is then an <code>O(1)</code> lookup. <code>O(n + q)</code>.</p>
-<div class="code-tabs" data-label="Solution">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def frequency(arr, queries):
-    freq_map = {}
-    for num in arr:
-        freq_map[num] = freq_map.get(num, 0) + 1
-
-    return [freq_map.get(q, 0) for q in queries]
-
-print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
-print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-function frequency(arr, queries) {
-  const map = new Map();
-  for (const elem of arr) {
-    if (map.has(elem)) {
-      map.set(elem, map.get(elem) + 1);
-    } else {
-      map.set(elem, 1);
-    }
-  }
-
-  const ans = [];
-  for (const query of queries) {
-    if (map.has(query)) {
-      ans.push(map.get(query));
-    } else {
-      ans.push(0);
-    }
-  }
-
-  return ans;
-}
-console.log(frequency([2, 6, 3, 8, 2, 8, 2, 8, 10, 6], [2, 8, 3, 5])); // [3, 3, 1, 0]
-</code></pre></div>
-</div>
-</div>
-<div class="worked">
-<b>Problem — Count pairs with sum K</b>
 <p class="worked-q">Count the pairs <code>i &lt; j</code> with <code>A[i] + A[j] = K</code>.</p>
-<p>For each <code>x</code>, every earlier occurrence of <code>K - x</code> forms a pair: add <code>freq[K - x]</code>, then record <code>x</code>. <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Solution">
+<p>For each element <code>x</code>, every earlier occurrence of <code>K - x</code> forms a pair: add <code>freq[K - x]</code> to your total, then increment <code>freq[x]</code>. Storing counts in a hash map allows duplicates to be accounted for in a single pass.</p>
+<div class="code-tabs" data-label="Answer — count pairs with sum K">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 def count_pairs_sum(arr, k):
     freq = dict()
     count = 0
-
     for num in arr:
         complement = k - num
         count += freq.get(complement, 0)
         freq[num] = freq.get(num, 0) + 1
-
     return count
+
 
 print(count_pairs_sum([1, 2, 3, 2, 1], 3))  # 4
 print(count_pairs_sum([1, 1, 1], 2))        # 3
@@ -6736,32 +6735,60 @@ function countPairsSum(arr, k) {
       count += map.get(need);
     }
 
-    if (map.has(elem)) {
-      map.set(elem, map.get(elem) + 1n);
-    } else {
-      map.set(elem, 1n);
-    }
-
-    // Alternatively, we could use the following line to avoid the if/else:
-    // map.set(elem, (map.get(elem) || 0n) + 1n);
+    map.set(elem, (map.get(elem) || 0n) + 1n);
   }
 
   const MOD = 1000_000_007n;
-
-  return Number(count % MOD)
+  return Number(count % MOD);
 }
+
 console.log(countPairsSum([3, 5, 1, 2], 8)); // 1
-console.log(countPairsSum([1, 2, 1, 2], 3)); // 4 // [[1, 2], [2, 1], [1, 2], [2, 1]]
+console.log(countPairsSum([1, 2, 1, 2], 3)); // 4
 </code></pre></div>
 </div>
 </div>
-<div class="worked">
-<b>Problem — Count subarrays with sum 0</b>
-<p class="worked-q">Count the subarrays whose sum is 0.</p>
-<p>Each earlier occurrence of the current prefix sum closes one zero-sum subarray. Keep prefix-sum counts, seeded with <code>{0: 1}</code>. <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Solution">
+<h4>More problems from the notes — Map</h4>
+<ol>
+<li><b>Frequency queries</b> &mdash; Build a frequency map of the array in <code>O(n)</code>; answer <code>Q</code> queries in <code>O(1)</code> each. Total <code>O(n + q)</code>.</li>
+<li><b>Count subarrays with sum 0</b> &mdash; Maintain prefix sum counts seeded with <code>{0: 1}</code>. Add <code>freq[curr_sum]</code> at each step. <code>O(n)</code>.</li>
+<li><b>Check subarray with sum K exists</b> &mdash; Maintain running sum; check if <code>curr_sum == K</code> or <code>map.has(curr_sum - K)</code>. <code>O(n)</code>.</li>
+<li><b>Common elements in 2 arrays</b> &mdash; Count frequencies of the smaller array into a map. Scan the larger array, outputting on positive count and decrementing. <code>O(n + m)</code>.</li>
+<li><b>Minimum distance between equal elements (Shaggy and distances)</b> &mdash; Map storing the last-seen index of each element. When an element repeats, minimize <code>i - last_seen[x]</code>. <code>O(n)</code>.</li>
+</ol>
+<div class="code-tabs" data-label="Problem — Frequency queries">
+<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
+def frequency(arr, queries):
+    freq_map = {}
+    for num in arr:
+        freq_map[num] = freq_map.get(num, 0) + 1
+
+    return [freq_map.get(q, 0) for q in queries]
+
+
+print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
+print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
+</code></pre></div>
+<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
+function frequency(arr, queries) {
+  const map = new Map();
+  for (const elem of arr) {
+    map.set(elem, (map.get(elem) || 0) + 1);
+  }
+
+  const ans = [];
+  for (const query of queries) {
+    ans.push(map.get(query) || 0);
+  }
+  return ans;
+}
+
+console.log(frequency([2, 6, 3, 8, 2, 8, 2, 8, 10, 6], [2, 8, 3, 5])); // [3, 3, 1, 0]
+</code></pre></div>
+</div>
+<div class="code-tabs" data-label="Problem — Count subarrays with sum 0">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 from collections import defaultdict
+
 
 def count_subarrays_with_sum_zero(arr):
     freq = defaultdict(int)
@@ -6776,8 +6803,9 @@ def count_subarrays_with_sum_zero(arr):
 
     return count
 
+
 print(count_subarrays_with_sum_zero([1, -1, -2, 2]))     # 3
-print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 1
+print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 2
 print(count_subarrays_with_sum_zero([0, 0, 0]))          # 6
 </code></pre></div>
 <div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
@@ -6802,17 +6830,12 @@ function countSubarraysWithSumZero(arr) {
 
   return count;
 }
-console.log(countSubarraysWithSumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // 2 // [2, 1, -3], [-3, 4, 3, 1, -2, -3]
 
-console.log(countSubarraysWithSumZero([1, 2, -2, 4, -4])); // 3 // [2, -2], [4, -4], [2, -2, 4, -4]
+console.log(countSubarraysWithSumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // 2
+console.log(countSubarraysWithSumZero([1, 2, -2, 4, -4])); // 3
 </code></pre></div>
 </div>
-</div>
-<div class="worked">
-<b>Problem — Does a subarray with sum K exist?</b>
-<p class="worked-q">Is there a subarray whose sum is exactly <code>K</code>?</p>
-<p>Keep prefix sums in a set; if <code>P - K</code> has been seen, the subarray after it sums to <code>K</code>. <code>O(n)</code>.</p>
-<div class="code-tabs" data-label="Solution">
+<div class="code-tabs" data-label="Problem — Does a subarray with sum K exist?">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 def subarray_sum_k(arr, k):
     seen = {0}
@@ -6826,6 +6849,7 @@ def subarray_sum_k(arr, k):
 
     return False
 
+
 print(subarray_sum_k([10, 2, -2, -20, 10], -10))  # True
 print(subarray_sum_k([1, 2, 3], 7))                 # False
 </code></pre></div>
@@ -6837,8 +6861,6 @@ function subarraySumK(arr, k) {
   for (const num of arr) {
     sum += num;
 
-    // Subarray between a previous index and current index equals k:
-    // currentSum - previousSum = k =&gt; previousSum = currentSum - k
     if (sum === k || map.has(sum - k)) {
       return true;
     }
@@ -6849,19 +6871,14 @@ function subarraySumK(arr, k) {
   return false;
 }
 
-console.log(subarraySumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // true // [2, 3, 9, -4, 1]
-
-console.log(subarraySumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // true // [2, 3, 7, -1, 9]
+console.log(subarraySumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // true
+console.log(subarraySumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // true
 </code></pre></div>
 </div>
-</div>
-<div class="worked">
-<b>Problem — Common elements of two arrays</b>
-<p class="worked-q">Return the elements common to two arrays, including repeats as many times as both contain them.</p>
-<p>Count the first array into a map; walk the second, and whenever a value still has a positive count, output it and decrement. <code>O(n + m)</code>.</p>
-<div class="code-tabs" data-label="Solution">
+<div class="code-tabs" data-label="Problem — Common elements of two arrays">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 from collections import Counter
+
 
 def common_elements(A, B):
     freq_a = Counter(A)
@@ -6875,29 +6892,20 @@ def common_elements(A, B):
 
     return ans
 
+
 print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
 </code></pre></div>
 <div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
 function commonElements(A, B) {
-  // Always build the frequency map on the smaller array
   if (B.length &lt; A.length) {
     [A, B] = [B, A];
   }
 
-  // 1) Count frequencies of A’s elements
   const freq = new Map();
   for (const x of A) {
-    // freq.set(x, (freq.get(x) || 0) + 1); // Use this syntax to avoid the if/else.
-
-    // Alternatively, we can use if / else
-    if (freq.has(x)) {
-      freq.set(x, freq.get(x) + 1);
-    } else {
-      freq.set(x, 1);
-    }
+    freq.set(x, (freq.get(x) || 0) + 1);
   }
 
-  // 2) Walk through B, collecting matches
   const result = [];
   for (const x of B) {
     const c = freq.get(x) || 0;
@@ -6909,99 +6917,12 @@ function commonElements(A, B) {
 
   return result;
 }
+
 console.log(commonElements([1, 2, 2, 1], [2, 3, 1, 2])); // [2, 1, 2]
 console.log(commonElements([2, 1, 4, 10], [3, 6, 2, 10, 10])); // [2, 10]
 </code></pre></div>
 </div>
-</div>
-<div class="worked">
-<b>Problem — Element-exists queries with a direct address table</b>
-<p class="worked-q">For each query value, report whether it appears in the array.</p>
-<p>A direct address table marks <code>present[v] = true</code> for every value <code>v</code> — perfect when values are small. A set generalises it to any value range. <code>O(n + q)</code>.</p>
-<div class="code-tabs" data-label="Solution">
-<div class="tab-pane" data-lang="python"><pre><code data-lang="python">
-def check_elements_queries(arr, queries):
-    # Using Python built-in set for O(1) lookups
-    elements_set = set(arr)
-    return [q in elements_set for q in queries]
-
-print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
-</code></pre></div>
-<div class="tab-pane" data-lang="javascript"><pre><code data-lang="javascript">
-// Given an array of size N
-const arr = [2, 4, 11, 15, 6, 8, 14, 9];
-
-// Q queries to check
-const queries = [4, 10, 17, 14];
-
-// Start with a low value for max calculation
-let maxVal = -1;
-
-// Iterate through the array to find the maximum element
-for (let i = 0; i &lt; arr.length; i++) {
-    if (arr[i] &gt; maxVal) {
-        maxVal = arr[i];
-    }
-}
-// maxVal is now 15 based on the input: [2, 4, 11, 15, 6, 8, 14, 9]
-
-// Create an array of size (maxVal + 1) filled with 0.
-// This ensures index 15 exists.
-const dat = new Array(maxVal + 1).fill(0);
-
-// Iterate through the original array again to fill the table
-for (let i = 0; i &lt; arr.length; i++) {
-    const x = arr[i];
-
-    // Use the element value 'x' as the index.
-    // Set the value at that index to 1 to mark presence.
-    dat[x] = 1;
-}
-
-console.log("Test Outputs:");
-
-// Loop through each query number
-for (let i = 0; i &lt; queries.length; i++) {
-    const q = queries[i];
-
-    // Corner case: If the query number is larger than our largest known number,
-    // it cannot exist in our table.
-    if (q &gt; maxVal) {
-        console.log(`${q} -&gt; false`);
-    }
-    // Check the DAT at index 'q'. If it's 1, the element exists.
-    else if (dat[q] === 1) {
-        console.log(`${q} -&gt; true`);
-    }
-    // If it is 0 (or undefined if we hadn't filled it), it does not exist.
-    else {
-        console.log(`${q} -&gt; false`);
-    }
-}
-
-/* * COMPLEXITY ANALYSIS
- * -------------------
- * Let N be the size of the input array.
- * Let Q be the number of queries.
- * Let M be the maximum value (magnitude) of an element in the array.
- * * Time Complexity: O(N + Q)
- * - Finding the max element takes O(N).
- * - Filling the DAT takes O(N).
- * - Processing all queries takes O(Q) because array indexing dat[q] is O(1).
- * - Total: O(N + Q). This is much faster than using .includes() inside a loop, which would be O(N * Q).
- * * Space Complexity: O(M)
- * - We require an auxiliary array of size M + 1.
- * - Note: In JavaScript, arrays are sparse objects, so space might be optimized internally,
- * but conceptually we are reserving index space up to M.
- */
-</code></pre></div>
-</div>
-</div>
-<div class="worked">
-<b>Problem — Minimum distance between equal elements (Shaggy and distances)</b>
-<p class="worked-q">Return the smallest <code>j - i</code> such that <code>A[i] == A[j]</code> and <code>i ≠ j</code>, or <code>-1</code> if every value is unique. <code>[7, 1, 3, 4, 1, 7]</code> → <code>3</code>.</p>
-<p>Walk once, remembering the <strong>last index</strong> each value was seen at. When a value repeats, the gap to its last occurrence is a candidate; the closest pair is always between consecutive occurrences, so the last index is all you need. <code>O(n)</code>. The notes list this twice ("Minimum Distance Between Equal Elements" and "Shaggy and distances").</p>
-<div class="code-tabs" data-label="Solution">
+<div class="code-tabs" data-label="Problem — Minimum distance between equal elements (Shaggy and distances)">
 <div class="tab-pane" data-lang="python"><pre><code data-lang="python">
 def min_distance_equal(arr):
     last_seen = {}
@@ -7031,10 +6952,9 @@ console.log(minDistanceEqual([7, 1, 3, 4, 1, 7])); // 3
 console.log(minDistanceEqual([1, 2, 3]));          // -1
 </code></pre></div>
 </div>
-</div>
 
-<!-- ============================================================ 24 -->
-<h3 id="23-sorting-beyond-the-library-call">Sorting Beyond the Library Call<a class="headerlink" href="#23-sorting-beyond-the-library-call" title="Permanent link">#</a></h3>
+<!-- ============================================================ 25 -->
+<h3 id="24-sorting-beyond-the-library-call">Sorting Beyond the Library Call<a class="headerlink" href="#24-sorting-beyond-the-library-call" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Count sort</b> <code class="big-o o-good">O(N + K)</code></li>
 <li><b>Merge sort</b> <code class="big-o o-ok">O(N log N)</code></li>
@@ -7692,8 +7612,8 @@ console.log(countNobleIntegers([-10, 1, 1, 2, 4, 4, 4, 8, 10])); // 5 // [1, 1, 
 </div>
 </div>
 
-<!-- ============================================================ 25 -->
-<h3 id="24-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers<a class="headerlink" href="#24-binary-search-on-arrays-and-answers" title="Permanent link">#</a></h3>
+<!-- ============================================================ 26 -->
+<h3 id="25-binary-search-on-arrays-and-answers">Binary Search on Arrays and on Answers<a class="headerlink" href="#25-binary-search-on-arrays-and-answers" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>On a sorted array</b> <code class="big-o o-great">O(log N)</code></li>
 <li><b>On an answer range</b> <code class="big-o o-ok">O(N log(range))</code></li>
@@ -8576,8 +8496,8 @@ console.log(allocateBooks([12, 15, 78], 4)); // -1
 </div>
 </div>
 
-<!-- ============================================================ 26 -->
-<h3 id="25-multiple-approaches-pair-with-a-given-sum">Multiple Approaches: Pair With a Given Sum<a class="headerlink" href="#25-multiple-approaches-pair-with-a-given-sum" title="Permanent link">#</a></h3>
+<!-- ============================================================ 27 -->
+<h3 id="26-multiple-approaches-pair-with-a-given-sum">Multiple Approaches: Pair With a Given Sum<a class="headerlink" href="#26-multiple-approaches-pair-with-a-given-sum" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Brute force</b> <code class="big-o o-bad">O(N^2)</code></li>
 <li><b>Binary search</b> <code class="big-o o-ok">O(N log N)</code></li>
@@ -8715,8 +8635,8 @@ console.log(hasPairWithSum([1, 2, 3, 4, 5], 10)); // false
 </code></pre></div>
 </div>
 
-<!-- ============================================================ 27 -->
-<h3 id="26-multiple-approaches-the-unique-element-among-pairs">Multiple Approaches: The Unique Element Among Pairs<a class="headerlink" href="#26-multiple-approaches-the-unique-element-among-pairs" title="Permanent link">#</a></h3>
+<!-- ============================================================ 28 -->
+<h3 id="27-multiple-approaches-the-unique-element-among-pairs">Multiple Approaches: The Unique Element Among Pairs<a class="headerlink" href="#27-multiple-approaches-the-unique-element-among-pairs" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>XOR</b> <code class="big-o o-good">O(N)</code></li>
 <li><b>Binary search (sorted)</b> <code class="big-o o-great">O(log N)</code></li>
@@ -8790,8 +8710,8 @@ console.log(singleElementSorted([3, 3, 7, 7, 10, 11, 11])); // 10
 <h2 id="unit-3">Unit 3 — Linked Structures<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
 <p>Nodes joined by pointers. The advanced tricks here are all about what you can do with <strong>two</strong> pointers, <strong>one</strong> stack, or <strong>zero</strong> extra memory.</p>
 
-<!-- ============================================================ 28 -->
-<h3 id="27-linked-lists">Linked Lists<a class="headerlink" href="#27-linked-lists" title="Permanent link">#</a></h3>
+<!-- ============================================================ 29 -->
+<h3 id="28-linked-lists">Linked Lists<a class="headerlink" href="#28-linked-lists" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Find middle / detect cycle</strong> <code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code> space</li>
 <li><strong>Insert / delete at a known node (DLL)</strong> <code class="big-o o-great">O(1)</code></li>
@@ -9953,8 +9873,8 @@ console.log(hasCycle(head)); // Output: true
 </div>
 </div>
 
-<!-- ============================================================ 29 -->
-<h3 id="28-stacks">Stacks<a class="headerlink" href="#28-stacks" title="Permanent link">#</a></h3>
+<!-- ============================================================ 30 -->
+<h3 id="29-stacks">Stacks<a class="headerlink" href="#29-stacks" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>push / pop / peek</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Nearest smaller for every index</b> <code class="big-o o-good">O(N)</code></li>
@@ -10515,8 +10435,8 @@ console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, 
 </div>
 </div>
 
-<!-- ============================================================ 30 -->
-<h3 id="29-queues-and-deques">Queues &amp; Deques<a class="headerlink" href="#29-queues-and-deques" title="Permanent link">#</a></h3>
+<!-- ============================================================ 31 -->
+<h3 id="30-queues-and-deques">Queues &amp; Deques<a class="headerlink" href="#30-queues-and-deques" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>enqueue / dequeue</b> <code class="big-o o-great">O(1)</code></li>
 <li><b>Sliding window maximum</b> <code class="big-o o-good">O(N)</code></li>
@@ -11291,8 +11211,8 @@ console.log(maxSlidingWindow(A2, B2)); // [7, 7, 7, 7]
 </div>
 </div>
 
-<!-- ============================================================ 31 -->
-<h3 id="30-binary-trees">Binary Trees<a class="headerlink" href="#30-binary-trees" title="Permanent link">#</a></h3>
+<!-- ============================================================ 32 -->
+<h3 id="31-binary-trees">Binary Trees<a class="headerlink" href="#31-binary-trees" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Any traversal</b> <code class="big-o o-good">O(N)</code></li>
 <li><b>Recursion stack</b> <code class="big-o o-great">O(H)</code></li>
@@ -12964,8 +12884,8 @@ console.log(nodeToRootPath(root, B)); // [40, 45, 30, 50]
 </div>
 </div>
 
-<!-- ============================================================ 32 -->
-<h3 id="31-binary-search-trees">Binary Search Trees<a class="headerlink" href="#31-binary-search-trees" title="Permanent link">#</a></h3>
+<!-- ============================================================ 33 -->
+<h3 id="32-binary-search-trees">Binary Search Trees<a class="headerlink" href="#32-binary-search-trees" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Search / insert / delete</b> <code class="big-o o-great">O(H)</code></li>
 <li><b>Balanced height</b> <code class="big-o o-great">O(log N)</code></li>
@@ -13779,8 +13699,8 @@ test(bst3, 2, null); // out of range
 </div>
 </div>
 
-<!-- ============================================================ 33 -->
-<h3 id="32-morris-traversal">Morris Traversal<a class="headerlink" href="#32-morris-traversal" title="Permanent link">#</a></h3>
+<!-- ============================================================ 34 -->
+<h3 id="33-morris-traversal">Morris Traversal<a class="headerlink" href="#33-morris-traversal" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Time</b> <code class="big-o o-good">O(N)</code></li>
 <li><b>Extra space</b> <code class="big-o o-great">O(1)</code></li>
@@ -14037,8 +13957,8 @@ console.log('After :', inorderList(root)); // [1, 2, 3, 4]
 </div>
 </div>
 
-<!-- ============================================================ 34 -->
-<h3 id="33-lowest-common-ancestor">Lowest Common Ancestor<a class="headerlink" href="#33-lowest-common-ancestor" title="Permanent link">#</a></h3>
+<!-- ============================================================ 35 -->
+<h3 id="34-lowest-common-ancestor">Lowest Common Ancestor<a class="headerlink" href="#34-lowest-common-ancestor" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>In a BST</b> <code class="big-o o-great">O(H)</code></li>
 <li><b>In a binary tree</b> <code class="big-o o-good">O(N)</code></li>
@@ -14281,8 +14201,8 @@ test(bst, 10, 11, null); // both missing
 <h2 id="unit-4">Unit 4 — Heaps, Greedy, DP &amp; Graphs<a class="headerlink" href="#unit-4" title="Permanent link">#</a></h2>
 <p>The heavyweight patterns: always grab the best item (heaps and greedy), remember every subproblem (DP), and walk networks of relationships (graphs).</p>
 
-<!-- ============================================================ 35 -->
-<h3 id="34-heaps">Heaps<a class="headerlink" href="#34-heaps" title="Permanent link">#</a></h3>
+<!-- ============================================================ 36 -->
+<h3 id="35-heaps">Heaps<a class="headerlink" href="#35-heaps" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Peek min / max</strong> <code class="big-o o-great">O(1)</code></li>
 <li><strong>Push / pop</strong> <code class="big-o o-great">O(log N)</code></li>
@@ -15784,8 +15704,8 @@ console.log(sortKSorted([6, 5, 3, 2, 8, 10, 9], 3)); // [2, 3, 5, 6, 8, 9, 10]
 </div>
 </div>
 
-<!-- ============================================================ 36 -->
-<h3 id="35-greedy-algorithms">Greedy Algorithms<a class="headerlink" href="#35-greedy-algorithms" title="Permanent link">#</a></h3>
+<!-- ============================================================ 37 -->
+<h3 id="36-greedy-algorithms">Greedy Algorithms<a class="headerlink" href="#36-greedy-algorithms" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Sort, then sweep</b> <code class="big-o o-ok">O(N log N)</code></li>
 <li><b>Heap-driven choices</b> <code class="big-o o-ok">O(N log N)</code></li>
@@ -15999,8 +15919,8 @@ console.log(minJumpsGreedy([3, 2, 1, 0, 4])); // -1
 </div>
 </div>
 
-<!-- ============================================================ 37 -->
-<h3 id="36-multiple-approaches-connecting-the-ropes">Multiple Approaches: Connecting the Ropes<a class="headerlink" href="#36-multiple-approaches-connecting-the-ropes" title="Permanent link">#</a></h3>
+<!-- ============================================================ 38 -->
+<h3 id="37-multiple-approaches-connecting-the-ropes">Multiple Approaches: Connecting the Ropes<a class="headerlink" href="#37-multiple-approaches-connecting-the-ropes" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Insertion sort</b> <code class="big-o o-bad">O(N^2)</code></li>
 <li><b>Priority queue</b> <code class="big-o o-ok">O(N log N)</code></li>
@@ -16278,8 +16198,8 @@ console.log(minCostToConnectRopes([2, 2, 3, 3])); // 20
 </code></pre></div>
 </div>
 
-<!-- ============================================================ 38 -->
-<h3 id="37-dynamic-programming">Dynamic Programming<a class="headerlink" href="#37-dynamic-programming" title="Permanent link">#</a></h3>
+<!-- ============================================================ 39 -->
+<h3 id="38-dynamic-programming">Dynamic Programming<a class="headerlink" href="#38-dynamic-programming" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Time</strong> <code>states × work per state</code></li>
 <li><strong>Fibonacci</strong> <code class="big-o o-bad">O(2^N)</code> → <code class="big-o o-good">O(N)</code></li>
@@ -17760,8 +17680,8 @@ console.log(maxProfitK(2, [3, 2, 6, 5, 0, 3])); // 7
 </div>
 </div>
 
-<!-- ============================================================ 39 -->
-<h3 id="38-multiple-approaches-target-sum-subset-sum">Multiple Approaches: Target Sum / Subset Sum<a class="headerlink" href="#38-multiple-approaches-target-sum-subset-sum" title="Permanent link">#</a></h3>
+<!-- ============================================================ 40 -->
+<h3 id="39-multiple-approaches-target-sum-subset-sum">Multiple Approaches: Target Sum / Subset Sum<a class="headerlink" href="#39-multiple-approaches-target-sum-subset-sum" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Recursion</b> <code class="big-o o-bad">O(2^N)</code></li>
 <li><b>2-D table</b> <code class="big-o o-good">O(N·S)</code></li>
@@ -17976,8 +17896,8 @@ console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); /
 </code></pre></div>
 </div>
 
-<!-- ============================================================ 40 -->
-<h3 id="39-multiple-approaches-print-valid-parentheses">Multiple Approaches: Print Valid Parentheses<a class="headerlink" href="#39-multiple-approaches-print-valid-parentheses" title="Permanent link">#</a></h3>
+<!-- ============================================================ 41 -->
+<h3 id="40-multiple-approaches-print-valid-parentheses">Multiple Approaches: Print Valid Parentheses<a class="headerlink" href="#40-multiple-approaches-print-valid-parentheses" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>Proactive recursion</b> <code class="big-o o-bad">O(4^n/√n)</code></li>
 <li><b>Reactive recursion</b> <code class="big-o o-bad">O(4^n/√n)</code></li>
@@ -18280,8 +18200,8 @@ printValidParenthesisDP(3); // ()()(), ()(()), (())(), (()()), ((()))
 </code></pre></div>
 </div>
 
-<!-- ============================================================ 41 -->
-<h3 id="40-graphs">Graphs<a class="headerlink" href="#40-graphs" title="Permanent link">#</a></h3>
+<!-- ============================================================ 42 -->
+<h3 id="41-graphs">Graphs<a class="headerlink" href="#41-graphs" title="Permanent link">#</a></h3>
 <ul class="meta-strip">
 <li><b>BFS / DFS</b> <code class="big-o o-good">O(V + E)</code></li>
 <li><b>Dijkstra</b> <code class="big-o o-ok">O((V + E) log V)</code></li>
@@ -20323,8 +20243,8 @@ console.log(validPath(5, 5, 1, [2], [2])); // YES
 </div>
 <hr />
 
-<!-- ============================================================ 42 -->
-<h2 id="41-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink" href="#41-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+<!-- ============================================================ 43 -->
+<h2 id="42-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink" href="#42-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
 <p>Most of interview problem-solving is <strong>recognition</strong>: noticing which of about thirty signals is in the problem statement. This table is the index to the whole course.</p>
 <table>
 <thead><tr><th>If the problem says…</th><th>Reach for</th><th>Cost</th><th>Section</th></tr></thead>
@@ -20345,26 +20265,27 @@ console.log(validPath(5, 5, 1, [2], [2])); // YES
 <tr><td>"number of ways to choose, nCr mod M"</td><td>Pascal's identity</td><td><code class="big-o o-bad">O(N^2)</code></td><td>§18</td></tr>
 <tr><td>"power in logarithmic time"</td><td>recursion, halve the exponent</td><td><code class="big-o o-great">O(log N)</code></td><td>§20</td></tr>
 <tr><td>"all subsets / permutations / combinations"</td><td>backtracking</td><td><code class="big-o o-bad">O(2^N)</code> / <code class="big-o o-bad">O(N!)</code></td><td>§21</td></tr>
-<tr><td>"subarray with sum K, negatives allowed"</td><td>prefix sums + hash map</td><td><code class="big-o o-good">O(N)</code></td><td>§22</td></tr>
-<tr><td>"values in a small range"</td><td>count sort</td><td><code class="big-o o-good">O(N + K)</code></td><td>§23</td></tr>
-<tr><td>"arrange to form the largest …"</td><td>custom comparator</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§23</td></tr>
-<tr><td>"minimum possible maximum" / "maximum possible minimum"</td><td>binary search on the answer</td><td><code class="big-o o-ok">O(N log R)</code></td><td>§24</td></tr>
-<tr><td>"middle, cycle, palindrome of a linked list"</td><td>slow / fast pointers</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§27</td></tr>
-<tr><td>"O(1) get and put with eviction"</td><td>hash map + DLL (LRU)</td><td><code class="big-o o-great">O(1)</code></td><td>§27</td></tr>
-<tr><td>"nearest smaller / greater element"</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td><td>§28</td></tr>
-<tr><td>"max of every window"</td><td>monotonic deque</td><td><code class="big-o o-good">O(N)</code></td><td>§29</td></tr>
-<tr><td>"left / right / top view of a tree"</td><td>level order (+ column index)</td><td><code class="big-o o-good">O(N)</code></td><td>§30</td></tr>
-<tr><td>"validate, delete or k-th smallest in a BST"</td><td>BST ordering, inorder</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§31</td></tr>
-<tr><td>"inorder with O(1) space"</td><td>Morris traversal</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§32</td></tr>
-<tr><td>"lowest common ancestor"</td><td>steer by value / recurse both sides</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§33</td></tr>
-<tr><td>"k smallest / largest, running median"</td><td>heap(s)</td><td><code class="big-o o-ok">O(N log K)</code></td><td>§34</td></tr>
-<tr><td>"maximum jobs / minimum joining cost"</td><td>greedy with sort or heap</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§35</td></tr>
-<tr><td>"count ways / min cost, choices overlap"</td><td>dynamic programming</td><td>states × transitions</td><td>§37</td></tr>
-<tr><td>"budget, weights, values"</td><td>knapsack</td><td><code class="big-o o-good">O(N·W)</code></td><td>§37</td></tr>
-<tr><td>"fewest steps in a grid or unweighted graph"</td><td>BFS / multi-source BFS</td><td><code class="big-o o-good">O(V + E)</code></td><td>§40</td></tr>
-<tr><td>"prerequisites / build order"</td><td>topological sort</td><td><code class="big-o o-good">O(V + E)</code></td><td>§40</td></tr>
-<tr><td>"connect everything cheaply"</td><td>MST (Kruskal / Prim)</td><td><code class="big-o o-ok">O(E log E)</code></td><td>§40</td></tr>
-<tr><td>"cheapest route, non-negative weights"</td><td>Dijkstra</td><td><code class="big-o o-ok">O((V + E) log V)</code></td><td>§40</td></tr>
+<tr><td>"distinct elements / pair with sum K / unique substring"</td><td>hash set</td><td><code class="big-o o-good">O(N)</code></td><td>§22</td></tr>
+<tr><td>"subarray with sum K, negatives allowed"</td><td>prefix sums + hash map</td><td><code class="big-o o-good">O(N)</code></td><td>§23</td></tr>
+<tr><td>"values in a small range"</td><td>count sort</td><td><code class="big-o o-good">O(N + K)</code></td><td>§24</td></tr>
+<tr><td>"arrange to form the largest …"</td><td>custom comparator</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§24</td></tr>
+<tr><td>"minimum possible maximum" / "maximum possible minimum"</td><td>binary search on the answer</td><td><code class="big-o o-ok">O(N log R)</code></td><td>§25</td></tr>
+<tr><td>"middle, cycle, palindrome of a linked list"</td><td>slow / fast pointers</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§28</td></tr>
+<tr><td>"O(1) get and put with eviction"</td><td>hash map + DLL (LRU)</td><td><code class="big-o o-great">O(1)</code></td><td>§28</td></tr>
+<tr><td>"nearest smaller / greater element"</td><td>monotonic stack</td><td><code class="big-o o-good">O(N)</code></td><td>§29</td></tr>
+<tr><td>"max of every window"</td><td>monotonic deque</td><td><code class="big-o o-good">O(N)</code></td><td>§30</td></tr>
+<tr><td>"left / right / top view of a tree"</td><td>level order (+ column index)</td><td><code class="big-o o-good">O(N)</code></td><td>§31</td></tr>
+<tr><td>"validate, delete or k-th smallest in a BST"</td><td>BST ordering, inorder</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§32</td></tr>
+<tr><td>"inorder with O(1) space"</td><td>Morris traversal</td><td><code class="big-o o-good">O(N)</code>, <code class="big-o o-great">O(1)</code></td><td>§33</td></tr>
+<tr><td>"lowest common ancestor"</td><td>steer by value / recurse both sides</td><td><code class="big-o o-great">O(H)</code> / <code class="big-o o-good">O(N)</code></td><td>§34</td></tr>
+<tr><td>"k smallest / largest, running median"</td><td>heap(s)</td><td><code class="big-o o-ok">O(N log K)</code></td><td>§35</td></tr>
+<tr><td>"maximum jobs / minimum joining cost"</td><td>greedy with sort or heap</td><td><code class="big-o o-ok">O(N log N)</code></td><td>§36</td></tr>
+<tr><td>"count ways / min cost, choices overlap"</td><td>dynamic programming</td><td>states × transitions</td><td>§38</td></tr>
+<tr><td>"budget, weights, values"</td><td>knapsack</td><td><code class="big-o o-good">O(N·W)</code></td><td>§38</td></tr>
+<tr><td>"fewest steps in a grid or unweighted graph"</td><td>BFS / multi-source BFS</td><td><code class="big-o o-good">O(V + E)</code></td><td>§41</td></tr>
+<tr><td>"prerequisites / build order"</td><td>topological sort</td><td><code class="big-o o-good">O(V + E)</code></td><td>§41</td></tr>
+<tr><td>"connect everything cheaply"</td><td>MST (Kruskal / Prim)</td><td><code class="big-o o-ok">O(E log E)</code></td><td>§41</td></tr>
+<tr><td>"cheapest route, non-negative weights"</td><td>Dijkstra</td><td><code class="big-o o-ok">O((V + E) log V)</code></td><td>§41</td></tr>
 </tbody>
 </table>
 <figure class="figure mermaid-fig">

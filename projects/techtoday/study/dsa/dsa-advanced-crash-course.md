@@ -49,26 +49,27 @@ The first DSA crash course taught you the containers. This one teaches the **mov
 20. [Multiple Approaches: Pascal's Triangle and nCr mod M](#19-multiple-approaches-pascals-triangle-and-ncr-mod-m)
 21. [Recursion](#20-recursion)
 22. [Backtracking](#21-backtracking)
-23. [Hashing](#22-hashing)
-24. [Sorting Beyond the Library Call](#23-sorting-beyond-the-library-call)
-25. [Binary Search on Arrays and on Answers](#24-binary-search-on-arrays-and-answers)
-26. [Multiple Approaches: Pair With a Given Sum](#25-multiple-approaches-pair-with-a-given-sum)
-27. [Multiple Approaches: The Unique Element Among Pairs](#26-multiple-approaches-the-unique-element-among-pairs)
-28. [Linked Lists](#27-linked-lists)
-29. [Stacks](#28-stacks)
-30. [Queues & Deques](#29-queues-and-deques)
-31. [Binary Trees](#30-binary-trees)
-32. [Binary Search Trees](#31-binary-search-trees)
-33. [Morris Traversal](#32-morris-traversal)
-34. [Lowest Common Ancestor](#33-lowest-common-ancestor)
-35. [Heaps](#34-heaps)
-36. [Greedy Algorithms](#35-greedy-algorithms)
-37. [Multiple Approaches: Connecting the Ropes](#36-multiple-approaches-connecting-the-ropes)
-38. [Dynamic Programming](#37-dynamic-programming)
-39. [Multiple Approaches: Target Sum / Subset Sum](#38-multiple-approaches-target-sum-subset-sum)
-40. [Multiple Approaches: Print Valid Parentheses](#39-multiple-approaches-print-valid-parentheses)
-41. [Graphs](#40-graphs)
-42. [The Whole Thing on One Page](#41-the-whole-thing-on-one-page)
+23. [Hashing (Set)](#22-hashing-set)
+24. [Hashing (Map)](#23-hashing-map)
+25. [Sorting Beyond the Library Call](#24-sorting-beyond-the-library-call)
+26. [Binary Search on Arrays and on Answers](#25-binary-search-on-arrays-and-answers)
+27. [Multiple Approaches: Pair With a Given Sum](#26-multiple-approaches-pair-with-a-given-sum)
+28. [Multiple Approaches: The Unique Element Among Pairs](#27-multiple-approaches-the-unique-element-among-pairs)
+29. [Linked Lists](#28-linked-lists)
+30. [Stacks](#29-stacks)
+31. [Queues & Deques](#30-queues-and-deques)
+32. [Binary Trees](#31-binary-trees)
+33. [Binary Search Trees](#32-binary-search-trees)
+34. [Morris Traversal](#33-morris-traversal)
+35. [Lowest Common Ancestor](#34-lowest-common-ancestor)
+36. [Heaps](#35-heaps)
+37. [Greedy Algorithms](#36-greedy-algorithms)
+38. [Multiple Approaches: Connecting the Ropes](#37-multiple-approaches-connecting-the-ropes)
+39. [Dynamic Programming](#38-dynamic-programming)
+40. [Multiple Approaches: Target Sum / Subset Sum](#39-multiple-approaches-target-sum-subset-sum)
+41. [Multiple Approaches: Print Valid Parentheses](#40-multiple-approaches-print-valid-parentheses)
+42. [Graphs](#41-graphs)
+43. [The Whole Thing on One Page](#42-the-whole-thing-on-one-page)
 
 <a id="0-read-the-constraints-first"></a>
 
@@ -6765,21 +6766,260 @@ function generateParentheses(A) {
 console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())", "()()()"]
 ```
 
-<a id="22-hashing"></a>
+<a id="22-hashing-set"></a>
 
-### Hashing
+### Hashing (Set)
 
-- **get / set / has (average)** `O(1)`
+- **add / delete / has (average)** `O(1)`
+- **Worst case** `O(n)`
+- **Space** `O(n)`
+- **Direct address table** `O(1)` time, `O(max_val)` space
+
+When a problem asks *"Have I seen this before?"* or *"Does a valid pair or complement exist?"*, you do not need to store values, counts, or indices. You only need a collection of unique elements with instant membership testing. A **HashSet** provides average `O(1)` insertion, lookup, and deletion by passing elements through a hash function into buckets, resolving collisions via chaining.
+
+> **Analogy** 📋
+>
+> **Picture it — a velvet rope and a guest list**
+>
+> The bouncer at a club holds a clipboard with the names of invitees. When a guest arrives, the bouncer scans the list in one quick glance (`has`). If the name is already checked in or absent, the bouncer acts immediately. No drinks ordered, seat numbers, or visit counts are recorded — only presence or absence matters.
+
+> **Interactive animation:** `hash-table` — rendered by the page script in the HTML version.
+
+#### HashSet operations
+1. `add(value)` — Add the value to the set: Time Complexity `O(1)` on average, `O(n)` in worst case.
+2. `delete(value)` — Delete the value from the set: Time Complexity `O(1)` on average, `O(n)` in worst case.
+3. `has(value)` — Check if the value is present in the set: Time Complexity `O(1)` on average, `O(n)` in worst case.
+4. `size` — Get the size (count of unique elements) of the set: Time Complexity `O(1)`.
+
+> **Key idea**
+>
+> **Check before inserting:** When looking for a pair `(x, y)` satisfying a condition (like `x + y = K` or a repeat character), check whether the complement exists in the set *before* adding the current element. This prevents an element from pairing with itself and guarantees a single `O(n)` pass.
+
+**Interview question**
+
+*Find the length of the longest substring with no repeated character. `"cbaabcfedfgh"` → `6` (`"abcfed"`).*
+
+Use a sliding window maintained by a hash set. Extend the right pointer; whenever `s[right]` is already in the set, evict characters from `s[left]` and increment `left` until the duplicate is removed. The set always represents the unique characters in the current window.
+
+**Answer — longest substring without repeating characters**
+
+```python
+def length_of_longest_substring(s):
+    window = set()
+    left = best = 0
+    for right, ch in enumerate(s):
+        while ch in window:          # evict until ch is unique again
+            window.remove(s[left])
+            left += 1
+        window.add(ch)
+        best = max(best, right - left + 1)
+    return best
+
+
+print(length_of_longest_substring("cbaabcfedfgh"))  # 6
+print(length_of_longest_substring("abcabcbb"))      # 3
+print(length_of_longest_substring("pwwkew"))        # 3
+```
+
+```javascript
+function lengthOfLongestSubstring(s) {
+  const window = new Set();
+  let start = 0;
+  let best = 0;
+  for (let end = 0; end < s.length; end++) {
+    while (window.has(s[end])) {    // evict until s[end] is unique again
+      window.delete(s[start]);
+      start++;
+    }
+    window.add(s[end]);
+    best = Math.max(best, end - start + 1);
+  }
+  return best;
+}
+
+console.log(lengthOfLongestSubstring("cbaabcfedfgh")); // 6
+console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
+console.log(lengthOfLongestSubstring("pwwkew"));       // 3
+```
+
+**Interview question**
+
+*Given an array and target `K`, determine if there exist two elements at distinct indices such that `A[i] + A[j] = K` (Good Pair).*
+
+For each element `x`, its complement is `K - x`. Maintain a set of numbers visited so far. Check `seen.has(K - x)` before inserting `x`; if found, return `1`. If the loop finishes, return `0`.
+
+**Answer — pair with sum K exists (good pair)**
+
+```python
+def good_pair(arr, K):
+    seen = set()
+    for num in arr:
+        complement = K - num
+        if complement in seen:
+            return 1
+        seen.add(num)
+    return 0
+
+
+print(good_pair([1, 2, 3, 4], 7))   # 1
+print(good_pair([1, 2, 4, 3], 2))   # 0
+print(good_pair([1, 9, 3, 4], 4))   # 1
+print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
+```
+
+```javascript
+function goodPair(arr, K) {
+  let set = new Set();
+
+  for (let elem of arr) {
+    let complement = K - elem;
+    if (set.has(complement)) {
+      return 1; // good pair found
+    }
+    set.add(elem);
+  }
+
+  return 0; // no good pair found
+}
+
+console.log(goodPair([1, 2, 3, 4], 7)); // 1
+console.log(goodPair([1, 2, 4, 3], 2)); // 0
+console.log(goodPair([1, 9, 3, 4], 4)); // 1
+console.log(goodPair([-2, 1, 5, 8], 3)); // 1 (pair -2, 5)
+```
+
+**Interview question**
+
+*Check if there exists a non-empty contiguous subarray whose sum is 0.*
+
+The sum of subarray `A[i..j]` equals prefix sum `P[j] - P[i-1]`. If `P[j] == P[i-1]`, or if any `P[j] == 0`, the subarray sums to 0. Carry forward the running cumulative sum in a Set. If the current sum is 0 or already exists in the set, a zero-sum subarray is found.
+
+**Answer — check if subarray with sum 0 exists**
+
+```python
+def subarray_sum_zero(arr):
+    seen_sums = set()
+    curr_sum = 0
+    for num in arr:
+        curr_sum += num
+        if curr_sum == 0 or curr_sum in seen_sums:
+            return True
+        seen_sums.add(curr_sum)
+    return False
+
+
+print(subarray_sum_zero([1, 2, 3, 4, 5]))                    # False
+print(subarray_sum_zero([4, -1, 1]))                         # True
+print(subarray_sum_zero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])) # True
+```
+
+```javascript
+function subarraySumZero(arr) {
+  let set = new Set();
+  let sum = 0;
+
+  for (const num of arr) {
+    sum += num;
+
+    if (sum === 0 || set.has(sum)) {
+      return true;
+    }
+
+    set.add(sum);
+  }
+
+  return false;
+}
+
+console.log(subarraySumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // true
+console.log(subarraySumZero([1, 2, 3, 4, 5])); // false
+```
+
+#### More problems from the notes — Set
+
+1. **Count of distinct elements** — Insert all elements into a Set; return `set.size` or `len(set)`. Takes `O(n)` time, `O(n)` space.
+2. **Element-exists queries with a Direct Address Table** — When the maximum element `M` is small, allocate an array of size `M + 1` filled with `0`. Set `dat[x] = 1` for each element in `arr`. Each query is an `O(1)` index lookup. When values are unbounded or negative, use a Set instead.
+
+**Problem — Count of distinct elements**
+
+*Given an n elements array, find the count of distinct elements in the array.*
+
+Insert every element into a set; duplicate entries collapse automatically. The set size is the distinct count. `O(n)` time, `O(n)` space.
+
+**Solution**
+
+```python
+def count_distinct(arr):
+    # Python built-in set automatically stores unique elements
+    return len(set(arr))
+
+
+print(count_distinct([1, 2, 2, 3, 4, 4, 5]))  # 5
+print(count_distinct([2, 6, 3, 8, 2, 8, 2, 8, 10, 6]))  # 5
+```
+
+```javascript
+function countDistinct(arr) {
+  const set = new Set(arr);
+  return set.size;
+}
+
+const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6];
+console.log(countDistinct(arr)); // 5
+console.log(countDistinct([1, 2, 2, 3, 4, 4, 5])); // 5
+```
+
+**Problem — Element-exists queries with a Direct Address Table**
+
+*Given an array and a list of queries, check whether each queried element exists in the array.*
+
+A direct address table marks `dat[v] = 1` at index `v` for every value `v` in the array. Queries take `O(1)` index lookups. When values exceed `10^6` or include negatives, use a hash set instead.
+
+**Solution**
+
+```python
+def check_elements_queries(arr, queries):
+    elements_set = set(arr)
+    return [q in elements_set for q in queries]
+
+
+print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
+```
+
+```javascript
+function checkElementsDAT(arr, queries) {
+  let maxVal = -1;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] > maxVal) maxVal = arr[i];
+  }
+
+  const dat = new Array(maxVal + 1).fill(0);
+  for (let i = 0; i < arr.length; i++) {
+    dat[arr[i]] = 1;
+  }
+
+  return queries.map((q) => (q <= maxVal && dat[q] === 1));
+}
+
+console.log(checkElementsDAT([2, 4, 11, 15, 6, 8, 14, 9], [4, 10, 17, 14])); // [true, false, false, true]
+```
+
+<a id="23-hashing-map"></a>
+
+### Hashing (Map)
+
+- **get / set / delete (average)** `O(1)`
 - **Worst case** `O(n)`
 - **Load factor** `λ = n / buckets`
+- **Rehash threshold** `λ > 2.0`
 
-A **direct address table** stores value `v` at index `v` — instant, but a value of `10^9` needs a billion slots. Hashing keeps a small, fixed number of buckets and maps any key into range with a hash function, typically `key % size`. With 10 buckets, `21 → 1`, `42 → 2`, `37 → 7`… and `41 → 1` too — a **collision**. The notes resolve collisions with **chaining**: each bucket holds a linked list.
+When you need to remember *more* than just existence — such as frequency of occurrences, earliest index seen, latest index seen, or key-to-value associations — reach for a **HashMap**. A hash map maps keys to values through an array of buckets, resolving collisions via chaining. When the load factor `λ = n / buckets` exceeds a threshold, it automatically **rehashes**: doubling bucket capacity and re-distributing keys to preserve `O(1)` average lookup time.
 
 > **Analogy** 🧥
 >
 > **Picture it — a coat check with ten hooks**
 >
-> The attendant hangs your coat on hook `ticket % 10`. Two guests can share a hook — the coats just hang one behind the other. Finding your coat means going to one hook and flipping through a few coats, not searching the whole room. If every hook gets crowded, the attendant installs twice as many hooks and re-hangs everything.
+> The attendant hangs your coat on hook `ticket % 10`. Two guests can share a hook — the coats just hang one behind the other. Handing in your ticket (key) gets your specific coat (value). If every hook gets crowded, the attendant installs twice as many hooks and re-hangs everything.
 
 ```text
 index | chain                       load factor λ = elements / buckets
@@ -6794,7 +7034,14 @@ index | chain                       load factor λ = elements / buckets
 
 > **Interactive animation:** `rehash` — rendered by the page script in the HTML version.
 
-The average chain length **is** the load factor. Keep `λ` below a constant and each lookup scans a constant number of nodes, so `get` and `put` stay `O(1)` on average. Rehashing costs `O(n)`, but because the table doubles it happens exponentially rarely — the same amortised argument as a growing array.
+The average chain length **is** the load factor. Keep `λ` below a constant and each lookup scans a constant number of nodes, so `get` and `set` stay `O(1)` on average. Rehashing costs `O(n)`, but because the table doubles it happens exponentially rarely — the same amortised argument as a growing array.
+
+#### HashMap operations
+1. `set(key, value)` / `put(key, value)` — Set the value for the key: Time Complexity `O(1)` on average, `O(n)` in worst case.
+2. `get(key)` — Get the value for the key: Time Complexity `O(1)` on average, `O(n)` in worst case.
+3. `delete(key)` — Delete the key-value pair: Time Complexity `O(1)` on average, `O(n)` in worst case.
+4. `has(key)` — Check if the key is present in the hashmap: Time Complexity `O(1)` on average, `O(n)` in worst case.
+5. `size` — Get the size of the hashmap: Time Complexity `O(1)`.
 
 **A hash map from scratch — array of chains with rehashing**
 
@@ -6913,6 +7160,7 @@ def count_subarrays_with_sum_k(arr, k):
 
 
 print(count_subarrays_with_sum_k([2, 3, 9, -4, 1, 5, 6, 2, 5], 11))  # 3
+print(count_subarrays_with_sum_k([1, 0, 1], 1))                     # 4
 print(count_subarrays_with_sum_k([0, 0, 0], 0))                     # 6
 ```
 
@@ -6930,6 +7178,7 @@ function countSubarraysWithSumK(arr, k) {
 }
 
 console.log(countSubarraysWithSumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // 3
+console.log(countSubarraysWithSumK([1, 0, 1], 1));                    // 4
 console.log(countSubarraysWithSumK([0, 0, 0], 0));                    // 6
 ```
 
@@ -6976,264 +7225,22 @@ console.log(longestSubarrayZeroSum([15, -2, 2, -8, 1, 7, 10, 23])); // 5
 
 **Interview question**
 
-*Find the length of the longest substring with no repeated character. `"cbaabcfedfgh"` → `6` (`"abcfed"`).*
-
-A hash **set** holds the characters in the current window. Extend the right edge; while the new character is already in the set, evict characters from the left. The window is always duplicate-free, and each character enters and leaves once — `O(n)`.
-
-**Answer — longest substring without repeating characters**
-
-```python
-def length_of_longest_substring(s):
-    window = set()
-    left = best = 0
-    for right, ch in enumerate(s):
-        while ch in window:          # evict until ch is unique again
-            window.remove(s[left])
-            left += 1
-        window.add(ch)
-        best = max(best, right - left + 1)
-    return best
-
-
-print(length_of_longest_substring("cbaabcfedfgh"))  # 6
-print(length_of_longest_substring("abcabcbb"))      # 3
-```
-
-```javascript
-function lengthOfLongestSubstring(s) {
-  const window = new Set();
-  let start = 0;
-  let best = 0;
-  for (let end = 0; end < s.length; end++) {
-    while (window.has(s[end])) {    // evict until s[end] is unique again
-      window.delete(s[start]);
-      start++;
-    }
-    window.add(s[end]);
-    best = Math.max(best, end - start + 1);
-  }
-  return best;
-}
-
-console.log(lengthOfLongestSubstring("cbaabcfedfgh")); // 6
-console.log(lengthOfLongestSubstring("abcabcbb"));     // 3
-```
-
-**From the notes — hashing problems**
-
-| Problem | Structure | Complexity |
-| --- | --- | --- |
-| Count distinct elements | set | `O(N)` |
-| Pair with sum K exists (good pair) | set of complements | `O(N)` |
-| Subarray with sum 0 exists | set of prefix sums | `O(N)` |
-| Longest substring without repeats | set + two pointers | `O(N)` |
-| Frequency queries; common elements of two arrays | map of counts | `O(N)` |
-| Count pairs with sum K | map of counts | `O(N)` |
-| Count subarrays with sum 0 / sum K; subarray with sum K exists | map of prefix counts | `O(N)` |
-| Longest zero-sum subarray | map of first prefix index | `O(N)` |
-| Element exists in Q queries | direct address table | `O(N + Q)` |
-| Implement a hash map | array of chains + rehash | `O(1)` average |
-
-#### More problems from the notes
-
-Every remaining problem from the revision notes for this topic, each with a solution in Python and JavaScript.
-
-**Problem — Count distinct elements**
-
-*Return the number of distinct values in an array.*
-
-Insert everything into a set; its size is the answer. `O(n)` average.
-
-**Solution**
-
-```python
-def count_distinct(arr):
-    # Python built-in set automatically stores unique elements
-    return len(set(arr))
-
-print(count_distinct([1, 2, 2, 3, 4, 4, 5]))  # 5
-```
-
-```javascript
-function countDistinct(arr) {
-  const set = new Set(arr);
-  return set.size;
-}
-const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6]
-console.log(countDistinct(arr)); // 5
-```
-
-**Problem — Good pair — does a pair with sum K exist?**
-
-*Is there a pair `i ≠ j` with `A[i] + A[j] = K`?*
-
-Walk once; before inserting `x`, check whether `K - x` is already in the set. Checking before inserting stops an element pairing with itself. `O(n)`.
-
-**Solution**
-
-```python
-def good_pair(arr, K):
-    seen = set()
-    for num in arr:
-        complement = K - num
-        if complement in seen:
-            return 1
-        seen.add(num)
-    return 0
-
-print(good_pair([1, 2, 3, 4], 7))   # 1
-print(good_pair([1, 2, 4, 3], 2))   # 0
-print(good_pair([1, 9, 3, 4], 4))   # 1
-print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
-```
-
-```javascript
-function goodPair(arr, K) {
-    let set = new Set();
-
-    for (let elem of arr) {
-        let complement = K - elem;
-        if (set.has(complement)) {
-            return 1; // good pair found
-        }
-        set.add(elem);
-    }
-
-    return 0; // no good pair found
-}
-
-console.log(goodPair([1, 2, 3, 4], 7)); // 1
-console.log(goodPair([1, 2, 4, 3], 2)); // 0
-console.log(goodPair([1, 9, 3, 4], 4)); // 1
-console.log(goodPair([-2, 1, 5, 8], 3)); // 1 (pair -2, 5)
-```
-
-**Problem — Does a zero-sum subarray exist?**
-
-*Is there a non-empty subarray whose sum is 0?*
-
-Two equal prefix sums mean the elements between them sum to 0. Keep prefix sums in a set (plus the empty prefix 0) and stop at the first repeat. `O(n)`.
-
-**Solution**
-
-```python
-def subarray_sum_k(arr, K):
-    seen_sums = set()
-    curr_sum = K
-
-    for num in arr:
-        curr_sum += num
-        # If prefix sum is K or was seen before, subarray sum is K
-        if curr_sum == K or curr_sum in seen_sums:
-            return 1
-        seen_sums.add(curr_sum)
-
-    return 0
-
-print(subarray_sum_k([1, 2, 3, 4, 5], 0))  # 0
-print(subarray_sum_k([4, -1, 1], 0))       # 1
-print(subarray_sum_k([1, -1], 0))          # 1
-```
-
-```javascript
-function subarraySumZero(arr) {
-  // Create a Set to store the prefix sums encountered so far.
-  let set = new Set();
-
-  // Initialize the cumulative sum to K.
-  let sum = 0;
-
-  // Iterate through each number in the input array.
-  for (const num of arr) {
-    // Add the current number to the cumulative sum.
-    // We call this Carry Forward technique.
-    sum += num;
-
-    if (sum === 0 || set.has(sum)) {
-      // Found a subarray with sum 0.
-      return true;
-    }
-
-    // Add the current cumulative sum to the set for future checks.
-    set.add(sum);
-  }
-
-  // If the loop finishes without finding a subarray with sum 0, return false.
-  return false;
-}
-
-console.log(subarraySumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // true
-
-console.log(subarraySumZero([1, 2, 3, 4, 5])); // false
-
-// We iterate through the array once. Set operations (add, has) are O(1) on average.
-// In the worst case, the set will store n distinct prefix sums.
-```
-
-**Problem — Frequency queries**
-
-*Given an array and a list of queries, return how many times each queried value occurs.*
-
-Count every value once into a map; each query is then an `O(1)` lookup. `O(n + q)`.
-
-**Solution**
-
-```python
-def frequency(arr, queries):
-    freq_map = {}
-    for num in arr:
-        freq_map[num] = freq_map.get(num, 0) + 1
-
-    return [freq_map.get(q, 0) for q in queries]
-
-print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
-print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
-```
-
-```javascript
-function frequency(arr, queries) {
-  const map = new Map();
-  for (const elem of arr) {
-    if (map.has(elem)) {
-      map.set(elem, map.get(elem) + 1);
-    } else {
-      map.set(elem, 1);
-    }
-  }
-
-  const ans = [];
-  for (const query of queries) {
-    if (map.has(query)) {
-      ans.push(map.get(query));
-    } else {
-      ans.push(0);
-    }
-  }
-
-  return ans;
-}
-console.log(frequency([2, 6, 3, 8, 2, 8, 2, 8, 10, 6], [2, 8, 3, 5])); // [3, 3, 1, 0]
-```
-
-**Problem — Count pairs with sum K**
-
 *Count the pairs `i < j` with `A[i] + A[j] = K`.*
 
-For each `x`, every earlier occurrence of `K - x` forms a pair: add `freq[K - x]`, then record `x`. `O(n)`.
+For each element `x`, every earlier occurrence of `K - x` forms a pair: add `freq[K - x]` to your total, then increment `freq[x]`. Storing counts in a hash map allows duplicates to be accounted for in a single pass.
 
-**Solution**
+**Answer — count pairs with sum K**
 
 ```python
 def count_pairs_sum(arr, k):
     freq = dict()
     count = 0
-
     for num in arr:
         complement = k - num
         count += freq.get(complement, 0)
         freq[num] = freq.get(num, 0) + 1
-
     return count
+
 
 print(count_pairs_sum([1, 2, 3, 2, 1], 3))  # 4
 print(count_pairs_sum([1, 1, 1], 2))        # 3
@@ -7253,22 +7260,61 @@ function countPairsSum(arr, k) {
       count += map.get(need);
     }
 
-    if (map.has(elem)) {
-      map.set(elem, map.get(elem) + 1n);
-    } else {
-      map.set(elem, 1n);
-    }
-
-    // Alternatively, we could use the following line to avoid the if/else:
-    // map.set(elem, (map.get(elem) || 0n) + 1n);
+    map.set(elem, (map.get(elem) || 0n) + 1n);
   }
 
   const MOD = 1000_000_007n;
-
-  return Number(count % MOD)
+  return Number(count % MOD);
 }
+
 console.log(countPairsSum([3, 5, 1, 2], 8)); // 1
-console.log(countPairsSum([1, 2, 1, 2], 3)); // 4 // [[1, 2], [2, 1], [1, 2], [2, 1]]
+console.log(countPairsSum([1, 2, 1, 2], 3)); // 4
+```
+
+#### More problems from the notes — Map
+
+1. **Frequency queries** — Build a frequency map of the array in `O(n)`; answer `Q` queries in `O(1)` each. Total `O(n + q)`.
+2. **Count subarrays with sum 0** — Maintain prefix sum counts seeded with `{0: 1}`. Add `freq[curr_sum]` at each step. `O(n)`.
+3. **Check subarray with sum K exists** — Maintain running sum; check if `curr_sum == K` or `map.has(curr_sum - K)`. `O(n)`.
+4. **Common elements in 2 arrays** — Count frequencies of the smaller array into a map. Scan the larger array, outputting on positive count and decrementing. `O(n + m)`.
+5. **Minimum distance between equal elements (Shaggy and distances)** — Map storing the last-seen index of each element. When an element repeats, minimize `i - last_seen[x]`. `O(n)`.
+
+**Problem — Frequency queries**
+
+*Given an array and a list of queries, return how many times each queried value occurs.*
+
+Count every value once into a map; each query is then an `O(1)` lookup. `O(n + q)`.
+
+**Solution**
+
+```python
+def frequency(arr, queries):
+    freq_map = {}
+    for num in arr:
+        freq_map[num] = freq_map.get(num, 0) + 1
+
+    return [freq_map.get(q, 0) for q in queries]
+
+
+print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
+print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
+```
+
+```javascript
+function frequency(arr, queries) {
+  const map = new Map();
+  for (const elem of arr) {
+    map.set(elem, (map.get(elem) || 0) + 1);
+  }
+
+  const ans = [];
+  for (const query of queries) {
+    ans.push(map.get(query) || 0);
+  }
+  return ans;
+}
+
+console.log(frequency([2, 6, 3, 8, 2, 8, 2, 8, 10, 6], [2, 8, 3, 5])); // [3, 3, 1, 0]
 ```
 
 **Problem — Count subarrays with sum 0**
@@ -7281,6 +7327,7 @@ Each earlier occurrence of the current prefix sum closes one zero-sum subarray. 
 
 ```python
 from collections import defaultdict
+
 
 def count_subarrays_with_sum_zero(arr):
     freq = defaultdict(int)
@@ -7295,8 +7342,9 @@ def count_subarrays_with_sum_zero(arr):
 
     return count
 
+
 print(count_subarrays_with_sum_zero([1, -1, -2, 2]))     # 3
-print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 1
+print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 2
 print(count_subarrays_with_sum_zero([0, 0, 0]))          # 6
 ```
 
@@ -7322,16 +7370,16 @@ function countSubarraysWithSumZero(arr) {
 
   return count;
 }
-console.log(countSubarraysWithSumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // 2 // [2, 1, -3], [-3, 4, 3, 1, -2, -3]
 
-console.log(countSubarraysWithSumZero([1, 2, -2, 4, -4])); // 3 // [2, -2], [4, -4], [2, -2, 4, -4]
+console.log(countSubarraysWithSumZero([2, 2, 1, -3, 4, 3, 1, -2, -3, 2])); // 2
+console.log(countSubarraysWithSumZero([1, 2, -2, 4, -4])); // 3
 ```
 
 **Problem — Does a subarray with sum K exist?**
 
 *Is there a subarray whose sum is exactly `K`?*
 
-Keep prefix sums in a set; if `P - K` has been seen, the subarray after it sums to `K`. `O(n)`.
+Keep prefix sums in a map or set; if `curr_sum - K` has been seen (or `curr_sum == K`), the subarray after it sums to `K`. `O(n)`.
 
 **Solution**
 
@@ -7348,6 +7396,7 @@ def subarray_sum_k(arr, k):
 
     return False
 
+
 print(subarray_sum_k([10, 2, -2, -20, 10], -10))  # True
 print(subarray_sum_k([1, 2, 3], 7))                 # False
 ```
@@ -7360,8 +7409,6 @@ function subarraySumK(arr, k) {
   for (const num of arr) {
     sum += num;
 
-    // Subarray between a previous index and current index equals k:
-    // currentSum - previousSum = k => previousSum = currentSum - k
     if (sum === k || map.has(sum - k)) {
       return true;
     }
@@ -7372,9 +7419,8 @@ function subarraySumK(arr, k) {
   return false;
 }
 
-console.log(subarraySumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // true // [2, 3, 9, -4, 1]
-
-console.log(subarraySumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // true // [2, 3, 7, -1, 9]
+console.log(subarraySumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // true
+console.log(subarraySumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // true
 ```
 
 **Problem — Common elements of two arrays**
@@ -7388,6 +7434,7 @@ Count the first array into a map; walk the second, and whenever a value still ha
 ```python
 from collections import Counter
 
+
 def common_elements(A, B):
     freq_a = Counter(A)
     freq_b = Counter(B)
@@ -7400,30 +7447,21 @@ def common_elements(A, B):
 
     return ans
 
+
 print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
 ```
 
 ```javascript
 function commonElements(A, B) {
-  // Always build the frequency map on the smaller array
   if (B.length < A.length) {
     [A, B] = [B, A];
   }
 
-  // 1) Count frequencies of A’s elements
   const freq = new Map();
   for (const x of A) {
-    // freq.set(x, (freq.get(x) || 0) + 1); // Use this syntax to avoid the if/else.
-
-    // Alternatively, we can use if / else
-    if (freq.has(x)) {
-      freq.set(x, freq.get(x) + 1);
-    } else {
-      freq.set(x, 1);
-    }
+    freq.set(x, (freq.get(x) || 0) + 1);
   }
 
-  // 2) Walk through B, collecting matches
   const result = [];
   for (const x of B) {
     const c = freq.get(x) || 0;
@@ -7435,101 +7473,16 @@ function commonElements(A, B) {
 
   return result;
 }
+
 console.log(commonElements([1, 2, 2, 1], [2, 3, 1, 2])); // [2, 1, 2]
 console.log(commonElements([2, 1, 4, 10], [3, 6, 2, 10, 10])); // [2, 10]
-```
-
-**Problem — Element-exists queries with a direct address table**
-
-*For each query value, report whether it appears in the array.*
-
-A direct address table marks `present[v] = true` for every value `v` — perfect when values are small. A set generalises it to any value range. `O(n + q)`.
-
-**Solution**
-
-```python
-def check_elements_queries(arr, queries):
-    # Using Python built-in set for O(1) lookups
-    elements_set = set(arr)
-    return [q in elements_set for q in queries]
-
-print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
-```
-
-```javascript
-// Given an array of size N
-const arr = [2, 4, 11, 15, 6, 8, 14, 9];
-
-// Q queries to check
-const queries = [4, 10, 17, 14];
-
-// Start with a low value for max calculation
-let maxVal = -1;
-
-// Iterate through the array to find the maximum element
-for (let i = 0; i < arr.length; i++) {
-    if (arr[i] > maxVal) {
-        maxVal = arr[i];
-    }
-}
-// maxVal is now 15 based on the input: [2, 4, 11, 15, 6, 8, 14, 9]
-
-// Create an array of size (maxVal + 1) filled with 0.
-// This ensures index 15 exists.
-const dat = new Array(maxVal + 1).fill(0);
-
-// Iterate through the original array again to fill the table
-for (let i = 0; i < arr.length; i++) {
-    const x = arr[i];
-
-    // Use the element value 'x' as the index.
-    // Set the value at that index to 1 to mark presence.
-    dat[x] = 1;
-}
-
-console.log("Test Outputs:");
-
-// Loop through each query number
-for (let i = 0; i < queries.length; i++) {
-    const q = queries[i];
-
-    // Corner case: If the query number is larger than our largest known number,
-    // it cannot exist in our table.
-    if (q > maxVal) {
-        console.log(`${q} -> false`);
-    }
-    // Check the DAT at index 'q'. If it's 1, the element exists.
-    else if (dat[q] === 1) {
-        console.log(`${q} -> true`);
-    }
-    // If it is 0 (or undefined if we hadn't filled it), it does not exist.
-    else {
-        console.log(`${q} -> false`);
-    }
-}
-
-/* * COMPLEXITY ANALYSIS
- * -------------------
- * Let N be the size of the input array.
- * Let Q be the number of queries.
- * Let M be the maximum value (magnitude) of an element in the array.
- * * Time Complexity: O(N + Q)
- * - Finding the max element takes O(N).
- * - Filling the DAT takes O(N).
- * - Processing all queries takes O(Q) because array indexing dat[q] is O(1).
- * - Total: O(N + Q). This is much faster than using .includes() inside a loop, which would be O(N * Q).
- * * Space Complexity: O(M)
- * - We require an auxiliary array of size M + 1.
- * - Note: In JavaScript, arrays are sparse objects, so space might be optimized internally,
- * but conceptually we are reserving index space up to M.
- */
 ```
 
 **Problem — Minimum distance between equal elements (Shaggy and distances)**
 
 *Return the smallest `j - i` such that `A[i] == A[j]` and `i ≠ j`, or `-1` if every value is unique. `[7, 1, 3, 4, 1, 7]` → `3`.*
 
-Walk once, remembering the **last index** each value was seen at. When a value repeats, the gap to its last occurrence is a candidate; the closest pair is always between consecutive occurrences, so the last index is all you need. `O(n)`. The notes list this twice ("Minimum Distance Between Equal Elements" and "Shaggy and distances").
+Walk once, remembering the **last index** each value was seen at. When a value repeats, the gap to its last occurrence is a candidate; the closest pair is always between consecutive occurrences, so the last index is all you need. `O(n)`.
 
 **Solution**
 
@@ -7563,7 +7516,8 @@ console.log(minDistanceEqual([7, 1, 3, 4, 1, 7])); // 3
 console.log(minDistanceEqual([1, 2, 3]));          // -1
 ```
 
-<a id="23-sorting-beyond-the-library-call"></a>
+
+<a id="24-sorting-beyond-the-library-call"></a>
 
 ### Sorting Beyond the Library Call
 
@@ -8272,7 +8226,7 @@ console.log(countNobleIntegers([-10, 1, 1, 2, 4, 4, 4, 8, 10])); // 5 // [1, 1, 
 // - Sorting is done in-place. Only a few variables (count, lessCount) are used.
 ```
 
-<a id="24-binary-search-on-arrays-and-answers"></a>
+<a id="25-binary-search-on-arrays-and-answers"></a>
 
 ### Binary Search on Arrays and on Answers
 
@@ -9198,7 +9152,7 @@ console.log(allocateBooks([12, 34, 67, 90], 2)); // 113
 console.log(allocateBooks([12, 15, 78], 4)); // -1
 ```
 
-<a id="25-multiple-approaches-pair-with-a-given-sum"></a>
+<a id="26-multiple-approaches-pair-with-a-given-sum"></a>
 
 ### Multiple Approaches: Pair With a Given Sum
 
@@ -9348,7 +9302,7 @@ console.log(hasPairWithSum([1, 2, 3, 4, 5], 10)); // false
  */
 ```
 
-<a id="26-multiple-approaches-the-unique-element-among-pairs"></a>
+<a id="27-multiple-approaches-the-unique-element-among-pairs"></a>
 
 ### Multiple Approaches: The Unique Element Among Pairs
 
@@ -9433,7 +9387,7 @@ console.log(singleElementSorted([3, 3, 7, 7, 10, 11, 11])); // 10
 
 Nodes joined by pointers. The advanced tricks here are all about what you can do with **two** pointers, **one** stack, or **zero** extra memory.
 
-<a id="27-linked-lists"></a>
+<a id="28-linked-lists"></a>
 
 ### Linked Lists
 
@@ -10668,7 +10622,7 @@ tail.next = head; // Creating a cycle
 console.log(hasCycle(head)); // Output: true
 ```
 
-<a id="28-stacks"></a>
+<a id="29-stacks"></a>
 
 ### Stacks
 
@@ -11269,7 +11223,7 @@ console.log(nextGreaterIndexOnRight([4, 6, 10, 11, 7, 8, 3, 5])); // [1, 2, 3, -
 console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, -1]
 ```
 
-<a id="29-queues-and-deques"></a>
+<a id="30-queues-and-deques"></a>
 
 ### Queues & Deques
 
@@ -12073,7 +12027,7 @@ const B2 = 6;
 console.log(maxSlidingWindow(A2, B2)); // [7, 7, 7, 7]
 ```
 
-<a id="30-binary-trees"></a>
+<a id="31-binary-trees"></a>
 
 ### Binary Trees
 
@@ -13806,7 +13760,7 @@ const B = 40;
 console.log(nodeToRootPath(root, B)); // [40, 45, 30, 50]
 ```
 
-<a id="31-binary-search-trees"></a>
+<a id="32-binary-search-trees"></a>
 
 ### Binary Search Trees
 
@@ -14660,7 +14614,7 @@ test(bst3, 1, 7);  // 1st smallest is 7
 test(bst3, 2, null); // out of range
 ```
 
-<a id="32-morris-traversal"></a>
+<a id="33-morris-traversal"></a>
 
 ### Morris Traversal
 
@@ -14931,7 +14885,7 @@ console.log('After :', inorderList(root)); // [1, 2, 3, 4]
  */
 ```
 
-<a id="33-lowest-common-ancestor"></a>
+<a id="34-lowest-common-ancestor"></a>
 
 ### Lowest Common Ancestor
 
@@ -15190,7 +15144,7 @@ test(bst, 10, 11, null); // both missing
 
 The heavyweight patterns: always grab the best item (heaps and greedy), remember every subproblem (DP), and walk networks of relationships (graphs).
 
-<a id="34-heaps"></a>
+<a id="35-heaps"></a>
 
 ### Heaps
 
@@ -16752,7 +16706,7 @@ function sortKSorted(arr, k) {
 console.log(sortKSorted([6, 5, 3, 2, 8, 10, 9], 3)); // [2, 3, 5, 6, 8, 9, 10]
 ```
 
-<a id="35-greedy-algorithms"></a>
+<a id="36-greedy-algorithms"></a>
 
 ### Greedy Algorithms
 
@@ -16985,7 +16939,7 @@ console.log(minJumpsGreedy([2, 3, 1, 1, 4])); // 2
 console.log(minJumpsGreedy([3, 2, 1, 0, 4])); // -1
 ```
 
-<a id="36-multiple-approaches-connecting-the-ropes"></a>
+<a id="37-multiple-approaches-connecting-the-ropes"></a>
 
 ### Multiple Approaches: Connecting the Ropes
 
@@ -17269,7 +17223,7 @@ console.log(minCostToConnectRopes([2, 2, 3, 3])); // 20
  */
 ```
 
-<a id="37-dynamic-programming"></a>
+<a id="38-dynamic-programming"></a>
 
 ### Dynamic Programming
 
@@ -18834,7 +18788,7 @@ function maxProfitK(k, prices) {
 console.log(maxProfitK(2, [3, 2, 6, 5, 0, 3])); // 7
 ```
 
-<a id="38-multiple-approaches-target-sum-subset-sum"></a>
+<a id="39-multiple-approaches-target-sum-subset-sum"></a>
 
 ### Multiple Approaches: Target Sum / Subset Sum
 
@@ -19058,7 +19012,7 @@ const target7 = 30;
 console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); // false
 ```
 
-<a id="39-multiple-approaches-print-valid-parentheses"></a>
+<a id="40-multiple-approaches-print-valid-parentheses"></a>
 
 ### Multiple Approaches: Print Valid Parentheses
 
@@ -19373,7 +19327,7 @@ printValidParenthesisDP(3); // ()()(), ()(()), (())(), (()()), ((()))
  */
 ```
 
-<a id="40-graphs"></a>
+<a id="41-graphs"></a>
 
 ### Graphs
 
@@ -21512,7 +21466,7 @@ console.log(validPath(5, 5, 1, [2], [2])); // YES
 
 ---
 
-<a id="41-the-whole-thing-on-one-page"></a>
+<a id="42-the-whole-thing-on-one-page"></a>
 
 ## The Whole Thing on One Page
 
@@ -21536,26 +21490,27 @@ Most of interview problem-solving is **recognition**: noticing which of about th
 | "number of ways to choose, nCr mod M" | Pascal's identity | `O(N^2)` | §18 |
 | "power in logarithmic time" | recursion, halve the exponent | `O(log N)` | §20 |
 | "all subsets / permutations / combinations" | backtracking | `O(2^N)` / `O(N!)` | §21 |
-| "subarray with sum K, negatives allowed" | prefix sums + hash map | `O(N)` | §22 |
-| "values in a small range" | count sort | `O(N + K)` | §23 |
-| "arrange to form the largest …" | custom comparator | `O(N log N)` | §23 |
-| "minimum possible maximum" / "maximum possible minimum" | binary search on the answer | `O(N log R)` | §24 |
-| "middle, cycle, palindrome of a linked list" | slow / fast pointers | `O(N)`, `O(1)` | §27 |
-| "O(1) get and put with eviction" | hash map + DLL (LRU) | `O(1)` | §27 |
-| "nearest smaller / greater element" | monotonic stack | `O(N)` | §28 |
-| "max of every window" | monotonic deque | `O(N)` | §29 |
-| "left / right / top view of a tree" | level order (+ column index) | `O(N)` | §30 |
-| "validate, delete or k-th smallest in a BST" | BST ordering, inorder | `O(H)` / `O(N)` | §31 |
-| "inorder with O(1) space" | Morris traversal | `O(N)`, `O(1)` | §32 |
-| "lowest common ancestor" | steer by value / recurse both sides | `O(H)` / `O(N)` | §33 |
-| "k smallest / largest, running median" | heap(s) | `O(N log K)` | §34 |
-| "maximum jobs / minimum joining cost" | greedy with sort or heap | `O(N log N)` | §35 |
-| "count ways / min cost, choices overlap" | dynamic programming | states × transitions | §37 |
-| "budget, weights, values" | knapsack | `O(N·W)` | §37 |
-| "fewest steps in a grid or unweighted graph" | BFS / multi-source BFS | `O(V + E)` | §40 |
-| "prerequisites / build order" | topological sort | `O(V + E)` | §40 |
-| "connect everything cheaply" | MST (Kruskal / Prim) | `O(E log E)` | §40 |
-| "cheapest route, non-negative weights" | Dijkstra | `O((V + E) log V)` | §40 |
+| "distinct elements / pair with sum K / unique substring" | hash set | `O(N)` | §22 |
+| "subarray with sum K, negatives allowed" | prefix sums + hash map | `O(N)` | §23 |
+| "values in a small range" | count sort | `O(N + K)` | §24 |
+| "arrange to form the largest …" | custom comparator | `O(N log N)` | §24 |
+| "minimum possible maximum" / "maximum possible minimum" | binary search on the answer | `O(N log R)` | §25 |
+| "middle, cycle, palindrome of a linked list" | slow / fast pointers | `O(N)`, `O(1)` | §28 |
+| "O(1) get and put with eviction" | hash map + DLL (LRU) | `O(1)` | §28 |
+| "nearest smaller / greater element" | monotonic stack | `O(N)` | §29 |
+| "max of every window" | monotonic deque | `O(N)` | §30 |
+| "left / right / top view of a tree" | level order (+ column index) | `O(N)` | §31 |
+| "validate, delete or k-th smallest in a BST" | BST ordering, inorder | `O(H)` / `O(N)` | §32 |
+| "inorder with O(1) space" | Morris traversal | `O(N)`, `O(1)` | §33 |
+| "lowest common ancestor" | steer by value / recurse both sides | `O(H)` / `O(N)` | §34 |
+| "k smallest / largest, running median" | heap(s) | `O(N log K)` | §35 |
+| "maximum jobs / minimum joining cost" | greedy with sort or heap | `O(N log N)` | §36 |
+| "count ways / min cost, choices overlap" | dynamic programming | states × transitions | §38 |
+| "budget, weights, values" | knapsack | `O(N·W)` | §38 |
+| "fewest steps in a grid or unweighted graph" | BFS / multi-source BFS | `O(V + E)` | §41 |
+| "prerequisites / build order" | topological sort | `O(V + E)` | §41 |
+| "connect everything cheaply" | MST (Kruskal / Prim) | `O(E log E)` | §41 |
+| "cheapest route, non-negative weights" | Dijkstra | `O((V + E) log V)` | §41 |
 
 ```mermaid
 flowchart TD
