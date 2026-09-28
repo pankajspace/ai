@@ -4,65 +4,55 @@ name: "create-course"
 argument-hint: "One or more topics (e.g. 'Kubernetes', or 'Rust, Go' for a shared tile)"
 ---
 
-Build a complete, self-contained study unit for each topic given as an argument:
+Per topic, build a **crash course** (weekly-use fundamentals via mental models and animations), a **detailed course** (the whole topic from first principles), a **catalog page**, and a **hub tile** in `projects/techtoday/index.html`.
 
-1. **Crash course** — the most-used and most-fundamental parts of the topic, taught through mental models and animations.
-2. **Detailed course** — the whole topic, section by section, from first principles.
-3. **Catalog page** + **homepage hub tile** wiring both courses into `projects/techtoday/index.html`.
-
-Author each course in **Markdown first, then HTML**. The `.md` file is where the teaching is written and reviewed; the `.html` file is that same content wired into the site's components and animation engine. Every `.html` page in `study/` has a `.md` counterpart next to it, and the two must stay in sync.
-
-The reference implementation is **DSA** (`projects/techtoday/study/dsa/`). It is the most complete unit on the site — it carries the animation engine. Copy its assets and match its structure; do not invent a new design system.
+Reference implementation: **DSA** (`projects/techtoday/study/dsa/`), which carries the animation engine. Copy its assets and structure; don't invent a new design system.
 
 ---
 
-## 0. Conventions and naming
-
-Given a topic, derive a lowercase hyphenated `<slug>` (`kubernetes`, `system-design`, `dsa`).
+## 1. Layout and rules
 
 ```
-projects/techtoday/
-├── index.html                        ← add/extend one hub tile
-└── study/
-    └── <slug>/
-        ├── <slug>-courses.html       ← catalog page (2 cards)
-        ├── <slug>-courses.md         ← Markdown counterpart
-        ├── <slug>-crash-course.md    ← written first
-        ├── <slug>-crash-course.html
-        ├── <slug>-detailed-course.md ← written first
-        ├── <slug>-detailed-course.html
-        ├── <slug>-study.css          ← copy of dsa-study.css
-        └── <slug>-study.js           ← copy of dsa-study.js
+projects/techtoday/study/<slug>/      ← <slug> = lowercase-hyphenated topic
+├── <slug>-courses.html / .md         ← catalog page
+├── <slug>-crash-course.md / .html
+├── <slug>-detailed-course.md / .html
+├── <slug>-study.css                  ← copy of dsa-study.css
+└── <slug>-study.js                   ← copy of dsa-study.js
 ```
 
-Rules that hold across the whole site:
-
-- **Markdown first.** Write `<slug>-crash-course.md` and `<slug>-detailed-course.md` before their HTML, and keep every `.html` page paired with a same-named `.md` in the same folder.
-- **No frameworks, no build step, no CDN.** Plain HTML + one CSS file + one JS file per topic folder.
-- Each topic folder is **self-contained** except for `../../site-header.css`, which is shared.
-- Catalog page naming follows the topic's own noun: `-courses.html` for courses, `-guides.html` where the existing site already used that (`git-guides.html`, `devops-guides.html`). For a new topic prefer `-courses.html`.
-- When the argument is **multiple topics that belong together** (e.g. "Rust, Go" → *Systems Languages*), nest each topic folder under a parent folder named after the hub tile — `study/<tile-slug>/<slug>/` — with a **single catalog page at `study/<tile-slug>/<tile-slug>-courses.html`** listing every topic's cards, and a **single hub tile with a final `Show All &rarr;` bullet**. Follow `study/programming-languages/{python,javascript}/` and `study/devops/{devops,docker,kubernetes}/`. Paths inside the nested course pages need one extra `../` level (`../../../site-header.css`).
+- **Markdown first, then HTML.** Every `.html` has a same-named `.md` beside it; update both in the same change.
+- **Incremental.** Write a few sections at a time, appending to the file. Never generate a whole course in one pass.
+- No frameworks, build step or CDN. The folder is self-contained except the shared `../../site-header.css`.
+- Catalog naming: `-courses.html` (`-guides.html` only where it already exists, e.g. git, devops).
+- **Related topics** (e.g. "Rust, Go" → Systems Languages): nest as `study/<tile-slug>/<slug>/` with one catalog at `study/<tile-slug>/<tile-slug>-courses.html` and one hub tile. Nested pages need an extra `../` (`../../../site-header.css`). See `study/programming-languages/` and `study/devops/`.
 
 ---
 
-## 1. Plan the syllabus before writing anything
+## 2. Plan the syllabus first
 
-Write the two tables of contents first and confirm them, because everything else — Markdown anchors and HTML section IDs alike — hangs off the section IDs.
+Confirm both TOCs before writing; every Markdown anchor and HTML ID hangs off them. IDs are `<n>-<kebab-title>`, numbered in both ID and heading: `<h2 id="14-sorting">14. Sorting</h2>`.
 
-- **Crash course** — 10–14 entries. Only what a practitioner touches weekly plus the fundamentals that make the rest legible. Group into 2–4 "Units" using `<h2 id="unit-1">Unit 1 — …</h2>` with `<h3>` sections beneath, exactly as the DSA crash course does. Start with the one prerequisite idea the whole topic rests on (DSA opens with Big-O) and end with a "the whole thing on one page" summary.
-- **Detailed course** — 25–40 numbered `<h2>` sections, ordered so each depends only on earlier ones. Number them in both the ID and the visible heading: `<h2 id="14-sorting">14. Sorting</h2>`. End with a cheat sheet, a pattern-recognition playbook, and a practice roadmap.
+1. **Crash course** (`<body class="is-crash">`) — 10–14 sections: what a practitioner touches weekly plus the fundamentals that make it legible. Mental model first; idiomatic code only. Open with the one prerequisite idea (DSA: Big-O); close with a one-page summary and "Where to go next" (numbered links to the detailed course, the catalog, and 2–3 external resources). ~2,500–3,000 HTML lines.
+2. **Detailed course** (no body class) — 25–40 sections, each depending only on earlier ones. First principles, then proof and edge cases; full implementations in both languages, plus from-scratch versions where a language lacks the feature. Section 1 has a `callout-key` pointing to the crash course. End with a cheat sheet, pattern-recognition playbook, and practice roadmap. ~8,000–10,000 HTML lines.
 
-Every section ID must be `#<n>-<kebab-title>` and every TOC entry links to it. The same IDs become the anchors in the Markdown file, so fix them once, here.
+Each crash-course section follows this rhythm:
+
+1. Meta-strip — the 2–4 numbers worth memorising.
+2. One plain-language definition paragraph.
+3. Analogy — an everyday mental model.
+4. Animation or diagram.
+5. Strength/weakness card-grid.
+6. Worked interview question — reasoning in prose, then Python/JavaScript tabs.
+7. Callout for the gotcha people actually hit.
+
+Always explain the *why* and the trade-off; never write a section that is only a definition and a code block.
 
 ---
 
-## 2. Write the Markdown course first
+## 3. Markdown course
 
-Write `<slug>-crash-course.md` and `<slug>-detailed-course.md` before touching HTML. Prose, examples, code and diagrams get reviewed here, where they are cheap to change; the HTML pass is then mechanical.
-
-Work **incrementally, a few sections at a time**, appending to the file. Do not attempt a single generation of a whole course.
-
-Use this shape, which is exactly what the HTML converts to and from:
+Teaching is reviewed here while it's cheap to change; the HTML pass is then mechanical. Use this shape:
 
 ````markdown
 <!--
@@ -123,135 +113,50 @@ The reasoning, in prose, before any code.
 > The gotcha people actually hit.
 ````
 
-Markdown ↔ HTML mapping to keep the pair in sync:
+Markdown ⇄ HTML mapping:
 
-1. `<a id="…"></a>` before a heading ⇄ the `id` on `<h1>`–`<h4>` (and its `.headerlink` anchor).
-2. `> **Key idea** / **Tip** / **Warning** / **Interview**` ⇄ `.callout.callout-key` / `-tip` / `-warn` / `-interview`.
-3. `> **Analogy** 🎬` + bold title ⇄ `.analogy` with `.analogy-icon` and `.analogy-body`.
-4. Bullet list of `**Term**` + value ⇄ `ul.meta-strip`; bullets of `**Strength — …**` ⇄ `ul.card-grid`.
+1. `<a id="…"></a>` before a heading ⇄ `id` on `<h1>`–`<h4>` plus its `.headerlink`.
+2. `> **Key idea** / **Tip** / **Warning** / **Interview**` ⇄ `.callout-key` / `-tip` / `-warn` / `-interview`.
+3. `> **Analogy** 🎬` + bold title ⇄ `.analogy` (`.analogy-icon`, `.analogy-body`).
+4. `**Term**` + value bullets ⇄ `ul.meta-strip`; `**Strength — …**` bullets ⇄ `ul.card-grid`.
 5. `**Interview question**` + italic question + prose ⇄ `.worked` with `.worked-q`.
-6. Consecutive fenced blocks under a bold label ⇄ `.code-tabs[data-label]` with one `.tab-pane` per language.
-7. `> **Interactive animation:** \`name\`` ⇄ `<div class="viz" data-viz="name"></div>` — one line per widget you intend to build, so §6 has a checklist.
-8. Fenced `text` block ⇄ `div.ascii`; italic caption line ⇄ `figcaption.viz-caption`; Markdown table ⇄ `<table>`.
+6. Consecutive fenced blocks under a bold label ⇄ `.code-tabs[data-label]`, one `.tab-pane` per language.
+7. `> **Interactive animation:** \`name\`` ⇄ `<div class="viz" data-viz="name"></div>` — the widget work list for §6.
+8. Fenced `text` ⇄ `div.ascii`; italic caption ⇄ `figcaption.viz-caption`; table ⇄ `<table>`.
 
-Confirm the Markdown reads as a complete course on its own before starting the HTML. If the HTML is edited later, update the `.md` in the same change — they are counterparts, not a one-way export.
+The Markdown must read as a complete course before HTML starts.
 
 ---
 
-## 3. Scaffold the topic assets
+## 4. Scaffold assets
 
 ```bash
-cd projects/techtoday/study
-mkdir -p <slug>
+cd projects/techtoday/study && mkdir -p <slug>
 cp dsa/dsa-study.css <slug>/<slug>-study.css
 cp dsa/dsa-study.js  <slug>/<slug>-study.js
 ```
 
-Then make exactly these edits to the copies:
-
-**`<slug>-study.css`** — three strings:
-
-```css
-.study>h1:first-child::before { content: "<Topic name>"; }        /* eyebrow, detailed course */
-body.is-crash .study>h1:first-child::before { content: "<Topic> crash course"; }
-```
-(the file header comment naming the guide is the third).
-
-**`<slug>-study.js`** — the persistence key and the header comment:
-
-```js
-const LANG_KEY = "tt-<slug>-lang";   // was tt-dsa-lang
-```
-
-Keep the whole animation engine even if the first draft uses few widgets — the `VIZ` registry is additive and unused entries cost nothing at runtime (the player only mounts `[data-viz]` elements present in the page).
-
-If the topic's code samples are not Python/JavaScript, extend the highlighter: add a keyword/builtin `Set` and a `buildTokenizer` branch, and add the label to `LANG_LABEL`. Do **not** pull in a highlighting library.
+1. **CSS** — update the header comment and both eyebrows: `.study>h1:first-child::before { content: "<Topic>"; }` and `body.is-crash .study>h1:first-child::before { content: "<Topic> crash course"; }`.
+2. **JS** — update the header comment and `const LANG_KEY = "tt-<slug>-lang";` (was `tt-dsa-lang`). Keep the whole animation engine; the player only mounts `[data-viz]` elements on the page.
+3. **Other languages** — extend the built-in highlighter (keyword/builtin `Set`, a `buildTokenizer` branch, a `LANG_LABEL` entry). No highlighting library.
 
 ---
 
-## 4. Page skeleton (identical for both courses)
+## 5. HTML page and components
 
-With the Markdown approved, build the HTML page from it section by section — the headings, IDs, prose and code come across verbatim; only the wrappers are new.
+Convert the approved Markdown section by section: headings, IDs, prose and code verbatim; only wrappers are new. Copy the shell from `dsa/dsa-crash-course.html` (`header.tt-site-header` → `div.progress` → `main > article.study` → `footer.study-footer` → `button.back-to-top` → `<script src="<slug>-study.js">`) and change the `<title>`, meta description (one specific sentence), CSS/JS filenames, `body` class, back link (`<slug>-courses.html`, or `../<tile-slug>-courses.html` when nested), `<h1>` and footer text.
 
-```html
-<!DOCTYPE html>
-<html lang="en">
+Must-haves:
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0d10" />
-    <title><Topic> Crash Course | TechToday</title>
-    <meta name="description" content="One sentence, specific, no marketing." />
-    <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="<slug>-study.css" />
-    <link rel="stylesheet" href="../../site-header.css" />
-</head>
+- `<p class="lede">` after the `<h1>`, telling the reader to press **Play** on animations.
+- Every `<h1>`–`<h4>` ends with `<a class="headerlink" href="#id" title="Permanent link">#</a>`.
+- `<ol class="table-of-contents table-of-contents-numbered">` under `<h2 id="table-of-contents">`. JS clones it into the sticky sidebar and mobile "Topics" drawer with scroll-spy; if it's missing or its links don't resolve, the sidebar silently disappears.
+- `<!-- ====== n -->` rulers between sections, for navigating these long files.
 
-<body class="is-crash">   <!-- omit the class on the detailed course -->
-    <header class="tt-site-header">
-        <nav class="tt-site-nav" aria-label="Main navigation">
-            <a class="tt-site-brand" href="../../index.html">
-                <span class="tt-site-logo" aria-hidden="true"></span>
-                <span>TechToday</span>
-            </a>
-            <a href="../<slug>-courses.html" class="nav-back-link">&larr; <Topic> Courses</a>
-        </nav>
-    </header>
-    <div class="progress" aria-hidden="true"></div>
-    <main>
-        <article class="study">
-            <h1 id="<slug>-crash-course"><Topic><a class="headerlink" href="#<slug>-crash-course"
-                    title="Permanent link">#</a></h1>
-
-            <p class="lede">Two or three sentences on how to read the page. Tell the reader to press
-                <strong>Play</strong> on the animations.</p>
-
-            <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents"
-                    title="Permanent link">#</a></h2>
-            <ol class="table-of-contents table-of-contents-numbered">
-                <li><a href="#1-…">…</a></li>
-            </ol>
-
-            <!-- sections -->
-        </article>
-    </main>
-    <footer class="study-footer">TechToday Study Library &mdash; <Topic></footer>
-    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
-    <script src="<slug>-study.js"></script>
-</body>
-
-</html>
-```
-
-Non-negotiables:
-
-- The base-path script is the **first** element in `<head>` (production serves the site under `/ai`).
-- Every `<h1>`/`<h2>`/`<h3>`/`<h4>` carries a trailing `<a class="headerlink" href="#id" title="Permanent link">#</a>`.
-- `.table-of-contents` is cloned by the JS into the sticky sidebar and the mobile "Topics" drawer, and scroll-spy highlights it. If the TOC is missing or its links do not resolve to real IDs, the sidebar silently disappears.
-- Insert `<!-- ====== n -->` comment rulers between sections. These files run into the thousands of lines; the rulers are how you navigate them later.
-
----
-
-## 5. Section anatomy and content components
-
-Each crash-course section follows the same rhythm, and this is what makes the pages teach rather than list:
-
-1. `<ul class="meta-strip">` — the 2–4 numbers worth memorising.
-2. One paragraph of plain-language definition.
-3. `<div class="analogy">` — an everyday mental model.
-4. An animation or a diagram.
-5. Strength/weakness contrast via `.card-grid`.
-6. `<div class="worked">` — question, reasoning, then Python/JavaScript tabs.
-7. A `.callout` for the gotcha people actually hit.
-
-Available components (all styled by the copied CSS — use these, never ad-hoc inline styles):
+Components (styled by the copied CSS; never ad-hoc inline styles):
 
 ```html
-<div class="callout callout-key">…</div>       <!-- the one idea to retain -->
-<div class="callout callout-tip">…</div>
-<div class="callout callout-warn">…</div>      <!-- gotcha / footgun -->
-<div class="callout callout-interview">…</div>
+<div class="callout callout-key">…</div>   <!-- also callout-tip, -warn (gotcha), -interview -->
 
 <div class="analogy">
     <span class="analogy-icon">🎬</span>
@@ -284,29 +189,23 @@ Available components (all styled by the copied CSS — use these, never ad-hoc i
 </div>
 ```
 
-- `.big-o` colour classes: `o-great`, `o-good`, `o-ok`, `o-bad`.
-- Code blocks: escape `<` `>` `&` as `&lt;` `&gt;` `&amp;` inside `<code>`. Leading/trailing blank lines are stripped by the `dedent` helper, so start the code on the line after `<code …>`.
-- `data-lang` must be one of the keys in `LANG_LABEL` (`python`, `javascript`, `text`). The tab bar is generated from the panes; the reader's choice persists site-wide via `LANG_KEY`.
-- Tables need no wrapper — the JS wraps every `<table>` in `.table-wrap` for horizontal scroll.
-- Prose rule: explain the *why* and the trade-off. Never write a section that is only a definition and a code block.
+- `.big-o` colours: `o-great`, `o-good`, `o-ok`, `o-bad`.
+- Escape `<` `>` `&` inside `<code>`. Start code on the line after `<code …>` (`dedent` strips edge blank lines).
+- `data-lang` must be a `LANG_LABEL` key (`python`, `javascript`, `text`); tabs are generated from panes and the choice persists via `LANG_KEY`.
+- Tables need no wrapper (JS adds `.table-wrap`).
 
 ---
 
 ## 6. Animations — the part that matters most
 
-The requirement is "explain everything using animations, images or diagrams where it makes sense". Order of preference: **animated widget → SVG/ASCII diagram → table → prose**. Any process with steps (a request travelling, a rebase rewriting history, a scheduler switching, a packet being fragmented) should be a widget, not a paragraph.
-
-The `> **Interactive animation:** \`name\`` markers left in the Markdown are the work list: each one becomes a mounted widget here, with the same name.
-
-Mount a widget with a single element:
+Preference: **animated widget → SVG/ASCII diagram → table → prose**. Any stepwise process (a request travelling, a rebase, a scheduler switch) is a widget, not a paragraph. Each Markdown animation marker becomes a widget of the same name.
 
 ```html
 <div class="viz" data-viz="linked-list"></div>
-<div class="viz" data-viz="sorting" data-option="merge"></div>   <!-- pins one variant -->
-<div class="viz" data-viz="sorting"></div>                        <!-- shows the variant picker -->
+<div class="viz" data-viz="sorting" data-option="merge"></div>   <!-- pins a variant; omit for the picker -->
 ```
 
-Register it in `<slug>-study.js` above the `viz player` section:
+Register in `<slug>-study.js` above the `viz player` section:
 
 ```js
 VIZ["cache-eviction"] = {
@@ -321,81 +220,33 @@ VIZ["cache-eviction"] = {
 };
 ```
 
-The contract:
+- `build()` precomputes every frame as `[{ stage, note }]` HTML strings; the player only swaps `innerHTML`, so playback is deterministic, scrubbable and reversible. Never use `setTimeout` in a widget.
+- The player provides controls, scrubber, speed, `step n / N`, autoplay on scroll-in (once, respecting `prefers-reduced-motion`) and auto-pause on scroll-out.
+- `note` is where teaching happens: one sentence on what changed and why, with `<code>` for state (`lo=0`). Aim for 8–20 frames; never more than ~30.
+- Helpers: `cellsHTML(arr, marks, tags)`, `barsHTML(arr, marks)`, `gridHTML(rows, marks)`, `svgHTML(w, h, body)`, `nodeHTML(x, y, label, state, r, sub)`, `edgeHTML(x1, y1, x2, y2, state)`, `esc()`, `clone()`.
 
-- `build()` **precomputes every frame up front** and returns `[{ stage, note }]`. `stage` and `note` are HTML strings; the player only swaps `innerHTML`, so playback is deterministic, scrubbable and reversible. Never animate with `setTimeout` inside a widget.
-- The player supplies restart / prev / play / next / scrubber / speed, a `step n / N` counter, autoplay on scroll-in (once, respecting `prefers-reduced-motion`) and auto-pause on scroll-out. You get all of this for free.
-- `note` is where the teaching happens — one sentence naming what changed and why, with `<code>` for state (`lo=0`, `hi=10`). Aim for 8–20 frames; more than ~30 and the reader loses the thread.
+Valid state classes — anything else fails silently as an unstyled frame:
 
-Render helpers already in the file: `cellsHTML(arr, marks, tags)`, `barsHTML(arr, marks)`, `gridHTML(rows, marks)`, `svgHTML(w, h, body)`, `nodeHTML(x, y, label, state, r, sub)`, `edgeHTML(x1, y1, x2, y2, state)`, `esc()`, `clone()`.
+1. `cellsHTML`: `is-active`, `is-cmp`, `is-done`, `is-out`, `is-window`, `is-dim`, `is-ghost`. Not `is-act` — the DSA `binary-search` widget has that bug; don't copy it.
+2. `barsHTML`: `is-cmp`, `is-act`, `is-done`, `is-out`, `is-aux`.
+3. `gridHTML` (keyed `"r,c"`): `is-head`, `is-act`, `is-cmp`, `is-done`, `is-empty`.
+4. `nodeHTML`: `n-idle`, `n-act`, `n-cmp`, `n-done`, `n-out`.
+5. `edgeHTML`: `e-idle`, `e-act`, `e-done`.
+6. `legend`: `lg-cmp`, `lg-act`, `lg-done`, `lg-out`, `lg-idle`.
 
-**Use only these state classes — mismatches fail silently (no error, just an unstyled frame):**
-
-| Helper | Valid modifier values |
-| --- | --- |
-| `cellsHTML` marks | `is-active`, `is-cmp`, `is-done`, `is-out`, `is-window`, `is-dim`, `is-ghost` |
-| `barsHTML` marks | `is-cmp`, `is-act`, `is-done`, `is-out`, `is-aux` |
-| `gridHTML` marks (keyed `"r,c"`) | `is-head`, `is-act`, `is-cmp`, `is-done`, `is-empty` |
-| `nodeHTML` state | `n-idle`, `n-act`, `n-cmp`, `n-done`, `n-out` |
-| `edgeHTML` state | `e-idle`, `e-act`, `e-done` |
-| `legend` class | `lg-cmp`, `lg-act`, `lg-done`, `lg-out`, `lg-idle` |
-
-> The DSA `binary-search` widget passes `is-act` to `cellsHTML`, but cells only style `is-active` — the highlight never renders. Do not copy that bug; check the table above when reusing a widget as a template.
-
-For static pictures use inline `<svg>` (no external images) wrapped as:
-
-```html
-<figure class="figure">
-    <svg viewBox="0 0 640 220" role="img" aria-label="…">…</svg>
-    <figcaption class="viz-caption">What to notice in the picture.</figcaption>
-</figure>
-```
+Static pictures: inline `<svg role="img" aria-label="…">` inside `<figure class="figure">` with `<figcaption class="viz-caption">`. No external images.
 
 ---
 
-## 7. Crash course vs detailed course
+## 7. Catalog page
 
-|  | Crash | Detailed |
-| --- | --- | --- |
-| `<body>` class | `is-crash` | none |
-| Sections | 10–14, grouped into Units | 25–40, numbered |
-| Framing | mental model first, code second | first principles, then proof and edge cases |
-| Code | the idiomatic form only | full implementations, both languages, plus the from-scratch version where a language lacks the feature |
-| Length guide | ~2,500–3,000 lines of HTML | ~8,000–10,000 lines of HTML |
-
-Cross-link them both ways:
-
-- Detailed course, inside section 1: a `callout-key` pointing new readers at the crash course.
-- Crash course, in the closing "Where to go next": a numbered list linking the detailed course, the catalog page, and 2–3 genuinely useful external resources.
-
-Write these files **incrementally, a few sections at a time**, appending to the file — in Markdown first, then in HTML. Do not attempt a single generation of a 400 KB document.
+Copy `study/dsa/dsa-courses.html`; change title, description, favicon emoji, hero copy and cards. It uses `../../style.css` (not the study CSS), `.grid.grid-2` for two cards, `.grid` for four or more. Each card is `.card > .card-header (span.icon + h3)`, a `<p>` naming the actual sections covered (not adjectives), and `<a href="…">Start learning &rarr;</a>`. Multi-topic catalogs list crash then detailed for each topic. Add the `.md` counterpart: title, hero copy, one bullet per card with its link.
 
 ---
 
-## 8. Catalog page — `study/<slug>/<slug>-courses.html`
+## 8. Homepage hub tile
 
-Copy `study/dsa/dsa-courses.html` and change the title, description, favicon emoji, hero copy and cards. It uses the site-wide `../../style.css` (not the study CSS), `.grid.grid-2` for two cards, plain `.grid` for four or more:
-
-```html
-<div class="card">
-    <div class="card-header">
-        <span class="icon">💡</span>
-        <h3><Topic> Crash Course</h3>
-    </div>
-    <p>Two lines naming the actual sections covered — not adjectives.</p>
-    <a href="<slug>-crash-course.html">Start learning &rarr;</a>
-</div>
-```
-
-For a multi-topic tile, the single catalog page sits in the tile folder and lists every topic's crash + detailed card, ordered crash/detailed per topic.
-
-Give the catalog page a `<slug>-courses.md` counterpart too — title, hero copy and one bullet per card with its link.
-
----
-
-## 9. Homepage hub tile — `projects/techtoday/index.html`
-
-Append or update one `.hub-tile` inside `.hub-grid`, preceded by an HTML comment naming it:
+Append or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`:
 
 ```html
 <!-- <Topic> Tile -->
@@ -420,38 +271,28 @@ Append or update one `.hub-tile` inside `.hub-grid`, preceded by an HTML comment
 </div>
 ```
 
-Tile structure rules:
-
-1. **Collapsible container**: Include `is-collapsed` on `.hub-tile`, with `data-tile-id="<slug>"` and accessibility attributes on `.hub-tile-header` (`role="button"`, `tabindex="0"`, `aria-expanded="false"`, `aria-label="Expand <Topic> tile"`).
-2. **SVG Icon**: In `.hub-tile-title .icon`, use an inline SVG with glowing gradients/filters matching the dark theme design system.
-3. **Status badge**: Use `<span class="hub-status live">Live</span>` (or `wip` for upcoming topics).
-4. **No main tile description**: Omit `<p class="hub-tile-desc">` on live tiles to keep vertical space compact.
-5. **Horizontal bullet list**: Replace old card-box items and bottom CTA blocks with `<ul class="hub-bullet-list">` inside `<div class="hub-tile-body">`. All course links render horizontally as compact, flex-wrapped pill badges.
-6. **Course bullets**: For a single topic, list its crash course and detailed course. For multi-topic tiles (e.g. Programming Languages, DevOps), list the relevant crash and detailed courses for each topic.
-7. **Show All link**: The final bullet in `<ul class="hub-bullet-list">` must always link to the topic's courses catalog landing page using `Show All &rarr;` (e.g. `<li><a href="study/<slug>/<slug>-courses.html">Show All &rarr;</a></li>`). Do not add a separate bottom `.hub-cta` block.
+- Keep `is-collapsed`, `data-tile-id` and the header's `role`/`tabindex`/`aria-*` attributes (collapsible, accessible).
+- Icon: inline SVG with glowing gradients/filters matching the dark theme.
+- Status: `live`, or `wip` for upcoming topics.
+- No `<p class="hub-tile-desc">` and no `.hub-cta` block; links go only in `ul.hub-bullet-list` (renders as horizontal pills).
+- Multi-topic tiles list crash + detailed for each topic. The last bullet is always `Show All &rarr;` to the catalog.
 
 ---
 
-## 10. Update the docs
+## 9. Update the docs
 
-1. **Root `README.md`** — add under `# Learn` a `## <Topic>` block with the two relative HTML links, matching the existing Python and DSA entries.
-2. **`projects/techtoday/README.md`** — add the new folder and catalog page to the *Project Structure* tree, and bump the tile count and category list in *Design* item 3 ("8 category tiles…").
+1. Root `README.md` — under `# Learn`, add a `## <Topic>` block with the two course links, like the Python and DSA entries.
+2. `projects/techtoday/README.md` — add the folder and catalog to *Project Structure*; bump the tile count and category list in *Design* item 3.
 
 ---
 
-## 11. Verification checklist
+## 10. Verification checklist
 
-Run through this before reporting done:
-
-- [ ] Every `.html` page in the topic folder has a `.md` counterpart of the same name, and the two carry the same sections, prose and code.
-- [ ] Both courses open; the sticky sidebar renders and highlights the section you are in (proves the TOC IDs resolve).
-- [ ] Every `data-viz` value in the HTML has a matching key in `VIZ` — grep both and diff:
-      `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`
-- [ ] Every widget plays, scrubs, reverses, and its final frame states the conclusion.
-- [ ] Widget state classes are in the table from §6.
-- [ ] Language tabs switch, and the choice persists after reload.
-- [ ] Copy-code buttons work; no raw `<` `>` breaking a code block.
-- [ ] Crash ↔ detailed ↔ catalog ↔ homepage links all resolve, including `../../index.html` and `../<slug>-courses.html`.
-- [ ] Page works at 390 px wide: the sidebar collapses into the "Topics" drawer.
-- [ ] No external network requests — no CDN scripts, fonts or images.
-- [ ] Root README and techtoday README updated.
+- [ ] Each `.html` has a matching `.md` with the same sections, prose and code.
+- [ ] Sidebar renders and scroll-spy highlights (TOC IDs resolve); at 390 px it collapses into the "Topics" drawer.
+- [ ] Every `data-viz` has a `VIZ` key: `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`.
+- [ ] Widgets play, scrub and reverse; the final frame states the conclusion; state classes come from §6.
+- [ ] Language tabs switch and persist after reload; copy buttons work; no unescaped `<` `>` in code.
+- [ ] Crash ↔ detailed ↔ catalog ↔ homepage links resolve, including `../../index.html`.
+- [ ] No external network requests (CDN scripts, fonts, images).
+- [ ] Both READMEs updated.
