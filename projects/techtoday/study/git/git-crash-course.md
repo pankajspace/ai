@@ -38,15 +38,9 @@ Most people learn Git as a list of incantations: `add`, `commit`, `push`, and a 
 13. [Getting Out of Trouble — `reflog` and `bisect`](#13-recovery)
 14. [The Whole Thing on One Page](#14-one-page)
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Model Under Everything
-
-Nothing in this unit is a command you will type often. It is the data model, and it is the reason the commands behave the way they do. Three sections: the three places a file can exist, what a commit really contains, and what a branch really is. Every later section is an application of these.
-
 <a id="1-three-trees"></a>
 
-### 1. The Three Trees — Working Tree, Index, HEAD
+## 1. The Three Trees — Working Tree, Index, HEAD
 
 - **Working tree** `not backed up`
 - **Index** `one file`
@@ -110,7 +104,7 @@ git status --short                # expect: clean
 
 <a id="2-snapshots"></a>
 
-### 2. Commits Are Snapshots, and the Hash Is the Name
+## 2. Commits Are Snapshots, and the Hash Is the Name
 
 - **Object types** `4`
 - **Commit lookup** `O(1)`
@@ -184,7 +178,7 @@ git verify-pack -v .git/objects/pack/*.idx \
 
 <a id="3-branches"></a>
 
-### 3. Branches Are Pointers — and So Is HEAD
+## 3. Branches Are Pointers — and So Is HEAD
 
 - **Cost to branch** `41 bytes`
 - **Time to branch** `O(1)`
@@ -257,15 +251,9 @@ git switch rescue
 git fsck --lost-found
 ```
 
-<a id="unit-2"></a>
-
-## Unit 2 — The Daily Loop
-
-This is the part you touch every hour: making a commit worth reviewing, seeing exactly what you are about to ship, undoing the four different things “undo” can mean, and joining two lines of work back together. Everything here is an application of Unit 1 — each command is named by the trees or pointers it moves.
-
 <a id="4-staging"></a>
 
-### 4. Staging Deliberately — `add -p` and Good Commits
+## 4. Staging Deliberately — `add -p` and Good Commits
 
 - **Good commit size** `one idea`
 - **Subject line** `≤ 50 chars`
@@ -343,7 +331,7 @@ git stash pop                    # get the unfinished work back
 
 <a id="5-reading"></a>
 
-### 5. Reading What Changed — `status`, `diff`, `log`
+## 5. Reading What Changed — `status`, `diff`, `log`
 
 - **Diffs to know** `4`
 - **Two dots** `A..B`
@@ -411,7 +399,7 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 <a id="6-undo"></a>
 
-### 6. Undoing — `restore`, `reset`, `revert`
+## 6. Undoing — `restore`, `reset`, `revert`
 
 - **restore** `destroys edits`
 - **reset** `moves the branch`
@@ -488,7 +476,7 @@ git filter-repo --invert-paths --path config/secrets.yml
 
 <a id="7-merging"></a>
 
-### 7. Branching and Merging
+## 7. Branching and Merging
 
 - **Merge base** `1 commit`
 - **Fast-forward** `no new commit`
@@ -560,15 +548,9 @@ git rebase --onto origin/main <sha-of-last-squashed-commit> feature
 git log --oneline origin/main..feature    # only the NEW commits
 ```
 
-<a id="unit-3"></a>
-
-## Unit 3 — When Histories Disagree
-
-Merging is easy when nobody touched the same lines. This unit is about everything else: what a conflict actually is inside the index, the one rule that decides between rebase and merge, how to turn a scrappy branch into a reviewable one, and how to move a single change from one place to another.
-
 <a id="8-conflicts"></a>
 
-### 8. Conflicts — What They Are and How to End Them
+## 8. Conflicts — What They Are and How to End Them
 
 - **Index entries** `3 per file`
 - **Escape hatch** `--abort`
@@ -648,7 +630,7 @@ git add .gitattributes && git commit -m "chore: merge strategies"
 
 <a id="9-rebase"></a>
 
-### 9. Rebase vs Merge, and the Golden Rule
+## 9. Rebase vs Merge, and the Golden Rule
 
 - **Merge** `never rewrites`
 - **Rebase** `new ids`
@@ -720,7 +702,7 @@ git log --oneline --graph -12    # verify: no duplicated subjects
 
 <a id="10-interactive-rebase"></a>
 
-### 10. Interactive Rebase — Tidying Up Before Review
+## 10. Interactive Rebase — Tidying Up Before Review
 
 - **Verbs** `6 that matter`
 - **Todo order** `oldest first`
@@ -805,7 +787,7 @@ git config rerere.enabled true
 
 <a id="11-moving-work"></a>
 
-### 11. Moving Work Around — `stash` and `cherry-pick`
+## 11. Moving Work Around — `stash` and `cherry-pick`
 
 - **Stash** `a stack`
 - **Untracked files** `need -u`
@@ -868,15 +850,9 @@ git tag -a v2.4.1 -m "hotfix: retry on 503" && git push --tags
 git switch main && git cherry -v origin/release/2.4
 ```
 
-<a id="unit-4"></a>
-
-## Unit 4 — Other People, and Getting Out of Trouble
-
-Everything so far happened on one machine. This unit adds the network — which introduces exactly one new concept, the remote-tracking branch — and then the two commands that get you out of almost any hole: `reflog` for “where did my work go” and `bisect` for “when did this break”.
-
 <a id="12-remotes"></a>
 
-### 12. Remotes — `fetch`, `pull`, `push`
+## 12. Remotes — `fetch`, `pull`, `push`
 
 - **fetch** `always safe`
 - **pull** `fetch + integrate`
@@ -954,7 +930,7 @@ git rebase origin/main                   # or: git merge origin/main
 
 <a id="13-recovery"></a>
 
-### 13. Getting Out of Trouble — `reflog` and `bisect`
+## 13. Getting Out of Trouble — `reflog` and `bisect`
 
 - **Reflog retention** `90 days`
 - **Reflog scope** `local only`
@@ -1038,7 +1014,7 @@ git bisect reset
 
 <a id="14-one-page"></a>
 
-### 14. The Whole Thing on One Page
+## 14. The Whole Thing on One Page
 
 Everything above collapses into one picture. There are three trees and a graph of immutable snapshots; refs are small files naming commits in that graph; and every command is a move between trees, a move of a ref, or a new object. If you can place a command on this diagram, you know what it will do.
 
@@ -1143,7 +1119,7 @@ git config --show-origin --get pull.ff   # which file set this?
 
 <a id="where-to-go-next"></a>
 
-#### Where to Go Next
+### Where to Go Next
 
 1. [The Git Detailed Course](git-detailed-course.html) — forty sections from the object database upward: refspecs, merge strategies, hooks, worktrees, submodules, LFS and partial clone, signing, `filter-repo`, and repository maintenance.
 2. [All Git courses](git-courses.html) — the catalog page for this topic.

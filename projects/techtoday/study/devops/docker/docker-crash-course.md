@@ -39,15 +39,9 @@ This course is written for the person who *writes the application*, not the pers
 14. [Making It Production-Ready](#14-production)
 15. [The Whole Thing on One Page](#15-one-page)
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Model
-
-Three sections that make everything else obvious. What the kernel is actually doing, what an image is made of, and how to write a Dockerfile that a reviewer would approve.
-
 <a id="1-what-a-container-is"></a>
 
-### 1. What a Container Actually Is
+## 1. What a Container Actually Is
 
 - **Start time** `~50 ms`
 - **Kernel** `shared with host`
@@ -124,7 +118,7 @@ for f in ("memory.max", "cpu.max", "pids.max"):
 
 <a id="2-images-layers"></a>
 
-### 2. Images, Layers & the Disposable Container
+## 2. Images, Layers & the Disposable Container
 
 - **Image** `read-only, shared`
 - **Container** `+ 1 writable layer`
@@ -204,7 +198,7 @@ def read_upload(key: str):
 
 <a id="3-first-dockerfile"></a>
 
-### 3. Your First Real Dockerfile
+## 3. Your First Real Dockerfile
 
 - **Instructions** `1 layer each`
 - **Order by** `rate of change`
@@ -303,15 +297,9 @@ Why each matters
 >
 > Pin the base image by **digest**, not by tag. `python:3.12-slim` is rebuilt upstream regularly, so the same Dockerfile produces a different image next month — which is exactly the non-reproducibility containers were meant to remove. Let a bot bump the digest in a pull request, so the change is reviewed rather than absorbed silently.
 
-<a id="unit-2"></a>
-
-## Unit 2 — Building Images You Will Not Regret
-
-Three sections about the build itself: why it is slow, why the image is enormous, and how a credential ends up permanently readable inside it.
-
 <a id="4-layer-cache"></a>
 
-### 4. The Layer Cache — Why Rebuilds Are Slow
+## 4. The Layer Cache — Why Rebuilds Are Slow
 
 - **Cache key** `instruction + layers below`
 - **One miss** `invalidates everything below`
@@ -384,7 +372,7 @@ docker buildx build \
 
 <a id="5-multi-stage"></a>
 
-### 5. Multi-Stage Builds & Small Images
+## 5. Multi-Stage Builds & Small Images
 
 - **Typical saving** `5–10×`
 - **Build tools** `left behind`
@@ -449,7 +437,7 @@ ENTRYPOINT ["/server"]
 
 <a id="6-dependencies"></a>
 
-### 6. Dependencies, Lockfiles & Build Secrets
+## 6. Dependencies, Lockfiles & Build Secrets
 
 - **Manifest** `a range`
 - **Lockfile** `exact + hashes`
@@ -524,15 +512,9 @@ npm ls lodash --all
 >
 > **Check your images for leaked build secrets today, not eventually.** `docker history --no-trunc <image>` prints every build instruction and requires only pull access — no layer download. If a token appears there, it is compromised: revoke it first, then fix the Dockerfile. Rewriting or deleting the image does not help, because anyone who pulled it already has the bytes.
 
-<a id="unit-3"></a>
-
-## Unit 3 — Running It on Your Machine
-
-The image is built. Now five things that decide whether working inside containers is pleasant or miserable: reaching your app, keeping your data, starting the dependencies, splitting into several services, and stopping cleanly.
-
 <a id="7-ports"></a>
 
-### 7. Ports & Talking to Other Containers
+## 7. Ports & Talking to Other Containers
 
 - **`-p`** `host:container`
 - **`EXPOSE`** `documentation only`
@@ -612,7 +594,7 @@ services:
 
 <a id="8-volumes"></a>
 
-### 8. Volumes — Where Your Data Lives
+## 8. Volumes — Where Your Data Lives
 
 - **Named volume** `survives`
 - **Bind mount** `dev only`
@@ -688,7 +670,7 @@ volumes:
 
 <a id="9-compose"></a>
 
-### 9. Compose — Your App Plus Its Real Dependencies
+## 9. Compose — Your App Plus Its Real Dependencies
 
 - **Goal** `one command to run`
 - **`depends_on`** `order, not readiness`
@@ -788,7 +770,7 @@ def readyz():
 
 <a id="10-microservices"></a>
 
-### 10. Microservices — Many Containers, One System
+## 10. Microservices — Many Containers, One System
 
 - **Unit of deploy** `one image per service`
 - **They find each other** `by service name`
@@ -907,7 +889,7 @@ grep -rn 'DATABASE_URL' services/*/  | sort
 
 <a id="11-signals"></a>
 
-### 11. Signals, PID 1 & Graceful Shutdown
+## 11. Signals, PID 1 & Graceful Shutdown
 
 - **`docker stop`** `SIGTERM, then 10 s`
 - **Then** `SIGKILL`
@@ -990,15 +972,9 @@ docker run --init myapp
 >
 > **Increase the grace period if your requests are long.** The default ten seconds is a *deadline*, not a suggestion — a report that takes thirty seconds to generate will be killed at ten however well you handle the signal. Set `stop_grace_period` in Compose or `terminationGracePeriodSeconds` in Kubernetes to comfortably exceed your longest request, and make sure your drain finishes before it.
 
-<a id="unit-4"></a>
-
-## Unit 4 — Shipping It
-
-Three sections on what happens after it works on your machine: how the image gets somewhere else, what to do when it will not start there, and the short list that separates a demo image from one you would run in production.
-
 <a id="12-registries"></a>
 
-### 12. Registries, Tags & Digests
+## 12. Registries, Tags & Digests
 
 - **Push uploads** `only new layers`
 - **Tag** `mutable pointer`
@@ -1074,7 +1050,7 @@ docker buildx imagetools inspect ghcr.io/acme/api:"$GIT_SHA" --raw \
 
 <a id="13-debugging"></a>
 
-### 13. Debugging a Container That Will Not Start
+## 13. Debugging a Container That Will Not Start
 
 - **137** `OOM killed`
 - **127** `command not found`
@@ -1160,7 +1136,7 @@ docker inspect api --format '{{.HostConfig.Memory}}'
 
 <a id="14-production"></a>
 
-### 14. Making It Production-Ready
+## 14. Making It Production-Ready
 
 - **User** `non-root`
 - **Root filesystem** `read-only`
@@ -1249,7 +1225,7 @@ spec:
 
 <a id="15-one-page"></a>
 
-### 15. The Whole Thing on One Page
+## 15. The Whole Thing on One Page
 
 ```text
 Dockerfile ──build──▶ IMAGE  (read-only layers, addressed by digest)
@@ -1335,7 +1311,7 @@ What identifies this build?
 
 <a id="where-next"></a>
 
-### Where to go next
+## Where to go next
 
 1. [The Kubernetes crash course](../kubernetes/kubernetes-crash-course.html) — the natural sequel, also written for developers: what happens to your container once something else is responsible for running it.
 2. [The DevOps crash course](../devops/devops-crash-course.html) — where containers sit in the wider delivery loop: pipelines, deployment strategies, observability and reliability.

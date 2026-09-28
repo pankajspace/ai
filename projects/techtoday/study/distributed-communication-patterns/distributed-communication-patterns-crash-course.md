@@ -87,13 +87,9 @@ chain of 4 services, each 99.9% available
 >
 > Two rules of thumb worth memorising before anything else. **First: the network is not reliable, not fast, not secure, and its topology changes** — these are four of the famous *eight fallacies of distributed computing*, and every outage you will ever debug is someone having assumed one of them. **Second: you cannot make a distributed call as safe as a local one; you can only make its failure cheap.**
 
-<a id="unit-1"></a>
-
-## Unit 1 — Calling Another Service
-
 <a id="1-sync-or-async"></a>
 
-### Synchronous or Asynchronous
+## Synchronous or Asynchronous
 
 - **Sync latency** `sum of the chain`
 - **Sync availability** `product of the chain`
@@ -175,7 +171,7 @@ app.post("/profile/photo", async (req, res) => {
 
 <a id="2-rest-grpc-graphql"></a>
 
-### REST, gRPC & GraphQL
+## REST, gRPC & GraphQL
 
 - **REST + JSON** `universal`
 - **gRPC + protobuf** `4× smaller`
@@ -251,7 +247,7 @@ query {
 
 <a id="3-discovery-and-load-balancing"></a>
 
-### Finding & Choosing an Instance
+## Finding & Choosing an Instance
 
 - **Discovery** `a freshness problem`
 - **Round robin** `counts turns`
@@ -281,13 +277,9 @@ One instance is *grey failing* — up, answering, passing a shallow `/healthz` t
 
 Three fixes, in increasing order of value: make health checks *deep* (check the dependencies the endpoint actually needs); switch to least-request load balancing so slowness is self-limiting; and add **outlier detection** so an instance whose error or latency profile deviates from its peers is ejected automatically for a cool-down period.
 
-<a id="unit-2"></a>
-
-## Unit 2 — Surviving the Network
-
 <a id="4-timeouts-and-deadlines"></a>
 
-### Timeouts & Deadlines
+## Timeouts & Deadlines
 
 - **No timeout** `wait forever`
 - **Per-hop timeout** `wasted work`
@@ -362,7 +354,7 @@ async function getPrice(sku, deadline) {
 
 <a id="5-retries-and-backoff"></a>
 
-### Retries, Backoff & Jitter
+## Retries, Backoff & Jitter
 
 - **Immediate retry** `load amplifier`
 - **Exponential** `still synchronised`
@@ -431,7 +423,7 @@ The rule that people miss is that retries **compose multiplicatively**. Three la
 
 <a id="6-idempotency"></a>
 
-### Idempotency
+## Idempotency
 
 - **Safe to retry** `GET, PUT, DELETE`
 - **Not safe** `POST charge, send`
@@ -520,7 +512,7 @@ app.post("/charges", async (req, res) => {
 
 <a id="7-circuit-breakers-and-bulkheads"></a>
 
-### Circuit Breakers & Bulkheads
+## Circuit Breakers & Bulkheads
 
 - **Breaker** `stop calling`
 - **Bulkhead** `cap the damage`
@@ -552,13 +544,9 @@ Four layers, each of which would have been enough on its own. **A short timeout*
 
 The framing to say out loud: *recommendations is a non-critical dependency, so the design fault was letting a non-critical dependency fail a critical path at all.* Classify every dependency as critical or not, and make the non-critical ones structurally incapable of taking you down.
 
-<a id="unit-3"></a>
-
-## Unit 3 — Talking Through a Broker
-
 <a id="8-queues-and-topics"></a>
 
-### Queues & Topics
+## Queues & Topics
 
 - **Queue** `one consumer gets it`
 - **Topic** `everyone gets a copy`
@@ -590,7 +578,7 @@ The third shape is the **log** — Kafka, Pulsar, Kinesis. It looks like a topic
 
 <a id="9-delivery-and-ordering"></a>
 
-### Delivery Guarantees & Ordering
+## Delivery Guarantees & Ordering
 
 - **At most once** `may lose`
 - **At least once** `may duplicate`
@@ -660,7 +648,7 @@ async function handle(event) {
 
 <a id="10-dead-letters-and-backpressure"></a>
 
-### Dead Letters & Backpressure
+## Dead Letters & Backpressure
 
 - **Poison message** `fails forever`
 - **DLQ** `unblocks the stream`
@@ -682,13 +670,9 @@ The other broker failure mode is quieter, and it is the one that kills processes
 >
 > **Every queue must be bounded, and the bound must come from a latency target rather than from available memory.** “Unbounded” always means “bounded by RAM, discovered during an incident”. Once bounded you have three real options when it fills: *push back* (stop reading, so the producer slows down), *shed* (reject with `503` plus `Retry-After`), or *drop by policy* (discard the oldest, which is right for live data whose value decays).
 
-<a id="unit-4"></a>
-
-## Unit 4 — Coordinating Work
-
 <a id="11-the-outbox"></a>
 
-### The Dual Write & the Outbox
+## The Dual Write & the Outbox
 
 - **Dual write** `no correct version`
 - **Outbox** `one transaction`
@@ -773,7 +757,7 @@ The outbox converts an impossible problem into a solved one plus a tolerable one
 
 <a id="12-sagas"></a>
 
-### Sagas
+## Sagas
 
 - **Steps** `local transactions`
 - **Rollback** `does not exist`
@@ -804,7 +788,7 @@ For contrast, the mechanism sagas replace — two-phase commit — is worth unde
 
 <a id="13-pushing-to-the-client"></a>
 
-### Pushing to the Client
+## Pushing to the Client
 
 - **Polling** `simple, wasteful`
 - **SSE** `server → client`

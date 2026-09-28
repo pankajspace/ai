@@ -79,15 +79,9 @@ The second thing worth knowing early: JavaScript is **compiled, not interpreted 
 >
 > Two settings decide how strict the language is with you, and modern code turns both on without you noticing. **Strict mode** (automatic inside modules and classes) makes silent failures throw — assigning to an undeclared variable, duplicate parameter names, `this` defaulting to the global object. **Module scope** means your top-level `const` is not a global. If you are writing a `<script type="module">` or a file in a `"type": "module"` package, you already have both.
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Language in Your Hands
-
-Five sections on the parts you type every day: values and how they compare, where names live, what a variable really holds, how functions bind `this`, and the array methods that make loops unnecessary. Nothing here is advanced — but each one has a sharp edge that costs people hours.
-
 <a id="1-values-and-types"></a>
 
-### Values, Types & the Two Equalities
+## Values, Types & the Two Equalities
 
 - **Primitives** `7`
 - **Falsy values** `8`
@@ -162,7 +156,7 @@ bool([]), bool({}), bool("")   # (False, False, False)  <- differs from JS!
 
 <a id="2-variables-and-scope"></a>
 
-### Variables, Scope & the Temporal Dead Zone
+## Variables, Scope & the Temporal Dead Zone
 
 - **Declarations** `const, let, var`
 - **const scope** `block`
@@ -233,7 +227,7 @@ for f in fns:
 
 <a id="3-objects-and-references"></a>
 
-### Objects, Arrays & References
+## Objects, Arrays & References
 
 - **Property access** `O(1)`
 - **Key type** `string | symbol`
@@ -319,7 +313,7 @@ sorted(nums)       # returns a new list
 
 <a id="4-functions-and-this"></a>
 
-### Functions, Arrows & `this`
+## Functions, Arrows & `this`
 
 - **Functions are** `values`
 - **Arrow `this`** `lexical`
@@ -375,7 +369,7 @@ Read the rules in priority order and you can answer any `this` question mechanic
 
 <a id="5-array-methods"></a>
 
-### The Array Methods That Replace Loops
+## The Array Methods That Replace Loops
 
 - **map / filter** `O(n)`
 - **find / some** `O(n), early exit`
@@ -478,15 +472,9 @@ last_wins = list({i["id"]: i for i in items}.values())
 unique = list(dict.fromkeys([1, 2, 2, 3]))   # order-preserving
 ```
 
-<a id="unit-2"></a>
-
-## Unit 2 — How JavaScript Actually Runs
-
-Everything so far you could have guessed from reading code. This unit is the machinery underneath: one thread and one stack, scopes that outlive their functions, objects that inherit through a chain of other objects, and a queue that decides when your callbacks run. These five sections are what separate someone who can write JavaScript from someone who can debug it.
-
 <a id="6-the-call-stack"></a>
 
-### The Call Stack & the Single Thread
+## The Call Stack & the Single Thread
 
 - **Threads** `1`
 - **Stack depth** `~10k frames`
@@ -511,7 +499,7 @@ Two practical consequences. First, **recursion depth is bounded** — around ten
 
 <a id="7-closures"></a>
 
-### Closures
+## Closures
 
 - **Captures** `the variable`
 - **Not** `a copy of the value`
@@ -603,7 +591,7 @@ def slow(n):
 
 <a id="8-prototypes-and-classes"></a>
 
-### Prototypes & Classes
+## Prototypes & Classes
 
 - **Inheritance** `delegation`
 - **Lookup** `O(chain depth)`
@@ -696,7 +684,7 @@ class Dog(Animal):
 
 <a id="9-the-event-loop"></a>
 
-### The Event Loop
+## The Event Loop
 
 - **Microtasks drained** `all of them`
 - **Macrotasks per turn** `1`
@@ -727,7 +715,7 @@ Before stepping through the animation, here is the whole machine on one picture 
 
 <a id="10-promises-and-async"></a>
 
-### Promises & async/await
+## Promises & async/await
 
 - **States** `3`
 - **Transitions** `1, ever`
@@ -860,15 +848,9 @@ asyncio.run(main())
 # JavaScript's split macrotask/microtask priority, so the order differs.
 ```
 
-<a id="unit-3"></a>
-
-## Unit 3 — Writing Real Code
-
-The language is only half the job. Real code is split across files, runs inside a host that gives it a page or a process, and has to survive being read again in six months. Three sections: how modules load, what the browser actually hands you, and a single page that ties everything above together.
-
 <a id="11-modules"></a>
 
-### Modules & the Ecosystem
+## Modules & the Ecosystem
 
 - **Standard** `ESM`
 - **Legacy (Node)** `CommonJS`
@@ -924,7 +906,7 @@ Around modules sits the package ecosystem, and three facts save a lot of confusi
 
 <a id="12-the-browser"></a>
 
-### The Browser — DOM, Events & fetch
+## The Browser — DOM, Events & fetch
 
 - **DOM read/write** `can force layout`
 - **Frame budget** `16.7 ms`

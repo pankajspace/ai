@@ -146,13 +146,8 @@
 
             <hr />
 
-            <h2 id="unit-1">Unit 1 — Running Programs<a class="headerlink" href="#unit-1" title="Permanent link">#</a>
-            </h2>
-            <p>The first illusion: that your program has a CPU to itself. Three ideas build it — the process, the
-                thread, and the scheduler that shuffles them.</p>
-
             <!-- ============================================================ 1 -->
-            <h3 id="1-processes">Processes<a class="headerlink" href="#1-processes" title="Permanent link">#</a></h3>
+            <h2 id="1-processes">Processes<a class="headerlink" href="#1-processes" title="Permanent link">#</a></h2>
 
             <ul class="meta-strip">
                 <li><b>Create (fork)</b> <code class="big-o o-ok">~50–500 µs</code></li>
@@ -181,8 +176,8 @@
                 these and loaded another.
             </p>
 
-            <h4 id="the-five-states">The five states<a class="headerlink" href="#the-five-states"
-                    title="Permanent link">#</a></h4>
+            <h3 id="the-five-states">The five states<a class="headerlink" href="#the-five-states"
+                    title="Permanent link">#</a></h3>
 
             <p>At any instant a process is in exactly one state, and almost all of your intuition about performance
                 comes from knowing which one.</p>
@@ -198,8 +193,8 @@
                 </p>
             </div>
 
-            <h4 id="how-processes-are-born">How processes are born<a class="headerlink" href="#how-processes-are-born"
-                    title="Permanent link">#</a></h4>
+            <h3 id="how-processes-are-born">How processes are born<a class="headerlink" href="#how-processes-are-born"
+                    title="Permanent link">#</a></h3>
 
             <p>Unix does something that looks bizarre until you see the reason: creating a process and running a
                 program are <em>two separate calls</em>. <code>fork()</code> duplicates the caller. <code>exec()</code>
@@ -287,7 +282,7 @@ int main(void) {
             </div>
 
             <!-- ============================================================ 2 -->
-            <h3 id="2-threads">Threads<a class="headerlink" href="#2-threads" title="Permanent link">#</a></h3>
+            <h2 id="2-threads">Threads<a class="headerlink" href="#2-threads" title="Permanent link">#</a></h2>
 
             <ul class="meta-strip">
                 <li><b>Create</b> <code class="big-o o-good">~10–30 µs</code></li>
@@ -395,8 +390,8 @@ int main(void) {
             </div>
 
             <!-- ============================================================ 3 -->
-            <h3 id="3-cpu-scheduling">CPU Scheduling<a class="headerlink" href="#3-cpu-scheduling"
-                    title="Permanent link">#</a></h3>
+            <h2 id="3-cpu-scheduling">CPU Scheduling<a class="headerlink" href="#3-cpu-scheduling"
+                    title="Permanent link">#</a></h2>
 
             <ul class="meta-strip">
                 <li><b>Linux time slice</b> <code class="big-o o-good">~1–10 ms</code></li>
@@ -473,8 +468,8 @@ int main(void) {
                 fallen furthest behind. There is no fixed quantum: the slice shrinks as the number of runnable tasks
                 grows, so latency stays bounded.</p>
 
-            <h4 id="what-a-switch-costs">What a switch actually costs<a class="headerlink" href="#what-a-switch-costs"
-                    title="Permanent link">#</a></h4>
+            <h3 id="what-a-switch-costs">What a switch actually costs<a class="headerlink" href="#what-a-switch-costs"
+                    title="Permanent link">#</a></h3>
 
             <div class="viz" data-viz="context-switch"></div>
 
@@ -519,13 +514,9 @@ strace -p &lt;pid&gt; -c -f
 
             <hr />
 
-            <h2 id="unit-2">Unit 2 — Memory<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
-            <p>The second illusion: that your program owns a private, contiguous, enormous block of memory. It owns
-                none of those things.</p>
-
             <!-- ============================================================ 4 -->
-            <h3 id="4-the-address-space">The Address Space<a class="headerlink" href="#4-the-address-space"
-                    title="Permanent link">#</a></h3>
+            <h2 id="4-the-address-space">The Address Space<a class="headerlink" href="#4-the-address-space"
+                    title="Permanent link">#</a></h2>
 
             <p>Every process sees the same layout: code at the bottom, then initialised data, then a heap that grows
                 upward, then a huge gap, then a stack that grows downward from the top. Two processes can both hold a
@@ -554,15 +545,15 @@ strace -p &lt;pid&gt; -c -f
             <div class="viz" data-viz="fragmentation"></div>
 
             <div class="callout callout-key">
-                <p>The final frame is the pivotal idea of the whole unit. Instead of making memory fit the request,
+                <p>The final frame is the pivotal idea of memory management. Instead of making memory fit the request,
                     <strong>chop everything into fixed-size pages and stop requiring contiguity</strong>. External
                     fragmentation then cannot happen, because every hole is exactly the size of every request.
                 </p>
             </div>
 
             <!-- ============================================================ 5 -->
-            <h3 id="5-virtual-memory">Virtual Memory &amp; Paging<a class="headerlink" href="#5-virtual-memory"
-                    title="Permanent link">#</a></h3>
+            <h2 id="5-virtual-memory">Virtual Memory &amp; Paging<a class="headerlink" href="#5-virtual-memory"
+                    title="Permanent link">#</a></h2>
 
             <ul class="meta-strip">
                 <li><b>Page size</b> <code class="big-o o-good">4 KB</code></li>
@@ -592,8 +583,8 @@ strace -p &lt;pid&gt; -c -f
                 bytes, the low 12 bits pass straight through and only the top bits are looked up. That is the entire
                 reason page sizes are powers of two.</p>
 
-            <h4 id="the-page-fault">The page fault is a feature<a class="headerlink" href="#the-page-fault"
-                    title="Permanent link">#</a></h4>
+            <h3 id="the-page-fault">The page fault is a feature<a class="headerlink" href="#the-page-fault"
+                    title="Permanent link">#</a></h3>
 
             <p>When a page table entry says <code>valid = 0</code>, the hardware traps to the kernel. Beginners read
                 that as an error; it is in fact the hook that makes most of the system work:</p>
@@ -614,8 +605,8 @@ strace -p &lt;pid&gt; -c -f
 
             <div class="viz" data-viz="copy-on-write"></div>
 
-            <h4 id="choosing-a-victim">When memory runs out, somebody must go<a class="headerlink"
-                    href="#choosing-a-victim" title="Permanent link">#</a></h4>
+            <h3 id="choosing-a-victim">When memory runs out, somebody must go<a class="headerlink"
+                    href="#choosing-a-victim" title="Permanent link">#</a></h3>
 
             <div class="viz" data-viz="page-replacement"></div>
 
@@ -679,8 +670,8 @@ pidstat -r -p $$ 1 3
             </div>
 
             <!-- ============================================================ 6 -->
-            <h3 id="6-the-memory-hierarchy">The Memory Hierarchy<a class="headerlink" href="#6-the-memory-hierarchy"
-                    title="Permanent link">#</a></h3>
+            <h2 id="6-the-memory-hierarchy">The Memory Hierarchy<a class="headerlink" href="#6-the-memory-hierarchy"
+                    title="Permanent link">#</a></h2>
 
             <p>The OS spends enormous effort keeping your data near the top of a ladder whose rungs are orders of
                 magnitude apart. Once you have internalised the distances, half of systems performance is obvious.</p>
@@ -697,13 +688,9 @@ pidstat -r -p $$ 1 3
 
             <hr />
 
-            <h2 id="unit-3">Unit 3 — Coordination<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
-            <p>Once two things run at once, correctness stops being about your code and starts being about the
-                interleavings your code allows.</p>
-
             <!-- ============================================================ 7 -->
-            <h3 id="7-synchronisation">Synchronisation<a class="headerlink" href="#7-synchronisation"
-                    title="Permanent link">#</a></h3>
+            <h2 id="7-synchronisation">Synchronisation<a class="headerlink" href="#7-synchronisation"
+                    title="Permanent link">#</a></h2>
 
             <p>A <strong>race condition</strong> is any situation where the result depends on timing. The cause is
                 almost always the same: an operation that looks atomic in your source is several instructions in the
@@ -771,8 +758,8 @@ pidstat -r -p $$ 1 3
                     spin briefly and then sleep, giving you both.</p>
             </div>
 
-            <h4 id="the-bounded-buffer">The pattern behind every queue<a class="headerlink" href="#the-bounded-buffer"
-                    title="Permanent link">#</a></h4>
+            <h3 id="the-bounded-buffer">The pattern behind every queue<a class="headerlink" href="#the-bounded-buffer"
+                    title="Permanent link">#</a></h3>
 
             <p>Producer–consumer over a bounded buffer is the single most reused concurrency shape in software: thread
                 pools, log pipelines, Kafka consumers, socket backlogs, <code>asyncio</code> queues. Two counting
@@ -874,7 +861,7 @@ int main(void) {
             </div>
 
             <!-- ============================================================ 8 -->
-            <h3 id="8-deadlock">Deadlock<a class="headerlink" href="#8-deadlock" title="Permanent link">#</a></h3>
+            <h2 id="8-deadlock">Deadlock<a class="headerlink" href="#8-deadlock" title="Permanent link">#</a></h2>
 
             <p>Deadlock needs four conditions to hold simultaneously. Break any one and it becomes impossible.</p>
 
@@ -921,8 +908,8 @@ int main(void) {
             </div>
 
             <!-- ============================================================ 9 -->
-            <h3 id="9-talking-between-processes">Talking Between Processes<a class="headerlink"
-                    href="#9-talking-between-processes" title="Permanent link">#</a></h3>
+            <h2 id="9-talking-between-processes">Talking Between Processes<a class="headerlink"
+                    href="#9-talking-between-processes" title="Permanent link">#</a></h2>
 
             <p>Isolation is the point of a process, so any communication has to be deliberate and has to go through the
                 kernel. The mechanisms differ mostly in <em>how many copies</em> the data makes.</p>
@@ -1035,14 +1022,9 @@ yes | head -1   # head exits, yes gets SIGPIPE, the pipeline ends cleanly
 
             <hr />
 
-            <h2 id="unit-4">Unit 4 — The Outside World<a class="headerlink" href="#unit-4" title="Permanent link">#</a>
-            </h2>
-            <p>Everything so far happened inside the machine. Now the parts that touch storage, devices and other
-                machines — all of them, in Unix, pretending to be files.</p>
-
             <!-- ============================================================ 10 -->
-            <h3 id="10-files-and-file-systems">Files &amp; File Systems<a class="headerlink"
-                    href="#10-files-and-file-systems" title="Permanent link">#</a></h3>
+            <h2 id="10-files-and-file-systems">Files &amp; File Systems<a class="headerlink"
+                    href="#10-files-and-file-systems" title="Permanent link">#</a></h2>
 
             <p>A file is the OS's second great lie: a named, arbitrarily long, byte-addressable stream, built on a
                 device that only understands fixed-size blocks at fixed addresses. The structure that maintains the
@@ -1057,8 +1039,8 @@ yes | head -1   # head exits, yes gets SIGPIPE, the pipeline ends cleanly
                     and why deleting an open file frees nothing until the last descriptor closes.</p>
             </div>
 
-            <h4 id="the-descriptor-chain">What a file descriptor really is<a class="headerlink"
-                    href="#the-descriptor-chain" title="Permanent link">#</a></h4>
+            <h3 id="the-descriptor-chain">What a file descriptor really is<a class="headerlink"
+                    href="#the-descriptor-chain" title="Permanent link">#</a></h3>
 
             <div class="ascii">your process the kernel the file system
                 ┌───────────┐ ┌──────────────────┐ ┌────────────┐
@@ -1121,8 +1103,8 @@ rm a; cat b                   # still there - link count is now 1
             </div>
 
             <!-- ============================================================ 11 -->
-            <h3 id="11-io-and-interrupts">I/O &amp; Interrupts<a class="headerlink" href="#11-io-and-interrupts"
-                    title="Permanent link">#</a></h3>
+            <h2 id="11-io-and-interrupts">I/O &amp; Interrupts<a class="headerlink" href="#11-io-and-interrupts"
+                    title="Permanent link">#</a></h2>
 
             <p>Devices are thousands to millions of times slower than the CPU, so the OS never waits for them by
                 asking. It asks the device to speak up when it is ready. That is an <strong>interrupt</strong>: the
@@ -1152,8 +1134,8 @@ rm a; cat b                   # still there - link count is now 1
                 </p>
             </div>
 
-            <h4 id="blocking-vs-async">Blocking, non-blocking, and the event loop<a class="headerlink"
-                    href="#blocking-vs-async" title="Permanent link">#</a></h4>
+            <h3 id="blocking-vs-async">Blocking, non-blocking, and the event loop<a class="headerlink"
+                    href="#blocking-vs-async" title="Permanent link">#</a></h3>
 
             <ul class="card-grid">
                 <li><b>Blocking</b>One thread per connection. Simple, and the thread sleeps for free — but 10,000
@@ -1170,8 +1152,8 @@ rm a; cat b                   # still there - link count is now 1
             </ul>
 
             <!-- ============================================================ 12 -->
-            <h3 id="12-vms-and-containers">Virtual Machines &amp; Containers<a class="headerlink"
-                    href="#12-vms-and-containers" title="Permanent link">#</a></h3>
+            <h2 id="12-vms-and-containers">Virtual Machines &amp; Containers<a class="headerlink"
+                    href="#12-vms-and-containers" title="Permanent link">#</a></h2>
 
             <p>The OS virtualises the CPU and memory for processes. Two technologies push the same idea one level
                 further — and they are far less similar than the marketing suggests.</p>

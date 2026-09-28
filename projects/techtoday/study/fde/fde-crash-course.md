@@ -70,15 +70,9 @@ There is a structural reason the gap does not close on its own. The knowledge ne
 
 ---
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Role
-
-What the job is, how an engagement is shaped, and the two behaviours that separate the people who are good at it from the people who are merely strong engineers.
-
 <a id="1-what-an-fde-actually-is"></a>
 
-### What an FDE Actually Is
+## What an FDE Actually Is
 
 - **Invented** `Palantir, ~2005`
 - **Internal name** `"Delta"`
@@ -102,7 +96,7 @@ Three properties separate the role from everything adjacent to it:
 
 <a id="1-1-the-neighbouring-roles"></a>
 
-#### Against the neighbouring roles
+### Against the neighbouring roles
 
 | Role | Deliverable | Writes new production code? | Still there in month nine? |
 | --- | --- | --- | --- |
@@ -137,7 +131,7 @@ calendar mostly yours                calendar mostly theirs
 
 <a id="2-the-engagement-loop"></a>
 
-### The Engagement Loop
+## The Engagement Loop
 
 - **Discover** `weeks 1–3`
 - **Prototype** `weeks 2–8`
@@ -157,7 +151,7 @@ Every engagement, in every company running this model, is the same four stages w
 
 <a id="3-discovery"></a>
 
-### Discovery — Finding the Real Problem
+## Discovery — Finding the Real Problem
 
 - **Customer conversations per week** `5–15`
 - **Share of an AI FDE's week** `30–40%`
@@ -175,7 +169,7 @@ The work is specific: sit with the people who do the job, watch them do it, and 
 
 <a id="3-1-questions-that-work"></a>
 
-#### Questions that work
+### Questions that work
 
 Bad discovery asks people to design software. Good discovery asks them to narrate history, because memory of last Tuesday is reliable and speculation about a hypothetical tool is not.
 
@@ -217,7 +211,7 @@ NOT DOING    Auto-approval. Anything touching payment. The mobile app.
 
 <a id="4-ship-on-day-one"></a>
 
-### Ship on Day One
+## Ship on Day One
 
 - **First working artefact** `day 1`
 - **First grounded answer** `day 3`
@@ -301,15 +295,9 @@ app.listen(8080);
 
 ---
 
-<a id="unit-2"></a>
-
-## Unit 2 — The Build
-
-Four layers, built in this order. Each one only makes sense once the layer beneath it exists, and skipping straight to the model is the most common way a deployment fails.
-
 <a id="5-the-ontology"></a>
 
-### The Ontology
+## The Ontology
 
 - **Built by** `day 2`
 - **Entities to start** `3–6`
@@ -400,7 +388,7 @@ export async function findShipments(site, { overdueOnly = true } = {}) {
 
 <a id="6-grounding"></a>
 
-### Grounding in the Customer's Data
+## Grounding in the Customer's Data
 
 - **Two pipelines** `ingest + serve`
 - **Retrieve then pass** `20 → 5`
@@ -489,7 +477,7 @@ export const SYSTEM =
 
 <a id="7-agents-and-tools"></a>
 
-### Agents & Tool Calls
+## Agents & Tool Calls
 
 - **Turn cap** `6–10`
 - **Policy lives in** `code, not the prompt`
@@ -592,7 +580,7 @@ export async function runAgent(goal, ctx) {
 
 <a id="8-evals"></a>
 
-### Evals — Proving It Works
+## Evals — Proving It Works
 
 - **Where cases come from** `real field failures`
 - **Compare** `per case, not aggregate`
@@ -689,15 +677,9 @@ export async function run(cases, baseline) {
 
 ---
 
-<a id="unit-3"></a>
-
-## Unit 3 — The Deployment
-
-The prototype works. You are now roughly a fifth of the way there, and the remaining four fifths have almost nothing to do with the model.
-
 <a id="9-the-integration-wall"></a>
 
-### The Integration Wall
+## The Integration Wall
 
 - **Gates between demo and prod** `5`
 - **Run them** `in parallel, from week 2`
@@ -726,7 +708,7 @@ The topology you deploy into is the decision the gates force, so make it early a
 
 <a id="10-observability"></a>
 
-### Observability & Cost
+## Observability & Cost
 
 - **Per request** `trace + cost + outcome`
 - **Traces live** `wherever the data lives`
@@ -807,7 +789,7 @@ export async function answerWithTrace(question, user) {
 
 <a id="11-handover"></a>
 
-### Handover Without Rot
+## Handover Without Rot
 
 - **Target bus factor** `≥ 3`
 - **Real test** `their first solo page`
@@ -854,15 +836,9 @@ DO        take the run_id from the UI footer, add it to evals/cases.jsonl
 
 ---
 
-<a id="unit-4"></a>
-
-## Unit 4 — Getting the Job
-
-The loop tests three things separately, and strong engineers routinely fail the one they did not practise.
-
 <a id="12-the-decomposition-interview"></a>
 
-### The Decomposition Interview
+## The Decomposition Interview
 
 - **Format** `60 min, ambiguous brief`
 - **Scored on** `how you scope`

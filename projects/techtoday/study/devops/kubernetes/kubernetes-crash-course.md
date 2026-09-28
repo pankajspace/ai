@@ -43,15 +43,9 @@ Kubernetes has hundreds of resource types and, as an application developer, you 
 14. [Shipping Safely — Rollbacks, Budgets & What You Own](#14-shipping)
 15. [The Whole Thing on One Page](#15-one-page)
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Model
-
-One idea and two objects. Once you can predict what a controller will do, the rest of the API stops being a hundred unrelated things to memorise.
-
 <a id="1-what-it-is-for"></a>
 
-### 1. What Kubernetes Is For — and the One Idea Behind It
+## 1. What Kubernetes Is For — and the One Idea Behind It
 
 - **Model** `declarative`
 - **You write** `desired state`
@@ -145,7 +139,7 @@ status:                     # WHAT IS TRUE - written by the controller,
 
 <a id="2-pods"></a>
 
-### 2. Pods — the Thing That Actually Runs
+## 2. Pods — the Thing That Actually Runs
 
 - **Pod** `1+ containers, 1 IP`
 - **Shared** `network + volumes`
@@ -234,7 +228,7 @@ kubectl exec -it api -c api -- sh
 
 <a id="3-deployments"></a>
 
-### 3. Deployments & Rollouts
+## 3. Deployments & Rollouts
 
 - **Deployment** `→ ReplicaSet → Pods`
 - **Template change** `= new ReplicaSet`
@@ -324,15 +318,9 @@ spec:
 >
 > **Both versions of your code are live for the whole rollout.** That is not an edge case, it is the normal state of every rolling update. Your v2 must therefore work with v1's database schema, v1's cache entries and v1's message formats — and after a rollback, v1 must work with whatever v2 left behind. Keep schema changes additive and backward-compatible, or the deployment is reversible and the data is not.
 
-<a id="unit-2"></a>
-
-## Unit 2 — Making It Behave
-
-Three sections that account for most of the incidents a developer causes in their first year: probes, resources, and configuration that does not take effect.
-
 <a id="4-probes"></a>
 
-### 4. Probes — Ready, Alive, Starting
+## 4. Probes — Ready, Alive, Starting
 
 - **readiness** `gates traffic`
 - **liveness** `kills the container`
@@ -437,7 +425,7 @@ def livez():
 
 <a id="5-resources"></a>
 
-### 5. Resources — Requests, Limits & Exit Code 137
+## 5. Resources — Requests, Limits & Exit Code 137
 
 - **requests** `scheduling`
 - **limits** `enforcement`
@@ -514,7 +502,7 @@ env:
 
 <a id="6-config"></a>
 
-### 6. Config & Secrets
+## 6. Config & Secrets
 
 - **ConfigMap** `non-sensitive`
 - **Secret** `base64, not encrypted`
@@ -593,15 +581,9 @@ kubectl get pods -l app=api \
 >
 > **Do not put a secret in a ConfigMap, and do not treat a Secret as encryption.** Secrets are stored in etcd, base64-encoded, and are only as protected as your RBAC and your etcd encryption settings. For anything genuinely sensitive, keep the value in an external store and sync it in with an operator or a CSI driver — then reads are audited, rotation is minutes rather than a redeploy, and the value is never a durable object you have to remember to protect.
 
-<a id="unit-3"></a>
-
-## Unit 3 — Being Reachable
-
-Pod IPs change constantly, so something has to stand between your callers and that churn. A Service handles it inside the cluster and an Ingress handles the outside world — and once several services are calling each other, a third problem appears that neither of them solves.
-
 <a id="7-services"></a>
 
-### 7. Services, DNS & Endpoints
+## 7. Services, DNS & Endpoints
 
 - **Service** `stable name + IP`
 - **Join** `label selector`
@@ -696,7 +678,7 @@ spec:
 
 <a id="8-ingress"></a>
 
-### 8. Ingress — Getting Traffic In
+## 8. Ingress — Getting Traffic In
 
 - **Ingress** `host + path rules`
 - **Controller** `the actual proxy`
@@ -789,7 +771,7 @@ kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50
 
 <a id="9-microservices"></a>
 
-### 9. Microservices — Many Services, One Cluster
+## 9. Microservices — Many Services, One Cluster
 
 - **Calls** `by Service DNS name`
 - **Timeout** `client default: none`
@@ -938,15 +920,9 @@ spec:
 >
 > The moment you have more than about three services, **distributed tracing stops being optional**. With one service, a log file answers "why was this slow?". With eight, per-service dashboards all look slightly bad and none of them says where the time went. Propagate the `traceparent` header through every hop — including message queues — and put the trace ID on every log line.
 
-<a id="unit-4"></a>
-
-## Unit 4 — Living With It
-
-The day-to-day: the commands worth knowing by heart, a systematic way to debug, and the three subjects — storage, scaling and safe shipping — where a developer's decisions have the largest consequences.
-
 <a id="10-kubectl"></a>
 
-### 10. kubectl — The Commands You Actually Need
+## 10. kubectl — The Commands You Actually Need
 
 - **Start with** `describe + events`
 - **Logs of a dead pod** `--previous`
@@ -1023,7 +999,7 @@ kubectl get pods -A --field-selector=status.phase!=Running
 
 <a id="11-debugging"></a>
 
-### 11. Debugging — Pending, CrashLoop, 502
+## 11. Debugging — Pending, CrashLoop, 502
 
 - **Pending** `scheduler`
 - **ImagePullBackOff** `registry`
@@ -1109,7 +1085,7 @@ spec:
 
 <a id="12-storage"></a>
 
-### 12. State & Storage (and Why You Probably Do Not Want It)
+## 12. State & Storage (and Why You Probably Do Not Want It)
 
 - **PVC** `a request for storage`
 - **ReadWriteOnce** `one node at a time`
@@ -1200,7 +1176,7 @@ kubectl get pvc          # data-db-0, data-db-1, data-db-2 still there
 
 <a id="13-scaling"></a>
 
-### 13. Scaling & What It Costs
+## 13. Scaling & What It Costs
 
 - **HPA reaction** `60–90 s`
 - **New node** `2–5 min`
@@ -1293,7 +1269,7 @@ kubectl get pods -A -o json | jq -r '
 
 <a id="14-shipping"></a>
 
-### 14. Shipping Safely — Rollbacks, Budgets & What You Own
+## 14. Shipping Safely — Rollbacks, Budgets & What You Own
 
 - **Rollback** `rollout undo`
 - **Not reversible** `migrations`
@@ -1389,7 +1365,7 @@ kubectl drain node-3 --ignore-daemonsets --dry-run=server
 
 <a id="15-one-page"></a>
 
-### 15. The Whole Thing on One Page
+## 15. The Whole Thing on One Page
 
 ```text
 you write                    controllers reconcile
@@ -1517,7 +1493,7 @@ Which probe?
 
 <a id="where-next"></a>
 
-### Where to go next
+## Where to go next
 
 1. [The Docker crash course](../docker/docker-crash-course.html) — the prerequisite, if any of the image, layer or volume material here felt thin.
 2. [The DevOps detailed course](../devops/devops-detailed-course.html) — sections 14 to 18 cover Kubernetes architecture, workloads, networking and scheduling in far more depth, including the control plane and RBAC.

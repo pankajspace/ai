@@ -38,15 +38,9 @@ DevOps is taught as a pile of tools — Docker, Kubernetes, Terraform, Jenkins, 
 13. [Security in the Pipeline](#13-security)
 14. [The Whole Thing on One Page](#14-one-page)
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Ground It All Stands On
-
-Three ideas come before any tool. If the loop is slow, no tool speeds it up. If the repository is not the source of truth, automation has nothing to automate. And if the thing you tested is not the thing you ship, every later guarantee is void.
-
 <a id="1-delivery-loop"></a>
 
-### 1. The Delivery Loop & the Four Metrics That Matter
+## 1. The Delivery Loop & the Four Metrics That Matter
 
 - **Deploy frequency** `on demand`
 - **Lead time** `< 1 hour`
@@ -123,7 +117,7 @@ print(f"{change_failure_rate(deploys):.0%}", mttr(incidents))
 
 <a id="2-version-control"></a>
 
-### 2. Version Control as the Source of Truth
+## 2. Version Control as the Source of Truth
 
 - **Branch lifetime** `< 1 day`
 - **Merge conflict risk** `grows with time`
@@ -195,7 +189,7 @@ gh api -X POST repos/:owner/:repo/merge-queue 2>/dev/null || true
 
 <a id="3-artifacts"></a>
 
-### 3. Build Once — Artifacts, Not Rebuilds
+## 3. Build Once — Artifacts, Not Rebuilds
 
 - **Builds per release** `exactly 1`
 - **Identity** `content digest`
@@ -277,15 +271,9 @@ spec:
 >
 > The strongest version of this idea is a **reproducible build**: same source in, byte-identical artifact out, on any machine, at any time. It requires pinning the base image by digest, committing a lockfile, and zeroing timestamps — and it is worth the effort mainly for security, because it lets someone else rebuild your artifact and verify that what you published is what your source produces.
 
-<a id="unit-2"></a>
-
-## Unit 2 — Packaging and Running
-
-Three technologies, one idea. A container makes an artifact runnable identically anywhere. Kubernetes makes a fleet of them converge on a state you declared. Infrastructure as code does the same for the machines underneath. Learn the declare-and-reconcile pattern once and all three become the same shape.
-
 <a id="4-containers"></a>
 
-### 4. Containers — What They Actually Are
+## 4. Containers — What They Actually Are
 
 - **Start time** `~50 ms`
 - **Kernel** `shared with host`
@@ -359,7 +347,7 @@ env:
 
 <a id="5-kubernetes"></a>
 
-### 5. Kubernetes — One Loop, Repeated
+## 5. Kubernetes — One Loop, Repeated
 
 - **Model** `declarative`
 - **Unit** `Pod`
@@ -455,7 +443,7 @@ signal.signal(signal.SIGTERM, handle_sigterm)
 
 <a id="6-iac"></a>
 
-### 6. Infrastructure as Code
+## 6. Infrastructure as Code
 
 - **Model** `declarative`
 - **Dry run** `plan before apply`
@@ -531,15 +519,9 @@ terraform apply tfplan
 >
 > Split state by **blast radius and change frequency**, not by tidiness. Networking and IAM change rarely and break everything; application resources change daily. Keeping them in one state means every routine deploy holds a lock on your VPC and can propose changes to it. Separate states, wired together with data sources or remote state outputs, keep a bad plan small.
 
-<a id="unit-3"></a>
-
-## Unit 3 — Shipping
-
-Now the loop closes. Continuous integration decides whether a change may become a candidate; deployment decides how many users meet it and how fast you can take it back; configuration and feature flags decide what "released" even means. The theme running through all four sections is *reversibility*.
-
 <a id="7-ci"></a>
 
-### 7. Continuous Integration — The Gate on `main`
+## 7. Continuous Integration — The Gate on `main`
 
 - **Target feedback** `< 10 min`
 - **Order stages by** `cost, ascending`
@@ -641,7 +623,7 @@ pytest --count=20 -x -q tests/ 2>&1 | grep -E '^(FAILED|ERROR)' | sort | uniq -c
 
 <a id="8-deployment"></a>
 
-### 8. Getting It Out — Deployment Strategies & GitOps
+## 8. Getting It Out — Deployment Strategies & GitOps
 
 - **Rolling** `no downtime, 1× cost`
 - **Blue-green** `rollback in seconds`
@@ -725,7 +707,7 @@ spec:
 
 <a id="9-config-secrets"></a>
 
-### 9. Configuration & Secrets
+## 9. Configuration & Secrets
 
 - **Config** `env vars or mounted files`
 - **Secrets** `fetched at run time`
@@ -806,7 +788,7 @@ steps:
 
 <a id="10-release"></a>
 
-### 10. Deploy Is Not Release — Flags & Migrations
+## 10. Deploy Is Not Release — Flags & Migrations
 
 - **Deploy** `code is running`
 - **Release** `users experience it`
@@ -893,15 +875,9 @@ psql -c "SELECT pg_cancel_backend(PID);"
 >
 > Give every feature flag an owner, a created date and a removal date at the moment it is introduced, and put a recurring item on the team's board to clear expired ones. Flags are debt with a useful purpose — the interest is paid in test combinations and in the confusion of the next person who reads the code and cannot tell which branch production actually takes.
 
-<a id="unit-4"></a>
-
-## Unit 4 — Running It in Production
-
-Shipping is half the loop. The other half is knowing what happened, deciding how reliable is reliable enough, recovering quickly when it is not, and making sure that what you shipped is what you intended to ship.
-
 <a id="11-observability"></a>
 
-### 11. Observability — Logs, Metrics & Traces
+## 11. Observability — Logs, Metrics & Traces
 
 - **Metrics** `detect`
 - **Traces** `localise`
@@ -986,7 +962,7 @@ YAML
 
 <a id="12-reliability"></a>
 
-### 12. Reliability — SLOs, Capacity & Incidents
+## 12. Reliability — SLOs, Capacity & Incidents
 
 - **99.9% / month** `43 min`
 - **99.99% / month** `4.3 min`
@@ -1070,7 +1046,7 @@ echo "0.999 * 0.999 * 0.9995" | bc -l   # .99799... -> you cannot promise 99.9%
 
 <a id="13-security"></a>
 
-### 13. Security in the Pipeline
+## 13. Security in the Pipeline
 
 - **Dependencies** `1000s, unread`
 - **Build runner** `holds every secret`
@@ -1165,7 +1141,7 @@ spec:
 
 <a id="14-one-page"></a>
 
-### 14. The Whole Thing on One Page
+## 14. The Whole Thing on One Page
 
 Everything above is one loop and four rules. Here is the whole course compressed to the point where you could reconstruct it.
 
@@ -1204,7 +1180,7 @@ A useful way to check your own understanding: for each row below, say what the t
 
 <a id="where-next"></a>
 
-### Where to go next
+## Where to go next
 
 1. [The DevOps detailed course](devops-detailed-course.html) — the same ground in forty numbered sections, from cgroups and Dockerfile internals through Kubernetes networking, Terraform state, pipeline design, OpenTelemetry and platform engineering, with full implementations rather than the idiomatic form only.
 2. [All DevOps courses](../devops-courses.html) — the catalogue page for this topic.

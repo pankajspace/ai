@@ -38,15 +38,9 @@ AWS has over two hundred services and you need about fifteen of them. This page 
 13. [Building Things That Survive](#13-resilience)
 14. [The Whole Thing on One Page](#14-one-page)
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Four Foundations
-
-Four sections that sit underneath everything else: *where* your resources physically are, *who* is allowed to touch them, *what network* they live in, and *how the meter runs*. Every service in Unit 2 is an application of these four. If you skip them, AWS feels like an arbitrary pile of products; if you learn them, most services become predictable before you read their documentation.
-
 <a id="1-regions-and-azs"></a>
 
-### 1. Regions, Availability Zones & the Shape of AWS
+## 1. Regions, Availability Zones & the Shape of AWS
 
 > **In plain words**
 >
@@ -125,7 +119,7 @@ print(spread)          # Counter({'us-east-1a': 3}) is the finding
 
 <a id="2-iam"></a>
 
-### 2. IAM — Who Can Do What
+## 2. IAM — Who Can Do What
 
 > **In plain words**
 >
@@ -235,7 +229,7 @@ for r in result["EvaluationResults"]:
 
 <a id="3-vpc"></a>
 
-### 3. The VPC — Where Your Resources Live
+## 3. The VPC — Where Your Resources Live
 
 > **In plain words**
 >
@@ -335,7 +329,7 @@ S3Endpoint:
 
 <a id="4-cost"></a>
 
-### 4. What You Are Actually Paying For
+## 4. What You Are Actually Paying For
 
 > **In plain words**
 >
@@ -422,15 +416,9 @@ aws ec2 describe-snapshots --owner-ids self \
 >
 > **The five-minute setup every account should have.** A budget with an email alert at 80% of expected spend. Cost Anomaly Detection enabled. Log group retention set to something finite — the default is "forever", and CloudWatch Logs storage quietly becomes a top-five line item. A tagging policy with at least `owner`, `env` and `service`, activated as cost allocation tags. And S3 lifecycle rules that abort incomplete multipart uploads after seven days.
 
-<a id="unit-2"></a>
-
-## Unit 2 — The Services You Touch Every Week
-
-Five sections covering the services that make up almost every application on AWS: somewhere to put objects, somewhere to run code, somewhere to put records, a way to get traffic in, and a way to keep the pieces from depending on each other. Each one has a decision at its heart — which storage class, which compute model, which database, which load balancer, which messaging service — and each section is built around making that decision well rather than listing features.
-
 <a id="5-s3"></a>
 
-### 5. S3 — The Default Place to Put Things
+## 5. S3 — The Default Place to Put Things
 
 > **In plain words**
 >
@@ -535,7 +523,7 @@ await fetch(url, {
 
 <a id="6-compute"></a>
 
-### 6. Compute — Lambda, Containers & EC2
+## 6. Compute — Lambda, Containers & EC2
 
 > **In plain words**
 >
@@ -651,7 +639,7 @@ def handler(event, context):
 
 <a id="7-databases"></a>
 
-### 7. Databases — Choosing and Not Regretting It
+## 7. Databases — Choosing and Not Regretting It
 
 > **In plain words**
 >
@@ -740,7 +728,7 @@ print(res["Count"], res["ConsumedCapacity"] if "ConsumedCapacity" in res else ""
 
 <a id="8-traffic"></a>
 
-### 8. Getting Traffic In — ALB, Route 53 & CloudFront
+## 8. Getting Traffic In — ALB, Route 53 & CloudFront
 
 > **In plain words**
 >
@@ -844,7 +832,7 @@ aws cloudfront create-invalidation \
 
 <a id="9-messaging"></a>
 
-### 9. Decoupling — SQS, SNS & EventBridge
+## 9. Decoupling — SQS, SNS & EventBridge
 
 > **In plain words**
 >
@@ -934,15 +922,9 @@ EmailRule:
 >
 > **Set the visibility timeout deliberately.** If it is shorter than your processing time, SQS hands the message to a second consumer while the first is still working — guaranteed duplicate work, and it looks exactly like a bug in your code. For Lambda consumers, AWS recommends the queue's visibility timeout be at least six times the function timeout.
 
-<a id="unit-3"></a>
-
-## Unit 3 — Running It Like You Mean It
-
-The first two units get an application running. This one is about the difference between an application that runs and a system a team can operate: knowing when it breaks, limiting what a breach can reach, being able to rebuild it from a file, and surviving the failures that are guaranteed to happen. This is also, not coincidentally, the material that separates a good AWS interview from a mediocre one.
-
 <a id="10-observability"></a>
 
-### 10. Observability — Knowing Before Your Users Do
+## 10. Observability — Knowing Before Your Users Do
 
 > **In plain words**
 >
@@ -1032,7 +1014,7 @@ def log_request(route, tenant, duration_ms, status):
 
 <a id="11-security"></a>
 
-### 11. Security Beyond IAM — KMS, Secrets & Blast Radius
+## 11. Security Beyond IAM — KMS, Secrets & Blast Radius
 
 > **In plain words**
 >
@@ -1132,7 +1114,7 @@ creds = get_secret("prod/db")
 
 <a id="12-iac"></a>
 
-### 12. Infrastructure as Code & Deployment
+## 12. Infrastructure as Code & Deployment
 
 > **In plain words**
 >
@@ -1224,7 +1206,7 @@ aws cloudformation describe-stack-resource-drifts --stack-name prod-api \
 
 <a id="13-resilience"></a>
 
-### 13. Building Things That Survive
+## 13. Building Things That Survive
 
 > **In plain words**
 >
@@ -1342,13 +1324,13 @@ export async function charge(customerId, amount, idemKey) {
 
 <a id="14-one-page"></a>
 
-### 14. The Whole Thing on One Page
+## 14. The Whole Thing on One Page
 
 Everything above, compressed to what you would want on a card during an interview or an incident.
 
 <a id="the-services-that-matter"></a>
 
-#### The services that matter, and the one line each
+### The services that matter, and the one line each
 
 | Need | Service | The thing to remember |
 | --- | --- | --- |
@@ -1372,7 +1354,7 @@ Everything above, compressed to what you would want on a card during an intervie
 
 <a id="the-rules"></a>
 
-#### The rules that apply everywhere
+### The rules that apply everywhere
 
 - **Spread across three AZs, always** It is the cheapest availability you will ever buy, and it is the failure AWS actually has.
 - **Roles, never access keys** Every runtime can receive one automatically. A static key in a config file is a finding waiting to be written up.
@@ -1385,7 +1367,7 @@ Everything above, compressed to what you would want on a card during an intervie
 
 <a id="the-six-pillars"></a>
 
-#### The Well-Architected pillars as questions
+### The Well-Architected pillars as questions
 
 ```text
 Operational excellence → Can we deploy on a Friday? Do we know it broke?
@@ -1402,7 +1384,7 @@ Operational excellence → Can we deploy on a Friday? Do we know it broke?
 
 <a id="where-to-go-next"></a>
 
-#### Where to go next
+### Where to go next
 
 1. [**The AWS Detailed Course**](aws-detailed-course.html) — the same ground and a great deal more, in 36 sections: Organizations and account structure, IAM policy evaluation in full, VPC connectivity including Transit Gateway and PrivateLink, EC2 instance families and storage, the whole storage line-up, Aurora and DynamoDB modelling, containers and Kubernetes, Step Functions, streaming and analytics, the security services, CI/CD, and a pattern-recognition playbook for design interviews.
 2. [**All AWS courses**](aws-courses.html) on TechToday.

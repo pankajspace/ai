@@ -120,15 +120,9 @@ with socket.create_connection(("10.0.4.21", 5432), timeout=2) as s:
 
 ---
 
-<a id="unit-1"></a>
-
-## Unit 1 — Getting Bytes Across
-
-The first three sections build the delivery machinery: how a frame crosses one segment, how addresses are structured so that routers can make decisions cheaply, and how a packet gets from your laptop to a machine neither of you has ever met.
-
 <a id="1-the-link-layer"></a>
 
-### The Link Layer — MAC, Switches & ARP
+## The Link Layer — MAC, Switches & ARP
 
 - **MAC address** `48 bits`
 - **Scope** `one segment`
@@ -154,7 +148,7 @@ The device that connects machines on a segment is a **switch**, and it is remark
 
 <a id="arp-the-missing-link"></a>
 
-#### ARP — the missing link between the two address types
+### ARP — the missing link between the two address types
 
 So the machine has an IP address to send to, and a NIC that only understands MAC addresses. Something must bridge the two, and that something is **ARP** — a protocol so simple it is almost rude: shout the question at everyone on the segment and wait for the one machine that recognises itself.
 
@@ -205,7 +199,7 @@ print(is_local("10.0.0.7", "10.0.0.130", 25))  # False -> sent to the gateway
 
 <a id="2-ip-addresses-and-subnets"></a>
 
-### IP Addresses & Subnets
+## IP Addresses & Subnets
 
 - **IPv4 address** `32 bits`
 - **IPv6 address** `128 bits`
@@ -235,7 +229,7 @@ The notation `10.0.4.0/24` means "the first 24 bits are the network". Everything
 
 <a id="getting-an-address"></a>
 
-#### Getting an address in the first place
+### Getting an address in the first place
 
 A machine joining a network has a chicken-and-egg problem: it needs an address to talk, and it must talk to get one. **DHCP** breaks the cycle with broadcast, and while it is at it hands over the mask, gateway and DNS servers — most of what you think of as "network settings" arrives in one message.
 
@@ -294,7 +288,7 @@ console.table(subnets("10.20.0.0/16", 3).slice(0, 6));
 
 <a id="3-routing-and-nat"></a>
 
-### Routing & NAT
+## Routing & NAT
 
 - **Router's memory of you** `none`
 - **Decision per packet** `next hop only`
@@ -317,7 +311,7 @@ A router does one job, millions of times a second: take a packet, find the longe
 
 <a id="nat-in-practice"></a>
 
-#### NAT — why your laptop's address is a lie
+### NAT — why your laptop's address is a lie
 
 Your machine almost certainly has a private address that is meaningless on the internet. A NAT device rewrites the source address and port on the way out, remembers the swap, and reverses it on the way back. It was invented to conserve IPv4 addresses, and it accidentally became the firewall most people rely on.
 
@@ -364,15 +358,9 @@ ss -tino state established '( dport = :5432 )'
 
 ---
 
-<a id="unit-2"></a>
-
-## Unit 2 — Turning Packets into Conversations
-
-IP delivers packets to a machine, unreliably and in no particular order. Four sections turn that into something a program can use: addressing a *process*, agreeing that a conversation exists, surviving loss, and going as fast as the slowest thing in the path allows.
-
 <a id="4-ports-and-transports"></a>
 
-### Ports, Sockets & the Two Transports
+## Ports, Sockets & the Two Transports
 
 - **Port number** `16 bits`
 - **UDP header** `8 B`
@@ -467,7 +455,7 @@ readMessages(socket, (msg) => console.log("message:", msg.toString()));
 
 <a id="5-the-tcp-connection"></a>
 
-### The TCP Connection
+## The TCP Connection
 
 - **Setup** `1 RTT`
 - **Teardown** `4 segments`
@@ -539,7 +527,7 @@ sysctl -w net.ipv4.ip_local_port_range="10240 65535"
 
 <a id="6-reliability"></a>
 
-### Reliability — Loss & Retransmission
+## Reliability — Loss & Retransmission
 
 - **Sequence numbers count** `bytes`
 - **Fast retransmit** `~1 RTT`
@@ -571,7 +559,7 @@ IP loses packets — routinely, by design, whenever a queue is full. TCP's relia
 
 <a id="7-flow-and-congestion-control"></a>
 
-### Flow Control & Congestion Control
+## Flow Control & Congestion Control
 
 - **Receiver's limit** `rwnd`
 - **Network's limit** `cwnd`
@@ -638,15 +626,9 @@ ss -ti dst 10.20.0.9 | grep -E 'cwnd|rtt|send'
 
 ---
 
-<a id="unit-3"></a>
-
-## Unit 3 — The Web on Top
-
-Four application-layer systems that every request passes through: finding the address, asking the question, doing it privately, and the machinery in the middle that makes it fast.
-
 <a id="8-dns"></a>
 
-### DNS
+## DNS
 
 - **Transport** `UDP 53`
 - **Cold lookup** `4 queries`
@@ -710,7 +692,7 @@ for _ in range(3):
 
 <a id="9-http"></a>
 
-### HTTP — 1.1, 2 and 3
+## HTTP — 1.1, 2 and 3
 
 - **HTTP/1.1** `1 request at a time`
 - **HTTP/2** `multiplexed on TCP`
@@ -736,7 +718,7 @@ HTTP itself is simple: a request line, headers, a blank line, a body. What chang
 
 <a id="10-tls-and-https"></a>
 
-### TLS & HTTPS
+## TLS & HTTPS
 
 - **TLS 1.3 handshake** `1 RTT`
 - **Resumed** `0 RTT`
@@ -796,7 +778,7 @@ with socket.create_connection(("example.com", 443), timeout=3) as raw:
 
 <a id="11-proxies-and-cdns"></a>
 
-### Proxies, Load Balancers & CDNs
+## Proxies, Load Balancers & CDNs
 
 - **L4 balancer** `sees the 4-tuple`
 - **L7 balancer** `sees the request`
@@ -826,15 +808,9 @@ The other machine in the middle is a cache close to the user. Its main product i
 
 ---
 
-<a id="unit-4"></a>
-
-## Unit 4 — When It Breaks
-
-Everything above becomes useful the moment something stops working. The last two sections are the method and the map.
-
 <a id="12-debugging"></a>
 
-### Debugging a Network Problem
+## Debugging a Network Problem
 
 - **Method** `bottom up`
 - **Refused** `RST — nothing listening`
@@ -915,7 +891,7 @@ print(f"server {t_first - t_tls:.3f}s")  # slow here -> and only here is it your
 
 <a id="13-the-whole-thing-on-one-page"></a>
 
-### The Whole Thing on One Page
+## The Whole Thing on One Page
 
 Every idea in this course appears, in order, in the most ordinary act on the internet: typing a URL and pressing Enter. Watch the time accumulate, and notice how little of it belongs to the server.
 
@@ -940,7 +916,7 @@ Every idea in this course appears, in order, in the most ordinary act on the int
 
 <a id="where-to-go-next"></a>
 
-#### Where to go next
+### Where to go next
 
 1. [The Networking Detailed Course](networking-detailed-course.html) — the same ground from first principles, plus IPv6, OSPF and BGP, TCP internals, QUIC, cloud networking, security and a full performance playbook.
 2. [All Networking Courses](networking-courses.html) — the catalog page for this topic.

@@ -90,15 +90,9 @@ None of the above exists when you press the power button. The CPU starts in a pr
 
 ---
 
-<a id="unit-1"></a>
-
-## Unit 1 — Running Programs
-
-The first illusion: that your program has a CPU to itself. Three ideas build it — the process, the thread, and the scheduler that shuffles them.
-
 <a id="1-processes"></a>
 
-### Processes
+## Processes
 
 - **Create (fork)** `~50–500 µs`
 - **Isolation** `total`
@@ -116,7 +110,7 @@ The kernel tracks all of that in one structure, the **process control block** (o
 
 <a id="the-five-states"></a>
 
-#### The five states
+### The five states
 
 At any instant a process is in exactly one state, and almost all of your intuition about performance comes from knowing which one.
 
@@ -128,7 +122,7 @@ At any instant a process is in exactly one state, and almost all of your intuiti
 
 <a id="how-processes-are-born"></a>
 
-#### How processes are born
+### How processes are born
 
 Unix does something that looks bizarre until you see the reason: creating a process and running a program are *two separate calls*. `fork()` duplicates the caller. `exec()` throws the current program away and loads a new one in its place. Every shell command you have ever typed is `fork`, then `exec`, then `wait`.
 
@@ -197,7 +191,7 @@ int main(void) {
 
 <a id="2-threads"></a>
 
-### Threads
+## Threads
 
 - **Create** `~10–30 µs`
 - **Stack cost** `8 MB virtual, ~8 KB real`
@@ -283,7 +277,7 @@ int main(void) {
 
 <a id="3-cpu-scheduling"></a>
 
-### CPU Scheduling
+## CPU Scheduling
 
 - **Linux time slice** `~1–10 ms`
 - **Switch cost** `~1–5 µs`
@@ -313,7 +307,7 @@ Real systems do not use any of the textbook four directly. Linux's CFS — and i
 
 <a id="what-a-switch-costs"></a>
 
-#### What a switch actually costs
+### What a switch actually costs
 
 > **Interactive animation:** `context-switch` — rendered by the page script in the HTML version.
 
@@ -348,15 +342,9 @@ strace -p <pid> -c -f
 
 ---
 
-<a id="unit-2"></a>
-
-## Unit 2 — Memory
-
-The second illusion: that your program owns a private, contiguous, enormous block of memory. It owns none of those things.
-
 <a id="4-the-address-space"></a>
 
-### The Address Space
+## The Address Space
 
 Every process sees the same layout: code at the bottom, then initialised data, then a heap that grows upward, then a huge gap, then a stack that grows downward from the top. Two processes can both hold a pointer to `0x400000` and be looking at entirely different bytes.
 
@@ -384,11 +372,11 @@ Why not just hand each process a real, contiguous slab of physical RAM? People t
 
 > **Key idea**
 >
-> The final frame is the pivotal idea of the whole unit. Instead of making memory fit the request, **chop everything into fixed-size pages and stop requiring contiguity**. External fragmentation then cannot happen, because every hole is exactly the size of every request.
+> The final frame is the pivotal idea of memory management. Instead of making memory fit the request, **chop everything into fixed-size pages and stop requiring contiguity**. External fragmentation then cannot happen, because every hole is exactly the size of every request.
 
 <a id="5-virtual-memory"></a>
 
-### Virtual Memory & Paging
+## Virtual Memory & Paging
 
 - **Page size** `4 KB`
 - **TLB hit** `~1 cycle`
@@ -409,7 +397,7 @@ Note what the animation does *not* translate: the offset. Because pages are `2¹
 
 <a id="the-page-fault"></a>
 
-#### The page fault is a feature
+### The page fault is a feature
 
 When a page table entry says `valid = 0`, the hardware traps to the kernel. Beginners read that as an error; it is in fact the hook that makes most of the system work:
 
@@ -424,7 +412,7 @@ When a page table entry says `valid = 0`, the hardware traps to the kernel. Begi
 
 <a id="choosing-a-victim"></a>
 
-#### When memory runs out, somebody must go
+### When memory runs out, somebody must go
 
 > **Interactive animation:** `page-replacement` — rendered by the page script in the HTML version.
 
@@ -477,7 +465,7 @@ pidstat -r -p $$ 1 3
 
 <a id="6-the-memory-hierarchy"></a>
 
-### The Memory Hierarchy
+## The Memory Hierarchy
 
 The OS spends enormous effort keeping your data near the top of a ladder whose rungs are orders of magnitude apart. Once you have internalised the distances, half of systems performance is obvious.
 
@@ -489,15 +477,9 @@ The OS spends enormous effort keeping your data near the top of a ladder whose r
 
 ---
 
-<a id="unit-3"></a>
-
-## Unit 3 — Coordination
-
-Once two things run at once, correctness stops being about your code and starts being about the interleavings your code allows.
-
 <a id="7-synchronisation"></a>
 
-### Synchronisation
+## Synchronisation
 
 A **race condition** is any situation where the result depends on timing. The cause is almost always the same: an operation that looks atomic in your source is several instructions in the machine, and a thread can be stopped between any two of them.
 
@@ -524,7 +506,7 @@ A **race condition** is any situation where the result depends on timing. The ca
 
 <a id="the-bounded-buffer"></a>
 
-#### The pattern behind every queue
+### The pattern behind every queue
 
 Producer–consumer over a bounded buffer is the single most reused concurrency shape in software: thread pools, log pipelines, Kafka consumers, socket backlogs, `asyncio` queues. Two counting semaphores and a mutex do all of it.
 
@@ -612,7 +594,7 @@ int main(void) {
 
 <a id="8-deadlock"></a>
 
-### Deadlock
+## Deadlock
 
 Deadlock needs four conditions to hold simultaneously. Break any one and it becomes impossible.
 
@@ -641,7 +623,7 @@ Deadlock needs four conditions to hold simultaneously. Break any one and it beco
 
 <a id="9-talking-between-processes"></a>
 
-### Talking Between Processes
+## Talking Between Processes
 
 Isolation is the point of a process, so any communication has to be deliberate and has to go through the kernel. The mechanisms differ mostly in *how many copies* the data makes.
 
@@ -701,15 +683,9 @@ yes | head -1   # head exits, yes gets SIGPIPE, the pipeline ends cleanly
 
 ---
 
-<a id="unit-4"></a>
-
-## Unit 4 — The Outside World
-
-Everything so far happened inside the machine. Now the parts that touch storage, devices and other machines — all of them, in Unix, pretending to be files.
-
 <a id="10-files-and-file-systems"></a>
 
-### Files & File Systems
+## Files & File Systems
 
 A file is the OS's second great lie: a named, arbitrarily long, byte-addressable stream, built on a device that only understands fixed-size blocks at fixed addresses. The structure that maintains the fiction is the **inode**.
 
@@ -721,7 +697,7 @@ A file is the OS's second great lie: a named, arbitrarily long, byte-addressable
 
 <a id="the-descriptor-chain"></a>
 
-#### What a file descriptor really is
+### What a file descriptor really is
 
 ```text
 your process the kernel the file system
@@ -768,7 +744,7 @@ rm a; cat b                   # still there - link count is now 1
 
 <a id="11-io-and-interrupts"></a>
 
-### I/O & Interrupts
+## I/O & Interrupts
 
 Devices are thousands to millions of times slower than the CPU, so the OS never waits for them by asking. It asks the device to speak up when it is ready. That is an **interrupt**: the hardware's way of calling a function inside the kernel.
 
@@ -788,7 +764,7 @@ Above the interrupt sits scheduling of the requests themselves. On a spinning di
 
 <a id="blocking-vs-async"></a>
 
-#### Blocking, non-blocking, and the event loop
+### Blocking, non-blocking, and the event loop
 
 - **Blocking** — One thread per connection. Simple, and the thread sleeps for free — but 10,000 connections means 10,000 stacks and a scheduler full of them.
 - **Non-blocking + readiness**`epoll`/`kqueue`: ask the kernel "which of these 10,000 descriptors can move now?", then do only that work. One thread, one core, enormous concurrency.
@@ -797,7 +773,7 @@ Above the interrupt sits scheduling of the requests themselves. On a spinning di
 
 <a id="12-vms-and-containers"></a>
 
-### Virtual Machines & Containers
+## Virtual Machines & Containers
 
 The OS virtualises the CPU and memory for processes. Two technologies push the same idea one level further — and they are far less similar than the marketing suggests.
 

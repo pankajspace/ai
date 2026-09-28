@@ -1465,7 +1465,7 @@ You can have one or the other. Fixed-size units eliminate external fragmentation
 
 > **Key idea**
 >
-> That trade is the pivot of the whole unit. **Stop requiring contiguity, chop everything into equal pages, and let a table hide the scattering.** Everything from §21 onward is working out the consequences.
+> That trade is the pivot of memory management. **Stop requiring contiguity, chop everything into equal pages, and let a table hide the scattering.** Everything from §21 onward is working out the consequences.
 
 <a id="21-segmentation-and-paging"></a>
 

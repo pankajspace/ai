@@ -140,15 +140,9 @@ enc.free(); // tiktoken holds WASM memory; release it
 
 ---
 
-<a id="unit-1"></a>
-
-## Unit 1 — The Model as a Component
-
-Before you can steer a model you need to know exactly what the API gives you and what it does not. Two surprises account for most early bugs: it remembers nothing, and it is not deterministic.
-
 <a id="1-the-context-window-and-the-chat-contract"></a>
 
-### The Context Window & the Chat Contract
+## The Context Window & the Chat Contract
 
 - **Server-side memory** `none`
 - **Cost per turn** `O(conversation)`
@@ -249,7 +243,7 @@ await ask("A-4471");            // in=48  out=9  <- turn 1 billed again
 
 <a id="2-sampling"></a>
 
-### Sampling: Why the Same Prompt Gives Different Answers
+## Sampling: Why the Same Prompt Gives Different Answers
 
 - **Extraction / routing** `temperature 0`
 - **Chat / drafting** `0.7, or top-p 0.9`
@@ -335,15 +329,9 @@ async function classify(ticket: string): Promise<string> {
 
 ---
 
-<a id="unit-2"></a>
-
-## Unit 2 — Steering the Model
-
-You cannot change the weights, so the only lever you have is the input. These four sections are that lever, in increasing order of power: what you write, what shape you demand back, what capabilities you attach, and what you choose to put in the window at all.
-
 <a id="3-prompting"></a>
 
-### Prompting That Survives Production
+## Prompting That Survives Production
 
 - **Biggest single win** `examples`
 - **Second biggest** `reason before answering`
@@ -373,7 +361,7 @@ USER
 
 <a id="3-1-the-four-techniques-that-earn-their-tokens"></a>
 
-#### The four techniques that earn their tokens
+### The four techniques that earn their tokens
 
 1. **Few-shot examples.** Two to five diverse, *canonical* examples teach format and edge-case handling faster than any amount of description. Do not stuff in thirty; a long list of near-duplicates crowds the context and teaches overfitting to their surface form.
 2. **Chain of thought.** “Think step by step before answering” measurably improves multi-step reasoning because the intermediate tokens *are* the computation — the model has nowhere else to do the work. On reasoning models this is built in and asking for it again is wasted tokens.
@@ -459,7 +447,7 @@ const messages = [
 
 <a id="3-2-prompt-failure-modes"></a>
 
-#### The failure modes worth recognising on sight
+### The failure modes worth recognising on sight
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
@@ -476,7 +464,7 @@ const messages = [
 
 <a id="4-structured-output"></a>
 
-### Structured Output
+## Structured Output
 
 - **“Reply in JSON”** `~95% valid`
 - **JSON mode** `valid JSON, any shape`
@@ -574,7 +562,7 @@ console.log(triage.queue, triage.urgency);
 
 <a id="5-tool-calling-and-mcp"></a>
 
-### Tool Calling & MCP
+## Tool Calling & MCP
 
 - **Who executes the tool** `your code`
 - **Practical toolset size** `< 20`
@@ -592,7 +580,7 @@ Tool descriptions are prompts, and deserve the same care. Anthropic's own experi
 
 <a id="5-1-parallel-tool-calls"></a>
 
-#### Parallel tool calls
+### Parallel tool calls
 
 Modern models can emit several `tool_call` blocks in one response when the calls are independent — fetch the order, fetch the customer, fetch the shipping status. Execute them concurrently and append *all* the results before the next model call. Three sequential round-trips become one, which is usually the largest latency win available in an agent.
 
@@ -711,7 +699,7 @@ async function runAll(calls, user) {
 
 <a id="5-2-mcp"></a>
 
-#### MCP: one plug instead of N adapters
+### MCP: one plug instead of N adapters
 
 Every team writing tool wrappers was solving the same problem badly. The **Model Context Protocol** standardises it: a *server* exposes **tools** (things to call), **resources** (things to read) and **prompts** (reusable templates) over JSON-RPC, and any MCP *client* — an IDE assistant, a desktop app, your own agent — can discover and use them without bespoke glue. It is USB-C for model capabilities: write the integration once, use it from any host.
 
@@ -724,7 +712,7 @@ Every team writing tool wrappers was solving the same problem badly. The **Model
 
 <a id="6-context-engineering-and-memory"></a>
 
-### Context Engineering & Memory
+## Context Engineering & Memory
 
 - **Attention cost** `O(n²)`
 - **Goal** `fewest high-signal tokens`
@@ -744,7 +732,7 @@ That quadratic table is the arithmetic behind the advice. Every token attends to
 
 <a id="6-1-the-four-techniques"></a>
 
-#### The four techniques, in the order you will need them
+### The four techniques, in the order you will need them
 
 1. **Trim at the source.** Cap tool results, strip HTML boilerplate, return IDs and summaries rather than whole records. A single unfiltered API response can be 8,000 tokens of which 40 matter.
 2. **Compaction.** When the window approaches full, summarise the older turns into a dense block and restart with that plus the most recent messages. Tune the summariser for recall first, then trim for precision.
@@ -753,7 +741,7 @@ That quadratic table is the arithmetic behind the advice. Every token attends to
 
 <a id="6-2-memory-types"></a>
 
-#### Memory is three different things
+### Memory is three different things
 
 | Kind | Lives in | Lifetime | Example |
 | --- | --- | --- | --- |
@@ -849,15 +837,9 @@ async function compact(history: Msg[]): Promise<Msg[]> {
 
 ---
 
-<a id="unit-3"></a>
-
-## Unit 3 — Giving the Model Knowledge
-
-The model's knowledge is frozen at training time, has no idea what is in your database, and cannot cite a source. Retrieval fixes all three — by putting the right text in the window at the right moment.
-
 <a id="7-embeddings-and-vector-search"></a>
 
-### Embeddings & Vector Search
+## Embeddings & Vector Search
 
 - **Typical dimensions** `384 – 3,072`
 - **Similarity** `cosine`
@@ -956,7 +938,7 @@ async function search(query: string, k = 5) {
 
 <a id="8-rag-end-to-end"></a>
 
-### RAG, End to End
+## RAG, End to End
 
 - **Chunk size** `400 – 800 tokens`
 - **Retrieve then rerank** `50 → 5`
@@ -974,7 +956,7 @@ async function search(query: string, k = 5) {
 
 <a id="8-1-chunking"></a>
 
-#### Chunking is the decision that limits everything downstream
+### Chunking is the decision that limits everything downstream
 
 Retrieval never returns documents; it returns chunks. If a rule is cut in half, no reranker and no model can put it back together. Cut on the structure the author created — headings, sections, function boundaries — and prefix each chunk with its heading trail so it is self-describing.
 
@@ -982,7 +964,7 @@ Retrieval never returns documents; it returns chunks. If a rule is cut in half, 
 
 <a id="8-2-hybrid-search"></a>
 
-#### One retriever is never enough
+### One retriever is never enough
 
 Real queries mix concepts with identifiers. **BM25** nails exact rare tokens and misses every paraphrase; vector search does the exact opposite. Run both and fuse the ranked lists with **Reciprocal Rank Fusion** — it combines *ranks*, which are comparable across retrievers, rather than scores, which are not.
 
@@ -992,7 +974,7 @@ Two more query-time moves matter as much as the retriever itself. **Metadata fil
 
 <a id="8-3-reranking"></a>
 
-#### Retrieve wide, rerank narrow
+### Retrieve wide, rerank narrow
 
 The retriever embedded your query and your documents *separately*, so it is comparing two summaries and its ordering is weak. A **cross-encoder** reads query and candidate together in one pass and can actually judge relevance — far more accurate, far too slow to run over a corpus. So you use both: recall cheaply, then precision expensively over a shortlist.
 
@@ -1085,15 +1067,9 @@ async function answer(question: string, user: User, history: Msg[]) {
 
 ---
 
-<a id="unit-4"></a>
-
-## Unit 4 — Giving the Model Agency
-
-An agent is a loop you write, not a model you buy. The engineering is entirely in what surrounds the loop: how it stops, how it recovers, how much it may do without asking, and whether you chose a loop at all when a fixed pipeline would have done.
-
 <a id="9-the-agent-loop"></a>
 
-### The Agent Loop
+## The Agent Loop
 
 - **Shape** `observe → think → act`
 - **Stops when** `text, not a tool call`
@@ -1111,7 +1087,7 @@ Strip away the vocabulary and an agent is: *an LLM autonomously using tools in a
 
 <a id="9-1-loop-shapes"></a>
 
-#### Four loop shapes, and when each one fits
+### Four loop shapes, and when each one fits
 
 1. **ReAct** — interleave a reasoning trace with actions: *thought → action → observation*, repeatedly. The default, and the right starting point for most tasks. The visible thought is also your best debugging artefact.
 2. **Plan-and-execute** — one call writes the whole plan, then cheap calls execute each step. Fewer expensive round-trips and a plan a human can approve up front; brittle when reality diverges from the plan, so allow re-planning on failure.
@@ -1224,7 +1200,7 @@ async function runAgent(task: string, user: User, runId: string) {
 
 <a id="10-workflows-and-multi-agent-patterns"></a>
 
-### Workflows, Multi-Agent Patterns & Human Oversight
+## Workflows, Multi-Agent Patterns & Human Oversight
 
 - **Default choice** `a workflow`
 - **Agent when** `steps are unpredictable`
@@ -1242,7 +1218,7 @@ The industry's most useful distinction: in a **workflow** the control flow is wr
 
 <a id="10-1-multi-agent"></a>
 
-#### Multi-agent: three shapes that actually earn their cost
+### Multi-agent: three shapes that actually earn their cost
 
 1. **Orchestrator + specialists.** A lead model plans and delegates; each specialist runs with a *clean context* containing only its subtask and returns a short summary. The context isolation is the real benefit — a specialist can burn 30,000 tokens exploring and hand back 500.
 2. **Critic + refiner.** One model produces, another judges against explicit criteria, the feedback goes back in. Worth it only when you can write down what “good” means, and always capped at two or three rounds.
@@ -1254,7 +1230,7 @@ The industry's most useful distinction: in a **workflow** the control flow is wr
 
 <a id="10-2-human-in-the-loop"></a>
 
-#### Human in the loop is a design decision, not a fallback
+### Human in the loop is a design decision, not a fallback
 
 Decide for each action where it sits on the autonomy scale, and enforce it in code rather than in a prompt.
 
@@ -1271,15 +1247,9 @@ Decide for each action where it sits on the autonomy scale, and enforce it in co
 
 ---
 
-<a id="unit-5"></a>
-
-## Unit 5 — Shipping It
-
-A demo becomes a product when three questions have answers: how do you know it works, what does it cost per request, and what happens when someone attacks it. None of the three is optional, and all three are cheaper to answer on day one than on day ninety.
-
 <a id="11-evaluation"></a>
 
-### Evaluation: The Only Thing That Compounds
+## Evaluation: The Only Thing That Compounds
 
 - **Starter set** `20 – 50 cases`
 - **Judge agreement floor** `~80%`
@@ -1297,7 +1267,7 @@ Traditional tests assert exact output. You cannot: there are many correct answer
 
 <a id="11-1-what-to-score"></a>
 
-#### Score what you can, judge what you cannot
+### Score what you can, judge what you cannot
 
 1. **Deterministic checks first.** Schema validity, required fields, forbidden phrases, a citation for every claim, latency and cost ceilings. Free, instant, no judge needed — and a surprising share of real failures are caught here.
 2. **Reference-based metrics** where a ground truth exists: exact match for labels, **recall@k** and **MRR** for retrieval, numeric tolerance for extraction.
@@ -1406,7 +1376,7 @@ describe("support triage", () => {
 
 <a id="12-latency-cost-and-caching"></a>
 
-### Latency, Cost & Caching
+## Latency, Cost & Caching
 
 - **Prompt cache saving** `~90% on the prefix`
 - **Output tokens cost** `3 – 5× input`
@@ -1422,7 +1392,7 @@ Measure the lanes separately — network, search, rerank, prefill, decode — be
 
 <a id="12-1-three-caches"></a>
 
-#### Three caches, three risk profiles
+### Three caches, three risk profiles
 
 1. **Prompt caching** — the provider keeps the KV cache for an exact token prefix. Around a 90% discount and a large TTFT cut on the cached span, and it is always correct. Turn it on, and order your prompt static-first so it actually hits.
 2. **Exact-response caching** — hash the full request, store the response. Free, safe, and useless for conversational traffic where no two requests are identical.
@@ -1441,7 +1411,7 @@ Beyond caching, the two biggest levers are both about *not using the big model*:
 
 <a id="13-failure-modes-and-guardrails"></a>
 
-### Failure Modes & Guardrails
+## Failure Modes & Guardrails
 
 - **OWASP LLM01** `prompt injection`
 - **Complete fix** `none known`
@@ -1459,7 +1429,7 @@ An LLM cannot distinguish instructions from data, because both arrive as tokens 
 
 <a id="13-1-owasp"></a>
 
-#### The OWASP LLM Top 10, as things that actually happen
+### The OWASP LLM Top 10, as things that actually happen
 
 | Risk | What it looks like in your system |
 | --- | --- |
@@ -1552,7 +1522,7 @@ async function guarded(userInput: string, user: User): Promise<string> {
 
 <a id="14-the-whole-thing-on-one-page"></a>
 
-### The Whole Thing on One Page
+## The Whole Thing on One Page
 
 Every technique on this page is a response to one of four properties of the component you are building on. If you remember nothing else, remember this mapping — it is how you diagnose a new failure you have never seen before.
 
@@ -1565,7 +1535,7 @@ Every technique on this page is a response to one of four properties of the comp
 
 <a id="14-1-defaults"></a>
 
-#### Defaults worth starting from
+### Defaults worth starting from
 
 1. **Start on the strongest model** to prove the task is possible at all, then move down the tiers until your evals complain. Starting small makes it impossible to tell a bad prompt from a bad model.
 2. **`temperature=0` everywhere** except deliberately creative text, and a pinned model version everywhere without exception.
@@ -1582,7 +1552,7 @@ Every technique on this page is a response to one of four properties of the comp
 
 <a id="14-2-where-to-go-next"></a>
 
-### Where to Go Next
+## Where to Go Next
 
 1. [AI Engineering Detailed Course](ai-engineering-detailed-course.html) — sixty-one sections from the transformer and tokenizers through MCP, GraphRAG, multi-agent deadlocks, LoRA and QLoRA, vLLM and continuous batching, voice agents, and the production gotchas nobody warns you about.
 2. [Anthropic — Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents): the clearest statement of the workflow-versus-agent distinction and the five patterns, written from production experience.
