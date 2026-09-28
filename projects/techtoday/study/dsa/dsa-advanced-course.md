@@ -37,52 +37,52 @@ The complete Scaler DSA curriculum from first principles: comprehensive theory, 
 12. [Contest Intermediate DSA](#12-contest-intermediate-dsa)
 13. [Arrays One Dimensional](#13-arrays-one-dimensional)
 14. [Arrays Two Dimensional](#14-arrays-two-dimensional)
-15. [Lab Session Arrays](#15-lab-session-arrays)
+15. [Practice Session Arrays](#15-practice-session-arrays)
 16. [Bit Manipulation 1](#16-bit-manipulation-1)
-17. [Lab Session Bit Manipulation](#17-lab-session-bit-manipulation)
+17. [Practice Session Bit Manipulation](#17-practice-session-bit-manipulation)
 18. [Recursion](#18-recursion)
-19. [Lab Session Recursion](#19-lab-session-recursion)
+19. [Practice Session Recursion](#19-practice-session-recursion)
 20. [Maths: Modular Arithmetic & GCD](#20-maths-modular-arithmetic-gcd)
 21. [Hashing](#21-hashing)
-22. [Lab Session Hashing](#22-lab-session-hashing)
+22. [Practice Session Hashing](#22-practice-session-hashing)
 23. [Count Sort & Merge Sort](#23-count-sort-merge-sort)
 24. [Quick Sort & Comparator](#24-quick-sort-comparator)
 25. [Contest 1: Arrays, Bit Manipulation, Recursion, Math, Hashing & Sorting](#25-contest-1-arrays-bit-manipulation-recursion-math-hashing-sorting)
 26. [Searching 1: Binary Search on Array](#26-searching-1-binary-search-on-array)
 27. [Searching 2: Binary Search on Answer](#27-searching-2-binary-search-on-answer)
-28. [Lab Session on Searching](#28-lab-session-on-searching)
+28. [Practice Session on Searching](#28-practice-session-on-searching)
 29. [Classes, Objects & Linked List Introduction](#29-classes-objects-linked-list-introduction)
 30. [Linked List: Basic Problems](#30-linked-list-basic-problems)
 31. [Stacks](#31-stacks)
-32. [Lab Session on Stacks](#32-lab-session-on-stacks)
+32. [Practice Session on Stacks](#32-practice-session-on-stacks)
 33. [Queues: Implementation & Problems](#33-queues-implementation-problems)
 34. [Trees 1: Structure & Traversal](#34-trees-1-structure-traversal)
 35. [Trees 2: BST](#35-trees-2-bst)
-36. [Lab Session on Binary Trees](#36-lab-session-on-binary-trees)
+36. [Practice Session on Binary Trees](#36-practice-session-on-binary-trees)
 37. [Contest 2: Sorting, Searching, Linked List, Stacks, Queues & Trees](#37-contest-2-sorting-searching-linked-list-stacks-queues-trees)
 38. [Maths: Combinatorics Basics & Prime Numbers](#38-maths-combinatorics-basics-prime-numbers)
-39. [Lab Session on Prime Numbers & 2 Pointers](#39-lab-session-on-prime-numbers-2-pointers)
-40. [Lab Session on Maths & 2 Pointers](#40-lab-session-on-maths-2-pointers)
+39. [Practice Session on Prime Numbers & 2 Pointers](#39-practice-session-on-prime-numbers-2-pointers)
+40. [Practice Session on Maths & 2 Pointers](#40-practice-session-on-maths-2-pointers)
 41. [Backtracking](#41-backtracking)
-42. [Lab Session on Backtracking](#42-lab-session-on-backtracking)
+42. [Practice Session on Backtracking](#42-practice-session-on-backtracking)
 43. [Linked List: Sorting and Problems](#43-linked-list-sorting-and-problems)
 44. [Linked List: Doubly Linked List & Detecting Loop](#44-linked-list-doubly-linked-list-detecting-loop)
 45. [Trees 3: Morris Inorder Traversal + LCA](#45-trees-3-morris-inorder-traversal-lca)
-46. [Lab Session on Binary Trees 2](#46-lab-session-on-binary-trees-2)
+46. [Practice Session on Binary Trees 2](#46-practice-session-on-binary-trees-2)
 47. [Hashing 3: Internal Implementation & Problems](#47-hashing-3-internal-implementation-problems)
 48. [Contest 3: Math, Two Pointers, Backtracking, Linked List & Trees](#48-contest-3-math-two-pointers-backtracking-linked-list-trees)
 49. [Heaps Introduction](#49-heaps-introduction)
 50. [Heap Sort & Greedy](#50-heap-sort-greedy)
-51. [Lab Session on Heaps & Greedy](#51-lab-session-on-heaps-greedy)
-52. [Lab Session on Interview Problems 1](#52-lab-session-on-interview-problems-1)
+51. [Practice Session on Heaps & Greedy](#51-practice-session-on-heaps-greedy)
+52. [Practice Session on Interview Problems 1](#52-practice-session-on-interview-problems-1)
 53. [DP 1: One Dimensional](#53-dp-1-one-dimensional)
 54. [DP 2: Two Dimensional](#54-dp-2-two-dimensional)
 55. [DP 3: Knapsack](#55-dp-3-knapsack)
-56. [Lab Session on Applications of Knapsack](#56-lab-session-on-applications-of-knapsack)
+56. [Practice Session on Applications of Knapsack](#56-practice-session-on-applications-of-knapsack)
 57. [Graphs 1: Introduction, DFS & Cycle Detection](#57-graphs-1-introduction-dfs-cycle-detection)
 58. [Graphs 2: BFS & MST](#58-graphs-2-bfs-mst)
 59. [Graphs 3: Dijkstra Algo & Topological Sort](#59-graphs-3-dijkstra-algo-topological-sort)
-60. [Lab Session on Interview Problems 2](#60-lab-session-on-interview-problems-2)
+60. [Practice Session on Interview Problems 2](#60-practice-session-on-interview-problems-2)
 61. [Contest 4: Heaps, Greedy, DP & Graphs](#61-contest-4-heaps-greedy-dp-graphs)
 62. [Mandatory Skill Evaluation Test (MSET) DSA](#62-mandatory-skill-evaluation-test-mset-dsa)
 63. [DSA Certification Contest - Winter 2025](#63-dsa-certification-contest-winter-2025)
@@ -7772,9 +7772,9 @@ function maxOnesRow(A) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="15-lab-session-arrays"></a>
+<a id="15-practice-session-arrays"></a>
 
-## 15. Lab Session Arrays
+## 15. Practice Session Arrays
 
 ### Theory
 
@@ -8851,9 +8851,9 @@ function unsetXBitsFromRight(A, B) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="17-lab-session-bit-manipulation"></a>
+<a id="17-practice-session-bit-manipulation"></a>
 
-## 17. Lab Session Bit Manipulation
+## 17. Practice Session Bit Manipulation
 
 ### Theory
 
@@ -9716,9 +9716,9 @@ decInc(5); // 5 4 3 2 1 1 2 3 4 5
 // Space Complexity Explanation : O(n) auxiliary memory used.
 ```
 
-<a id="19-lab-session-recursion"></a>
+<a id="19-practice-session-recursion"></a>
 
-## 19. Lab Session Recursion
+## 19. Practice Session Recursion
 
 ### Theory
 
@@ -11736,9 +11736,9 @@ function countPairDifferenceHashMap(A, B) {
 // Space Complexity Explanation : O(N) auxiliary memory used.
 ```
 
-<a id="22-lab-session-hashing"></a>
+<a id="22-practice-session-hashing"></a>
 
-## 22. Lab Session Hashing
+## 22. Practice Session Hashing
 
 ### Theory
 
@@ -16952,9 +16952,9 @@ function maxOccurrences(A, B) {
 // Space Complexity Explanation : O(N) auxiliary memory used.
 ```
 
-<a id="28-lab-session-on-searching"></a>
+<a id="28-practice-session-on-searching"></a>
 
-## 28. Lab Session on Searching
+## 28. Practice Session on Searching
 
 ### Theory
 
@@ -20167,9 +20167,9 @@ function infixToPostfix(A) {
 // Space Complexity Explanation : O(n) auxiliary memory used.
 ```
 
-<a id="32-lab-session-on-stacks"></a>
+<a id="32-practice-session-on-stacks"></a>
 
-## 32. Lab Session on Stacks
+## 32. Practice Session on Stacks
 
 ### Theory
 
@@ -24881,9 +24881,9 @@ const CCountAssg = 20; // Upper bound
 // Space Complexity Explanation : O(h) auxiliary memory used.
 ```
 
-<a id="36-lab-session-on-binary-trees"></a>
+<a id="36-practice-session-on-binary-trees"></a>
 
-## 36. Lab Session on Binary Trees
+## 36. Practice Session on Binary Trees
 
 ### Theory
 
@@ -27660,9 +27660,9 @@ function solution(A) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="39-lab-session-on-prime-numbers-2-pointers"></a>
+<a id="39-practice-session-on-prime-numbers-2-pointers"></a>
 
-## 39. Lab Session on Prime Numbers & 2 Pointers
+## 39. Practice Session on Prime Numbers & 2 Pointers
 
 ### Theory
 
@@ -29354,9 +29354,9 @@ function closestPairFromSorted(A, B, C) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="40-lab-session-on-maths-2-pointers"></a>
+<a id="40-practice-session-on-maths-2-pointers"></a>
 
-## 40. Lab Session on Maths & 2 Pointers
+## 40. Practice Session on Maths & 2 Pointers
 
 ### Theory
 
@@ -30869,9 +30869,9 @@ function kthSymbol(A, B) {
 // Space Complexity Explanation : O(A) auxiliary memory used.
 ```
 
-<a id="42-lab-session-on-backtracking"></a>
+<a id="42-practice-session-on-backtracking"></a>
 
-## 42. Lab Session on Backtracking
+## 42. Practice Session on Backtracking
 
 ### Theory
 
@@ -36713,9 +36713,9 @@ let root = new TreeNode(
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="46-lab-session-on-binary-trees-2"></a>
+<a id="46-practice-session-on-binary-trees-2"></a>
 
-## 46. Lab Session on Binary Trees 2
+## 46. Practice Session on Binary Trees 2
 
 ### Theory
 
@@ -44828,9 +44828,9 @@ function minCoinsPowersOf5Greedy(A) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="51-lab-session-on-heaps-greedy"></a>
+<a id="51-practice-session-on-heaps-greedy"></a>
 
-## 51. Lab Session on Heaps & Greedy
+## 51. Practice Session on Heaps & Greedy
 
 ### Theory
 
@@ -45519,9 +45519,9 @@ function kthSmallestInSortedMatrix(A, B) {
 // Space Complexity Explanation : O(1) auxiliary memory used.
 ```
 
-<a id="52-lab-session-on-interview-problems-1"></a>
+<a id="52-practice-session-on-interview-problems-1"></a>
 
-## 52. Lab Session on Interview Problems 1
+## 52. Practice Session on Interview Problems 1
 
 ### Theory
 
@@ -49187,9 +49187,9 @@ const D2 = 99;
 // Space Complexity Explanation : O(D) auxiliary memory used.
 ```
 
-<a id="56-lab-session-on-applications-of-knapsack"></a>
+<a id="56-practice-session-on-applications-of-knapsack"></a>
 
-## 56. Lab Session on Applications of Knapsack
+## 56. Practice Session on Applications of Knapsack
 
 ### Theory
 
@@ -53245,9 +53245,9 @@ function findAthPerfectNumber(A) {
 // Space Complexity Explanation : O(A * log(A)) auxiliary memory used.
 ```
 
-<a id="60-lab-session-on-interview-problems-2"></a>
+<a id="60-practice-session-on-interview-problems-2"></a>
 
-## 60. Lab Session on Interview Problems 2
+## 60. Practice Session on Interview Problems 2
 
 ### Theory
 
