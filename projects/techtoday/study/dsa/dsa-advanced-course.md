@@ -498,7 +498,7 @@ function isPerfect(A) {
         }
     }
     sum -= A; // Exclude the number itself from the sum
-    
+
     return sum === A ? 1 : 0;
 }
 
@@ -998,7 +998,7 @@ function reverse(A, B, C) {
     B++;
     C--;
   }
-  
+
   return A;
 }
 
@@ -8171,9 +8171,9 @@ def longestPalindromeSubstring(str):
  * every character (and the gap between every character) as a potential center.
  * * 1. Iterate through each character in the string.
  * 2. For each character, consider it the center of an "odd-length" palindrome (e.g., "aba").
- * 3. Also consider the space between the current and next character as the center 
+ * 3. Also consider the space between the current and next character as the center
  * of an "even-length" palindrome (e.g., "abba").
- * 4. Use a helper function to expand outward from these centers as long as the 
+ * 4. Use a helper function to expand outward from these centers as long as the
  * characters on the left and right match.
  * 5. Track the maximum length found during these expansions.
  */
@@ -8187,7 +8187,7 @@ function longestPalindromeSubstring(str) {
 
     // Helper function to keep the code DRY (Don't Repeat Yourself)
     /**
-     * Expands outward from the given center indices and returns the length 
+     * Expands outward from the given center indices and returns the length
      * of the valid palindrome discovered.
      */
     function expand(start, end) {
@@ -8230,7 +8230,7 @@ function longestPalindromeSubstring(str) {
  * - We iterate through the string of length n once.
  * - For each character, we perform an expansion that can take up to O(n) time.
  * * Space Complexity: O(1)
- * - The algorithm uses a constant amount of extra space (variables for length and pointers), 
+ * - The algorithm uses a constant amount of extra space (variables for length and pointers),
  * regardless of the input string size.
  */
 
@@ -43990,70 +43990,36 @@ import math
 
 # solution
 
-class MaxHeap:
-    def __init__(self):
-        self.data = []
-
-    def push(self, val):
-        self.data.append(val)
-        self._heapifyUp((self.data.length - 1))
-
-    def pop(self):
-        if self.size() == 0:
-                        return None
-        top = self.data[0]
-        end = self.data.pop()
-        if (self.data.length > 0):
-            self.data[0] = end
-            self._heapifyDown(0)
-        return top
-
-    def size(self):
-        return self.data.length
-
-    def _heapifyUp(self, idx):
-        while (idx > 0):
-            parent = (idx - 1) // 2
-            if (self.data[parent] >= self.data[idx]):
-                                break
-            self.data[parent], self.data[idx] = self.data[idx], self.data[parent]
-            idx = parent
-
-    def _heapifyDown(self, idx):
-        length = self.data.length
-        while True:
-            left = ((2 * idx) + 1)
-            right = ((2 * idx) + 2)
-            largest = idx
-            if ((left < length) and (self.data[left] > self.data[largest])):
-                                largest = left
-            if ((right < length) and (self.data[right] > self.data[largest])):
-                                largest = right
-            if largest == idx:
-                                break
-            self.data[largest], self.data[idx] = self.data[idx], self.data[largest]
-            idx = largest
+import heapq
+import math
 
 def isPerfectLine(A, B):
-    uniqueSizes = set()
-    heap = MaxHeap()
+    unique_sizes = set()
+    heap = []
+
     for size in A:
-        if (size in uniqueSizes):
-                        return 0
-        uniqueSizes.add(size)
-        heap.append(size)
-    while (uniqueSizes.size < B):
-        largest = heap.pop()
+        if size in unique_sizes:
+            return 0
+        unique_sizes.add(size)
+        heapq.heappush(heap, -size)
+
+    while len(unique_sizes) < B:
+        largest = -heapq.heappop(heap)
         if largest == 1:
-                        return 0
+            return 0
+
         part1 = largest // 2
-        part2 = math.ceil(largest // 2)
-        if ((part1 in uniqueSizes) or (part2 in uniqueSizes)):
-                        return 0
-        uniqueSizes.add(part1)
-        uniqueSizes.add(part2)
-        heap.append(part1)
-        heap.append(part2)
+        part2 = math.ceil(largest / 2)
+
+        if part1 in unique_sizes or part2 in unique_sizes:
+            return 0
+
+        unique_sizes.add(part1)
+        unique_sizes.add(part2)
+
+        heapq.heappush(heap, -part1)
+        heapq.heappush(heap, -part2)
+
     return 1
 
 # Test Case 1 : print(isPerfectLine([7, 9, 3], 4)); // Expected: 1
@@ -44063,6 +44029,7 @@ def isPerfectLine(A, B):
 # Time Complexity Explanation : O(B log B) operations determined by input size and loop traversal.
 # Space Complexity : O(N)
 # Space Complexity Explanation : O(N) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -45932,9 +45899,19 @@ const C = 3;
 
 ### Theory
 
-#### Counting Principles
-- **Addition Rule (OR)**: If event A can occur in $m$ ways and mutually exclusive event B in $n$ ways, A or B can occur in $m + n$ ways.
-- **Multiplication Rule (AND)**: If event A can occur in $m$ ways and independent event B in $n$ ways, both can occur in $m \times n$ ways.
+#### Addition Rule (OR) (Mutually Exclusive)
+When OR is used, it indicates that you can choose one of several options. Means you can either do one thing or another, but not both at the same time. This is where the addition rule comes into play.
+
+The addition rule states that if there are A ways to do one thing and B ways to do another, and these two things cannot happen at the same time, then there are A + B ways to choose one of these actions.
+
+For example, if you can choose from either 3 appetizers **OR** 2 main courses, not both, the total number of choices is 3 + 2 = 5.
+
+#### Multiplication Rule (AND) (Independent Events Happening Together)
+When AND is used, it indicates that you can choose multiple options in sequence. Means you can do one thing and then another. This is where the multiplication rule comes into play.
+
+The multiplication rule states that if there are A ways to do one thing and B ways to do another, and these two things can happen together, then there are A * B ways to perform both actions.
+
+For example, if you can choose from 3 appetizers **AND** 2 main courses, both can be chosen, the total number of meal combinations is 3 * 2 = 6.
 
 #### Permutation and Combination
 - **Permutation**: Arrangement where order matters:
@@ -45946,6 +45923,72 @@ const C = 3;
 - $nC0 = 1$, $nCn = 1$, $nC1 = n$
 - $nCr = nC(n - r)$
 - Pascal's Identity: $nCr = {n-1}Cr + {n-1}C(r - 1)$
+
+#### Arrangement of Objects
+Given 3 distinct characters A, B, and C, the arrangement of these characters can be represented as a sequence of choices.
+The first character can be any of the three (A, B, or C), the second character can be any of the remaining two, and the last character is the one left.
+
+So the arrangements are:
+- First character: 3 choices (A, B, C)
+- Second character: 2 choices (from the remaining two)
+- Last character: 1 choice (the one left)
+
+This results in a total of (3 * 2 * 1) = 6 arrangements. Which are: ABC, ACB, BAC, BCA, CAB, CBA. Which is 3! (3 factorial).
+
+This is an example of permutation, where the order of arrangement matters.
+
+#### Permutation
+A permutation is an arrangement of objects in a specific order. The order matters in permutations, meaning that changing the order of the objects creates a different permutation.
+
+For example, if we have 4 distinct characters A, B, C, and D, and we have to select 2 of them to arrange, the permutations can be calculated as follows:
+- First character: 4 choices (A, B, C, D)
+- Second character: 3 choices (from the remaining three)
+
+This results in a total of (4 * 3) = 12 permutations. The permutations are: AB, AC, AD, BA, BC, BD, CA, CB, CD, DA, DB, DC.
+
+#### nPr Formulae
+nPr = n! / (n - r)!
+
+Where:
+- n is the total number of objects.
+- r is the number of objects to be arranged.
+- n! (n factorial) is the product of all positive integers up to n.
+- (n - r)! is the factorial of the difference between n and r.
+
+For example, if we have 5 distinct characters A, B, C, D, and E, and we want to arrange 3 of them, we can use the formula:
+
+5P3 = 5! / (5 - 3)! = 5! / 2! = (5 * 4 * 3 * 2 * 1) / (2 * 1) = 60
+
+#### Combination
+A combination is a selection of objects without regard to the order. In combinations, the order does not matter, meaning that changing the order of the objects does not create a different combination.
+
+For example, if we have 4 distinct characters A, B, C, and D, and we want to select 2 of them, the combinations can be calculated as follows:
+- We can select A and B, A and C, A and D, B and C, B and D, C and D.
+- This results in a total of 6 combinations.
+- The combinations are: AB, AC, AD, BC, BD, CD.
+- Note that AB and BA are considered the same combination since the order does not matter.
+
+#### nCr Formulae
+nCr = n! / (r! * (n - r)!)
+
+The formula for combinations can be derived from the permutations formula as follows: Permutations = Combinations * Arrangements
+nPr = nCr * r!
+Where:
+- n is the total number of objects.
+- r is the number of objects to be selected.
+- nCr is the number of combinations.
+- r! is the number of arrangements of the selected objects.
+
+Thus the formula for combinations is given by: nCr = n! / (r! * (n - r)!)
+For example, if we have 5 distinct characters A, B, C, D, and E, and we want to select 3 of them, we can use the formula:
+5C3 = 5! / (3! * (5 - 3)!) = (5 * 4 * 3 * 2 * 1) / ((3 * 2 * 1) * (2 * 1)) = 10
+
+#### Properties of Combination
+1. Selecting 0 objects from n objects is always 1. **nC0 = 1**
+2. Selecting n objects from n objects is also always 1. **nCn = 1**
+3. Selecting 1 object  from n objects is always n. **nC1 = n**
+4. Selecting r objects from n objects is the same as selecting (n - r) objects from n objects. **nCr = nC(n - r)**
+5. Selecting r objects from n objects can be expressed in terms of the previous row in Pascal's Triangle. **nCr = n-1Cr + n-1C(r - 1)**
 
 ### Questions
 
@@ -68168,73 +68211,33 @@ heap.push(2, 4, 5, 11, 6, 7, 8, 20);
 
 # solution
 
+import heapq
+
 class MinHeap:
-    def __init__(self):
-        self.heap = []
-
-    def getParentIndex(self, i):
-        return (i - 1) // 2
-
-    def getLeftChildIndex(self, i):
-        return ((2 * i) + 1)
-
-    def getRightChildIndex(self, i):
-        return ((2 * i) + 2)
-
-    def swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+    """Min-Heap implementation using Python's built-in heapq module."""
+    def __init__(self, items=None):
+        self.heap = list(items) if items else []
+        heapq.heapify(self.heap)
 
     def insert(self, value):
-        self.heap.append(value)
-        self.heapifyUp()
-
-    def heapifyUp(self):
-        index = (self.heap.length - 1)
-        while ((index > 0) and (self.heap[self.getParentIndex(index)] > self.heap[index])):
-            self.swap(self.getParentIndex(index), index)
-            index = self.getParentIndex(index)
-
-    def extractMin(self):
-        if self.heap.length == 0:
-                        return None
-        if self.heap.length == 1:
-                        return self.heap.pop()
-        root = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self.heapifyDown()
-        return root
-
-    def heapifyDown(self):
-        index = 0
-        while (self.getLeftChildIndex(index) < self.heap.length):
-            smallerChildIndex = index
-            if ((self.getLeftChildIndex(index) < self.heap.length) and (self.heap[self.getLeftChildIndex(index)] < self.heap[smallerChildIndex])):
-                smallerChildIndex = self.getLeftChildIndex(index)
-            if ((self.getRightChildIndex(index) < self.heap.length) and (self.heap[self.getRightChildIndex(index)] < self.heap[smallerChildIndex])):
-                smallerChildIndex = self.getRightChildIndex(index)
-            if (self.heap[index] <= self.heap[smallerChildIndex]):
-                break
-            else:
-                self.swap(index, smallerChildIndex)
-            index = smallerChildIndex
+        heapq.heappush(self.heap, value)
 
     def peek(self):
-        return (self.heap[0] if (self.heap.length > 0) else None)
+        return self.heap[0] if self.heap else None
+
+    def extractMin(self):
+        return heapq.heappop(self.heap) if self.heap else None
 
     def size(self):
-        return self.heap.length
+        return len(self.heap)
+
+    def isEmpty(self):
+        return len(self.heap) == 0
 
 minHeap = MinHeap()
-
-minHeap.insert(10)
-
-minHeap.insert(5)
-
-minHeap.insert(20)
-
+minHeap.insert(3)
 minHeap.insert(1)
-
-minHeap.insert(15)
+minHeap.insert(4)
 
 # Test Case 1 : print(minHeap.peek()); // Expected: Output: 1 (smallest element)
 # Test Case 2 : print(minHeap.extractMin()); // Expected: Output: 1
@@ -68243,6 +68246,7 @@ minHeap.insert(15)
 # Time Complexity Explanation : O(log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -68435,73 +68439,33 @@ minHeap.insert(15);
 
 # solution
 
+import heapq
+
 class MaxHeap:
-    def __init__(self):
-        self.heap = []
-
-    def getParentIndex(self, i):
-        return (i - 1) // 2
-
-    def getLeftChildIndex(self, i):
-        return ((2 * i) + 1)
-
-    def getRightChildIndex(self, i):
-        return ((2 * i) + 2)
-
-    def swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+    """Max-Heap implementation using Python's built-in heapq module with negated values."""
+    def __init__(self, items=None):
+        self.heap = [-x for x in items] if items else []
+        heapq.heapify(self.heap)
 
     def insert(self, value):
-        self.heap.append(value)
-        self.heapifyUp()
-
-    def heapifyUp(self):
-        index = (self.heap.length - 1)
-        while ((index > 0) and (self.heap[self.getParentIndex(index)] < self.heap[index])):
-            self.swap(self.getParentIndex(index), index)
-            index = self.getParentIndex(index)
-
-    def extractMax(self):
-        if self.heap.length == 0:
-                        return None
-        if self.heap.length == 1:
-                        return self.heap.pop()
-        root = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self.heapifyDown()
-        return root
-
-    def heapifyDown(self):
-        index = 0
-        while (self.getLeftChildIndex(index) < self.heap.length):
-            largerChildIndex = index
-            if ((self.getLeftChildIndex(index) < self.heap.length) and (self.heap[self.getLeftChildIndex(index)] > self.heap[largerChildIndex])):
-                largerChildIndex = self.getLeftChildIndex(index)
-            if ((self.getRightChildIndex(index) < self.heap.length) and (self.heap[self.getRightChildIndex(index)] > self.heap[largerChildIndex])):
-                largerChildIndex = self.getRightChildIndex(index)
-            if (self.heap[index] >= self.heap[largerChildIndex]):
-                break
-            else:
-                self.swap(index, largerChildIndex)
-            index = largerChildIndex
+        heapq.heappush(self.heap, -value)
 
     def peek(self):
-        return (self.heap[0] if (self.heap.length > 0) else None)
+        return -self.heap[0] if self.heap else None
+
+    def extractMax(self):
+        return -heapq.heappop(self.heap) if self.heap else None
 
     def size(self):
-        return self.heap.length
+        return len(self.heap)
+
+    def isEmpty(self):
+        return len(self.heap) == 0
 
 maxHeap = MaxHeap()
-
 maxHeap.insert(10)
-
-maxHeap.insert(5)
-
 maxHeap.insert(20)
-
-maxHeap.insert(1)
-
-maxHeap.insert(15)
+maxHeap.insert(5)
 
 # Test Case 1 : print(maxHeap.peek()); // Expected: Output: 20 (largest element)
 # Test Case 2 : print(maxHeap.extractMax()); // Expected: Output: 20
@@ -68510,6 +68474,7 @@ maxHeap.insert(15)
 # Time Complexity Explanation : O(log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -68710,32 +68675,34 @@ maxHeap.insert(15);
 
 # solution
 
+import heapq
+
 class PriorityQueue:
+    """Priority Queue implementation using Python's built-in heapq module."""
     def __init__(self):
-        self.heap = MinHeap()
+        self.heap = []
 
-    def add(self, value):
-        self.heap.insert(value)
-
-    def poll(self):
-        return self.heap.extractMin()
+    def add(self, element, priority=None):
+        if priority is None:
+            priority = element
+        heapq.heappush(self.heap, (priority, element))
 
     def peek(self):
-        return self.heap.peek()
+        return self.heap[0][1] if self.heap else None
+
+    def poll(self):
+        return heapq.heappop(self.heap)[1] if self.heap else None
 
     def size(self):
-        return self.heap.size()
+        return len(self.heap)
 
     def isEmpty(self):
-        return self.size() == 0
+        return len(self.heap) == 0
 
 pq = PriorityQueue()
-
-pq.add(10)
-
-pq.add(3)
-
-pq.add(7)
+pq.add(10, 10)
+pq.add(3, 3)
+pq.add(5, 5)
 
 # Test Case 1 : print(pq.peek()); // Expected: 3
 # Test Case 2 : print(pq.poll()); // Expected: 3
@@ -68744,6 +68711,7 @@ pq.add(7)
 # Time Complexity Explanation : O(log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -68870,69 +68838,25 @@ pq.add(7);
 
 # solution
 
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def size(self):
-        return self.heap.length
-
-    def add(self, val):
-        self.heap.append(val)
-        self.bubbleUp()
-
-    def poll(self):
-        if self.size() == 0:
-                        return None
-        if self.size() == 1:
-                        return self.heap.pop()
-        min = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self.bubbleDown()
-        return min
-
-    def bubbleUp(self):
-        index = (self.heap.length - 1)
-        while (index > 0):
-            parentIndex = (index - 1) // 2
-            if (self.heap[index] < self.heap[parentIndex]):
-                self.heap[index], self.heap[parentIndex] = self.heap[parentIndex], self.heap[index]
-                index = parentIndex
-            else:
-                break
-
-    def bubbleDown(self):
-        index = 0
-        length = self.heap.length
-        while True:
-            left = ((2 * index) + 1)
-            right = ((2 * index) + 2)
-            swap = None
-            if (left < length):
-                if (self.heap[left] < self.heap[index]):
-                    swap = left
-            if (right < length):
-                if ((swap == None and (self.heap[right] < self.heap[index])) or (swap != None and (self.heap[right] < self.heap[left]))):
-                    swap = right
-            if swap == None:
-                                break
-            self.heap[index], self.heap[swap] = self.heap[swap], self.heap[index]
-            index = swap
+import heapq
 
 def minCostToConnectRopes(lengths):
-    if (not Array.isArray(lengths) or (len(lengths) <= 1)):
-                return 0
-    pq = PriorityQueue()
-    for len in lengths:
-        pq.add(len)
-    total = 0
-    while (pq.size() > 1):
-        a = pq.poll()
-        b = pq.poll()
-        cost = (a + b)
-        total += cost
-        pq.add(cost)
-    return total
+    """
+    Connect ropes with minimum total cost using Python's heapq.
+    Always connect the two shortest ropes first.
+    """
+    if not lengths or len(lengths) <= 1:
+        return 0
+    h = list(lengths)
+    heapq.heapify(h)
+    total_cost = 0
+    while len(h) > 1:
+        first = heapq.heappop(h)
+        second = heapq.heappop(h)
+        cost = first + second
+        total_cost += cost
+        heapq.heappush(h, cost)
+    return total_cost
 
 # Test Case 1 : print(minCostToConnectRopes([])); // Expected: 0
 # Test Case 2 : print(minCostToConnectRopes([8])); // Expected: 0 (nothing to connect)
@@ -68941,6 +68865,7 @@ def minCostToConnectRopes(lengths):
 # Time Complexity Explanation : O(N^2) operations determined by input size and loop traversal.
 # Space Complexity : O(1)
 # Space Complexity Explanation : O(1) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -69169,71 +69094,24 @@ function minCostToConnectRopes(lengths) {
 
 # solution
 
-class MinHeap:
-    def __init__(self, values=[]):
-        self.h = values[:]
-        for i in range((self.h.length // 2 - 1), -1, -1):
-                        self.down(i)
-
-    def size(self):
-        return self.h.length
-
-    def isEmpty(self):
-        return self.h.length == 0
-
-    def peek(self):
-        return self.h[0]
-
-    def push(self, x):
-        self.h.append(x)
-        self.up((self.h.length - 1))
-
-    def pop(self):
-        n = self.h.length
-        if n == 0:
-                        return None
-        if n == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self.down(0)
-        return root
-
-    def up(self, i):
-        while (i > 0):
-            p = (i - 1) // 2
-            if (self.h[p] <= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def down(self, i):
-        n = self.h.length
-        while True:
-            l = ((2 * i) + 1)
-            r = (l + 1)
-            s = i
-            if ((l < n) and (self.h[l] < self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] < self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
+import heapq
 
 def minCostToConnectRopes(A):
-    if (not Array.isArray(A) or (len(A) <= 1)):
-                return 0
-    heap = MinHeap(A)
-    cost = 0
-    while (heap.size() > 1):
-        a = heap.pop()
-        b = heap.pop()
-        c = (a + b)
-        cost += c
-        heap.append(c)
-    return cost
+    """
+    Connect ropes with minimum total cost using Python's heapq.
+    """
+    if not A or len(A) <= 1:
+        return 0
+    h = list(A)
+    heapq.heapify(h)
+    total_cost = 0
+    while len(h) > 1:
+        first = heapq.heappop(h)
+        second = heapq.heappop(h)
+        cost = first + second
+        total_cost += cost
+        heapq.heappush(h, cost)
+    return total_cost
 
 # Test Case 1 : print(minCostToConnectRopes([1, 2, 3, 4, 5])); // Expected: 33
 # Test Case 2 : print(minCostToConnectRopes([5, 17, 100, 11])); // Expected: 182
@@ -69242,6 +69120,7 @@ def minCostToConnectRopes(A):
 # Time Complexity Explanation : O(n log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -69527,64 +69406,23 @@ const A = [5, 13, -2, 11, 27, 31, 0, 19];
 
 # solution
 
-class MinHeap:
-    def __init__(self):
-        self.h = []
-
-    def size(self):
-        return self.h.length
-
-    def peek(self):
-        return self.h[0]
-
-    def push(self, x):
-        self.h.append(x)
-        self.siftUp((self.h.length - 1))
-
-    def pop(self):
-        n = self.h.length
-        if n == 0:
-                        return None
-        if n == 1:
-                        return self.h.pop()
-        min = self.h[0]
-        self.h[0] = self.h.pop()
-        self.siftDown(0)
-        return min
-
-    def siftUp(self, i):
-        while (i > 0):
-            parent = (i - 1) // 2
-            if (self.h[parent] <= self.h[i]):
-                                break
-            self.h[parent], self.h[i] = self.h[i], self.h[parent]
-            i = parent
-
-    def siftDown(self, i):
-        n = self.h.length
-        while True:
-            left = ((2 * i) + 1)
-            right = (left + 1)
-            smallest = i
-            if ((left < n) and (self.h[left] < self.h[smallest])):
-                                smallest = left
-            if ((right < n) and (self.h[right] < self.h[smallest])):
-                                smallest = right
-            if smallest == i:
-                                break
-            self.h[i], self.h[smallest] = self.h[smallest], self.h[i]
-            i = smallest
+import heapq
 
 def heapQueries(A):
-    heap = MinHeap()
-    result = []
-    for P, Q in A:
-        if (P == 1 and Q == -1):
-            minValue = heap.pop()
-            result.append((-1 if minValue == None else minValue))
-        elif (P == 2 and (Q >= 1)):
-            heap.append(Q)
-    return result
+    """
+    Process queries using Python's heapq:
+    [1, -1] -> extract min (or -1 if empty)
+    [2, x]  -> insert x into heap
+    """
+    heap = []
+    ans = []
+    for q in A:
+        t = q[0]
+        if t == 1:
+            ans.append(heapq.heappop(heap) if heap else -1)
+        elif t == 2:
+            heapq.heappush(heap, q[1])
+    return ans
 
 # Test Case 1 : print(heapQueries([[1, -1], [2, 2], [2, 1], [1, -1]])); // Expected: [-1, 1]
 # Test Case 2 : print(heapQueries([[2, 5], [2, 3], [2, 1], [1, -1], [1, -1]])); // Expected: [1, 3]
@@ -69593,6 +69431,7 @@ def heapQueries(A):
 # Time Complexity Explanation : O(M * log N) operations determined by input size and loop traversal.
 # Space Complexity : O(N + M)
 # Space Complexity Explanation : O(N + M) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -69921,73 +69760,26 @@ const B2 = 5;
 
 # solution
 
-class MinHeap:
-    def __init__(self, values=[]):
-        self.h = values[:]
-        for i in range((self.h.length // 2 - 1), -1, -1):
-                        self.siftDown(i)
-
-    def size(self):
-        return self.h.length
-
-    def isEmpty(self):
-        return self.h.length == 0
-
-    def peek(self):
-        return self.h[0]
-
-    def push(self, x):
-        self.h.append(x)
-        self.siftUp((self.h.length - 1))
-
-    def pop(self):
-        n = self.h.length
-        if n == 0:
-                        return None
-        if n == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self.siftDown(0)
-        return root
-
-    def siftUp(self, i):
-        while (i > 0):
-            p = (i - 1) // 2
-            if (self.h[p] <= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def siftDown(self, i):
-        n = self.h.length
-        while True:
-            l = ((2 * i) + 1)
-            r = (l + 1)
-            s = i
-            if ((l < n) and (self.h[l] < self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] < self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
+import heapq
 
 def mishaAndCandies(A, B):
-    heap = MinHeap(A)
+    """
+    Misha and Candies using Python's heapq.
+    """
+    heap = list(A)
+    heapq.heapify(heap)
     eaten = 0
-    while (not heap.isEmpty() and (heap.peek() <= B)):
-        if heap.size() == 1:
-            x = heap.pop()
+    while heap and heap[0] <= B:
+        if len(heap) == 1:
+            x = heapq.heappop(heap)
             eaten += x // 2
             break
-        x = heap.pop()
+        x = heapq.heappop(heap)
         eat = x // 2
-        rem = (x - eat)
+        rem = x - eat
         eaten += eat
-        y = heap.pop()
-        heap.append((y + rem))
+        y = heapq.heappop(heap)
+        heapq.heappush(heap, y + rem)
     return eaten
 
 # Test Case 1 : print(mishaAndCandies([705], 895)); // Expected: 352
@@ -69997,6 +69789,7 @@ def mishaAndCandies(A, B):
 # Time Complexity Explanation : O((N + K) log N) operations determined by input size and loop traversal.
 # Space Complexity : O(N)
 # Space Complexity Explanation : O(N) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -70920,123 +70713,29 @@ heapSort(arr);
 
 # solution
 
-class MinHeap:
-    def __init__(self):
-        self.h = []
-
-    def size(self):
-        return self.h.length
-
-    def peek(self):
-        return (self.h[0] or None)
-
-    def insert(self, x):
-        self.h.append(x)
-        self.up((self.h.length - 1))
-
-    def extractMin(self):
-        if not self.h.length:
-                        return None
-        if self.h.length == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self.down(0)
-        return root
-
-    def up(self, i):
-        while (i > 0):
-            p = (i - 1) // 2
-            if (self.h[p] <= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def down(self, i):
-        n = self.h.length
-        while True:
-            s = i
-            l = ((2 * i) + 1)
-            r = ((2 * i) + 2)
-            if ((l < n) and (self.h[l] < self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] < self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
-
-class MaxHeap:
-    def __init__(self):
-        self.h = []
-
-    def size(self):
-        return self.h.length
-
-    def peek(self):
-        return (self.h[0] or None)
-
-    def insert(self, x):
-        self.h.append(x)
-        self.up((self.h.length - 1))
-
-    def extractMax(self):
-        if not self.h.length:
-                        return None
-        if self.h.length == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self.down(0)
-        return root
-
-    def up(self, i):
-        while (i > 0):
-            p = (i - 1) // 2
-            if (self.h[p] >= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def down(self, i):
-        n = self.h.length
-        while True:
-            s = i
-            l = ((2 * i) + 1)
-            r = ((2 * i) + 2)
-            if ((l < n) and (self.h[l] > self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] > self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
+import heapq
 
 class MedianFinder:
+    """Find median from data stream using two heaps with Python's heapq."""
     def __init__(self):
-        self.low = MaxHeap()
-        self.high = MinHeap()
+        self.low = []   # max-heap (negated values)
+        self.high = []  # min-heap
 
     def addNum(self, num):
-        if (not self.low.size() or (num <= self.low.peek())):
-            self.low.insert(num)
-        else:
-            self.high.insert(num)
-        if (self.low.size() > (self.high.size() + 1)):
-            self.high.insert(self.low.extractMax())
-        elif (self.high.size() > (self.low.size() + 1)):
-            self.low.insert(self.high.extractMin())
+        heapq.heappush(self.low, -num)
+        heapq.heappush(self.high, -heapq.heappop(self.low))
+        if len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
 
     def findMedian(self):
-        if self.low.size() == self.high.size():
-            return (self.low.peek() + self.high.peek()) // 2
-        return (self.low.peek() if (self.low.size() > self.high.size()) else self.high.peek())
+        if len(self.low) > len(self.high):
+            return -self.low[0]
+        return (-self.low[0] + self.high[0]) / 2.0
 
 mf = MedianFinder()
-
-[9, 6, 3, 10, 4].forEach(lambda x: None)
+stream = [5, 15, 1, 3]
+for x in stream:
+    mf.addNum(x)
 
 # Test Case 1 : print(`Added ${x}, Median:`, mf.findMedian());
 
@@ -71044,6 +70743,7 @@ mf = MedianFinder()
 # Time Complexity Explanation : O(log N) operations determined by input size and loop traversal.
 # Space Complexity : O(N)
 # Space Complexity Explanation : O(N) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -71374,115 +71074,22 @@ const activities = [
 
 # solution
 
-class MinHeap:
-    def __init__(self):
-        self.h = []
-
-    def size(self):
-        return self.h.length
-
-    def peek(self):
-        return (self.h[0] if self.h.length else None)
-
-    def insert(self, x):
-        self.h.append(x)
-        self._up((self.h.length - 1))
-
-    def extractMin(self):
-        if not self.h.length:
-                        return None
-        if self.h.length == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self._down(0)
-        return root
-
-    def _up(self, i):
-        while (i > 0):
-            p = ((i - 1) >> 1)
-            if (self.h[p] <= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def _down(self, i):
-        n = self.h.length
-        while True:
-            l = ((2 * i) + 1)
-            r = ((2 * i) + 2)
-            s = i
-            if ((l < n) and (self.h[l] < self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] < self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
-
-class MaxHeap:
-    def __init__(self):
-        self.h = []
-
-    def size(self):
-        return self.h.length
-
-    def peek(self):
-        return (self.h[0] if self.h.length else None)
-
-    def insert(self, x):
-        self.h.append(x)
-        self._up((self.h.length - 1))
-
-    def extractMax(self):
-        if not self.h.length:
-                        return None
-        if self.h.length == 1:
-                        return self.h.pop()
-        root = self.h[0]
-        self.h[0] = self.h.pop()
-        self._down(0)
-        return root
-
-    def _up(self, i):
-        while (i > 0):
-            p = ((i - 1) >> 1)
-            if (self.h[p] >= self.h[i]):
-                                break
-            self.h[p], self.h[i] = self.h[i], self.h[p]
-            i = p
-
-    def _down(self, i):
-        n = self.h.length
-        while True:
-            l = ((2 * i) + 1)
-            r = ((2 * i) + 2)
-            s = i
-            if ((l < n) and (self.h[l] > self.h[s])):
-                                s = l
-            if ((r < n) and (self.h[r] > self.h[s])):
-                                s = r
-            if s == i:
-                                break
-            self.h[i], self.h[s] = self.h[s], self.h[i]
-            i = s
+import heapq
 
 def runningMedianLower(A):
-    low = MaxHeap()
-    high = MinHeap()
-    C = []
+    """
+    Return running median (lower median for even counts) for every prefix of A using Python's heapq.
+    """
+    low = []   # max-heap (negated values)
+    high = []  # min-heap
+    ans = []
     for x in A:
-        if (low.size() == 0 or (x <= low.peek())):
-                        low.insert(x)
-        else:
-                        high.insert(x)
-        if (low.size() < high.size()):
-            low.insert(high.extractMin())
-        elif (low.size() > (high.size() + 1)):
-            high.insert(low.extractMax())
-        C.append(low.peek())
-    return C
+        heapq.heappush(low, -x)
+        heapq.heappush(high, -heapq.heappop(low))
+        if len(high) > len(low):
+            heapq.heappush(low, -heapq.heappop(high))
+        ans.append(-low[0])
+    return ans
 
 # Test Case 1 : print(runningMedianLower([1, 2, 5, 4, 3])); // Expected: [1, 1, 2, 2, 3]
 # Test Case 2 : print(runningMedianLower([5, 17, 100, 11])); // Expected: [5, 5, 17, 11]
@@ -71491,6 +71098,7 @@ def runningMedianLower(A):
 # Time Complexity Explanation : O(N) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -72627,98 +72235,33 @@ function distributeCandies(ratings) {
 
 # solution
 
+import heapq
+
 class ListNode:
-    def __init__(self, value, next=None):
-        self.val = value
+    def __init__(self, val=0, next=None):
+        self.val = val
         self.next = next
 
-class MinHeapOfListNodes:
-    def __init__(self):
-        self.nodes = []
-
-    def size(self):
-        return self.nodes.length
-
-    def min(self):
-        return self.nodes[0]
-
-    def insert(self, node):
-        self.nodes.append(node)
-        self._siftUp((self.nodes.length - 1))
-
-    def extractMin(self):
-        if self.nodes.length == 0:
-                        return None
-        root = self.nodes[0]
-        last = self.nodes.pop()
-        if (self.nodes.length > 0):
-            self.nodes[0] = last
-            self._siftDown(0)
-        return root
-
-    def _parentIndex(self, i):
-        return ((i - 1) >> 1)
-
-    def _leftChildIndex(self, i):
-        return ((i << 1) + 1)
-
-    def _rightChildIndex(self, i):
-        return ((i << 1) + 2)
-
-    def _isLess(self, i, j):
-        return (self.nodes[i].val < self.nodes[j].val)
-
-    def _siftUp(self, i):
-        while (i > 0):
-            p = self._parentIndex(i)
-            if not self._isLess(i, p):
-                                break
-            self.nodes[i], self.nodes[p] = self.nodes[p], self.nodes[i]
-            i = p
-
-    def _siftDown(self, i):
-        n = self.nodes.length
-        while True:
-            smallest = i
-            l = self._leftChildIndex(i)
-            r = self._rightChildIndex(i)
-            if ((l < n) and self._isLess(l, smallest)):
-                                smallest = l
-            if ((r < n) and self._isLess(r, smallest)):
-                                smallest = r
-            if smallest == i:
-                                break
-            self.nodes[i], self.nodes[smallest] = self.nodes[smallest], self.nodes[i]
-            i = smallest
-
 def mergeKSortedLinkedLists(listHeads):
-    minHeap = MinHeapOfListNodes()
-    for head in listHeads:
+    """
+    Merge K sorted linked lists using a min-heap with Python's heapq.
+    """
+    heap = []
+    for i, head in enumerate(listHeads):
         if head:
-                        minHeap.insert(head)
-    dummyHead = ListNode(0)
-    mergedTail = dummyHead
-    while (minHeap.size() > 0):
-        smallestNode = minHeap.extractMin()
-        mergedTail.next = smallestNode
-        mergedTail = mergedTail.next
-        if smallestNode.next:
-            minHeap.insert(smallestNode.next)
-    return dummyHead.next
+            heapq.heappush(heap, (head.val, i, head))
 
-list1 = ListNode(1, ListNode(4, ListNode(5)))
+    dummy = ListNode(0)
+    curr = dummy
 
-list2 = ListNode(1, ListNode(3, ListNode(4)))
+    while heap:
+        val, i, node = heapq.heappop(heap)
+        curr.next = node
+        curr = curr.next
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
 
-list3 = ListNode(2, ListNode(6))
-
-mergedHead = mergeKSortedLinkedLists([list1, list2, list3])
-
-cursor = mergedHead
-
-while cursor:
-    process.stdout.write((cursor.val + " "))
-    cursor = cursor.next
+    return dummy.next
 
 # Test Case 1 : print(solve(Sample input arguments));
 
@@ -72726,6 +72269,7 @@ while cursor:
 # Time Complexity Explanation : O(n log k) operations determined by input size and loop traversal.
 # Space Complexity : O(k)
 # Space Complexity Explanation : O(k) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -72895,72 +72439,36 @@ while (cursor) {                                     // Iterate until end of lis
 
 # solution
 
-class MinHeapOfNumbers:
-    def __init__(self):
-        self.heap = []
-
-    def size(self):
-        return self.heap.length
-
-    def peek(self):
-        return self.heap[0]
-
-    def insert(self, value):
-        self.heap.append(value)
-        self._siftUp((self.heap.length - 1))
-
-    def extractMin(self):
-        if self.heap.length == 0:
-                        return None
-        minValue = self.heap[0]
-        last = self.heap.pop()
-        if (self.heap.length > 0):
-            self.heap[0] = last
-            self._siftDown(0)
-        return minValue
-
-    def _parent(self, i):
-        return ((i - 1) >> 1)
-
-    def _left(self, i):
-        return ((i << 1) + 1)
-
-    def _right(self, i):
-        return ((i << 1) + 2)
-
-    def _siftUp(self, i):
-        while (i > 0):
-            p = self._parent(i)
-            if (self.heap[p] <= self.heap[i]):
-                                break
-            self.heap[p], self.heap[i] = self.heap[i], self.heap[p]
-            i = p
-
-    def _siftDown(self, i):
-        n = self.heap.length
-        while True:
-            smallest = i
-            l = self._left(i)
-            r = self._right(i)
-            if ((l < n) and (self.heap[l] < self.heap[smallest])):
-                                smallest = l
-            if ((r < n) and (self.heap[r] < self.heap[smallest])):
-                                smallest = r
-            if smallest == i:
-                                break
-            self.heap[i], self.heap[smallest] = self.heap[smallest], self.heap[i]
-            i = smallest
+import heapq
 
 def maximizeProfitWithinDeadlines(jobs):
-    jobs.sort()
-    chosenProfits = MinHeapOfNumbers()
-    for job in jobs:
-        chosenProfits.insert(job.profit)
-        if (chosenProfits.size() > job.deadline):
-            chosenProfits.extractMin()
-    return chosenProfits.heap.reduce(lambda sum, p: (sum + p), 0)
+    """
+    Greedy job sequencing with deadlines using Python's heapq.
+    """
+    def get_deadline(j):
+        return j["deadline"] if isinstance(j, dict) else getattr(j, "deadline", j[0] if isinstance(j, (list, tuple)) else 0)
 
-sampleJobs = [{"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2}, {"deadline": 3, "profit": 7}, {"deadline": 3, "profit": 1}, {"deadline": 5, "profit": 4}, {"deadline": 5, "profit": 3}, {"deadline": 6, "profit": 8}, {"deadline": 8, "profit": 1}]
+    def get_profit(j):
+        return j["profit"] if isinstance(j, dict) else getattr(j, "profit", j[1] if isinstance(j, (list, tuple)) else 0)
+
+    sorted_jobs = sorted(jobs, key=get_deadline)
+    chosen_profits = []
+
+    for job in sorted_jobs:
+        p = get_profit(job)
+        d = get_deadline(job)
+        heapq.heappush(chosen_profits, p)
+        if len(chosen_profits) > d:
+            heapq.heappop(chosen_profits)
+
+    return sum(chosen_profits)
+
+sampleJobs = [
+    {"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2},
+    {"deadline": 3, "profit": 7}, {"deadline": 3, "profit": 1},
+    {"deadline": 5, "profit": 4}, {"deadline": 5, "profit": 3},
+    {"deadline": 6, "profit": 8}, {"deadline": 8, "profit": 1},
+]
 
 # Test Case 1 : print(maximizeProfitWithinDeadlines(sampleJobs)); // Expected: 30
 
@@ -72968,6 +72476,7 @@ sampleJobs = [{"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2}, {"dead
 # Time Complexity Explanation : O(n log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -73109,72 +72618,36 @@ const sampleJobs = [
 
 # solution
 
-class MinHeapOfNumbers:
-    def __init__(self):
-        self.heap = []
-
-    def size(self):
-        return self.heap.length
-
-    def peek(self):
-        return self.heap[0]
-
-    def insert(self, value):
-        self.heap.append(value)
-        self._siftUp((self.heap.length - 1))
-
-    def extractMin(self):
-        if self.heap.length == 0:
-                        return None
-        minValue = self.heap[0]
-        last = self.heap.pop()
-        if (self.heap.length > 0):
-            self.heap[0] = last
-            self._siftDown(0)
-        return minValue
-
-    def _parent(self, i):
-        return ((i - 1) >> 1)
-
-    def _left(self, i):
-        return ((i << 1) + 1)
-
-    def _right(self, i):
-        return ((i << 1) + 2)
-
-    def _siftUp(self, i):
-        while (i > 0):
-            p = self._parent(i)
-            if (self.heap[p] <= self.heap[i]):
-                                break
-            self.heap[p], self.heap[i] = self.heap[i], self.heap[p]
-            i = p
-
-    def _siftDown(self, i):
-        n = self.heap.length
-        while True:
-            smallest = i
-            l = self._left(i)
-            r = self._right(i)
-            if ((l < n) and (self.heap[l] < self.heap[smallest])):
-                                smallest = l
-            if ((r < n) and (self.heap[r] < self.heap[smallest])):
-                                smallest = r
-            if smallest == i:
-                                break
-            self.heap[i], self.heap[smallest] = self.heap[smallest], self.heap[i]
-            i = smallest
+import heapq
 
 def maximizeProfitWithinDeadlines(jobs):
-    jobs.sort()
-    chosenProfits = MinHeapOfNumbers()
-    for job in jobs:
-        chosenProfits.insert(job.profit)
-        if (chosenProfits.size() > job.deadline):
-            chosenProfits.extractMin()
-    return chosenProfits.heap.reduce(lambda sum, p: (sum + p), 0)
+    """
+    Greedy job sequencing with deadlines using Python's heapq.
+    """
+    def get_deadline(j):
+        return j["deadline"] if isinstance(j, dict) else getattr(j, "deadline", j[0] if isinstance(j, (list, tuple)) else 0)
 
-sampleJobs = [{"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2}, {"deadline": 3, "profit": 7}, {"deadline": 3, "profit": 1}, {"deadline": 5, "profit": 4}, {"deadline": 5, "profit": 3}, {"deadline": 6, "profit": 8}, {"deadline": 8, "profit": 1}]
+    def get_profit(j):
+        return j["profit"] if isinstance(j, dict) else getattr(j, "profit", j[1] if isinstance(j, (list, tuple)) else 0)
+
+    sorted_jobs = sorted(jobs, key=get_deadline)
+    chosen_profits = []
+
+    for job in sorted_jobs:
+        p = get_profit(job)
+        d = get_deadline(job)
+        heapq.heappush(chosen_profits, p)
+        if len(chosen_profits) > d:
+            heapq.heappop(chosen_profits)
+
+    return sum(chosen_profits)
+
+sampleJobs = [
+    {"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2},
+    {"deadline": 3, "profit": 7}, {"deadline": 3, "profit": 1},
+    {"deadline": 5, "profit": 4}, {"deadline": 5, "profit": 3},
+    {"deadline": 6, "profit": 8}, {"deadline": 8, "profit": 1},
+]
 
 # Test Case 1 : print(maximizeProfitWithinDeadlines(sampleJobs)); // Expected: 30
 
@@ -73182,6 +72655,7 @@ sampleJobs = [{"deadline": 1, "profit": 5}, {"deadline": 3, "profit": 2}, {"dead
 # Time Complexity Explanation : O(n log n) operations determined by input size and loop traversal.
 # Space Complexity : O(n)
 # Space Complexity Explanation : O(n) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -73332,78 +72806,31 @@ const sampleJobs = [
 
 # solution
 
-class MinHeap:
-    def __init__(self):
-        self.data = []
-
-    def size(self):
-        return self.data.length
-
-    def top(self):
-        return self.data[0]
-
-    def push(self, x):
-        self.data.append(x)
-        self._siftUp((self.data.length - 1))
-
-    def pop(self):
-        if self.data.length == 0:
-                        return None
-        root = self.data[0]
-        last = self.data.pop()
-        if self.data.length:
-            self.data[0] = last
-            self._siftDown(0)
-        return root
-
-    def _parent(self, i):
-        return ((i - 1) >> 1)
-
-    def _left(self, i):
-        return ((i << 1) + 1)
-
-    def _right(self, i):
-        return ((i << 1) + 2)
-
-    def _siftUp(self, i):
-        while (i > 0):
-            p = self._parent(i)
-            if (self.data[p] <= self.data[i]):
-                                break
-            self.data[p], self.data[i] = self.data[i], self.data[p]
-            i = p
-
-    def _siftDown(self, i):
-        n = self.data.length
-        while True:
-            s = i
-            l = self._left(i)
-            r = self._right(i)
-            if ((l < n) and (self.data[l] < self.data[s])):
-                                s = l
-            if ((r < n) and (self.data[r] < self.data[s])):
-                                s = r
-            if s == i:
-                                break
-            self.data[i], self.data[s] = self.data[s], self.data[i]
-            i = s
+import heapq
 
 def productOfTopThreeForEachPrefix(A):
-    n = len(A)
-    result = [-1] * n
-    top3 = MinHeap()
-    for i in range(n):
-        x = A[i]
-        if (top3.size() < 3):
-            top3.append(x)
-        elif (x > top3.top()):
-            top3.pop()
-            top3.append(x)
-        if top3.size() == 3:
-            a, b, c = top3.data
-            result[i] = ((a * b) * c)
+    """
+    Find product of top 3 largest elements for each prefix using a min-heap of size 3 with Python's heapq.
+    """
+    top3 = []
+    running_product = 1
+    result = []
+
+    for val in A:
+        if len(top3) < 3:
+            heapq.heappush(top3, val)
+            running_product *= val
+            if len(top3) < 3:
+                result.append(-1)
+            else:
+                result.append(running_product)
         else:
-            result[i] = -1
+            if val > top3[0]:
+                smallest = heapq.heappop(top3)
+                running_product = (running_product // smallest) * val
+                heapq.heappush(top3, val)
+            result.append(running_product)
+
     return result
 
 # Test Case 1 : print(productOfTopThreeForEachPrefix([1, 2, 3, 4, 5])); // Expected: [-1, -1, 6, 24, 60]
@@ -73413,6 +72840,7 @@ def productOfTopThreeForEachPrefix(A):
 # Time Complexity Explanation : O(N) operations determined by input size and loop traversal.
 # Space Complexity : O(1)
 # Space Complexity Explanation : O(1) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -73803,73 +73231,30 @@ function minMeetingRooms(startTimes, endTimes) {
 
 # solution
 
+import heapq
+
 def sortKSortedArray(arr, k):
-    if not Array.isArray(arr):
-                raise Exception("arr must be an array")
-    if (type(k) != "number" or (k < 0)):
-                raise Exception("k must be a non-negative integer")
-    class MinHeap:
-        def __init__(self):
-            self.data = []
-
-        def parent(self, i):
-            return (i - 1) // 2
-
-        def left(self, i):
-            return ((2 * i) + 1)
-
-        def right(self, i):
-            return ((2 * i) + 2)
-
-        def swap(self, i, j):
-            tmp = self.data[i]
-            self.data[i] = self.data[j]
-            self.data[j] = tmp
-
-        def push(self, val):
-            self.data.append(val)
-            i = (self.data.length - 1)
-            while ((i > 0) and (self.data[i] < self.data[self.parent(i)])):
-                self.swap(i, self.parent(i))
-                i = self.parent(i)
-
-        def pop(self):
-            if self.data.length == 0:
-                                return None
-            rootVal = self.data[0]
-            lastVal = self.data.pop()
-            if (self.data.length > 0):
-                self.data[0] = lastVal
-                self.heapify(0)
-            return rootVal
-
-        def heapify(self, i):
-            smallest = i
-            l = self.left(i)
-            r = self.right(i)
-            if ((l < self.data.length) and (self.data[l] < self.data[smallest])):
-                smallest = l
-            if ((r < self.data.length) and (self.data[r] < self.data[smallest])):
-                smallest = r
-            if smallest != i:
-                self.swap(i, smallest)
-                self.heapify(smallest)
-
-        def size(self):
-            return self.data.length
+    """
+    Sort a nearly sorted (or k-sorted) array using a min-heap of size k+1 with Python's heapq.
+    """
     n = len(arr)
-    if (n <= 1):
-                return [*arr]
-    heap = MinHeap()
-    result = []
-    for i in range(min(n, (k + 1))):
-        heap.append(arr[i])
-    for i in range((k + 1), n):
-        result.append(heap.pop())
-        heap.append(arr[i])
-    while (heap.size() > 0):
-        result.append(heap.pop())
-    return result
+    if n == 0:
+        return arr
+
+    heap = arr[:k + 1]
+    heapq.heapify(heap)
+    target = 0
+
+    for i in range(k + 1, n):
+        arr[target] = heapq.heappop(heap)
+        target += 1
+        heapq.heappush(heap, arr[i])
+
+    while heap:
+        arr[target] = heapq.heappop(heap)
+        target += 1
+
+    return arr
 
 # Test Case 1 : print(sortKSortedArray([13, 22, 31, 45, 11, 20, 48, 60, 50], 4)); // Expected: expected [11,13,20,22,31,45,48,50,60]
 
@@ -73877,6 +73262,7 @@ def sortKSortedArray(arr, k):
 # Time Complexity Explanation : O(n log k) operations determined by input size and loop traversal.
 # Space Complexity : O(k)
 # Space Complexity Explanation : O(k) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -74359,86 +73745,30 @@ function minDistanceBetweenEqualElements(arrayA) {
 
 # solution
 
-class MinHeap:
-    def __init__(self):
-        self.items = []
+import heapq
 
-    def parentIndex(self, i):
-        return (i - 1) // 2
+def sortKSortedArray(arr, k):
+    """
+    Sort a nearly sorted (or k-sorted) array using a min-heap of size k+1 with Python's heapq.
+    """
+    n = len(arr)
+    if n == 0:
+        return arr
 
-    def leftChildIndex(self, i):
-        return ((2 * i) + 1)
+    heap = arr[:k + 1]
+    heapq.heapify(heap)
+    target = 0
 
-    def rightChildIndex(self, i):
-        return ((2 * i) + 2)
+    for i in range(k + 1, n):
+        arr[target] = heapq.heappop(heap)
+        target += 1
+        heapq.heappush(heap, arr[i])
 
-    def swap(self, i, j):
-        temp = self.items[i]
-        self.items[i] = self.items[j]
-        self.items[j] = temp
+    while heap:
+        arr[target] = heapq.heappop(heap)
+        target += 1
 
-    def size(self):
-        return self.items.length
-
-    def peek(self):
-        return self.items[0]
-
-    def push(self, value):
-        self.items.append(value)
-        index = (self.items.length - 1)
-        while (index > 0):
-            parent = self.parentIndex(index)
-            if (self.items[index] < self.items[parent]):
-                self.swap(index, parent)
-                index = parent
-            else:
-                break
-
-    def pop(self):
-        if self.items.length == 0:
-                        return None
-        self.swap(0, (self.items.length - 1))
-        minValue = self.items.pop()
-        self.heapifyDown(0)
-        return minValue
-
-    def heapifyDown(self, startIndex):
-        index = startIndex
-        while True:
-            left = self.leftChildIndex(index)
-            right = self.rightChildIndex(index)
-            smallest = index
-            if ((left < self.items.length) and (self.items[left] < self.items[smallest])):
-                smallest = left
-            if ((right < self.items.length) and (self.items[right] < self.items[smallest])):
-                smallest = right
-            if smallest == index:
-                                break
-            self.swap(index, smallest)
-            index = smallest
-
-def sortKSortedArray(priorities, k):
-    if not Array.isArray(priorities):
-        raise Exception("The first argument must be an array of numbers.")
-    if ((type(k) != "number" or (k < 0)) or not Number.isFinite(k)):
-        raise Exception("The second argument B must be a finite non-negative number.")
-    n = len(priorities)
-    if (n <= 1):
-        return [*priorities]
-    sorted = [0] * n
-    heap = MinHeap()
-    initialSize = min(n, (k + 1))
-    for i in range(initialSize):
-        heap.append(priorities[i])
-    writeIndex = 0
-    for i in range((k + 1), n):
-        sorted[writeIndex] = heap.pop()
-        writeIndex += 1
-        heap.append(priorities[i])
-    while (heap.size() > 0):
-        sorted[writeIndex] = heap.pop()
-        writeIndex += 1
-    return sorted
+    return arr
 
 # Test Case 1 : print(sortKSortedArray([1, 40, 2, 3], 2)); // Expected: expected [1, 2, 3, 40]
 # Test Case 2 : print(sortKSortedArray([2, 1, 17, 10, 21, 95], 1)); // Expected: expected [1, 2, 10, 17, 21, 95]
@@ -74447,6 +73777,7 @@ def sortKSortedArray(priorities, k):
 # Time Complexity Explanation : O(N log (B+1)) operations determined by input size and loop traversal.
 # Space Complexity : O(B)
 # Space Complexity Explanation : O(B) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -82146,66 +81477,60 @@ const grid1 = [[2,1,1],[1,1,0],[0,1,1]];
 
 # solution
 
+import heapq
+
 class Edge:
     def __init__(self, u, v, wt):
         self.u = u
         self.v = v
         self.wt = wt
 
+    def __lt__(self, other):
+        return self.wt < other.wt
+
 class NeighborPair:
     def __init__(self, neighbor, weight):
         self.neighbor = neighbor
         self.weight = weight
 
-class PriorityQueue:
-    def __init__(self):
-        self.items = []
-
-    def add(self, element):
-        self.items.append(element)
-        self.items.sort()
-
-    def remove(self):
-        return self.items.pop(0)
-
-    def size(self):
-        return self.items.length
-
 def findMinConstructionCost(graph):
-    numVertices = len(graph)
-    visited = [False] * numVertices
-    pq = PriorityQueue()
-    minCost = 0
-    startVertex = 0
-    visited[startVertex] = True
-    for pair in graph[startVertex]:
-        pq.add(Edge(startVertex, pair.neighbor, pair.weight))
-    while (pq.size() > 0):
-        edge = pq.remove()
+    """
+    Finds the minimum cost to connect all centers using Prim's algorithm with heapq.
+    """
+    num_vertices = len(graph)
+    visited = [False] * num_vertices
+    pq = []
+    min_cost = 0
+    start_vertex = 0
+
+    visited[start_vertex] = True
+    for pair in graph[start_vertex]:
+        heapq.heappush(pq, Edge(start_vertex, pair.neighbor, pair.weight))
+
+    while pq:
+        edge = heapq.heappop(pq)
         v = edge.v
         wt = edge.wt
-        if visited[v] == True:
+
+        if visited[v]:
             continue
+
         visited[v] = True
-        minCost += wt
+        min_cost += wt
+
         for pair in graph[v]:
-            if visited[pair.neighbor] == False:
-                pq.add(Edge(v, pair.neighbor, pair.weight))
-    return minCost
+            if not visited[pair.neighbor]:
+                heapq.heappush(pq, Edge(v, pair.neighbor, pair.weight))
+
+    return min_cost
 
 centersGraph = [[] for _ in range(6)]
-
-centersGraph[0].append(NeighborPair(1, 7), NeighborPair(3, 8))
-
-centersGraph[1].append(NeighborPair(0, 7), NeighborPair(3, 3), NeighborPair(2, 6))
-
-centersGraph[2].append(NeighborPair(1, 6), NeighborPair(3, 4), NeighborPair(4, 2), NeighborPair(5, 5))
-
-centersGraph[3].append(NeighborPair(0, 8), NeighborPair(1, 3), NeighborPair(2, 4), NeighborPair(4, 3))
-
-centersGraph[4].append(NeighborPair(2, 2), NeighborPair(3, 3), NeighborPair(5, 5))
-
-centersGraph[5].append(NeighborPair(2, 5), NeighborPair(4, 5))
+centersGraph[0].extend([NeighborPair(1, 7), NeighborPair(3, 8)])
+centersGraph[1].extend([NeighborPair(0, 7), NeighborPair(3, 3), NeighborPair(2, 6)])
+centersGraph[2].extend([NeighborPair(1, 6), NeighborPair(3, 4), NeighborPair(4, 2), NeighborPair(5, 5)])
+centersGraph[3].extend([NeighborPair(0, 8), NeighborPair(1, 3), NeighborPair(2, 4), NeighborPair(4, 3)])
+centersGraph[4].extend([NeighborPair(2, 2), NeighborPair(3, 3), NeighborPair(5, 5)])
+centersGraph[5].extend([NeighborPair(2, 5), NeighborPair(4, 5)])
 
 minCost = findMinConstructionCost(centersGraph)
 
@@ -82215,6 +81540,7 @@ minCost = findMinConstructionCost(centersGraph)
 # Time Complexity Explanation : O(M log M + M * α(N)) operations determined by input size and loop traversal.
 # Space Complexity : O(N + M)
 # Space Complexity Explanation : O(N + M) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -82356,94 +81682,42 @@ const minCost = findMinConstructionCost(centersGraph);
 
 # solution
 
-class MinPriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def _getParentIndex(self, i):
-        return (i - 1) // 2
-
-    def _getLeftChildIndex(self, i):
-        return ((2 * i) + 1)
-
-    def _getRightChildIndex(self, i):
-        return ((2 * i) + 2)
-
-    def _swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
-
-    def enqueue(self, element):
-        self.heap.append(element)
-        self._bubbleUp()
-
-    def _bubbleUp(self):
-        index = (self.heap.length - 1)
-        while (index > 0):
-            parentIndex = self._getParentIndex(index)
-            if (self.heap[index][0] < self.heap[parentIndex][0]):
-                self._swap(index, parentIndex)
-                index = parentIndex
-            else:
-                break
-
-    def dequeue(self):
-        if self.isEmpty():
-                        return None
-        min = self.heap[0]
-        end = self.heap.pop()
-        if not self.isEmpty():
-            self.heap[0] = end
-            self._sinkDown()
-        return min
-
-    def _sinkDown(self):
-        index = 0
-        length = self.heap.length
-        element = self.heap[0]
-        while True:
-            leftChildIndex = self._getLeftChildIndex(index)
-            rightChildIndex = self._getRightChildIndex(index)
-            leftChild = None
-            rightChild = None
-            swap = None
-            if (leftChildIndex < length):
-                leftChild = self.heap[leftChildIndex]
-                if (leftChild[0] < element[0]):
-                    swap = leftChildIndex
-            if (rightChildIndex < length):
-                rightChild = self.heap[rightChildIndex]
-                if ((swap == None and (rightChild[0] < element[0])) or (swap != None and (rightChild[0] < leftChild[0]))):
-                    swap = rightChildIndex
-            if swap == None:
-                                break
-            self._swap(index, swap)
-            index = swap
-
-    def isEmpty(self):
-        return self.heap.length == 0
+import heapq
 
 def solveCommutableIslandsPrim(A, B):
-    adj = [[0] * C for _ in range((A + 1))]
-    for u, v, cost in B:
-        adj[u].append({"node": v, "cost": cost})
-        adj[v].append({"node": u, "cost": cost})
-    pq = MinPriorityQueue()
+    """
+    Finds the minimum cost to connect all islands using Prim's algorithm with heapq.
+    """
+    adj = {i: [] for i in range(1, A + 1)}
+    for edge in B:
+        u, v, cost = edge[0], edge[1], edge[2]
+        adj[u].append((cost, v))
+        adj[v].append((cost, u))
+
+    pq = [(0, 1)]  # (cost, node)
     visited = [False] * (A + 1)
-    totalCost = 0
-    edgesCount = 0
-    pq.enqueue([0, 1])
-    while (not pq.isEmpty() and (edgesCount < A)):
-        cost, u = pq.dequeue()
+    total_cost = 0
+    edges_count = 0
+
+    while pq and edges_count < A:
+        cost, u = heapq.heappop(pq)
         if visited[u]:
             continue
+
         visited[u] = True
-        totalCost += cost
-        edgesCount += 1
-        for neighbor in adj[u]:
-            node, cost = neighbor
+        total_cost += cost
+        edges_count += 1
+
+        for edge_cost, v in adj[u]:
             if not visited[v]:
-                pq.enqueue([edgeCost, v])
-    return totalCost
+                heapq.heappush(pq, (edge_cost, v))
+
+    return total_cost
+
+A1 = 4
+B1 = [[1, 2, 1], [2, 3, 4], [1, 4, 3], [4, 3, 2], [1, 3, 10]]
+A2 = 4
+B2 = [[1, 2, 1], [2, 3, 2], [3, 4, 4], [1, 4, 3]]
 
 # Test Case 1 : print(`Minimal cost for Example 1 (Prim's): ${solveCommutableIslandsPrim(A1, B1)}`); // Expected: Expected output: 6
 # Test Case 2 : print(`Minimal cost for Example 2 (Prim's): ${solveCommutableIslandsPrim(A2, B2)}`); // Expected: Expected output: 6
@@ -82452,6 +81726,7 @@ def solveCommutableIslandsPrim(A, B):
 # Time Complexity Explanation : O(M log A) operations determined by input size and loop traversal.
 # Space Complexity : O(A + M)
 # Space Complexity Explanation : O(A + M) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -84095,51 +83370,41 @@ const adjusted_edges = edge_list.map(([u,v,w]) => [u-1, v-1, w]);
 
 # solution
 
-class PriorityQueue:
-    def __init__(self):
-        self.elements = []
-
-    def enqueue(self, element, priority):
-        self.elements.append({"element": element, "priority": priority})
-        self.elements.sort()
-
-    def dequeue(self):
-        return self.elements.pop(0).element
-
-    def isEmpty(self):
-        return self.elements.length == 0
+import heapq
 
 def dijkstra(n, edges, src):
+    """
+    Find shortest distances from src to all vertices using Dijkstra's algorithm with heapq.
+    """
     graph = [[] for _ in range(n)]
-    for u, v, weight in edges:
-        graph[u].append({"neighbor": v, "weight": weight})
-        graph[v].append({"neighbor": u, "weight": weight})
+    for edge in edges:
+        if isinstance(edge, (list, tuple)):
+            u, v, weight = edge[0], edge[1], edge[2]
+        else:
+            u, v, weight = edge["u"], edge["v"], edge["weight"]
+        graph[u].append((v, weight))
+        graph[v].append((u, weight))
+
     distances = [float('inf')] * n
     distances[src] = 0
-    pq = PriorityQueue()
-    pq.enqueue(src, 0)
-    visited = [False] * n
-    while not pq.isEmpty():
-        currentVertex = pq.dequeue()
-        if visited[currentVertex]:
+    pq = [(0, src)]
+
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > distances[u]:
             continue
-        visited[currentVertex] = True
-        for edge in graph[currentVertex]:
-            neighbor = edge.neighbor
-            weight = edge.weight
-            newDistance = (distances[currentVertex] + weight)
-            if (newDistance < distances[neighbor]):
-                distances[neighbor] = newDistance
-                pq.enqueue(neighbor, newDistance)
+        for v, weight in graph[u]:
+            if distances[u] + weight < distances[v]:
+                distances[v] = distances[u] + weight
+                heapq.heappush(pq, (distances[v], v))
+
     return distances
 
-numCities = 7
-
-cityConnections = [[0, 1, 10], [0, 3, 40], [1, 2, 10], [2, 3, 10], [3, 4, 2], [4, 5, 3], [4, 6, 8], [5, 6, 3]]
-
-startCity = 0
-
-shortestDistances = dijkstra(numCities, cityConnections, startCity)
+edges = [
+    [0, 1, 10], [0, 2, 20], [1, 3, 20], [2, 3, 10],
+    [3, 4, 2], [4, 5, 3], [5, 6, 3]
+]
+shortestDistances = dijkstra(7, edges, 0)
 
 # Test Case 1 : print("Shortest distances from city 0:", shortestDistances); // Expected: Expected Output: [0, 10, 20, 30, 32, 35, 38]
 
@@ -84147,6 +83412,7 @@ shortestDistances = dijkstra(numCities, cityConnections, startCity)
 # Time Complexity Explanation : O(E log V) operations determined by input size and loop traversal.
 # Space Complexity : O(V + E)
 # Space Complexity Explanation : O(V + E) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -84584,51 +83850,41 @@ const A2_dfs = 2, B2_dfs = [1, 2], C2_dfs = [2, 1];
 
 # solution
 
-class PriorityQueue:
-    def __init__(self):
-        self.elements = []
-
-    def enqueue(self, element, priority):
-        self.elements.append({"element": element, "priority": priority})
-        self.elements.sort()
-
-    def dequeue(self):
-        return self.elements.pop(0).element
-
-    def isEmpty(self):
-        return self.elements.length == 0
+import heapq
 
 def dijkstra(n, edges, src):
+    """
+    Find shortest distances from src to all vertices using Dijkstra's algorithm with heapq.
+    """
     graph = [[] for _ in range(n)]
-    for u, v, weight in edges:
-        graph[u].append({"neighbor": v, "weight": weight})
-        graph[v].append({"neighbor": u, "weight": weight})
+    for edge in edges:
+        if isinstance(edge, (list, tuple)):
+            u, v, weight = edge[0], edge[1], edge[2]
+        else:
+            u, v, weight = edge["u"], edge["v"], edge["weight"]
+        graph[u].append((v, weight))
+        graph[v].append((u, weight))
+
     distances = [float('inf')] * n
     distances[src] = 0
-    pq = PriorityQueue()
-    pq.enqueue(src, 0)
-    visited = [False] * n
-    while not pq.isEmpty():
-        currentVertex = pq.dequeue()
-        if visited[currentVertex]:
+    pq = [(0, src)]
+
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > distances[u]:
             continue
-        visited[currentVertex] = True
-        for edge in graph[currentVertex]:
-            neighbor = edge.neighbor
-            weight = edge.weight
-            newDistance = (distances[currentVertex] + weight)
-            if (newDistance < distances[neighbor]):
-                distances[neighbor] = newDistance
-                pq.enqueue(neighbor, newDistance)
+        for v, weight in graph[u]:
+            if distances[u] + weight < distances[v]:
+                distances[v] = distances[u] + weight
+                heapq.heappush(pq, (distances[v], v))
+
     return distances
 
-numCities = 7
-
-cityConnections = [[0, 1, 10], [0, 3, 40], [1, 2, 10], [2, 3, 10], [3, 4, 2], [4, 5, 3], [4, 6, 8], [5, 6, 3]]
-
-startCity = 0
-
-shortestDistances = dijkstra(numCities, cityConnections, startCity)
+edges = [
+    [0, 1, 10], [0, 2, 20], [1, 3, 20], [2, 3, 10],
+    [3, 4, 2], [4, 5, 3], [5, 6, 3]
+]
+shortestDistances = dijkstra(7, edges, 0)
 
 # Test Case 1 : print("Shortest distances from city 0:", shortestDistances); // Expected: Expected Output: [0, 10, 20, 30, 32, 35, 38]
 
@@ -84636,6 +83892,7 @@ shortestDistances = dijkstra(numCities, cityConnections, startCity)
 # Time Complexity Explanation : O(E log V) operations determined by input size and loop traversal.
 # Space Complexity : O(V + E)
 # Space Complexity Explanation : O(V + E) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -84956,88 +84213,37 @@ function solution(A, B, C, D) {
 
 # solution
 
-class MinPriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def isEmpty(self):
-        return self.heap.length == 0
-
-    def swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
-
-    def parent(self, i):
-        return (i - 1) // 2
-
-    def leftChild(self, i):
-        return ((2 * i) + 1)
-
-    def rightChild(self, i):
-        return ((2 * i) + 2)
-
-    def enqueue(self, element):
-        self.heap.append(element)
-        self.siftUp((self.heap.length - 1))
-
-    def dequeue(self):
-        if self.isEmpty():
-                        return None
-        self.swap(0, (self.heap.length - 1))
-        dequeued = self.heap.pop()
-        if not self.isEmpty():
-            self.siftDown(0)
-        return dequeued
-
-    def siftUp(self, i):
-        parentIndex = self.parent(i)
-        while ((i > 0) and (self.heap[i] < self.heap[parentIndex])):
-            self.swap(i, parentIndex)
-            i = parentIndex
-            parentIndex = self.parent(i)
-
-    def siftDown(self, i):
-        minIndex = i
-        left = self.leftChild(i)
-        right = self.rightChild(i)
-        size = self.heap.length
-        if ((left < size) and (self.heap[left] < self.heap[minIndex])):
-                        minIndex = left
-        if ((right < size) and (self.heap[right] < self.heap[minIndex])):
-                        minIndex = right
-        if i != minIndex:
-            self.swap(i, minIndex)
-            self.siftDown(minIndex)
+import heapq
 
 def solution(A, B):
-    adj = [[] for _ in range((A + 1))]
-    inDegree = [0] * (A + 1)
+    """
+    Generates the lexicographically smallest topological sort using a min-heap with heapq.
+    """
+    adj = [[] for _ in range(A + 1)]
+    in_degree = [0] * (A + 1)
+
     for edge in B:
-        u, v = edge
+        u, v = edge[0], edge[1]
         adj[u].append(v)
-        inDegree[v] += 1
-    minHeap = MinPriorityQueue()
-    for i in range(1, A + 1):
-        if inDegree[i] == 0:
-            minHeap.enqueue(i)
+        in_degree[v] += 1
+
+    pq = [i for i in range(1, A + 1) if in_degree[i] == 0]
+    heapq.heapify(pq)
+
     result = []
-    while not minHeap.isEmpty():
-        u = minHeap.dequeue()
+    while pq:
+        u = heapq.heappop(pq)
         result.append(u)
         for v in adj[u]:
-            inDegree[v] -= 1
-            if inDegree[v] == 0:
-                minHeap.enqueue(v)
-    if len(result) == A:
-        return result
-    else:
-        return []
+            in_degree[v] -= 1
+            if in_degree[v] == 0:
+                heapq.heappush(pq, v)
+
+    return result if len(result) == A else []
 
 A1 = 6
-
 B1 = [[6, 3], [6, 1], [5, 1], [5, 2], [3, 4], [4, 2]]
-
 A2 = 3
-
 B2 = [[1, 2], [2, 3], [3, 1]]
 
 # Test Case 1 : print(solution(A1, B1)); // Expected: expected output: [5, 6, 1, 3, 4, 2]
@@ -85047,6 +84253,7 @@ B2 = [[1, 2], [2, 3], [3, 1]]
 # Time Complexity Explanation : O((A + M) * log A) operations determined by input size and loop traversal.
 # Space Complexity : O(A + M)
 # Space Complexity Explanation : O(A + M) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -86690,85 +85897,54 @@ const pricesC = [7, 1, 5, 3, 6, 4];
 
 # solution
 
-class MinPriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def enqueue(self, element):
-        self.heap.append(element)
-        self.bubbleUp((self.heap.length - 1))
-
-    def dequeue(self):
-        if self.isEmpty():
-                        return None
-        self.swap(0, (self.heap.length - 1))
-        min = self.heap.pop()
-        self.sinkDown(0)
-        return min
-
-    def isEmpty(self):
-        return self.heap.length == 0
-
-    def bubbleUp(self, index):
-        parentIndex = (index - 1) // 2
-        while ((index > 0) and (self.heap[index].dist < self.heap[parentIndex].dist)):
-            self.swap(index, parentIndex)
-            index = parentIndex
-            parentIndex = (index - 1) // 2
-
-    def sinkDown(self, index):
-        leftChildIndex = ((2 * index) + 1)
-        rightChildIndex = ((2 * index) + 2)
-        smallest = index
-        if ((leftChildIndex < self.heap.length) and (self.heap[leftChildIndex].dist < self.heap[smallest].dist)):
-            smallest = leftChildIndex
-        if ((rightChildIndex < self.heap.length) and (self.heap[rightChildIndex].dist < self.heap[smallest].dist)):
-            smallest = rightChildIndex
-        if smallest != index:
-            self.swap(index, smallest)
-            self.sinkDown(smallest)
-
-    def swap(self, i, j):
-        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+import heapq
 
 def solve(A, B, C):
-    numRows = len(A)
-    numCols = len(A[0])
-    startRow, startCol = B
-    destRow, destCol = C
-    distances = [[float('inf')] * numCols for _ in range(numRows)]
-    distances[startRow][startCol] = 0
-    priorityQueue = MinPriorityQueue()
-    priorityQueue.enqueue({"dist": 0, "row": startRow, "col": startCol})
-    directions = [[-1, 0], [1, 0], [0, -1], [0, 1]]
-    while not priorityQueue.isEmpty():
-        dist, row, col = priorityQueue.dequeue()
-        if (dist > distances[row][col]):
+    """
+    Finds the shortest distance for a rolling ball in a maze using Dijkstra's algorithm with heapq.
+    """
+    num_rows = len(A)
+    num_cols = len(A[0])
+    start_row, start_col = B[0], B[1]
+    dest_row, dest_col = C[0], C[1]
+
+    distances = [[float('inf')] * num_cols for _ in range(num_rows)]
+    distances[start_row][start_col] = 0
+
+    pq = [(0, start_row, start_col)]
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while pq:
+        dist, row, col = heapq.heappop(pq)
+        if dist > distances[row][col]:
             continue
+
         for dr, dc in directions:
-            currentRow = row
-            currentCol = col
+            current_row = row
+            current_col = col
             steps = 0
-            while ((((((currentRow + dr) >= 0) and ((currentRow + dr) < numRows)) and ((currentCol + dc) >= 0)) and ((currentCol + dc) < numCols)) and A[(currentRow + dr)][(currentCol + dc)] == 0):
-                currentRow += dr
-                currentCol += dc
+            while (
+                0 <= current_row + dr < num_rows and
+                0 <= current_col + dc < num_cols and
+                A[current_row + dr][current_col + dc] == 0
+            ):
+                current_row += dr
+                current_col += dc
                 steps += 1
-            if ((distances[row][col] + steps) < distances[currentRow][currentCol]):
-                distances[currentRow][currentCol] = (distances[row][col] + steps)
-                priorityQueue.enqueue({"dist": distances[currentRow][currentCol], "row": currentRow, "col": currentCol})
-    finalDistance = distances[destRow][destCol]
-    return (-1 if finalDistance == float('inf') else finalDistance)
+
+            if distances[row][col] + steps < distances[current_row][current_col]:
+                distances[current_row][current_col] = distances[row][col] + steps
+                heapq.heappush(pq, (distances[current_row][current_col], current_row, current_col))
+
+    final_distance = distances[dest_row][dest_col]
+    return -1 if final_distance == float('inf') else final_distance
 
 A1 = [[0, 0], [0, 0]]
-
 B1 = [0, 0]
-
 C1 = [0, 1]
 
 A2 = [[0, 1], [1, 0]]
-
 B2 = [0, 0]
-
 C2 = [1, 1]
 
 # Test Case 1 : print(solve(A1, B1, C1)); // Expected: Expected Output: 1
@@ -86778,6 +85954,7 @@ C2 = [1, 1]
 # Time Complexity Explanation : O(N * M * max(N, M)) operations determined by input size and loop traversal.
 # Space Complexity : O(N * M)
 # Space Complexity Explanation : O(N * M) auxiliary memory used.
+
 ```
 
 ```javascript
@@ -91223,13 +90400,13 @@ def minMeetingRooms(intervals):
 // solution
 function minMeetingRooms(intervals) {
   if (!intervals || intervals.length === 0) return 0;
-  
+
   const startTimes = intervals.map(i => i[0]).sort((a, b) => a - b);
   const endTimes = intervals.map(i => i[1]).sort((a, b) => a - b);
-  
+
   let rooms = 0;
   let endPtr = 0;
-  
+
   // Two-pointer sweep over sorted start and end times
   for (let i = 0; i < startTimes.length; i++) {
     if (startTimes[i] < endTimes[endPtr]) {
