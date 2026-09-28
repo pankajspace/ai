@@ -2093,11 +2093,27 @@ function maxProfit(A){
 #### Contribution Technique
 In subarray sum problems, instead of generating each subarray, calculate how many subarrays each element $A[i]$ appears in and multiply by its value.
 
-```mermaid
-flowchart LR
-    START["Start Index Choices<br/>0, 1, ..., i<br/>(i + 1 options)"] --> ELEM["Element A[i]<br/>(Index i)"]
-    ELEM --> END["End Index Choices<br/>i, i+1, ..., N-1<br/>(N - i options)"]
-    END --> FORMULA["Total Subarrays with A[i]:<br/>(i + 1) * (N - i)"]
+```text
+Optimal Solution — Contribution Technique:
+Array A = [ 6,   8,  -1 ]
+Index:      0    1    2
+
+Subarrays containing each element:
+- Index 0 (value 6)  : [0..0], [0..1], [0..2]         ──> appears in 3 subarrays
+- Index 1 (value 8)  : [0..1], [0..2], [1..1], [1..2] ──> appears in 4 subarrays
+- Index 2 (value -1) : [0..2], [1..2], [2..2]         ──> appears in 3 subarrays
+
+Mathematical Derivation for element at index i in array of size N:
+Start index choices: 0, 1, ..., i         ──> (i + 1) choices
+End index choices:   i, i+1, ..., N-1     ──> (N - i) choices
+Total Subarrays containing A[i] = (i + 1) * (N - i)
+
+Calculation for A = [6, 8, -1] (N = 3):
+A[0] =  6  ──>  6 * (0 + 1) * (3 - 0) =  6 * 1 * 3 =  18
+A[1] =  8  ──>  8 * (1 + 1) * (3 - 1) =  8 * 2 * 2 =  32
+A[2] = -1  ──> -1 * (2 + 1) * (3 - 2) = -1 * 3 * 1 =  -3
+                                      ──────────────────
+                               Total Sum of Subarrays =  47
 ```
 
 - Start index choices: Any index from $0$ to $i \implies (i + 1)$ choices.
@@ -2111,17 +2127,20 @@ flowchart LR
 ### Questions
 
 1. Q1. Print subarrays sums & total sum starting from given index | Carry Forward Technique: O(N), O(1)
-```mermaid
-flowchart TD
-    subgraph CarryForward ["Carry Forward Subarray Sums from start index 3: A = [3, 8, 4, 7, -9, 4, 3, -2]"]
-        direction TB
-        S0["Start at index 3: element = 7"] --> S1["Subarray [3..3] = [7] -> sum = 7"]
-        S1 --> S2["Subarray [3..4] = [7, -9] -> sum = 7 + (-9) = -2"]
-        S2 --> S3["Subarray [3..5] = [7, -9, 4] -> sum = -2 + 4 = 2"]
-        S3 --> S4["Subarray [3..6] = [7, -9, 4, 3] -> sum = 2 + 3 = 5"]
-        S4 --> S5["Subarray [3..7] = [7, -9, 4, 3, -2] -> sum = 5 + (-2) = 3"]
-        S5 --> TOT["Total Sum of Subarrays = 7 + (-2) + 2 + 5 + 3 = 15"]
-    end
+```text
+Carry Forward Subarray Sums from start index 3:
+Array A:
+Index:   0    1    2    3     4    5    6     7
+Value: [ 3,   8,   4,   7,  -9,   4,   3,   -2 ]
+                        ▲
+                        └─ Start index = 3 (element = 7)
+
+Carry Forward Trace:
+Subarray [3..3] : [7]                   ──> Subarray Sum = 0 + 7  =  7  (Total: 7)
+Subarray [3..4] : [7, -9]               ──> Subarray Sum = 7 + -9 = -2  (Total: 5)
+Subarray [3..5] : [7, -9, 4]            ──> Subarray Sum = -2 + 4 =  2  (Total: 7)
+Subarray [3..6] : [7, -9, 4, 3]         ──> Subarray Sum = 2 + 3  =  5  (Total: 12)
+Subarray [3..7] : [7, -9, 4, 3, -2]     ──> Subarray Sum = 5 + -2 =  3  (Total: 15)
 ```
 ```js
 // Input 1 : Sample input arguments
@@ -2163,11 +2182,27 @@ printSubarraysSumsFromIndex([1, 2, 3, 4], 0); // [1] [1, 2] [1, 2, 3] [1, 2, 3, 
    - Prefix Sum: O(N^2), O(N)
    - Carry Forward Technique: O(N^2), O(1)
    - Contribution Technique: O(N), O(1)
-```mermaid
-flowchart LR
-    START["Start Index Choices<br/>0, 1, ..., i<br/>(i + 1 options)"] --> ELEM["Element A[i]<br/>(Index i)"]
-    ELEM --> END["End Index Choices<br/>i, i+1, ..., N-1<br/>(N - i options)"]
-    END --> FORMULA["Total Subarrays with A[i]:<br/>(i + 1) * (N - i)"]
+```text
+Optimal Solution — Contribution Technique:
+Array A = [ 6,   8,  -1 ]
+Index:      0    1    2
+
+Subarrays containing each element:
+- Index 0 (value 6)  : [0..0], [0..1], [0..2]         ──> appears in 3 subarrays
+- Index 1 (value 8)  : [0..1], [0..2], [1..1], [1..2] ──> appears in 4 subarrays
+- Index 2 (value -1) : [0..2], [1..2], [2..2]         ──> appears in 3 subarrays
+
+Mathematical Derivation for element at index i in array of size N:
+Start index choices: 0, 1, ..., i         ──> (i + 1) choices
+End index choices:   i, i+1, ..., N-1     ──> (N - i) choices
+Total Subarrays containing A[i] = (i + 1) * (N - i)
+
+Calculation for A = [6, 8, -1] (N = 3):
+A[0] =  6  ──>  6 * (0 + 1) * (3 - 0) =  6 * 1 * 3 =  18
+A[1] =  8  ──>  8 * (1 + 1) * (3 - 1) =  8 * 2 * 2 =  32
+A[2] = -1  ──> -1 * (2 + 1) * (3 - 2) = -1 * 3 * 1 =  -3
+                                      ──────────────────
+                               Total Sum of Subarrays =  47
 ```
 ```js
 // Input 1 : [1, 2, 3]
@@ -2439,11 +2474,27 @@ const arr2 = [2, 2, 2], targetSum2 = 1;
 
 
 2. Sum of All Subarrays | Contribution technique.
-```mermaid
-flowchart LR
-    START["Start Index Choices<br/>0, 1, ..., i<br/>(i + 1 options)"] --> ELEM["Element A[i]<br/>(Index i)"]
-    ELEM --> END["End Index Choices<br/>i, i+1, ..., N-1<br/>(N - i options)"]
-    END --> FORMULA["Total Subarrays with A[i]:<br/>(i + 1) * (N - i)"]
+```text
+Optimal Solution — Contribution Technique:
+Array A = [ 6,   8,  -1 ]
+Index:      0    1    2
+
+Subarrays containing each element:
+- Index 0 (value 6)  : [0..0], [0..1], [0..2]         ──> appears in 3 subarrays
+- Index 1 (value 8)  : [0..1], [0..2], [1..1], [1..2] ──> appears in 4 subarrays
+- Index 2 (value -1) : [0..2], [1..2], [2..2]         ──> appears in 3 subarrays
+
+Mathematical Derivation for element at index i in array of size N:
+Start index choices: 0, 1, ..., i         ──> (i + 1) choices
+End index choices:   i, i+1, ..., N-1     ──> (N - i) choices
+Total Subarrays containing A[i] = (i + 1) * (N - i)
+
+Calculation for A = [6, 8, -1] (N = 3):
+A[0] =  6  ──>  6 * (0 + 1) * (3 - 0) =  6 * 1 * 3 =  18
+A[1] =  8  ──>  8 * (1 + 1) * (3 - 1) =  8 * 2 * 2 =  32
+A[2] = -1  ──> -1 * (2 + 1) * (3 - 2) = -1 * 3 * 1 =  -3
+                                      ──────────────────
+                               Total Sum of Subarrays =  47
 ```
 ```js
 // Input 1 : A = [1, 2, 3]
@@ -2855,23 +2906,34 @@ arr.sort((a, b) => b - a); // Descending order: [4, 3, 2, 1]
 ```
 
 #### Basic Sorting Algorithms
-```mermaid
-flowchart TD
-    subgraph ComparisonSorts ["Comparison-Based Sorting Algorithms"]
-        direction TB
-        subgraph SelectionSort ["Selection Sort: Find Min, Swap to Front"]
-            direction LR
-            SS1["[29, 10, 14, 37]"] --> SS2["Min=10 -> Swap with 29: [10, 29, 14, 37]"] --> SS3["Min=14 -> Swap with 29: [10, 14, 29, 37]"]
-        end
-        subgraph InsertionSort ["Insertion Sort: Shift & Insert into Sorted Sublist"]
-            direction LR
-            IS1["Sorted [10, 29], next 14"] --> IS2["Shift 29 right -> Insert 14: [10, 14, 29]"]
-        end
-        subgraph BubbleSort ["Bubble Sort: Compare Adjacent, Bubble Max to End"]
-            direction LR
-            BS1["Compare (29, 10) -> Swap: [10, 29]"] --> BS2["Compare (29, 37) -> No swap"] --> BS3["Largest element bubbles to end each pass"]
-        end
-    end
+```text
+Selection Sort Pass-by-Pass Trace:
+Initial:   [ 29, 10, 14, 37, 13 ]
+Pass 1:    [ 10, 29, 14, 37, 13 ]  (find min=10 in [29..13], swap with index 0: 29 <-> 10)
+             ──
+Pass 2:    [ 10, 13, 14, 37, 29 ]  (find min=13 in [29..13], swap with index 1: 29 <-> 13)
+             ──────
+Pass 3:    [ 10, 13, 14, 37, 29 ]  (find min=14 in [14..29], already at index 2)
+             ──────────
+Pass 4:    [ 10, 13, 14, 29, 37 ]  (find min=29 in [37..29], swap with index 3: 37 <-> 29)
+             ──────────────
+Sorted:    [ 10, 13, 14, 29, 37 ]
+
+Insertion Sort Pass-by-Pass Trace:
+Initial:   [ 29 | 10, 14, 37, 13 ]  (sorted sublist: [29], insert 10)
+Pass 1:    [ 10, 29 | 14, 37, 13 ]  (shift 29 right, insert 10)
+Pass 2:    [ 10, 14, 29 | 37, 13 ]  (shift 29 right, insert 14)
+Pass 3:    [ 10, 14, 29, 37 | 13 ]  (37 > 29, stays in place)
+Pass 4:    [ 10, 13, 14, 29, 37 ]   (shift 37, 29, 14 right, insert 13)
+Sorted:    [ 10, 13, 14, 29, 37 ]
+
+Bubble Sort Pass-by-Pass Trace:
+Initial:   [ 29, 10, 14, 37, 13 ]
+Pass 1:    [ 10, 14, 29, 13 | 37 ]  (adjacent swaps: 29>10, 29>14, 37>13; largest 37 bubbled to end)
+Pass 2:    [ 10, 14, 13 | 29, 37 ]  (29>13 swapped; 29 bubbled to position)
+Pass 3:    [ 10, 13 | 14, 29, 37 ]  (14>13 swapped; 14 bubbled to position)
+Pass 4:    [ 10 | 13, 14, 29, 37 ]  (no swaps needed; sorted!)
+Sorted:    [ 10, 13, 14, 29, 37 ]
 ```
 
 - **Selection Sort**: Repeatedly find the minimum element from the unsorted segment and place it at the beginning. Time: $O(N^2)$, Space: $O(1)$. Unstable.
@@ -2881,16 +2943,27 @@ flowchart TD
 ### Questions
 
 1. Q1. Minimize the cost to empty an array | Sorting & Contribution | Sorting & Prefix sum
-```mermaid
-flowchart TD
-    subgraph MinCostEmpty ["Minimize Cost to Empty Array: Sort Descending"]
-        direction TB
-        OP1["Removal 1 (remove largest 'a'): cost = a + b + c + d"] --> OP2["Removal 2 (remove 'b'): cost = b + c + d"]
-        OP2 --> OP3["Removal 3 (remove 'c'): cost = c + d"]
-        OP3 --> OP4["Removal 4 (remove 'd'): cost = d"]
-        OP4 --> SUM["Total Cost = 1*a + 2*b + 3*c + 4*d"]
-        SUM --> INSIGHT["Insight: Elements removed earlier contribute to fewer remaining operations.<br/>Sort descending so largest elements have the smallest multipliers."]
-    end
+```text
+Cost Breakdown for Emptying Array of 4 elements [a, b, c, d]:
+Remove 1st element 'a' : cost = a + b + c + d
+Remove 2nd element 'b' : cost =     b + c + d
+Remove 3rd element 'c' : cost =         c + d
+Remove 4th element 'd' : cost =             d
+─────────────────────────────────────────────
+Total Cost             = 1*a + 2*b + 3*c + 4*d
+
+Key Insight:
+The element removed first is counted 1 time.
+The element removed second is counted 2 times.
+The element removed last is counted 4 times.
+
+To MINIMIZE total cost:
+Assign the largest values to the smallest multipliers!
+  a (largest)  * 1
+  b (2nd)      * 2
+  c (3rd)      * 3
+  d (smallest) * 4
+=> Strategy: Sort the array in DESCENDING order!
 ```
 ```js
 // Input 1 : [3, 1, 2, 4]
@@ -3184,16 +3257,27 @@ bubbleSort(numbers);
 ### Assignments
 
 1. Minimum cost to remove all elements | Sorting & contribution.
-```mermaid
-flowchart TD
-    subgraph MinCostEmpty ["Minimize Cost to Empty Array: Sort Descending"]
-        direction TB
-        OP1["Removal 1 (remove largest 'a'): cost = a + b + c + d"] --> OP2["Removal 2 (remove 'b'): cost = b + c + d"]
-        OP2 --> OP3["Removal 3 (remove 'c'): cost = c + d"]
-        OP3 --> OP4["Removal 4 (remove 'd'): cost = d"]
-        OP4 --> SUM["Total Cost = 1*a + 2*b + 3*c + 4*d"]
-        SUM --> INSIGHT["Insight: Elements removed earlier contribute to fewer remaining operations.<br/>Sort descending so largest elements have the smallest multipliers."]
-    end
+```text
+Cost Breakdown for Emptying Array of 4 elements [a, b, c, d]:
+Remove 1st element 'a' : cost = a + b + c + d
+Remove 2nd element 'b' : cost =     b + c + d
+Remove 3rd element 'c' : cost =         c + d
+Remove 4th element 'd' : cost =             d
+─────────────────────────────────────────────
+Total Cost             = 1*a + 2*b + 3*c + 4*d
+
+Key Insight:
+The element removed first is counted 1 time.
+The element removed second is counted 2 times.
+The element removed last is counted 4 times.
+
+To MINIMIZE total cost:
+Assign the largest values to the smallest multipliers!
+  a (largest)  * 1
+  b (2nd)      * 2
+  c (3rd)      * 3
+  d (smallest) * 4
+=> Strategy: Sort the array in DESCENDING order!
 ```
 ```js
 // Input 1 : [3, 1, 2, 4]
@@ -6416,15 +6500,20 @@ function findMaximumSubarraySum(arr) {
 
 
 4. Q4. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Kadane's Algorithm.
-```mermaid
-flowchart TD
-    subgraph KadaneDecision ["Kadane's Algorithm: Extend vs. Restart Decision"]
-        direction TB
-        ELEM["Current Element: A[i]"] --> DECISION{"Is (currSum + A[i]) > A[i]?"}
-        DECISION -- "Yes (currSum >= 0)" --> EXTEND["Extend Subarray:<br/>currSum = currSum + A[i]"]
-        DECISION -- "No (currSum < 0)" --> RESTART["Restart Subarray:<br/>currSum = A[i] (or 0 if negative)"]
-        EXTEND & RESTART --> UPDATE["Update Global Maximum:<br/>maxSum = max(maxSum, currSum)"]
-    end
+```text
+Kadane's Algorithm Local Extend vs. Restart Decision:
+At each index i:
+  currSum = max(arr[i], currSum + arr[i])
+  maxSum  = max(maxSum, currSum)
+
+Visual Trace on Array A = [ -2, 1, -3, 4, -1, 2, 1, -5, 4 ]:
+Index:       0     1     2     3     4     5     6     7     8
+Value:      -2     1    -3     4    -1     2     1    -5     4
+Action:   Start  Reset Start Extend Extend Extend Extend Drop Start
+currSum:    -2     1    -2     4     3     5     6     1     5
+maxSum:     -2     1     1     4     4     5     6     6     6
+
+Max contiguous subarray = [4, -1, 2, 1] with maximum sum = 6.
 ```
 ```js
 // Input 1 : findMaximumSubarraySum([1, 2, 3, -9, 5])
@@ -6481,13 +6570,21 @@ function findMaximumSubarraySum(arr) {
 
 
 5. Q5. Zero Based Queries I (Perform multiple Queries from i to last index) (Beggars Outside Temple) | Prefix Sum.
-```mermaid
-flowchart LR
-    subgraph DifferenceArray ["Difference Array Technique (Beggars Outside Temple)"]
-        direction LR
-        UPDATE["For each query [L, R, Val]:<br/>arr[L] += Val<br/>arr[R + 1] -= Val"] --> PREFIX["Compute Prefix Sum Array:<br/>P[i] = P[i-1] + arr[i]"]
-        PREFIX --> RESULT["Result: All elements in range [L, R] updated in O(1) time per query!"]
-    end
+```text
+Difference Array Technique (Range Update in O(1)):
+Initial array of size N = 5 (all zeros): [ 0, 0, 0, 0, 0 ]
+
+Query: Add +10 to range [1..3]
+1. Add +10 at start index L = 1   ──> [ 0, +10,   0,   0,   0 ]
+2. Add -10 at index R + 1 = 4     ──> [ 0, +10,   0,   0, -10 ]
+
+Compute Running Prefix Sum:
+P[0] = 0                          ──>   0
+P[1] = 0 + 10                     ──>  10  (Index 1 updated)
+P[2] = 10 + 0                     ──>  10  (Index 2 updated)
+P[3] = 10 + 0                     ──>  10  (Index 3 updated)
+P[4] = 10 + (-10)                 ──>   0  (Restored to 0!)
+Final Array: [ 0, 10, 10, 10, 0 ]
 ```
 ```js
 // Input 1 : arr
@@ -6590,14 +6687,26 @@ let queries = [[1, 3, 2], [5, 6, -1], [2, 5, 5], [0, 1, 4]];
 
 
 7. Q7. Merge Overlapping Intervals | Interval Technique.
-```mermaid
-flowchart TD
-    subgraph IntervalMerge ["Merge Overlapping Intervals Algorithm"]
-        direction TB
-        SORT["1. Sort intervals by start time: [s1, e1], [s2, e2], ..."] --> CHECK{"Does next interval overlap?<br/>(s2 <= currentEnd)"}
-        CHECK -- "Yes" --> MERGE["Merge intervals:<br/>currentEnd = max(currentEnd, e2)"]
-        CHECK -- "No" --> PUSH["Append current interval to result,<br/>start new interval with [s2, e2]"]
-    end
+```text
+Merge Overlapping Intervals:
+Sorted Intervals: [ [1, 3], [2, 6], [8, 10], [15, 18] ]
+
+Trace:
+1. Start with [1, 3]: currentEnd = 3
+2. Next [2, 6]:
+   Does 2 <= currentEnd (3)? YES! Overlap detected!
+   Merge: currentEnd = max(3, 6) = 6 ──> [1, 6]
+3. Next [8, 10]:
+   Does 8 <= currentEnd (6)? NO! No overlap.
+   Push [1, 6] to result.
+   Start new interval: [8, 10]
+4. Next [15, 18]:
+   Does 15 <= currentEnd (10)? NO! No overlap.
+   Push [8, 10] to result.
+   Start new interval: [15, 18]
+5. End of list: Push [15, 18] to result.
+
+Final Merged Intervals: [ [1, 6], [8, 10], [15, 18] ]
 ```
 ```js
 // Input 1 : mergeIntervals(intervals1)
@@ -6915,11 +7024,40 @@ function flip(A) {
 #### 2D Submatrix Contribution Technique
 To find the sum of all possible submatrices in an $N \times M$ matrix in $O(N \times M)$ time and $O(1)$ auxiliary space:
 
-```mermaid
-flowchart TD
-    TL["Top-Left (TL) Corner Choices<br/>Rows: 0 to i (i + 1 options)<br/>Cols: 0 to j (j + 1 options)<br/>Total TL = (i + 1) * (j + 1)"] --> CELL["Target Cell: matrix[i][j]<br/>At row i, col j"]
-    CELL --> BR["Bottom-Right (BR) Corner Choices<br/>Rows: i to N-1 (N - i options)<br/>Cols: j to M-1 (M - j options)<br/>Total BR = (N - i) * (M - j)"]
-    BR --> FORMULA["Total Submatrices containing (i, j):<br/>(i + 1) * (j + 1) * (N - i) * (M - j)"]
+```text
+2D Submatrix Contribution Technique:
+Matrix of size N x M. For any cell (i, j):
+
+       0       1    ...    j    ...    M-1
+   0 ┌───┬───┬───┬───────┬───┬───────┬───┐
+     │TL │TL │TL │  TL   │   │       │   │   Top-Left (TL) Corner Choices:
+   1 ├───┼───┼───┼───────┼───┼───────┼───┤   Rows: 0 to i     -> (i + 1) choices
+     │TL │TL │TL │  TL   │   │       │   │   Cols: 0 to j     -> (j + 1) choices
+  .. ├───┼───┼───┼───────┼───┼───────┼───┤   Total TL = (i + 1) * (j + 1)
+   i │TL │TL │TL │ (i,j) │BR │  BR   │BR │
+     ├───┼───┼───┼───────┼───┼───────┼───┤   Bottom-Right (BR) Corner Choices:
+  .. │   │   │   │  BR   │BR │  BR   │BR │   Rows: i to N-1   -> (N - i) choices
+ N-1 ├───┼───┼───┼───────┼───┼───────┼───┤   Cols: j to M-1   -> (M - j) choices
+     │   │   │   │  BR   │BR │  BR   │BR │   Total BR = (N - i) * (M - j)
+     └───┴───┴───┴───────┴───┴───────┴───┘
+
+Formula:
+Frequency of cell (i, j) = Top-Left Choices * Bottom-Right Choices
+                         = (i + 1) * (j + 1) * (N - i) * (M - j)
+
+Contribution of cell (i, j) = matrix[i][j] * Frequency
+
+Example for 2 x 3 Matrix:
+  [ 4,  9, 6 ]
+  [ 5, -1, 2 ]
+  Cell (0, 0): 4 * (1*1) * (2*3) = 4 * 6 =  24
+  Cell (0, 1): 9 * (1*2) * (2*2) = 9 * 8 =  72
+  Cell (0, 2): 6 * (1*3) * (2*1) = 6 * 6 =  36
+  Cell (1, 0): 5 * (2*1) * (1*3) = 5 * 6 =  30
+  Cell (1, 1):-1 * (2*2) * (1*2) =-1 * 8 =  -8
+  Cell (1, 2): 2 * (2*3) * (1*1) = 2 * 6 =  12
+                               ───────────────
+                       Total Submatrices Sum = 166
 ```
 
 - Any submatrix containing cell $(i, j)$ is uniquely determined by its Top-Left corner $(r_1, c_1)$ and Bottom-Right corner $(r_2, c_2)$.
@@ -7173,11 +7311,40 @@ printSpiral(mat2);
 
 
 4. Q4. Sum of all Submatrices Sum | Contribution Technique.
-```mermaid
-flowchart TD
-    TL["Top-Left Corner Choices<br/>Rows: 0 ... i (i + 1 options)<br/>Cols: 0 ... j (j + 1 options)<br/>Total TL = (i + 1) * (j + 1)"] --> CELL["Target Cell: matrix[i][j]<br/>At row i, col j"]
-    CELL --> BR["Bottom-Right Corner Choices<br/>Rows: i ... N-1 (N - i options)<br/>Cols: j ... M-1 (M - j options)<br/>Total BR = (N - i) * (M - j)"]
-    BR --> FORMULA["Total Submatrices with (i, j):<br/>(i + 1) * (j + 1) * (N - i) * (M - j)"]
+```text
+2D Submatrix Contribution Technique:
+Matrix of size N x M. For any cell (i, j):
+
+       0       1    ...    j    ...    M-1
+   0 ┌───┬───┬───┬───────┬───┬───────┬───┐
+     │TL │TL │TL │  TL   │   │       │   │   Top-Left (TL) Corner Choices:
+   1 ├───┼───┼───┼───────┼───┼───────┼───┤   Rows: 0 to i     -> (i + 1) choices
+     │TL │TL │TL │  TL   │   │       │   │   Cols: 0 to j     -> (j + 1) choices
+  .. ├───┼───┼───┼───────┼───┼───────┼───┤   Total TL = (i + 1) * (j + 1)
+   i │TL │TL │TL │ (i,j) │BR │  BR   │BR │
+     ├───┼───┼───┼───────┼───┼───────┼───┤   Bottom-Right (BR) Corner Choices:
+  .. │   │   │   │  BR   │BR │  BR   │BR │   Rows: i to N-1   -> (N - i) choices
+ N-1 ├───┼───┼───┼───────┼───┼───────┼───┤   Cols: j to M-1   -> (M - j) choices
+     │   │   │   │  BR   │BR │  BR   │BR │   Total BR = (N - i) * (M - j)
+     └───┴───┴───┴───────┴───┴───────┴───┘
+
+Formula:
+Frequency of cell (i, j) = Top-Left Choices * Bottom-Right Choices
+                         = (i + 1) * (j + 1) * (N - i) * (M - j)
+
+Contribution of cell (i, j) = matrix[i][j] * Frequency
+
+Example for 2 x 3 Matrix:
+  [ 4,  9, 6 ]
+  [ 5, -1, 2 ]
+  Cell (0, 0): 4 * (1*1) * (2*3) = 4 * 6 =  24
+  Cell (0, 1): 9 * (1*2) * (2*2) = 9 * 8 =  72
+  Cell (0, 2): 6 * (1*3) * (2*1) = 6 * 6 =  36
+  Cell (1, 0): 5 * (2*1) * (1*3) = 5 * 6 =  30
+  Cell (1, 1):-1 * (2*2) * (1*2) =-1 * 8 =  -8
+  Cell (1, 2): 2 * (2*3) * (1*1) = 2 * 6 =  12
+                               ───────────────
+                       Total Submatrices Sum = 166
 ```
 ```js
 // Input 1 : sumOfSubmatricesSums([[1, 2], [3, 4]])
@@ -7413,11 +7580,40 @@ function firstMissingPositive(A) {
 
 
 2. Sum of all Submatrices | Contribution Technique.
-```mermaid
-flowchart TD
-    TL["Top-Left Corner Choices<br/>Rows: 0 ... i (i + 1 options)<br/>Cols: 0 ... j (j + 1 options)<br/>Total TL = (i + 1) * (j + 1)"] --> CELL["Target Cell: matrix[i][j]<br/>At row i, col j"]
-    CELL --> BR["Bottom-Right Corner Choices<br/>Rows: i ... N-1 (N - i options)<br/>Cols: j ... M-1 (M - j options)<br/>Total BR = (N - i) * (M - j)"]
-    BR --> FORMULA["Total Submatrices with (i, j):<br/>(i + 1) * (j + 1) * (N - i) * (M - j)"]
+```text
+2D Submatrix Contribution Technique:
+Matrix of size N x M. For any cell (i, j):
+
+       0       1    ...    j    ...    M-1
+   0 ┌───┬───┬───┬───────┬───┬───────┬───┐
+     │TL │TL │TL │  TL   │   │       │   │   Top-Left (TL) Corner Choices:
+   1 ├───┼───┼───┼───────┼───┼───────┼───┤   Rows: 0 to i     -> (i + 1) choices
+     │TL │TL │TL │  TL   │   │       │   │   Cols: 0 to j     -> (j + 1) choices
+  .. ├───┼───┼───┼───────┼───┼───────┼───┤   Total TL = (i + 1) * (j + 1)
+   i │TL │TL │TL │ (i,j) │BR │  BR   │BR │
+     ├───┼───┼───┼───────┼───┼───────┼───┤   Bottom-Right (BR) Corner Choices:
+  .. │   │   │   │  BR   │BR │  BR   │BR │   Rows: i to N-1   -> (N - i) choices
+ N-1 ├───┼───┼───┼───────┼───┼───────┼───┤   Cols: j to M-1   -> (M - j) choices
+     │   │   │   │  BR   │BR │  BR   │BR │   Total BR = (N - i) * (M - j)
+     └───┴───┴───┴───────┴───┴───────┴───┘
+
+Formula:
+Frequency of cell (i, j) = Top-Left Choices * Bottom-Right Choices
+                         = (i + 1) * (j + 1) * (N - i) * (M - j)
+
+Contribution of cell (i, j) = matrix[i][j] * Frequency
+
+Example for 2 x 3 Matrix:
+  [ 4,  9, 6 ]
+  [ 5, -1, 2 ]
+  Cell (0, 0): 4 * (1*1) * (2*3) = 4 * 6 =  24
+  Cell (0, 1): 9 * (1*2) * (2*2) = 9 * 8 =  72
+  Cell (0, 2): 6 * (1*3) * (2*1) = 6 * 6 =  36
+  Cell (1, 0): 5 * (2*1) * (1*3) = 5 * 6 =  30
+  Cell (1, 1):-1 * (2*2) * (1*2) =-1 * 8 =  -8
+  Cell (1, 2): 2 * (2*3) * (1*1) = 2 * 6 =  12
+                               ───────────────
+                       Total Submatrices Sum = 166
 ```
 ```js
 // Input 1 : [[1, 1], [1, 1]]
@@ -7841,22 +8037,30 @@ function printBoundaryElements(matrix) {
 ### Assignments
 
 1. Trapping Rain Water. Calculate how much rain water can be trapped given an elevation map. | Two Pointer Technique or Prefix Sum Technique.
-```mermaid
-flowchart TD
-    subgraph RainWater ["Trapping Rain Water: Elevation Map A = [5, 4, 1, 4, 3, 2, 7]"]
-        direction TB
-        BARS["For each elevation bar i, trapped water is bounded by min(leftMax, rightMax)"]
-        FORMULA["Water at index i = max(0, min(leftMax[i], rightMax[i]) - A[i])"]
-        BARS --> FORMULA
-        subgraph ExampleBar ["Example calculation for index 2 (A[2] = 1)"]
-            direction LR
-            LM["leftMax = 5 (from bar at index 0)"]
-            CURR["Current bar height A[2] = 1"]
-            RM["rightMax = 7 (from bar at index 6)"]
-            LM & RM --> CALC["Water = min(5, 7) - 1 = 5 - 1 = 4 units"]
-        end
-        FORMULA --> ExampleBar
-    end
+```text
+Trapping Rain Water Elevation Map:
+Array A = [ 5, 4, 1, 4, 3, 2, 7 ]
+
+Height
+  7 |                           █
+  6 |                           █
+  5 | █   ≈   ≈   ≈   ≈   ≈     █       Legend:
+  4 | █   █   ≈   █   ≈   ≈     █       █ = Elevation Bar
+  3 | █   █   ≈   █   █   ≈     █       ≈ = Trapped Water
+  2 | █   █   ≈   █   █   █     █
+  1 | █   █   █   █   █   █     █
+  --+-----------------------------
+ idx: 0   1   2   3   4   5     6
+A[i]: 5   4   1   4   3   2     7
+
+Calculation Table:
+Index i           :  0   1   2   3   4   5   6
+Height A[i]       :  5   4   1   4   3   2   7
+leftMax[i]        :  5   5   5   5   5   5   7
+rightMax[i]       :  7   7   7   7   7   7   7
+min(left, right)  :  5   5   5   5   5   5   7
+Trapped Water     :  0   1   4   1   2   3   0   ==> Total Trapped Water = 11 units
+(min(L,R) - A[i])
 ```
 ```js
 // Input 1 : / Output
@@ -14474,21 +14678,30 @@ function maxDecreasingSum(A) {
 
 
 5. Rain Water Trapped | Arrays One Dimensional | Prefix Sum | Two Pointers Technique
-```mermaid
-flowchart TD
-    subgraph RainWater25 ["Trapping Rain Water: Elevation Map A = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]"]
-        direction TB
-        BARS["For each elevation bar i, trapped water is bounded by min(leftMax, rightMax)"]
-        FORMULA["Water at index i = max(0, min(leftMax[i], rightMax[i]) - A[i])"]
-        BARS --> FORMULA
-        subgraph TwoPointers ["Two Pointer Approach: O(N) Time, O(1) Space"]
-            direction LR
-            L["Left Pointer: tracks leftMax"]
-            R["Right Pointer: tracks rightMax"]
-            L & R --> ACC["Accumulate water from smaller boundary inward"]
-        end
-        FORMULA --> TwoPointers
-    end
+```text
+Trapping Rain Water Elevation Map:
+Array A = [ 5, 4, 1, 4, 3, 2, 7 ]
+
+Height
+  7 |                           █
+  6 |                           █
+  5 | █   ≈   ≈   ≈   ≈   ≈     █       Legend:
+  4 | █   █   ≈   █   ≈   ≈     █       █ = Elevation Bar
+  3 | █   █   ≈   █   █   ≈     █       ≈ = Trapped Water
+  2 | █   █   ≈   █   █   █     █
+  1 | █   █   █   █   █   █     █
+  --+-----------------------------
+ idx: 0   1   2   3   4   5     6
+A[i]: 5   4   1   4   3   2     7
+
+Calculation Table:
+Index i           :  0   1   2   3   4   5   6
+Height A[i]       :  5   4   1   4   3   2   7
+leftMax[i]        :  5   5   5   5   5   5   7
+rightMax[i]       :  7   7   7   7   7   7   7
+min(left, right)  :  5   5   5   5   5   5   7
+Trapped Water     :  0   1   4   1   2   3   0   ==> Total Trapped Water = 11 units
+(min(L,R) - A[i])
 ```
 ```js
 // Input 1 : A = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]
@@ -20329,22 +20542,34 @@ function removeConsecutivePairs(s) {
 
 
 3. Q3. Largest Rectangle in Histogram.
-```mermaid
-flowchart TD
-    subgraph HistArea ["Largest Rectangle in Histogram: Heights = [8, 6, 2, 5, 6, 5, 7, 4]"]
-        direction TB
-        CONCEPT["For each bar i with height H = A[i]:<br/>Find Left Smaller Index (LSI) and Right Smaller Index (RSI) using Monotonic Stack"]
-        WIDTH["Width = RSI - LSI - 1<br/>Rectangle Area = Height * Width"]
-        CONCEPT --> WIDTH
-        subgraph OptimalBar ["Optimal Bar at index 3 or 5 (Height = 5)"]
-            direction LR
-            LSI["LSI = 2 (bar height 2 at index 2)"]
-            RSI["RSI = 7 (bar height 4 at index 7)"]
-            CALC2["Width = 7 - 2 - 1 = 4 (bars at indices 3, 4, 5, 6)<br/>Max Area = 5 * 4 = 20"]
-            LSI & RSI --> CALC2
-        end
-        WIDTH --> OptimalBar
-    end
+```text
+Largest Rectangle in Histogram:
+Heights = [ 8, 6, 2, 5, 6, 5, 7, 4 ]
+
+Height
+  8 | █
+  7 | █               █
+  6 | █   █       █   █
+  5 | █   █     ┌───────────┐           Max Rectangle:
+  4 | █   █     │ █   █   █ │ █         Height = 5
+  3 | █   █     │ █   █   █ │ █         Width  = 4 (bars from index 3 to 6)
+  2 | █   █   █ │ █   █   █ │ █         Area   = 5 * 4 = 20
+  1 | █   █   █ │ █   █   █ │ █
+  --+---------------------------
+ idx: 0   1   2   3   4   5   6   7
+A[i]: 8   6   2   5   6   5   7   4
+                  └───────────┘
+
+Monotonic Stack Boundaries for each bar:
+Index i | Height A[i] | Left Smaller (LSI) | Right Smaller (RSI) | Width (R-L-1) | Area
+   0    |      8      |        -1          |          1          |   1 -(-1)- 1=1|   8
+   1    |      6      |        -1          |          2          |   2 -(-1)- 1=2|  12
+   2    |      2      |        -1          |          8          |   8 -(-1)- 1=8|  16
+   3    |      5      |         2          |          7          |   7 - 2 - 1 =4|  20  <-- MAX AREA
+   4    |      6      |         3          |          5          |   5 - 3 - 1 =1|   6
+   5    |      5      |         2          |          7          |   7 - 2 - 1 =4|  20  <-- MAX AREA
+   6    |      7      |         5          |          7          |   7 - 5 - 1 =1|   7
+   7    |      4      |         2          |          8          |   8 - 2 - 1 =5|  20  <-- MAX AREA
 ```
 ```js
 // Input 1 : largestRectangleArea([8, 6, 2, 5, 6, 5, 7, 4])
@@ -30618,36 +30843,26 @@ function subsets(A) {
 ### Problems
 
 1. Letter Phone | Backtracking
-```mermaid
-flowchart TD
-    subgraph PhoneKeypad ["Telephone Keypad Digit-to-Letter Mapping"]
-        direction TB
-        subgraph Row1 [" "]
-            direction LR
-            D1["1: (none)"]
-            D2["2: a, b, c"]
-            D3["3: d, e, f"]
-        end
-        subgraph Row2 [" "]
-            direction LR
-            D4["4: g, h, i"]
-            D5["5: j, k, l"]
-            D6["6: m, n, o"]
-        end
-        subgraph Row3 [" "]
-            direction LR
-            D7["7: p, q, r, s"]
-            D8["8: t, u, v"]
-            D9["9: w, x, y, z"]
-        end
-        subgraph Row4 [" "]
-            direction LR
-            DStar["*"]
-            D0["0: (none)"]
-            DHash["#"]
-        end
-        Row1 --> Row2 --> Row3 --> Row4
-    end
+```text
+Telephone Keypad Mapping:
+┌───────────┬───────────┬───────────┐
+│     1     │     2     │     3     │
+│   (none)  │   a b c   │   d e f   │
+├───────────┼───────────┼───────────┤
+│     4     │     5     │     6     │
+│   g h i   │   j k l   │   m n o   │
+├───────────┼───────────┼───────────┤
+│     7     │     8     │     9     │
+│  p q r s  │   t u v   │  w x y z  │
+├───────────┼───────────┼───────────┤
+│     *     │     0     │     #     │
+│           │    ' '    │           │
+└───────────┴───────────┴───────────┘
+
+Example: Input "23"
+  Digit '2' -> ['a', 'b', 'c']
+  Digit '3' -> ['d', 'e', 'f']
+Combinations: "ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf" (Total 3 * 3 = 9)
 ```
 ```js
 // Input 1 : A = "23
@@ -34473,12 +34688,39 @@ printList(flatHead);
 #### Morris Inorder Traversal
 - An iterative tree traversal technique that achieves $O(1)$ auxiliary space without using recursion or an explicit stack by temporarily threading leaf predecessors to their successor roots.
 
-```mermaid
-graph TD
-    Curr((Curr: 10)) --> Left((Left: 20))
-    Curr --> Right((Right: 30))
-    Left --> Pred((Pred: 50))
-    Pred -. "Thread (pred.right = curr)" .-> Curr
+```text
+Morris Inorder Traversal — Threading Mechanism:
+Original Binary Tree with temporary predecessor threads (dotted lines):
+
+                (10) ◄──────────────────┐
+               /    \                   │
+             /        \                 │
+          (20) ◄─────┐ (30)             │ thread from 80 to 10
+         /    \      │    \             │
+       (40)   (50)◄─┐│    (60)◄──┐      │
+        │      / \  ││    /      │      │
+      thread  (70)(80)─┘ (90)────┘      │
+      to 20   │          thread to 60   │
+              thread                    │
+              to 50 ────────────────────┘
+
+Algorithm Step-by-Step Rules:
+1. If curr.left == null:
+   - Visit curr (print / store curr.val)
+   - Move curr = curr.right
+2. Else:
+   - Find inorder predecessor: pred = rightmost node of curr.left (while pred.right != null && pred.right != curr)
+   - Case A: If pred.right == null (first visit to curr):
+             Create thread: pred.right = curr
+             Move curr = curr.left
+   - Case B: If pred.right == curr (second visit, left subtree is done):
+             Remove thread: pred.right = null
+             Visit curr (print / store curr.val)
+             Move curr = curr.right
+
+Inorder Traversal Output:
+[ 40, 20, 70, 50, 80, 10, 30, 90, 60 ]
+Space Complexity: O(1) auxiliary (tree is restored to its exact original state upon completion)
 ```
 
 - Algorithm:
@@ -34647,34 +34889,39 @@ const k = 8;
 
 
 2. Q2. Morris Inorder Traversal | Iterative Inorder Traversal without Stack
-```mermaid
-flowchart TD
-    subgraph MorrisTree ["Morris Inorder Traversal Threading Mechanism"]
-        direction TB
-        N10((10: Root))
-        N20((20: Left))
-        N30((30: Right))
-        N40((40: Leaf))
-        N50((50: Sub-root))
-        N70((70: Leaf))
-        N80((80: Inorder Pred of 10))
-        N60((60: Sub-root))
-        N90((90: Inorder Pred of 60))
+```text
+Morris Inorder Traversal — Threading Mechanism:
+Original Binary Tree with temporary predecessor threads (dotted lines):
 
-        N10 --> N20
-        N10 --> N30
-        N20 --> N40
-        N20 --> N50
-        N50 --> N70
-        N50 --> N80
-        N30 --> N60
-        N60 --> N90
+                (10) ◄──────────────────┐
+               /    \                   │
+             /        \                 │
+          (20) ◄─────┐ (30)             │ thread from 80 to 10
+         /    \      │    \             │
+       (40)   (50)◄─┐│    (60)◄──┐      │
+        │      / \  ││    /      │      │
+      thread  (70)(80)─┘ (90)────┘      │
+      to 20   │          thread to 60   │
+              thread                    │
+              to 50 ────────────────────┘
 
-        N40 -. "Thread: pred.right = 20" .-> N20
-        N80 -. "Thread: pred.right = 10" .-> N10
-        N70 -. "Thread: pred.right = 50" .-> N50
-        N90 -. "Thread: pred.right = 60" .-> N60
-    end
+Algorithm Step-by-Step Rules:
+1. If curr.left == null:
+   - Visit curr (print / store curr.val)
+   - Move curr = curr.right
+2. Else:
+   - Find inorder predecessor: pred = rightmost node of curr.left (while pred.right != null && pred.right != curr)
+   - Case A: If pred.right == null (first visit to curr):
+             Create thread: pred.right = curr
+             Move curr = curr.left
+   - Case B: If pred.right == curr (second visit, left subtree is done):
+             Remove thread: pred.right = null
+             Visit curr (print / store curr.val)
+             Move curr = curr.right
+
+Inorder Traversal Output:
+[ 40, 20, 70, 50, 80, 10, 30, 90, 60 ]
+Space Complexity: O(1) auxiliary (tree is restored to its exact original state upon completion)
 ```
 ```js
 // Input 1 : morrisInorderTraversal(root)
@@ -36164,34 +36411,39 @@ test(tree2, 1, 21, 8);  // → 8
 
 
 5. Morris Inorder Traversal
-```mermaid
-flowchart TD
-    subgraph MorrisTree ["Morris Inorder Traversal Threading Mechanism"]
-        direction TB
-        N10((10: Root))
-        N20((20: Left))
-        N30((30: Right))
-        N40((40: Leaf))
-        N50((50: Sub-root))
-        N70((70: Leaf))
-        N80((80: Inorder Pred of 10))
-        N60((60: Sub-root))
-        N90((90: Inorder Pred of 60))
+```text
+Morris Inorder Traversal — Threading Mechanism:
+Original Binary Tree with temporary predecessor threads (dotted lines):
 
-        N10 --> N20
-        N10 --> N30
-        N20 --> N40
-        N20 --> N50
-        N50 --> N70
-        N50 --> N80
-        N30 --> N60
-        N60 --> N90
+                (10) ◄──────────────────┐
+               /    \                   │
+             /        \                 │
+          (20) ◄─────┐ (30)             │ thread from 80 to 10
+         /    \      │    \             │
+       (40)   (50)◄─┐│    (60)◄──┐      │
+        │      / \  ││    /      │      │
+      thread  (70)(80)─┘ (90)────┘      │
+      to 20   │          thread to 60   │
+              thread                    │
+              to 50 ────────────────────┘
 
-        N40 -. "Thread: pred.right = 20" .-> N20
-        N80 -. "Thread: pred.right = 10" .-> N10
-        N70 -. "Thread: pred.right = 50" .-> N50
-        N90 -. "Thread: pred.right = 60" .-> N60
-    end
+Algorithm Step-by-Step Rules:
+1. If curr.left == null:
+   - Visit curr (print / store curr.val)
+   - Move curr = curr.right
+2. Else:
+   - Find inorder predecessor: pred = rightmost node of curr.left (while pred.right != null && pred.right != curr)
+   - Case A: If pred.right == null (first visit to curr):
+             Create thread: pred.right = curr
+             Move curr = curr.left
+   - Case B: If pred.right == curr (second visit, left subtree is done):
+             Remove thread: pred.right = null
+             Visit curr (print / store curr.val)
+             Move curr = curr.right
+
+Inorder Traversal Output:
+[ 40, 20, 70, 50, 80, 10, 30, 90, 60 ]
+Space Complexity: O(1) auxiliary (tree is restored to its exact original state upon completion)
 ```
 ```js
 // Input 1 : A =
@@ -37373,33 +37625,35 @@ printLevels(root);
 
 
 6. Q6. Vertical Order Traversal of Binary Tree | HashMap & Level Order Traversal
-```mermaid
-flowchart TD
-    subgraph VerticalOrder ["Vertical Order Traversal by Column Coordinate"]
-        direction TB
-        N6((Node 6<br/>Col: 0))
-        N3((Node 3<br/>Col: -1))
-        N7((Node 7<br/>Col: +1))
-        N2((Node 2<br/>Col: -2))
-        N5((Node 5<br/>Col: 0))
-        N9((Node 9<br/>Col: +2))
+```text
+Vertical Order Traversal Coordinate System:
+Assign (row, col) coordinates to each node. Root is at (0, 0).
+Left child:  (row + 1, col - 1)
+Right child: (row + 1, col + 1)
 
-        N6 --> N3
-        N6 --> N7
-        N3 --> N2
-        N3 --> N5
-        N7 --> N9
+Vertical Lines:
+ Line 1     Line 2     Line 3     Line 4     Line 5
+(Col -2)   (Col -1)   (Col 0)    (Col +1)   (Col +2)
+   │          │          │          │          │
+   │          │        ( 6 )        │          │  Row 0
+   │          │        /   \        │          │
+   │        ( 3 )     │     │     ( 7 )        │  Row 1
+   │        /   \     │     │       \          │
+ ( 2 )     │   ( 5 )  │     │        │       ( 9 ) Row 2
+   │       │     │    │     │        │         │
+   ▼       ▼     ▼    ▼     ▼        ▼         ▼
 
-        subgraph Columns ["Vertical Line Buckets"]
-            direction LR
-            C1["Line 1 (Col -2): [2]"]
-            C2["Line 2 (Col -1): [3]"]
-            C3["Line 3 (Col 0): [6, 5]"]
-            C4["Line 4 (Col +1): [7]"]
-            C5["Line 5 (Col +2): [9]"]
-            C1 --> C2 --> C3 --> C4 --> C5
-        end
-    end
+Grouping Nodes by Column:
+- Column -2 (Line 1): [ 2 ]
+- Column -1 (Line 2): [ 3 ]
+- Column  0 (Line 3): [ 6, 5 ]   (node 6 has smaller depth, comes first)
+- Column +1 (Line 4): [ 7 ]
+- Column +2 (Line 5): [ 9 ]
+
+Traversal Outputs:
+- Vertical Order : [ [2], [3], [6, 5], [7], [9] ]
+- Top View       : [ 2, 3, 6, 7, 9 ]   (first node seen in each column)
+- Bottom View    : [ 2, 3, 5, 7, 9 ]   (last node seen in each column)
 ```
 ```js
 // Input 1 : "Test 1 – Empty:", verticalOrder1D(null)
@@ -38193,33 +38447,35 @@ printNextPointers(imp);
 
 
 2. Vertical Order Traversal of Binary Tree | HashMap & Level Order Traversal
-```mermaid
-flowchart TD
-    subgraph VerticalOrder ["Vertical Order Traversal by Column Coordinate"]
-        direction TB
-        N6((Node 6<br/>Col: 0))
-        N3((Node 3<br/>Col: -1))
-        N7((Node 7<br/>Col: +1))
-        N2((Node 2<br/>Col: -2))
-        N5((Node 5<br/>Col: 0))
-        N9((Node 9<br/>Col: +2))
+```text
+Vertical Order Traversal Coordinate System:
+Assign (row, col) coordinates to each node. Root is at (0, 0).
+Left child:  (row + 1, col - 1)
+Right child: (row + 1, col + 1)
 
-        N6 --> N3
-        N6 --> N7
-        N3 --> N2
-        N3 --> N5
-        N7 --> N9
+Vertical Lines:
+ Line 1     Line 2     Line 3     Line 4     Line 5
+(Col -2)   (Col -1)   (Col 0)    (Col +1)   (Col +2)
+   │          │          │          │          │
+   │          │        ( 6 )        │          │  Row 0
+   │          │        /   \        │          │
+   │        ( 3 )     │     │     ( 7 )        │  Row 1
+   │        /   \     │     │       \          │
+ ( 2 )     │   ( 5 )  │     │        │       ( 9 ) Row 2
+   │       │     │    │     │        │         │
+   ▼       ▼     ▼    ▼     ▼        ▼         ▼
 
-        subgraph Columns ["Vertical Line Buckets"]
-            direction LR
-            C1["Line 1 (Col -2): [2]"]
-            C2["Line 2 (Col -1): [3]"]
-            C3["Line 3 (Col 0): [6, 5]"]
-            C4["Line 4 (Col +1): [7]"]
-            C5["Line 5 (Col +2): [9]"]
-            C1 --> C2 --> C3 --> C4 --> C5
-        end
-    end
+Grouping Nodes by Column:
+- Column -2 (Line 1): [ 2 ]
+- Column -1 (Line 2): [ 3 ]
+- Column  0 (Line 3): [ 6, 5 ]   (node 6 has smaller depth, comes first)
+- Column +1 (Line 4): [ 7 ]
+- Column +2 (Line 5): [ 9 ]
+
+Traversal Outputs:
+- Vertical Order : [ [2], [3], [6, 5], [7], [9] ]
+- Top View       : [ 2, 3, 6, 7, 9 ]   (first node seen in each column)
+- Bottom View    : [ 2, 3, 5, 7, 9 ]   (last node seen in each column)
 ```
 ```js
 // Input 1 : 6
@@ -41076,16 +41332,38 @@ const B2 = [3, 6];
 
 
 15. Longest Possible Route in a Matrix with Hurdles | Backtracking
-```mermaid
-flowchart TD
-    subgraph LongestPath ["Longest Path in 3x3 Matrix with No Obstacles (8 Steps)"]
-        direction TB
-        C00["(0,0): Start A"] --> C10["(1,0)"] --> C20["(2,0)"]
-        C20 --> C21["(2,1)"] --> C11["(1,1)"] --> C01["(0,1)"]
-        C01 --> C02["(0,2)"] --> C12["(1,2)"] --> C22["(2,2): Dest B"]
-        style C00 fill:#4CAF50,stroke:#388E3C,color:#fff
-        style C22 fill:#F44336,stroke:#D32F2F,color:#fff
-    end
+```text
+Grid 1 (3 x 3 Matrix without hurdles):
+Source A = (0, 0), Destination B = (2, 2)
+
+      Col 0     Col 1     Col 2
+     ┌─────────┬─────────┬─────────┐
+R 0  │ (A) 1 ────►  1  ────►  1    │
+     │     │         ▲        │    │
+R 1  │     ▼         │        ▼    │
+     │     1         1        1    │
+     │     │         ▲        │    │
+R 2  │     ▼         │        ▼    │
+     │     1 ────►  1       1 (B)  │
+     └─────────┴─────────┴─────────┘
+Optimal Longest Path: (0,0) -> (1,0) -> (2,0) -> (2,1) -> (1,1) -> (0,1) -> (0,2) -> (1,2) -> (2,2)
+Total Steps = 8 (visits all 9 cells)
+
+Grid 2 (3 x 4 Matrix with hurdles '0'):
+Source A = (1, 1), Destination B = (0, 3)
+
+      Col 0     Col 1     Col 2     Col 3
+     ┌─────────┬─────────┬─────────┬─────────┐
+R 0  │    1 ◄─────  1        0       1 (B)   │
+     │    │         ▲                ▲       │
+R 1  │    ▼         │ (A)            │       │
+     │    1         1        0       1       │
+     │    │                          ▲       │
+R 2  │    ▼                          │       │
+     │    1 ─────►  1 ─────► 1 ────► 1       │
+     └─────────┴─────────┴─────────┴─────────┘
+Optimal Longest Path: (1,1) -> (0,1) -> (0,0) -> (1,0) -> (2,0) -> (2,1) -> (2,2) -> (2,3) -> (1,3) -> (0,3)
+Total Steps = 9
 ```
 ```js
 // Input 1 : A = [0, 0]
