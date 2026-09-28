@@ -6,33 +6,41 @@ const main = document.querySelector("main");
 const desktopMenu = window.matchMedia("(min-width: 961px)");
 
 const setupTopicMenu = () => {
-    if (!toc || !article || !main) {
-        return null;
+    let nav = document.querySelector(".topic-menu");
+    let panel, list;
+    if (nav) {
+        panel = nav.querySelector(".topic-menu-panel");
+        list = nav.querySelector(".table-of-contents");
+    } else {
+        if (!toc || !article || !main) return null;
+
+        nav = document.createElement("nav");
+        nav.className = "topic-menu";
+        nav.setAttribute("aria-label", "Topics");
+
+        panel = document.createElement("details");
+        panel.className = "topic-menu-panel";
+
+        const summary = document.createElement("summary");
+        summary.textContent = "Topics";
+
+        list = toc.cloneNode(true);
+        panel.append(summary, list);
+        nav.append(panel);
+        main.classList.add("study-layout");
+        main.prepend(nav);
     }
-
-    const nav = document.createElement("nav");
-    nav.className = "topic-menu";
-    nav.setAttribute("aria-label", "Topics");
-
-    const panel = document.createElement("details");
-    panel.className = "topic-menu-panel";
-
-    const summary = document.createElement("summary");
-    summary.textContent = "Topics";
-
-    const list = toc.cloneNode(true);
-    panel.append(summary, list);
-    nav.append(panel);
-    main.classList.add("study-layout");
-    main.prepend(nav);
+    if (!panel || !list) return nav;
 
     const links = [...list.querySelectorAll("a")];
     const sections = links
         .map((link) => {
-            const id = decodeURIComponent(link.getAttribute("href") || "").slice(1);
+            const href = link.getAttribute("href") || "";
+            if (!href.startsWith("#")) return null;
+            const id = decodeURIComponent(href.slice(1));
             return { link, heading: document.getElementById(id) };
         })
-        .filter((item) => item.heading);
+        .filter((item) => item && item.heading);
 
     const syncPanel = () => {
         panel.open = desktopMenu.matches;
@@ -42,19 +50,13 @@ const setupTopicMenu = () => {
         const marker = 96;
         let current = sections[0];
         for (const item of sections) {
-            if (item.heading.getBoundingClientRect().top <= marker) {
-                current = item;
-            }
+            if (item.heading.getBoundingClientRect().top <= marker) current = item;
         }
-        links.forEach((link) => {
-            link.classList.toggle("is-active", link === current?.link);
-        });
+        links.forEach((link) => link.classList.toggle("is-active", link === current?.link));
     };
 
     list.addEventListener("click", (event) => {
-        if (!desktopMenu.matches && event.target.closest("a")) {
-            panel.open = false;
-        }
+        if (!desktopMenu.matches && event.target.closest("a")) panel.open = false;
     });
 
     desktopMenu.addEventListener("change", syncPanel);
