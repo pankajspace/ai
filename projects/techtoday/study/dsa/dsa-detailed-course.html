@@ -71,7 +71,7 @@
                 </ol>
             </details>
         </nav>
-        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
         <article class="study">
             <h1 id="dsa-detailed-course">Data Structures &amp; Algorithms<a class="headerlink"
                     href="#dsa-detailed-course" title="Permanent link">#</a></h1>
@@ -81,7 +81,7 @@
                 whichever language you think in. Press <strong>Play</strong> on any animation and step through it; the
                 pictures do most of the teaching.</p>
 
-<!-- ============================================================ 1 -->
+            <!-- ============================================================ 1 -->
             <h2 id="1-how-to-use-this-course">1. How to Use This Course<a class="headerlink"
                     href="#1-how-to-use-this-course" title="Permanent link">#</a></h2>
 
@@ -5764,6 +5764,163 @@ function lcaBST(root, p, q) {           // O(h) time, O(1) space
                     the tree is extremely shallow.</li>
             </ol>
 
+            <h3 id="treeset-and-treemap">TreeSet &amp; TreeMap — the standard-library wrappers<a class="headerlink"
+                    href="#treeset-and-treemap" title="Permanent link">#</a></h3>
+            <p>You rarely build an AVL or red-black tree by hand. Every major language wraps one up for you:</p>
+            <ol>
+                <li><strong>Java</strong> — <code>TreeSet&lt;T&gt;</code> (sorted set of unique elements) and
+                    <code>TreeMap&lt;K, V&gt;</code> (sorted key-value map), both backed by a red-black tree.
+                </li>
+                <li><strong>C++</strong> — <code>std::set</code> / <code>std::map</code> (red-black tree).
+                    <code>std::multiset</code> / <code>std::multimap</code> allow duplicate keys.
+                </li>
+                <li><strong>Python</strong> — no built-in equivalent. Use the third-party
+                    <code>sortedcontainers</code> library (<code>SortedList</code>, <code>SortedDict</code>,
+                    <code>SortedSet</code>), which are backed by B-tree-like sorted lists and deliver
+                    <code>O(log n)</code> inserts, deletes and lookups.
+                </li>
+                <li><strong>JavaScript</strong> — no native sorted set/map. Use a manual BST, or libraries like
+                    <code>bintrees</code> or <code>functional-red-black-tree</code>.
+                </li>
+            </ol>
+
+            <p><strong>A <code>TreeSet</code></strong> is an ordered collection of unique elements. Under the hood it
+                is simply a <code>TreeMap</code> where each element is stored as a key with a dummy placeholder value.
+                Iterating always yields elements in sorted order.</p>
+
+            <p><strong>A <code>TreeMap</code></strong> is an ordered key-value map. It keeps all keys in sorted order
+                (either natural ordering or by a custom comparator), so you can iterate from smallest to largest in
+                <code>O(n)</code>.
+            </p>
+
+            <h4>When to use TreeSet / TreeMap over HashSet / HashMap</h4>
+            <p><code>HashMap</code> and <code>HashSet</code> give <code>O(1)</code> average lookups — use them when
+                you only need "is <code>x</code> present?" or "what is the value for key <code>k</code>?". Reach for
+                <code>TreeMap</code> / <code>TreeSet</code> when you need any of these <code>O(log n)</code> operations
+                that hash tables <strong>cannot</strong> do:
+            </p>
+            <ol>
+                <li><strong><code>floor(x)</code></strong> — largest element ≤ <code>x</code>.</li>
+                <li><strong><code>ceiling(x)</code></strong> — smallest element ≥ <code>x</code>.</li>
+                <li><strong><code>lower(x)</code></strong> — strictly greatest element &lt; <code>x</code>.</li>
+                <li><strong><code>higher(x)</code></strong> — strictly smallest element &gt; <code>x</code>.</li>
+                <li><strong><code>first()</code> / <code>last()</code></strong> — minimum and maximum.</li>
+                <li><strong><code>subSet(from, to)</code></strong> — a live view of elements in a range.</li>
+                <li><strong>Sorted iteration</strong> — iterate keys in order without a separate sort step.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p><strong>Rule of thumb:</strong> if the problem says "find the nearest", "next greater",
+                    "previous smaller", "range of values", or "k-th smallest in a stream" — think
+                    <code>TreeSet</code> / <code>TreeMap</code>.
+                </p>
+            </div>
+
+            <div class="worked">
+                <b>Worked example — TreeSet / TreeMap in action</b>
+                <p class="worked-q">Given a stream of integers, support two operations: <code>add(val)</code> inserts a
+                    value, and <code>find_closest(target)</code> returns the element in the set nearest to
+                    <code>target</code> (break ties by returning the smaller one). Both operations must be
+                    <code>O(log n)</code>.
+                </p>
+                <p>A <code>HashSet</code> cannot answer "nearest" without scanning all elements.
+                    A <code>TreeSet</code> (or <code>SortedList</code> in Python) answers it instantly with
+                    <code>floor</code> and <code>ceiling</code>: look one step below and one step above, then pick the
+                    closer one.
+                </p>
+
+                <div class="code-tabs" data-label="Answer — nearest value using a sorted set">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+from sortedcontainers import SortedList          # pip install sortedcontainers
+
+class NearestFinder:
+    """O(log n) add and O(log n) find_closest, backed by a sorted list."""
+    def __init__(self):
+        self.sl = SortedList()
+
+    def add(self, val):
+        self.sl.add(val)                          # O(log n)
+
+    def find_closest(self, target):
+        if not self.sl:
+            return None
+        idx = self.sl.bisect_left(target)         # O(log n) — position where target would go
+
+        best = None
+        # Check the element at idx (ceiling) and idx-1 (floor)
+        for i in (idx, idx - 1):
+            if 0 &lt;= i &lt; len(self.sl):
+                cand = self.sl[i]
+                if best is None or abs(cand - target) &lt; abs(best - target) \
+                        or (abs(cand - target) == abs(best - target) and cand &lt; best):
+                    best = cand
+        return best
+
+
+nf = NearestFinder()
+for v in [4, 1, 9, 7, 3]:
+    nf.add(v)
+
+print(nf.find_closest(5))   # 4  — both 4 and 7 are candidates; 4 is closer
+print(nf.find_closest(6))   # 7  — 7 is 1 away, 4 is 2 away
+print(nf.find_closest(8))   # 9 vs 7 — both 1 away, pick smaller → 7
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+// A minimal sorted-set backed by a balanced BST (using an array + bisect for clarity).
+// In production, use a library like 'bintrees' for O(log n) insert.
+
+class NearestFinder {
+  constructor() { this.arr = []; }            // kept sorted
+
+  add(val) {                                  // O(log n) search + O(n) shift (use BST lib for true O(log n))
+    let lo = 0, hi = this.arr.length;
+    while (lo &lt; hi) {
+      const mid = (lo + hi) &gt;&gt; 1;
+      if (this.arr[mid] &lt; val) lo = mid + 1;
+      else hi = mid;
+    }
+    if (this.arr[lo] !== val) this.arr.splice(lo, 0, val);
+  }
+
+  findClosest(target) {                       // O(log n)
+    const a = this.arr, n = a.length;
+    if (n === 0) return null;
+    let lo = 0, hi = n;
+    while (lo &lt; hi) {
+      const mid = (lo + hi) &gt;&gt; 1;
+      if (a[mid] &lt; target) lo = mid + 1;
+      else hi = mid;
+    }
+    // lo is the ceiling index; lo-1 is the floor index
+    let best = null;
+    for (const i of [lo, lo - 1]) {
+      if (i &gt;= 0 &amp;&amp; i &lt; n) {
+        const c = a[i];
+        if (best === null
+            || Math.abs(c - target) &lt; Math.abs(best - target)
+            || (Math.abs(c - target) === Math.abs(best - target) &amp;&amp; c &lt; best)) {
+          best = c;
+        }
+      }
+    }
+    return best;
+  }
+}
+
+const nf = new NearestFinder();
+for (const v of [4, 1, 9, 7, 3]) nf.add(v);
+
+console.log(nf.findClosest(5));   // 4
+console.log(nf.findClosest(6));   // 7
+console.log(nf.findClosest(8));   // 7  (tie-break: 7 &lt; 9)
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
             <h3 id="why-databases-use-b-trees">Why every database uses a B+ tree<a class="headerlink"
                     href="#why-databases-use-b-trees" title="Permanent link">#</a></h3>
             <p>On disk, the cost is not comparisons — it is <strong>page reads</strong>. A disk or SSD reads a 4–16 KB
@@ -6734,6 +6891,186 @@ const d = new WordDictionary();
 ["bad", "dad", "mad"].forEach((w) =&gt; d.addWord(w));
 console.log(d.search("pad"), d.search("bad"), d.search(".ad"), d.search("b.."));
 // false true true true
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 id="trieset-and-triemap">TrieSet &amp; TrieMap — using a trie as a collection<a class="headerlink"
+                    href="#trieset-and-triemap" title="Permanent link">#</a></h3>
+            <p>A basic trie already answers "is this word present?" — that is a <strong>set</strong>. Attach a value to
+                each end-of-word node and the same structure becomes a <strong>map</strong>. These specialised
+                collections are called <strong>TrieSet</strong> and <strong>TrieMap</strong>.</p>
+
+            <ol>
+                <li><strong>TrieSet</strong> — a set of strings backed by a trie. Supports <code>add</code>,
+                    <code>contains</code>, and <code>remove</code> in <code>O(L)</code> (key length), plus
+                    prefix queries that <code>HashSet</code> and <code>TreeSet</code> cannot do efficiently.
+                </li>
+                <li><strong>TrieMap</strong> — a map from string keys to arbitrary values. Each end-of-word node
+                    stores the associated value. Supports <code>put</code>, <code>get</code>, <code>delete</code> in
+                    <code>O(L)</code>, plus <code>keysWithPrefix(prefix)</code> and
+                    <code>longestPrefixOf(query)</code>.
+                </li>
+            </ol>
+
+            <h4>Language support</h4>
+            <ol>
+                <li><strong>Scala</strong> — ships <code>scala.collection.concurrent.TrieMap</code>, a lock-free
+                    concurrent hash-trie (note: this is a hash-array-mapped trie, not a string prefix trie).</li>
+                <li><strong>Java / C++ / Python / JavaScript</strong> — no built-in trie collection. You build one
+                    from scratch (as shown above) or use libraries like
+                    <code>datrie</code> (Python), <code>marisa-trie</code> (Python/C++), or
+                    <code>trie-prefix-tree</code> (npm).
+                </li>
+            </ol>
+
+            <h4>When to use a TrieSet / TrieMap over a HashMap</h4>
+            <p>A <code>HashMap</code> with string keys gives <code>O(L)</code> average-case lookup (hashing the key
+                costs <code>O(L)</code>), so raw lookup speed is similar. Choose a TrieMap / TrieSet when you need
+                operations that hash tables <strong>cannot</strong> do:</p>
+            <ol>
+                <li><strong>Prefix search</strong> — "give me all keys starting with <code>pre</code>" in
+                    <code>O(P + K)</code> where <code>P</code> is the prefix length and <code>K</code> is the number of
+                    matches.
+                </li>
+                <li><strong>Autocomplete / typeahead</strong> — walk the trie to the prefix node, then DFS the subtree
+                    to collect completions.</li>
+                <li><strong>Longest prefix matching</strong> — "what is the longest stored key that is a prefix of this
+                    query?" Used in IP routing tables and URL routers.</li>
+                <li><strong>Lexicographic ordering</strong> — a DFS of the trie yields all keys in sorted order without
+                    a separate sort step.</li>
+                <li><strong>Shared-prefix compression</strong> — when many keys share long prefixes (URLs, file paths,
+                    DNS names), a trie uses less memory than storing each key independently.</li>
+            </ol>
+
+            <div class="callout callout-key">
+                <p><strong>Rule of thumb:</strong> if the keys are strings and the problem involves prefixes,
+                    autocomplete, wildcard matching, or longest-prefix routing — use a TrieMap / TrieSet. For
+                    arbitrary key types or pure key-value lookup, stick to <code>HashMap</code>.</p>
+            </div>
+
+            <div class="worked">
+                <b>Worked example — TrieMap in action</b>
+                <p class="worked-q">Build a <code>TrieMap</code> that maps string keys to integer values. Support
+                    <code>put(key, value)</code>, <code>get(key)</code>, and
+                    <code>keys_with_prefix(prefix)</code> — return all key-value pairs whose key starts with
+                    <code>prefix</code>.
+                </p>
+                <p>This extends the basic trie from above: each end-of-word node stores a value instead of just a
+                    boolean flag. The prefix-collection walk is unchanged — DFS the subtree and collect nodes that
+                    carry a value.</p>
+
+                <div class="code-tabs" data-label="Answer — TrieMap with prefix lookup">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+class TrieMap:
+    """A string-keyed map backed by a trie. O(L) put/get, O(P+K) prefix query."""
+    def __init__(self):
+        self.children = {}
+        self.value = None                # None means 'no entry here'
+        self._has_value = False
+
+    def put(self, key, value):           # O(L)
+        node = self
+        for ch in key:
+            node = node.children.setdefault(ch, TrieMap())
+        node.value = value
+        node._has_value = True
+
+    def get(self, key, default=None):    # O(L)
+        node = self
+        for ch in key:
+            node = node.children.get(ch)
+            if node is None:
+                return default
+        return node.value if node._has_value else default
+
+    def keys_with_prefix(self, prefix):  # O(P + K)
+        node = self
+        for ch in prefix:
+            node = node.children.get(ch)
+            if node is None:
+                return []
+        results = []
+        node._collect(prefix, results)
+        return results
+
+    def _collect(self, path, results):
+        if self._has_value:
+            results.append((path, self.value))
+        for ch, child in sorted(self.children.items()):
+            child._collect(path + ch, results)
+
+
+tm = TrieMap()
+for key, val in [("apple", 1), ("app", 2), ("apricot", 3), ("banana", 4)]:
+    tm.put(key, val)
+
+print(tm.get("app"))                    # 2
+print(tm.get("ap"))                     # None — not a stored key
+print(tm.keys_with_prefix("ap"))        # [('app', 2), ('apple', 1), ('apricot', 3)]
+print(tm.keys_with_prefix("ban"))       # [('banana', 4)]
+print(tm.keys_with_prefix("z"))         # []
+</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+class TrieMap {                                // O(L) put/get, O(P+K) prefix query
+  constructor() {
+    this.children = new Map();
+    this.value = undefined;
+    this._hasValue = false;
+  }
+
+  put(key, value) {                            // O(L)
+    let node = this;
+    for (const ch of key) {
+      if (!node.children.has(ch)) node.children.set(ch, new TrieMap());
+      node = node.children.get(ch);
+    }
+    node.value = value;
+    node._hasValue = true;
+  }
+
+  get(key) {                                   // O(L)
+    let node = this;
+    for (const ch of key) {
+      node = node.children.get(ch);
+      if (!node) return undefined;
+    }
+    return node._hasValue ? node.value : undefined;
+  }
+
+  keysWithPrefix(prefix) {                     // O(P + K)
+    let node = this;
+    for (const ch of prefix) {
+      node = node.children.get(ch);
+      if (!node) return [];
+    }
+    const results = [];
+    node._collect(prefix, results);
+    return results;
+  }
+
+  _collect(path, results) {
+    if (this._hasValue) results.push([path, this.value]);
+    for (const [ch, child] of [...this.children.entries()].sort()) {
+      child._collect(path + ch, results);
+    }
+  }
+}
+
+const tm = new TrieMap();
+for (const [k, v] of [["apple", 1], ["app", 2], ["apricot", 3], ["banana", 4]]) {
+  tm.put(k, v);
+}
+
+console.log(tm.get("app"));                    // 2
+console.log(tm.get("ap"));                     // undefined
+console.log(tm.keysWithPrefix("ap"));          // [['app',2],['apple',1],['apricot',3]]
+console.log(tm.keysWithPrefix("ban"));         // [['banana',4]]
+console.log(tm.keysWithPrefix("z"));           // []
 </code></pre>
                     </div>
                 </div>
@@ -11632,118 +11969,5 @@ console.log(maxConcurrent([[0, 30], [5, 10], [15, 20]]));   // 2
                 <li><b>"Prefix / autocomplete"</b> Trie.</li>
                 <li><b>"Overlapping ranges"</b> Sort by start and merge, or a sweep line of +1/−1 events.</li>
                 <li><b>"In place, O(1) space"</b> Two pointers, in-place reversal, or index-as-hash marking.</li>
-                <li><b>"Cycle in a list or sequence"</b> Floyd's fast and slow pointers.</li>
-                <li><b>"Range query with updates"</b> Fenwick or segment tree. Static data? Prefix sums.</li>
-                <li><b>"Linked list, one pass"</b> Dummy head plus fast/slow pointers.</li>
-            </ul>
-
-            <h3 id="a-method-for-attacking-a-problem">A method for attacking any problem<a class="headerlink"
-                    href="#a-method-for-attacking-a-problem" title="Permanent link">#</a></h3>
-            <ol>
-                <li><strong>Restate it</strong> in your own words and confirm the inputs, outputs and edge cases. Empty
-                    input, one element, duplicates, negatives, and the maximum size.</li>
-                <li><strong>Write the brute force</strong> — even just out loud. It gives you a correctness baseline and
-                    a complexity to beat.</li>
-                <li><strong>Find the waste.</strong> What is being recomputed? What information is thrown away between
-                    iterations? The optimisation almost always comes from caching that information in a better
-                    structure.
-                </li>
-                <li><strong>Match the pattern</strong> from the list above.</li>
-                <li><strong>Verify on a small example by hand</strong> before writing more code, especially the
-                    boundaries.</li>
-                <li><strong>State the complexity</strong> of what you wrote, in time and in space.</li>
-            </ol>
-
-            <div class="callout callout-key">
-                <p>The single most transferable skill here is step 3. Two pointers, sliding window, prefix sums,
-                    memoisation, monotonic stacks and hash maps are all the same move: <em>notice that you are throwing
-                        away work between iterations, and keep it instead.</em></p>
-            </div>
-
-            <!-- ============================================================ 38 -->
-            <h2 id="38-practice-roadmap">38. Practice Roadmap<a class="headerlink" href="#38-practice-roadmap"
-                    title="Permanent link">#</a></h2>
-
-            <p>Reading this page will not make you good at algorithms any more than reading about swimming makes you
-                a swimmer. Here is an order of practice that builds on itself.</p>
-
-            <h3 id="phase-1">Phase 1 — fluency with the basics<a class="headerlink" href="#phase-1"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li>Arrays and strings: reverse in place, rotate, remove duplicates, valid palindrome, group anagrams.
-                </li>
-                <li>Hashing: two sum, first unique character, contains duplicate, longest consecutive sequence.</li>
-                <li>Two pointers and sliding window: container with most water, longest substring without repeats,
-                    minimum window substring.</li>
-                <li>Stacks: valid parentheses, min stack, daily temperatures, evaluate reverse Polish notation.</li>
-            </ol>
-
-            <h3 id="phase-2">Phase 2 — structures and recursion<a class="headerlink" href="#phase-2"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li>Linked lists: reverse, merge two sorted, detect cycle, remove <code>n</code>-th from end, LRU cache.
-                </li>
-                <li>Trees: all four traversals, maximum depth, validate a BST, lowest common ancestor, level-order.</li>
-                <li>Heaps: <code>k</code>-th largest, merge <code>k</code> sorted lists, top <code>k</code> frequent,
-                    median of a data stream.</li>
-                <li>Binary search: classic, first/last position, search in a rotated array, minimise the maximum.</li>
-            </ol>
-
-            <h3 id="phase-3">Phase 3 — graphs and search<a class="headerlink" href="#phase-3"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li>Grids as graphs: number of islands, rotting oranges, word search, surrounded regions.</li>
-                <li>Traversal: clone a graph, course schedule (topological sort), word ladder.</li>
-                <li>Weighted: network delay time (Dijkstra), cheapest flight within <code>k</code> stops, MST.</li>
-                <li>Backtracking: subsets, permutations, combination sum, N-Queens, Sudoku solver.</li>
-            </ol>
-
-            <h3 id="phase-4">Phase 4 — dynamic programming and the rest<a class="headerlink" href="#phase-4"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li>1-D: climbing stairs, house robber, coin change, longest increasing subsequence, word break.</li>
-                <li>2-D: unique paths, edit distance, longest common subsequence, 0/1 knapsack, regular expression
-                    matching.</li>
-                <li>Advanced structures: trie with autocomplete, Union-Find problems, Fenwick or segment tree.</li>
-                <li>Everything else: bit manipulation, intervals, sweep line, string matching.</li>
-            </ol>
-
-            <h3 id="how-to-practise">How to practise so it sticks<a class="headerlink" href="#how-to-practise"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li><strong>Time-box.</strong> Twenty-five minutes of genuine effort, then read the solution. Struggling
-                    for three hours teaches you far less than reading a good solution and re-solving it from scratch the
-                    next day.</li>
-                <li><strong>Re-solve, do not re-read.</strong> A problem is learned when you can write the solution
-                    without looking, a week later.</li>
-                <li><strong>Keep a mistake log.</strong> Off-by-one in binary search, forgetting the visited set,
-                    mutating while iterating. Patterns in your own errors are more valuable than any problem list.</li>
-                <li><strong>Say the complexity out loud</strong> after every solution, for both time and space.</li>
-                <li><strong>Prefer depth over volume.</strong> Fifty problems understood thoroughly beat five hundred
-                    skimmed.</li>
-            </ol>
-
-            <blockquote>
-                <p><em>"Bad programmers worry about the code. Good programmers worry about data structures and their
-                        relationships."</em> — Linus Torvalds</p>
-            </blockquote>
-
-            <h3 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next"
-                    title="Permanent link">#</a></h3>
-            <ol>
-                <li>📚 Browse all guides in the <a href="dsa-courses.html">DSA Courses catalog</a>.</li>
-                <li>📖 <a href="https://cp-algorithms.com/">CP-Algorithms</a> — rigorous write-ups of the advanced
-                    material.</li>
-                <li>📖 <em>The Algorithm Design Manual</em> (Skiena) — the best book for building intuition about which
-                    algorithm to use.</li>
-                <li>🧠 <a href="https://leetcode.com/">LeetCode</a> and <a href="https://codeforces.com/">Codeforces</a>
-                    — for the repetitions.</li>
-            </ol>
-        </article>
-    </main>
-    <footer class="study-footer">TechToday Study Library &mdash; Data Structures &amp; Algorithms</footer>
-    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
-    <script src="dsa-study.js"></script>
-</body>
-
-</html>
+                <li><b>"Cycle in a list or sequence"</b> Floyd's fast and slow pointers.
+                    ... [truncated for diff preview]
