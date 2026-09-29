@@ -1399,58 +1399,67 @@ console.log("smallestSubarrayContainingMinMax", smallestSubarrayContainingMinMax
 
 1. Sum of all Subarrays sums. **O(N), O(1)**
 
-```text
-Subarray Contribution Visualization:
-Array A = [ 6,   8,  -1 ]
-Indices:    0    1    2
+**Diagram 1: Brute force vs contribution (A = [6, 8, -1])**
+```
+Index:      0    1    2
+A[]   = [   6,   8,  -1 ]
 
-1. Subarrays and individual sums:
-   - [0..0] : [6]         = 6
-   - [0..1] : [6, 8]      = 14
-   - [0..2] : [6, 8, -1]  = 13
-   - [1..1] : [8]         = 8
-   - [1..2] : [8, -1]     = 7
-   - [2..2] : [-1]        = -1
-   Total Brute-Force Sum  = 47
+Subarray [s..e]   Elements        Sum
+[0..0]            {6}              6
+[0..1]            {6, 8}          14
+[0..2]            {6, 8, -1}      13
+[1..1]            {8}              8
+[1..2]            {8, -1}          7
+[2..2]            {-1}            -1
+                                 ----
+                          Total = 47
 
-2. Contribution Technique (Element * Occurrence):
-   - A[0] =  6 appears in 3 subarrays  -->   6 * 3 = 18
-   - A[1] =  8 appears in 4 subarrays  -->   8 * 4 = 32
-   - A[2] = -1 appears in 3 subarrays  -->  -1 * 3 = -3
-   Total Contribution Sum              = 18 + 32 + (-3) = 47
+Contribution view: A[i] * (number of subarrays containing i)
+  A[0] =  6 -> in 3 subarrays ->  6 * 3 = 18
+  A[1] =  8 -> in 4 subarrays ->  8 * 4 = 32
+  A[2] = -1 -> in 3 subarrays -> -1 * 3 = -3
+                                        ----
+                                         47
 ```
 
-```text
-Subarray Presence for Index 1:
-Array A = [ 3,  -2,   4,  -1,   2,   6 ]  (N = 6, Target Index i = 1, Value = -2)
+**Diagram 2: In how many subarrays is index 1 present? (A = [3, -2, 4, -1, 2, 6])**
 
-Start Index (st) choices (must be <= 1):
-  st ∈ {0, 1}                    --> (1 - 0 + 1) = 2 choices
+A subarray contains index 1 if `start` is in [0..1] and `end` is in [1..5]. Each start/end pair gives one subarray.
 
-End Index (end) choices (must be >= 1):
-  end ∈ {1, 2, 3, 4, 5}          --> (6 - 1)     = 5 choices
-
-All 10 Subarrays Containing Index 1:
-  - Starting at 0: [0..1], [0..2], [0..3], [0..4], [0..5]  (5 subarrays)
-  - Starting at 1: [1..1], [1..2], [1..3], [1..4], [1..5]  (5 subarrays)
-
-Total Subarrays containing Index 1 = 2 * 5 = 10
+```mermaid
+flowchart LR
+  subgraph Start["start in [0..1] : 2 choices"]
+    S0((0))
+    S1((1))
+  end
+  subgraph End["end in [1..5] : 5 choices"]
+    E1((1))
+    E2((2))
+    E3((3))
+    E4((4))
+    E5((5))
+  end
+  S0 --- E1 & E2 & E3 & E4 & E5
+  S1 --- E1 & E2 & E3 & E4 & E5
 ```
 
-```text
-General 1D Subarray Contribution Formula:
-Array: [ a_0, a_1, ..., a_i, ..., a_{N-1} ]
+```
+start = 0 : [0,1] [0,2] [0,3] [0,4] [0,5]
+start = 1 : [1,1] [1,2] [1,3] [1,4] [1,5]
 
-1. Start Index Choices:
-   Any index from 0 to i
-   Total choices = (i - 0 + 1) = (i + 1)
+Total subarrays = 2 * 5 = 10
+```
 
-2. End Index Choices:
-   Any index from i to N - 1
-   Total choices = (N - 1 - i + 1) = (N - i)
+**Diagram 3: General formula for index i**
+```
+  a0  a1  a2  ...  ai  a(i+1)  ...  a(n-1)
+  |_________________|
+     start in [0..i]   -> (i - 0 + 1)     = (i + 1) choices
+                   |_____________________|
+                      end in [i..n-1] -> (n - 1 - i + 1) = (n - i) choices
 
-Total Subarrays containing index i = (i + 1) * (N - i)
-Contribution of A[i] to Total Sum = A[i] * (i + 1) * (N - i)
+Total subarrays containing index i = (i + 1) * (n - i)
+Contribution of A[i]               = A[i] * (i + 1) * (n - i)
 ```
 
 ```python
@@ -1502,70 +1511,91 @@ console.log(sumOfAllSubarraysSums([1, 2, 3, 4])); // 50
 
 2. Sum of all Submatrices sums. **O(N^2), O(1)**
 
-```text
-Matrix Submatrix Sum Example:
-Matrix (N = 2 rows, M = 3 columns):
-         col 0   col 1   col 2
-  row 0 [  4,      9,      6  ]
-  row 1 [  5,     -1,      2  ]
+**Diagram 1: Brute force vs contribution (2 x 3 matrix)**
+```
+        0    1    2
+      +----+----+----+
+  0   |  4 |  9 |  6 |
+      +----+----+----+
+  1   |  5 | -1 |  2 |
+      +----+----+----+
 
-All Submatrices Sums:
-  - 1x1: [4]=4, [9]=9, [6]=6, [5]=5, [-1]=-1, [2]=2
-  - 1x2: [4,9]=13, [9,6]=15, [5,-1]=4, [-1,2]=1
-  - 1x3: [4,9,6]=19, [5,-1,2]=6
-  - 2x1: [[4],[5]]=9, [[9],[-1]]=8, [[6],[2]]=8
-  - 2x2: [[4,9],[5,-1]]=17, [[9,6],[-1,2]]=16
-  - 2x3: [[4,9,6],[5,-1,2]]=25
-  Total Sum = 166
+All 18 submatrices, grouped by shape (rows separated by /):
+  1x1 : [4]=4  [9]=9  [6]=6  [5]=5  [-1]=-1  [2]=2   -> 25
+  1x2 : [4 9]=13  [9 6]=15  [5 -1]=4  [-1 2]=1       -> 33
+  1x3 : [4 9 6]=19  [5 -1 2]=6                       -> 25
+  2x1 : [4/5]=9  [9/-1]=8  [6/2]=8                   -> 25
+  2x2 : [4 9/5 -1]=17  [9 6/-1 2]=16                 -> 33
+  2x3 : [4 9 6/5 -1 2]=25                            -> 25
+                                              Total = 166
 
-Contribution by Element Frequency:
-  - Element  4 at (0,0): appears in 6 submatrices -->  4 * 6 = 24
-  - Element  9 at (0,1): appears in 8 submatrices -->  9 * 8 = 72
-  - Element  6 at (0,2): appears in 6 submatrices -->  6 * 6 = 36
-  - Element  5 at (1,0): appears in 6 submatrices -->  5 * 6 = 30
-  - Element -1 at (1,1): appears in 8 submatrices --> -1 * 8 = -8
-  - Element  2 at (1,2): appears in 6 submatrices -->  2 * 6 = 12
-  Total Sum = 24 + 72 + 36 + 30 - 8 + 12 = 166
+Contribution view: freq(i,j) = (i+1) * (j+1) * (N-i) * (M-j),  N = 2, M = 3
+  (0,0) =  4 -> 1*1*2*3 = 6 ->  4 * 6 =  24
+  (0,1) =  9 -> 1*2*2*2 = 8 ->  9 * 8 =  72
+  (0,2) =  6 -> 1*3*2*1 = 6 ->  6 * 6 =  36
+  (1,0) =  5 -> 2*1*1*3 = 6 ->  5 * 6 =  30
+  (1,1) = -1 -> 2*2*1*2 = 8 -> -1 * 8 =  -8
+  (1,2) =  2 -> 2*3*1*1 = 6 ->  2 * 6 =  12
+                                       -----
+                                  Sum = 166
 ```
 
-```text
-Top-Left (TL) and Bottom-Right (BR) Grid Point Choices:
+**Diagram 2: Counting top-left (TL) and bottom-right (BR) corners**
 
-For any cell (i, j) in an N x M matrix, every containing submatrix has:
-  - Top-Left corner (r1, c1) where 0 <= r1 <= i and 0 <= c1 <= j
-  - Bottom-Right corner (r2, c2) where i <= r2 < N and j <= c2 < M
+A submatrix contains cell (i, j) only if its top-left corner is above-left of (i, j) and its bottom-right corner is below-right of it (the cell itself counts for both).
 
-Example: In a 4 x 5 Matrix, for element at (1, 2):
-  - Rows for Top-Left: {0, 1}           --> 2 choices
-  - Cols for Top-Left: {0, 1, 2}        --> 3 choices
-  - Count of TL corners = 2 * 3 = 6 choices
+```
+Matrix 8 x 10, cell (i, j) = (3, 4) marked *
 
-  - Rows for Bottom-Right: {1, 2, 3}    --> 3 choices
-  - Cols for Bottom-Right: {2, 3, 4}    --> 3 choices
-  - Count of BR corners = 3 * 3 = 9 choices
+       0   1   2   3   4   5   6   7   8   9
+  0   TL  TL  TL  TL  TL   .   .   .   .   .
+  1   TL  TL  TL  TL  TL   .   .   .   .   .
+  2   TL  TL  TL  TL  TL   .   .   .   .   .
+  3   TL  TL  TL  TL   *  BR  BR  BR  BR  BR
+  4    .   .   .   .  BR  BR  BR  BR  BR  BR
+  5    .   .   .   .  BR  BR  BR  BR  BR  BR
+  6    .   .   .   .  BR  BR  BR  BR  BR  BR
+  7    .   .   .   .  BR  BR  BR  BR  BR  BR
 
-Total Submatrices containing cell (1, 2) = 6 * 9 = 54
+  TL : rows 0..3 x cols 0..4 = 4 * 5 = 20
+  BR : rows 3..7 x cols 4..9 = 5 * 6 = 30
+  Submatrices containing (3,4) = 20 * 30 = 600
 ```
 
-```text
-General 2D Matrix Contribution Derivation:
-Dimensions: N rows x M columns. Element at coordinate (i, j).
+```
+In a 4 x 5 matrix, how many submatrices contain (1, 2)?
 
-1. Top-Left choices:
-   r1 ∈ [0, i]  --> (i + 1) choices
-   c1 ∈ [0, j]  --> (j + 1) choices
-   Count(TL) = (i + 1) * (j + 1)
+       0   1   2   3   4
+  0   TL  TL  TL   .   .
+  1   TL  TL   *  BR  BR
+  2    .   .  BR  BR  BR
+  3    .   .  BR  BR  BR
 
-2. Bottom-Right choices:
-   r2 ∈ [i, N-1]  --> (N - i) choices
-   c2 ∈ [j, M-1]  --> (M - j) choices
-   Count(BR) = (N - i) * (M - j)
+  TL : rows 0..1 x cols 0..2 = 2 * 3 = 6
+  BR : rows 1..3 x cols 2..4 = 3 * 3 = 9
+  Submatrices containing (1,2) = 6 * 9 = 54
+```
 
-Frequency of cell (i, j) in all submatrices:
-   Freq(i, j) = (i + 1) * (j + 1) * (N - i) * (M - j)
+**Diagram 3: Generic N x M matrix, cell (i, j)**
+```
+             col 0          col j            col M-1
+               |              |                 |
+  row 0   ->   +--------------+
+               |  TL region   |
+               | (i+1)x(j+1)  |
+  row i   ->   +--------------*-----------------+
+                              |   BR region     |
+                              |  (N-i)x(M-j)    |
+  row N-1 ->                  +-----------------+
 
-Contribution to Grand Total:
-   Contribution(i, j) = mat[i][j] * Freq(i, j)
+Top-left corner (r1, c1):      r1 in [0..i],   c1 in [0..j]
+  count TL = (i - 0 + 1) * (j - 0 + 1)         = (i + 1) * (j + 1)
+
+Bottom-right corner (r2, c2):  r2 in [i..N-1], c2 in [j..M-1]
+  count BR = (N - 1 - i + 1) * (M - 1 - j + 1) = (N - i) * (M - j)
+
+freq(i, j)         = count TL * count BR = (i+1) * (j+1) * (N-i) * (M-j)
+contribution(i, j) = freq(i, j) * mat[i][j]
 ```
 
 ```python
@@ -17065,29 +17095,79 @@ Morris Traversal is a clever method used to walk through binary trees without ne
 This technique not only saves memory but also provides an interesting way to explore trees.
 ```
 
-```text
-Morris Inorder Traversal Structure & Threaded Pointers:
+**Diagram 1: Tree with temporary threads (dotted = thread from inorder predecessor back to curr)**
+
+```mermaid
+flowchart TD
+  N10((10)) --> N20((20))
+  N10 --> N30((30))
+  N20 --> N40((40))
+  N20 --> N50((50))
+  N50 --> N70((70))
+  N50 --> N80((80))
+  N30 --> X30[null]
+  N30 --> N60((60))
+  N60 --> N90((90))
+  N60 --> X60[null]
+  N40 -. thread .-> N20
+  N70 -. thread .-> N50
+  N80 -. thread .-> N10
+  N90 -. thread .-> N60
+```
+
+```
                  10
-               /    \
-             20      30
-            /  \       \
-          40    50      60
-               /  \    /
-              70  80  90
+              /      \
+           20          30
+          /  \           \
+        40    50          60
+             /  \        /
+           70    80    90
 
-Inorder Predecessor Threads Created:
-  - Node 40 (predecessor of 20): 40.right -> 20
-  - Node 70 (predecessor of 50): 70.right -> 50
-  - Node 80 (predecessor of 10): 80.right -> 10
-  - Node 90 (predecessor of 60): 90.right -> 60
+Threads (rightmost node of curr's left subtree -> curr):
+  40.right -> 20
+  70.right -> 50
+  80.right -> 10
+  90.right -> 60
 
-Inorder Traversal Sequence: [40, 20, 70, 50, 80, 10, 30, 90, 60]
+Inorder: [40, 20, 70, 50, 80, 10, 30, 90, 60]
+```
 
-Algorithm Rule:
-1. If curr.left is null: visit curr, curr = curr.right.
-2. Else find predecessor (rightmost node in curr.left):
-   - If pred.right is null: create thread (pred.right = curr), curr = curr.left.
-   - If pred.right is curr: remove thread (pred.right = null), visit curr, curr = curr.right.
+**Diagram 2: Decision flow**
+
+```mermaid
+flowchart TD
+  A["curr = root"] --> B{"curr != null?"}
+  B -- no --> Z["done"]
+  B -- yes --> C{"curr.left is null?"}
+  C -- yes --> D["visit curr<br/>curr = curr.right"]
+  D --> B
+  C -- no --> E["pred = rightmost node of curr.left"]
+  E --> F{"pred.right is null?"}
+  F -- "yes (first visit)" --> G["pred.right = curr (make thread)<br/>curr = curr.left"]
+  G --> B
+  F -- "no, pred.right is curr (left done)" --> H["pred.right = null (break thread)<br/>visit curr<br/>curr = curr.right"]
+  H --> B
+```
+
+**Diagram 3: Step-by-step trace**
+```
+Step  curr  pred  pred.right  Action
+ 1    10    80    null        thread 80 -> 10, curr = 20
+ 2    20    40    null        thread 40 -> 20, curr = 40
+ 3    40    -     -           no left: visit 40, curr = 20 (via thread)
+ 4    20    40    20          break thread, visit 20, curr = 50
+ 5    50    70    null        thread 70 -> 50, curr = 70
+ 6    70    -     -           no left: visit 70, curr = 50 (via thread)
+ 7    50    70    50          break thread, visit 50, curr = 80
+ 8    80    -     -           no left: visit 80, curr = 10 (via thread)
+ 9    10    80    10          break thread, visit 10, curr = 30
+10    30    -     -           no left: visit 30, curr = 60
+11    60    90    null        thread 90 -> 60, curr = 90
+12    90    -     -           no left: visit 90, curr = 60 (via thread)
+13    60    90    60          break thread, visit 60, curr = null
+
+Result: [40, 20, 70, 50, 80, 10, 30, 90, 60]
 ```
 
 ```python
