@@ -12,18 +12,20 @@
     <link rel="stylesheet" href="dsa-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
     <style>
-        /* Course Toolbar */
+        /* ------------------------------------------------------------------
+           Course Toolbar
+           ------------------------------------------------------------------ */
         .course-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 12px;
-            margin: 28px 0 24px;
-            padding: 12px 18px;
-            background: #14171d;
-            border: 1px solid #222834;
-            border-radius: 10px;
+            gap: 10px;
+            margin: 16px 0 14px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
         }
 
         .course-toolbar-actions {
@@ -35,26 +37,26 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 15px;
-            background: #1c212a;
-            border: 1px solid #2a3242;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.07);
             border-radius: 6px;
-            color: #f3f8fc;
-            font-size: 13px;
+            color: #f1f5f9;
+            font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
         }
 
         .action-btn:hover {
-            background: #252c38;
-            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.35);
             color: #38bdf8;
         }
 
         .course-toolbar-info {
             color: #8c9ba8;
-            font-size: 13px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -64,44 +66,85 @@
             opacity: 0.5;
         }
 
-        /* Topic Section Card */
+        /* ------------------------------------------------------------------
+           Unit Dividers
+           ------------------------------------------------------------------ */
+        .unit-divider {
+            margin: 20px 0 10px;
+            padding: 10px 14px;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.08) 0%, rgba(56, 189, 248, 0.01) 100%);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .unit-divider-badge {
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #38bdf8;
+            margin-bottom: 2px;
+        }
+
+        .unit-divider-title {
+            margin: 0 0 2px 0 !important;
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            color: #f1f5f9 !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        .unit-divider-desc {
+            margin: 0 !important;
+            font-size: 13px !important;
+            color: #8c9ba8 !important;
+            line-height: 1.45;
+        }
+
+        /* ------------------------------------------------------------------
+           Topic Section (Level 1 Accordion) - Sleek Modern Row / Card
+           ------------------------------------------------------------------ */
         .topic-section {
-            margin: 22px 0;
-            background: #14171d;
-            border: 1px solid #222834;
-            border-radius: 12px;
+            margin: 12px 0;
+            background: #0f1217;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
             overflow: hidden;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
         .topic-section:hover {
-            border-color: rgba(56, 189, 248, 0.35);
+            border-color: rgba(56, 189, 248, 0.25);
         }
 
         .topic-section:not(.is-collapsed) {
-            border-color: rgba(56, 189, 248, 0.45);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            border-color: rgba(56, 189, 248, 0.35);
+            border-left: 1px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.45);
+            background: #11141b;
         }
 
         .topic-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding: 16px 22px;
-            background: #14171d;
+            gap: 12px;
+            padding: 12px 16px;
+            background: transparent;
             cursor: pointer;
             user-select: none;
             transition: background 0.15s ease;
         }
 
         .topic-header:hover {
-            background: #181d26;
+            background: rgba(255, 255, 255, 0.025);
         }
 
         .topic-section:not(.is-collapsed) .topic-header {
-            background: #1a1f29;
-            border-bottom: 1px solid #222834;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.07) 0%, rgba(20, 24, 33, 0.3) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .topic-header:focus-visible {
@@ -112,7 +155,7 @@
         .topic-header-main {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
             flex: 1;
             min-width: 0;
         }
@@ -121,17 +164,23 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 32px;
-            height: 32px;
+            min-width: 26px;
+            height: 26px;
             padding: 0 6px;
-            background: rgba(56, 189, 248, 0.12);
+            background: rgba(56, 189, 248, 0.1);
             color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 6px;
             font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .topic-section:not(.is-collapsed) .topic-badge {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.45);
         }
 
         .topic-title {
@@ -139,9 +188,9 @@
             padding: 0 !important;
             border: none !important;
             font-family: Georgia, "Times New Roman", serif !important;
-            font-size: clamp(18px, 2.2vw, 22px) !important;
+            font-size: 17px !important;
             font-weight: 600 !important;
-            color: #f3f8fc !important;
+            color: #f1f5f9 !important;
             line-height: 1.3 !important;
             letter-spacing: -0.01em !important;
         }
@@ -149,7 +198,7 @@
         .topic-header-meta {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
@@ -157,63 +206,95 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             color: #8c9ba8;
-            transition: transform 0.25s ease, color 0.2s ease;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .topic-chevron svg {
+            width: 15px;
+            height: 15px;
         }
 
         .topic-section:not(.is-collapsed) .topic-chevron {
             transform: rotate(180deg);
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.35);
             color: #38bdf8;
         }
 
         .topic-content {
-            padding: 20px 22px 24px;
+            padding: 10px 14px 14px;
         }
 
         .topic-section.is-collapsed .topic-content {
             display: none !important;
         }
 
-        /* Inner Parts (Theory, Questions) as Collapsible Cards */
+        @keyframes accordionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-3px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .topic-section:not(.is-collapsed)>.topic-content {
+            animation: accordionFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ------------------------------------------------------------------
+           Inner Part Section (Level 2) - Seamless Row / De-Boxed
+           No enclosing box-in-a-box border!
+           ------------------------------------------------------------------ */
         .part-section {
-            margin: 14px 0;
-            background: #0f1217;
-            border: 1px solid #1e2430;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: border-color 0.2s ease, background 0.2s ease;
-        }
-
-        .part-section:hover {
-            border-color: #2e3848;
-        }
-
-        .part-section:not(.is-collapsed) {
-            border-color: #2e3848;
-            background: #11151c;
+            margin: 10px 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            overflow: visible;
         }
 
         .part-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 12px 18px;
+            gap: 8px;
+            padding: 8px 12px;
             cursor: pointer;
             user-select: none;
-            background: rgba(20, 23, 29, 0.7);
-            transition: background 0.15s ease;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 7px;
+            transition: background 0.15s ease, border-color 0.15s ease;
         }
 
         .part-header:hover {
-            background: #181d26;
+            background: rgba(255, 255, 255, 0.045);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .part-section:not(.is-collapsed) .part-header {
-            border-bottom: 1px solid #1e2430;
-            background: #181d26;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.09);
+        }
+
+        .part-section:not(.is-collapsed):has(.ind-theory) .part-header {
+            background: rgba(167, 139, 250, 0.07);
+            border-color: rgba(167, 139, 250, 0.28);
+        }
+
+        .part-section:not(.is-collapsed):has(.ind-questions) .part-header {
+            background: rgba(56, 189, 248, 0.07);
+            border-color: rgba(56, 189, 248, 0.28);
         }
 
         .part-header:focus-visible {
@@ -224,16 +305,16 @@
         .part-header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .part-heading {
             margin: 0 !important;
             padding: 0 !important;
             border: none !important;
-            font-size: 16px !important;
-            font-weight: 700 !important;
-            color: #f3f8fc !important;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            color: #f1f5f9 !important;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -241,65 +322,351 @@
         }
 
         .part-indicator {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             display: inline-block;
         }
 
         .ind-theory {
             background: #a78bfa;
-            box-shadow: 0 0 8px #a78bfa;
+            box-shadow: 0 0 6px #a78bfa;
         }
 
         .ind-questions {
             background: #38bdf8;
-            box-shadow: 0 0 8px #38bdf8;
+            box-shadow: 0 0 6px #38bdf8;
+        }
+
+        .part-counter {
+            font-size: 11px;
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 1px 7px;
+            border-radius: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            font-weight: 600;
+        }
+
+        .philosophy-title {
+            margin: 14px 0 8px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            color: #f1f5f9 !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            scroll-margin-top: 90px;
+        }
+
+        .philosophy-title:first-child {
+            margin-top: 0 !important;
         }
 
         .part-header-right {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .part-counter {
-            font-size: 11.5px;
-            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-            color: #8c9ba8;
-            background: rgba(255, 255, 255, 0.04);
-            padding: 2px 8px;
-            border-radius: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            gap: 8px;
         }
 
         .part-arrow {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             color: #8c9ba8;
-            transition: transform 0.2s ease, color 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .part-arrow svg {
+            width: 13px;
+            height: 13px;
         }
 
         .part-section:not(.is-collapsed) .part-arrow {
             transform: rotate(180deg);
             color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.25);
         }
 
         .part-body {
-            padding: 20px 18px;
+            padding: 10px 4px 6px;
         }
 
         .part-section.is-collapsed .part-body {
             display: none !important;
         }
 
+        .part-section:not(.is-collapsed)>.part-body {
+            animation: accordionFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ------------------------------------------------------------------
+           Content Elements - Soft Atmospheric Tints Instead of Boxy Slabs
+           ------------------------------------------------------------------ */
+        .topic-content h4,
+        .part-body h4 {
+            margin: 12px 0 6px;
+            font-size: 14px;
+        }
+
+        .worked {
+            margin: 12px 0;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, rgba(197, 134, 192, 0.04) 0%, rgba(17, 21, 27, 0.5) 100%);
+            border: 1px solid rgba(197, 134, 192, 0.16);
+            border-left: 1px solid rgba(197, 134, 192, 0.16);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .worked>b:first-child {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            color: #c586c0;
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .worked-q {
+            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #f1f5f9;
+        }
+
+        .worked p,
+        .worked ol,
+        .worked ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #c6d1dc;
+            margin: 0 0 10px;
+        }
+
+        .worked li {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .worked code {
+            font-size: 13.5px;
+        }
+
+        .code-tab-label {
+            display: block;
+            margin: 14px 0 6px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: #f1f5f9;
+        }
+
+        .code-tab-label+.code-tabs {
+            margin-top: 0;
+        }
+
+        /* Integrated Code Block */
+        .code-tabs {
+            margin: 10px 0 0;
+            background: #090c10;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .tab-bar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-bar .tab-label {
+            display: none;
+        }
+
+        .tab {
+            padding: 5px 12px 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8c9ba8;
+            background: transparent;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .tab:hover {
+            color: #f1f5f9;
+        }
+
+        .tab[aria-selected="true"] {
+            color: #f2c98a;
+            border-bottom-color: #e0af68;
+            font-weight: 600;
+        }
+
+        .code-tabs pre {
+            margin: 0;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        /* Atmospheric Callouts and Analogies */
+        .analogy {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-left: 3px solid #38bdf8;
+            border-radius: 8px;
+        }
+
+        .analogy-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        .callout {
+            position: relative;
+            margin: 12px 0;
+            padding: 10px 12px 10px 36px;
+            border-radius: 8px;
+            border-left-width: 3px;
+            border-style: solid;
+        }
+
+        .callout-key {
+            background: linear-gradient(135deg, rgba(224, 175, 104, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border-color: rgba(224, 175, 104, 0.18);
+            border-left-color: #e0af68;
+        }
+
+        .callout-tip {
+            background: linear-gradient(135deg, rgba(115, 201, 145, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border-color: rgba(115, 201, 145, 0.18);
+            border-left-color: #73c991;
+        }
+
+        .callout-warn {
+            background: linear-gradient(135deg, rgba(244, 135, 113, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border-color: rgba(244, 135, 113, 0.18);
+            border-left-color: #f48771;
+        }
+
+        .callout-interview {
+            background: linear-gradient(135deg, rgba(197, 134, 192, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border: 1px solid rgba(197, 134, 192, 0.18);
+            border-left: 1px solid rgba(197, 134, 192, 0.18);
+        }
+
+        .callout::before {
+            top: 9px;
+            left: 10px;
+            font-size: 14px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .card-grid li {
+            padding: 9px 12px;
+            border-radius: 7px;
+            font-size: 13.5px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .card-grid li.is-good {
+            background: linear-gradient(135deg, rgba(115, 201, 145, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border-color: rgba(115, 201, 145, 0.18);
+            border-left: 3px solid #73c991;
+        }
+
+        .card-grid li.is-bad {
+            background: linear-gradient(135deg, rgba(244, 135, 113, 0.05) 0%, rgba(17, 21, 26, 0.4) 100%);
+            border-color: rgba(244, 135, 113, 0.18);
+            border-left: 3px solid #f48771;
+        }
+
+        .ascii {
+            margin: 10px 0;
+            padding: 10px 12px;
+            font-size: 11.5px;
+            border-radius: 6px;
+            background: #080a0e;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .viz {
+            margin: 10px 0;
+            padding: 10px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .figure {
+            margin: 10px 0;
+            padding: 10px 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .meta-strip {
+            margin: 0 0 10px;
+            gap: 6px 8px;
+        }
+
+        .meta-strip li {
+            padding: 2px 8px;
+            font-size: 11.5px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .copy-code {
+            top: 5px;
+            right: 5px;
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 4px;
+            background: rgba(23, 28, 34, 0.9);
+        }
+
         .theory-subheading {
-            margin: 24px 0 12px !important;
+            margin: 18px 0 8px !important;
             color: #e2e8f0 !important;
-            font-size: 15.5px !important;
+            font-size: 15px !important;
             font-weight: 600 !important;
         }
 
@@ -309,14 +676,23 @@
 
         .theory-list,
         .theory-ordered-list {
-            margin: 12px 0 16px 20px;
+            margin: 8px 0 12px 18px;
             color: #c6d1dc;
             line-height: 1.6;
+            font-size: 15px;
         }
 
         .theory-list li,
         .theory-ordered-list li {
-            margin-bottom: 6px;
+            margin-bottom: 5px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .topic-section:not(.is-collapsed)>.topic-content,
+            .part-section:not(.is-collapsed)>.part-body {
+                animation: none !important;
+            }
         }
     </style>
 </head>
@@ -36276,6 +36652,19 @@ console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); /
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
     <script src="dsa-study.js"></script>
     <script>
+        // Move code-tab labels above code boxes so tab-bar never cramps on narrow viewports
+        document.querySelectorAll(".code-tabs").forEach((wrap) => {
+            let label = wrap.querySelector(".tab-bar .tab-label");
+            if (!label && wrap.dataset.label) {
+                label = document.createElement("span");
+                label.textContent = wrap.dataset.label;
+            }
+            if (label && wrap.parentNode) {
+                label.className = "code-tab-label";
+                wrap.parentNode.insertBefore(label, wrap);
+            }
+        });
+
         // Topic & Inner Part Accordion Interactive Logic
         (() => {
             const toggleCard = (card, headerSelector, forceOpen = null) => {
