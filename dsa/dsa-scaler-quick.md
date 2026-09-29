@@ -6716,7 +6716,7 @@ print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
 # Space Complexity: O(N + M)
 ```
 
-# 11. Count Sort & Merge Sort
+# 11. Count Sort
 
 ## Theory
 
@@ -6724,15 +6724,6 @@ print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
 ```
 Range of elements: A[i] <= 10^6
 Frequency of every element: A[i] <= 10^6
-```
-
-### Mid calculation optimization
-```js
-const mid = lo + Math.floor((hi - lo) / 2);
-```
-
-```python
-mid = lo + (hi - lo) // 2
 ```
 
 ### Stable Sort
@@ -6897,7 +6888,86 @@ print(count_sort_negative([-5, -10, 0, -3, 8, 5, -1, 10]))
 # Space Complexity: O(K)
 ```
 
-### 3. Merge two sorted arrays | Merge Sort. **O(N), O(N)**
+
+### 3. Sort by color. Sort an array in such a way that same colored elements are adjacent / Dutch National Flag Problem | Count Sort. **O(N), O(N)**
+```js
+// Using count sort
+function sortColors(arr) {
+  let count = new Array(3).fill(0);
+  let ans = [];
+  for (const num of arr) {
+    count[num]++;
+  }
+
+  for (let i = 0; i < count.length; i++) {
+    let frequency = count[i];
+    while (frequency > 0) {
+      ans.push(i);
+      frequency--;
+    }
+  }
+
+  return ans;
+}
+
+console.log(sortColors([0, 1, 2, 0, 1, 2])); // [0, 0, 1, 1, 2, 2]
+console.log(sortColors([0])); // [0]
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+```
+
+```python
+# Using Counting Sort / Dutch National Flag
+def sort_colors(arr):
+    count0 = 0
+    count1 = 0
+    count2 = 0
+
+    for num in arr:
+        if num == 0:
+            count0 += 1
+        elif num == 1:
+            count1 += 1
+        else:
+            count2 += 1
+
+    i = 0
+    for _ in range(count0):
+        arr[i] = 0
+        i += 1
+    for _ in range(count1):
+        arr[i] = 1
+        i += 1
+    for _ in range(count2):
+        arr[i] = 2
+        i += 1
+
+    return arr
+
+
+print(sort_colors([2, 0, 2, 1, 1, 0]))  # [0, 0, 1, 1, 2, 2]
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+# 12. Merge Sort
+
+## Theory
+
+### Mid calculation optimization
+```js
+const mid = lo + Math.floor((hi - lo) / 2);
+```
+
+```python
+mid = lo + (hi - lo) // 2
+```
+
+## Questions
+
+### 1. Merge two sorted arrays | Merge Sort. **O(N), O(N)**
 ```js
 /**
  * Splitting Function
@@ -7003,7 +7073,7 @@ print(merge_two_sorted_arrays([1, 3, 5], [2, 4, 6]))  # [1, 2, 3, 4, 5, 6]
 # Space Complexity: O(N + M)
 ```
 
-### 4. Merge sort | Merge Sort. **O(N), O(N)**
+### 2. Merge sort | Merge Sort. **O(N), O(N)**
 ```js
 /**
  * Helper function to merge two sorted arrays into a single sorted array.
@@ -7114,70 +7184,7 @@ print(merge_sort([38, 27, 43, 3, 9, 82, 10]))  # [3, 9, 10, 27, 38, 43, 82]
 # Space Complexity: O(N)
 ```
 
-### 5. Sort by color. Sort an array in such a way that same colored elements are adjacent / Dutch National Flag Problem | Count Sort. **O(N), O(N)**
-```js
-// Using count sort
-function sortColors(arr) {
-  let count = new Array(3).fill(0);
-  let ans = [];
-  for (const num of arr) {
-    count[num]++;
-  }
-
-  for (let i = 0; i < count.length; i++) {
-    let frequency = count[i];
-    while (frequency > 0) {
-      ans.push(i);
-      frequency--;
-    }
-  }
-
-  return ans;
-}
-
-console.log(sortColors([0, 1, 2, 0, 1, 2])); // [0, 0, 1, 1, 2, 2]
-console.log(sortColors([0])); // [0]
-
-// Time Complexity: O(n)
-// Space Complexity: O(1)
-```
-
-```python
-# Using Counting Sort / Dutch National Flag
-def sort_colors(arr):
-    count0 = 0
-    count1 = 0
-    count2 = 0
-
-    for num in arr:
-        if num == 0:
-            count0 += 1
-        elif num == 1:
-            count1 += 1
-        else:
-            count2 += 1
-
-    i = 0
-    for _ in range(count0):
-        arr[i] = 0
-        i += 1
-    for _ in range(count1):
-        arr[i] = 1
-        i += 1
-    for _ in range(count2):
-        arr[i] = 2
-        i += 1
-
-    return arr
-
-
-print(sort_colors([2, 0, 2, 1, 1, 0]))  # [0, 0, 1, 1, 2, 2]
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 12. Quick Sort & Comparator
+# 13. Quick Sort & Comparator
 
 ### 1. Partition the array. All 0s on the left and all 1s on the right. | Partitioning Algorithm **O(N), O(1)**
 ```js
