@@ -4631,6 +4631,129 @@ A self-balancing tree detects when it is getting lopsided and repairs itself. Th
 3. **Treap / skip list** — randomised structures that achieve `O(log n)` *expected* height with far simpler code. Redis sorted sets are skip lists.
 4. **B-tree / B+ tree** — not binary. Each node holds many keys and has many children, so the tree is extremely shallow.
 
+<a id="treeset-and-treemap"></a>
+
+### TreeSet & TreeMap — the standard-library wrappers
+
+You rarely build an AVL or red-black tree by hand. Every major language wraps one up for you:
+
+1. **Java** — `TreeSet<T>` (sorted set of unique elements) and `TreeMap<K, V>` (sorted key-value map), both backed by a red-black tree.
+2. **C++** — `std::set` / `std::map` (red-black tree). `std::multiset` / `std::multimap` allow duplicate keys.
+3. **Python** — no built-in equivalent. Use the third-party `sortedcontainers` library (`SortedList`, `SortedDict`, `SortedSet`), which are backed by B-tree-like sorted lists and deliver `O(log n)` inserts, deletes and lookups.
+4. **JavaScript** — no native sorted set/map. Use a manual BST, or libraries like `bintrees` or `functional-red-black-tree`.
+
+**A `TreeSet`** is an ordered collection of unique elements. Under the hood it is simply a `TreeMap` where each element is stored as a key with a dummy placeholder value. Iterating always yields elements in sorted order.
+
+**A `TreeMap`** is an ordered key-value map. It keeps all keys in sorted order (either natural ordering or by a custom comparator), so you can iterate from smallest to largest in `O(n)`.
+
+#### When to use TreeSet / TreeMap over HashSet / HashMap
+
+`HashMap` and `HashSet` give `O(1)` average lookups — use them when you only need "is `x` present?" or "what is the value for key `k`?". Reach for `TreeMap` / `TreeSet` when you need any of these `O(log n)` operations that hash tables **cannot** do:
+
+1. **`floor(x)`** — largest element ≤ `x`.
+2. **`ceiling(x)`** — smallest element ≥ `x`.
+3. **`lower(x)`** — strictly greatest element < `x`.
+4. **`higher(x)`** — strictly smallest element > `x`.
+5. **`first()` / `last()`** — minimum and maximum.
+6. **`subSet(from, to)`** — a live view of elements in a range.
+7. **Sorted iteration** — iterate keys in order without a separate sort step.
+
+> **Rule of thumb:** if the problem says "find the nearest", "next greater", "previous smaller", "range of values", or "k-th smallest in a stream" — think `TreeSet` / `TreeMap`.
+
+**Worked example — TreeSet / TreeMap in action**
+
+*Given a stream of integers, support two operations: `add(val)` inserts a value, and `find_closest(target)` returns the element in the set nearest to `target` (break ties by returning the smaller one). Both operations must be `O(log n)`.*
+
+A `HashSet` cannot answer "nearest" without scanning all elements. A `TreeSet` (or `SortedList` in Python) answers it instantly with `floor` and `ceiling`: look one step below and one step above, then pick the closer one.
+
+**Answer — nearest value using a sorted set**
+
+```python
+from sortedcontainers import SortedList          # pip install sortedcontainers
+
+class NearestFinder:
+    """O(log n) add and O(log n) find_closest, backed by a sorted list."""
+    def __init__(self):
+        self.sl = SortedList()
+
+    def add(self, val):
+        self.sl.add(val)                          # O(log n)
+
+    def find_closest(self, target):
+        if not self.sl:
+            return None
+        idx = self.sl.bisect_left(target)         # O(log n) — position where target would go
+
+        best = None
+        # Check the element at idx (ceiling) and idx-1 (floor)
+        for i in (idx, idx - 1):
+            if 0 <= i < len(self.sl):
+                cand = self.sl[i]
+                if best is None or abs(cand - target) < abs(best - target) \
+                        or (abs(cand - target) == abs(best - target) and cand < best):
+                    best = cand
+        return best
+
+
+nf = NearestFinder()
+for v in [4, 1, 9, 7, 3]:
+    nf.add(v)
+
+print(nf.find_closest(5))   # 4  — both 4 and 7 are candidates; 4 is closer
+print(nf.find_closest(6))   # 7  — 7 is 1 away, 4 is 2 away
+print(nf.find_closest(8))   # 9 vs 7 — both 1 away, pick smaller → 7
+```
+
+```javascript
+// A minimal sorted-set backed by a balanced BST (using an array + bisect for clarity).
+// In production, use a library like 'bintrees' for O(log n) insert.
+
+class NearestFinder {
+  constructor() { this.arr = []; }            // kept sorted
+
+  add(val) {                                  // O(log n) search + O(n) shift (use BST lib for true O(log n))
+    let lo = 0, hi = this.arr.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (this.arr[mid] < val) lo = mid + 1;
+      else hi = mid;
+    }
+    if (this.arr[lo] !== val) this.arr.splice(lo, 0, val);
+  }
+
+  findClosest(target) {                       // O(log n)
+    const a = this.arr, n = a.length;
+    if (n === 0) return null;
+    let lo = 0, hi = n;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (a[mid] < target) lo = mid + 1;
+      else hi = mid;
+    }
+    // lo is the ceiling index; lo-1 is the floor index
+    let best = null;
+    for (const i of [lo, lo - 1]) {
+      if (i >= 0 && i < n) {
+        const c = a[i];
+        if (best === null
+            || Math.abs(c - target) < Math.abs(best - target)
+            || (Math.abs(c - target) === Math.abs(best - target) && c < best)) {
+          best = c;
+        }
+      }
+    }
+    return best;
+  }
+}
+
+const nf = new NearestFinder();
+for (const v of [4, 1, 9, 7, 3]) nf.add(v);
+
+console.log(nf.findClosest(5));   // 4
+console.log(nf.findClosest(6));   // 7
+console.log(nf.findClosest(8));   // 7  (tie-break: 7 < 9)
+```
+
 <a id="why-databases-use-b-trees"></a>
 
 ### Why every database uses a B+ tree
@@ -5479,6 +5602,149 @@ const d = new WordDictionary();
 ["bad", "dad", "mad"].forEach((w) => d.addWord(w));
 console.log(d.search("pad"), d.search("bad"), d.search(".ad"), d.search("b.."));
 // false true true true
+```
+
+<a id="trieset-and-triemap"></a>
+
+### TrieSet & TrieMap — using a trie as a collection
+
+A basic trie already answers "is this word present?" — that is a **set**. Attach a value to each end-of-word node and the same structure becomes a **map**. These specialised collections are called **TrieSet** and **TrieMap**.
+
+1. **TrieSet** — a set of strings backed by a trie. Supports `add`, `contains`, and `remove` in `O(L)` (key length), plus prefix queries that `HashSet` and `TreeSet` cannot do efficiently.
+2. **TrieMap** — a map from string keys to arbitrary values. Each end-of-word node stores the associated value. Supports `put`, `get`, `delete` in `O(L)`, plus `keysWithPrefix(prefix)` and `longestPrefixOf(query)`.
+
+#### Language support
+
+1. **Scala** — ships `scala.collection.concurrent.TrieMap`, a lock-free concurrent hash-trie (note: this is a hash-array-mapped trie, not a string prefix trie).
+2. **Java / C++ / Python / JavaScript** — no built-in trie collection. You build one from scratch (as shown above) or use libraries like `datrie` (Python), `marisa-trie` (Python/C++), or `trie-prefix-tree` (npm).
+
+#### When to use a TrieSet / TrieMap over a HashMap
+
+A `HashMap` with string keys gives `O(L)` average-case lookup (hashing the key costs `O(L)`), so raw lookup speed is similar. Choose a TrieMap / TrieSet when you need operations that hash tables **cannot** do:
+
+1. **Prefix search** — "give me all keys starting with `pre`" in `O(P + K)` where `P` is the prefix length and `K` is the number of matches.
+2. **Autocomplete / typeahead** — walk the trie to the prefix node, then DFS the subtree to collect completions.
+3. **Longest prefix matching** — "what is the longest stored key that is a prefix of this query?" Used in IP routing tables and URL routers.
+4. **Lexicographic ordering** — a DFS of the trie yields all keys in sorted order without a separate sort step.
+5. **Shared-prefix compression** — when many keys share long prefixes (URLs, file paths, DNS names), a trie uses less memory than storing each key independently.
+
+> **Rule of thumb:** if the keys are strings and the problem involves prefixes, autocomplete, wildcard matching, or longest-prefix routing — use a TrieMap / TrieSet. For arbitrary key types or pure key-value lookup, stick to `HashMap`.
+
+**Worked example — TrieMap in action**
+
+*Build a `TrieMap` that maps string keys to integer values. Support `put(key, value)`, `get(key)`, and `keys_with_prefix(prefix)` — return all key-value pairs whose key starts with `prefix`.*
+
+This extends the basic trie from above: each end-of-word node stores a value instead of just a boolean flag. The prefix-collection walk is unchanged — DFS the subtree and collect nodes that carry a value.
+
+**Answer — TrieMap with prefix lookup**
+
+```python
+class TrieMap:
+    """A string-keyed map backed by a trie. O(L) put/get, O(P+K) prefix query."""
+    def __init__(self):
+        self.children = {}
+        self.value = None                # None means 'no entry here'
+        self._has_value = False
+
+    def put(self, key, value):           # O(L)
+        node = self
+        for ch in key:
+            node = node.children.setdefault(ch, TrieMap())
+        node.value = value
+        node._has_value = True
+
+    def get(self, key, default=None):    # O(L)
+        node = self
+        for ch in key:
+            node = node.children.get(ch)
+            if node is None:
+                return default
+        return node.value if node._has_value else default
+
+    def keys_with_prefix(self, prefix):  # O(P + K)
+        node = self
+        for ch in prefix:
+            node = node.children.get(ch)
+            if node is None:
+                return []
+        results = []
+        node._collect(prefix, results)
+        return results
+
+    def _collect(self, path, results):
+        if self._has_value:
+            results.append((path, self.value))
+        for ch, child in sorted(self.children.items()):
+            child._collect(path + ch, results)
+
+
+tm = TrieMap()
+for key, val in [("apple", 1), ("app", 2), ("apricot", 3), ("banana", 4)]:
+    tm.put(key, val)
+
+print(tm.get("app"))                    # 2
+print(tm.get("ap"))                     # None — not a stored key
+print(tm.keys_with_prefix("ap"))        # [('app', 2), ('apple', 1), ('apricot', 3)]
+print(tm.keys_with_prefix("ban"))       # [('banana', 4)]
+print(tm.keys_with_prefix("z"))         # []
+```
+
+```javascript
+class TrieMap {                                // O(L) put/get, O(P+K) prefix query
+  constructor() {
+    this.children = new Map();
+    this.value = undefined;
+    this._hasValue = false;
+  }
+
+  put(key, value) {                            // O(L)
+    let node = this;
+    for (const ch of key) {
+      if (!node.children.has(ch)) node.children.set(ch, new TrieMap());
+      node = node.children.get(ch);
+    }
+    node.value = value;
+    node._hasValue = true;
+  }
+
+  get(key) {                                   // O(L)
+    let node = this;
+    for (const ch of key) {
+      node = node.children.get(ch);
+      if (!node) return undefined;
+    }
+    return node._hasValue ? node.value : undefined;
+  }
+
+  keysWithPrefix(prefix) {                     // O(P + K)
+    let node = this;
+    for (const ch of prefix) {
+      node = node.children.get(ch);
+      if (!node) return [];
+    }
+    const results = [];
+    node._collect(prefix, results);
+    return results;
+  }
+
+  _collect(path, results) {
+    if (this._hasValue) results.push([path, this.value]);
+    for (const [ch, child] of [...this.children.entries()].sort()) {
+      child._collect(path + ch, results);
+    }
+  }
+}
+
+const tm = new TrieMap();
+for (const [k, v] of [["apple", 1], ["app", 2], ["apricot", 3], ["banana", 4]]) {
+  tm.put(k, v);
+}
+
+console.log(tm.get("app"));                    // 2
+console.log(tm.get("ap"));                     // undefined
+console.log(tm.keysWithPrefix("ap"));          // [['app',2],['apple',1],['apricot',3]]
+console.log(tm.keysWithPrefix("ban"));         // [['banana',4]]
+console.log(tm.keysWithPrefix("z"));           // []
 ```
 
 <a id="21-union-find"></a>

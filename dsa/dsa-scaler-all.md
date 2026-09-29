@@ -220,7 +220,7 @@ function isPerfect(A) {
         }
     }
     sum -= A; // Exclude the number itself from the sum
-    
+
     return sum === A ? 1 : 0;
 }
 
@@ -499,7 +499,7 @@ function reverse(A, B, C) {
     B++;
     C--;
   }
-  
+
   return A;
 }
 
@@ -4639,9 +4639,9 @@ function longestPalindromeSubstring(str) {
  * every character (and the gap between every character) as a potential center.
  * * 1. Iterate through each character in the string.
  * 2. For each character, consider it the center of an "odd-length" palindrome (e.g., "aba").
- * 3. Also consider the space between the current and next character as the center 
+ * 3. Also consider the space between the current and next character as the center
  * of an "even-length" palindrome (e.g., "abba").
- * 4. Use a helper function to expand outward from these centers as long as the 
+ * 4. Use a helper function to expand outward from these centers as long as the
  * characters on the left and right match.
  * 5. Track the maximum length found during these expansions.
  */
@@ -4655,7 +4655,7 @@ function longestPalindromeSubstring(str) {
 
     // Helper function to keep the code DRY (Don't Repeat Yourself)
     /**
-     * Expands outward from the given center indices and returns the length 
+     * Expands outward from the given center indices and returns the length
      * of the valid palindrome discovered.
      */
     function expand(start, end) {
@@ -4698,7 +4698,7 @@ function longestPalindromeSubstring(str) {
  * - We iterate through the string of length n once.
  * - For each character, we perform an expansion that can take up to O(n) time.
  * * Space Complexity: O(1)
- * - The algorithm uses a constant amount of extra space (variables for length and pointers), 
+ * - The algorithm uses a constant amount of extra space (variables for length and pointers),
  * regardless of the input string size.
  */
 
@@ -26849,9 +26849,20 @@ const C = 3;
 # 38. Maths: Combinatorics Basics & Prime Numbers
 
 ## Theory
-### Counting Principles
-- **Addition Rule (OR)**: If event A can occur in $m$ ways and mutually exclusive event B in $n$ ways, A or B can occur in $m + n$ ways.
-- **Multiplication Rule (AND)**: If event A can occur in $m$ ways and independent event B in $n$ ways, both can occur in $m \times n$ ways.
+
+### Addition Rule (OR) (Mutually Exclusive)
+When OR is used, it indicates that you can choose one of several options. Means you can either do one thing or another, but not both at the same time. This is where the addition rule comes into play.
+
+The addition rule states that if there are A ways to do one thing and B ways to do another, and these two things cannot happen at the same time, then there are A + B ways to choose one of these actions.
+
+For example, if you can choose from either 3 appetizers **OR** 2 main courses, not both, the total number of choices is 3 + 2 = 5.
+
+### Multiplication Rule (AND) (Independent Events Happening Together)
+When AND is used, it indicates that you can choose multiple options in sequence. Means you can do one thing and then another. This is where the multiplication rule comes into play.
+
+The multiplication rule states that if there are A ways to do one thing and B ways to do another, and these two things can happen together, then there are A * B ways to perform both actions.
+
+For example, if you can choose from 3 appetizers **AND** 2 main courses, both can be chosen, the total number of meal combinations is 3 * 2 = 6.
 
 ### Permutation and Combination
 - **Permutation**: Arrangement where order matters:
@@ -26863,6 +26874,73 @@ const C = 3;
 - $nC0 = 1$, $nCn = 1$, $nC1 = n$
 - $nCr = nC(n - r)$
 - Pascal's Identity: $nCr = {n-1}Cr + {n-1}C(r - 1)$
+
+### Arrangement of Objects
+Given 3 distinct characters A, B, and C, the arrangement of these characters can be represented as a sequence of choices.
+The first character can be any of the three (A, B, or C), the second character can be any of the remaining two, and the last character is the one left.
+
+So the arrangements are:
+- First character: 3 choices (A, B, C)
+- Second character: 2 choices (from the remaining two)
+- Last character: 1 choice (the one left)
+
+This results in a total of (3 * 2 * 1) = 6 arrangements. Which are: ABC, ACB, BAC, BCA, CAB, CBA. Which is 3! (3 factorial).
+
+This is an example of permutation, where the order of arrangement matters.
+
+### Permutation
+A permutation is an arrangement of objects in a specific order. The order matters in permutations, meaning that changing the order of the objects creates a different permutation.
+
+For example, if we have 4 distinct characters A, B, C, and D, and we have to select 2 of them to arrange, the permutations can be calculated as follows:
+- First character: 4 choices (A, B, C, D)
+- Second character: 3 choices (from the remaining three)
+
+This results in a total of (4 * 3) = 12 permutations. The permutations are: AB, AC, AD, BA, BC, BD, CA, CB, CD, DA, DB, DC.
+
+### nPr Formulae
+nPr = n! / (n - r)!
+
+Where:
+- n is the total number of objects.
+- r is the number of objects to be arranged.
+- n! (n factorial) is the product of all positive integers up to n.
+- (n - r)! is the factorial of the difference between n and r.
+
+For example, if we have 5 distinct characters A, B, C, D, and E, and we want to arrange 3 of them, we can use the formula:
+
+5P3 = 5! / (5 - 3)! = 5! / 2! = (5 * 4 * 3 * 2 * 1) / (2 * 1) = 60
+
+### Combination
+A combination is a selection of objects without regard to the order. In combinations, the order does not matter, meaning that changing the order of the objects does not create a different combination.
+
+For example, if we have 4 distinct characters A, B, C, and D, and we want to select 2 of them, the combinations can be calculated as follows:
+- We can select A and B, A and C, A and D, B and C, B and D, C and D.
+- This results in a total of 6 combinations.
+- The combinations are: AB, AC, AD, BC, BD, CD.
+- Note that AB and BA are considered the same combination since the order does not matter.
+
+### nCr Formulae
+nCr = n! / (r! * (n - r)!)
+
+The formula for combinations can be derived from the permutations formula as follows: Permutations = Combinations * Arrangements
+nPr = nCr * r!
+Where:
+- n is the total number of objects.
+- r is the number of objects to be selected.
+- nCr is the number of combinations.
+- r! is the number of arrangements of the selected objects.
+
+Thus the formula for combinations is given by: nCr = n! / (r! * (n - r)!)
+For example, if we have 5 distinct characters A, B, C, D, and E, and we want to select 3 of them, we can use the formula:
+5C3 = 5! / (3! * (5 - 3)!) = (5 * 4 * 3 * 2 * 1) / ((3 * 2 * 1) * (2 * 1)) = 10
+
+### Properties of Combination
+1. Selecting 0 objects from n objects is always 1. **nC0 = 1**
+2. Selecting n objects from n objects is also always 1. **nCn = 1**
+3. Selecting 1 object  from n objects is always n. **nC1 = n**
+4. Selecting r objects from n objects is the same as selecting (n - r) objects from n objects. **nCr = nC(n - r)**
+5. Selecting r objects from n objects can be expressed in terms of the previous row in Pascal's Triangle. **nCr = n-1Cr + n-1C(r - 1)**
+
 
 ## Questions
 1. Q1. Most Varied Meal Combo. Find restaurant with maximum unique meal combinations. | Multiplication Rule (AND)
@@ -56274,13 +56352,13 @@ function subarraySum(nums, k) {
 // solution
 function minMeetingRooms(intervals) {
   if (!intervals || intervals.length === 0) return 0;
-  
+
   const startTimes = intervals.map(i => i[0]).sort((a, b) => a - b);
   const endTimes = intervals.map(i => i[1]).sort((a, b) => a - b);
-  
+
   let rooms = 0;
   let endPtr = 0;
-  
+
   // Two-pointer sweep over sorted start and end times
   for (let i = 0; i < startTimes.length; i++) {
     if (startTimes[i] < endTimes[endPtr]) {
