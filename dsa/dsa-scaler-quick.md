@@ -1,6 +1,6 @@
 [<- DSA](00-dsa-quick.md)
 
-# Intermediate DSA
+# DSA 1
 
 # 1. Time Complexity
 
@@ -1244,9 +1244,88 @@ print(smallest_subarray_containing_min_max([2, 2, 2, 2]))  # 1
 # 7. Contribution Technique
 
 ### 1. Sum of all Subarrays sums. **O(N), O(1)**
-![alt text](contribution-1.png)
-![alt text](contribution-2.png)
-![alt text](contribution-3.png)
+
+#### Concept: Contribution Technique vs Traditional Subarray Sums
+Given array: `A = [6, 8, -1]` (indices: `0, 1, 2`)
+
+```text
+Traditional Approach (Sum of each subarray):
+1. Subarray [0, 0] = [6]          -> Sum =  6
+2. Subarray [0, 1] = [6, 8]       -> Sum = 14
+3. Subarray [0, 2] = [6, 8, -1]   -> Sum = 13
+4. Subarray [1, 1] = [8]          -> Sum =  8
+5. Subarray [1, 2] = [8, -1]      -> Sum =  7
+6. Subarray [2, 2] = [-1]         -> Sum = -1
+---------------------------------------------
+Total Sum                               = 47
+
+Contribution Technique (Element * Occurrences):
+1. Element 6  (index 0) appears in 3 subarrays: [0,0], [0,1], [0,2] ->  6 * 3 =  18
+2. Element 8  (index 1) appears in 4 subarrays: [0,1], [0,2], [1,1], [1,2] ->  8 * 4 =  32
+3. Element -1 (index 2) appears in 3 subarrays: [0,2], [1,2], [2,2] -> -1 * 3 =  -3
+----------------------------------------------------------------------------------
+Total Sum                                                         =  47
+```
+
+#### How Many Subarrays Contain Index `i`?
+Example: `A = [3, -2, 4, -1, 2, 6]`, find how many subarrays contain index `1` (`value = -2`):
+
+```text
+Array:    [ 3,  -2,   4,  -1,   2,   6 ]
+Indices:    0    1    2    3    4    5
+                 ^
+           Target index = 1
+
+1. Valid Start indices (0 <= st <= 1) : 2 choices  { 0, 1 }
+2. Valid End indices   (1 <= end <= 5): 5 choices  { 1, 2, 3, 4, 5 }
+Total subarrays containing index 1     = 2 * 5 = 10 subarrays
+```
+
+```mermaid
+graph LR
+    subgraph Start_Indices["Start Choices (st <= 1)"]
+        S0["st = 0"]
+        S1["st = 1"]
+    end
+
+    subgraph End_Indices["End Choices (end >= 1)"]
+        E1["end = 1 -> [st, 1]"]
+        E2["end = 2 -> [st, 2]"]
+        E3["end = 3 -> [st, 3]"]
+        E4["end = 4 -> [st, 4]"]
+        E5["end = 5 -> [st, 5]"]
+    end
+
+    S0 --- E1
+    S0 --- E2
+    S0 --- E3
+    S0 --- E4
+    S0 --- E5
+
+    S1 --- E1
+    S1 --- E2
+    S1 --- E3
+    S1 --- E4
+    S1 --- E5
+```
+
+1. Subarrays starting at index 0: `[0, 1], [0, 2], [0, 3], [0, 4], [0, 5]`
+2. Subarrays starting at index 1: `[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]`
+
+#### General Formula Derivation
+For an array of size `N`:
+
+```text
+Array: [ a_0,   a_1,   a_2,   ... ,   a_i,   ... ,   a_{n-1} ]
+Index:    0      1      2     ...      i     ...      n-1
+       |<------- Start [0..i] ------->|
+                                      |<----- End [i..n-1] ----->|
+```
+
+1. Valid start indices: range `[0, i]` = `(i - 0 + 1) = (i + 1)` choices.
+2. Valid end indices: range `[i, n - 1]` = `(n - 1 - i + 1) = (n - i)` choices.
+3. Total number of subarrays containing index `i` = `(i + 1) * (n - i)`.
+4. Contribution of `A[i]` to total sum = `A[i] * (i + 1) * (n - i)`.
 
 ```js
 function sumOfAllSubarraysSums(A) {
@@ -1296,9 +1375,113 @@ print(sum_of_all_subarrays_sums([2, 1, 3]))  # 19
 ```
 
 ### 2. Sum of all Submatrices sums. **O(N^2), O(1)**
-![alt text](matrix-contribution-1.png)
-![alt text](matrix-contribution-2.png)
-![alt text](matrix-contribution-3.png)
+
+#### Concept: Contribution Technique vs Traditional Submatrix Sums
+Given matrix of size `2 x 3` (rows = 2, cols = 3):
+
+```text
+       col 0  col 1  col 2
+row 0 [   4,     9,     6  ]
+row 1 [   5,    -1,     2  ]
+```
+
+```text
+Traditional Approach (Sum of all possible 18 submatrices):
+- 1x1 submatrices (6):
+  1. [4]           -> 4
+  2. [9]           -> 9
+  3. [6]           -> 6
+  4. [5]           -> 5
+  5. [-1]          -> -1
+  6. [2]           -> 2
+- 1x2 submatrices (4):
+  1. [4, 9]        -> 13
+  2. [9, 6]        -> 15
+  3. [5, -1]       -> 4
+  4. [-1, 2]       -> 1
+- 1x3 submatrices (2):
+  1. [4, 9, 6]     -> 19
+  2. [5, -1, 2]    -> 6
+- 2x1 submatrices (3):
+  1. [[4], [5]]    -> 9
+  2. [[9], [-1]]   -> 8
+  3. [[6], [2]]    -> 8
+- 2x2 submatrices (2):
+  1. [[4, 9], [5, -1]]   -> 17
+  2. [[9, 6], [-1, 2]]   -> 16
+- 2x3 submatrices (1):
+  1. [[4, 9, 6], [5, -1, 2]] -> 25
+---------------------------------------------------------------------
+Total Sum = 4+9+6+5+(-1)+2 + 13+15+4+1 + 19+6 + 9+8+8 + 17+16 + 25 = 166
+
+Contribution Technique (Element * Occurrences in all Submatrices):
+1. Element  4 (at 0,0) occurs in 6 submatrices ->  4 * 6 =  24
+2. Element  9 (at 0,1) occurs in 8 submatrices ->  9 * 8 =  72
+3. Element  6 (at 0,2) occurs in 6 submatrices ->  6 * 6 =  36
+4. Element  5 (at 1,0) occurs in 6 submatrices ->  5 * 6 =  30
+5. Element -1 (at 1,1) occurs in 8 submatrices -> -1 * 8 =  -8
+6. Element  2 (at 1,2) occurs in 6 submatrices ->  2 * 6 =  12
+---------------------------------------------------------------------
+Total Sum                                                = 166
+```
+
+#### How Many Submatrices Contain Cell `(i, j)`?
+A submatrix is uniquely determined by its Top-Left `(TL)` corner and Bottom-Right `(BR)` corner.
+For a submatrix to contain cell `(i, j)`:
+- `TL` corner `(r1, c1)` must satisfy: `0 <= r1 <= i` and `0 <= c1 <= j`.
+- `BR` corner `(r2, c2)` must satisfy: `i <= r2 < N` and `j <= c2 < M`.
+
+**Example 1: Matrix of size 8 x 10, target cell `(i=3, j=4)`**
+```text
+        0   1   2   3   4   5   6   7   8   9  (cols)
+    0 [TL  TL  TL  TL  TL]  .   .   .   .   .
+    1 [TL  TL  TL  TL  TL]  .   .   .   .   .
+    2 [TL  TL  TL  TL  TL]  .   .   .   .   .
+    3 [TL  TL  TL  TL (3,4) BR  BR  BR  BR  BR]
+    4   .   .   .   . [BR   BR  BR  BR  BR  BR]
+    5   .   .   .   . [BR   BR  BR  BR  BR  BR]
+    6   .   .   .   . [BR   BR  BR  BR  BR  BR]
+    7   .   .   .   . [BR   BR  BR  BR  BR  BR]
+  (rows)
+```
+1. Top-Left choices: row in `[0, 3]` (4 choices), col in `[0, 4]` (5 choices) -> `4 * 5 = 20`
+2. Bottom-Right choices: row in `[3, 7]` (5 choices), col in `[4, 9]` (6 choices) -> `5 * 6 = 30`
+3. Total submatrices containing `(3, 4)` = `20 * 30 = 600`
+
+**Example 2: Matrix of size 4 x 5, target cell `(i=1, j=2)`**
+```text
+        0    1    2    3    4  (cols)
+    0 [ TL   TL   TL ]  .    .
+    1 [ TL   TL  (1,2) BR   BR ]
+    2   .    .  [ BR   BR   BR ]
+    3   .    .  [ BR   BR   BR ]
+  (rows)
+```
+1. Top-Left choices: row in `[0, 1]` (2 choices), col in `[0, 2]` (3 choices) -> `2 * 3 = 6`
+2. Bottom-Right choices: row in `[1, 3]` (3 choices), col in `[2, 4]` (3 choices) -> `3 * 3 = 9`
+3. Total submatrices containing `(1, 2)` = `6 * 9 = 54`
+
+#### Generic Formula Derivation
+For an `N x M` matrix:
+
+```text
+           0       1       ...       j       ...      M-1
+      +-------------------------------------------------+
+    0 | [Top-Left Corner Region]                        |
+    1 |   Row range: [0..i]    => (i + 1) choices       |
+  ... |   Col range: [0..j]    => (j + 1) choices       |
+    i |                        (i, j)*                  |
+  ... |                           [Bottom-Right Region] |
+      |                             Row: [i..N-1] (N-i) |
+  N-1 |                             Col: [j..M-1] (M-j) |
+      +-------------------------------------------------+
+```
+
+1. Top-Left corner choices: `(i - 0 + 1) * (j - 0 + 1) = (i + 1) * (j + 1)`
+2. Bottom-Right corner choices: `(N - 1 - i + 1) * (M - 1 - j + 1) = (N - i) * (M - j)`
+3. Frequency of cell `(i, j)` in all submatrices = `(i + 1) * (j + 1) * (N - i) * (M - j)`
+4. Contribution of cell `(i, j)` = `matrix[i][j] * (i + 1) * (j + 1) * (N - i) * (M - j)`
+5. Total Sum of all submatrices = `Σ Σ (matrix[i][j] * (i + 1) * (j + 1) * (N - i) * (M - j))`
 
 ```js
 /**
@@ -3353,9 +3536,7 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 #### 4. Using Two Pointers T(n), S(1)
 
----
-
-# Advanced DSA 1
+# DSA 2
 
 # 1. 1D Arrays Advanced
 
@@ -7389,9 +7570,7 @@ print(largest_number([10, 5, 2, 8, 200]))        # "85220010"
 # Space Complexity: O(N)
 ```
 
----
-
-# Advanced DSA 2
+# DSA 3
 
 # 1. Searching 1: Binary Search on Array
 
@@ -12687,9 +12866,7 @@ def sorted_array_to_balanced_bst(arr):
 # Space Complexity: O(log N) recursion stack
 ```
 
----
-
-# Advanced DSA 3
+# DSA 4
 
 # 1. Two Pointers
 
@@ -16429,7 +16606,71 @@ Morris Traversal is a clever method used to walk through binary trees without ne
 This technique not only saves memory but also provides an interesting way to explore trees.
 ```
 
-![alt text](morris-traversal.png)
+#### Binary Tree & Morris Threaded Connections
+
+```mermaid
+flowchart TD
+    N10((10))
+    N20((20))
+    N30((30))
+    N40((40))
+    N50((50))
+    N60((60))
+    N70((70))
+    N80((80))
+    N90((90))
+
+    N10 --> N20
+    N10 --> N30
+    N20 --> N40
+    N20 --> N50
+    N50 --> N70
+    N50 --> N80
+    N30 --> N60
+    N60 --> N90
+
+    %% Temporary Morris Thread Links (predecessor.right -> current)
+    N40 -.->|thread| N20
+    N70 -.->|thread| N50
+    N80 -.->|thread| N10
+    N90 -.->|thread| N60
+```
+
+```text
+Tree Structure & Temporary Threads:
+
+               (10) <------------------------+
+              /    \                         |
+            /        \                       |
+          (20)        (30)                   |
+         /    \          \                   |
+       /        \          \                 |
+     (40)       (50)       (60) <------+     |
+      :        /    \       /          |     |
+      :      (70)   (80)  (90)         |     |
+      :       :      :      :          |     |
+      :       :      +------:----------+-----+ (thread: 80.right -> 10)
+      :       +------------> (thread: 70.right -> 50)
+      +--------------------> (thread: 40.right -> 20)
+                            +---------> (thread: 90.right -> 60)
+
+Inorder Traversal Output:
+[40, 20, 70, 50, 80, 10, 30, 90, 60]
+```
+
+#### Inorder Traversal Threading Rules:
+1. If left child is `null`:
+   - Visit / print current node value.
+   - Move to right: `current = current.right` (via regular right pointer or returning via temporary thread).
+2. If left child exists:
+   - Find inorder predecessor (the rightmost node in the left subtree).
+   - If predecessor's right is `null` (first time visiting):
+     - Create temporary thread: `predecessor.right = current`.
+     - Move left: `current = current.left`.
+   - If predecessor's right is `current` (already threaded, returning from left subtree):
+     - Remove temporary thread: `predecessor.right = null`.
+     - Visit / print current node value.
+     - Move right: `current = current.right`.
 
 ```js
 /*
@@ -21840,9 +22081,7 @@ def pascal_triangle_ncr(n):
     return [pascal_row_ncr_single(i) for i in range(n)]
 ```
 
----
-
-# Advanced DSA 4
+# DSA 5
 
 # 1. Heaps Introduction
 
