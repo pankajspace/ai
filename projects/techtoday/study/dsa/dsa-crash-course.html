@@ -12,6 +12,311 @@
     <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="dsa-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
+    <style>
+        /* Course Toolbar */
+        .course-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 28px 0 24px;
+            padding: 12px 18px;
+            background: #14171d;
+            border: 1px solid #222834;
+            border-radius: 10px;
+        }
+
+        .course-toolbar-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 15px;
+            background: #1c212a;
+            border: 1px solid #2a3242;
+            border-radius: 6px;
+            color: #f3f8fc;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .action-btn:hover {
+            background: #252c38;
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        .course-toolbar-info {
+            color: #8c9ba8;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .course-toolbar-info .dot {
+            opacity: 0.5;
+        }
+
+        /* Unit Dividers */
+        .unit-divider {
+            margin: 36px 0 18px;
+            padding: 16px 20px;
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.07) 0%, rgba(20, 23, 29, 0.3) 100%);
+            border-left: 3px solid #38bdf8;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .unit-divider-badge {
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .unit-divider-title {
+            margin: 0 0 4px 0 !important;
+            font-size: 19px !important;
+            font-weight: 700 !important;
+            color: #f3f8fc !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        .unit-divider-desc {
+            margin: 0 !important;
+            font-size: 13.5px !important;
+            color: #8c9ba8 !important;
+            line-height: 1.5;
+        }
+
+        /* Topic Section Card */
+        .topic-section {
+            margin: 22px 0;
+            background: #14171d;
+            border: 1px solid #222834;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .topic-section:hover {
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .topic-section:not(.is-collapsed) {
+            border-color: rgba(56, 189, 248, 0.45);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 22px;
+            background: #14171d;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s ease;
+        }
+
+        .topic-header:hover {
+            background: #181d26;
+        }
+
+        .topic-section:not(.is-collapsed) .topic-header {
+            background: #1a1f29;
+            border-bottom: 1px solid #222834;
+        }
+
+        .topic-header:focus-visible {
+            outline: 2px solid #38bdf8;
+            outline-offset: -2px;
+        }
+
+        .topic-header-main {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topic-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 6px;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .topic-title {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            font-family: Georgia, "Times New Roman", serif !important;
+            font-size: clamp(18px, 2.2vw, 22px) !important;
+            font-weight: 600 !important;
+            color: #f3f8fc !important;
+            line-height: 1.3 !important;
+            letter-spacing: -0.01em !important;
+        }
+
+        .topic-header-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .topic-chevron {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            color: #8c9ba8;
+            transition: transform 0.25s ease, color 0.2s ease;
+        }
+
+        .topic-section:not(.is-collapsed) .topic-chevron {
+            transform: rotate(180deg);
+            color: #38bdf8;
+        }
+
+        .topic-content {
+            padding: 20px 22px 24px;
+        }
+
+        .topic-section.is-collapsed .topic-content {
+            display: none !important;
+        }
+
+        /* Inner Parts as Collapsible Cards */
+        .part-section {
+            margin: 14px 0;
+            background: #0f1217;
+            border: 1px solid #1e2430;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .part-section:hover {
+            border-color: #2e3848;
+        }
+
+        .part-section:not(.is-collapsed) {
+            border-color: #2e3848;
+            background: #11151c;
+        }
+
+        .part-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 18px;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(20, 23, 29, 0.7);
+            transition: background 0.15s ease;
+        }
+
+        .part-header:hover {
+            background: #181d26;
+        }
+
+        .part-section:not(.is-collapsed) .part-header {
+            border-bottom: 1px solid #1e2430;
+            background: #181d26;
+        }
+
+        .part-header:focus-visible {
+            outline: 2px solid #38bdf8;
+            outline-offset: -2px;
+        }
+
+        .part-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .part-heading {
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            color: #f3f8fc !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            scroll-margin-top: 90px;
+        }
+
+        .part-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .ind-theory {
+            background: #a78bfa;
+            box-shadow: 0 0 8px #a78bfa;
+        }
+
+        .part-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .part-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            color: #8c9ba8;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .part-section:not(.is-collapsed) .part-arrow {
+            transform: rotate(180deg);
+            color: #38bdf8;
+        }
+
+        .part-body {
+            padding: 20px 18px;
+        }
+
+        .part-section.is-collapsed .part-body {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body class="is-crash">
@@ -63,11 +368,52 @@
                     universally best.</p>
             </div>
 
-            <!-- ============================================================ 0 -->
-            <h2 id="0-the-only-maths-you-need">The Only Maths You Need<a class="headerlink"
-                    href="#0-the-only-maths-you-need" title="Permanent link">#</a></h2>
+                        <div class="course-toolbar">
+                <div class="course-toolbar-actions">
+                    <button type="button" class="action-btn" data-course-action="expand-all">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="7 13 12 18 17 13"></polyline>
+                            <polyline points="7 6 12 11 17 6"></polyline>
+                        </svg>
+                        <span>Expand All</span>
+                    </button>
+                    <button type="button" class="action-btn" data-course-action="collapse-all">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="17 11 12 6 7 11"></polyline>
+                            <polyline points="17 18 12 13 7 18"></polyline>
+                        </svg>
+                        <span>Collapse All</span>
+                    </button>
+                </div>
+                <div class="course-toolbar-info">
+                    <span>13 Core Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>Mental Models, Interactive Animations &amp; Solutions</span>
+                </div>
+            </div>
 
-            <p>Before any structure makes sense you need one idea: <strong>Big-O</strong>. It does not measure seconds —
+            <!-- ====== 0: The Only Maths You Need ====== -->
+            <section class="topic-section is-collapsed" id="sec-0-the-only-maths-you-need" data-topic="0-the-only-maths-you-need">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-0-the-only-maths-you-need">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">0</span>
+                        <h2 id="0-the-only-maths-you-need" class="topic-title">The Only Maths You Need<a class="headerlink"
+                                href="#0-the-only-maths-you-need" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-0-the-only-maths-you-need">
+                    <p>Before any structure makes sense you need one idea: <strong>Big-O</strong>. It does not measure seconds —
                 seconds depend on your laptop. It measures how the work <em>grows</em> as the input grows, which is the
                 only thing that still matters when your ten test rows become ten million production rows.</p>
 
@@ -111,17 +457,37 @@
                 <code>O(n)</code> even if you allocate nothing; and <strong>slicing copies</strong>, so
                 <code>nums[1:]</code> inside a loop quietly turns a linear algorithm quadratic.
             </p>
+                </div>
+            </section>
 
-            <hr />
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Foundational Linear Structures<a class="headerlink" href="#unit-1" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Linear structures store data sequentially: one item after another, in a row or a defined order.</p>
+                </div>
+            </div>
 
-            <h2 id="unit-1">Unit 1 — Foundational Linear Structures<a class="headerlink" href="#unit-1"
-                    title="Permanent link">#</a></h2>
-            <p>Linear structures store data sequentially: one item after another, in a row or a defined order.</p>
-
-            <!-- ============================================================ 1 -->
-            <h3 id="1-arrays">Arrays<a class="headerlink" href="#1-arrays" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 1: Arrays ====== -->
+            <section class="topic-section is-collapsed" id="sec-1-arrays" data-topic="1-arrays">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-1-arrays">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="1-arrays" class="topic-title">Arrays<a class="headerlink"
+                                href="#1-arrays" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-1-arrays">
+                    <ul class="meta-strip">
                 <li><b>Access</b> <code class="big-o o-great">O(1)</code></li>
                 <li><b>Search</b> <code class="big-o o-good">O(n)</code></li>
                 <li><b>Insert / delete in middle</b> <code class="big-o o-bad">O(n)</code></li>
@@ -350,11 +716,29 @@ console.log(k, data.slice(0, k));       // 5 [0, 1, 2, 3, 4]
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 1b -->
-            <h3 id="strings">Strings<a class="headerlink" href="#strings" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 1b: Strings ====== -->
+            <section class="topic-section is-collapsed" id="sec-strings" data-topic="strings">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-strings">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1b</span>
+                        <h2 id="strings" class="topic-title">Strings<a class="headerlink"
+                                href="#strings" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-strings">
+                    <ul class="meta-strip">
                 <li><b>Index</b> <code class="big-o o-great">O(1)</code></li>
                 <li><b>Concatenate</b> <code class="big-o o-good">O(n + m)</code></li>
                 <li><b>Naive search</b> <code class="big-o o-bad">O(n·m)</code></li>
@@ -602,12 +986,29 @@ console.log(firstUniqChar("loveleetcode"));   // 2
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 2 -->
-            <h3 id="2-linked-lists">Linked Lists<a class="headerlink" href="#2-linked-lists"
-                    title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 2: Linked Lists ====== -->
+            <section class="topic-section is-collapsed" id="sec-2-linked-lists" data-topic="2-linked-lists">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-2-linked-lists">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="2-linked-lists" class="topic-title">Linked Lists<a class="headerlink"
+                                href="#2-linked-lists" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-2-linked-lists">
+                    <ul class="meta-strip">
                 <li><b>Access by index</b> <code class="big-o o-bad">O(n)</code></li>
                 <li><b>Insert / delete at a known node</b> <code class="big-o o-great">O(1)</code></li>
             </ul>
@@ -865,11 +1266,29 @@ console.log(hasCycle(head));        // true
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 3 -->
-            <h3 id="3-stacks">Stacks<a class="headerlink" href="#3-stacks" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 3: Stacks ====== -->
+            <section class="topic-section is-collapsed" id="sec-3-stacks" data-topic="3-stacks">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-3-stacks">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="3-stacks" class="topic-title">Stacks<a class="headerlink"
+                                href="#3-stacks" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-3-stacks">
+                    <ul class="meta-strip">
                 <li><b>Push / pop / peek</b> <code class="big-o o-great">O(1)</code></li>
                 <li><b>Rule</b> LIFO — last in, first out</li>
             </ul>
@@ -1042,11 +1461,29 @@ console.log(removeDuplicates("abbaca"));   // 'ca'
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 4 -->
-            <h3 id="4-queues">Queues<a class="headerlink" href="#4-queues" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 4: Queues ====== -->
+            <section class="topic-section is-collapsed" id="sec-4-queues" data-topic="4-queues">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-4-queues">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="4-queues" class="topic-title">Queues<a class="headerlink"
+                                href="#4-queues" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-4-queues">
+                    <ul class="meta-strip">
                 <li><b>Enqueue / dequeue</b> <code class="big-o o-great">O(1)</code></li>
                 <li><b>Rule</b> FIFO — first in, first out</li>
             </ul>
@@ -1484,18 +1921,37 @@ console.log(counter.ping(1), counter.ping(100), counter.ping(3001), counter.ping
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <hr />
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">High-Speed &amp; Relational Structures<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Past simple lines: structures for near-instant lookup, hierarchies, and networks.</p>
+                </div>
+            </div>
 
-            <h2 id="unit-2">Unit 2 — High-Speed &amp; Relational Structures<a class="headerlink" href="#unit-2"
-                    title="Permanent link">#</a></h2>
-            <p>Past simple lines: structures for near-instant lookup, hierarchies, and networks.</p>
-
-            <!-- ============================================================ 5 -->
-            <h3 id="5-hash-tables-and-sets">Hash Tables &amp; Sets<a class="headerlink" href="#5-hash-tables-and-sets"
-                    title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 5: Hash Tables &amp; Sets ====== -->
+            <section class="topic-section is-collapsed" id="sec-5-hash-tables-and-sets" data-topic="5-hash-tables-and-sets">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-5-hash-tables-and-sets">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="5-hash-tables-and-sets" class="topic-title">Hash Tables &amp; Sets<a class="headerlink"
+                                href="#5-hash-tables-and-sets" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-5-hash-tables-and-sets">
+                    <ul class="meta-strip">
                 <li><b>Insert / lookup / delete</b> <code class="big-o o-great">O(1)</code> average</li>
                 <li><b>Worst case</b> <code class="big-o o-bad">O(n)</code></li>
                 <li><b>No ordering</b></li>
@@ -1720,11 +2176,29 @@ console.log(intersection([1, 2, 2, 1], [2, 2]).sort());   // [2]
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 6 -->
-            <h3 id="6-trees">Trees<a class="headerlink" href="#6-trees" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 6: Trees ====== -->
+            <section class="topic-section is-collapsed" id="sec-6-trees" data-topic="6-trees">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-6-trees">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="6-trees" class="topic-title">Trees<a class="headerlink"
+                                href="#6-trees" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-6-trees">
+                    <ul class="meta-strip">
                 <li><b>Traversal</b> <code class="big-o o-good">O(n)</code></li>
                 <li><b>Balanced operations</b> <code class="big-o o-great">O(log n)</code></li>
                 <li><b>Degenerate</b> <code class="big-o o-bad">O(n)</code></li>
@@ -2569,11 +3043,29 @@ console.log(isSymmetric(tree));         // true
             </code></pre>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 7 -->
-            <h3 id="7-graphs">Graphs<a class="headerlink" href="#7-graphs" title="Permanent link">#</a></h3>
-
-            <ul class="meta-strip">
+            <!-- ====== 7: Graphs ====== -->
+            <section class="topic-section is-collapsed" id="sec-7-graphs" data-topic="7-graphs">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-7-graphs">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="7-graphs" class="topic-title">Graphs<a class="headerlink"
+                                href="#7-graphs" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-7-graphs">
+                    <ul class="meta-strip">
                 <li><b>Adjacency list</b> <code class="big-o o-good">O(V + E)</code> space</li>
                 <li><b>Traversal</b> <code class="big-o o-good">O(V + E)</code></li>
             </ul>
@@ -3112,18 +3604,37 @@ function dfsIterative(graph, start) {       // stack -&gt; dive deep
             </code></pre>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <hr />
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Core Algorithms<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Structures hold the data. Algorithms are the disciplined, step-by-step methods for working with it.</p>
+                </div>
+            </div>
 
-            <h2 id="unit-3">Unit 3 — Core Algorithms<a class="headerlink" href="#unit-3" title="Permanent link">#</a>
-            </h2>
-            <p>Structures hold the data. Algorithms are the disciplined, step-by-step methods for working with it.</p>
-
-            <!-- ============================================================ 8 -->
-            <h3 id="8-searching"><span id="9-searching"></span>Searching<a class="headerlink" href="#8-searching"
-                    title="Permanent link">#</a></h3>
-
-            <ol>
+            <!-- ====== 8: Searching ====== -->
+            <section class="topic-section is-collapsed" id="sec-8-searching" data-topic="8-searching">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-8-searching">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="8-searching" class="topic-title"><span id="9-searching"></span>Searching<a class="headerlink"
+                                href="#8-searching" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-8-searching">
+                    <ol>
                 <li><strong>Linear search</strong> <code class="big-o o-good">O(n)</code> — check every item one by one.
                     Slow, but it is the only option on unsorted data.</li>
                 <li><strong>Binary search</strong> <code class="big-o o-great">O(log n)</code> — requires
@@ -3338,12 +3849,29 @@ console.log(firstBadVersion(6, (v) =&gt; v &gt;= 4));   // 4
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 9 -->
-            <h3 id="9-sorting"><span id="10-sorting"></span>Sorting<a class="headerlink" href="#9-sorting"
-                    title="Permanent link">#</a></h3>
-
-            <p>You will rarely write a sort in production — both languages ship excellent ones. You learn them because
+            <!-- ====== 9: Sorting ====== -->
+            <section class="topic-section is-collapsed" id="sec-9-sorting" data-topic="9-sorting">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-9-sorting">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="9-sorting" class="topic-title"><span id="10-sorting"></span>Sorting<a class="headerlink"
+                                href="#9-sorting" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-9-sorting">
+                    <p>You will rarely write a sort in production — both languages ship excellent ones. You learn them because
                 they are the clearest demonstration of algorithmic technique: one task, solved six ways, with the
                 trade-offs on display. Below, each algorithm is animated step by step alongside its core mechanism.</p>
 
@@ -3794,18 +4322,50 @@ console.log(sortedSquares([-4, -1, 0, 3, 10]));   // [0, 1, 9, 16, 100]
                     </div>
                 </div>
             </div>
+                </div>
+            </section>
 
-            <!-- ============================================================ 10 -->
-            <h2 id="10-the-four-problem-solving-philosophies"><span
-                    id="11-the-four-problem-solving-philosophies"></span>The Four Problem-Solving Philosophies<a
-                    class="headerlink" href="#10-the-four-problem-solving-philosophies" title="Permanent link">#</a>
-            </h2>
-
-            <p>Almost every algorithm is built on one of four mindsets. Recognising which one a problem wants is most
+            <!-- ====== 10: The Four Problem-Solving Philosophies ====== -->
+            <section class="topic-section is-collapsed" id="sec-10-the-four-problem-solving-philosophies" data-topic="10-the-four-problem-solving-philosophies">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-10-the-four-problem-solving-philosophies">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="10-the-four-problem-solving-philosophies" class="topic-title"><span id="11-the-four-problem-solving-philosophies"></span>The Four Problem-Solving Philosophies<a class="headerlink"
+                                href="#10-the-four-problem-solving-philosophies" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-10-the-four-problem-solving-philosophies">
+                    <p>Almost every algorithm is built on one of four mindsets. Recognising which one a problem wants is most
                 of the battle.</p>
 
-            <h3 id="greedy">1. Greedy<a class="headerlink" href="#greedy" title="Permanent link">#</a></h3>
-            <p><strong>Philosophy:</strong> take the best option available <em>right now</em> and never look back.</p>
+                    <div class="part-section is-collapsed" id="part-greedy">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-greedy">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="greedy">1. Greedy<a class="headerlink"
+                                        href="#greedy" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-greedy">
+<p><strong>Philosophy:</strong> take the best option available <em>right now</em> and never look back.</p>
 
             <div class="analogy">
                 <span class="analogy-icon">💵</span>
@@ -3981,10 +4541,28 @@ console.log(lemonadeChange([5, 5, 10, 10, 20]));   // false
                     </div>
                 </div>
             </div>
+                        </div>
+                    </div>
 
-            <h3 id="divide-and-conquer">2. Divide &amp; Conquer<a class="headerlink" href="#divide-and-conquer"
-                    title="Permanent link">#</a></h3>
-            <p><strong>Philosophy:</strong> break an intimidating problem into small independent sub-problems, solve
+                    <div class="part-section is-collapsed" id="part-divide-and-conquer">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-divide-and-conquer">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="divide-and-conquer">2. Divide &amp; Conquer<a class="headerlink"
+                                        href="#divide-and-conquer" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-divide-and-conquer">
+<p><strong>Philosophy:</strong> break an intimidating problem into small independent sub-problems, solve
                 those, and combine the results.</p>
             <p>Merge sort and quicksort are the canonical examples: split ten million items down to single items, where
                 the problem is trivial, then reassemble. The sub-problems being <em>independent</em> is what separates
@@ -4185,10 +4763,28 @@ console.log(mySqrt(16));   // 4
                     </div>
                 </div>
             </div>
+                        </div>
+                    </div>
 
-            <h3 id="dynamic-programming">3. Dynamic Programming<a class="headerlink" href="#dynamic-programming"
-                    title="Permanent link">#</a></h3>
-            <p><strong>Philosophy:</strong> those who do not remember the past are condemned to recompute it.</p>
+                    <div class="part-section is-collapsed" id="part-dynamic-programming">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-dynamic-programming">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="dynamic-programming">3. Dynamic Programming<a class="headerlink"
+                                        href="#dynamic-programming" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-dynamic-programming">
+<p><strong>Philosophy:</strong> those who do not remember the past are condemned to recompute it.</p>
 
             <div class="analogy">
                 <span class="analogy-icon">📔</span>
@@ -4448,10 +5044,28 @@ console.log(minCostClimbingStairs([10, 15, 20]));   // 15
                     </div>
                 </div>
             </div>
+                        </div>
+                    </div>
 
-            <h3 id="backtracking">4. Backtracking<a class="headerlink" href="#backtracking" title="Permanent link">#</a>
-            </h3>
-            <p><strong>Philosophy:</strong> try a path; on hitting a dead end, step back to the last junction and try a
+                    <div class="part-section is-collapsed" id="part-backtracking">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-backtracking">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="backtracking">4. Backtracking<a class="headerlink"
+                                        href="#backtracking" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-backtracking">
+<p><strong>Philosophy:</strong> try a path; on hitting a dead end, step back to the last junction and try a
                 different one.</p>
 
             <div class="analogy">
@@ -4744,16 +5358,49 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
                     checking for conflicts as you go cuts it to roughly 2,000 recursive calls. When backtracking is too
                     slow, the fix is a better constraint check — never a faster language.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            <hr />
-
-            <!-- ============================================================ 11 -->
-            <h2 id="11-the-whole-thing-on-one-page"><span id="12-the-whole-thing-on-one-page"></span>The Whole Thing on
-                One Page<a class="headerlink" href="#11-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
-
-            <h3 id="pick-a-structure">Pick a structure<a class="headerlink" href="#pick-a-structure"
-                    title="Permanent link">#</a></h3>
-            <table>
+            <!-- ====== 11: The Whole Thing on One Page ====== -->
+            <section class="topic-section is-collapsed" id="sec-11-the-whole-thing-on-one-page" data-topic="11-the-whole-thing-on-one-page">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-11-the-whole-thing-on-one-page">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="11-the-whole-thing-on-one-page" class="topic-title"><span id="12-the-whole-thing-on-one-page"></span>The Whole Thing on One Page<a class="headerlink"
+                                href="#11-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-the-whole-thing-on-one-page">
+                    <div class="part-section is-collapsed" id="part-pick-a-structure">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-pick-a-structure">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="pick-a-structure">Pick a structure<a class="headerlink"
+                                        href="#pick-a-structure" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-pick-a-structure">
+<table>
                 <thead>
                     <tr>
                         <th>Structure</th>
@@ -4829,10 +5476,28 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
                     </tr>
                 </tbody>
             </table>
+                        </div>
+                    </div>
 
-            <h3 id="pick-an-approach">Pick an approach<a class="headerlink" href="#pick-an-approach"
-                    title="Permanent link">#</a></h3>
-            <ul class="card-grid">
+                    <div class="part-section is-collapsed" id="part-pick-an-approach">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-pick-an-approach">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="pick-an-approach">Pick an approach<a class="headerlink"
+                                        href="#pick-an-approach" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-pick-an-approach">
+<ul class="card-grid">
                 <li><b>"Sorted array" + find a pair</b>Two pointers, one at each end. <code>O(n)</code>.</li>
                 <li><b>"Have I seen this before?"</b>Hash set. Turns <code>O(n²)</code> into <code>O(n)</code>.</li>
                 <li><b>"Top k" or "k-th largest"</b>A heap of size <code>k</code>.</li>
@@ -4844,10 +5509,28 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
                 <li><b>"Prefix" or "autocomplete"</b>Trie.</li>
                 <li><b>"Dependencies / prerequisites"</b>Topological sort on a DAG.</li>
             </ul>
+                        </div>
+                    </div>
 
-            <h3 id="how-to-attack-any-problem">How to attack any problem<a class="headerlink"
-                    href="#how-to-attack-any-problem" title="Permanent link">#</a></h3>
-            <ol>
+                    <div class="part-section is-collapsed" id="part-how-to-attack-any-problem">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-how-to-attack-any-problem">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="how-to-attack-any-problem">How to attack any problem<a class="headerlink"
+                                        href="#how-to-attack-any-problem" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-how-to-attack-any-problem">
+<ol>
                 <li><strong>Restate it</strong> in your own words. Confirm the edge cases: empty input, one element,
                     duplicates, negatives, maximum size.</li>
                 <li><strong>Write the brute force</strong>, even just out loud. It gives you a correct baseline and a
@@ -4863,10 +5546,28 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
                     stacks and hash maps are all the same move: <em>notice that you are throwing away work between
                         iterations, and keep it instead.</em></p>
             </div>
+                        </div>
+                    </div>
 
-            <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
-            </h3>
-            <ol>
+                    <div class="part-section is-collapsed" id="part-where-next">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-where-next">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="where-next">Where to go next<a class="headerlink"
+                                        href="#where-next" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-where-next">
+<ol>
                 <li>📘 The <a href="dsa-detailed-course.html">DSA Detailed Course</a> — the same ground in 38 sections,
                     plus prefix sums, union-find, topological sort, MSTs, segment trees, string matching and a full
                     practice roadmap.</li>
@@ -4876,16 +5577,124 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
                 <li>🧠 <a href="https://leetcode.com/">LeetCode</a> — for the repetitions. Time-box to 25 minutes, then
                     read the solution and re-solve it from scratch the next day.</li>
             </ol>
+                        </div>
+                    </div>
 
             <blockquote>
                 <p><em>"Bad programmers worry about the code. Good programmers worry about data structures and their
                         relationships."</em> — Linus Torvalds</p>
             </blockquote>
+                </div>
+            </section>
+
         </article>
     </main>
     <footer class="study-footer">TechToday Study Library &mdash; Data Structures &amp; Algorithms</footer>
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
     <script src="dsa-study.js"></script>
+    <script>
+        // Topic & Inner Part Accordion Interactive Logic
+        (() => {
+            const toggleCard = (card, headerSelector, forceOpen = null) => {
+                if (!card) return;
+                const header = card.querySelector(headerSelector);
+                const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+                card.classList.toggle("is-collapsed", !willOpen);
+                if (header) {
+                    header.setAttribute("aria-expanded", String(willOpen));
+                }
+            };
+
+            const openAndScrollTo = (targetId) => {
+                if (!targetId) return;
+                const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+                const target = document.getElementById(decodeURIComponent(cleanId));
+                if (!target) return;
+
+                // Expand part if target is a part or inside a part
+                const part = target.closest(".part-section");
+                if (part) {
+                    toggleCard(part, ".part-header", true);
+                }
+
+                // Expand topic
+                const section = target.closest(".topic-section");
+                if (section) {
+                    toggleCard(section, ".topic-header", true);
+                    setTimeout(() => {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 60);
+                } else {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            };
+
+            // Click handler for topic and part headers
+            document.addEventListener("click", (e) => {
+                if (e.target.closest(".headerlink")) return;
+
+                const partHeader = e.target.closest(".part-header");
+                if (partHeader) {
+                    const part = partHeader.closest(".part-section");
+                    toggleCard(part, ".part-header");
+                    return;
+                }
+
+                const topicHeader = e.target.closest(".topic-header");
+                if (topicHeader) {
+                    const section = topicHeader.closest(".topic-section");
+                    toggleCard(section, ".topic-header");
+                    return;
+                }
+
+                const link = e.target.closest("a");
+                if (link) {
+                    const href = link.getAttribute("href");
+                    if (href && href.startsWith("#") && href.length > 1) {
+                        openAndScrollTo(href);
+                    }
+                }
+            });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    const partHeader = e.target.closest(".part-header");
+                    if (partHeader) {
+                        e.preventDefault();
+                        const part = partHeader.closest(".part-section");
+                        toggleCard(part, ".part-header");
+                        return;
+                    }
+
+                    const topicHeader = e.target.closest(".topic-header");
+                    if (topicHeader) {
+                        e.preventDefault();
+                        const section = topicHeader.closest(".topic-section");
+                        toggleCard(section, ".topic-header");
+                    }
+                }
+            });
+
+            document.addEventListener("click", (e) => {
+                const btn = e.target.closest("[data-course-action]");
+                if (!btn) return;
+                const action = btn.dataset.courseAction;
+                if (action === "expand-all") {
+                    document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", true));
+                    document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", true));
+                } else if (action === "collapse-all") {
+                    document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", false));
+                    document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", false));
+                }
+            });
+
+            if (window.location.hash) {
+                setTimeout(() => openAndScrollTo(window.location.hash), 150);
+            }
+            window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
+        })();
+    </script>
+
 </body>
 
 </html>

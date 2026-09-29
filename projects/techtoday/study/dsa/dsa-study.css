@@ -1580,3 +1580,326 @@ details.extra[open] {
         transition: none !important;
     }
 }
+
+/* ==========================================================================
+   Course Toolbar & Collapsible Accordion Sections
+   ========================================================================== */
+
+/* Course Toolbar */
+.course-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 28px 0 24px;
+    padding: 12px 18px;
+    background: #14171d;
+    border: 1px solid #222834;
+    border-radius: 10px;
+}
+
+.course-toolbar-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 15px;
+    background: #1c212a;
+    border: 1px solid #2a3242;
+    border-radius: 6px;
+    color: #f3f8fc;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+    background: #252c38;
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+
+.course-toolbar-info {
+    color: #8c9ba8;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.course-toolbar-info .dot {
+    opacity: 0.5;
+}
+
+/* Unit Dividers */
+.unit-divider {
+    margin: 36px 0 18px;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.07) 0%, rgba(20, 23, 29, 0.3) 100%);
+    border-left: 3px solid #38bdf8;
+    border-radius: 0 10px 10px 0;
+}
+
+.unit-divider-badge {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #38bdf8;
+    margin-bottom: 4px;
+}
+
+.unit-divider-title {
+    margin: 0 0 4px 0 !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: #f3f8fc !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.unit-divider-desc {
+    margin: 0 !important;
+    font-size: 13.5px !important;
+    color: #8c9ba8 !important;
+    line-height: 1.5;
+}
+
+/* Topic Section Card */
+.topic-section {
+    margin: 22px 0;
+    background: #14171d;
+    border: 1px solid #222834;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.topic-section:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+}
+
+.topic-section:not(.is-collapsed) {
+    border-color: rgba(56, 189, 248, 0.45);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.topic-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 22px;
+    background: #14171d;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.topic-header:hover {
+    background: #181d26;
+}
+
+.topic-section:not(.is-collapsed) .topic-header {
+    background: #1a1f29;
+    border-bottom: 1px solid #222834;
+}
+
+.topic-header:focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: -2px;
+}
+
+.topic-header-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.topic-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 8px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.topic-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: clamp(18px, 2.2vw, 22px) !important;
+    font-weight: 600 !important;
+    color: #f3f8fc !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.topic-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.topic-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #8c9ba8;
+    transition: transform 0.25s ease, color 0.2s ease;
+}
+
+.topic-section:not(.is-collapsed) .topic-chevron {
+    transform: rotate(180deg);
+    color: #38bdf8;
+}
+
+.topic-content {
+    padding: 20px 22px 24px;
+}
+
+.topic-section.is-collapsed .topic-content {
+    display: none !important;
+}
+
+/* Inner Parts as Collapsible Cards */
+.part-section {
+    margin: 14px 0;
+    background: #0f1217;
+    border: 1px solid #1e2430;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.part-section:hover {
+    border-color: #2e3848;
+}
+
+.part-section:not(.is-collapsed) {
+    border-color: #2e3848;
+    background: #11151c;
+}
+
+.part-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(20, 23, 29, 0.7);
+    transition: background 0.15s ease;
+}
+
+.part-header:hover {
+    background: #181d26;
+}
+
+.part-section:not(.is-collapsed) .part-header {
+    border-bottom: 1px solid #1e2430;
+    background: #181d26;
+}
+
+.part-header:focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: -2px;
+}
+
+.part-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.part-heading {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #f3f8fc !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    scroll-margin-top: 90px;
+}
+
+.part-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.ind-theory {
+    background: #a78bfa;
+    box-shadow: 0 0 8px #a78bfa;
+}
+
+.ind-questions {
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
+}
+
+.part-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.part-counter {
+    font-size: 11.5px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    color: #8c9ba8;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 2px 8px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.part-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: #8c9ba8;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.part-section:not(.is-collapsed) .part-arrow {
+    transform: rotate(180deg);
+    color: #38bdf8;
+}
+
+.part-body {
+    padding: 20px 18px;
+}
+
+.part-section.is-collapsed .part-body {
+    display: none !important;
+}
