@@ -52,9 +52,9 @@
 
 ## DSA
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
-2. [DSA Quick Course](projects/techtoday/study/dsa/dsa-quick-course.html)
-3. [DSA Advanced Course](projects/techtoday/study/dsa/dsa-advanced-course.html)
-4. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
+2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
+3. [DSA Quick Course](projects/techtoday/study/dsa/dsa-quick-course.html)
+4. [DSA Advanced Course](projects/techtoday/study/dsa/dsa-advanced-course.html)
 
 ## Git
 1. [Git Crash Course](projects/techtoday/study/git/git-crash-course.html)
