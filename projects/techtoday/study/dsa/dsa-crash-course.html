@@ -431,7 +431,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             color: #c586c0;
             font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
             font-size: 11px;
@@ -441,10 +441,42 @@
         }
 
         .worked-q {
-            margin: 0 0 6px;
-            font-size: 14px;
-            line-height: 1.4;
+            margin: 0 0 8px;
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.5;
             color: #f1f5f9;
+        }
+
+        .worked p,
+        .worked ol,
+        .worked ul {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #c6d1dc;
+            margin: 0 0 10px;
+        }
+
+        .worked li {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .worked code {
+            font-size: 13.5px;
+        }
+
+        .code-tab-label {
+            display: block;
+            margin: 14px 0 6px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.45;
+            color: #f1f5f9;
+        }
+
+        .code-tab-label+.code-tabs {
+            margin-top: 0;
         }
 
         /* Integrated Code Block */
@@ -459,26 +491,26 @@
         .tab-bar {
             display: flex;
             align-items: center;
-            gap: 2px;
-            padding: 4px 6px 0;
+            gap: 4px;
+            padding: 3px 8px 0;
             background: rgba(255, 255, 255, 0.02);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .tab-bar .tab-label {
-            padding: 3px 6px 6px;
-            font-size: 10.5px;
-            color: #7d8b99;
+            display: none;
         }
 
         .tab {
-            padding: 5px 10px 6px;
-            font-size: 11.5px;
+            padding: 5px 12px 6px;
+            font-size: 12px;
+            font-weight: 600;
             color: #8c9ba8;
             background: transparent;
             border: 0;
             border-bottom: 2px solid transparent;
             cursor: pointer;
+            user-select: none;
             transition: color 0.15s ease, border-color 0.15s ease;
         }
 
@@ -6867,6 +6899,19 @@ console.log(subsetXORSum([5, 1, 6]));   // 28
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
     <script src="dsa-study.js"></script>
     <script>
+        // Move code-tab labels above code boxes so tab-bar never cramps on narrow viewports
+        document.querySelectorAll(".code-tabs").forEach((wrap) => {
+            let label = wrap.querySelector(".tab-bar .tab-label");
+            if (!label && wrap.dataset.label) {
+                label = document.createElement("span");
+                label.textContent = wrap.dataset.label;
+            }
+            if (label && wrap.parentNode) {
+                label.className = "code-tab-label";
+                wrap.parentNode.insertBefore(label, wrap);
+            }
+        });
+
         // Topic & Inner Part Accordion Interactive Logic
         (() => {
             const toggleCard = (card, headerSelector, forceOpen = null) => {
