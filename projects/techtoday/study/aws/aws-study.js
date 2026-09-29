@@ -14,31 +14,41 @@ const desktopMenu = window.matchMedia("(min-width: 961px)");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const setupTopicMenu = () => {
-    if (!toc || !article || !main) return null;
+    let nav = document.querySelector(".topic-menu");
+    let panel, list;
+    if (nav) {
+        panel = nav.querySelector(".topic-menu-panel");
+        list = nav.querySelector(".table-of-contents");
+    } else {
+        if (!toc || !article || !main) return null;
 
-    const nav = document.createElement("nav");
-    nav.className = "topic-menu";
-    nav.setAttribute("aria-label", "Topics");
+        nav = document.createElement("nav");
+        nav.className = "topic-menu";
+        nav.setAttribute("aria-label", "Topics");
 
-    const panel = document.createElement("details");
-    panel.className = "topic-menu-panel";
+        panel = document.createElement("details");
+        panel.className = "topic-menu-panel";
 
-    const summary = document.createElement("summary");
-    summary.textContent = "Topics";
+        const summary = document.createElement("summary");
+        summary.textContent = "Topics";
 
-    const list = toc.cloneNode(true);
-    panel.append(summary, list);
-    nav.append(panel);
-    main.classList.add("study-layout");
-    main.prepend(nav);
+        list = toc.cloneNode(true);
+        panel.append(summary, list);
+        nav.append(panel);
+        main.classList.add("study-layout");
+        main.prepend(nav);
+    }
+    if (!panel || !list) return nav;
 
     const links = [...list.querySelectorAll("a")];
     const sections = links
         .map((link) => {
-            const id = decodeURIComponent(link.getAttribute("href") || "").slice(1);
+            const href = link.getAttribute("href") || "";
+            if (!href.startsWith("#")) return null;
+            const id = decodeURIComponent(href.slice(1));
             return { link, heading: document.getElementById(id) };
         })
-        .filter((item) => item.heading);
+        .filter((item) => item && item.heading);
 
     const syncPanel = () => {
         panel.open = desktopMenu.matches;

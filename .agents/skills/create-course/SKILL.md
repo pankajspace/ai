@@ -144,13 +144,13 @@ cp dsa/dsa-study.js  <slug>/<slug>-study.js
 
 ## 5. HTML page and components
 
-Convert the approved Markdown section by section: headings, IDs, prose and code verbatim; only wrappers are new. Copy the shell from `dsa/dsa-crash-course.html` (`header.tt-site-header` → `div.progress` → `main > article.study` → `footer.study-footer` → `button.back-to-top` → `<script src="<slug>-study.js">`) and change the `<title>`, meta description (one specific sentence), CSS/JS filenames, `body` class, back link (`<slug>-courses.html`, or `../<tile-slug>-courses.html` when nested), `<h1>` and footer text.
+Convert the approved Markdown section by section: headings, IDs, prose and code verbatim; only wrappers are new. Copy the shell from `dsa/dsa-crash-course.html` (`header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + script + article.study` → `footer.study-footer` → `button.back-to-top` → `<script src="<slug>-study.js">`) and change the `<title>`, meta description (one specific sentence), CSS/JS filenames, `body` class, back link (`<slug>-courses.html`, or `../<tile-slug>-courses.html` when nested), `<h1>` and footer text.
 
 Must-haves:
 
 - `<p class="lede">` after the `<h1>`, telling the reader to press **Play** on animations.
 - Every `<h1>`–`<h4>` ends with `<a class="headerlink" href="#id" title="Permanent link">#</a>`.
-- `<ol class="table-of-contents table-of-contents-numbered">` under `<h2 id="table-of-contents">`. JS clones it into the sticky sidebar and mobile "Topics" drawer with scroll-spy; if it's missing or its links don't resolve, the sidebar silently disappears.
+- Pre-rendered `<nav class="topic-menu" aria-label="Topics">` containing `<details class="topic-menu-panel"><summary>Topics</summary><ol class="table-of-contents table-of-contents-numbered">...</ol></details></nav>` and the desktop auto-open `<script>` directly inside `<main class="study-layout">` before `<article class="study">`. JS attaches scroll-spy, active link tracking, and mobile drawer toggles without causing layout shift.
 - `<!-- ====== n -->` rulers between sections, for navigating these long files.
 
 Components (styled by the copied CSS; never ad-hoc inline styles):
