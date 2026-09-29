@@ -23,7 +23,7 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 
 ## Table of Contents
 
-### Intermediate DSA
+### Unit 1 — DSA 1: Intermediate Problem Solving
 1. [Time Complexity](#1-time-complexity)
 2. [Numbers](#2-numbers)
 3. [1D Arrays Basics](#3-1d-arrays-basics)
@@ -41,7 +41,7 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 15. [Bit Manipulations Basics](#15-bit-manipulations-basics)
 16. [Multiple Approaches](#16-multiple-approaches)
 
-### Advanced DSA 1
+### Unit 2 — DSA 2: Advanced Arrays, Recursion & Sorting
 17. [1D Arrays Advanced](#17-1d-arrays-advanced)
 18. [Prefix Sum Advanced](#18-prefix-sum-advanced)
 19. [Two Pointers](#19-two-pointers)
@@ -55,7 +55,7 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 27. [Count Sort & Merge Sort](#27-count-sort-merge-sort)
 28. [Quick Sort & Comparator](#28-quick-sort-comparator)
 
-### Advanced DSA 2
+### Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
 29. [Searching 1: Binary Search on Array](#29-searching-1-binary-search-on-array)
 30. [Searching 2: Binary Search on Answer](#30-searching-2-binary-search-on-answer)
 31. [Linked List Introduction](#31-linked-list-introduction)
@@ -65,7 +65,7 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 35. [Trees 1: Structure & Traversal](#35-trees-1-structure-traversal)
 36. [Trees 2: BST](#36-trees-2-bst)
 
-### Advanced DSA 3
+### Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
 37. [Two Pointers](#37-two-pointers)
 38. [Backtracking](#38-backtracking)
 39. [Linked List, Sorting and Fast + Slow Pointer](#39-linked-list-sorting-and-fast-slow-pointer)
@@ -75,7 +75,7 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 43. [Maths: Combinatorics Basics & Prime Numbers](#43-maths-combinatorics-basics-prime-numbers)
 44. [Multiple Approaches](#44-multiple-approaches)
 
-### Advanced DSA 4
+### Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
 45. [Heaps Introduction](#45-heaps-introduction)
 46. [Heap Sort & Greedy](#46-heap-sort-greedy)
 47. [DP 1: One Dimensional](#47-dp-1-one-dimensional)
@@ -86,6 +86,14 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 52. [Graphs 3: Dijkstra Algo & Topological Sort](#52-graphs-3-dijkstra-algo-topological-sort)
 53. [Multiple Approaches](#53-multiple-approaches)
 54. [Interview Problems](#54-interview-problems)
+
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — DSA 1: Intermediate Problem Solving
+
+Core complexity analysis, number theory, 1D/2D arrays, prefix sums, carry forward, sliding window, strings, and bit manipulation basics.
 
 ---
 
@@ -3699,7 +3707,12 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 ---
 
-# Advanced DSA 1
+<a id="unit-2"></a>
+
+## Unit 2 — DSA 2: Advanced Arrays, Recursion & Sorting
+
+Advanced array transformations, intervals, Kadane's algorithm, bit manipulation, recursion, hashing, merge sort, and quick sort.
+
 
 ---
 
@@ -7856,7 +7869,12 @@ console.log(largestNumber([10, 5, 2, 8, 200])); // "85220010"
 
 ---
 
-# Advanced DSA 2
+<a id="unit-3"></a>
+
+## Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
+
+Binary search on arrays and answer spaces, linked list fundamentals, stacks, queues, and binary search trees.
+
 
 ---
 
@@ -13244,7 +13262,12 @@ let bst2 = sortedArrayToBST(arr2);
 
 ---
 
-# Advanced DSA 3
+<a id="unit-4"></a>
+
+## Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
+
+Multi-pointer techniques, backtracking explorations, loop detection, Morris traversal, lowest common ancestor, and combinatorics.
+
 
 ---
 
@@ -22533,7 +22556,12 @@ printPascalOptimized(5);
 
 ---
 
-# Advanced DSA 4
+<a id="unit-5"></a>
+
+## Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
+
+Priority queues, greedy strategies, 1D/2D/knapsack dynamic programming, graph traversals, shortest paths, and topological sort.
+
 
 ---
 

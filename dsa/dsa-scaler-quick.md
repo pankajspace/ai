@@ -1,6 +1,12 @@
 [<- DSA](00-dsa-quick.md)
 
-# DSA 1
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — DSA 1: Intermediate Problem Solving
+
+Core complexity analysis, number theory, 1D/2D arrays, prefix sums, carry forward, sliding window, strings, and bit manipulation basics.
 
 # 1. Time Complexity
 
@@ -3536,7 +3542,13 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 #### 4. Using Two Pointers T(n), S(1)
 
-# DSA 2
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — DSA 2: Advanced Arrays, Recursion & Sorting
+
+Advanced array transformations, intervals, Kadane's algorithm, bit manipulation, recursion, hashing, merge sort, and quick sort.
 
 # 1. 1D Arrays Advanced
 
@@ -7570,7 +7582,13 @@ print(largest_number([10, 5, 2, 8, 200]))        # "85220010"
 # Space Complexity: O(N)
 ```
 
-# DSA 3
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
+
+Binary search on arrays and answer spaces, linked list fundamentals, stacks, queues, and binary search trees.
 
 # 1. Searching 1: Binary Search on Array
 
@@ -12866,7 +12884,13 @@ def sorted_array_to_balanced_bst(arr):
 # Space Complexity: O(log N) recursion stack
 ```
 
-# DSA 4
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
+
+Multi-pointer techniques, backtracking explorations, loop detection, Morris traversal, lowest common ancestor, and combinatorics.
 
 # 1. Two Pointers
 
@@ -22081,7 +22105,13 @@ def pascal_triangle_ncr(n):
     return [pascal_row_ncr_single(i) for i in range(n)]
 ```
 
-# DSA 5
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
+
+Priority queues, greedy strategies, 1D/2D/knapsack dynamic programming, graph traversals, shortest paths, and topological sort.
 
 # 1. Heaps Introduction
 
