@@ -19,6 +19,7 @@
 17. AI Projects // done
 18. Web Performance
 19. Web Security
+20. FDE // done
 
 ### Courses to Complete
 1. [Docker and Kubernetes UDM SG](https://www.udemy.com/course/docker-and-kubernetes-the-complete-guide/) 21Hrs
