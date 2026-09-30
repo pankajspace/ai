@@ -216,7 +216,7 @@ const renderMermaid = (source, uid) => {
     const edges = [];
 
     const NODE_RE = /^([A-Za-z_]\w*)\s*(\(\("[^"]*"\)\)|\(\([^)]*\)\)|\(\["[^"]*"\]\)|\(\[[^\]]*\]\)|\["[^"]*"\]|\[[^\]]*\]|\("[^"]*"\)|\([^)]*\)|\{"[^"]*"\}|\{[^}]*\})?(?::::(\w+))?/;
-    const EDGE_RE = /^(-->|---|-\.->|-\.-|==>)(?:\|([^|]*)\|)?|^--\s*([^>]+?)\s*-->/;
+    const EDGE_RE = /^(-->|---|-\.->|-\.-|==>)(?:\|([^|]*)\|)?|^--\s*([^>]+?)\s*-->|^-\.\s*([^.]+?)\s*\.->/;
 
     const addNode = (token) => {
         const m = token.match(NODE_RE);
@@ -244,21 +244,32 @@ const renderMermaid = (source, uid) => {
         if (/^(classDef|class|style|linkStyle|subgraph|end|direction)\b/.test(line)) return;
         let parsed = addNode(line);
         while (parsed) {
-            const rest = parsed.rest.trim();
+            let rest = parsed.rest.trim();
             const em = rest.match(EDGE_RE);
             if (!em) break;
-            const next = addNode(rest.slice(em[0].length).trim());
-            if (!next) break;
-            const op = em[1] || "-->";
-            edges.push({
-                from: parsed.node.id,
-                to: next.node.id,
-                label: (em[2] ?? em[3] ?? "").trim().replace(/^"(.*)"$/, "$1"),
-                arrow: op !== "---" && op !== "-.-",
-                dashed: op.startsWith("-."),
-                thick: op === "==>",
-            });
-            parsed = next;
+            rest = rest.slice(em[0].length).trim();
+            const op = em[1] || (em[4] !== undefined ? "-.->" : "-->");
+            const label = (em[2] ?? em[3] ?? em[4] ?? "").trim().replace(/^"(.*)"$/, "$1");
+            const arrow = op !== "---" && op !== "-.-";
+            const dashed = op.startsWith("-.");
+            const thick = op === "==>";
+            const parts = rest.split(/\s*&\s*/);
+            let nextParsed = null;
+            for (const part of parts) {
+                const next = addNode(part.trim());
+                if (next) {
+                    edges.push({
+                        from: parsed.node.id,
+                        to: next.node.id,
+                        label,
+                        arrow,
+                        dashed,
+                        thick,
+                    });
+                    nextParsed = next;
+                }
+            }
+            parsed = parts.length === 1 ? nextParsed : null;
         }
     });
 
