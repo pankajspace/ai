@@ -25,7 +25,7 @@ Comprehensive study covering 38 sections: dynamic programming, graphs, heaps, un
 
 ### DSA Quick Course
 
-Fast-track Scaler DSA curriculum covering 55 topics across 5 units: time complexity, arrays, strings, bit manipulation, recursion, hashing, sorting, searching, linked lists, stacks, trees, heaps, DP, and graphs.
+Fast-track Scaler DSA curriculum covering 56 topics across 5 units: time complexity, arrays, strings, bit manipulation, recursion, hashing, sorting, searching, linked lists, stacks, trees, heaps, DP, and graphs.
 
 [Start learning →](dsa-quick-course.html)
 

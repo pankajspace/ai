@@ -7243,7 +7243,7 @@ print(merge_sort([38, 27, 43, 3, 9, 82, 10]))  # [3, 9, 10, 27, 38, 43, 82]
 # Space Complexity: O(N)
 ```
 
-# 13. Quick Sort & Comparator
+# 13. Quick Sort
 
 ### 1. Partition the array. All 0s on the left and all 1s on the right. | Partitioning Algorithm **O(N), O(1)**
 ```js
@@ -7472,7 +7472,11 @@ print(quick_sort([10, 7, 8, 9, 1, 5]))  # [1, 5, 7, 8, 9, 10]
 # Space Complexity: O(log N) auxiliary recursion stack
 ```
 
-### 4. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
+# 14. Custom Sort / Comparison Based Sorting
+
+## Questions
+
+### 1. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
 ```js
 function getFactorsCount(num) {
   let count = 0;
@@ -7496,6 +7500,7 @@ function getFactorsCount(num) {
   }
   return count;
 }
+
 function sortByFactors(arr) {
   return arr.sort((a, b) => {
     const factorsA = getFactorsCount(a);
@@ -7543,7 +7548,7 @@ print(sort_by_factors([10, 5, 6, 2, 3, 4]))      # [2, 3, 4, 5, 6, 10]
 # Space Complexity: O(1)
 ```
 
-### 5. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
+### 2. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
 ```
 Given an array of non negative integers, sort the array in such a way that the largest number is formed by rearranging the elements of the array.
 Return the largest number as a string.

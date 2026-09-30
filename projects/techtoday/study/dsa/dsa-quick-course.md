@@ -54,39 +54,40 @@ The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-
 26. [Hashing (Map)](#26-hashing-map)
 27. [Count Sort](#27-count-sort)
 28. [Merge Sort](#28-merge-sort)
-29. [Quick Sort & Comparator](#29-quick-sort-comparator)
+29. [Quick Sort](#29-quick-sort)
+30. [Custom Sort / Comparison Based Sorting](#30-custom-sort-comparison-based-sorting)
 
 ### Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
-30. [Searching 1: Binary Search on Array](#30-searching-1-binary-search-on-array)
-31. [Searching 2: Binary Search on Answer](#31-searching-2-binary-search-on-answer)
-32. [Linked List Introduction](#32-linked-list-introduction)
-33. [Linked List: Basic Problems](#33-linked-list-basic-problems)
-34. [Stacks](#34-stacks)
-35. [Queues](#35-queues)
-36. [Trees 1: Structure & Traversal](#36-trees-1-structure-traversal)
-37. [Trees 2: BST](#37-trees-2-bst)
+31. [Searching 1: Binary Search on Array](#31-searching-1-binary-search-on-array)
+32. [Searching 2: Binary Search on Answer](#32-searching-2-binary-search-on-answer)
+33. [Linked List Introduction](#33-linked-list-introduction)
+34. [Linked List: Basic Problems](#34-linked-list-basic-problems)
+35. [Stacks](#35-stacks)
+36. [Queues](#36-queues)
+37. [Trees 1: Structure & Traversal](#37-trees-1-structure-traversal)
+38. [Trees 2: BST](#38-trees-2-bst)
 
 ### Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
-38. [Two Pointers](#38-two-pointers)
-39. [Backtracking](#39-backtracking)
-40. [Linked List, Sorting and Fast + Slow Pointer](#40-linked-list-sorting-and-fast-slow-pointer)
-41. [Doubly Linked List and Detecting Loop](#41-doubly-linked-list-and-detecting-loop)
-42. [Trees 3: Morris Inorder Traversal & LCA](#42-trees-3-morris-inorder-traversal-lca)
-43. [Hashing 3: Internal Implementation & Problems](#43-hashing-3-internal-implementation-problems)
-44. [Maths: Combinatorics Basics & Prime Numbers](#44-maths-combinatorics-basics-prime-numbers)
-45. [Multiple Approaches](#45-multiple-approaches)
+39. [Two Pointers](#39-two-pointers)
+40. [Backtracking](#40-backtracking)
+41. [Linked List, Sorting and Fast + Slow Pointer](#41-linked-list-sorting-and-fast-slow-pointer)
+42. [Doubly Linked List and Detecting Loop](#42-doubly-linked-list-and-detecting-loop)
+43. [Trees 3: Morris Inorder Traversal & LCA](#43-trees-3-morris-inorder-traversal-lca)
+44. [Hashing 3: Internal Implementation & Problems](#44-hashing-3-internal-implementation-problems)
+45. [Maths: Combinatorics Basics & Prime Numbers](#45-maths-combinatorics-basics-prime-numbers)
+46. [Multiple Approaches](#46-multiple-approaches)
 
 ### Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
-46. [Heaps Introduction](#46-heaps-introduction)
-47. [Heap Sort & Greedy](#47-heap-sort-greedy)
-48. [DP 1: One Dimensional](#48-dp-1-one-dimensional)
-49. [DP 2: Two Dimensional](#49-dp-2-two-dimensional)
-50. [DP 3: Knapsack](#50-dp-3-knapsack)
-51. [Graphs 1: Introduction, DFS & Cycle Detection](#51-graphs-1-introduction-dfs-cycle-detection)
-52. [Graphs 2: BFS & MST](#52-graphs-2-bfs-mst)
-53. [Graphs 3: Dijkstra Algo & Topological Sort](#53-graphs-3-dijkstra-algo-topological-sort)
-54. [Multiple Approaches](#54-multiple-approaches)
-55. [Interview Problems](#55-interview-problems)
+47. [Heaps Introduction](#47-heaps-introduction)
+48. [Heap Sort & Greedy](#48-heap-sort-greedy)
+49. [DP 1: One Dimensional](#49-dp-1-one-dimensional)
+50. [DP 2: Two Dimensional](#50-dp-2-two-dimensional)
+51. [DP 3: Knapsack](#51-dp-3-knapsack)
+52. [Graphs 1: Introduction, DFS & Cycle Detection](#52-graphs-1-introduction-dfs-cycle-detection)
+53. [Graphs 2: BFS & MST](#53-graphs-2-bfs-mst)
+54. [Graphs 3: Dijkstra Algo & Topological Sort](#54-graphs-3-dijkstra-algo-topological-sort)
+55. [Multiple Approaches](#55-multiple-approaches)
+56. [Interview Problems](#56-interview-problems)
 
 ---
 
@@ -7595,9 +7596,9 @@ console.log(mergeSort([4, 2, 7, 7, 3, 2, 1, 8])); // [1, 2, 2, 3, 4, 7, 7, 8]
 
 ---
 
-<a id="29-quick-sort-comparator"></a>
+<a id="29-quick-sort"></a>
 
-## 29. Quick Sort & Comparator
+## 29. Quick Sort
 
 ### Questions
 
@@ -7831,7 +7832,15 @@ console.log(arr); // [17, 20, 26, 31, 44, 55, 77, 93]
 // Space Complexity: O(log n)
 ```
 
-4. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
+---
+
+<a id="30-custom-sort-comparison-based-sorting"></a>
+
+## 30. Custom Sort / Comparison Based Sorting
+
+### Questions
+
+1. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
 
 ```python
 import math
@@ -7885,6 +7894,7 @@ function getFactorsCount(num) {
   }
   return count;
 }
+
 function sortByFactors(arr) {
   return arr.sort((a, b) => {
     const factorsA = getFactorsCount(a);
@@ -7903,7 +7913,7 @@ console.log(sortByFactors([4, 7, 6, 9, 8, 2, 10])); // [2, 7, 4, 9, 6, 8, 10]
 console.log(sortByFactors([10, 5, 6, 2, 3, 4])); // [2, 3, 4, 5, 6, 10]
 ```
 
-5. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
+2. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
 
 ```text
 Given an array of non negative integers, sort the array in such a way that the largest number is formed by rearranging the elements of the array.
@@ -7997,9 +8007,9 @@ Binary search on arrays and answer spaces, linked list fundamentals, stacks, que
 
 ---
 
-<a id="30-searching-1-binary-search-on-array"></a>
+<a id="31-searching-1-binary-search-on-array"></a>
 
-## 30. Searching 1: Binary Search on Array
+## 31. Searching 1: Binary Search on Array
 
 ### Theory
 
@@ -8557,9 +8567,9 @@ console.log(findPeakWithDuplicates([1, 2, 3, 1])); // 3
 
 ---
 
-<a id="31-searching-2-binary-search-on-answer"></a>
+<a id="32-searching-2-binary-search-on-answer"></a>
 
-## 31. Searching 2: Binary Search on Answer
+## 32. Searching 2: Binary Search on Answer
 
 ### Questions
 
@@ -9276,9 +9286,9 @@ console.log(allocateBooks([12, 15, 78], 4)); // -1
 
 ---
 
-<a id="32-linked-list-introduction"></a>
+<a id="33-linked-list-introduction"></a>
 
-## 32. Linked List Introduction
+## 33. Linked List Introduction
 
 ### Theory
 
@@ -9470,9 +9480,9 @@ console.log(list.getKthElement(2)); // 5
 
 ---
 
-<a id="33-linked-list-basic-problems"></a>
+<a id="34-linked-list-basic-problems"></a>
 
-## 33. Linked List: Basic Problems
+## 34. Linked List: Basic Problems
 
 ### Questions
 
@@ -9779,9 +9789,9 @@ console.log(JSON.stringify(newHead)); // Output the new head of the reversed lis
 
 ---
 
-<a id="34-stacks"></a>
+<a id="35-stacks"></a>
 
-## 34. Stacks
+## 35. Stacks
 
 ### Theory
 
@@ -10508,9 +10518,9 @@ console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, 
 
 ---
 
-<a id="35-queues"></a>
+<a id="36-queues"></a>
 
-## 35. Queues
+## 36. Queues
 
 ### Theory
 
@@ -11757,9 +11767,9 @@ console.log(maxSlidingWindow(A2, B2)); // [7, 7, 7, 7]
 
 ---
 
-<a id="36-trees-1-structure-traversal"></a>
+<a id="37-trees-1-structure-traversal"></a>
 
-## 36. Trees 1: Structure & Traversal
+## 37. Trees 1: Structure & Traversal
 
 ### Questions
 
@@ -12223,9 +12233,9 @@ leftRightView(root);
 
 ---
 
-<a id="37-trees-2-bst"></a>
+<a id="38-trees-2-bst"></a>
 
-## 37. Trees 2: BST
+## 38. Trees 2: BST
 
 ### Questions
 
@@ -13390,9 +13400,9 @@ Multi-pointer techniques, backtracking explorations, loop detection, Morris trav
 
 ---
 
-<a id="38-two-pointers"></a>
+<a id="39-two-pointers"></a>
 
-## 38. Two Pointers
+## 39. Two Pointers
 
 ### Questions
 
@@ -14276,9 +14286,9 @@ console.log(countPairsWithDifferenceDuplicates([1, 5, 5, 5, 5, 5, 8], 0)); // 10
 
 ---
 
-<a id="39-backtracking"></a>
+<a id="40-backtracking"></a>
 
-## 39. Backtracking
+## 40. Backtracking
 
 ### Theory
 
@@ -15464,9 +15474,9 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
 
 ---
 
-<a id="40-linked-list-sorting-and-fast-slow-pointer"></a>
+<a id="41-linked-list-sorting-and-fast-slow-pointer"></a>
 
-## 40. Linked List, Sorting and Fast + Slow Pointer
+## 41. Linked List, Sorting and Fast + Slow Pointer
 
 ### Theory
 
@@ -15943,9 +15953,9 @@ console.log(isPalindrome(head3)); // false
 
 ---
 
-<a id="41-doubly-linked-list-and-detecting-loop"></a>
+<a id="42-doubly-linked-list-and-detecting-loop"></a>
 
-## 41. Doubly Linked List and Detecting Loop
+## 42. Doubly Linked List and Detecting Loop
 
 ### Questions
 
@@ -16996,9 +17006,9 @@ console.log(modifiedHead); // Output: Linked list without cycle
 
 ---
 
-<a id="42-trees-3-morris-inorder-traversal-lca"></a>
+<a id="43-trees-3-morris-inorder-traversal-lca"></a>
 
-## 42. Trees 3: Morris Inorder Traversal & LCA
+## 43. Trees 3: Morris Inorder Traversal & LCA
 
 ### Theory
 
@@ -20309,9 +20319,9 @@ console.log("         Mixed after: ", levelOrder(mixed));
 
 ---
 
-<a id="43-hashing-3-internal-implementation-problems"></a>
+<a id="44-hashing-3-internal-implementation-problems"></a>
 
-## 43. Hashing 3: Internal Implementation & Problems
+## 44. Hashing 3: Internal Implementation & Problems
 
 ### Theory
 
@@ -21302,9 +21312,9 @@ console.log(longestSubarrayZeroSum([3, 2, -1])); // 0
 
 ---
 
-<a id="44-maths-combinatorics-basics-prime-numbers"></a>
+<a id="45-maths-combinatorics-basics-prime-numbers"></a>
 
-## 44. Maths: Combinatorics Basics & Prime Numbers
+## 45. Maths: Combinatorics Basics & Prime Numbers
 
 ### Theory
 
@@ -21891,9 +21901,9 @@ printPascalOptimized(5);
 
 ---
 
-<a id="45-multiple-approaches"></a>
+<a id="46-multiple-approaches"></a>
 
-## 45. Multiple Approaches
+## 46. Multiple Approaches
 
 ### Questions
 
@@ -22734,9 +22744,9 @@ Priority queues, greedy strategies, 1D/2D/knapsack dynamic programming, graph tr
 
 ---
 
-<a id="46-heaps-introduction"></a>
+<a id="47-heaps-introduction"></a>
 
-## 46. Heaps Introduction
+## 47. Heaps Introduction
 
 ### Theory
 
@@ -24622,9 +24632,9 @@ console.log(heapQueries([[2, 5], [2, 3], [2, 1], [1, -1], [1, -1]]));   // [1, 3
 
 ---
 
-<a id="47-heap-sort-greedy"></a>
+<a id="48-heap-sort-greedy"></a>
 
-## 47. Heap Sort & Greedy
+## 48. Heap Sort & Greedy
 
 ### Questions
 
@@ -25585,9 +25595,9 @@ console.log(maximizeProfitWithinDeadlines(sampleJobs)); // 30
 
 ---
 
-<a id="48-dp-1-one-dimensional"></a>
+<a id="49-dp-1-one-dimensional"></a>
 
-## 48. DP 1: One Dimensional
+## 49. DP 1: One Dimensional
 
 ### Theory
 
@@ -26413,9 +26423,9 @@ console.log(minSquaresTabulated(13)); // output: 2
 
 ---
 
-<a id="49-dp-2-two-dimensional"></a>
+<a id="50-dp-2-two-dimensional"></a>
 
-## 49. DP 2: Two Dimensional
+## 50. DP 2: Two Dimensional
 
 ### Questions
 
@@ -27857,9 +27867,9 @@ console.log(countNDigitNumbersWithSum(1, 3)); // expected output: 1 (3)
 
 ---
 
-<a id="50-dp-3-knapsack"></a>
+<a id="51-dp-3-knapsack"></a>
 
-## 50. DP 3: Knapsack
+## 51. DP 3: Knapsack
 
 ### Theory
 
@@ -28725,9 +28735,9 @@ console.log("Max Value (Unbounded Tabulation):", unboundedKnapsackTabulation(wei
 
 ---
 
-<a id="51-graphs-1-introduction-dfs-cycle-detection"></a>
+<a id="52-graphs-1-introduction-dfs-cycle-detection"></a>
 
-## 51. Graphs 1: Introduction, DFS & Cycle Detection
+## 52. Graphs 1: Introduction, DFS & Cycle Detection
 
 ### Theory
 
@@ -29944,9 +29954,9 @@ console.log(findPathDFS(5, [ [1, 2], [2, 3], [3, 4], [4, 5] ])); // 1
 
 ---
 
-<a id="52-graphs-2-bfs-mst"></a>
+<a id="53-graphs-2-bfs-mst"></a>
 
-## 52. Graphs 2: BFS & MST
+## 53. Graphs 2: BFS & MST
 
 ### Questions
 
@@ -31018,9 +31028,9 @@ console.log(`Minimal cost for Example 2 (Prim's): ${solveCommutableIslandsPrim(A
 
 ---
 
-<a id="53-graphs-3-dijkstra-algo-topological-sort"></a>
+<a id="54-graphs-3-dijkstra-algo-topological-sort"></a>
 
-## 53. Graphs 3: Dijkstra Algo & Topological Sort
+## 54. Graphs 3: Dijkstra Algo & Topological Sort
 
 ### Questions
 
@@ -32311,9 +32321,9 @@ console.log(solution(A2, B2)); // expected output: []
 
 ---
 
-<a id="54-multiple-approaches"></a>
+<a id="55-multiple-approaches"></a>
 
-## 54. Multiple Approaches
+## 55. Multiple Approaches
 
 ### Questions
 
@@ -32870,9 +32880,9 @@ console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); /
 
 ---
 
-<a id="55-interview-problems"></a>
+<a id="56-interview-problems"></a>
 
-## 55. Interview Problems
+## 56. Interview Problems
 
 ### Questions
 
