@@ -6723,6 +6723,7 @@ print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
 ### Ideal range for Count Sort
 ```
 Range of elements: A[i] <= 10^6
+
 Frequency of every element: A[i] <= 10^6
 ```
 
@@ -7474,6 +7475,41 @@ print(quick_sort([10, 7, 8, 9, 1, 5]))  # [1, 5, 7, 8, 9, 10]
 
 # 14. Custom Sort / Comparison Based Sorting
 
+## Theory
+
+## JavaScript basic sorting
+```js
+const arr = [1, 2, 10, 5];
+
+// ascending
+arr.sort((a, b) => {
+  if (a < b) return -1;
+  if (a > b) return  1;
+  return  0;
+});
+console.log(arr);
+// [1, 2, 5, 10]
+
+// ascending order shorthand
+arr.sort((a, b) => a - b);
+console.log(arr);
+// [1, 2, 5, 10]
+
+// descending
+arr.sort((a, b) => {
+  if (a > b) return -1;
+  if (a < b) return  1;
+  return  0;
+});
+console.log(arr);
+// [10, 5, 2, 1]
+
+// descending order shorthand
+arr.sort((a, b) => b - a);
+console.log(arr);
+// [10, 5, 2, 1]
+```
+
 ## Questions
 
 ### 1. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
@@ -7506,7 +7542,7 @@ function sortByFactors(arr) {
     const factorsA = getFactorsCount(a);
     const factorsB = getFactorsCount(b);
     if (factorsA === factorsB) {
-      return a - b;
+      return a - b; // If the factor counts are equal, sort by the actual value in ascending order
       // or alternatively
       // if (a < b) return -1;
       // if (a > b) return 1;
@@ -7574,6 +7610,7 @@ function largestNumber(arr) {
         // to maximize the total number (Descending order logic).
         // JavaScript automatically coerces these strings to numbers for subtraction.
         // return ba - ab; // decreasing order
+
         // or alternatively:
         if (ab > ba) return -1;
         if (ab < ba) return 1;
@@ -7590,10 +7627,10 @@ function largestNumber(arr) {
     return result;
 }
 
+console.log(largestNumber([989, 9, 767, 11, 1, 0])); // "998987671110"
 // Comparison trace for [989, 9]:
 // "9" + "989" (9989) vs "989" + "9" (9899).
 // 9989 > 9899, so 9 comes before 989.
-console.log(largestNumber([989, 9, 767, 11, 1, 0])); // "998987671110"
 
 console.log(largestNumber([10, 5, 2, 8, 200])); // "85220010"
 
