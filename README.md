@@ -56,6 +56,10 @@
 3. [DSA Quick Course](projects/techtoday/study/dsa/dsa-quick-course.html)
 4. [DSA Advanced Course](projects/techtoday/study/dsa/dsa-advanced-course.html)
 
+## Design Patterns
+1. [Design Patterns Crash Course](projects/techtoday/study/design-patterns/design-patterns-crash-course.html)
+2. [Design Patterns Detailed Course](projects/techtoday/study/design-patterns/design-patterns-detailed-course.html)
+
 ## Git
 1. [Git Crash Course](projects/techtoday/study/git/git-crash-course.html)
 2. [Git Detailed Course](projects/techtoday/study/git/git-detailed-course.html)
