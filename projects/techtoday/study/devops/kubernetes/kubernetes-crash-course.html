@@ -77,10 +77,68 @@
                     first month are really container problems.</p>
             </div>
 
-<!-- ============================================================ 1 -->
-            <h2 id="1-what-it-is-for">1. What Kubernetes Is For &mdash; and the One Idea Behind It<a class="headerlink"
-                    href="#1-what-it-is-for" title="Permanent link">#</a></h2>
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>16 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>Mental Models, Interactive Animations &amp; Worked Questions</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-1-what-it-is-for" data-topic="1-what-it-is-for">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-1-what-it-is-for">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="1-what-it-is-for" class="topic-title">What Kubernetes Is For &mdash; and the One Idea Behind It<a class="headerlink"
+                    href="#1-what-it-is-for" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-1-what-it-is-for">
+                    <div class="part-section is-collapsed" id="1-what-it-is-for-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-1-what-it-is-for-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#1-what-it-is-for-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-what-it-is-for-theory">
             <ul class="meta-strip">
                 <li><b>Model</b> <code class="big-o o-good">declarative</code></li>
                 <li><b>You write</b> <code class="big-o o-good">desired state</code></li>
@@ -133,6 +191,34 @@
                     Compose or a managed container platform costs far less attention.</li>
             </ul>
 
+            <div class="callout callout-warn">
+                <p><b>Never fix production with <code>kubectl edit</code>.</b> It works, and then it is silently
+                    undone &mdash; by the next deploy, which reapplies the manifest, or within a minute by a GitOps
+                    agent reconciling from Git. Worse, the change exists in no reviewable record, so the next person
+                    to debug the same problem finds a cluster that does not match the repository. Change the
+                    manifest and apply it; use <code>edit</code> only to look.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="1-what-it-is-for-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-1-what-it-is-for-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#1-what-it-is-for-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-what-it-is-for-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">You run <code>kubectl apply -f deployment.yaml</code> and it returns
@@ -156,7 +242,7 @@
                     <div class="tab-pane" data-lang="bash">
                         <pre><code data-lang="bash">
 kubectl apply -f deployment.yaml
-# deployment.apps/api configured        <- this means "stored", not "running"
+# deployment.apps/api configured        &lt;- this means "stored", not "running"
 
 # The command that actually waits for the outcome.
 kubectl rollout status deployment/api --timeout=120s
@@ -201,31 +287,61 @@ spec:                       # WHAT YOU WANT - the only part you write
 
 status:                     # WHAT IS TRUE - written by the controller,
   replicas: 3               # never edited by you
-  readyReplicas: 2          # <- 2, not 3: something is not converging
+  readyReplicas: 2          # &lt;- 2, not 3: something is not converging
   conditions:
     - type: Progressing
       status: "True"
       reason: ReplicaSetUpdated
     - type: Available
-      status: "False"       # <- and this is why your Service has no traffic
+      status: "False"       # &lt;- and this is why your Service has no traffic
       reason: MinimumReplicasUnavailable
 </code></pre>
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>Never fix production with <code>kubectl edit</code>.</b> It works, and then it is silently
-                    undone &mdash; by the next deploy, which reapplies the manifest, or within a minute by a GitOps
-                    agent reconciling from Git. Worse, the change exists in no reviewable record, so the next person
-                    to debug the same problem finds a cluster that does not match the repository. Change the
-                    manifest and apply it; use <code>edit</code> only to look.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 2 -->
-            <h2 id="2-pods">2. Pods &mdash; the Thing That Actually Runs<a class="headerlink" href="#2-pods"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-2-pods" data-topic="2-pods">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-2-pods">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="2-pods" class="topic-title">Pods &mdash; the Thing That Actually Runs<a class="headerlink" href="#2-pods"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-2-pods">
+                    <div class="part-section is-collapsed" id="2-pods-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-2-pods-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#2-pods-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-2-pods-theory">
             <ul class="meta-strip">
                 <li><b>Pod</b> <code class="big-o o-good">1+ containers, 1 IP</code></li>
                 <li><b>Shared</b> <code class="big-o o-good">network + volumes</code></li>
@@ -269,6 +385,36 @@ status:                     # WHAT IS TRUE - written by the controller,
                     disappointed.</li>
             </ul>
 
+            <div class="callout callout-key">
+                <p><b><code>Running</code> and <code>Ready</code> are different, and the difference causes real
+                        outages.</b> <code>Running</code> means the container process started. <code>Ready</code>
+                    means a readiness probe said it can serve, which is what puts it into a Service's endpoint list.
+                    <code>kubectl get pods</code> shows both &mdash; the <code>READY</code> column is
+                    <code>0/1</code> or <code>1/1</code>, and it is the one that decides whether users reach
+                    you.
+                </p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="2-pods-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-2-pods-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#2-pods-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-2-pods-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Should your web server and your database run in the same Pod?</p>
@@ -331,7 +477,7 @@ kubectl get pods -o custom-columns=NAME:.metadata.name,IP:.status.podIP,NODE:.sp
 kubectl delete pod api-7d4-x9k
 kubectl get pods -w
 # api-7d4-x9k   1/1  Terminating   ...
-# api-7d4-t3c   0/1  Pending       <- a NEW pod: new name, new IP
+# api-7d4-t3c   0/1  Pending       &lt;- a NEW pod: new name, new IP
 # api-7d4-t3c   0/1  ContainerCreating
 # api-7d4-t3c   1/1  Running
 
@@ -342,21 +488,49 @@ kubectl exec -it api -c api -- sh
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-key">
-                <p><b><code>Running</code> and <code>Ready</code> are different, and the difference causes real
-                        outages.</b> <code>Running</code> means the container process started. <code>Ready</code>
-                    means a readiness probe said it can serve, which is what puts it into a Service's endpoint list.
-                    <code>kubectl get pods</code> shows both &mdash; the <code>READY</code> column is
-                    <code>0/1</code> or <code>1/1</code>, and it is the one that decides whether users reach
-                    you.
-                </p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 3 -->
-            <h2 id="3-deployments">3. Deployments &amp; Rollouts<a class="headerlink" href="#3-deployments"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-3-deployments" data-topic="3-deployments">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-3-deployments">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="3-deployments" class="topic-title">Deployments &amp; Rollouts<a class="headerlink" href="#3-deployments"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-3-deployments">
+                    <div class="part-section is-collapsed" id="3-deployments-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-3-deployments-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#3-deployments-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-deployments-theory">
             <ul class="meta-strip">
                 <li><b>Deployment</b> <code class="big-o o-good">&rarr; ReplicaSet &rarr; Pods</code></li>
                 <li><b>Template change</b> <code class="big-o o-good">= new ReplicaSet</code></li>
@@ -413,6 +587,34 @@ kubectl exec -it api -c api -- sh
                 </tbody>
             </table>
 
+            <div class="callout callout-warn">
+                <p><b>Both versions of your code are live for the whole rollout.</b> That is not an edge case, it is
+                    the normal state of every rolling update. Your v2 must therefore work with v1's database schema,
+                    v1's cache entries and v1's message formats &mdash; and after a rollback, v1 must work with
+                    whatever v2 left behind. Keep schema changes additive and backward-compatible, or the deployment
+                    is reversible and the data is not.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="3-deployments-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-3-deployments-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#3-deployments-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-deployments-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your rollout is stuck. <code>kubectl rollout status</code> has been waiting for
@@ -446,7 +648,7 @@ kubectl get deployment api -o jsonpath='{.status.conditions}' | jq
 kubectl get rs -l app=api \
   -o custom-columns=NAME:.metadata.name,DESIRED:.spec.replicas,READY:.status.readyReplicas
 kubectl get pods -l app=api
-kubectl describe pod <the-new-one> | sed -n '/Events/,$p'
+kubectl describe pod &lt;the-new-one&gt; | sed -n '/Events/,$p'
 
 # 3. Stop the churn while you look.
 kubectl rollout pause deployment/api
@@ -496,19 +698,49 @@ spec:
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>Both versions of your code are live for the whole rollout.</b> That is not an edge case, it is
-                    the normal state of every rolling update. Your v2 must therefore work with v1's database schema,
-                    v1's cache entries and v1's message formats &mdash; and after a rollback, v1 must work with
-                    whatever v2 left behind. Keep schema changes additive and backward-compatible, or the deployment
-                    is reversible and the data is not.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 4 -->
-            <h2 id="4-probes">4. Probes &mdash; Ready, Alive, Starting<a class="headerlink" href="#4-probes"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-4-probes" data-topic="4-probes">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-4-probes">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="4-probes" class="topic-title">Probes &mdash; Ready, Alive, Starting<a class="headerlink" href="#4-probes"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-4-probes">
+                    <div class="part-section is-collapsed" id="4-probes-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-4-probes-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#4-probes-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-4-probes-theory">
             <ul class="meta-strip">
                 <li><b>readiness</b> <code class="big-o o-good">gates traffic</code></li>
                 <li><b>liveness</b> <code class="big-o o-bad">kills the container</code></li>
@@ -548,6 +780,35 @@ spec:
                     correct.</li>
             </ul>
 
+            <div class="callout callout-key">
+                <p><b>If you add one thing to your manifests, make it a readiness probe.</b> Without it Kubernetes
+                    treats <em>Running</em> as <em>Ready</em>, so a rollout removes old Pods in exchange for new ones
+                    that are not listening yet &mdash; and the rollout reports success while your users get 502s.
+                    Point it at an endpoint that reflects your actual ability to serve, not at a static
+                    <code>/ping</code> that returns 200 before anything is connected.
+                </p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="4-probes-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-4-probes-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#4-probes-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-4-probes-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your service depends on a database. Should the health endpoint check the
@@ -642,20 +903,49 @@ def livez():
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-key">
-                <p><b>If you add one thing to your manifests, make it a readiness probe.</b> Without it Kubernetes
-                    treats <em>Running</em> as <em>Ready</em>, so a rollout removes old Pods in exchange for new ones
-                    that are not listening yet &mdash; and the rollout reports success while your users get 502s.
-                    Point it at an endpoint that reflects your actual ability to serve, not at a static
-                    <code>/ping</code> that returns 200 before anything is connected.
-                </p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 5 -->
-            <h2 id="5-resources">5. Resources &mdash; Requests, Limits &amp; Exit Code 137<a class="headerlink"
-                    href="#5-resources" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-5-resources" data-topic="5-resources">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-5-resources">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="5-resources" class="topic-title">Resources &mdash; Requests, Limits &amp; Exit Code 137<a class="headerlink"
+                    href="#5-resources" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-5-resources">
+                    <div class="part-section is-collapsed" id="5-resources-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-5-resources-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#5-resources-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-5-resources-theory">
             <ul class="meta-strip">
                 <li><b>requests</b> <code class="big-o o-good">scheduling</code></li>
                 <li><b>limits</b> <code class="big-o o-bad">enforcement</code></li>
@@ -688,6 +978,33 @@ def livez():
                     pasting values out of another service's manifest.</li>
             </ul>
 
+            <div class="callout callout-warn">
+                <p><b>A Pod with no resources set at all is <code>BestEffort</code>, and it is evicted first.</b>
+                    Many people read "no limits" as "unlimited"; the kubelet reads it as "nothing was promised to
+                    this Pod", so when a node runs short of memory, yours is the first one thrown overboard. Setting
+                    requests is not bureaucracy &mdash; it is how you avoid being at the front of that queue.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="5-resources-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-5-resources-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#5-resources-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-5-resources-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your Pod restarts every few hours with exit code 137 and no logs. Then someone
@@ -730,7 +1047,7 @@ kubectl get pod api-7d4-x9k -o jsonpath='{.spec.containers[0].resources}' | jq
 # Is CPU being throttled? This is the invisible latency cause.
 kubectl exec api-7d4-x9k -- cat /sys/fs/cgroup/cpu.stat
 # nr_periods 21400
-# nr_throttled 4820        <- 22% of periods hit the ceiling
+# nr_throttled 4820        &lt;- 22% of periods hit the ceiling
 
 # Right-size from a week of data rather than from another team's manifest:
 #   quantile_over_time(0.95,
@@ -763,18 +1080,49 @@ env:
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>A Pod with no resources set at all is <code>BestEffort</code>, and it is evicted first.</b>
-                    Many people read "no limits" as "unlimited"; the kubelet reads it as "nothing was promised to
-                    this Pod", so when a node runs short of memory, yours is the first one thrown overboard. Setting
-                    requests is not bureaucracy &mdash; it is how you avoid being at the front of that queue.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 6 -->
-            <h2 id="6-config">6. Config &amp; Secrets<a class="headerlink" href="#6-config" title="Permanent link">#</a>
-            </h2>
 
+            <section class="topic-section is-collapsed" id="sec-6-config" data-topic="6-config">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-6-config">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="6-config" class="topic-title">Config &amp; Secrets<a class="headerlink" href="#6-config" title="Permanent link">#</a>
+            </h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-6-config">
+                    <div class="part-section is-collapsed" id="6-config-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-6-config-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#6-config-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-6-config-theory">
             <ul class="meta-strip">
                 <li><b>ConfigMap</b> <code class="big-o o-good">non-sensitive</code></li>
                 <li><b>Secret</b> <code class="big-o o-bad">base64, not encrypted</code></li>
@@ -806,6 +1154,34 @@ env:
                     siblings, and behaviour starts depending on which replica served the request.</li>
             </ul>
 
+            <div class="callout callout-warn">
+                <p><b>Do not put a secret in a ConfigMap, and do not treat a Secret as encryption.</b> Secrets are
+                    stored in etcd, base64-encoded, and are only as protected as your RBAC and your etcd encryption
+                    settings. For anything genuinely sensitive, keep the value in an external store and sync it in
+                    with an operator or a CSI driver &mdash; then reads are audited, rotation is minutes rather than
+                    a redeploy, and the value is never a durable object you have to remember to protect.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="6-config-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-6-config-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#6-config-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-6-config-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">How do you make a config change take effect, and how do you make sure it is
@@ -882,19 +1258,49 @@ kubectl get pods -l app=api \
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>Do not put a secret in a ConfigMap, and do not treat a Secret as encryption.</b> Secrets are
-                    stored in etcd, base64-encoded, and are only as protected as your RBAC and your etcd encryption
-                    settings. For anything genuinely sensitive, keep the value in an external store and sync it in
-                    with an operator or a CSI driver &mdash; then reads are audited, rotation is minutes rather than
-                    a redeploy, and the value is never a durable object you have to remember to protect.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 7 -->
-            <h2 id="7-services">7. Services, DNS &amp; Endpoints<a class="headerlink" href="#7-services"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-7-services" data-topic="7-services">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-7-services">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="7-services" class="topic-title">Services, DNS &amp; Endpoints<a class="headerlink" href="#7-services"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-7-services">
+                    <div class="part-section is-collapsed" id="7-services-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-7-services-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#7-services-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-services-theory">
             <ul class="meta-strip">
                 <li><b>Service</b> <code class="big-o o-great">stable name + IP</code></li>
                 <li><b>Join</b> <code class="big-o o-good">label selector</code></li>
@@ -963,6 +1369,33 @@ kubectl get pods -l app=api \
                 </tbody>
             </table>
 
+            <div class="callout callout-key">
+                <p><b>Three checks resolve almost every "the Service is broken" ticket, in this order:</b> does the
+                    label selector match the Pods, are the Pods <em>Ready</em>, and is <code>targetPort</code> the
+                    port the container really listens on. <code>kubectl get endpointslice</code> answers the first
+                    two in one command. Suspect DNS, the CNI or the load balancer only after all three pass.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="7-services-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-7-services-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#7-services-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-services-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your Service returns "connection refused" but all the Pods are
@@ -990,16 +1423,16 @@ kubectl get pods -l app=api \
                         <pre><code data-lang="bash">
 # 1. Does the Service have any backends at all?
 kubectl get endpointslice -l kubernetes.io/service-name=api -o wide
-# ADDRESSES  <none>     <- the cause is one of the next two checks
+# ADDRESSES  &lt;none&gt;     &lt;- the cause is one of the next two checks
 
 # 2a. Does the selector match?
 kubectl describe svc api | grep -i selector      # app=api
-kubectl get pods --show-labels                   # app=api-server  <- typo
+kubectl get pods --show-labels                   # app=api-server  &lt;- typo
 
 # 2b. Are the pods Ready? (Matching but not Ready = no endpoint.)
 kubectl get pods -l app=api
 # NAME           READY   STATUS
-# api-7d4-x9k    0/1     Running     <- readiness probe is failing
+# api-7d4-x9k    0/1     Running     &lt;- readiness probe is failing
 
 # 3. Ports: targetPort must be what the container actually listens on.
 kubectl get svc api -o jsonpath='{.spec.ports}' | jq
@@ -1007,7 +1440,7 @@ kubectl get pod api-7d4-x9k -o jsonpath='{.spec.containers[0].ports}' | jq
 
 # 4. Is the app bound to 0.0.0.0 rather than 127.0.0.1 inside the container?
 kubectl exec api-7d4-x9k -- ss -tlnp
-# LISTEN 127.0.0.1:8080   <- open, and reachable by nobody
+# LISTEN 127.0.0.1:8080   &lt;- open, and reachable by nobody
 
 # Test the whole path from inside the cluster.
 kubectl run tmp --rm -it --image=nicolaka/netshoot -- \
@@ -1044,18 +1477,49 @@ spec:
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-key">
-                <p><b>Three checks resolve almost every "the Service is broken" ticket, in this order:</b> does the
-                    label selector match the Pods, are the Pods <em>Ready</em>, and is <code>targetPort</code> the
-                    port the container really listens on. <code>kubectl get endpointslice</code> answers the first
-                    two in one command. Suspect DNS, the CNI or the load balancer only after all three pass.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 8 -->
-            <h2 id="8-ingress">8. Ingress &mdash; Getting Traffic In<a class="headerlink" href="#8-ingress"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-8-ingress" data-topic="8-ingress">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-8-ingress">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="8-ingress" class="topic-title">Ingress &mdash; Getting Traffic In<a class="headerlink" href="#8-ingress"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-8-ingress">
+                    <div class="part-section is-collapsed" id="8-ingress-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-8-ingress-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#8-ingress-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-8-ingress-theory">
             <ul class="meta-strip">
                 <li><b>Ingress</b> <code class="big-o o-good">host + path rules</code></li>
                 <li><b>Controller</b> <code class="big-o o-good">the actual proxy</code></li>
@@ -1166,11 +1630,49 @@ kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50
                     and the problem is at the edge &mdash; DNS, the load balancer, the certificate, the routing
                     rules. If it does not, stop looking at the Ingress entirely.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 9 -->
-            <h2 id="9-microservices">9. Microservices &mdash; Many Services, One Cluster<a class="headerlink"
-                    href="#9-microservices" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-9-microservices" data-topic="9-microservices">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-9-microservices">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="9-microservices" class="topic-title">Microservices &mdash; Many Services, One Cluster<a class="headerlink"
+                    href="#9-microservices" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-9-microservices">
+                    <div class="part-section is-collapsed" id="9-microservices-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-9-microservices-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#9-microservices-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-9-microservices-theory">
             <ul class="meta-strip">
                 <li><b>Calls</b> <code class="big-o o-good">by Service DNS name</code></li>
                 <li><b>Timeout</b> <code class="big-o o-bad">client default: none</code></li>
@@ -1264,6 +1766,52 @@ kubectl logs -n ingress-nginx deploy/ingress-nginx-controller --tail=50
                     twice.</li>
             </ul>
 
+            <div class="callout callout-warn">
+                <p><b>Kubernetes load-balances per <em>connection</em>, not per request.</b> For plain HTTP/1.1 that
+                    is fine, because connections come and go. For long-lived HTTP/2 or gRPC channels it means one
+                    client pins to one Pod for the life of the channel &mdash; so you scale to ten replicas and the
+                    traffic stays on two. The fixes are a client that does its own load balancing over the headless
+                    Service, periodic connection recycling, or a proxy that balances at the request layer.</p>
+            </div>
+
+            <div class="callout callout-key">
+                <p><b>A service mesh gives you all of this as configuration rather than code</b> &mdash; timeouts,
+                    retries, circuit breaking, mutual TLS between services and traces you did not have to
+                    instrument. It is genuinely valuable at a few dozen services and a large operational commitment
+                    before that: a sidecar in every Pod, another control plane to upgrade, and a new place for
+                    traffic to go wrong. Implement the four patterns in a shared library first; adopt a mesh when
+                    keeping that library consistent across languages has become the harder problem.</p>
+            </div>
+
+            <div class="callout callout-tip">
+                <p>The moment you have more than about three services, <b>distributed tracing stops being optional</b>.
+                    With one service, a log file answers "why was this slow?". With eight, per-service dashboards
+                    all look slightly bad and none of them says where the time went. Propagate the
+                    <code>traceparent</code> header through every hop &mdash; including message queues &mdash; and
+                    put the trace ID on every log line.
+                </p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="9-microservices-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-9-microservices-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#9-microservices-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-9-microservices-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">During an incident, one downstream service is slow &mdash; not down, just slow.
@@ -1386,37 +1934,49 @@ spec:
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>Kubernetes load-balances per <em>connection</em>, not per request.</b> For plain HTTP/1.1 that
-                    is fine, because connections come and go. For long-lived HTTP/2 or gRPC channels it means one
-                    client pins to one Pod for the life of the channel &mdash; so you scale to ten replicas and the
-                    traffic stays on two. The fixes are a client that does its own load balancing over the headless
-                    Service, periodic connection recycling, or a proxy that balances at the request layer.</p>
-            </div>
-
-            <div class="callout callout-key">
-                <p><b>A service mesh gives you all of this as configuration rather than code</b> &mdash; timeouts,
-                    retries, circuit breaking, mutual TLS between services and traces you did not have to
-                    instrument. It is genuinely valuable at a few dozen services and a large operational commitment
-                    before that: a sidecar in every Pod, another control plane to upgrade, and a new place for
-                    traffic to go wrong. Implement the four patterns in a shared library first; adopt a mesh when
-                    keeping that library consistent across languages has become the harder problem.</p>
-            </div>
-
-            <div class="callout callout-tip">
-                <p>The moment you have more than about three services, <b>distributed tracing stops being optional</b>.
-                    With one service, a log file answers "why was this slow?". With eight, per-service dashboards
-                    all look slightly bad and none of them says where the time went. Propagate the
-                    <code>traceparent</code> header through every hop &mdash; including message queues &mdash; and
-                    put the trace ID on every log line.
-                </p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 10 -->
-            <h2 id="10-kubectl">10. kubectl &mdash; The Commands You Actually Need<a class="headerlink"
-                    href="#10-kubectl" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-10-kubectl" data-topic="10-kubectl">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-10-kubectl">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="10-kubectl" class="topic-title">kubectl &mdash; The Commands You Actually Need<a class="headerlink"
+                    href="#10-kubectl" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-10-kubectl">
+                    <div class="part-section is-collapsed" id="10-kubectl-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-10-kubectl-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-kubectl-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-kubectl-theory">
             <ul class="meta-strip">
                 <li><b>Start with</b> <code class="big-o o-great">describe + events</code></li>
                 <li><b>Logs of a dead pod</b> <code class="big-o o-great">--previous</code></li>
@@ -1468,7 +2028,7 @@ kubectl top pod --containers | sort -k3 -h | tail
                     <pre><code data-lang="bash">
 # Worth putting in your shell profile on day one.
 alias k=kubectl
-source <(kubectl completion bash)   # or zsh
+source &lt;(kubectl completion bash)   # or zsh
 complete -o default -F __start_kubectl k
 
 # JSONPath and custom columns turn kubectl into a query tool.
@@ -1503,11 +2063,49 @@ kubectl get pods -A --field-selector=status.phase!=Running
                     prompt tool) &mdash; it takes five minutes and it removes an entire category of incident.
                 </p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 11 -->
-            <h2 id="11-debugging">11. Debugging &mdash; Pending, CrashLoop, 502<a class="headerlink"
-                    href="#11-debugging" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-11-debugging" data-topic="11-debugging">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-11-debugging">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="11-debugging" class="topic-title">Debugging &mdash; Pending, CrashLoop, 502<a class="headerlink"
+                    href="#11-debugging" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-debugging">
+                    <div class="part-section is-collapsed" id="11-debugging-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-11-debugging-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-debugging-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-debugging-theory">
             <ul class="meta-strip">
                 <li><b>Pending</b> <code class="big-o o-bad">scheduler</code></li>
                 <li><b>ImagePullBackOff</b> <code class="big-o o-bad">registry</code></li>
@@ -1573,6 +2171,35 @@ kubectl get pods -A --field-selector=status.phase!=Running
                 </tbody>
             </table>
 
+            <div class="callout callout-key">
+                <p><b><code>kubectl describe</code> and <code>kubectl get events</code> answer most questions before
+                        you reach for anything cleverer.</b> Every controller that touched the object &mdash; scheduler,
+                    kubelet, endpoints controller &mdash; recorded what it did and why. And when the image has no
+                    shell, <code>kubectl debug --image=nicolaka/netshoot --target=api</code> attaches a toolbox
+                    container that shares the Pod's network and process namespaces, so you get a prompt without
+                    shipping one.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="11-debugging-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-11-debugging-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#11-debugging-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-debugging-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Users report intermittent 502s. Some requests work, some do not. Where do you
@@ -1601,7 +2228,7 @@ kubectl get pods -A --field-selector=status.phase!=Running
 kubectl get pods -l app=api
 # NAME          READY   STATUS    RESTARTS   AGE
 # api-7d4-x9k   1/1     Running   0          4h
-# api-7d4-mq2   0/1     Running   3          4h    <- there it is
+# api-7d4-mq2   0/1     Running   3          4h    &lt;- there it is
 
 # 2. Why is that one unhealthy?
 kubectl describe pod api-7d4-mq2 | sed -n '/Events/,$p'
@@ -1649,20 +2276,49 @@ spec:
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-key">
-                <p><b><code>kubectl describe</code> and <code>kubectl get events</code> answer most questions before
-                        you reach for anything cleverer.</b> Every controller that touched the object &mdash; scheduler,
-                    kubelet, endpoints controller &mdash; recorded what it did and why. And when the image has no
-                    shell, <code>kubectl debug --image=nicolaka/netshoot --target=api</code> attaches a toolbox
-                    container that shares the Pod's network and process namespaces, so you get a prompt without
-                    shipping one.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 12 -->
-            <h2 id="12-storage">12. State &amp; Storage (and Why You Probably Do Not Want It)<a class="headerlink"
-                    href="#12-storage" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-12-storage" data-topic="12-storage">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-12-storage">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">12</span>
+                        <h2 id="12-storage" class="topic-title">State &amp; Storage (and Why You Probably Do Not Want It)<a class="headerlink"
+                    href="#12-storage" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-12-storage">
+                    <div class="part-section is-collapsed" id="12-storage-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-12-storage-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-storage-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-storage-theory">
             <ul class="meta-strip">
                 <li><b>PVC</b> <code class="big-o o-good">a request for storage</code></li>
                 <li><b>ReadWriteOnce</b> <code class="big-o o-bad">one node at a time</code></li>
@@ -1687,6 +2343,33 @@ spec:
                     trade by a wide margin.</li>
             </ul>
 
+            <div class="callout callout-tip">
+                <p>As an application developer, the best storage decision is usually <b>not to need any</b>. Put
+                    durable data in a managed database, put files in object storage, keep caches in Redis, and let
+                    your Pods hold nothing that matters. Then rescheduling, rollbacks, node failures and scaling are
+                    all uninteresting &mdash; which is the entire benefit you came to Kubernetes for.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="12-storage-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-12-storage-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#12-storage-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-storage-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">You add a PVC to a Deployment and scale to three replicas. Two Pods stay
@@ -1742,7 +2425,7 @@ spec:
 ---
 # And set the reclaim policy deliberately, or a deleted namespace also
 # deletes the disks:
-#   kubectl patch pv <pv> -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
+#   kubectl patch pv &lt;pv&gt; -p '{"spec":{"persistentVolumeReclaimPolicy":"Retain"}}'
 </code></pre>
                     </div>
                     <div class="tab-pane" data-lang="bash">
@@ -1753,9 +2436,9 @@ kubectl get pvc
 # data-api    Pending                       gp3
 
 kubectl describe pvc data-api | sed -n '/Events/,$p'
-#   waiting for first consumer to be created before binding   <- normal,
+#   waiting for first consumer to be created before binding   &lt;- normal,
 #     with WaitForFirstConsumer; the volume is made when a pod is scheduled
-#   no persistent volumes available for this claim            <- no dynamic
+#   no persistent volumes available for this claim            &lt;- no dynamic
 #     provisioner, or the storageClassName is wrong
 
 # Multi-attach: the Deployment-plus-PVC mistake.
@@ -1775,18 +2458,49 @@ kubectl get pvc          # data-db-0, data-db-1, data-db-2 still there
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-tip">
-                <p>As an application developer, the best storage decision is usually <b>not to need any</b>. Put
-                    durable data in a managed database, put files in object storage, keep caches in Redis, and let
-                    your Pods hold nothing that matters. Then rescheduling, rollbacks, node failures and scaling are
-                    all uninteresting &mdash; which is the entire benefit you came to Kubernetes for.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 13 -->
-            <h2 id="13-scaling">13. Scaling &amp; What It Costs<a class="headerlink" href="#13-scaling"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-13-scaling" data-topic="13-scaling">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-13-scaling">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">13</span>
+                        <h2 id="13-scaling" class="topic-title">Scaling &amp; What It Costs<a class="headerlink" href="#13-scaling"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-13-scaling">
+                    <div class="part-section is-collapsed" id="13-scaling-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-13-scaling-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-scaling-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-scaling-theory">
             <ul class="meta-strip">
                 <li><b>HPA reaction</b> <code class="big-o o-ok">60&ndash;90 s</code></li>
                 <li><b>New node</b> <code class="big-o o-bad">2&ndash;5 min</code></li>
@@ -1812,6 +2526,34 @@ kubectl get pvc          # data-db-0, data-db-1, data-db-2 still there
                     real outages.</li>
             </ul>
 
+            <div class="callout callout-warn">
+                <p><b>Autoscaling is a cost tool that helps with load, not a defence against spikes.</b> If your
+                    traffic can double in ten seconds, the answers are a higher <code>minReplicas</code>,
+                    pre-scaling before known events, and shedding load at the edge &mdash; not a more aggressive
+                    threshold. And bound the second-order effect: connection pooling with a hard maximum, so that
+                    thirty Pods cannot open thirty times as many database connections as four.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="13-scaling-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-13-scaling-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-scaling-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-scaling-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">You add an HPA on CPU at 70% and it never scales, even though the service is
@@ -1880,7 +2622,7 @@ kubectl describe hpa api | sed -n '/Conditions/,$p'
 
 kubectl get hpa api -o wide
 # NAME  REFERENCE       TARGETS         MINPODS  MAXPODS  REPLICAS
-# api   Deployment/api  <unknown>/70%   4        30       4
+# api   Deployment/api  &lt;unknown&gt;/70%   4        30       4
 
 # Is metrics-server working at all?
 kubectl top pod -l app=api
@@ -1899,19 +2641,49 @@ kubectl get pods -A -o json | jq -r '
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-warn">
-                <p><b>Autoscaling is a cost tool that helps with load, not a defence against spikes.</b> If your
-                    traffic can double in ten seconds, the answers are a higher <code>minReplicas</code>,
-                    pre-scaling before known events, and shedding load at the edge &mdash; not a more aggressive
-                    threshold. And bound the second-order effect: connection pooling with a hard maximum, so that
-                    thirty Pods cannot open thirty times as many database connections as four.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 14 -->
-            <h2 id="14-shipping">14. Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own<a class="headerlink"
-                    href="#14-shipping" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-14-shipping" data-topic="14-shipping">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-14-shipping">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">14</span>
+                        <h2 id="14-shipping" class="topic-title">Shipping Safely &mdash; Rollbacks, Budgets &amp; What You Own<a class="headerlink"
+                    href="#14-shipping" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-14-shipping">
+                    <div class="part-section is-collapsed" id="14-shipping-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-14-shipping-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#14-shipping-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-14-shipping-theory">
             <ul class="meta-strip">
                 <li><b>Rollback</b> <code class="big-o o-great">rollout undo</code></li>
                 <li><b>Not reversible</b> <code class="big-o o-bad">migrations</code></li>
@@ -2052,13 +2824,53 @@ kubectl drain node-3 --ignore-daemonsets --dry-run=server
                     incident in this course that a developer can cause is in that second list &mdash; which is good
                     news, because it is a short list and all of it is in your manifest.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 15 -->
-            <h2 id="15-one-page">15. The Whole Thing on One Page<a class="headerlink" href="#15-one-page"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-15-one-page" data-topic="15-one-page">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-15-one-page">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">15</span>
+                        <h2 id="15-one-page" class="topic-title">The Whole Thing on One Page<a class="headerlink" href="#15-one-page"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-15-one-page">
+                    <div class="part-section is-collapsed" id="15-one-page-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-15-one-page-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#15-one-page-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-15-one-page-theory">
             <!-- prettier-ignore -->
+
             <!-- beautify ignore:start -->
+
             <div class="ascii">you write                    controllers reconcile
 ──────────────────────       ─────────────────────────────────────────
 Deployment                   ReplicaSet ──▶ Pods
@@ -2075,6 +2887,7 @@ users ──▶ Ingress ──▶ Service ───┘    host + path ⇒ svc �
 debugging is always:   spec   (what you asked for)
                     vs status (what is true now)
                      + events (what happened in between)</div>
+
             <!-- beautify ignore:end -->
 
             <ul class="card-grid">
@@ -2200,10 +3013,47 @@ Which probe?
                     you did not realise you had declared. Read <code>spec</code>, then <code>status</code>, then the
                     events, and the surprise usually explains itself.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-            <h2 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
+            <section class="topic-section is-collapsed" id="sec-where-next" data-topic="where-next">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-where-next">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">16</span>
+                        <h2 id="where-next" class="topic-title">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
             </h2>
-
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-where-next">
+                    <div class="part-section is-collapsed" id="where-next-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-where-next-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#where-next-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-where-next-theory">
             <ol>
                 <li><a href="../docker/docker-crash-course.html">The Docker crash course</a> &mdash; the
                     prerequisite, if any of the image, layer or volume material here felt thin.</li>
@@ -2221,6 +3071,11 @@ Which probe?
                     once.
                 </li>
             </ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </article>
     </main>
     <footer class="study-footer">TechToday Study Library &mdash; Kubernetes</footer>

@@ -1491,6 +1491,78 @@ const mountViz = (root) => {
 
 document.querySelectorAll("[data-viz]").forEach(mountViz);
 
+/* ------------------------------------------------ collapsible questions */
+
+(() => {
+    const TRIGGER = ".worked.is-collapsible > .worked-q, .worked.is-collapsible > b:first-child, .worked-arrow";
+    const cards = [];
+
+    const setOpen = (card, open) => {
+        card.classList.toggle("is-open", open);
+        card.querySelector(":scope > .worked-q").setAttribute("aria-expanded", String(open));
+        const body = card.querySelector(":scope > .worked-body");
+        if (open) body.removeAttribute("hidden");
+        // "until-found" lets the browser's find-in-page reveal collapsed answers.
+        else body.setAttribute("hidden", "until-found");
+    };
+
+    document.querySelectorAll(".worked").forEach((card, i) => {
+        const question = card.querySelector(":scope > .worked-q");
+        if (!question) return;
+        const label = card.querySelector(":scope > b:first-child");
+        const rest = [...card.childNodes].filter((node) => node !== question && node !== label);
+        if (!rest.some((node) => node.nodeType === Node.ELEMENT_NODE || node.textContent.trim())) return;
+
+        const body = document.createElement("div");
+        body.className = "worked-body";
+        body.id = `worked-body-${i}`;
+        body.append(...rest);
+        body.addEventListener("beforematch", () => setOpen(card, true));
+
+        const arrow = document.createElement("span");
+        arrow.className = "worked-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line class="worked-arrow-v" x1="12" y1="5" x2="12" y2="19"></line></svg>';
+
+        question.setAttribute("role", "button");
+        question.tabIndex = 0;
+        question.setAttribute("aria-controls", body.id);
+        card.classList.add("is-collapsible");
+        card.append(arrow, body);
+        setOpen(card, false);
+        cards.push(card);
+    });
+
+    document.addEventListener("click", (e) => {
+        const trigger = e.target.closest(TRIGGER);
+        if (trigger && !e.target.closest("a")) {
+            const card = trigger.closest(".worked");
+            setOpen(card, !card.classList.contains("is-open"));
+            return;
+        }
+        const action = e.target.closest("[data-course-action]")?.dataset.courseAction;
+        if (action === "expand-all" || action === "collapse-all") {
+            cards.forEach((card) => setOpen(card, action === "expand-all"));
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if ((e.key !== "Enter" && e.key !== " ") || !e.target.matches(".worked.is-collapsible > .worked-q")) return;
+        e.preventDefault();
+        const card = e.target.closest(".worked");
+        setOpen(card, !card.classList.contains("is-open"));
+    });
+
+    const openHashTarget = () => {
+        const id = decodeURIComponent(window.location.hash.slice(1));
+        const card = id && document.getElementById(id)?.closest(".worked.is-collapsible");
+        if (card) setOpen(card, true);
+    };
+    openHashTarget();
+    window.addEventListener("hashchange", openHashTarget);
+})();
+
 /* ------------------------------------------------- shared header behaviour */
 
 (() => {
@@ -1528,4 +1600,120 @@ document.querySelectorAll("[data-viz]").forEach(mountViz);
     updateAiMenuVisibility();
     window.addEventListener("popstate", updateAiMenuVisibility);
     window.addEventListener("hashchange", updateAiMenuVisibility);
+})();
+
+/* ------------------------------------------------ topic & part accordions */
+
+// Move code-tab labels above code boxes so tab-bar never cramps on narrow viewports
+document.querySelectorAll(".code-tabs").forEach((wrap) => {
+    let label = wrap.querySelector(".tab-bar .tab-label");
+    if (!label && wrap.dataset.label) {
+        label = document.createElement("span");
+        label.textContent = wrap.dataset.label;
+    }
+    if (label && wrap.parentNode) {
+        label.className = "code-tab-label";
+        wrap.parentNode.insertBefore(label, wrap);
+    }
+});
+
+// Topic & Inner Part Accordion Interactive Logic
+(() => {
+    const toggleCard = (card, headerSelector, forceOpen = null) => {
+        if (!card) return;
+        const header = card.querySelector(headerSelector);
+        const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+        card.classList.toggle("is-collapsed", !willOpen);
+        if (header) {
+            header.setAttribute("aria-expanded", String(willOpen));
+        }
+    };
+
+    const openAndScrollTo = (targetId) => {
+        if (!targetId) return;
+        const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+        const target = document.getElementById(decodeURIComponent(cleanId));
+        if (!target) return;
+
+        // Expand part if target is a part or inside a part
+        const part = target.closest(".part-section");
+        if (part) {
+            toggleCard(part, ".part-header", true);
+        }
+
+        // Expand topic
+        const section = target.closest(".topic-section");
+        if (section) {
+            toggleCard(section, ".topic-header", true);
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 60);
+        } else {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
+
+    // Click handler for topic and part headers
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".headerlink")) return;
+
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+            const part = partHeader.closest(".part-section");
+            toggleCard(part, ".part-header");
+            return;
+        }
+
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+            const section = topicHeader.closest(".topic-section");
+            toggleCard(section, ".topic-header");
+            return;
+        }
+
+        const link = e.target.closest("a");
+        if (link) {
+            const href = link.getAttribute("href");
+            if (href && href.startsWith("#") && href.length > 1) {
+                openAndScrollTo(href);
+            }
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            const partHeader = e.target.closest(".part-header");
+            if (partHeader) {
+                e.preventDefault();
+                const part = partHeader.closest(".part-section");
+                toggleCard(part, ".part-header");
+                return;
+            }
+
+            const topicHeader = e.target.closest(".topic-header");
+            if (topicHeader) {
+                e.preventDefault();
+                const section = topicHeader.closest(".topic-section");
+                toggleCard(section, ".topic-header");
+            }
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-course-action]");
+        if (!btn) return;
+        const action = btn.dataset.courseAction;
+        if (action === "expand-all") {
+            document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", true));
+            document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", true));
+        } else if (action === "collapse-all") {
+            document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", false));
+            document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", false));
+        }
+    });
+
+    if (window.location.hash) {
+        setTimeout(() => openAndScrollTo(window.location.hash), 150);
+    }
+    window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
 })();
