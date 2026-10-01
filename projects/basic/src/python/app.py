@@ -22,7 +22,7 @@ from flask_cors import CORS
 from arena import battle
 from joke import get_joke
 from rate_limiter import check_rate_limit
-from summarizer import summarize
+from summarizer import MAX_TEXT_CHARS, PERSONALITIES, summarize, summarize_text
 from travel import get_travel_suggestion
 
 # ---------------------------------------------------------------------------
@@ -138,21 +138,29 @@ def travel():
 
 @bp.route("/summarize", methods=["POST"])
 def summarizer():
-    """Scrape a URL and return a GPT-4o mini summary.
+    """Summarize a URL (scraped) or pasted article text with GPT-4o mini.
 
-    Request body (JSON): ``{ "url": "<website URL>" }``
+    Request body (JSON): ``{ "url": "<website URL>" }`` or
+                         ``{ "text": "<article text>" }``, plus an optional
+                         ``"personality"`` (friendly | snarky | eli5 | professional)
     Response (JSON):     ``{ "result": "<markdown summary>" }``
-    Error response:      ``{ "error": "<message>" }`` with HTTP 400 (missing url)
+    Error response:      ``{ "error": "<message>" }`` with HTTP 400 (bad input)
                          or HTTP 500 (API / scraping error)
     """
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
+    article = (data.get("text") or "").strip()
+    personality = (data.get("personality") or "friendly").strip()
     # Validate at the boundary — return 400 immediately rather than letting
-    # the scraper make a request with an empty URL.
-    if not url:
-        return jsonify({"error": "A website URL is required."}), 400
+    # the scraper or model run on bad input.
+    if not url and not article:
+        return jsonify({"error": "A website URL or article text is required."}), 400
+    if personality not in PERSONALITIES:
+        return jsonify({"error": "Unknown personality."}), 400
+    if len(article) > MAX_TEXT_CHARS:
+        return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
     try:
-        text = summarize(url)
+        text = summarize_text(article, personality) if article else summarize(url, personality)
         return jsonify({"result": text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

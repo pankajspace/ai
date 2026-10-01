@@ -189,10 +189,10 @@ Calls **Groq** (Llama 3.3 70B Versatile) to generate a joke on a topic you provi
 Calls **OpenAI** (GPT-4o mini) with a witty-travel-guide persona to suggest one thing to do in any city you enter.
 
 ### 🔎 Website Summarizer
-Takes any URL, fetches the page with a browser-like User-Agent, strips away scripts / navigation / footer noise, then asks **GPT-4o mini** to produce a short markdown summary of what remains.
+Pick a sample (🚀 Startup site, 📰 News article, ✍️ Personal blog), or paste a URL or any article text, then choose a personality (🙂 Friendly, 😏 Snarky, 🧒 Explain like I'm 5, 💼 Professional). URLs are fetched with a browser-like User-Agent and stripped of scripts / navigation / footer noise; pasted text skips scraping. **GPT-4o mini** then writes a short markdown summary using the system prompt for the chosen personality.
 
 ### 🥊 LLM Arena
-Sends the exact same prompt to both **GPT-4o mini** (OpenAI) and **Llama 3.3 70B** (Groq) and displays both replies side by side, making it easy to compare how a proprietary model and an open-source model handle the same question.
+Sends the exact same prompt to two models and shows the replies **blind** as Model A / Model B (sides are shuffled). Pick an example prompt or type your own, vote 👍 / 👎 on each answer to reveal which model wrote it, and watch a running per-model score — a tiny version of arena.ai.
 
 ---
 
@@ -244,7 +244,9 @@ projects/basic/
 - Returns a formatted string (`Title: …\n\nPage contents:\n…`) ready to embed in an LLM prompt, or an error message string if the fetch fails.
 
 **`summarizer.py`**
-- `summarize(url)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion with a markdown-summary system prompt.
+- `summarize(url, personality)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion.
+- `summarize_text(text, personality)` — summarizes pasted article text directly, no scraping.
+- `PERSONALITIES` maps `friendly` / `snarky` / `eli5` / `professional` to the phrase swapped into the system prompt by `build_system_prompt()`.
 - The two steps are deliberately separate so the scraper can be reused by other features independently.
 - Can be run directly from the project root: `python src/python/summarizer.py`.
 
@@ -258,7 +260,7 @@ projects/basic/
 - `GET /` — reads `index.html`, replaces the `const API = "";` placeholder with `PATH_PREFIX`, and returns the patched HTML.  This keeps the same HTML file working both locally (empty prefix) and in production (e.g. `/basic`).
 - `POST /joke` — body: `{ "topic": "..." }` (optional) → `{ "result": "..." }` with `Cache-Control: no-store`.
 - `POST /travel` — body: `{ "city": "..." }` (required) → `{ "result": "..." }`.
-- `POST /summarize` — body: `{ "url": "..." }` (required) → `{ "result": "..." }`.  Returns HTTP 400 if `url` is missing.
+- `POST /summarize` — body: `{ "url": "..." }` or `{ "text": "..." }`, plus optional `"personality"` → `{ "result": "..." }`.  Returns HTTP 400 if both are missing, the personality is unknown, or `text` exceeds 20,000 characters.
 - `POST /arena` — body: `{ "prompt": "..." }` (required) → `{ "result": { "model_a": {…}, "model_b": {…} } }`.  Returns HTTP 400 if `prompt` is missing.
 - Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080` by `docker-compose.yml`).
 

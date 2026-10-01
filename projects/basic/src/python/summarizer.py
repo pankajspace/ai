@@ -16,16 +16,47 @@ from scraper import fetch_website_contents
 # the task is well-defined enough that a smaller model handles it reliably.
 SUMMARIZER_MODEL = "gpt-4o-mini"
 
-# The system prompt primes the model to act as a focused summarizer.
-# Telling it to "ignore navigation menus" discourages it from echoing back
-# repeated boilerplate that slipped through the scraper.
-# Asking for markdown means the UI can render headings / bullets natively.
-SYSTEM_PROMPT = """You analyze the contents of a website and
-give a short, friendly summary. Ignore navigation menus.
-Respond in markdown."""
+# Each personality swaps one phrase of the system prompt — the same code
+# produces a very different summary.  Keys are the only values the API accepts.
+PERSONALITIES = {
+    "friendly": "give a short, friendly summary in plain English",
+    "snarky": "give a short, snarky and humorous summary",
+    "eli5": "explain it in a short summary a 5-year-old could understand",
+    "professional": "give a concise executive summary in a professional tone",
+}
+DEFAULT_PERSONALITY = "friendly"
+
+# Upper bound on pasted article text, to keep prompt size (and cost) in check.
+MAX_TEXT_CHARS = 20_000
 
 
-def summarize(url: str) -> str:
+def build_system_prompt(personality: str = DEFAULT_PERSONALITY) -> str:
+    """Return the system prompt for a personality (unknown keys fall back to friendly).
+
+    Telling the model to "ignore navigation menus" discourages it from echoing
+    boilerplate that slipped through the scraper; asking for markdown lets the
+    UI render headings / bullets.
+    """
+    style = PERSONALITIES.get(personality, PERSONALITIES[DEFAULT_PERSONALITY])
+    return (
+        f"You analyze the contents of a website or article and {style}. "
+        "Ignore navigation menus.\nRespond in markdown."
+    )
+
+
+def _complete(user_content: str, personality: str) -> str:
+    client = get_openai_client()
+    response = client.chat.completions.create(
+        model=SUMMARIZER_MODEL,
+        messages=[
+            {"role": "system", "content": build_system_prompt(personality)},
+            {"role": "user", "content": user_content},
+        ],
+    )
+    return response.choices[0].message.content
+
+
+def summarize(url: str, personality: str = DEFAULT_PERSONALITY) -> str:
     """Fetch a web page and return a short markdown summary of it.
 
     The function scrapes the URL first, then passes the cleaned text to
@@ -35,29 +66,18 @@ def summarize(url: str) -> str:
 
     Args:
         url: The website URL to summarize.  Scheme is optional.
+        personality: One of the PERSONALITIES keys.
 
     Returns:
         A markdown-formatted summary string from the model.
     """
-    # Step 1 — get the page text (title + body, scripts/nav stripped).
     website = fetch_website_contents(url)
+    return _complete(f"Summarize this website:\n\n{website}", personality)
 
-    # Step 2 — ask the model to summarize what we scraped.
-    client = get_openai_client()
-    response = client.chat.completions.create(
-        model=SUMMARIZER_MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                # We embed the full page text directly into the user message.
-                # For very large pages this could exceed the context window;
-                # a production version would truncate or chunk the text first.
-                "content": f"Summarize this website:\n\n{website}",
-            },
-        ],
-    )
-    return response.choices[0].message.content
+
+def summarize_text(text: str, personality: str = DEFAULT_PERSONALITY) -> str:
+    """Summarize pasted article text directly (no scraping)."""
+    return _complete(f"Summarize this article:\n\n{text}", personality)
 
 
 if __name__ == "__main__":

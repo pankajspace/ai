@@ -44,6 +44,12 @@
                     simple way to compare how two different providers respond to identical input.
                 </p>
                 <p>
+                    Like <strong>arena.ai</strong>, the two answers are shown <strong>blind</strong>: the browser
+                    shuffles them into "Model A" and "Model B". Vote &#x1F44D; / &#x1F44E; on an answer to reveal which
+                    model wrote it; a running score per model is kept for the session. Pick one of the example
+                    prompts (recursion, coffee-shop tagline, hotdog debate, space fact) or type your own.
+                </p>
+                <p>
                     Both models are called through the same helper function because they both use the OpenAI SDK — only
                     the client and model name differ.
                 </p>
@@ -95,7 +101,7 @@
                     <div class="flow-arrow-down">&darr;</div>
                     <div class="flow-step">
                         <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Both replies rendered side by side</span>
+                        <span class="flow-detail">Shuffled into blind Model A / B; vote to reveal names</span>
                     </div>
                 </div>
 
@@ -164,6 +170,21 @@ def arena():
     except Exception as e:
         # Catch unexpected model/network failures and return HTTP 500
         return jsonify({"error": str(e)}), 500</code></pre>
+
+                <h2>Frontend voting</h2>
+                <span class="file-label">Shuffles the replies, hides model names, and reveals them on the first
+                    vote (<code>js/main.js</code>).</span>
+                <pre><code class="language-javascript">const renderArena = (data, result) => {
+    const models = [data.result.model_a, data.result.model_b];
+    if (Math.random() &lt; 0.5) models.reverse();   // blind: random sides
+
+    // ...each side shows "Model A" / "Model B" with 👍 Good / 👎 Bad buttons
+    const vote = (delta) => {
+        // reveal both model names, then update that model's running score
+        arenaScores[m.model] += delta;
+        renderTally();
+    };
+};</code></pre>
 
             </div>
         </section>

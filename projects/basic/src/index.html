@@ -63,31 +63,68 @@
                     </div>
 
                     <!-- Summarizer Card -->
-                    <div class="card">
+                    <div class="card wide">
                         <h2>
                             <span class="card-title">&#x1F50E; Website Summarizer</span>
                             <a class="info-link" href="info/summarize.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Paste a URL and let GPT-4o mini summarize the page.</p>
-                        <input type="text" id="urlInput" placeholder="Website URL (e.g. example.com)" />
-                        <span class="validation" id="urlValidation"></span>
-                        <button id="summarizeBtn" disabled>Summarize</button>
+                        <p>Pick a sample, paste a URL or any article text, choose a personality, and let GPT-4o mini
+                            summarize it.</p>
+                        <span class="field-label">Pick a sample "website"</span>
+                        <div class="chip-row" id="sampleChips">
+                            <button type="button" class="chip" data-sample="startup">&#x1F680; Startup site</button>
+                            <button type="button" class="chip" data-sample="news">&#x1F4F0; News article</button>
+                            <button type="button" class="chip" data-sample="blog">&#x270D;&#xFE0F; Personal
+                                blog</button>
+                        </div>
+                        <label class="field-label" for="summarizeInput">&hellip;or paste a URL or any article
+                            text</label>
+                        <textarea id="summarizeInput" rows="4"
+                            placeholder="example.com &mdash; or paste a paragraph or article here"></textarea>
+                        <span class="validation" id="summarizeValidation"></span>
+                        <span class="field-label">Personality (the system prompt)</span>
+                        <div class="chip-row" id="personalityChips" role="radiogroup" aria-label="Personality">
+                            <button type="button" class="chip is-active" role="radio" aria-checked="true"
+                                data-personality="friendly">&#x1F642; Friendly</button>
+                            <button type="button" class="chip" role="radio" aria-checked="false"
+                                data-personality="snarky">&#x1F60F; Snarky</button>
+                            <button type="button" class="chip" role="radio" aria-checked="false"
+                                data-personality="eli5">&#x1F9D2; Explain like I'm 5</button>
+                            <button type="button" class="chip" role="radio" aria-checked="false"
+                                data-personality="professional">&#x1F4BC; Professional</button>
+                        </div>
+                        <button id="summarizeBtn" disabled>&#x2728; Summarize</button>
                         <div class="result" id="summarizeResult"></div>
                     </div>
 
                     <!-- Arena Card -->
-                    <div class="card">
+                    <div class="card wide">
                         <h2>
                             <span class="card-title">&#x1F94A; LLM Arena</span>
                             <a class="info-link" href="info/arena.html" data-tooltip="Explanation"
                                 aria-label="Explanation">&#x24D8;</a>
                         </h2>
-                        <p>Ask one prompt to both GPT-4o mini and Llama 3.3 70B.</p>
+                        <p>One prompt, two hidden models. Vote &#x1F44D; / &#x1F44E; on each answer to reveal who's
+                            who.</p>
                         <input type="text" id="promptInput" placeholder="Ask both models the same thing" />
                         <span class="validation" id="promptValidation"></span>
-                        <button id="arenaBtn" disabled>Battle</button>
+                        <span class="field-label">Or try</span>
+                        <div class="chip-row" id="arenaExamples">
+                            <button type="button" class="chip"
+                                data-prompt="Explain recursion to a total beginner, in 2 sentences.">Explain
+                                recursion&hellip;</button>
+                            <button type="button" class="chip"
+                                data-prompt="Write a catchy tagline for a coffee shop.">Coffee shop tagline</button>
+                            <button type="button" class="chip"
+                                data-prompt="Is a hotdog a sandwich? Give a definitive answer.">Is a hotdog a
+                                sandwich?</button>
+                            <button type="button" class="chip" data-prompt="Give me a fun fact about space.">Fun
+                                fact about space</button>
+                        </div>
+                        <button id="arenaBtn" disabled>&#x2694;&#xFE0F; Battle</button>
                         <div class="result" id="arenaResult"></div>
+                        <div class="arena-tally" id="arenaTally" hidden></div>
                     </div>
 
                 </div>

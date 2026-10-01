@@ -38,11 +38,19 @@
 
                 <h2>Concept</h2>
                 <p>
-                    This demo fetches a web page, strips out the HTML noise, and asks an LLM to summarize what's
-                    left. It's a two-step pipeline kept in separate modules so each step is independently testable
-                    and the scraper can be reused by future features.
+                    This demo fetches a web page (or takes article text you paste in), strips out the HTML noise, and
+                    asks an LLM to summarize what's left in the <strong>personality</strong> you pick. It's a two-step
+                    pipeline kept in separate modules so each step is independently testable and the scraper can be
+                    reused by future features.
                 </p>
                 <ol>
+                    <li><strong>Pick the input</strong> — click a sample (&#x1F680; Startup site, &#x1F4F0; News
+                        article, &#x270D;&#xFE0F; Personal blog), or paste a URL or any article text. A single token
+                        like <code>example.com</code> is sent as <code>url</code>; anything else is sent as
+                        <code>text</code> and skips scraping.
+                    </li>
+                    <li><strong>Pick a personality</strong> — &#x1F642; Friendly, &#x1F60F; Snarky, &#x1F9D2; Explain
+                        like I'm 5, or &#x1F4BC; Professional. Each one swaps a single phrase of the system prompt.</li>
                     <li><strong>Scrape</strong> — <code>scraper.py</code> downloads the page with a browser-like
                         <code>User-Agent</code> and removes <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>,
                         <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>,
@@ -64,19 +72,24 @@
                         <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out
                         <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This
                         is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens
-                        and increase API costs, while potentially confusing the model with structural noise.</li>
+                        and increase API costs, while potentially confusing the model with structural noise.
+                    </li>
                     <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the
                         system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's
                         output can be predictably rendered by our frontend. Furthermore, instructing the model to
                         "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that
                         survived the BeautifulSoup cleanup.</li>
+                    <li><strong>Personality = Prompt Engineering:</strong> The four personality buttons change one
+                        phrase of the system prompt and nothing else. Same model, same input, very different output —
+                        that's the core idea of prompt engineering. The server only accepts the four known keys, so a
+                        user can't inject an arbitrary system prompt.</li>
                 </ul>
 
                 <h2>Request flow</h2>
                 <div class="flow-diagram">
                     <div class="flow-step">
                         <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Paste a URL, click “Summarize”</span>
+                        <span class="flow-detail">Pick a sample or paste a URL / text, pick a personality</span>
                     </div>
                     <div class="flow-arrow">&rarr;</div>
                     <div class="flow-step">
@@ -104,7 +117,9 @@
                 <div class="mermaid-wrap">
                     <div class="mermaid">
                         flowchart TD
-                        A[Browser<br />url] -->|POST /summarize| B[app.py<br />summarizer route]
+                        A[Browser<br />url or text] -->|POST /summarize| B[app.py<br />summarizer route]
+                        B -->|text| F[summarizer.py<br />summarize_text]
+                        F -->|text + prompt| E
                         B -->|url| C[summarizer.py<br />summarize]
                         C -->|url| D[scraper.py<br />fetch_website_contents]
                         D -->|cleaned page text| C
@@ -148,34 +163,44 @@
 
                 <h2>Summarizer</h2>
                 <span class="file-label">Chains the scraper into a GPT-4o mini chat completion.</span>
-                <pre><code class="language-python"># Instruct the model to ignore leftover navigation boilerplate and reply in markdown
-SYSTEM_PROMPT = """You analyze the contents of a website and
-give a short, friendly summary. Ignore navigation menus.
-Respond in markdown."""
+                <pre><code class="language-python"># Each personality swaps one phrase of the system prompt
+PERSONALITIES = {
+    "friendly": "give a short, friendly summary in plain English",
+    "snarky": "give a short, snarky and humorous summary",
+    "eli5": "explain it in a short summary a 5-year-old could understand",
+    "professional": "give a concise executive summary in a professional tone",
+}
 
 
-def summarize(url: str) -> str:
-    # Step 1: Fetch and clean page text (title + body text, scripts/nav stripped)
-    website = fetch_website_contents(url)
+def build_system_prompt(personality: str = "friendly") -> str:
+    style = PERSONALITIES.get(personality, PERSONALITIES["friendly"])
+    return (
+        f"You analyze the contents of a website or article and {style}. "
+        "Ignore navigation menus.\nRespond in markdown."
+    )
 
-    # Step 2: Initialize OpenAI client
+
+def _complete(user_content: str, personality: str) -> str:
     client = get_openai_client()
-
-    # Step 3: Prompt GPT-4o mini to summarize the extracted webpage contents
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                # Embed full page text directly into the user message.
-                # (For very large production documents, chunking/truncation would precede this).
-                "role": "user",
-                "content": f"Summarize this website:\n\n{website}",
-            },
+            {"role": "system", "content": build_system_prompt(personality)},
+            {"role": "user", "content": user_content},
         ],
     )
-    # Step 4: Return generated markdown summary text
-    return response.choices[0].message.content</code></pre>
+    return response.choices[0].message.content
+
+
+def summarize(url: str, personality: str = "friendly") -> str:
+    # Scrape first, then summarize the cleaned page text
+    website = fetch_website_contents(url)
+    return _complete(f"Summarize this website:\n\n{website}", personality)
+
+
+def summarize_text(text: str, personality: str = "friendly") -> str:
+    # Pasted article text needs no scraping
+    return _complete(f"Summarize this article:\n\n{text}", personality)</code></pre>
 
                 <h2>API route</h2>
                 <span class="file-label">Exposes the summarizer over HTTP as <code>POST /summarize</code>.</span>
@@ -184,14 +209,20 @@ def summarizer():
     # Step 1: Parse incoming JSON request
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
+    article = (data.get("text") or "").strip()
+    personality = (data.get("personality") or "friendly").strip()
 
-    # Step 2: Validate URL at the API boundary before initiating scraping
-    if not url:
-        return jsonify({"error": "A website URL is required."}), 400
+    # Step 2: Validate at the API boundary before scraping or calling the model
+    if not url and not article:
+        return jsonify({"error": "A website URL or article text is required."}), 400
+    if personality not in PERSONALITIES:
+        return jsonify({"error": "Unknown personality."}), 400
+    if len(article) > MAX_TEXT_CHARS:
+        return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
 
-    # Step 3: Scrape website and generate summary
+    # Step 3: Summarize pasted text directly, or scrape the URL first
     try:
-        text = summarize(url)
+        text = summarize_text(article, personality) if article else summarize(url, personality)
         return jsonify({"result": text})
     except Exception as e:
         # Catch network or LLM failures and return HTTP 500
