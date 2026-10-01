@@ -8,17 +8,17 @@ Scripts: ../dsa/dsa-study.js
 
 Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
 
-Class 1 · Beginner friendly · Build & ship today
+Beginner friendly · Build & ship today
 
 <a id="llms-and-prompting"></a>
 
 # By the end of *today*, you'll have shipped *two* AI apps.
 
-No PhD. No math. No machine learning background. In one class you'll understand how AI *actually* works — and you'll build **two** real, shareable apps: an **AI Website Summarizer** and a mini **LLM Arena**. Let's go.
+No PhD. No math. No machine learning background. In one sitting you'll understand how AI *actually* works — and you'll build **two** real, shareable apps: an **AI Website Summarizer** and a mini **LLM Arena**. Let's go.
 
 🧠 How LLMs really work · 🪄 The "fill-in-the-blank" trick · 🛠️ Your first 6 lines of code · 🎛️ Two real AI apps · 🥊 Summarizer + LLM Arena
 
-> 🔑 **The promise of Class 1.** You walk in curious. You walk out having **built and shared two working AI apps** — ahead of 99% of people who only *talk* about AI.
+> 🔑 **The promise.** You walk in curious. You walk out having **built and shared two working AI apps** — ahead of 99% of people who only *talk* about AI.
 
 **Scaler Academy** — everything below is interactive. **Click the simulators** as we go.
 
@@ -52,7 +52,7 @@ AI is not new — it's **70 years old**. So why did it explode in *your* feed on
 1. **1950s–2000s — AI is a research lab thing.** Decades of slow progress. You needed a PhD, a university, and years to do anything useful.
 2. **2017 — The "Transformer" is invented.** A new model design that learns language astonishingly well. This is the engine inside GPT, Claude, Gemini.
 3. **Nov 2022 — ChatGPT launches.** The fastest-adopted product in history. Suddenly everyone can *talk* to AI.
-4. **Now → you — Anyone can build on top of it.** The hardest part is done by giant labs. You just *call* their AI with a few lines of code. That's this class.
+4. **Now → you — Anyone can build on top of it.** The hardest part is done by giant labs. You just *call* their AI with a few lines of code. That's what you'll learn here.
 
 > 🔑 **🤯 The wow that defines our era.** Something that used to need **a team + 6 months + a data warehouse** can now be built by **one person in an afternoon** with an internet connection. That collapse in cost is why "AI Engineer" is one of the fastest-growing jobs on the planet — and why you're in the right room.
 
@@ -282,7 +282,7 @@ c. **Open a notebook & pick the kernel.** Open a `.ipynb` file → click *Select
 
 #### ② Get your OpenAI API key
 
-An API key is a secret password that lets your code use OpenAI's models (you pay only for what you use — cents for this class). Here's the flow, simulated — click through it:
+An API key is a secret password that lets your code use OpenAI's models (you pay only for what you use — cents for everything here). Here's the flow, simulated — click through it:
 
 **🔑 OpenAI Platform** — platform.openai.com/api-keys
 
@@ -294,7 +294,7 @@ Sign in, add a little credit under *Billing*, then create a key:
 
 ⚠️ Copy it now — OpenAI shows a secret key only once. And never share it or commit it to GitHub.
 
-🔁 Prefer free? You can skip this entirely and use **Ollama** (runs on your laptop, no key, same code) — we'll cover it next class.
+🔁 Prefer free? You can skip this entirely and use **Ollama** (runs on your laptop, no key, same code) — we'll cover it later.
 
 #### ③ Put the key in a `.env` file (never in your code)
 

@@ -1,6 +1,6 @@
 ---
 name: class-notes-enhancer
-description: "Use when: simplifying a TechToday AI class-notes HTML page (study/ai-projects/*.html) into the DSA-course design (dark theme, collapsible topic/part accordions, plain callouts), removing Gradio UI content, the agenda/flight-plan section and LinkedIn posting content, and regenerating the companion .md file"
+description: "Use when: simplifying a TechToday AI class-notes HTML page (study/ai-projects/*.html) into the DSA-course design (dark theme, collapsible topic/part accordions, plain callouts), removing Gradio UI content, the agenda/flight-plan section, LinkedIn posting content and class numbers ("Class 2"), and regenerating the companion .md file"
 argument-hint: "HTML file to enhance, e.g. projects/techtoday/study/ai-projects/rag-embeddings.html"
 ---
 
@@ -32,11 +32,15 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
 3. **LinkedIn / social-posting content.** This covers ship checklists, caption templates, profile-tag instructions, "post it" speaker notes and hero chips.
    - Scrub every remaining mention: lede, promise text, takeaways ("and posted it"), tips ("eye-catching on LinkedIn"), and sims whose goal is a LinkedIn post (retarget to a neutral artifact such as a blog post).
    - Move non-LinkedIn content from those sections into the most relevant topic instead of deleting it (e.g. "project ideas" → the project topic).
+4. **Class numbers.** Pages must stand alone, not as "Class N" of a series. This covers "Class 2 ·" prefixes in the kicker/eyebrow, `<title>`, meta description and h1, plus every in-text and code-comment reference such as "Class 1's scraper" or "Recap from Class 2".
+   - Drop the prefix where it is just a label: "Class 3 · RAG · Talk to your own documents" → "RAG · Talk to your own documents".
+   - Where it refers to earlier material, name that material instead: "In Class 1 you called the API by hand" → "With the raw OpenAI API you called it by hand"; "Recap from Class 2" → "Recap: LangChain agents"; "# reuse Class 1's scraper" → "# reuse the earlier scraper".
+   - Also drop "today's class" / "this class" phrasing tied to a numbered session where it reads oddly once the number is gone.
 
 ## 3. Rebuild the page structure
 
 1. **Head:** keep any existing base-href script, meta, title and icon. Link `../dsa/dsa-study.css` and `../../site-header.css`. Drop the old bespoke `<style>`, `ai-study-theme.css` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the sim helpers you actually use.
-2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text>"; }`.
+2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
    - site header
    - `.progress`
@@ -93,7 +97,7 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
 
 ## 7. Validate
 
-1. `grep -ci 'gradio\|linkedin'` on both files must return 0.
+1. `grep -ci 'gradio\|linkedin'` and `grep -ciE 'class[ #]*[0-9]'` on both files must each return 0.
 2. Open the page in the integrated browser and run one Playwright check that returns small JSON (avoid screenshots; at most one, if layout must be eyeballed):
    - no `pageerror` events
    - after clicking Expand All: topic and part counts
@@ -111,4 +115,5 @@ Reply briefly with:
 - what was removed
 - what was moved
 - any code that was added to replace Gradio apps
+- each class-number reference that was reworded (not just dropped)
 - any content you reworded beyond the removals
