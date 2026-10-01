@@ -9,7 +9,7 @@ THE FIX:
 Group related tools in a class. They share ONE connection (here, one dict)
 via self, created once in __init__.
 
-    python shivank2/08_class_based_tools.py
+    python two/08_class_based_tools.py
 """
 
 import sys, os

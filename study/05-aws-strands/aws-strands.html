@@ -129,7 +129,7 @@
     <ul>
       <li><a href="#s0">0 · AWS setup from zero</a></li>
     </ul>
-    <h4>Module 1 · shivank1</h4>
+    <h4>Module 1 · one</h4>
     <ul>
       <li><a href="#s1">1 · Why agents exist</a></li>
       <li><a href="#s2">2 · RAG and how it works</a></li>
@@ -140,7 +140,7 @@
       <li><a href="#s7">7 · Strands SDK &amp; the agent loop</a></li>
       <li><a href="#s8">8 · Hello World agents (run it)</a></li>
     </ul>
-    <h4>Module 2 · shivank2</h4>
+    <h4>Module 2 · two</h4>
     <ul>
       <li><a href="#s9">9 · LLM, agent, tools</a></li>
       <li><a href="#s10">10 · Function → tool</a></li>
@@ -237,9 +237,9 @@
 ├── setup.sh / setup.bat
 ├── 00_check_setup.py     <span class="c"># run this FIRST</span>
 ├── 01_list_models.py     <span class="c"># use when a model is retired</span>
-├── shivank1/             <span class="c"># 2 examples</span>
-├── shivank2/             <span class="c"># 9 examples</span>
-└── shivank3/             <span class="c"># capstone project</span></pre></div>
+├── one/             <span class="c"># 2 examples</span>
+├── two/             <span class="c"># 9 examples</span>
+└── three/             <span class="c"># capstone project</span></pre></div>
 
     <h3>0.5 · Install the packages</h3>
     <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">terminal · from the project folder</span><button class="copy">COPY</button></div>
@@ -287,7 +287,7 @@ python 00_check_setup.py</pre>
 
   <!-- ================= CH1 ================= -->
   <section id="s1">
-    <div class="pill">Module 1 · shivank1</div>
+    <div class="pill">Module 1 · one</div>
     <div class="kicker">Section 1</div>
     <h2>Why agents exist at all</h2>
     <p>Start here, because it frames everything else. A standard LLM has two hard limits:</p>
@@ -640,11 +640,11 @@ python 00_check_setup.py</pre>
     <h2>Building a "Hello World" agent</h2>
     <div class="note info">
       <div class="t">How to run every example in this guide</div>
-      <p>Run everything <strong>from the project root</strong> (the folder containing <code class="inl">config.py</code>) — not from inside <code class="inl">shivank1/</code>. The scripts import shared settings from <code class="inl">config.py</code>, so running from a subfolder gives <code class="inl">ModuleNotFoundError: No module named 'config'</code>.</p>
+      <p>Run everything <strong>from the project root</strong> (the folder containing <code class="inl">config.py</code>) — not from inside <code class="inl">one/</code>. The scripts import shared settings from <code class="inl">config.py</code>, so running from a subfolder gives <code class="inl">ModuleNotFoundError: No module named 'config'</code>.</p>
     </div>
 
     <h3>8.1 · The simplest possible agent — Strands + Nova Lite</h3>
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank1/01_hello_world_agent.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">one/01_hello_world_agent.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent
 <span class="k">from</span> strands.models.bedrock <span class="k">import</span> BedrockModel
 <span class="k">from</span> config <span class="k">import</span> NOVA_LITE
@@ -659,14 +659,14 @@ response = agent(<span class="s">"Hello! Tell me a fun fact about AI agents."</s
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank1/01_hello_world_agent.py</pre>
+<pre>python one/01_hello_world_agent.py</pre>
     </div>
     <p><strong>Four lines is a whole agent.</strong> Read each one: choose a model, wrap it in an <code class="inl">Agent</code>, call the agent like a function, print the answer. There are no tools here yet, so the loop runs exactly once — this is the "before" picture for Module 2.</p>
 
     <h3>8.2 · Same idea in LangGraph, with a tool</h3>
     <p>Strands is not the only framework. This version uses LangGraph and adds a small tool, so you can watch the loop actually loop.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank1/02_hello_world_langgraph.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">one/02_hello_world_langgraph.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> langchain.chat_models <span class="k">import</span> init_chat_model
 <span class="k">from</span> langchain.tools <span class="k">import</span> tool
 <span class="k">from</span> langgraph.prebuilt <span class="k">import</span> create_react_agent
@@ -700,7 +700,7 @@ response = agent.invoke(
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank1/02_hello_world_langgraph.py</pre>
+<pre>python one/02_hello_world_langgraph.py</pre>
     </div>
     <div class="note ok">
       <div class="t">Expected output — and the moment it clicks</div>
@@ -717,7 +717,7 @@ response = agent.invoke(
 
   <!-- ================= CH2 ================= -->
   <section id="s9">
-    <div class="pill">Module 2 · shivank2</div>
+    <div class="pill">Module 2 · two</div>
     <div class="kicker">Section 9</div>
     <h2>LLM, agent, and tools — who does what</h2>
     <p>The division of labour — the cleanest mental model here:</p>
@@ -822,7 +822,7 @@ status = check_server_status(<span class="s">"https://staging.myapp.com"</span>)
       <tr><td>A proper docstring</td><td>Describes what it does, so the agent knows <em>when</em> to use it</td></tr>
     </table>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/01_function_to_tool.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/01_function_to_tool.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent, tool
 <span class="k">import</span> requests
 
@@ -848,7 +848,7 @@ response = agent(<span class="s">"Is the staging server running? Check https://h
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/01_function_to_tool.py</pre>
+<pre>python two/01_function_to_tool.py</pre>
     </div>
     <div class="note teach">
       <div class="t">The one thing to take away from this section</div>
@@ -862,7 +862,7 @@ response = agent(<span class="s">"Is the staging server running? Check https://h
     <h2>Your first tool-enabled agent — the tip calculator</h2>
     <p>A practical, self-contained example from Module 2. Nothing external to configure.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/01_function_to_tool.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/01_function_to_tool.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent, tool
 
 <span class="d">@tool</span>
@@ -891,14 +891,14 @@ response = agent(<span class="s">"The bill is $85. What's a 20% tip, and how muc
 <span class="f">print</span>(response.message[<span class="s">'content'</span>][<span class="s">0</span>][<span class="s">'text'</span>])</pre></div>
 
     <p>Then show that the agent understands <em>intent</em>, not keywords — all three of these work without any extra code:</p>
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/02_tip_calculator.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/02_tip_calculator.py</span><button class="copy">COPY</button></div>
 <pre>agent(<span class="s">"What's a 15% tip on $42?"</span>)
 agent(<span class="s">"Bill is $120, we want to tip 18%, split between 3 people"</span>)
 agent(<span class="s">"Calculate tip for $67.50 at 20%"</span>)</pre></div>
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/02_tip_calculator.py</pre>
+<pre>python two/02_tip_calculator.py</pre>
     </div>
     <div class="note teach">
       <div class="t">Contrast worth drawing</div>
@@ -911,7 +911,7 @@ agent(<span class="s">"Calculate tip for $67.50 at 20%"</span>)</pre></div>
     <h2>When one tool isn't enough</h2>
     <p>The scenario: you ask a sales assistant to <em>"pull last quarter's sales data and email a summary to the team."</em> That is not one task — it is three: query the database, analyse the numbers, send an email.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/03_multi_tool_sales.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/03_multi_tool_sales.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent, tool
 
 <span class="d">@tool</span>
@@ -966,7 +966,7 @@ response = agent(<span class="s">"Pull last quarter's sales data and email a sum
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/03_multi_tool_sales.py</pre>
+<pre>python two/03_multi_tool_sales.py</pre>
     </div>
     <div class="note info">
       <div class="t">Rule of thumb</div>
@@ -980,7 +980,7 @@ response = agent(<span class="s">"Pull last quarter's sales data and email a sum
     <p>You don't have to write everything. <code class="inl">strands_tools</code> ships ready-made tools — import and go.</p>
 
     <h3>13.1 · Calculator</h3>
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/05_prebuilt_tools.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/05_prebuilt_tools.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent
 <span class="k">from</span> strands_tools <span class="k">import</span> calculator
 
@@ -996,11 +996,11 @@ agent(<span class="s">"What's the derivative of sin(x) * cos(x)?"</span>)</pre><
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/05_prebuilt_tools.py</pre>
+<pre>python two/05_prebuilt_tools.py</pre>
     </div>
     <h3>13.2 · Combining several pre-built tools</h3>
     <p>Fetch data from the web, do maths on it, and write a file — one request, three tools.</p>
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/06_multi_prebuilt_tools.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/06_multi_prebuilt_tools.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">import</span> os
 <span class="k">from</span> strands <span class="k">import</span> Agent
 <span class="k">from</span> strands_tools <span class="k">import</span> http_request, calculator, file_write
@@ -1021,7 +1021,7 @@ agent(<span class="s">"""</span>
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/06_multi_prebuilt_tools.py</pre>
+<pre>python two/06_multi_prebuilt_tools.py</pre>
     </div>
     <div class="note warn">
       <div class="t">Explain BYPASS_TOOL_CONSENT before running it</div>
@@ -1034,7 +1034,7 @@ agent(<span class="s">"""</span>
     <h2>AWS integration with <code class="inl">use_aws</code></h2>
     <p>One tool, many services. <code class="inl">use_aws</code> translates plain English into AWS API calls.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/07_use_aws.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/07_use_aws.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent
 <span class="k">from</span> strands_tools <span class="k">import</span> use_aws
 
@@ -1062,7 +1062,7 @@ agent(<span class="s">"Invoke the Lambda function 'order-processor' with order I
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/07_use_aws.py</pre>
+<pre>python two/07_use_aws.py</pre>
     </div>
     <div class="note warn">
       <div class="t">Handle with care</div>
@@ -1075,7 +1075,7 @@ agent(<span class="s">"Invoke the Lambda function 'order-processor' with order I
     <h2>Building custom tools</h2>
     <p>When community tools don't fit — an internal API, a proprietary database, something new — you write your own. For example: an online store checking inventory.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/04_custom_tool_inventory.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/04_custom_tool_inventory.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent, tool
 
 <span class="d">@tool</span>
@@ -1111,7 +1111,7 @@ agent(<span class="s">"Can I order PROD-123 right now?"</span>)</pre></div>
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/04_custom_tool_inventory.py</pre>
+<pre>python two/04_custom_tool_inventory.py</pre>
     </div>
     <div class="note teach">
       <div class="t">Exercise — pick one of these</div>
@@ -1128,7 +1128,7 @@ agent(<span class="s">"Can I order PROD-123 right now?"</span>)</pre></div>
     <p>The story: your agent has five tools, each opening its own database connection. Your DBA messages: <em>"Why is your agent opening 50 database connections per minute?"</em> Each tool call opens and closes a connection; multiply by concurrent users and the database drowns.</p>
     <p><strong>The fix:</strong> group related tools in a class so they share one connection.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/08_class_based_tools.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/08_class_based_tools.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">from</span> strands <span class="k">import</span> Agent, tool
 
 <span class="k">class</span> <span class="f">InventoryTools</span>:
@@ -1175,12 +1175,12 @@ agent(<span class="s">"Update PROD-456 stock to 25 units, then confirm the new l
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/08_class_based_tools.py</pre>
+<pre>python two/08_class_based_tools.py</pre>
     </div>
     <h3>16.2 · Slow sequential calls → async tools</h3>
     <p>If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make the tool <code class="inl">async</code> and they run in parallel.</p>
 
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank2/09_async_tools.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">two/09_async_tools.py</span><button class="copy">COPY</button></div>
 <pre><span class="k">import</span> asyncio
 <span class="k">import</span> time
 <span class="k">from</span> strands <span class="k">import</span> Agent, tool
@@ -1223,7 +1223,7 @@ agent(<span class="s">"Update PROD-456 stock to 25 units, then confirm the new l
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank2/09_async_tools.py</pre>
+<pre>python two/09_async_tools.py</pre>
     </div>
     <div class="note ok">
       <div class="t">Great demo moment</div>
@@ -1252,7 +1252,7 @@ agent(<span class="s">"Update PROD-456 stock to 25 units, then confirm the new l
     </table>
 
     <h3>Starter code</h3>
-    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">shivank3/travel_assistant.py</span><button class="copy">COPY</button></div>
+    <div class="code"><div class="code-bar"><span class="dot"><i></i><i></i><i></i></span><span class="label">three/travel_assistant.py</span><button class="copy">COPY</button></div>
 <pre><span class="s">"""Capstone: Travel Assistant Agent (Modules 1 & 2)."""</span>
 
 <span class="k">from</span> strands <span class="k">import</span> Agent, tool
@@ -1353,10 +1353,10 @@ agent = Agent(
 
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
-<pre>python shivank3/travel_assistant.py
+<pre>python three/travel_assistant.py
 
 # or ask your own question:
-python shivank3/travel_assistant.py "I&#39;m going to Manali for 4 days, budget 15000"</pre>
+python three/travel_assistant.py "I&#39;m going to Manali for 4 days, budget 15000"</pre>
     </div>
 
 
@@ -1396,22 +1396,22 @@ python 00_check_setup.py         # verifies everything, makes a real model call<
     <div class="runbox">
       <div class="rl"><span>▶ Run it</span><button class="copy">COPY</button></div>
 <pre># ---- Module 1 · first agents ----
-python shivank1/01_hello_world_agent.py        # simplest agent, no tools
-python shivank1/02_hello_world_langgraph.py    # with a tool — watch the loop
+python one/01_hello_world_agent.py        # simplest agent, no tools
+python one/02_hello_world_langgraph.py    # with a tool — watch the loop
 
 # ---- Module 2 · tools ----
-python shivank2/01_function_to_tool.py         # THE core idea: @tool
-python shivank2/02_tip_calculator.py           # first useful tool agent
-python shivank2/03_multi_tool_sales.py         # 3 tools, agent picks the order
-python shivank2/04_custom_tool_inventory.py    # build your own tool
-python shivank2/05_prebuilt_tools.py           # community tools + system prompt
-python shivank2/06_multi_prebuilt_tools.py     # combining several tools
-python shivank2/07_use_aws.py                  # one tool, many AWS services
-python shivank2/08_class_based_tools.py        # shared-resource pattern
-python shivank2/09_async_tools.py              # parallel tools: 2s not 6s
+python two/01_function_to_tool.py         # THE core idea: @tool
+python two/02_tip_calculator.py           # first useful tool agent
+python two/03_multi_tool_sales.py         # 3 tools, agent picks the order
+python two/04_custom_tool_inventory.py    # build your own tool
+python two/05_prebuilt_tools.py           # community tools + system prompt
+python two/06_multi_prebuilt_tools.py     # combining several tools
+python two/07_use_aws.py                  # one tool, many AWS services
+python two/08_class_based_tools.py        # shared-resource pattern
+python two/09_async_tools.py              # parallel tools: 2s not 6s
 
 # ---- Module 3 · capstone ----
-python shivank3/travel_assistant.py</pre>
+python three/travel_assistant.py</pre>
     </div>
 
     <h3>Helpers</h3>
@@ -1450,7 +1450,7 @@ env | grep AWS               # what credentials are actually set?</pre>
       <tr><td>Notebook cell stuck on <code>[*]</code></td><td>A tool is waiting for consent. Type <code>y</code> at the hidden prompt, or set <code>BYPASS_TOOL_CONSENT="true"</code> in an earlier cell.</td></tr>
       <tr><td>Terminal shows <code>quote&gt;</code> or <code>:</code> and seems frozen</td><td><code>quote&gt;</code> = unclosed quote, press Ctrl+C. <code>:</code> = the AWS CLI pager, press <code>q</code>. Set <code>export AWS_PAGER=""</code> to stop it.</td></tr>
       <tr><td>Agent ignores your tool</td><td>Weak docstring or missing type hints. Rewrite the description to say plainly when it should be used.</td></tr>
-      <tr><td><code>ModuleNotFoundError: No module named 'config'</code></td><td>You ran from inside a subfolder. Run from the project root: <code>python shivank1/01_hello_world_agent.py</code>.</td></tr>
+      <tr><td><code>ModuleNotFoundError: No module named 'config'</code></td><td>You ran from inside a subfolder. Run from the project root: <code>python one/01_hello_world_agent.py</code>.</td></tr>
       <tr><td>Worked yesterday, fails today</td><td>Almost always expired SSO credentials. Paste a fresh block, then <code>python 00_check_setup.py</code>.</td></tr>
     </table>
 

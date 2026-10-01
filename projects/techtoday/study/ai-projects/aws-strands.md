@@ -133,9 +133,9 @@ what's inside
 ├── setup.sh / setup.bat
 ├── 00_check_setup.py     # run this FIRST
 ├── 01_list_models.py     # use when a model is retired
-├── shivank1/             # 2 examples
-├── shivank2/             # 9 examples
-└── shivank3/             # capstone project
+├── one/             # 2 examples
+├── two/             # 9 examples
+└── three/             # capstone project
 ```
 
 ### 0.5 · Install the packages
@@ -188,7 +188,7 @@ python 00_check_setup.py
 
 ---
 
-Module 1 · shivank1
+Module 1 · one
 
 **Section 1**
 
@@ -352,11 +352,11 @@ The loop in plain terms: the agent asks the model; the model reasons, responds, 
 
 > **Info — How to run every example in this guide**
 >
-> Run everything **from the project root** (the folder containing `config.py`) — not from inside `shivank1/`. The scripts import shared settings from `config.py`, so running from a subfolder gives `ModuleNotFoundError: No module named 'config'`.
+> Run everything **from the project root** (the folder containing `config.py`) — not from inside `one/`. The scripts import shared settings from `config.py`, so running from a subfolder gives `ModuleNotFoundError: No module named 'config'`.
 
 ### 8.1 · The simplest possible agent — Strands + Nova Lite
 
-shivank1/01_hello_world_agent.py
+one/01_hello_world_agent.py
 
 ```
 from strands import Agent
@@ -375,7 +375,7 @@ print(response)
 **▶ Run it**
 
 ```
-python shivank1/01_hello_world_agent.py
+python one/01_hello_world_agent.py
 ```
 
 **Four lines is a whole agent.** Read each one: choose a model, wrap it in an `Agent`, call the agent like a function, print the answer. There are no tools here yet, so the loop runs exactly once — this is the "before" picture for Module 2.
@@ -384,7 +384,7 @@ python shivank1/01_hello_world_agent.py
 
 Strands is not the only framework. This version uses LangGraph and adds a small tool, so you can watch the loop actually loop.
 
-shivank1/02_hello_world_langgraph.py
+one/02_hello_world_langgraph.py
 
 ```
 from langchain.chat_models import init_chat_model
@@ -420,7 +420,7 @@ for message in response["messages"]:
 **▶ Run it**
 
 ```
-python shivank1/02_hello_world_langgraph.py
+python one/02_hello_world_langgraph.py
 ```
 
 > **What success looks like — Expected output — and the moment it clicks**
@@ -433,7 +433,7 @@ python shivank1/02_hello_world_langgraph.py
 
 ---
 
-Module 2 · shivank2
+Module 2 · two
 
 **Section 9**
 
@@ -490,7 +490,7 @@ The bridge is **function calling** (also called tool use). Add three things:
 | Type hints | Tell the agent what data types to expect |
 | A proper docstring | Describes what it does, so the agent knows *when* to use it |
 
-shivank2/01_function_to_tool.py
+two/01_function_to_tool.py
 
 ```
 from strands import Agent, tool
@@ -523,7 +523,7 @@ response = agent("Is the staging server running? Check https://httpbin.org/get")
 **▶ Run it**
 
 ```
-python shivank2/01_function_to_tool.py
+python two/01_function_to_tool.py
 ```
 
 > **Teaching note — The one thing to take away from this section**
@@ -538,7 +538,7 @@ In short: *this pattern works for any function. Add `@tool`, give it to your Age
 
 A practical, self-contained example from Module 2. Nothing external to configure.
 
-shivank2/01_function_to_tool.py
+two/01_function_to_tool.py
 
 ```
 from strands import Agent, tool
@@ -571,7 +571,7 @@ print(response.message['content'][0]['text'])
 
 Then show that the agent understands *intent*, not keywords — all three of these work without any extra code:
 
-shivank2/02_tip_calculator.py
+two/02_tip_calculator.py
 
 ```
 agent("What's a 15% tip on $42?")
@@ -582,7 +582,7 @@ agent("Calculate tip for $67.50 at 20%")
 **▶ Run it**
 
 ```
-python shivank2/02_tip_calculator.py
+python two/02_tip_calculator.py
 ```
 
 > **Teaching note — Contrast worth drawing**
@@ -595,7 +595,7 @@ python shivank2/02_tip_calculator.py
 
 The scenario: you ask a sales assistant to *"pull last quarter's sales data and email a summary to the team."* That is not one task — it is three: query the database, analyse the numbers, send an email.
 
-shivank2/03_multi_tool_sales.py
+two/03_multi_tool_sales.py
 
 ```
 from strands import Agent, tool
@@ -630,7 +630,7 @@ You never told the agent the sequence. It recognised it needed data first, then 
 **▶ Run it**
 
 ```
-python shivank2/03_multi_tool_sales.py
+python two/03_multi_tool_sales.py
 ```
 
 > **Info — Rule of thumb**
@@ -645,7 +645,7 @@ You don't have to write everything. `strands_tools` ships ready-made tools — i
 
 ### 13.1 · Calculator
 
-shivank2/05_prebuilt_tools.py
+two/05_prebuilt_tools.py
 
 ```
 from strands import Agent
@@ -666,14 +666,14 @@ Note this also introduces the **system prompt** — standing instructions that s
 **▶ Run it**
 
 ```
-python shivank2/05_prebuilt_tools.py
+python two/05_prebuilt_tools.py
 ```
 
 ### 13.2 · Combining several pre-built tools
 
 Fetch data from the web, do maths on it, and write a file — one request, three tools.
 
-shivank2/06_multi_prebuilt_tools.py
+two/06_multi_prebuilt_tools.py
 
 ```
 import os
@@ -698,7 +698,7 @@ and save the results to stock_summary.txt
 **▶ Run it**
 
 ```
-python shivank2/06_multi_prebuilt_tools.py
+python two/06_multi_prebuilt_tools.py
 ```
 
 > **Warning — Explain BYPASS_TOOL_CONSENT before running it**
@@ -711,7 +711,7 @@ python shivank2/06_multi_prebuilt_tools.py
 
 One tool, many services. `use_aws` translates plain English into AWS API calls.
 
-shivank2/07_use_aws.py
+two/07_use_aws.py
 
 ```
 from strands import Agent
@@ -746,7 +746,7 @@ Notice what just happened: you described what you wanted in plain English, and t
 **▶ Run it**
 
 ```
-python shivank2/07_use_aws.py
+python two/07_use_aws.py
 ```
 
 > **Warning — Handle with care**
@@ -759,7 +759,7 @@ python shivank2/07_use_aws.py
 
 When community tools don't fit — an internal API, a proprietary database, something new — you write your own. For example: an online store checking inventory.
 
-shivank2/04_custom_tool_inventory.py
+two/04_custom_tool_inventory.py
 
 ```
 from strands import Agent, tool
@@ -799,7 +799,7 @@ Note the mock dictionary: in production you'd replace it with real database quer
 **▶ Run it**
 
 ```
-python shivank2/04_custom_tool_inventory.py
+python two/04_custom_tool_inventory.py
 ```
 
 > **Teaching note — Exercise — pick one of these**
@@ -818,7 +818,7 @@ The story: your agent has five tools, each opening its own database connection. 
 
 **The fix:** group related tools in a class so they share one connection.
 
-shivank2/08_class_based_tools.py
+two/08_class_based_tools.py
 
 ```
 from strands import Agent, tool
@@ -869,14 +869,14 @@ agent("Update PROD-456 stock to 25 units, then confirm the new level")
 **▶ Run it**
 
 ```
-python shivank2/08_class_based_tools.py
+python two/08_class_based_tools.py
 ```
 
 ### 16.2 · Slow sequential calls → async tools
 
 If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make the tool `async` and they run in parallel.
 
-shivank2/09_async_tools.py
+two/09_async_tools.py
 
 ```
 import asyncio
@@ -923,7 +923,7 @@ await main()
 **▶ Run it**
 
 ```
-python shivank2/09_async_tools.py
+python two/09_async_tools.py
 ```
 
 > **What success looks like — Great demo moment**
@@ -953,7 +953,7 @@ Build an agent that answers: *"I'm going to Goa for 3 days next week with a budg
 
 ### Starter code
 
-shivank3/travel_assistant.py
+three/travel_assistant.py
 
 ```
 """Capstone: Travel Assistant Agent (Modules 1 & 2)."""
@@ -1054,10 +1054,10 @@ if __name__ == "__main__":
 **▶ Run it**
 
 ```
-python shivank3/travel_assistant.py
+python three/travel_assistant.py
 
 # or ask your own question:
-python shivank3/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 ```
 
 ### What to observe together
@@ -1099,22 +1099,22 @@ python 00_check_setup.py         # verifies everything, makes a real model call
 
 ```
 # ---- Module 1 · first agents ----
-python shivank1/01_hello_world_agent.py        # simplest agent, no tools
-python shivank1/02_hello_world_langgraph.py    # with a tool — watch the loop
+python one/01_hello_world_agent.py        # simplest agent, no tools
+python one/02_hello_world_langgraph.py    # with a tool — watch the loop
 
 # ---- Module 2 · tools ----
-python shivank2/01_function_to_tool.py         # THE core idea: @tool
-python shivank2/02_tip_calculator.py           # first useful tool agent
-python shivank2/03_multi_tool_sales.py         # 3 tools, agent picks the order
-python shivank2/04_custom_tool_inventory.py    # build your own tool
-python shivank2/05_prebuilt_tools.py           # community tools + system prompt
-python shivank2/06_multi_prebuilt_tools.py     # combining several tools
-python shivank2/07_use_aws.py                  # one tool, many AWS services
-python shivank2/08_class_based_tools.py        # shared-resource pattern
-python shivank2/09_async_tools.py              # parallel tools: 2s not 6s
+python two/01_function_to_tool.py         # THE core idea: @tool
+python two/02_tip_calculator.py           # first useful tool agent
+python two/03_multi_tool_sales.py         # 3 tools, agent picks the order
+python two/04_custom_tool_inventory.py    # build your own tool
+python two/05_prebuilt_tools.py           # community tools + system prompt
+python two/06_multi_prebuilt_tools.py     # combining several tools
+python two/07_use_aws.py                  # one tool, many AWS services
+python two/08_class_based_tools.py        # shared-resource pattern
+python two/09_async_tools.py              # parallel tools: 2s not 6s
 
 # ---- Module 3 · capstone ----
-python shivank3/travel_assistant.py
+python three/travel_assistant.py
 ```
 
 ### Helpers
@@ -1155,7 +1155,7 @@ env | grep AWS               # what credentials are actually set?
 | Notebook cell stuck on `[*]` | A tool is waiting for consent. Type `y` at the hidden prompt, or set `BYPASS_TOOL_CONSENT="true"` in an earlier cell. |
 | Terminal shows `quote>` or `:` and seems frozen | `quote>` = unclosed quote, press Ctrl+C. `:` = the AWS CLI pager, press `q`. Set `export AWS_PAGER=""` to stop it. |
 | Agent ignores your tool | Weak docstring or missing type hints. Rewrite the description to say plainly when it should be used. |
-| `ModuleNotFoundError: No module named 'config'` | You ran from inside a subfolder. Run from the project root: `python shivank1/01_hello_world_agent.py`. |
+| `ModuleNotFoundError: No module named 'config'` | You ran from inside a subfolder. Run from the project root: `python one/01_hello_world_agent.py`. |
 | Worked yesterday, fails today | Almost always expired SSO credentials. Paste a fresh block, then `python 00_check_setup.py`. |
 
 ### The five sentences to remember

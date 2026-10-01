@@ -3,7 +3,7 @@
 Shows that the agent understands INTENT, not keywords. All three phrasings
 at the bottom work without any extra code — no regex, no intent classifier.
 
-    python shivank2/02_tip_calculator.py
+    python two/02_tip_calculator.py
 """
 
 import sys, os

@@ -56,45 +56,45 @@ Checks Python, packages, credentials, region, Bedrock — **and makes a real mod
 
 ## Running the lessons
 
-Run everything **from this folder** (the one with `config.py`), not from inside `shivank1/`.
+Run everything **from this folder** (the one with `config.py`), not from inside `one/`.
 
 ### Module 1 — first agents
 
 ```bash
-python shivank1/01_hello_world_agent.py        # simplest agent, no tools
-python shivank1/02_hello_world_langgraph.py    # with a tool — watch the loop
+python one/01_hello_world_agent.py        # simplest agent, no tools
+python one/02_hello_world_langgraph.py    # with a tool — watch the loop
 ```
 
 ### Module 2 — tools
 
 ```bash
-python shivank2/01_function_to_tool.py         # THE core idea: @tool
-python shivank2/02_tip_calculator.py           # first useful tool agent
-python shivank2/03_multi_tool_sales.py         # 3 tools, agent picks the order
-python shivank2/04_custom_tool_inventory.py    # build your own tool
-python shivank2/05_prebuilt_tools.py           # community tools + system prompt
-python shivank2/06_multi_prebuilt_tools.py     # combining several tools
-python shivank2/07_use_aws.py                  # one tool, many AWS services
-python shivank2/08_class_based_tools.py        # shared-resource pattern
-python shivank2/09_async_tools.py              # parallel tools: 2s not 6s
+python two/01_function_to_tool.py         # THE core idea: @tool
+python two/02_tip_calculator.py           # first useful tool agent
+python two/03_multi_tool_sales.py         # 3 tools, agent picks the order
+python two/04_custom_tool_inventory.py    # build your own tool
+python two/05_prebuilt_tools.py           # community tools + system prompt
+python two/06_multi_prebuilt_tools.py     # combining several tools
+python two/07_use_aws.py                  # one tool, many AWS services
+python two/08_class_based_tools.py        # shared-resource pattern
+python two/09_async_tools.py              # parallel tools: 2s not 6s
 ```
 
 ### Module 3 — capstone
 
 ```bash
-python shivank3/travel_assistant.py
+python three/travel_assistant.py
 
 # or ask your own question:
-python shivank3/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 ```
 
 ---
 
 ## Two experiments worth doing in class
 
-**1. Break a docstring.** In `shivank2/01_function_to_tool.py`, change the tool's docstring to just `"""Does a thing."""` and re-run. The agent often stops calling the tool. The docstring isn't a comment — it's the manual the *model* reads to decide if your tool is relevant.
+**1. Break a docstring.** In `two/01_function_to_tool.py`, change the tool's docstring to just `"""Does a thing."""` and re-run. The agent often stops calling the tool. The docstring isn't a comment — it's the manual the *model* reads to decide if your tool is relevant.
 
-**2. Watch the loop.** Run `shivank1/02_hello_world_langgraph.py` and look at the empty `ai:` line. That's the model choosing to *use a tool* instead of answering. That is the agentic loop.
+**2. Watch the loop.** Run `one/02_hello_world_langgraph.py` and look at the empty `ai:` line. That's the model choosing to *use a tool* instead of answering. That is the agentic loop.
 
 ---
 
@@ -153,7 +153,7 @@ Everything runs on your laptop and calls Bedrock per request. All lessons togeth
 ├── setup.sh / setup.bat
 ├── 00_check_setup.py     ← run this first
 ├── 01_list_models.py     ← when a model is retired
-├── shivank1/             ← Module 1 · 2 lessons
-├── shivank2/             ← Module 2 · 9 lessons
-└── shivank3/             ← Module 3 · capstone
+├── one/             ← Module 1 · 2 lessons
+├── two/             ← Module 2 · 9 lessons
+└── three/             ← Module 3 · capstone
 ```

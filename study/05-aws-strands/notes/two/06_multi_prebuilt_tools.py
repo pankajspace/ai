@@ -11,7 +11,7 @@ That prompt is a real safety feature — in production you often WANT a human
 approving actions. If a script ever seems to hang, it's probably waiting for
 you to type 'y'.
 
-    python shivank2/06_multi_prebuilt_tools.py
+    python two/06_multi_prebuilt_tools.py
 """
 
 import sys, os

@@ -14,8 +14,8 @@ WHAT TO WATCH: the agent calls get_weather_forecast FIRST, feeds those numbers
 into suggest_packing_list, then prices the trip and compares to the budget.
 Nobody wrote that sequence — the loop worked it out.
 
-    python shivank3/travel_assistant.py
-    python shivank3/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+    python three/travel_assistant.py
+    python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 """
 
 import sys, os
@@ -129,11 +129,11 @@ if __name__ == "__main__":
 #
 # EASY    Add a get_visa_requirements(country) tool, ask about an intl. trip.
 # MEDIUM  Replace the mock weather with a real API call using `requests`
-#         (same pattern as shivank2/01_function_to_tool.py).
+#         (same pattern as two/01_function_to_tool.py).
 # MEDIUM  Regroup the three tools into a TravelTools class with shared state
-#         (see shivank2/08_class_based_tools.py).
+#         (see two/08_class_based_tools.py).
 # HARDER  Make the weather + cost lookups async so a multi-city comparison
-#         runs in parallel (see shivank2/09_async_tools.py).
+#         runs in parallel (see two/09_async_tools.py).
 # HARDER  Add file_write from strands_tools and have the agent save an
 #         itinerary to disk.
 # ---------------------------------------------------------------------------

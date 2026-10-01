@@ -13,7 +13,7 @@ WHAT TO LOOK FOR in the output:
 That empty `ai:` line is the model deciding to act instead of replying.
 That IS the agentic loop.
 
-    python shivank1/02_hello_world_langgraph.py
+    python one/02_hello_world_langgraph.py
 """
 
 import sys, os

@@ -105,4 +105,4 @@ if problems:
     sys.exit(1)
 else:
     print("\nAll checks passed. You're ready — start with:")
-    print("    python shivank1/01_hello_world_agent.py\n")
+    print("    python one/01_hello_world_agent.py\n")

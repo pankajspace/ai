@@ -10,7 +10,7 @@ An empty list is a valid result, not an error.
 use_aws CAN modify real resources. In a class, demo read-only requests only,
 on a sandbox account.
 
-    python shivank2/07_use_aws.py
+    python two/07_use_aws.py
 """
 
 import sys, os

@@ -9,7 +9,7 @@ Four lines is a whole agent:
 There are no tools here, so the agentic loop runs exactly once.
 This is the "before" picture for Module 2.
 
-    python shivank1/01_hello_world_agent.py
+    python one/01_hello_world_agent.py
 """
 
 import sys, os

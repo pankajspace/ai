@@ -9,7 +9,7 @@ PARALLEL, so the whole thing takes about 2 seconds instead of 6.
 
 WATCH THE PRINTED TIMING at the end — that IS the lesson.
 
-    python shivank2/09_async_tools.py
+    python two/09_async_tools.py
 """
 
 import sys, os

@@ -7,7 +7,7 @@ A normal Python function is invisible to an agent. To expose it, add 3 things:
     2. type hints            -> tells the agent what data types to expect
     3. a proper docstring    -> tells the agent WHEN to use it
 
-    python shivank2/01_function_to_tool.py
+    python two/01_function_to_tool.py
 """
 
 import sys, os

@@ -6,7 +6,7 @@ write your own. Here: an online store checking stock.
 The mock dictionary stands in for a real database. The agent-facing part —
 decorator, type hints, docstring — is identical either way.
 
-    python shivank2/04_custom_tool_inventory.py
+    python two/04_custom_tool_inventory.py
 """
 
 import sys, os
