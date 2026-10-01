@@ -26,3 +26,6 @@
 2. [AWS Cloud Practitioner UDM](https://www.udemy.com/course/aws-certified-cloud-practitioner-new/) 15Hrs
 3. [Microservices Node JS & React UDM SG](https://www.udemy.com/course/microservices-with-node-js-and-react/) 55Hrs
 4. [AWS Certified AI Practitioner AIF-C01](https://www.udemy.com/course/aws-ai-practitioner-certified) 10Hrs
+
+
+Make this html design simple , similar to our dsa courses. dont remove any content while doing that. Remove gradio related content for creating UI.
