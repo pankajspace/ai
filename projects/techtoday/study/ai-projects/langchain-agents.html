@@ -2,14 +2,6 @@
 <html lang="en">
 
 <head>
-  <script>
-    if (window.location.pathname.endsWith('/ai')) {
-      const base = document.createElement('base');
-      let path = window.location.pathname.replace(/\/ai\/?$/, '');
-      base.href = path.substring(0, path.lastIndexOf('/') + 1) || '/';
-      document.head.appendChild(base);
-    }
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0b0d10" />
@@ -666,7 +658,8 @@
                 the third.</p>
               <ul class="card-grid">
                 <li class="is-good"><b>✍️ 1. Prompting</b>Just <em>tell</em> it clearly. Free, instant, no training.
-                  <strong>90% of real work lives here</strong> — including everything on this page.</li>
+                  <strong>90% of real work lives here</strong> — including everything on this page.
+                </li>
                 <li><b>📚 2. RAG</b>Hand it <em>your</em> documents at question-time so it answers from real data.
                   Coming up next.</li>
                 <li><b>🎓 3. Fine-tuning</b>Actually re-train on examples. Powerful, costly, rarely needed. Reach for
@@ -698,7 +691,8 @@
         </div>
         <div class="topic-content" id="content-langchain">
           <div class="part-section is-collapsed" id="langchain-why">
-            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-langchain-why">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-why">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
                 <h3 class="part-heading">Why LangChain (and Install It)<a class="headerlink" href="#langchain-why"
@@ -755,10 +749,12 @@ $ pip install langchain langchain-openai
                 <li><b><code>ChatPromptTemplate</code> = a prompt with blanks</b>A normal prompt where some parts are
                   left as <code>{blanks}</code> to fill in later. Like a wedding-invite template: "Dear
                   <code>{name}</code>, join us on <code>{date}</code>". Write once, reuse for every guest.<br><em>say
-                    it as: "my reusable prompt"</em></li>
+                    it as: "my reusable prompt"</em>
+                </li>
                 <li><b><code>ChatOpenAI</code> = the model, in a LangChain wrapper</b>The exact same GPT you called
                   with the raw OpenAI API — just wrapped so it can snap onto other LangChain pieces. Same
-                  <code>model=</code>, same <code>temperature=</code>.<br><em>say it as: "the model"</em></li>
+                  <code>model=</code>, same <code>temperature=</code>.<br><em>say it as: "the model"</em>
+                </li>
                 <li><b><code>StrOutputParser</code> = unwraps the answer</b>The model doesn't return plain text — it
                   returns a <em>package</em> (text + metadata like token counts). This piece opens the package and
                   hands you just the string. ("Str" = string, i.e. plain text.)<br><em>say it as: "give me just the
@@ -941,10 +937,12 @@ print(summarize("https://anthropic.com"))
                   takes the model's <code>AIMessage</code> package, hands back plain text.</li>
                 <li><strong>The pipe <code>|</code></strong> means <strong>"then"</strong>. Read aloud: "the prompt,
                   <em>then</em> the model, <em>then</em> the parser." Data flows left → right, exactly like the
-                  builder.</li>
+                  builder.
+                </li>
                 <li><strong><code>invoke</code></strong> means <strong>"run it"</strong>. The dict
                   <code>{"website": ...}</code> says which blank gets what — the key <code>"website"</code> matches
-                  the <code>{website}</code> blank by name.</li>
+                  the <code>{website}</code> blank by name.
+                </li>
               </ol>
               <div class="callout callout-key">
                 <p><strong>✨ The unlock.</strong> <code>chain</code> is now a <strong>reusable building
@@ -971,7 +969,8 @@ print(summarize("https://anthropic.com"))
             <div class="part-body" id="body-langchain-memory">
               <p>Remember the basic truth: models forget everything between calls. The fix is simple —
                 <strong>re-send the old messages every time</strong>. LangChain gives that a tidy home. Two tiny new
-                words first:</p>
+                words first:
+              </p>
               <ul class="card-grid">
                 <li><b><code>HumanMessage</code> / <code>AIMessage</code> = labelled chat bubbles</b>Just a way to
                   store "the human said X" and "the AI replied Y" — the same user/assistant roles from the raw OpenAI
@@ -1106,7 +1105,8 @@ def get_price(item):
               <p>Two tiny notes for the Python: <code>PRICES</code> is an ordinary dict standing in for a database,
                 and <code>.get(item, 'unknown')</code> means "look it up, and if it's not there, say
                 <em>unknown</em> instead of crashing." That's the entire tool — <strong>any function you can write
-                  can become an agent's tool.</strong></p>
+                  can become an agent's tool.</strong>
+              </p>
 
               <h4>Step 2 — describe the tool so the model knows it exists</h4>
               <p>The model can't see your Python. You hand it a <strong>menu card describing the tool</strong> —
@@ -1175,14 +1175,17 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
                 <li><strong>Check for a tool request.</strong> <code>msg.tool_calls</code> = "did the model ask to
                   run a tool?" If it did, this holds <em>which tool</em> and <em>with what input</em> — e.g.
                   <code>get_price</code>, <code>item="shoes"</code>. If not, it's empty and we skip straight to the
-                  answer.</li>
+                  answer.
+                </li>
                 <li><strong>Run the tool.</strong> The model's request arrives as text, so
                   <code>json.loads(...)</code> converts it into a Python dict we can read — then <strong>we</strong>
                   run the real function. (Important: the model never runs code itself. It <em>asks</em>; your Python
-                  <em>does</em>.)</li>
+                  <em>does</em>.)
+                </li>
                 <li><strong>Send it all back.</strong> We append the tool's result to the conversation with
                   <code>role: "tool"</code> (a third role, joining system/user/assistant!) and send everything back,
-                  so the model can write a friendly final answer using the real data.</li>
+                  so the model can write a friendly final answer using the real data.
+                </li>
               </ol>
             </div>
           </div>
@@ -1204,7 +1207,8 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
             <div class="part-body" id="body-agent-messages">
               <p>The whole agent is just <strong>a list of messages getting longer</strong>. Step through one
                 question and watch each card get appended — this is exactly what your code's
-                <code>messages.append(...)</code> lines do:</p>
+                <code>messages.append(...)</code> lines do:
+              </p>
               <div class="viz">
                 <div class="viz-head"><span class="viz-title">Live sim · The messages list, live</span><span
                     class="viz-step">"How much are the shoes?"</span></div>
@@ -1223,7 +1227,8 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
                 <p><strong>🤯 <code>if msg.tool_calls</code> is the entire secret.</strong> The model asked to run
                   <code>get_price("shoes")</code> <em>on its own</em>. Give it ten tools and it picks among them. You
                   now understand how Cursor, support bots, and every "AI agent" headline actually works — same
-                  pattern, bigger toolbox.</p>
+                  pattern, bigger toolbox.
+                </p>
               </div>
             </div>
           </div>
@@ -1335,9 +1340,11 @@ Shop: The pants are ₹1699.
 </code></pre>
               <ol>
                 <li><strong>Ask a price question.</strong> "How much are the pants?" — watch your terminal print
-                  <code>🔧 tool called: get_price(pants)</code>. Your agent used its tool!</li>
+                  <code>🔧 tool called: get_price(pants)</code>. Your agent used its tool!
+                </li>
                 <li><strong>Then ask small talk.</strong> "What's your return policy?" — no tool fires. It's
-                  <em>deciding</em>, not following a script.</li>
+                  <em>deciding</em>, not following a script.
+                </li>
                 <li><strong>Compare the two.</strong> One tool question, one chat question, terminal visible — that
                   contrast is the whole agent idea in 15 seconds.</li>
               </ol>
@@ -1359,10 +1366,11 @@ Shop: The pants are ₹1699.
             </div>
             <div class="part-body" id="body-project-demo">
               <p>A live, in-browser version with the real chat feel — typing dots, tool-call chips, the works. Watch
-                <em>when</em> the 🔧 appears (and when it doesn't):</p>
+                <em>when</em> the 🔧 appears (and when it doesn't):
+              </p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">🛍️ Smart Shop Assistant</span><span
-                    class="viz-step">live demo</span></div>
+                <div class="viz-head"><span class="viz-title">🛍️ Smart Shop Assistant</span><span class="viz-step">live
+                    demo</span></div>
                 <div class="viz-stage is-text chat-log" id="shopLog">
                   <div class="bub bot show">Hi! I'm your shop assistant. Ask me the price of anything 🙂</div>
                 </div>
@@ -1455,9 +1463,11 @@ Shop: The pants are ₹1699.
             <div class="part-body" id="body-next-road">
               <ol>
                 <li><strong>More tools (your homework).</strong> Add <code>check_stock(item)</code> or
-                  <code>apply_discount(item)</code> and watch the agent pick the right one.</li>
+                  <code>apply_discount(item)</code> and watch the agent pick the right one.
+                </li>
                 <li><strong>RAG — chat with your own PDFs.</strong> The next big build: a model that answers from
-                  <em>your</em> documents.</li>
+                  <em>your</em> documents.
+                </li>
                 <li><strong>Multi-agent teams.</strong> Several agents handing work to each other — once one agent
                   feels easy.</li>
               </ol>
