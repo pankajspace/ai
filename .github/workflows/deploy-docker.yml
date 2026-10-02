@@ -223,7 +223,9 @@ jobs:
 
             docker compose -f ~/docker-compose.yml --profile level2 --profile level3 pull \
               web quickbite scalergpt deskbuddy-agent deskbuddy-tools
-            docker compose -f ~/docker-compose.yml --profile level2 --profile level3 up -d --wait
+            # Name services explicitly so leftover entries in the shared file can't abort the rollout.
+            docker compose -f ~/docker-compose.yml --profile level2 --profile level3 up -d --wait \
+              web quickbite scalergpt scalergpt-chroma deskbuddy-agent deskbuddy-tools deskbuddy-redis
 
             # ScalerGPT needs its documents indexed into Chroma after start.
             docker compose -f ~/docker-compose.yml exec -T scalergpt python ingest.py
