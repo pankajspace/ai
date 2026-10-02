@@ -4,186 +4,462 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Website Summarizer · AI Playground</title>
     <meta name="description"
         content="How the Website Summarizer demo works: scraping, GPT-4o mini, and the code behind it." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Playground</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Playground</a>
         </nav>
     </header>
-
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F50E; Website Summarizer</h1>
-                <p class="subtitle">requests + BeautifulSoup + GPT-4o mini</p>
-            </div>
-        </section>
-
-        <section>
-            <div class="container info-content">
-
-                <h2>Concept</h2>
-                <p>
-                    This demo fetches a web page (or takes article text you paste in), strips out the HTML noise, and
-                    asks an LLM to summarize what's left in the <strong>personality</strong> you pick. It's a two-step
-                    pipeline kept in separate modules so each step is independently testable and the scraper can be
-                    reused by future features.
-                </p>
-                <ol>
-                    <li><strong>Pick the input</strong> — click a sample (&#x1F680; Startup site, &#x1F4F0; News
-                        article, &#x270D;&#xFE0F; Personal blog), or paste a URL or any article text. A single token
-                        like <code>example.com</code> is sent as <code>url</code>; anything else is sent as
-                        <code>text</code> and skips scraping.
-                    </li>
-                    <li><strong>Pick a personality</strong> — &#x1F642; Friendly, &#x1F60F; Snarky, &#x1F9D2; Explain
-                        like I'm 5, or &#x1F4BC; Professional. Each one swaps a single phrase of the system prompt.</li>
-                    <li><strong>Scrape</strong> — <code>scraper.py</code> downloads the page with a browser-like
-                        <code>User-Agent</code> and removes <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>,
-                        <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>,
-                        <code>&lt;img&gt;</code>, and <code>&lt;input&gt;</code> tags before extracting plain text.
-                    </li>
-                    <li><strong>Summarize</strong> — <code>summarizer.py</code> passes the cleaned text to
-                        <strong>GPT-4o mini</strong>, which is instructed to respond in markdown and ignore leftover
-                        navigation boilerplate.
-                    </li>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-scraper-py">scraper.py</a></li>
+                    <li><a href="#source-summarizer-py">summarizer.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F50E; Website Summarizer<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>HTML Sanitization and Prompt Constraints</strong></p>
-                <p>The Website Summarizer demo demonstrates how to effectively prepare messy real-world data for an LLM:
-                </p>
-                <ul>
-                    <li><strong>Token Efficiency through Scraping:</strong> Web pages are filled with HTML tags,
-                        scripts, and navigation menus that are irrelevant to the actual content. In the
-                        <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out
-                        <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This
-                        is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens
-                        and increase API costs, while potentially confusing the model with structural noise.
-                    </li>
-                    <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the
-                        system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's
-                        output can be predictably rendered by our frontend. Furthermore, instructing the model to
-                        "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that
-                        survived the BeautifulSoup cleanup.</li>
-                    <li><strong>Personality = Prompt Engineering:</strong> The four personality buttons change one
-                        phrase of the system prompt and nothing else. Same model, same input, very different output —
-                        that's the core idea of prompt engineering. The server only accepts the four known keys, so a
-                        user can't inject an arbitrary system prompt.</li>
-                </ul>
+            <p class="lede">requests + BeautifulSoup + GPT-4o mini. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
 
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Pick a sample or paste a URL / text, pick a personality</span>
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>9 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>5 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /summarize</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">fetch_website_contents()</span>
-                        <span class="flow-detail">Downloads + cleans the page</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">summarize()</span>
-                        <span class="flow-detail">Sends cleaned text to OpenAI</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Markdown summary rendered</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        This demo fetches a web page (or takes article text you paste in), strips out the HTML noise, and
+                        asks an LLM to summarize what's left in the <strong>personality</strong> you pick. It's a two-step
+                        pipeline kept in separate modules so each step is independently testable and the scraper can be
+                        reused by future features.
+                    </p>
+                    <ol>
+                        <li><strong>Pick the input</strong> — click a sample (&#x1F680; Startup site, &#x1F4F0; News
+                            article, &#x270D;&#xFE0F; Personal blog), or paste a URL or any article text. A single token
+                            like <code>example.com</code> is sent as <code>url</code>; anything else is sent as
+                            <code>text</code> and skips scraping.
+                        </li>
+                        <li><strong>Pick a personality</strong> — &#x1F642; Friendly, &#x1F60F; Snarky, &#x1F9D2; Explain
+                            like I'm 5, or &#x1F4BC; Professional. Each one swaps a single phrase of the system prompt.</li>
+                        <li><strong>Scrape</strong> — <code>scraper.py</code> downloads the page with a browser-like
+                            <code>User-Agent</code> and removes <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>,
+                            <code>&lt;nav&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code>,
+                            <code>&lt;img&gt;</code>, and <code>&lt;input&gt;</code> tags before extracting plain text.
+                        </li>
+                        <li><strong>Summarize</strong> — <code>summarizer.py</code> passes the cleaned text to
+                            <strong>GPT-4o mini</strong>, which is instructed to respond in markdown and ignore leftover
+                            navigation boilerplate.
+                        </li>
+                    </ol>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />url or text] -->|POST /summarize| B[app.py<br />summarizer route]
-                        B -->|text| F[summarizer.py<br />summarize_text]
-                        F -->|text + prompt| E
-                        B -->|url| C[summarizer.py<br />summarize]
-                        C -->|url| D[scraper.py<br />fetch_website_contents]
-                        D -->|cleaned page text| C
-                        C -->|page text + prompt| E[OpenAI API<br />GPT-4o mini]
-                        E -->|markdown summary| C
-                        C -->|summary| B
-                        B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>HTML Sanitization and Prompt Constraints</strong></p>
+                    <p>The Website Summarizer demo demonstrates how to effectively prepare messy real-world data for an LLM:
+                    </p>
+                    <ul>
+                        <li><strong>Token Efficiency through Scraping:</strong> Web pages are filled with HTML tags,
+                            scripts, and navigation menus that are irrelevant to the actual content. In the
+                            <code>fetch_website_contents()</code> function, we use BeautifulSoup to proactively strip out
+                            <code>&lt;script&gt;</code>, <code>&lt;style&gt;</code>, and <code>&lt;nav&gt;</code> tags. This
+                            is crucial because passing raw HTML to GPT-4o mini would waste valuable context window tokens
+                            and increase API costs, while potentially confusing the model with structural noise.
+                        </li>
+                        <li><strong>Constraining the Output Format:</strong> Once the cleaned text is passed to the LLM, the
+                            system prompt explicitly commands it to "Respond in markdown." This ensures the summarizer's
+                            output can be predictably rendered by our frontend. Furthermore, instructing the model to
+                            "Ignore navigation menus" provides a second layer of defense against any stray boilerplate that
+                            survived the BeautifulSoup cleanup.</li>
+                        <li><strong>Personality = Prompt Engineering:</strong> The four personality buttons change one
+                            phrase of the system prompt and nothing else. Same model, same input, very different output —
+                            that's the core idea of prompt engineering. The server only accepts the four known keys, so a
+                            user can't inject an arbitrary system prompt.</li>
+                    </ul>
 
-                <h2>Scraper</h2>
-                <span class="file-label">Downloads a page and returns cleaned, readable text.</span>
-                <pre><code class="language-python">def fetch_website_contents(url: str) -> str:
-    # Step 1: Prepend scheme if user passed a bare domain
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Pick a sample or paste a URL / text, pick a personality</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /summarize</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">fetch_website_contents()</span>
+                            <span class="flow-detail">Downloads + cleans the page</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">summarize()</span>
+                            <span class="flow-detail">Sends cleaned text to OpenAI</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Markdown summary rendered</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />url or text] -->|POST /summarize| B[app.py<br />summarizer route]
+                            B -->|text| F[summarizer.py<br />summarize_text]
+                            F -->|text + prompt| E
+                            B -->|url| C[summarizer.py<br />summarize]
+                            C -->|url| D[scraper.py<br />fetch_website_contents]
+                            D -->|cleaned page text| C
+                            C -->|page text + prompt| E[OpenAI API<br />GPT-4o mini]
+                            E -->|markdown summary| C
+                            C -->|summary| B
+                            B -->|JSON result| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-scraper-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-scraper-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-scraper-py" class="topic-title is-file">scraper.py<a class="headerlink" href="#source-scraper-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">86 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-scraper-py">
+                    <span class="file-path">src/python/scraper.py</span>
+                    <p class="file-label">Fetch and clean the readable text contents of a web page.</p>
+                    <pre><code data-lang="python">"""Fetch and clean the readable text contents of a web page.
+
+This module is intentionally kept separate from summarizer.py so it can
+be reused by any future feature that needs raw page text (e.g. a Q&amp;A
+feature, a translation feature, etc.).
+"""
+
+import requests
+from bs4 import BeautifulSoup
+
+# Many servers block requests that don't look like a real browser.
+# Sending a realistic User-Agent and Accept header avoids most simple
+# bot-detection checks while staying well within normal usage.
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+def fetch_website_contents(url: str) -&gt; str:
+    """Download a web page and return its title and cleaned text.
+
+    The text is cleaned so it can be included in an LLM prompt without
+    wasting tokens on HTML boilerplate.  The function never raises — if
+    the page cannot be fetched it returns an error string so the caller
+    (and ultimately the model) can surface a helpful message.
+
+    Args:
+        url: The page to fetch.  May be given without a scheme; ``https://``
+             will be prepended automatically.
+
+    Returns:
+        A string of the form::
+
+            Title: &lt;page title&gt;
+
+            Page contents:
+            &lt;cleaned body text&gt;
+
+        …or an error message prefixed with "Could not fetch the website."
+    """
+    # Users often paste bare domains like "example.com"; add a scheme so
+    # requests doesn't raise an invalid-URL error.
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
     try:
-        # Step 2: Fetch raw HTML; 15-second timeout prevents hanging on slow hosts
+        # timeout=15 prevents the endpoint from hanging indefinitely on slow
+        # or unresponsive servers.
         response = requests.get(url, headers=HEADERS, timeout=15)
-        # Raise an HTTPError for 4xx/5xx status codes to handle failures cleanly below
+        # Raise an HTTPError for 4xx / 5xx status codes so we can catch and
+        # return a friendly error message below.
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        # Return an error string instead of raising, so it can display cleanly in the UI
+        # Return instead of raising so the summarizer can pass the error
+        # text straight to the model (or the API can surface it to the UI).
         return f"Could not fetch the website. Error: {e}"
 
-    # Step 3: Parse HTML with BeautifulSoup (html.parser requires no external C libraries)
+    # Parse the raw HTML with BeautifulSoup's built-in html.parser (no extra
+    # C libraries required, unlike lxml).
     soup = BeautifulSoup(response.text, "html.parser")
+
+    # Extract the page title before decomposing anything.
     title = soup.title.string if soup.title else "No title found"
 
-    # Step 4: Remove tags that add noise but no useful content for an LLM:
-    #   script / style        — code and CSS, not human-readable text
+    # Remove tags that add noise but no useful content for an LLM:
+    #   script / style  — code and CSS, not human-readable text
     #   nav / header / footer — repeated site chrome that inflates token count
-    #   img / input           — non-text elements whose attributes we don't need
+    #   img / input     — non-text elements whose attributes we don't need
     for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
         tag.decompose()
 
-    # Step 5: Extract cleaned, human-readable text content
+    # get_text with separator="\n" produces one block of readable plain text
+    # from what remains; strip=True removes leading/trailing whitespace from
+    # each extracted string chunk.
     text = soup.get_text(separator="\n", strip=True)
-    return f"Title: {title}\n\nPage contents:\n{text}"</code></pre>
+    return f"Title: {title}\n\nPage contents:\n{text}"
 
-                <h2>Summarizer</h2>
-                <span class="file-label">Chains the scraper into a GPT-4o mini chat completion.</span>
-                <pre><code class="language-python"># Each personality swaps one phrase of the system prompt
+
+if __name__ == "__main__":
+    # Quick manual test: run `python scraper.py` to print the cleaned text
+    # of example.com to the terminal.
+    print(fetch_website_contents("example.com"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-summarizer-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-summarizer-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-summarizer-py" class="topic-title is-file">summarizer.py<a class="headerlink" href="#source-summarizer-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">86 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-summarizer-py">
+                    <span class="file-path">src/python/summarizer.py</span>
+                    <p class="file-label">Summarize the contents of a website using GPT-4o mini.</p>
+                    <pre><code data-lang="python">"""Summarize the contents of a website using GPT-4o mini.
+
+This module chains two steps together:
+  1. scraper.fetch_website_contents() — downloads and cleans the page.
+  2. An OpenAI chat completion — reads the cleaned text and produces a
+     short markdown summary.
+
+Keeping the two steps separate makes each one independently testable and
+allows the scraper to be reused by other features in the future.
+"""
+
+from config import get_openai_client
+from scraper import fetch_website_contents
+
+# GPT-4o mini is a good balance of quality vs. cost for summarization:
+# the task is well-defined enough that a smaller model handles it reliably.
+SUMMARIZER_MODEL = "gpt-4o-mini"
+
+# Each personality swaps one phrase of the system prompt — the same code
+# produces a very different summary.  Keys are the only values the API accepts.
 PERSONALITIES = {
     "friendly": "give a short, friendly summary in plain English",
     "snarky": "give a short, snarky and humorous summary",
     "eli5": "explain it in a short summary a 5-year-old could understand",
     "professional": "give a concise executive summary in a professional tone",
 }
+DEFAULT_PERSONALITY = "friendly"
+
+# Upper bound on pasted article text, to keep prompt size (and cost) in check.
+MAX_TEXT_CHARS = 20_000
 
 
-def build_system_prompt(personality: str = "friendly") -> str:
-    style = PERSONALITIES.get(personality, PERSONALITIES["friendly"])
+def build_system_prompt(personality: str = DEFAULT_PERSONALITY) -&gt; str:
+    """Return the system prompt for a personality (unknown keys fall back to friendly).
+
+    Telling the model to "ignore navigation menus" discourages it from echoing
+    boilerplate that slipped through the scraper; asking for markdown lets the
+    UI render headings / bullets.
+    """
+    style = PERSONALITIES.get(personality, PERSONALITIES[DEFAULT_PERSONALITY])
     return (
         f"You analyze the contents of a website or article and {style}. "
         "Ignore navigation menus.\nRespond in markdown."
     )
 
 
-def _complete(user_content: str, personality: str) -> str:
+def _complete(user_content: str, personality: str) -&gt; str:
     client = get_openai_client()
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=SUMMARIZER_MODEL,
         messages=[
             {"role": "system", "content": build_system_prompt(personality)},
             {"role": "user", "content": user_content},
@@ -192,77 +468,444 @@ def _complete(user_content: str, personality: str) -> str:
     return response.choices[0].message.content
 
 
-def summarize(url: str, personality: str = "friendly") -> str:
-    # Scrape first, then summarize the cleaned page text
+def summarize(url: str, personality: str = DEFAULT_PERSONALITY) -&gt; str:
+    """Fetch a web page and return a short markdown summary of it.
+
+    The function scrapes the URL first, then passes the cleaned text to
+    GPT-4o mini.  If scraping fails, fetch_website_contents() returns an
+    error string — the model will then summarize that error, which the
+    caller or UI can detect and display accordingly.
+
+    Args:
+        url: The website URL to summarize.  Scheme is optional.
+        personality: One of the PERSONALITIES keys.
+
+    Returns:
+        A markdown-formatted summary string from the model.
+    """
     website = fetch_website_contents(url)
     return _complete(f"Summarize this website:\n\n{website}", personality)
 
 
-def summarize_text(text: str, personality: str = "friendly") -> str:
-    # Pasted article text needs no scraping
-    return _complete(f"Summarize this article:\n\n{text}", personality)</code></pre>
+def summarize_text(text: str, personality: str = DEFAULT_PERSONALITY) -&gt; str:
+    """Summarize pasted article text directly (no scraping)."""
+    return _complete(f"Summarize this article:\n\n{text}", personality)
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the summarizer over HTTP as <code>POST /summarize</code>.</span>
-                <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
+
+if __name__ == "__main__":
+    # Quick manual test: run `python summarizer.py` to print a summary
+    # of example.com to the terminal.
+    print(summarize("example.com"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">42 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create API clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create API clients.
+
+This module is the single place that knows about API keys and base URLs.
+Every other module calls get_openai_client() or get_groq_client() instead
+of constructing the client themselves, so key management stays in one place.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Read key=value pairs from the .env file in the project root and inject
+# them into os.environ.  This call is safe to make at import time — if no
+# .env file exists (e.g. in production where env vars are set directly),
+# python-dotenv simply does nothing.
+load_dotenv()
+
+# Groq exposes an OpenAI-compatible REST API at this base URL.  Because
+# the interface is identical we can reuse the official `openai` package
+# by just pointing it at a different host — no extra SDK required.
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return an OpenAI client authenticated with OPENAI_API_KEY."""
+    # The OpenAI constructor reads api_key from the environment automatically
+    # if you pass it explicitly, which makes the dependency visible at the
+    # call site rather than relying on an implicit env lookup inside the SDK.
+    # We dont need BASE_URL as its the default for OpenAI as https://api.openai.com/v1
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY")) 
+
+
+def get_groq_client() -&gt; OpenAI:
+    """Return an OpenAI client pointed at the Groq API.
+
+    The returned object is an instance of the standard ``openai.OpenAI``
+    class — Groq's API is wire-compatible so no additional library is
+    needed.  Only ``api_key`` and ``base_url`` differ from the OpenAI
+    client above.
+    """
+    return OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=GROQ_BASE_URL)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">211 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing joke, travel, summarize, and arena endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing joke, travel, summarize, and arena endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/joke",
+  etc.  In production Nginx forwards ``/basic/...`` traffic to the container
+  and PATH_PREFIX is set to "/basic", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from arena import battle
+from joke import get_joke
+from rate_limiter import check_rate_limit
+from summarizer import MAX_TEXT_CHARS, PERSONALITIES, summarize, summarize_text
+from travel import get_travel_suggestion
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/basic") so the app
+# works correctly behind an Nginx location block.  Locally it is empty string,
+# which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/joke", methods=["POST"])
+def joke():
+    """Return a joke generated by Llama 3.3 70B on Groq.
+
+    Request body (JSON): ``{ "topic": "&lt;optional topic&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;joke text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    data = request.get_json(force=True)
+    # topic is optional; an empty string causes get_joke() to pick randomly.
+    topic = (data.get("topic") or "").strip()
+    try:
+        text = get_joke(topic)
+        response = jsonify({"result": text})
+        # Prevent the browser from caching joke responses — every click
+        # should fetch a fresh joke from the API.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/travel", methods=["POST"])
+def travel():
+    """Return a travel suggestion for a city via GPT-4o mini.
+
+    Request body (JSON): ``{ "city": "&lt;city name&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;suggestion text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    data = request.get_json(force=True)
+    # Fall back to Bangalore if the user submits an empty city, so the
+    # call to get_travel_suggestion() always has a usable value.
+    city = (data.get("city") or "").strip() or "Bangalore"
+    try:
+        text = get_travel_suggestion(city)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/summarize", methods=["POST"])
 def summarizer():
-    # Step 1: Parse incoming JSON request
+    """Summarize a URL (scraped) or pasted article text with GPT-4o mini.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }`` or
+                         ``{ "text": "&lt;article text&gt;" }``, plus an optional
+                         ``"personality"`` (friendly | snarky | eli5 | professional)
+    Response (JSON):     ``{ "result": "&lt;markdown summary&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (bad input)
+                         or HTTP 500 (API / scraping error)
+    """
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
     article = (data.get("text") or "").strip()
     personality = (data.get("personality") or "friendly").strip()
-
-    # Step 2: Validate at the API boundary before scraping or calling the model
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper or model run on bad input.
     if not url and not article:
         return jsonify({"error": "A website URL or article text is required."}), 400
     if personality not in PERSONALITIES:
         return jsonify({"error": "Unknown personality."}), 400
-    if len(article) > MAX_TEXT_CHARS:
+    if len(article) &gt; MAX_TEXT_CHARS:
         return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
-
-    # Step 3: Summarize pasted text directly, or scrape the URL first
     try:
         text = summarize_text(article, personality) if article else summarize(url, personality)
         return jsonify({"result": text})
     except Exception as e:
-        # Catch network or LLM failures and return HTTP 500
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+@bp.route("/arena", methods=["POST"])
+def arena():
+    """Send one prompt to two models and return both responses.
+
+    Request body (JSON): ``{ "prompt": "&lt;user prompt&gt;" }``
+    Response (JSON)::
+
+        {
+          "result": {
+            "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
+            "model_b": {"model": "openai/gpt-oss-120b", "reply": "..."}
+          }
+        }
+
+    Error response: ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing prompt)
+                    or HTTP 500 (API error)
+    """
+    data = request.get_json(force=True)
+    prompt = (data.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        result = battle(prompt)
+        return jsonify({"result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/joke") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8080 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Playground &mdash; 🔎 Website Summarizer &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

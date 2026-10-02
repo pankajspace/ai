@@ -4,102 +4,271 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Inventory Manager · AI Agents on AWS</title>
-    <meta name="description" content="Explanation of Inventory Manager." />
+    <meta name="description"
+        content="Explanation of Inventory Manager." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Agents on AWS</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AWS Strands Lab</a>
         </nav>
     </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F5C4;&#xFE0F; Inventory Manager</h1>
-                <p class="subtitle">class-based stateful tools via Strands + Bedrock</p>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-stock-agent-py">stock_agent.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F5C4;&#xFE0F; Inventory Manager<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">class-based stateful tools via Strands + Bedrock. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
-        <section>
-            <div class="container info-content">
-                <h2>Concept</h2>
-                <p>
-                    Grouping related tools inside a Python class lets them share a single stateful resource — a shared
-                    <code>self.products</code> store — instead of each function maintaining isolated state. A
-                    module-level instance preserves this state across requests so updates made in one turn are
-                    immediately visible in the next.
-                </p>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-                <h2>Theory &amp; Concepts</h2>
-                <p>The <strong>Inventory Manager</strong> demo explores shared state and multi-turn persistence in
-                    tool-calling agents:</p>
-                <ul>
-                    <li><strong>Class-Based Stateful Tools:</strong> Tools defined as methods on
-                        <code>InventoryTools</code> share access to <code>self.products</code>. When the agent calls
-                        <code>update_stock</code>, the modified count is instantly visible to subsequent calls to
-                        <code>check_stock</code> within the same turn.</li>
-                    <li><strong>Module-Level Persistence:</strong> By keeping the <code>_inventory</code> instance at
-                        module level in <code>stock_agent.py</code>, stock updates persist across separate HTTP requests
-                        from the browser without requiring immediate database re-fetching.</li>
-                    <li><strong>Atomic Verification:</strong> The agent can update an item's stock and immediately
-                        verify the new count before responding, ensuring reliable verification in automated inventory
-                        tasks.</li>
-                </ul>
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser request</span>
-                        <span class="flow-detail">POST /stock</span>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">stock_agent.py manage()</span>
-                        <span class="flow-detail">Agent</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Bedrock</span>
-                        <span class="flow-detail">check_stock or update_stock on shared InventoryTools instance</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">answer</span>
-                        <span class="flow-detail">Browser</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        Grouping related tools inside a Python class lets them share a single stateful resource — a shared
+                        <code>self.products</code> store — instead of each function maintaining isolated state. A
+                        module-level instance preserves this state across requests so updates made in one turn are
+                        immediately visible in the next.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser&lt;br/&gt;stock request"] -->|"POST /stock"| B["app.py&lt;br/&gt;stock_route"]
-                        B -->|"request"| C["stock_agent.py&lt;br/&gt;manage"]
-                        C -->|"request + tools"| D["Bedrock&lt;br/&gt;Nova Pro"]
-                        D -->|"tool call: check_stock"| E["InventoryTools&lt;br/&gt;check_stock"]
-                        E -->|"qty + price"| D
-                        D -->|"tool call: update_stock"| F["InventoryTools&lt;br/&gt;update_stock"]
-                        F -->|"updated confirmation"| D
-                        E & F -->|"shared self.products"| G["Module-level&lt;br/&gt;_inventory instance"]
-                        D -->|"final answer"| C
-                        C -->|"final answer"| B
-                        B -->|"JSON result"| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <strong>Inventory Manager</strong> demo explores shared state and multi-turn persistence in
+                        tool-calling agents:</p>
+                    <ul>
+                        <li><strong>Class-Based Stateful Tools:</strong> Tools defined as methods on
+                            <code>InventoryTools</code> share access to <code>self.products</code>. When the agent calls
+                            <code>update_stock</code>, the modified count is instantly visible to subsequent calls to
+                            <code>check_stock</code> within the same turn.</li>
+                        <li><strong>Module-Level Persistence:</strong> By keeping the <code>_inventory</code> instance at
+                            module level in <code>stock_agent.py</code>, stock updates persist across separate HTTP requests
+                            from the browser without requiring immediate database re-fetching.</li>
+                        <li><strong>Atomic Verification:</strong> The agent can update an item's stock and immediately
+                            verify the new count before responding, ensuring reliable verification in automated inventory
+                            tasks.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">stock_agent.py</span>
-                <pre><code class="language-python">"""Module 2 demo — class-based tools (the shared-resource pattern).
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser request</span>
+                            <span class="flow-detail">POST /stock</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">stock_agent.py manage()</span>
+                            <span class="flow-detail">Agent</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Bedrock</span>
+                            <span class="flow-detail">check_stock or update_stock on shared InventoryTools instance</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">answer</span>
+                            <span class="flow-detail">Browser</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser&lt;br/&gt;stock request"] -->|"POST /stock"| B["app.py&lt;br/&gt;stock_route"]
+                            B -->|"request"| C["stock_agent.py&lt;br/&gt;manage"]
+                            C -->|"request + tools"| D["Bedrock&lt;br/&gt;Nova Pro"]
+                            D -->|"tool call: check_stock"| E["InventoryTools&lt;br/&gt;check_stock"]
+                            E -->|"qty + price"| D
+                            D -->|"tool call: update_stock"| F["InventoryTools&lt;br/&gt;update_stock"]
+                            F -->|"updated confirmation"| D
+                            E & F -->|"shared self.products"| G["Module-level&lt;br/&gt;_inventory instance"]
+                            D -->|"final answer"| C
+                            C -->|"final answer"| B
+                            B -->|"JSON result"| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-stock-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-stock-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-stock-agent-py" class="topic-title is-file">stock_agent.py<a class="headerlink" href="#source-stock-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-stock-agent-py">
+                    <span class="file-path">src/python/stock_agent.py</span>
+                    <p class="file-label">Module 2 demo — class-based tools (the shared-resource pattern).</p>
+                    <pre><code data-lang="python">"""Module 2 demo — class-based tools (the shared-resource pattern).
 
 Grouping related tools in a class lets them share ONE resource (here, a single
 ``self.products`` store) instead of each tool opening its own. A module-level
@@ -107,7 +276,6 @@ instance keeps the state alive across requests, so an update made in one call
 is visible to the next — check, update, then re-check and watch it persist.
 """
 
-# Import Agent runner and @tool decorator from Strands
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -115,11 +283,9 @@ from config import MODEL_ID, agent_text
 
 
 class InventoryTools:
-    """Class encapsulating shared, mutable inventory state across tool methods."""
-
     def __init__(self):
         # Shared resource: all tools access the same data store.
-        # In production: self.db = connect_to_database()   <-- opened ONCE
+        # In production: self.db = connect_to_database()   &lt;-- opened ONCE
         self.products = {
             "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
             "PROD-456": {"name": "USB-C Hub", "quantity": 0, "price": 49.99},
@@ -133,11 +299,9 @@ class InventoryTools:
         Args:
             product_id: The product ID to check
         """
-        # Step 1: Look up product entry in shared state
         product = self.products.get(product_id)
         if not product:
             return f"Product {product_id} not found"
-        # Step 2: Return current stock quantity and unit price
         return f"{product['name']}: {product['quantity']} units at ${product['price']}"
 
     @tool
@@ -148,63 +312,479 @@ class InventoryTools:
             product_id: The product ID to update
             quantity: New quantity to set
         """
-        # Step 1: Update in-memory quantity if valid product ID
         if product_id in self.products:
             self.products[product_id]["quantity"] = quantity
             return f"Updated {product_id} to {quantity} units"
         return f"Product {product_id} not found"
 
 
-# One shared singleton instance — state persists across successive HTTP requests.
+# One shared instance — state persists across web requests.
 _inventory = InventoryTools()
 
 
 def manage(question: str) -&gt; str:
     """Answer a stock request with the class-based, stateful inventory tools."""
-    # Step 1: Provide bound methods (_inventory.check_stock, _inventory.update_stock)
-    # directly to the agent. Strands inspects the bound methods and their parent instance.
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[_inventory.check_stock, _inventory.update_stock],
         callback_handler=None,
     )
+    return agent_text(agent(question))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-    # Step 2: Execute ReAct loop; modifications made by update_stock remain in memory
-    return agent_text(agent(question))
-</code></pre>
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">46 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and expose Bedrock model settings.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and expose Bedrock model settings.
 
-            </div>
-        </section>
+Every feature module imports MODEL_ID from here, so if a model is retired you
+change it ONCE in this file instead of editing each demo.
+
+Credentials are read from the standard AWS environment variables
+(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION) or, in
+production, the EC2 instance role — boto3 (used by the Strands SDK) picks them
+up automatically, so no key handling is needed in application code.
+"""
+
+import os
+import re
+
+from dotenv import load_dotenv
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Current, non-retired models (verified working).
+# The "us." prefix is a cross-region inference profile — required on Bedrock.
+NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # default — Amazon's own, no use-case form, cheapest
+HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # Claude, fast + cheap (needs Anthropic use-case form)
+SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # Claude, stronger reasoning (needs Anthropic use-case form)
+
+# Default used across the demos. Override with:  export MODEL_ID="..."
+# Amazon Nova avoids the Anthropic "use case details" gating and is the cheapest option.
+MODEL_ID = os.environ.get("MODEL_ID", NOVA_LITE)
+
+REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+
+def agent_text(response) -&gt; str:
+    """Extract the plain-text reply from a Strands agent response.
+
+    Strands returns a rich result object; ``str(response)`` yields the final
+    assistant text, which is what the browser needs.
+    """
+    text = str(response)
+    # Some models (e.g. Amazon Nova) wrap their reasoning in &lt;thinking&gt;...&lt;/thinking&gt;
+    # tags — strip those blocks (and any stray tags) so only the answer is shown.
+    text = re.sub(r"&lt;thinking&gt;.*?&lt;/thinking&gt;", "", text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r"&lt;/?thinking&gt;", "", text, flags=re.IGNORECASE)
+    return text.strip()</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">252 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing the AWS Strands agent demos.</p>
+                    <pre><code data-lang="python">"""Flask server exposing the AWS Strands agent demos.
+
+Each demo runs a real Strands agent on Amazon Bedrock:
+  * ``/ask``       — a plain, tool-less agent (Module 1).
+  * ``/math``      — a pre-built calculator tool (Module 2).
+  * ``/tip``       — a tool-enabled tip calculator (Module 2).
+  * ``/inventory`` — a custom tool checking stock (Module 2).
+  * ``/sales``     — multi-tool planning: query, analyse, email (Module 2).
+  * ``/stock``     — class-based, stateful inventory tools (Module 2).
+  * ``/warehouse`` — async tools running lookups in parallel (Module 2).
+  * ``/travel``    — a multi-tool travel assistant (Module 3 capstone).
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/ask", etc.
+  In production Nginx forwards ``/aws-strands/…`` traffic to the container and
+  PATH_PREFIX is set to "/aws-strands".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML page
+  can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from hello_agent import ask
+from inventory_agent import check
+from math_agent import solve
+from sales_agent import report
+from stock_agent import manage
+from tip_agent import calculate
+from travel_agent import plan
+from warehouse_agent import lookup
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+CORS(app)
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Page + asset routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+# ---------------------------------------------------------------------------
+# Demo API routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/ask", methods=["POST"])
+def ask_route():
+    """Answer a prompt with a plain, tool-less agent (Module 1).
+
+    Request body (JSON): ``{ "message": "&lt;prompt&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        return jsonify({"result": ask(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/tip", methods=["POST"])
+def tip_route():
+    """Answer a natural-language tip question via a tool-enabled agent (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;tip question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        return jsonify({"result": calculate(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/math", methods=["POST"])
+def math_route():
+    """Answer a math question via the pre-built calculator tool (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;math question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        return jsonify({"result": solve(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/inventory", methods=["POST"])
+def inventory_route():
+    """Check stock with a custom tool (Module 2). Try PROD-123, PROD-456, PROD-789.
+
+    Request body (JSON): ``{ "message": "&lt;stock question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        return jsonify({"result": check(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/sales", methods=["POST"])
+def sales_route():
+    """Run a multi-tool sales request: query, analyse, email (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;sales request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    try:
+        return jsonify({"result": report(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/stock", methods=["POST"])
+def stock_route():
+    """Check or update stock with class-based, stateful tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;stock request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    try:
+        return jsonify({"result": manage(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/warehouse", methods=["POST"])
+def warehouse_route():
+    """Look up stock across warehouses in parallel via async tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;warehouse question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        return jsonify({"result": lookup(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/travel", methods=["POST"])
+def travel_route():
+    """Plan a trip with the multi-tool travel assistant (Module 3 capstone).
+
+    Request body (JSON): ``{ "message": "&lt;trip description&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A trip description is required."}), 400
+    try:
+        return jsonify({"result": plan(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <footer class="study-footer">AI Agents on AWS &mdash; 🗄️ Inventory Manager &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

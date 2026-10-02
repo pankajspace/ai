@@ -4,115 +4,449 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — ScalerGPT · Docker Demo Lab</title>
     <meta name="description"
         content="How the ScalerGPT demo works." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo">🐳</span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>Docker Demo Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; Docker Demo Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-scaler-gpt-ingest-py">scaler-gpt/ingest.py</a></li>
+                    <li><a href="#source-scaler-gpt-app-py">scaler-gpt/app.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F4DA; ScalerGPT<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F4DA; ScalerGPT</h1>
-                <p class="subtitle">Level 2 &middot; 2 containers</p>
+            <p class="lede">Level 2 &middot; 2 containers. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
-<h2>Concept</h2>
-<p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an answer using only that context.</p>
-<h2>Theory & Concepts</h2>
-<p>The <b>ScalerGPT</b> demo showcases a multi-container architecture for <b>Retrieval-Augmented Generation (RAG)</b>. Standard Large Language Models (LLMs) like GPT-4o-mini are great at general knowledge, but they don't know your specific private study notes and might hallucinate answers. ScalerGPT solves this by giving the LLM the exact information it needs to answer your question.</p>
-<p>To achieve this, the demo uses two separate Docker containers working together:</p>
-<ul>
-    <li><b>The Vector Database Container (ChromaDB):</b> This container stores your ingested notes as "embeddings"—mathematical representations of the text's meaning. When you ask a question like "what is a container?", the system converts your question into a vector and asks ChromaDB to find the notes with the most similar meaning.</li>
-    <li><b>The ScalerGPT Backend Container:</b> This FastAPI service coordinates the RAG process. First, it hits the ChromaDB container to retrieve the top 3 most relevant chunks of your notes. Then, it takes those chunks and stuffs them into a "Context" section of the prompt.</li>
-    <li><b>Context Injection:</b> Instead of just asking the LLM the question directly, the backend gives it strict system instructions: "Answer the user's question using ONLY the context below." The LLM synthesizes the final answer based purely on the retrieved notes, ensuring accuracy and avoiding hallucinations.</li>
-</ul>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 1 -->
 
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">POST /scalergpt/ask</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">app.py</span>
-                        <span class="flow-detail">proxy</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">ScalerGPT Container</span>
-                        <span class="flow-detail">FastAPI /ask</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">ChromaDB Container</span>
-                        <span class="flow-detail">query</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">OpenAI API</span>
-                        <span class="flow-detail">completion</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">answer</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>This demo runs two containers: a FastAPI backend and a ChromaDB vector database. It uses Retrieval-Augmented Generation (RAG). The user's query is first embedded and used to search ChromaDB for relevant notes. The matched notes are stuffed into the prompt, and GPT-4o-mini generates an answer using only that context.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A["Browser"] -->|POST /scalergpt/ask| B["app.py<br/>scalergpt_ask"]
-    B -->|proxy_request| C["scalergpt:8000<br/>POST /ask"]
-    C -->|query| D["chroma container<br/>collection.query"]
-    D -->|relevant chunks| C
-    C -->|context + query| E["OpenAI API<br/>gpt-4o-mini"]
-    E -->|answer text| C
-    C -->|JSON result| B
-    B -->|JSON result| A
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <b>ScalerGPT</b> demo showcases a multi-container architecture for <b>Retrieval-Augmented Generation (RAG)</b>. Standard Large Language Models (LLMs) like GPT-4o-mini are great at general knowledge, but they don't know your specific private study notes and might hallucinate answers. ScalerGPT solves this by giving the LLM the exact information it needs to answer your question.</p>
+                    <p>To achieve this, the demo uses two separate Docker containers working together:</p>
+                    <ul>
+                        <li><b>The Vector Database Container (ChromaDB):</b> This container stores your ingested notes as "embeddings"—mathematical representations of the text's meaning. When you ask a question like "what is a container?", the system converts your question into a vector and asks ChromaDB to find the notes with the most similar meaning.</li>
+                        <li><b>The ScalerGPT Backend Container:</b> This FastAPI service coordinates the RAG process. First, it hits the ChromaDB container to retrieve the top 3 most relevant chunks of your notes. Then, it takes those chunks and stuffs them into a "Context" section of the prompt.</li>
+                        <li><b>Context Injection:</b> Instead of just asking the LLM the question directly, the backend gives it strict system instructions: "Answer the user's question using ONLY the context below." The LLM synthesizes the final answer based purely on the retrieved notes, ensuring accuracy and avoiding hallucinations.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Retrieves context from ChromaDB and calls OpenAI for RAG.</span>
-                <pre><code class="language-python">@app.post("/ask")
+
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">POST /scalergpt/ask</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">app.py</span>
+                            <span class="flow-detail">proxy</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">ScalerGPT Container</span>
+                            <span class="flow-detail">FastAPI /ask</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">ChromaDB Container</span>
+                            <span class="flow-detail">query</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">completion</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">answer</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A["Browser"] -->|POST /scalergpt/ask| B["app.py<br/>scalergpt_ask"]
+                        B -->|proxy_request| C["scalergpt:8000<br/>POST /ask"]
+                        C -->|query| D["chroma container<br/>collection.query"]
+                        D -->|relevant chunks| C
+                        C -->|context + query| E["OpenAI API<br/>gpt-4o-mini"]
+                        E -->|answer text| C
+                        C -->|JSON result| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-scaler-gpt-ingest-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-scaler-gpt-ingest-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-scaler-gpt-ingest-py" class="topic-title is-file">scaler-gpt/ingest.py<a class="headerlink" href="#source-scaler-gpt-ingest-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">65 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-scaler-gpt-ingest-py">
+                    <span class="file-path">src/scaler-gpt/ingest.py</span>
+                    <p class="file-label">Loads every .txt and .md file from docs/ into the Chroma vector database.</p>
+                    <pre><code data-lang="python">"""
+Loads every .txt and .md file from docs/ into the Chroma vector database.
+
+Run this AFTER the containers are up:
+    docker compose exec scalergpt python ingest.py
+"""
+import glob
+import os
+import sys
+import time
+
+import chromadb
+from chromadb.utils import embedding_functions
+
+API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not API_KEY or API_KEY.startswith("sk-paste"):
+    sys.exit("[ingest] OPENAI_API_KEY is missing. Put a real key in .env and recreate.")
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+    api_key=API_KEY,
+    model_name="text-embedding-3-small",
+)
+
+host = os.getenv("CHROMA_HOST", "localhost")
+port = int(os.getenv("CHROMA_PORT", "8000"))
+
+chroma = None
+for attempt in range(10):
+    try:
+        chroma = chromadb.HttpClient(host=host, port=port)
+        chroma.heartbeat()
+        break
+    except Exception:
+        print(f"[ingest] waiting for chroma ({attempt + 1}/10)...", flush=True)
+        time.sleep(2)
+if chroma is None:
+    sys.exit(f"[ingest] Could not reach chroma at {host}:{port}")
+
+collection = chroma.get_or_create_collection(name="notes", embedding_function=openai_ef)
+
+files = sorted(glob.glob("docs/*.txt") + glob.glob("docs/*.md"))
+if not files:
+    sys.exit("No files found in docs/ — add some .txt or .md notes first.")
+
+ids, documents, metadatas = [], [], []
+for path in files:
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read().strip()
+
+    # Simple chunking: split on blank lines, keep chunks of reasonable size
+    chunks = [c.strip() for c in text.split("\n\n") if len(c.strip()) &gt; 40]
+
+    for i, chunk in enumerate(chunks):
+        ids.append(f"{os.path.basename(path)}::{i}")
+        documents.append(chunk)
+        metadatas.append({"source": os.path.basename(path)})
+
+if not documents:
+    sys.exit("Files found but no usable chunks. Make paragraphs a bit longer.")
+
+# upsert = add or overwrite, so re-running this script is safe
+collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+
+print(f"Ingested {len(documents)} chunks from {len(files)} file(s) ✅")
+print(f"Collection now holds {collection.count()} chunks total.")</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-scaler-gpt-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-scaler-gpt-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-scaler-gpt-app-py" class="topic-title is-file">scaler-gpt/app.py<a class="headerlink" href="#source-scaler-gpt-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">115 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-scaler-gpt-app-py">
+                    <span class="file-path">src/scaler-gpt/app.py</span>
+                    <p class="file-label">ScalerGPT - A RAG chatbot over your own notes.</p>
+                    <pre><code data-lang="python">"""
+ScalerGPT - A RAG chatbot over your own notes.
+
+Architecture:
+  [ you ] --&gt; app (FastAPI, this file) --&gt; chroma (vector DB, separate container)
+                     |
+                     +--&gt; OpenAI API (embeddings + chat completion)
+"""
+import os
+import sys
+import time
+
+import chromadb
+from chromadb.utils import embedding_functions
+from fastapi import FastAPI, HTTPException
+from openai import OpenAI
+from pydantic import BaseModel
+
+app = FastAPI(title="ScalerGPT", description="RAG over your course notes")
+
+# --- Fail loudly and clearly if the API key is missing ---------------------
+API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not API_KEY or API_KEY.startswith("sk-paste"):
+    sys.exit(
+        "\n[ScalerGPT] OPENAI_API_KEY is missing.\n"
+        "  Fix: cp .env.example .env, put your real key in it, then\n"
+        "       docker compose up -d --force-recreate\n"
+    )
+
+llm = OpenAI(api_key=API_KEY)
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+    api_key=API_KEY,
+    model_name="text-embedding-3-small",
+)
+
+CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
+CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+
+
+def connect_to_chroma(retries: int = 30, delay: int = 2):
+    """
+    Chroma's container takes a few seconds to boot. `depends_on` only waits for
+    the container to START, not to be READY - so we retry here instead of
+    crashing on the first refused connection.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+            client.heartbeat()
+            print(f"[ScalerGPT] Connected to chroma at {CHROMA_HOST}:{CHROMA_PORT}")
+            return client
+        except Exception as e:
+            print(
+                f"[ScalerGPT] Waiting for chroma "
+                f"({attempt}/{retries}): {type(e).__name__}",
+                flush=True,
+            )
+            time.sleep(delay)
+    sys.exit(f"\n[ScalerGPT] Could not reach chroma at {CHROMA_HOST}:{CHROMA_PORT}\n")
+
+
+chroma = connect_to_chroma()
+collection = chroma.get_or_create_collection(name="notes", embedding_function=openai_ef)
+
+
+class Question(BaseModel):
+    query: str
+
+
+@app.get("/")
+def health():
+    return {
+        "status": "ScalerGPT is live 📚",
+        "docs_indexed": collection.count(),
+        "chroma_host": CHROMA_HOST,
+        "chroma_port": CHROMA_PORT,
+    }
+
+
+@app.post("/ask")
 def ask(q: Question):
-    # Step 0: Verify documents have been embedded and stored in the Chroma collection
     if collection.count() == 0:
         raise HTTPException(
             status_code=400,
             detail="No documents indexed yet. Run: docker compose exec scalergpt python ingest.py",
         )
 
-    # 1. RETRIEVE - query vector database for top 3 semantically relevant chunks
+    # 1. RETRIEVE - find the most relevant chunks from the vector DB
     hits = collection.query(query_texts=[q.query], n_results=3)
     documents = hits.get("documents") or [[]]
     context = "\n\n---\n\n".join(documents[0])
 
-    # 2. AUGMENT - inject retrieved context into system prompt to ground the model
+    # 2. AUGMENT - stuff that context into the prompt
     system_prompt = (
         "You are ScalerGPT, a helpful teaching assistant. "
         "Answer the user's question using ONLY the context below. "
@@ -120,7 +454,7 @@ def ask(q: Question):
         f"CONTEXT:\n{context}"
     )
 
-    # 3. GENERATE - invoke GPT-4o mini to formulate the final grounded answer
+    # 3. GENERATE - let the LLM write the final answer
     resp = llm.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -129,62 +463,340 @@ def ask(q: Question):
         ],
     )
 
-    # Step 4: Return question, answer, and count of supporting source chunks used
     return {
         "question": q.query,
         "answer": resp.choices[0].message.content,
         "sources_used": len(documents[0]),
     }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
 
-                <h2>API route</h2>
-                <span class="file-label">app.py &mdash; proxies the browser to the ScalerGPT container.</span>
-                <pre><code class="language-python">@bp.route("/scalergpt/ask", methods=["POST"])
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">197 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server proxying browser requests to internal Docker demo services.</p>
+                    <pre><code data-lang="python">"""Flask server proxying browser requests to internal Docker demo services.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/quickbite/predict", etc. In production Nginx forwards ``/docker/...``
+  traffic to the container and PATH_PREFIX is set to "/docker".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+- Proxy routes forward browser requests to internal Docker services
+  (quickbite, scalergpt, deskbuddy-agent) using service-name networking.
+"""
+
+import os
+from pathlib import Path
+
+import requests as http_client
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/docker") so the app
+# works correctly behind an Nginx location block. Locally it is an empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# Internal service URLs — these use Docker Compose service names, never IPs.
+QUICKBITE_URL = "http://quickbite:8000"
+SCALERGPT_URL = "http://scalergpt:8000"
+DESKBUDDY_URL = "http://deskbuddy-agent:9000"
+
+# Timeout for proxy requests to example services (seconds).
+PROXY_TIMEOUT = 30
+
+
+# ---------------------------------------------------------------------------
+# Helper
+# ---------------------------------------------------------------------------
+
+def proxy_request(method, url, json_body=None):
+    """Forward a request to an internal service and return its JSON response.
+
+    Returns a tuple of (response_dict, http_status_code). On connection
+    errors, returns a helpful error message instead of crashing.
+    """
+    try:
+        if method == "GET":
+            resp = http_client.get(url, timeout=PROXY_TIMEOUT)
+        else:
+            resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        return resp.json(), resp.status_code
+    except http_client.ConnectionError:
+        service = url.split("//")[1].split(":")[0]
+        return {
+            "error": f"Service '{service}' is not running. "
+                     f"Start it with: docker compose up {service}"
+        }, 503
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+# ---------------------------------------------------------------------------
+# Routes — Static files
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+# ---------------------------------------------------------------------------
+# Routes — QuickBite ETA (Level 1, keyless)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/quickbite/predict", methods=["POST"])
+def quickbite_predict():
+    """Proxy ETA prediction to the QuickBite FastAPI service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    return jsonify(data), status
+
+
+@bp.route("/quickbite/status")
+def quickbite_status():
+    """Check if QuickBite service is running."""
+    data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — ScalerGPT (Level 2, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/scalergpt/ask", methods=["POST"])
 def scalergpt_ask():
     """Proxy RAG question to the ScalerGPT FastAPI service."""
-    # Step 1: Parse request JSON containing user query
     body = request.get_json(force=True)
-
-    # Step 2: Proxy HTTP request to the ScalerGPT container over internal Docker network
     data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    return jsonify(data), status
 
-    # Step 3: Return answer and source citations to browser
-    return jsonify(data), status</code></pre>
 
-            </div>
-        </section>
+@bp.route("/scalergpt/status")
+def scalergpt_status():
+    """Check if ScalerGPT service is running and how many docs are indexed."""
+    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — DeskBuddy (Level 3, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/deskbuddy/chat", methods=["POST"])
+def deskbuddy_chat():
+    """Proxy chat message to the DeskBuddy agent service."""
+    body = request.get_json(force=True)
+    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    return jsonify(data), status
+
+
+@bp.route("/deskbuddy/status")
+def deskbuddy_status():
+    """Check if DeskBuddy agent service is running."""
+    data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">Docker Demo Lab &mdash; 📚 ScalerGPT &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

@@ -4,177 +4,387 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Shipment Exception Desk · TechToday</title>
     <meta name="description"
         content="How the Shipment Exception Desk demo works: LangChain triage classification, deterministic compensation policy, escalation logic, and daily aggregation." />
-    <link rel="icon" href="../logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../style.css" />
+    <link rel="icon"
+        href="../logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>TechToday</span>
             </a>
             <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-pipeline-py">pipeline.py</a></li>
+                    <li><a href="#source-chains-py">chains.py</a></li>
+                    <li><a href="#source-llm-py">llm.py</a></li>
+                    <li><a href="#source-tools-py">tools.py</a></li>
+                    <li><a href="#source-session-py">session.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                    <li><a href="#source-triage-check-py">triage_check.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🚚 Shipment Exception Desk<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🚚 Shipment Exception Desk</h1>
-                <p class="subtitle">LLM Classification · Deterministic Compensation Policy · Tier-Aware Escalation ·
-                    Session KPI Aggregation</p>
+            <p class="lede">LLM Classification · Deterministic Compensation Policy · Tier-Aware Escalation · Session KPI Aggregation. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>13 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>9 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    <strong>Shipment Exception Desk</strong> is an operations-focused AI workflow for logistics
-                    exception handling.
-                    Instead of directly drafting responses from raw complaint text, the system follows a structured
-                    triage pipeline:
-                    classify issue type, calculate policy compensation, evaluate escalation need, generate the right
-                    communication,
-                    and record everything in a session ledger.
-                </p>
-                <p>
-                    The design deliberately combines <strong>LLM reasoning</strong> with <strong>deterministic business
-                        rules</strong>.
-                    Classification and narrative drafting are delegated to LangChain model chains, while monetary
-                    calculations and
-                    escalation thresholds remain exact and auditable in Python.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-
-                <p><strong>1. Hybrid architecture: probabilistic AI + deterministic policy</strong></p>
-                <p>
-                    The project uses the model for language-heavy tasks (classification and writing) and uses plain code
-                    for exact rule execution.
-                    This split keeps behavior stable for compliance-sensitive operations while still benefiting from LLM
-                    flexibility.
-                </p>
-
-                <p><strong>2. Tier-aware escalation gating</strong></p>
-                <p>
-                    Premium and standard customers use different escalation thresholds. Unknown reports auto-escalate.
-                    This makes escalation decisions both explainable and easy to tune:
-                </p>
-                <ul>
-                    <li><strong>Standard:</strong> escalate above $100 compensation.</li>
-                    <li><strong>Premium:</strong> escalate above $50 compensation.</li>
-                    <li><strong>Unknown:</strong> escalate immediately for manual review.</li>
-                </ul>
-
-                <p><strong>3. Session-level operational analytics</strong></p>
-                <p>
-                    Each processed claim is appended to an in-memory ledger. A daily summary endpoint aggregates totals,
-                    escalation rate, and costliest category by cumulative payout, turning each run into an auditable
-                    operations snapshot.
-                </p>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">🧑 Browser</span>
-                        <span class="flow-detail">Submit exception report + value + tier</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /api/triage</span>
-                        <span class="flow-detail">Flask route validation</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">process_exception()</span>
-                        <span class="flow-detail">Main orchestration function</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">LangChain classify_chain</span>
-                            <span class="flow-detail">Category: delayed/damaged/lost/unknown</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">tools.py policy functions</span>
-                            <span class="flow-detail">Compensation amount + reason</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Escalation + Draft Chain</span>
-                        <span class="flow-detail">Manager briefing or customer email</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">session.py ledger</span>
-                        <span class="flow-detail">Log record + update summary KPIs</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">🧑 Browser</span>
-                        <span class="flow-detail">Render decision trail, log, and summary</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Shipment Exception Desk</strong> is an operations-focused AI workflow for logistics
+                        exception handling.
+                        Instead of directly drafting responses from raw complaint text, the system follows a structured
+                        triage pipeline:
+                        classify issue type, calculate policy compensation, evaluate escalation need, generate the right
+                        communication,
+                        and record everything in a session ledger.
+                    </p>
+                    <p>
+                        The design deliberately combines <strong>LLM reasoning</strong> with <strong>deterministic business
+                            rules</strong>.
+                        Classification and narrative drafting are delegated to LangChain model chains, while monetary
+                        calculations and
+                        escalation thresholds remain exact and auditable in Python.
+                    </p>
 
-                <h2>Code flow</h2>
-                <!-- beautify ignore:start -->
-                <!-- prettier-ignore -->
-                <div class="mermaid-wrap mermaid-wrap-large">
-                    <div class="mermaid">
-flowchart TD
-    A[Browser<br/>report + value + tier] -->|POST /api/triage| B[app.py<br/>triage_report]
-    B -->|validated fields| C[pipeline.py<br/>process_exception]
-    C -->|report_text| D[chains.py<br/>classify_chain]
-    D -->|category| C
-    C -->|value + category| E[tools.py<br/>compensation calc]
-    E -->|amount + reason| C
-    C -->|category + amount| F[pipeline.py<br/>evaluate_escalation]
-    F -->|escalated + reason| C
-    C -->|escalated case| G[chains.py<br/>escalate_chain]
-    C -->|resolved case| H[chains.py<br/>draft_email_chain]
-    G -->|manager briefing| C
-    H -->|customer email| C
-    C -->|result record| I[session.py<br/>log_exception]
-    I -->|stored entry| C
-    C -->|result + steps| B
-    B -->|HTTP 200 JSON| A
-    A -->|GET /api/log| J[app.py<br/>fetch_log]
-    J -->|session records| A
-    A -->|GET /api/summary| K[app.py<br/>fetch_summary]
-    K -->|aggregated KPIs| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
-                <!-- beautify ignore:end -->
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Hybrid architecture: probabilistic AI + deterministic policy</strong></p>
+                    <p>
+                        The project uses the model for language-heavy tasks (classification and writing) and uses plain code
+                        for exact rule execution.
+                        This split keeps behavior stable for compliance-sensitive operations while still benefiting from LLM
+                        flexibility.
+                    </p>
 
-                <h2>Pipeline Orchestration</h2>
-                <span class="file-label">pipeline.py — classifies, compensates, escalates, drafts, and logs each
-                    exception</span>
-                <pre><code class="language-python">ESCALATION_THRESHOLDS = {
+                    <p><strong>2. Tier-aware escalation gating</strong></p>
+                    <p>
+                        Premium and standard customers use different escalation thresholds. Unknown reports auto-escalate.
+                        This makes escalation decisions both explainable and easy to tune:
+                    </p>
+                    <ul>
+                        <li><strong>Standard:</strong> escalate above $100 compensation.</li>
+                        <li><strong>Premium:</strong> escalate above $50 compensation.</li>
+                        <li><strong>Unknown:</strong> escalate immediately for manual review.</li>
+                    </ul>
+
+                    <p><strong>3. Session-level operational analytics</strong></p>
+                    <p>
+                        Each processed claim is appended to an in-memory ledger. A daily summary endpoint aggregates totals,
+                        escalation rate, and costliest category by cumulative payout, turning each run into an auditable
+                        operations snapshot.
+                    </p>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">🧑 Browser</span>
+                            <span class="flow-detail">Submit exception report + value + tier</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /api/triage</span>
+                            <span class="flow-detail">Flask route validation</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">process_exception()</span>
+                            <span class="flow-detail">Main orchestration function</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">LangChain classify_chain</span>
+                                <span class="flow-detail">Category: delayed/damaged/lost/unknown</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">tools.py policy functions</span>
+                                <span class="flow-detail">Compensation amount + reason</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Escalation + Draft Chain</span>
+                            <span class="flow-detail">Manager briefing or customer email</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">session.py ledger</span>
+                            <span class="flow-detail">Log record + update summary KPIs</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">🧑 Browser</span>
+                            <span class="flow-detail">Render decision trail, log, and summary</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap mermaid-wrap-large">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>report + value + tier] -->|POST /api/triage| B[app.py<br/>triage_report]
+                        B -->|validated fields| C[pipeline.py<br/>process_exception]
+                        C -->|report_text| D[chains.py<br/>classify_chain]
+                        D -->|category| C
+                        C -->|value + category| E[tools.py<br/>compensation calc]
+                        E -->|amount + reason| C
+                        C -->|category + amount| F[pipeline.py<br/>evaluate_escalation]
+                        F -->|escalated + reason| C
+                        C -->|escalated case| G[chains.py<br/>escalate_chain]
+                        C -->|resolved case| H[chains.py<br/>draft_email_chain]
+                        G -->|manager briefing| C
+                        H -->|customer email| C
+                        C -->|result record| I[session.py<br/>log_exception]
+                        I -->|stored entry| C
+                        C -->|result + steps| B
+                        B -->|HTTP 200 JSON| A
+                        A -->|GET /api/log| J[app.py<br/>fetch_log]
+                        J -->|session records| A
+                        A -->|GET /api/summary| K[app.py<br/>fetch_summary]
+                        K -->|aggregated KPIs| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-pipeline-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-pipeline-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-pipeline-py" class="topic-title is-file">pipeline.py<a class="headerlink" href="#source-pipeline-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">154 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-pipeline-py">
+                    <span class="file-path">shipment-exception-desk/src/python/pipeline.py</span>
+                    <p class="file-label">Triage pipeline for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Triage pipeline for Northwind Logistics Shipment Exception Desk.
+
+Coordinates:
+1. LLM classification of incoming exception report
+2. Rule-based compensation calculation
+3. Tier-based escalation evaluation (lower threshold for premium clients, auto-escalation for unknown)
+4. LLM drafting of internal manager briefing (if escalated) or customer email (if resolved)
+5. Session logging for daily aggregation
+"""
+
+from typing import Dict, Any, List
+
+try:
+    from .chains import classify_chain, escalate_chain, draft_email_chain
+    from .tools import (
+        calculate_delay_compensation,
+        calculate_damage_compensation,
+        calculate_lost_compensation,
+        calculate_unknown_compensation,
+    )
+    from .session import log_exception
+except ImportError:
+    from chains import classify_chain, escalate_chain, draft_email_chain
+    from tools import (
+        calculate_delay_compensation,
+        calculate_damage_compensation,
+        calculate_lost_compensation,
+        calculate_unknown_compensation,
+    )
+    from session import log_exception
+
+# Compensation escalation thresholds
+# Premium customers receive manager intervention at a lower dollar threshold ($50 vs $100)
+ESCALATION_THRESHOLDS = {
     "standard": 100.0,
     "premium": 50.0,
 }
 
 
-def evaluate_escalation(category: str, compensation_amount: float, customer_tier: str) -> tuple[bool, str]:
-    """Tier-aware escalation decision."""
+def evaluate_escalation(
+    category: str,
+    compensation_amount: float,
+    customer_tier: str,
+) -&gt; tuple[bool, str]:
+    """Evaluate whether an exception requires manager escalation.
+
+    Rules:
+    - Unknown or unclassifiable exceptions escalate automatically regardless of value.
+    - Escalates if compensation exceeds tier threshold (Standard: $100, Premium: $50).
+    """
     tier_normalized = customer_tier.strip().lower()
     threshold = ESCALATION_THRESHOLDS.get(tier_normalized, 100.0)
 
     if category == "unknown":
         return True, "Unclassifiable or garbled report requires manual operations review."
 
-    if compensation_amount > threshold:
+    if compensation_amount &gt; threshold:
         return (
             True,
             f"Compensation amount (${compensation_amount:.2f}) exceeds {tier_normalized.capitalize()} tier threshold (${threshold:.2f}).",
@@ -186,15 +396,22 @@ def evaluate_escalation(category: str, compensation_amount: float, customer_tier
     )
 
 
-def process_exception(report_text: str, shipment_value: float, customer_tier: str = "standard", log_to_session: bool = True):
-    steps = []
+def process_exception(
+    report_text: str,
+    shipment_value: float,
+    customer_tier: str = "standard",
+    log_to_session: bool = True,
+) -&gt; Dict[str, Any]:
+    """Process an incoming shipment exception report through the full triage pipeline."""
+    steps: List[str] = []
     customer_tier = customer_tier.strip().lower()
+    shipment_value = float(shipment_value)
 
-    # Step 1: LLM category classification
+    # 1. Classify Report
     category = classify_chain.invoke({"report_text": report_text})
     steps.append(f"Step 1 [Classify]: Report classified as '{category.upper()}' via LLM.")
 
-    # Step 2: Deterministic compensation routing
+    # 2. Route to Compensation Calculator
     if category == "delayed":
         comp_result = calculate_delay_compensation(shipment_value)
     elif category == "damaged":
@@ -205,53 +422,301 @@ def process_exception(report_text: str, shipment_value: float, customer_tier: st
         comp_result = calculate_unknown_compensation(shipment_value)
 
     comp_amount = float(comp_result.get("amount", 0.0))
+    comp_reason = comp_result.get("reason", "")
+    steps.append(
+        f"Step 2 [Compensate]: Calculated compensation ${comp_amount:.2f} ({comp_reason})."
+    )
 
-    # Step 3: Escalation gate
+    # 3. Escalation Decision
     escalated, escalation_reason = evaluate_escalation(
         category=category,
         compensation_amount=comp_amount,
         customer_tier=customer_tier,
     )
+    action_taken = "Escalated to Manager" if escalated else "Auto-Resolved"
+    steps.append(f"Step 3 [Escalation Check]: {action_taken} — {escalation_reason}")
 
-    # Step 4: Conditional draft generation
+    # 4. Draft Appropriate Message
     if escalated:
-        draft = escalate_chain.invoke({
-            "customer_tier": customer_tier.capitalize(),
-            "shipment_value": f"{shipment_value:.2f}",
-            "category": category,
-            "compensation_amount": f"{comp_amount:.2f}",
-            "escalation_reason": escalation_reason,
-            "report_text": report_text,
-        })
+        draft = escalate_chain.invoke(
+            {
+                "customer_tier": customer_tier.capitalize(),
+                "shipment_value": f"{shipment_value:.2f}",
+                "category": category,
+                "compensation_amount": f"{comp_amount:.2f}",
+                "escalation_reason": escalation_reason,
+                "report_text": report_text,
+            }
+        )
+        steps.append("Step 4 [Draft]: Generated internal Manager Escalation Briefing.")
     else:
-        draft = draft_email_chain.invoke({
-            "customer_tier": customer_tier.capitalize(),
-            "shipment_value": f"{shipment_value:.2f}",
-            "category": category,
-            "compensation_amount": f"{comp_amount:.2f}",
-            "report_text": report_text,
-        })
+        draft = draft_email_chain.invoke(
+            {
+                "customer_tier": customer_tier.capitalize(),
+                "shipment_value": f"{shipment_value:.2f}",
+                "category": category,
+                "compensation_amount": f"{comp_amount:.2f}",
+                "compensation_reason": comp_reason,
+                "report_text": report_text,
+            }
+        )
+        steps.append("Step 4 [Draft]: Generated customer resolution &amp; apology email.")
 
     result = {
+        "report_text": report_text,
+        "shipment_value": shipment_value,
+        "customer_tier": customer_tier,
         "category": category,
+        "compensation": comp_result,
         "compensation_amount": comp_amount,
         "escalated": escalated,
         "escalation_reason": escalation_reason,
+        "action_taken": action_taken,
         "draft": draft,
         "steps": steps,
     }
 
-    # Step 5: Session ledger append
+    # 5. Log to session
     if log_to_session:
         log_exception(result)
+        steps.append("Step 5 [Session]: Exception logged into daily triage ledger.")
 
     return result</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-                <h2>Compensation Policy Tools</h2>
-                <span class="file-label">tools.py — deterministic payout logic per exception category</span>
-                <pre><code class="language-python">def calculate_delay_compensation(shipment_value: float, days_delayed: int = 1):
-    """20% payout, with a minimum courtesy credit and cap."""
-    if shipment_value < 0:
+            <section class="topic-section is-collapsed" id="sec-source-chains-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-chains-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-chains-py" class="topic-title is-file">chains.py<a class="headerlink" href="#source-chains-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">116 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-chains-py">
+                    <span class="file-path">shipment-exception-desk/src/python/chains.py</span>
+                    <p class="file-label">LangChain chains for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""LangChain chains for Northwind Logistics Shipment Exception Desk.
+
+Implements the standard prompt | model | parser chain pattern for:
+1. classify_chain: Categorizes exception reports into delayed, damaged, lost, or unknown.
+2. escalate_chain: Drafts internal escalation notes for managers.
+3. draft_email_chain: Drafts customer resolution emails for auto-resolved claims.
+"""
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda
+
+try:
+    from .llm import llm
+except ImportError:
+    from llm import llm
+
+
+# --- 1. Classification Chain ---
+_classify_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are an expert logistics triage classifier at Northwind Logistics.\n"
+            "Given an incoming customer exception report, classify it into EXACTLY one category:\n"
+            "- delayed: shipment was late, held up, stuck at a hub, or missed delivery deadline.\n"
+            "- damaged: package or contents arrived broken, crushed, leaking, cracked, or ruined.\n"
+            "- lost: package marked delivered but missing, lost in transit, or untraceable by carrier.\n"
+            "- unknown: report is garbled, unreadable, meaningless gibberish, or cannot be reliably determined.\n\n"
+            "Respond with ONLY one lowercase word: delayed, damaged, lost, or unknown.",
+        ),
+        (
+            "human",
+            "Exception Report:\n{report_text}\n\nCategory:",
+        ),
+    ]
+)
+
+
+def _clean_category(raw_output: str) -&gt; str:
+    """Normalize and validate the classification output."""
+    cleaned = raw_output.strip().lower().replace('"', "").replace("'", "")
+    # Check for known categories in the output
+    for cat in ["delayed", "damaged", "lost", "unknown"]:
+        if cat in cleaned:
+            return cat
+    return "unknown"
+
+
+classify_chain = (
+    _classify_prompt
+    | llm
+    | StrOutputParser()
+    | RunnableLambda(_clean_category)
+)
+
+
+# --- 2. Escalation Chain ---
+_escalate_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a logistics operations analyst at Northwind Logistics.\n"
+            "Draft a concise, professional internal escalation briefing to an Operations Manager.\n"
+            "The briefing must include:\n"
+            "- Subject line: [ESCALATION REQUIRED] followed by Category and Tier\n"
+            "- Incident Summary\n"
+            "- Customer Tier &amp; Value at Risk\n"
+            "- Compensation Calculated\n"
+            "- Escalation Trigger / Reason\n"
+            "- Recommended Operational Action",
+        ),
+        (
+            "human",
+            "Customer Tier: {customer_tier}\n"
+            "Shipment Value: ${shipment_value}\n"
+            "Category: {category}\n"
+            "Calculated Compensation: ${compensation_amount}\n"
+            "Escalation Reason: {escalation_reason}\n\n"
+            "Customer Report:\n{report_text}\n\n"
+            "Draft Internal Escalation Briefing:",
+        ),
+    ]
+)
+
+escalate_chain = _escalate_prompt | llm | StrOutputParser()
+
+
+# --- 3. Draft Email Chain ---
+_draft_email_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a Senior Customer Care Specialist at Northwind Logistics.\n"
+            "Draft an empathetic, professional resolution email to the customer regarding their shipment exception.\n"
+            "Guidelines:\n"
+            "- Acknowledge the issue ({category}) and apologize sincerely for the inconvenience.\n"
+            "- Clearly state the approved compensation of ${compensation_amount} under our Northwind Guarantee.\n"
+            "- Mention that credit will reflect within 2-3 business days.\n"
+            "- Maintain an empathetic, helpful tone.\n"
+            "- Sign off as: 'Northwind Logistics Customer Care Team'.",
+        ),
+        (
+            "human",
+            "Customer Tier: {customer_tier}\n"
+            "Shipment Value: ${shipment_value}\n"
+            "Category: {category}\n"
+            "Approved Compensation: ${compensation_amount}\n"
+            "Compensation Reason: {compensation_reason}\n\n"
+            "Customer Report:\n{report_text}\n\n"
+            "Draft Customer Resolution Email:",
+        ),
+    ]
+)
+
+draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-llm-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-llm-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-llm-py" class="topic-title is-file">llm.py<a class="headerlink" href="#source-llm-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">21 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-llm-py">
+                    <span class="file-path">shipment-exception-desk/src/python/llm.py</span>
+                    <pre><code data-lang="python">import os
+from pathlib import Path
+from dotenv import load_dotenv, find_dotenv
+from langchain_openai import ChatOpenAI
+
+# Load .env file from project root or current working directory
+dotenv_path = find_dotenv(usecwd=True)
+if not dotenv_path:
+    # Try looking in parent directory if executing from within src/
+    parent_env = Path(__file__).resolve().parent.parent / ".env"
+    if parent_env.exists():
+        dotenv_path = str(parent_env)
+
+load_dotenv(dotenv_path)
+
+# Initialize ChatOpenAI instance
+llm = ChatOpenAI(
+    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    temperature=0.0,
+    api_key=os.getenv("OPENAI_API_KEY"),
+)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-tools-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-tools-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">102 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-tools-py">
+                    <span class="file-path">shipment-exception-desk/src/python/tools.py</span>
+                    <p class="file-label">Compensation calculation tools for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Compensation calculation tools for Northwind Logistics Shipment Exception Desk.
+
+Each function calculates compensation based on policy rules and returns
+a structured dictionary containing:
+  - category: The exception category (delayed, damaged, lost, unknown)
+  - amount: Calculated compensation dollar amount (float)
+  - currency: "USD"
+  - reason: Explanation of how the compensation was determined
+"""
+
+from typing import Dict, Any
+
+
+def calculate_delay_compensation(
+    shipment_value: float, days_delayed: int = 1
+) -&gt; Dict[str, Any]:
+    """Calculate compensation for delayed shipments.
+
+    Policy:
+    - 20% of shipment value
+    - Minimum courtesy credit of $15.00
+    - Capped at 100% of shipment value
+    """
+    if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
     if shipment_value == 0:
@@ -263,6 +728,7 @@ def process_exception(report_text: str, shipment_value: float, customer_tier: st
         }
 
     base_compensation = shipment_value * 0.20
+    # Apply minimum courtesy credit, but never exceed shipment value
     compensation = max(base_compensation, 15.0)
     compensation = min(compensation, shipment_value)
 
@@ -270,52 +736,107 @@ def process_exception(report_text: str, shipment_value: float, customer_tier: st
         "category": "delayed",
         "amount": round(compensation, 2),
         "currency": "USD",
-        "reason": "Delay compensation with minimum courtesy credit and shipment-value cap",
+        "reason": (
+            f"Delay compensation: 20% of ${shipment_value:.2f} "
+            f"(with $15.00 minimum credit, capped at shipment value)"
+        ),
     }
 
 
-def calculate_damage_compensation(shipment_value: float, damage_severity: str = "partial"):
-    """50% for partial damage, 100% for total/severe damage."""
-    if shipment_value < 0:
+def calculate_damage_compensation(
+    shipment_value: float, damage_severity: str = "partial"
+) -&gt; Dict[str, Any]:
+    """Calculate compensation for damaged shipments.
+
+    Policy:
+    - Partial damage: 50% of shipment value
+    - Total/severe damage: 100% of shipment value
+    """
+    if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
     severity = damage_severity.strip().lower()
     rate = 1.0 if severity in ("total", "severe", "complete") else 0.50
+    compensation = shipment_value * rate
+
     return {
         "category": "damaged",
-        "amount": round(shipment_value * rate, 2),
+        "amount": round(compensation, 2),
         "currency": "USD",
+        "reason": (
+            f"Damage compensation: {int(rate * 100)}% of shipment value "
+            f"(${shipment_value:.2f}) for {severity} damage"
+        ),
     }
 
 
-def calculate_lost_compensation(shipment_value: float):
-    """Lost shipments get full replacement value."""
-    if shipment_value < 0:
+def calculate_lost_compensation(shipment_value: float) -&gt; Dict[str, Any]:
+    """Calculate compensation for lost in transit shipments.
+
+    Policy:
+    - 100% full replacement value of the shipment
+    """
+    if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
     return {
         "category": "lost",
         "amount": round(shipment_value, 2),
         "currency": "USD",
+        "reason": f"Lost shipment compensation: 100% full replacement value of ${shipment_value:.2f}",
     }
 
 
-def calculate_unknown_compensation(shipment_value: float):
-    """Unknown/garbled reports are routed to manual review."""
+def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
+    """Fallback compensation calculator for unclassified or garbled reports."""
     return {
         "category": "unknown",
         "amount": 0.0,
         "currency": "USD",
-        "reason": "Unclassified exception: no automatic compensation; manual review required",
+        "reason": "Unclassified exception: no automatic compensation calculated; routed for manual review",
     }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
 
-                <h2>Session Aggregation</h2>
-                <span class="file-label">session.py — append-only triage ledger and daily KPI summary generation</span>
-                <pre><code class="language-python">_SESSION_RECORDS = []
+            <section class="topic-section is-collapsed" id="sec-source-session-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-session-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="source-session-py" class="topic-title is-file">session.py<a class="headerlink" href="#source-session-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">144 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-session-py">
+                    <span class="file-path">shipment-exception-desk/src/python/session.py</span>
+                    <p class="file-label">Session tracking and daily aggregation for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Session tracking and daily aggregation for Northwind Logistics Shipment Exception Desk.
+
+Aggregates session records to calculate:
+- Total compensation paid across all processed exceptions
+- Overall escalation rate
+- Named costliest category by cumulative compensation paid
+"""
+
+from datetime import datetime
+from typing import List, Dict, Any, Optional
+
+# In-memory session ledger
+_SESSION_RECORDS: List[Dict[str, Any]] = []
 
 
-def log_exception(record):
-    """Append one processed exception to the in-memory daily ledger."""
+def log_exception(record: Dict[str, Any]) -&gt; Dict[str, Any]:
+    """Append an exception triage result to the daily session ledger."""
     entry = dict(record)
     if "timestamp" not in entry:
         entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -323,44 +844,221 @@ def log_exception(record):
     return entry
 
 
-def generate_daily_summary():
-    """Aggregate session records into operational metrics."""
-    total_exceptions = len(_SESSION_RECORDS)
-    total_compensation = sum(float(r.get("compensation_amount", 0.0)) for r in _SESSION_RECORDS)
-    escalated_count = sum(1 for r in _SESSION_RECORDS if r.get("escalated"))
-    escalation_rate = (escalated_count / total_exceptions * 100.0) if total_exceptions else 0.0
+def get_triage_log() -&gt; List[Dict[str, Any]]:
+    """Return all exception records logged during the current session."""
+    return list(_SESSION_RECORDS)
 
+
+def clear_session() -&gt; None:
+    """Clear the session ledger."""
+    global _SESSION_RECORDS
+    _SESSION_RECORDS.clear()
+
+
+def generate_daily_summary() -&gt; Dict[str, Any]:
+    """Perform real aggregation on the session triage log.
+
+    Calculates:
+    - total_exceptions
+    - total_compensation
+    - escalation_rate
+    - costliest_category (by total dollars, where multiple small payouts can beat a single large one)
+    - detailed category breakdown
+    - formatted markdown summary
+    """
+    total_exceptions = len(_SESSION_RECORDS)
+
+    if total_exceptions == 0:
+        return {
+            "total_exceptions": 0,
+            "total_compensation": 0.0,
+            "escalated_count": 0,
+            "resolved_count": 0,
+            "escalation_rate": 0.0,
+            "costliest_category": "None",
+            "costliest_category_amount": 0.0,
+            "category_breakdown": {},
+            "markdown_summary": (
+                "### Daily Triage Summary\n"
+                "_No exception reports processed in this session yet._"
+            ),
+        }
+
+    total_compensation = sum(
+        float(r.get("compensation_amount", 0.0)) for r in _SESSION_RECORDS
+    )
+    escalated_count = sum(1 for r in _SESSION_RECORDS if r.get("escalated"))
+    resolved_count = total_exceptions - escalated_count
+    escalation_rate = (escalated_count / total_exceptions) * 100.0
+
+    # Aggregate by category
     categories = ["delayed", "damaged", "lost", "unknown"]
-    category_breakdown = {}
+    category_breakdown: Dict[str, Dict[str, Any]] = {}
 
     for cat in categories:
         cat_records = [r for r in _SESSION_RECORDS if r.get("category") == cat]
+        count = len(cat_records)
+        cat_total = sum(float(r.get("compensation_amount", 0.0)) for r in cat_records)
+        escalated_cat = sum(1 for r in cat_records if r.get("escalated"))
         category_breakdown[cat] = {
-            "count": len(cat_records),
-            "total_compensation": round(sum(float(r.get("compensation_amount", 0.0)) for r in cat_records), 2),
-            "escalated": sum(1 for r in cat_records if r.get("escalated")),
+            "count": count,
+            "total_compensation": round(cat_total, 2),
+            "escalated": escalated_cat,
         }
 
+    # Determine costliest category by total compensation paid
+    # Find category with highest cumulative payout; fallback to "None" if total is 0
     payout_per_category = {
         cat: category_breakdown[cat]["total_compensation"] for cat in categories
     }
 
-    max_payout = max(payout_per_category.values()) if payout_per_category else 0.0
-    costliest_category = max(payout_per_category, key=lambda k: payout_per_category[k]) if max_payout > 0 else "None"
+    max_payout = max(payout_per_category.values())
+    if max_payout &gt; 0:
+        costliest_category = max(
+            payout_per_category, key=lambda k: payout_per_category[k]
+        )
+        costliest_amount = payout_per_category[costliest_category]
+    else:
+        # If no compensation paid anywhere, pick category with most claims or "None"
+        costliest_category = "None"
+        costliest_amount = 0.0
+
+    # Build formatted Markdown summary
+    summary_lines = [
+        "### 📊 Northwind Logistics — Daily Triage Summary",
+        f"- **Total Exceptions Processed**: {total_exceptions}",
+        f"- **Total Compensation Paid**: ${total_compensation:,.2f}",
+        f"- **Escalation Rate**: {escalation_rate:.1f}% ({escalated_count} escalated / {resolved_count} auto-resolved)",
+        f"- **Costliest Category**: **{costliest_category.upper()}** (${costliest_amount:,.2f} total paid)",
+        "",
+        "#### Category Breakdown",
+        "| Category | Total Claims | Total Compensation | Escalated | Payout Share |",
+        "| :--- | :--- | :--- | :--- | :--- |",
+    ]
+
+    for cat in sorted(
+        categories,
+        key=lambda c: category_breakdown[c]["total_compensation"],
+        reverse=True,
+    ):
+        data = category_breakdown[cat]
+        share = (
+            (data["total_compensation"] / total_compensation * 100.0)
+            if total_compensation &gt; 0
+            else 0.0
+        )
+        summary_lines.append(
+            f"| {cat.capitalize()} | {data['count']} | ${data['total_compensation']:,.2f} | {data['escalated']} | {share:.1f}% |"
+        )
+
+    markdown_summary = "\n".join(summary_lines)
 
     return {
         "total_exceptions": total_exceptions,
         "total_compensation": round(total_compensation, 2),
         "escalated_count": escalated_count,
+        "resolved_count": resolved_count,
         "escalation_rate": round(escalation_rate, 2),
         "costliest_category": costliest_category,
+        "costliest_category_amount": round(costliest_amount, 2),
         "category_breakdown": category_breakdown,
+        "markdown_summary": markdown_summary,
     }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 10 -->
 
-                <h2>API route</h2>
-                <span class="file-label">app.py — Flask endpoints exposing triage execution, log retrieval, summary, and
-                    reset</span>
-                <pre><code class="language-python">@bp.route("/api/triage", methods=["POST"])
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">127 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">shipment-exception-desk/src/python/app.py</span>
+                    <p class="file-label">Flask web server for Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Flask web server for Shipment Exception Desk.
+
+Serves the dashboard UI and provides API endpoints for:
+- /api/triage: process exception reports through the pipeline
+- /api/log: fetch the current session triage ledger
+- /api/summary: fetch aggregated KPI summary
+- /api/reset: clear current in-memory session ledger
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from pipeline import process_exception
+from rate_limiter import check_rate_limit
+from session import clear_session, generate_daily_summary, get_triage_log
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+
+@bp.route("/")
+def index():
+    """Serve index.html with API base injected for local/prod parity."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from src/css."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from src/js."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/api/health", methods=["GET"])
+def health_check():
+    """Health check endpoint."""
+    return jsonify({"status": "ok", "service": "shipment-exception-desk"})
+
+
+@bp.route("/api/triage", methods=["POST"])
 def triage_report():
     """Process an incoming shipment exception report."""
     data = request.get_json(force=True) or {}
@@ -368,7 +1066,6 @@ def triage_report():
     shipment_value = data.get("shipment_value")
     customer_tier = (data.get("customer_tier") or "standard").strip().lower()
 
-    # Step 1: Input validation
     if not report_text:
         return jsonify({"detail": "Report text cannot be empty."}), 400
 
@@ -377,13 +1074,12 @@ def triage_report():
     except (TypeError, ValueError):
         return jsonify({"detail": "Shipment value must be a valid number."}), 400
 
-    if shipment_value < 0:
+    if shipment_value &lt; 0:
         return jsonify({"detail": "Shipment value cannot be negative."}), 400
 
     if customer_tier not in {"standard", "premium"}:
         return jsonify({"detail": "Customer tier must be standard or premium."}), 400
 
-    # Step 2: Execute full pipeline
     try:
         result = process_exception(
             report_text=report_text,
@@ -412,42 +1108,419 @@ def fetch_summary():
 def reset_session():
     """Clear session records."""
     clear_session()
-    return jsonify({"status": "session_cleared"})</code></pre>
+    return jsonify({"status": "session_cleared"})
 
-            </div>
-        </section>
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 11 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">106 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">shipment-exception-desk/src/python/main.py</span>
+                    <p class="file-label">Command-line interface runner for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Command-line interface runner for Northwind Logistics Shipment Exception Desk.
+
+Allows quick terminal testing of single exception reports or running demo presets.
+"""
+
+import sys
+import argparse
+from pathlib import Path
+
+src_dir = Path(__file__).resolve().parent
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
+from pipeline import process_exception
+from session import generate_daily_summary, get_triage_log
+
+
+def print_result(res: dict) -&gt; None:
+    print("\n" + "=" * 65)
+    print("NORTHWIND LOGISTICS — EXCEPTION TRIAGE RESULT")
+    print("=" * 65)
+    print(f"Report Snippet     : {res['report_text'][:80]}...")
+    print(f"Shipment Value     : ${res['shipment_value']:.2f}")
+    print(f"Customer Tier      : {res['customer_tier'].capitalize()}")
+    print("-" * 65)
+    print(f"Classified Category: {res['category'].upper()}")
+    print(f"Compensation Amount: ${res['compensation_amount']:.2f}")
+    print(f"Compensation Reason: {res['compensation'].get('reason', 'N/A')}")
+    print(f"Escalation Status  : {'[ESCALATED]' if res['escalated'] else '[AUTO-RESOLVED]'}")
+    print(f"Escalation Details : {res['escalation_reason']}")
+    print("-" * 65)
+    print("Decision Trail:")
+    for step in res["steps"]:
+        print(f"  • {step}")
+    print("-" * 65)
+    action_label = (
+        "INTERNAL MANAGER ESCALATION BRIEFING"
+        if res["escalated"]
+        else "CUSTOMER RESOLUTION EMAIL DRAFT"
+    )
+    print(f"Generated Draft ({action_label}):\n")
+    print(res["draft"])
+    print("=" * 65 + "\n")
+
+
+def main() -&gt; None:
+    parser = argparse.ArgumentParser(
+        description="Northwind Logistics Shipment Exception Desk CLI"
+    )
+    parser.add_argument(
+        "--report",
+        type=str,
+        help="Exception report text submitted by customer",
+    )
+    parser.add_argument(
+        "--value",
+        type=float,
+        default=100.0,
+        help="Shipment monetary value in USD (default: 100.0)",
+    )
+    parser.add_argument(
+        "--tier",
+        type=str,
+        choices=["standard", "premium"],
+        default="standard",
+        help="Customer account tier (standard or premium, default: standard)",
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run a standard delay demo scenario",
+    )
+
+    args = parser.parse_args()
+
+    if args.report:
+        report_text = args.report
+        value = args.value
+        tier = args.tier
+    elif args.demo or len(sys.argv) == 1:
+        # Default demo
+        print("Running demo exception report...")
+        report_text = (
+            "Hi, my package was supposed to arrive 3 days ago. "
+            "Tracking has been stuck on 'In Transit - Weather Delay' with no updates."
+        )
+        value = 120.0
+        tier = "standard"
+    else:
+        report_text = input("Enter shipment exception report: ").strip()
+        val_input = input("Enter shipment value in USD (default 100): ").strip()
+        value = float(val_input) if val_input else 100.0
+        tier_input = input("Enter customer tier (standard/premium, default standard): ").strip()
+        tier = tier_input.lower() if tier_input in ["standard", "premium"] else "standard"
+
+    res = process_exception(
+        report_text=report_text,
+        shipment_value=value,
+        customer_tier=tier,
+        log_to_session=True,
+    )
+    print_result(res)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 12 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-triage-check-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-triage-check-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">12</span>
+                        <h2 id="source-triage-check-py" class="topic-title is-file">triage_check.py<a class="headerlink" href="#source-triage-check-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">142 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-triage-check-py">
+                    <span class="file-path">shipment-exception-desk/src/python/triage_check.py</span>
+                    <p class="file-label">Test harness for Northwind Logistics Shipment Exception Desk.</p>
+                    <pre><code data-lang="python">"""Test harness for Northwind Logistics Shipment Exception Desk.
+
+Exercises the 4 required canned scenarios:
+1. Mild delay -&gt; category: delayed, escalated: False (Auto-Resolved)
+2. High-value loss -&gt; category: lost, escalated: True (Escalated to Manager)
+3. Minor damage claim -&gt; category: damaged, escalated: False (Auto-Resolved)
+4. Garbled unclassifiable report -&gt; category: unknown, escalated: True (Auto-Escalated)
+
+Also validates session aggregation and costliest-category calculation.
+"""
+
+import sys
+from pathlib import Path
+
+# Ensure src directory is in python path
+src_dir = Path(__file__).resolve().parent
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
+from pipeline import process_exception
+from session import clear_session, generate_daily_summary, get_triage_log
+
+# Canned test scenarios
+SCENARIOS = [
+    {
+        "name": "Scenario 1: Mild delay",
+        "report_text": (
+            "My shipment was scheduled for delivery yesterday afternoon. "
+            "Tracking now indicates a weather delay at the regional depot "
+            "and delivery is rescheduled for tomorrow."
+        ),
+        "shipment_value": 50.00,
+        "customer_tier": "standard",
+        "expected_category": "delayed",
+        "expected_escalated": False,
+    },
+    {
+        "name": "Scenario 2: High-value loss",
+        "report_text": (
+            "Our pallet of high-end consumer electronics was marked delivered, "
+            "but our warehouse never received it. The carrier has officially confirmed "
+            "the cargo was lost in transit."
+        ),
+        "shipment_value": 500.00,
+        "customer_tier": "standard",
+        "expected_category": "lost",
+        "expected_escalated": True,
+    },
+    {
+        "name": "Scenario 3: Minor damage claim",
+        "report_text": (
+            "The parcel arrived on time, but the exterior box was crushed "
+            "and one of the glass items inside is cracked."
+        ),
+        "shipment_value": 60.00,
+        "customer_tier": "standard",
+        "expected_category": "damaged",
+        "expected_escalated": False,
+    },
+    {
+        "name": "Scenario 4: Garbled unclassifiable report",
+        "report_text": "asdf1234 !!@@##$$ order ?? xx zz 998234 lkjasdf",
+        "shipment_value": 10.00,
+        "customer_tier": "standard",
+        "expected_category": "unknown",
+        "expected_escalated": True,
+    },
+]
+
+
+def run_checks() -&gt; bool:
+    print("=" * 70)
+    print("NORTHWIND LOGISTICS — TRIAGE PIPELINE VERIFICATION")
+    print("=" * 70)
+
+    clear_session()
+    all_passed = True
+
+    for i, s in enumerate(SCENARIOS, 1):
+        print(f"\n[{i}/4] Testing: {s['name']}")
+        print(f"    Value: ${s['shipment_value']:.2f} | Tier: {s['customer_tier']}")
+        print(f"    Report: \"{s['report_text'][:60]}...\"")
+
+        res = process_exception(
+            report_text=s["report_text"],
+            shipment_value=s["shipment_value"],
+            customer_tier=s["customer_tier"],
+            log_to_session=True,
+        )
+
+        cat_match = res["category"] == s["expected_category"]
+        esc_match = res["escalated"] == s["expected_escalated"]
+
+        print(f"    Result Category  : {res['category']} (Expected: {s['expected_category']}) -&gt; {'✓' if cat_match else '✗'}")
+        print(f"    Result Escalated : {res['escalated']} (Expected: {s['expected_escalated']}) -&gt; {'✓' if esc_match else '✗'}")
+        print(f"    Compensation     : ${res['compensation_amount']:.2f}")
+        print(f"    Action Taken     : {res['action_taken']}")
+        print(f"    Draft Preview    :\n      {res['draft'].strip().splitlines()[0]}")
+
+        if not (cat_match and esc_match):
+            all_passed = False
+            print("    &gt;&gt;&gt; FAILED SCENARIO &lt;&lt;&lt;")
+
+    print("\n" + "=" * 70)
+    print("VERIFYING DAILY SESSION AGGREGATION")
+    print("=" * 70)
+
+    summary = generate_daily_summary()
+    total_exceptions = summary["total_exceptions"]
+    total_comp = summary["total_compensation"]
+    escalation_rate = summary["escalation_rate"]
+    costliest_category = summary["costliest_category"]
+
+    print(f"Total Exceptions Processed : {total_exceptions} (Expected: 4)")
+    print(f"Total Compensation Paid    : ${total_comp:,.2f}")
+    print(f"Escalation Rate            : {escalation_rate:.1f}% (Expected: 50.0%)")
+    print(f"Costliest Category         : {costliest_category} (Expected: lost)")
+
+    if total_exceptions != 4:
+        all_passed = False
+        print("✗ Session total exceptions mismatch!")
+    if escalation_rate != 50.0:
+        all_passed = False
+        print("✗ Escalation rate mismatch!")
+    if costliest_category != "lost":
+        all_passed = False
+        print("✗ Costliest category mismatch!")
+
+    print("\n" + "=" * 70)
+    if all_passed:
+        print("🎉 ALL 4 SCENARIOS &amp; SESSION AGGREGATIONS PASSED SUCCESSFULLY!")
+        print("=" * 70)
+        return True
+    else:
+        print("❌ SOME CHECKS FAILED. Please review the errors above.")
+        print("=" * 70)
+        return False
+
+
+if __name__ == "__main__":
+    success = run_checks()
+    sys.exit(0 if success else 1)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 13 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">13</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">shipment-exception-desk/src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">TechToday &mdash; 🚚 Shipment Exception Desk &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 34,
-                rankSpacing: 387,
-                padding: 16,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

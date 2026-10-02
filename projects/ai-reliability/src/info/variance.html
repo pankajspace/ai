@@ -4,146 +4,340 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Variance &amp; Determinism · AI Reliability Lab</title>
     <meta name="description"
         content="How the Variance & Determinism demo works: unconstrained vs prompt-JSON vs schema-enforced output, graded by a strict parser." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Reliability Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Reliability Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-variance-py">variance.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F3B2; Variance &amp; Determinism<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F3B2; Variance &amp; Determinism</h1>
-                <p class="subtitle">gpt-4o-mini · temperature 0.7 · 3 strategies × 5 runs · strict json.loads() grading
-                </p>
+            <p class="lede">gpt-4o-mini · temperature 0.7 · 3 strategies × 5 runs · strict json.loads() grading. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    The same extraction task — "give me the sentiment and entities of this review" — is sent
-                    15 times: 5 runs each under three strategies. Every response is then handed to a
-                    <strong>strict downstream parser</strong> that simply calls <code>json.loads()</code> with no
-                    fence stripping, no repair, and no retry, exactly like a real pipeline would.
-                </p>
-                <p>
-                    Temperature stays at <strong>0.7</strong> for all three strategies. The only variable is how
-                    tightly the output is constrained, so any difference in reliability comes from the constraint,
-                    not from turning down randomness.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>1. A correct answer can still be unusable</strong></p>
-                <p>
-                    Unconstrained, the model usually understands the review perfectly — and answers in prose. To a
-                    program that expects JSON, that is a crash on every run. The model is not wrong; it is unusable
-                    as a software component.
-                </p>
-                <p><strong>2. Persuasion vs. structural guarantee</strong></p>
-                <ul>
-                    <li><strong>A · Unconstrained:</strong> high variance, near-0% parseable.</li>
-                    <li><strong>B · Prompt asks for JSON:</strong> most runs parse, but anything short of 100% is a
-                        silent failure rate you must wrap in retry and repair code (markdown fences, extra prose).</li>
-                    <li><strong>C · Schema enforced:</strong> <code>response_format</code> with a strict JSON schema
-                        constrains decoding itself, so every run parses and matches the shape.</li>
-                </ul>
-                <p><strong>3. Metrics reported</strong></p>
-                <ul>
-                    <li><strong>Unique responses / consistency:</strong> how many distinct strings came back, and the
-                        share taken by the most common one.</li>
-                    <li><strong>Parses as JSON / matches schema:</strong> what a downstream consumer actually
-                        experiences. API failures are excluded so infrastructure errors are not mistaken for model
-                        behaviour.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Paste a review, click “Run 15 extractions”</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /variance</span>
-                        <span class="flow-detail">Flask route validates the review</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">run_variance()</span>
-                        <span class="flow-detail">Builds 15 jobs, runs them in parallel (max 8)</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">A · 5 runs</span>
-                            <span class="flow-detail">Plain prompt</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">B · 5 runs</span>
-                            <span class="flow-detail">Prompt asks for JSON</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">C · 5 runs</span>
-                            <span class="flow-detail">json_schema, strict</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">parse_downstream() + metrics()</span>
-                        <span class="flow-detail">Strict grading per strategy</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Text report with metrics, samples, takeaway</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        The same extraction task — "give me the sentiment and entities of this review" — is sent
+                        15 times: 5 runs each under three strategies. Every response is then handed to a
+                        <strong>strict downstream parser</strong> that simply calls <code>json.loads()</code> with no
+                        fence stripping, no repair, and no retry, exactly like a real pipeline would.
+                    </p>
+                    <p>
+                        Temperature stays at <strong>0.7</strong> for all three strategies. The only variable is how
+                        tightly the output is constrained, so any difference in reliability comes from the constraint,
+                        not from turning down randomness.
+                    </p>
 
-                <h2>Code flow</h2>
-                <!-- beautify ignore:start -->
-                <!-- prettier-ignore -->
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A[Browser<br/>review] -->|POST /variance| B[app.py<br/>variance_route]
-    B -->|review| C[variance.py<br/>run_variance]
-    C -->|review| P[build_prompts]
-    P -->|plain + JSON prompts| C
-    C -->|15 jobs| D[config.py<br/>parallel_map]
-    D -->|prompt, format| E[call_model]
-    E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
-    F -->|text| E
-    E -->|15 responses| C
-    C -->|responses| G[metrics<br/>parse_downstream]
-    G -->|unique, parse%, schema%| C
-    C -->|text report| B
-    B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
-                <!-- beautify ignore:end -->
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. A correct answer can still be unusable</strong></p>
+                    <p>
+                        Unconstrained, the model usually understands the review perfectly — and answers in prose. To a
+                        program that expects JSON, that is a crash on every run. The model is not wrong; it is unusable
+                        as a software component.
+                    </p>
+                    <p><strong>2. Persuasion vs. structural guarantee</strong></p>
+                    <ul>
+                        <li><strong>A · Unconstrained:</strong> high variance, near-0% parseable.</li>
+                        <li><strong>B · Prompt asks for JSON:</strong> most runs parse, but anything short of 100% is a
+                            silent failure rate you must wrap in retry and repair code (markdown fences, extra prose).</li>
+                        <li><strong>C · Schema enforced:</strong> <code>response_format</code> with a strict JSON schema
+                            constrains decoding itself, so every run parses and matches the shape.</li>
+                    </ul>
+                    <p><strong>3. Metrics reported</strong></p>
+                    <ul>
+                        <li><strong>Unique responses / consistency:</strong> how many distinct strings came back, and the
+                            share taken by the most common one.</li>
+                        <li><strong>Parses as JSON / matches schema:</strong> what a downstream consumer actually
+                            experiences. API failures are excluded so infrastructure errors are not mistaken for model
+                            behaviour.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Builds the prompts, calls the model, and grades each output like a strict
-                    pipeline.</span>
-                <pre><code class="language-python">RESPONSE_SCHEMA = {
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Paste a review, click “Run 15 extractions”</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /variance</span>
+                            <span class="flow-detail">Flask route validates the review</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">run_variance()</span>
+                            <span class="flow-detail">Builds 15 jobs, runs them in parallel (max 8)</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">A · 5 runs</span>
+                                <span class="flow-detail">Plain prompt</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">B · 5 runs</span>
+                                <span class="flow-detail">Prompt asks for JSON</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">C · 5 runs</span>
+                                <span class="flow-detail">json_schema, strict</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">parse_downstream() + metrics()</span>
+                            <span class="flow-detail">Strict grading per strategy</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Text report with metrics, samples, takeaway</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>review] -->|POST /variance| B[app.py<br/>variance_route]
+                        B -->|review| C[variance.py<br/>run_variance]
+                        C -->|review| P[build_prompts]
+                        P -->|plain + JSON prompts| C
+                        C -->|15 jobs| D[config.py<br/>parallel_map]
+                        D -->|prompt, format| E[call_model]
+                        E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
+                        F -->|text| E
+                        E -->|15 responses| C
+                        C -->|responses| G[metrics<br/>parse_downstream]
+                        G -->|unique, parse%, schema%| C
+                        C -->|text report| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-variance-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-variance-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-variance-py" class="topic-title is-file">variance.py<a class="headerlink" href="#source-variance-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">160 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-variance-py">
+                    <span class="file-path">src/python/variance.py</span>
+                    <p class="file-label">Variance &amp; Determinism: how output constraints make a model a reliable component.</p>
+                    <pre><code data-lang="python">"""Variance &amp; Determinism: how output constraints make a model a reliable component.
+
+Adapted from ``study/09-ai-reliability/variance-determinism.py``. The same
+extraction task runs N times under three strategies at temperature 0.7:
+
+  A  Unconstrained prompt
+  B  Prompt asks for JSON
+  C  Schema enforced by the API (``response_format=json_schema``, strict)
+
+Each response is graded by a strict downstream parser (plain ``json.loads``,
+no fence stripping or repair), so the report shows how often a real pipeline
+would survive the output.
+"""
+
+import json
+from collections import Counter
+
+from config import CHAT_MODEL, get_openai_client, parallel_map
+
+RUNS_PER_STRATEGY = 5
+TEMPERATURE = 0.7
+MAX_REVIEW_CHARS = 1000
+
+STRATEGY_CHOICES = ("all", "A", "B", "C")
+
+DEFAULT_REVIEW = (
+    "The new smartphone is amazing, the camera quality is top-notch but the "
+    "battery life is a bit disappointing. I love the design though!"
+)
+
+RESPONSE_SCHEMA = {
     "type": "object",
     "properties": {
         "sentiment": {"type": "string", "enum": ["Positive", "Negative", "Mixed"]},
@@ -159,7 +353,7 @@ SCHEMA_FORMAT = {
 }
 
 
-def build_prompts(review: str) -> tuple[str, str]:
+def build_prompts(review: str) -&gt; tuple[str, str]:
     """Return (unconstrained_prompt, json_prompt) for a review."""
     task = f"Extract the sentiment and key entities from this customer review: '{review}'"
     constrained = (
@@ -171,12 +365,12 @@ def build_prompts(review: str) -> tuple[str, str]:
     return task, constrained
 
 
-def call_model(prompt: str, response_format: dict | None = None) -> str:
+def call_model(prompt: str, response_format: dict | None = None, temperature: float = TEMPERATURE) -&gt; str:
     """Return the model's text, or a string starting with 'Error:' on failure."""
     kwargs = {
         "model": CHAT_MODEL,
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": TEMPERATURE,
+        "temperature": temperature,
     }
     if response_format is not None:
         kwargs["response_format"] = response_format
@@ -187,7 +381,7 @@ def call_model(prompt: str, response_format: dict | None = None) -> str:
         return f"Error: {e}"
 
 
-def parse_downstream(raw: str) -> tuple[bool, bool]:
+def parse_downstream(raw: str) -&gt; tuple[bool, bool]:
     """Return (parsed_ok, schema_ok) the way a strict pipeline would see it."""
     if raw.startswith("Error:"):
         return False, False
@@ -207,7 +401,7 @@ def parse_downstream(raw: str) -> tuple[bool, bool]:
     return True, schema_ok
 
 
-def metrics(responses: list[str]) -> dict:
+def metrics(responses: list[str]) -&gt; dict:
     """Variance and downstream-reliability metrics; API errors are excluded."""
     valid = [r for r in responses if not r.startswith("Error:")]
     errors = len(responses) - len(valid)
@@ -222,68 +416,483 @@ def metrics(responses: list[str]) -> dict:
         "schema": round(sum(s for _, s in verdicts) / n * 100),
         "total": n,
         "errors": errors,
-    }</code></pre>
+    }
 
-                <h2>Orchestration</h2>
-                <span class="file-label">Fans the 15 runs out in parallel, then summarises each strategy.</span>
-                <pre><code class="language-python">def run_variance(review: str) -> str:
-    """Run all three strategies on ``review`` and return a text report."""
+
+def run_variance(review: str, strategy: str = "all", temperature: float = TEMPERATURE) -&gt; str:
+    """Run the selected strategy (or all three) on ``review`` and return a text report."""
     review = review.strip()[:MAX_REVIEW_CHARS]
     unconstrained, constrained = build_prompts(review)
     strategies = [
-        ("A · Unconstrained prompt", unconstrained, None),
-        ("B · Prompt asks for JSON", constrained, None),
-        ("C · Schema enforced by API", constrained, SCHEMA_FORMAT),
+        ("A", "A · Unconstrained prompt", unconstrained, None),
+        ("B", "B · Prompt asks for JSON", constrained, None),
+        ("C", "C · Schema enforced by API", constrained, SCHEMA_FORMAT),
     ]
+    if strategy != "all":
+        strategies = [s for s in strategies if s[0] == strategy]
 
-    jobs = [(p, fmt) for _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
+    jobs = [(p, fmt, temperature) for _, _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
     outputs = parallel_map(lambda job: call_model(*job), jobs)
-    ...</code></pre>
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the demo as <code>POST /variance</code>.</span>
-                <pre><code class="language-python">@bp.route("/variance", methods=["POST"])
+    lines = [
+        f"{RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
+        "",
+    ]
+    schema_scores = []
+    for i, (_, label, _, _) in enumerate(strategies):
+        responses = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
+        m = metrics(responses)
+        schema_scores.append(m["schema"])
+        lines.append(label)
+        lines.append(
+            f"  unique responses {m['unique']}/{m['total']} · consistency {m['consistency']}% · "
+            f"parses as JSON {m['parse']}% · matches schema {m['schema']}%"
+        )
+        if m["errors"]:
+            lines.append(f"  ({m['errors']} API call(s) failed and were excluded)")
+        sample = next((r for r in responses if not r.startswith("Error:")), responses[0])
+        lines.append(f"  sample: {sample[:300]}{'…' if len(sample) &gt; 300 else ''}")
+        lines.append("")
+
+    if len(schema_scores) == 3:
+        lines.append(
+            f"Takeaway: usable output went {schema_scores[0]}% → {schema_scores[1]}% → {schema_scores[2]}% "
+            "at the same temperature. Determinism came from narrowing what the model "
+            "was allowed to emit, not from turning down randomness."
+        )
+    else:
+        lines.append("Tip: re-run at another temperature, or pick 'All three' to compare strategies.")
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    print(run_variance(DEFAULT_REVIEW))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">58 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and build the OpenAI client.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and build the OpenAI client.
+
+This module is the single place that knows about secrets and model names.
+Every feature module imports from here instead of reading ``os.environ`` or
+constructing API clients itself.
+"""
+
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+# A NON-reasoning model: reasoning models think internally even when told not
+# to, which erases the gaps these demos measure.
+CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
+
+# Upper bound on parallel API calls per request; keeps each demo well under
+# the 60 s Nginx proxy timeout without hammering the provider.
+MAX_WORKERS = 8
+
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
+_client = None
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return a shared OpenAI client built from OPENAI_API_KEY."""
+    global _client
+    if _client is None:
+        api_key = get_env("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
+    return _client
+
+
+def parallel_map(fn, items):
+    """Run ``fn`` over ``items`` concurrently, preserving input order."""
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        return list(pool.map(fn, items))
+
+
+def bar(correct: int, total: int, width: int = 10) -&gt; str:
+    """Render a text accuracy bar with a count and percentage."""
+    if total == 0:
+        return "n/a"
+    filled = round(correct / total * width)
+    return f"{'█' * filled}{'░' * (width - filled)}  {correct}/{total} ({round(correct / total * 100)}%)"</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">211 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server for AI Reliability Lab: four measured LLM reliability demos.</p>
+                    <pre><code data-lang="python">"""Flask server for AI Reliability Lab: four measured LLM reliability demos.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/variance", etc. In production Nginx forwards ``/ai-reliability/...``
+  traffic to the container and PATH_PREFIX is set to "/ai-reliability".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from config import TEMPERATURE_CHOICES
+from cot import PROBLEMS, run_cot
+from cot import STRATEGY_CHOICES as COT_STRATEGIES
+from rate_limiter import check_rate_limit
+from tool_errors import FAIL_ON_CALL_LABELS, PROMPT_CHOICES, run_error_injection
+from tool_routing import DESCRIPTION_CHOICES, NAME_CHOICES, run_routing
+from variance import STRATEGY_CHOICES as VARIANCE_STRATEGIES
+from variance import run_variance
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment ("/ai-reliability") so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+def read_message() -&gt; str:
+    """Return the trimmed ``message`` field from the JSON body, or ''."""
+    data = request.get_json(force=True, silent=True) or {}
+    return str(data.get("message") or "").strip()
+
+
+def read_choice(name: str, allowed, default: str) -&gt; str | None:
+    """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+
+
+@bp.route("/variance", methods=["POST"])
 def variance_route():
     """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
     message = read_message()
     if not message:
         return jsonify({"error": "A customer review is required."}), 400
+    strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
-        return jsonify({"result": run_variance(message)})
+        return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
         app.logger.exception("variance failed")
-        return jsonify({"error": "Variance test failed. Please try again later."}), 500</code></pre>
+        return jsonify({"error": "Variance test failed. Please try again later."}), 500
 
-            </div>
-        </section>
+
+@bp.route("/cot", methods=["POST"])
+def cot_route():
+    """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    message = read_message().lower()
+    if not message:
+        return jsonify({"error": "A problem name is required."}), 400
+    if message not in PROBLEMS:
+        return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    strategy = read_choice("strategy", COT_STRATEGIES, "both")
+    if strategy is None:
+        return invalid_choice("strategy", COT_STRATEGIES)
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+    try:
+        return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
+    except Exception:
+        app.logger.exception("cot failed")
+        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
+
+
+@bp.route("/routing", methods=["POST"])
+def routing_route():
+    """Route a weather question under the names x descriptions 2x2."""
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    names = read_choice("names", NAME_CHOICES, "both")
+    if names is None:
+        return invalid_choice("names", NAME_CHOICES)
+    descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
+    if descriptions is None:
+        return invalid_choice("descriptions", DESCRIPTION_CHOICES)
+    try:
+        return jsonify({"result": run_routing(message, names, descriptions)})
+    except Exception:
+        app.logger.exception("routing failed")
+        return jsonify({"error": "Routing test failed. Please try again later."}), 500
+
+
+@bp.route("/errors", methods=["POST"])
+def errors_route():
+    """Run the tool-error injection scenarios on a weather question."""
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    prompt = read_choice("prompt", PROMPT_CHOICES, "both")
+    if prompt is None:
+        return invalid_choice("prompt", PROMPT_CHOICES)
+    fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
+    fail_on_call = read_choice("fail_on_call", fail_choices, "2")
+    if fail_on_call is None:
+        return invalid_choice("fail_on_call", fail_choices)
+    try:
+        return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
+    except Exception:
+        app.logger.exception("error injection failed")
+        return jsonify({"error": "Error-injection test failed. Please try again later."}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/variance") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Reliability Lab &mdash; 🎲 Variance &amp; Determinism &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

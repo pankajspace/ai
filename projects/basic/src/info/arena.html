@@ -4,177 +4,788 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — LLM Arena · AI Playground</title>
     <meta name="description"
         content="How the LLM Arena demo works: comparing GPT-4o mini and GPT OSS 120B, and the code behind it." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Playground</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Playground</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-arena-py">arena.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                    <li><a href="#frontend-voting">Frontend voting</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F94A; LLM Arena<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F94A; LLM Arena</h1>
-                <p class="subtitle">GPT-4o mini (OpenAI) vs. GPT OSS 120B (OpenAI API)</p>
+            <p class="lede">GPT-4o mini (OpenAI) vs. GPT OSS 120B (OpenAI API). Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>9 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    This demo sends the exact same prompt to a proprietary model
-                    (<strong>GPT-4o mini</strong> via OpenAI) and an open-source model
-                    (<strong>GPT OSS 120B</strong> via OpenAI API), then displays both replies side by side. It's a
-                    simple way to compare how two different providers respond to identical input.
-                </p>
-                <p>
-                    Like <strong>arena.ai</strong>, the two answers are shown <strong>blind</strong>: the browser
-                    shuffles them into "Model A" and "Model B". Vote &#x1F44D; / &#x1F44E; on an answer to reveal which
-                    model wrote it; a running score per model is kept for the session. Pick one of the example
-                    prompts (recursion, coffee-shop tagline, hotdog debate, space fact) or type your own.
-                </p>
-                <p>
-                    Both models are called through the same helper function because they both use the OpenAI SDK — only
-                    the client and model name differ.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>Standardized Interfaces and A/B Testing</strong></p>
-                <p>The LLM Arena demo highlights the flexibility of standard APIs and the power of side-by-side
-                    comparison:</p>
-                <ul>
-                    <li><strong>Blind A/B Testing in Practice:</strong> Evaluating language models is inherently
-                        subjective. By taking your single input prompt and sending it simultaneously to both GPT-4o mini
-                        and GPT OSS 120B, this demo allows you to directly compare their reasoning, tone, and formatting
-                        in real-time. This side-by-side evaluation is exactly how industry leaderboards like LMSYS
-                        Chatbot Arena rank models based on human preference.</li>
-                    <li><strong>API Standardization:</strong> Notice how the code uses a single <code>_ask()</code>
-                        helper function for both OpenAI and the open-source Groq endpoint. Because many open-source
-                        inference providers have adopted the OpenAI API specification, we can swap between a proprietary
-                        model (GPT-4o mini) and an open-weights model (GPT OSS 120B) without rewriting the orchestration
-                        code. It's a simple matter of changing the base URL and the model name parameter.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Type a prompt, click “Battle”</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /arena</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">battle()</span>
-                        <span class="flow-detail">Sends the same prompt to both providers</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">OpenAI API</span>
-                            <span class="flow-detail">GPT-4o mini replies</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">OpenAI API</span>
-                            <span class="flow-detail">GPT OSS 120B replies</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Shuffled into blind Model A / B; vote to reveal names</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        This demo sends the exact same prompt to a proprietary model
+                        (<strong>GPT-4o mini</strong> via OpenAI) and an open-source model
+                        (<strong>GPT OSS 120B</strong> via OpenAI API), then displays both replies side by side. It's a
+                        simple way to compare how two different providers respond to identical input.
+                    </p>
+                    <p>
+                        Like <strong>arena.ai</strong>, the two answers are shown <strong>blind</strong>: the browser
+                        shuffles them into "Model A" and "Model B". Vote &#x1F44D; / &#x1F44E; on an answer to reveal which
+                        model wrote it; a running score per model is kept for the session. Pick one of the example
+                        prompts (recursion, coffee-shop tagline, hotdog debate, space fact) or type your own.
+                    </p>
+                    <p>
+                        Both models are called through the same helper function because they both use the OpenAI SDK — only
+                        the client and model name differ.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />prompt] -->|POST /arena| B[app.py<br />arena route]
-                        B -->|prompt| C[arena.py<br />battle]
-                        C -->|prompt| D[OpenAI API<br />GPT-4o mini]
-                        C -->|prompt| E[OpenAI API<br />GPT OSS 120B]
-                        D -->|reply A| C
-                        E -->|reply B| C
-                        C -->|both replies| B
-                        B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Standardized Interfaces and A/B Testing</strong></p>
+                    <p>The LLM Arena demo highlights the flexibility of standard APIs and the power of side-by-side
+                        comparison:</p>
+                    <ul>
+                        <li><strong>Blind A/B Testing in Practice:</strong> Evaluating language models is inherently
+                            subjective. By taking your single input prompt and sending it simultaneously to both GPT-4o mini
+                            and GPT OSS 120B, this demo allows you to directly compare their reasoning, tone, and formatting
+                            in real-time. This side-by-side evaluation is exactly how industry leaderboards like LMSYS
+                            Chatbot Arena rank models based on human preference.</li>
+                        <li><strong>API Standardization:</strong> Notice how the code uses a single <code>_ask()</code>
+                            helper function for both OpenAI and the open-source Groq endpoint. Because many open-source
+                            inference providers have adopted the OpenAI API specification, we can swap between a proprietary
+                            model (GPT-4o mini) and an open-weights model (GPT OSS 120B) without rewriting the orchestration
+                            code. It's a simple matter of changing the base URL and the model name parameter.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Sends one prompt to two models and returns both replies.</span>
-                <pre><code class="language-python"># Model definitions for side-by-side evaluation
-OPENAI_MODEL = "gpt-4o-mini"          # proprietary frontier model
-GROQ_MODEL = "openai/gpt-oss-120b"    # open-source model, served with high throughput via OpenAI API
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Type a prompt, click “Battle”</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /arena</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">battle()</span>
+                            <span class="flow-detail">Sends the same prompt to both providers</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">OpenAI API</span>
+                                <span class="flow-detail">GPT-4o mini replies</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">OpenAI API</span>
+                                <span class="flow-detail">GPT OSS 120B replies</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shuffled into blind Model A / B; vote to reveal names</span>
+                        </div>
+                    </div>
 
 
-def _ask(client, model: str, prompt: str) -> str:
-    # Both providers follow the standard OpenAI chat completions wire format,
-    # so a single shared helper handles inference for both endpoints.
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />prompt] -->|POST /arena| B[app.py<br />arena route]
+                            B -->|prompt| C[arena.py<br />battle]
+                            C -->|prompt| D[OpenAI API<br />GPT-4o mini]
+                            C -->|prompt| E[OpenAI API<br />GPT OSS 120B]
+                            D -->|reply A| C
+                            E -->|reply B| C
+                            C -->|both replies| B
+                            B -->|JSON result| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-arena-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-arena-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-arena-py" class="topic-title is-file">arena.py<a class="headerlink" href="#source-arena-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">71 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-arena-py">
+                    <span class="file-path">src/python/arena.py</span>
+                    <p class="file-label">Send one prompt to two models and return both replies for comparison.</p>
+                    <pre><code data-lang="python">"""Send one prompt to two models and return both replies for comparison.
+
+The LLM Arena feature lets users compare how a proprietary model (GPT-4o mini
+via OpenAI) and an open-source model (Llama 3.3 70B via Groq) respond to the
+exact same prompt.  Both calls are made sequentially; a future improvement
+could fire them concurrently using asyncio or threading.
+"""
+
+from config import get_groq_client, get_openai_client
+
+# Model A — OpenAI's GPT-4o mini: fast, cheap, high quality instruction-following.
+OPENAI_MODEL = "gpt-4o-mini"
+
+# Model B — Meta's Llama 3.3 70B served by Groq: open-source, free tier,
+# very fast inference thanks to Groq's custom LPU hardware.
+GROQ_MODEL = "openai/gpt-oss-120b"
+
+
+def _ask(client, model: str, prompt: str) -&gt; str:
+    """Send a single-turn prompt to a model and return its reply text.
+
+    This private helper keeps the repetitive chat completion call in one
+    place so battle() stays readable.  Both providers accept the exact
+    same request format, which is why one helper covers both.
+    """
     response = client.chat.completions.create(
         model=model,
+        # A single user message with no system prompt keeps the comparison
+        # fair — both models receive identical context.
         messages=[{"role": "user", "content": prompt}],
     )
-    # Extract the assistant's text content from the first completion choice
     return response.choices[0].message.content
 
 
-def battle(prompt: str) -> dict:
-    # Step 1: Call OpenAI model first
+def battle(prompt: str) -&gt; dict:
+    """Ask the same prompt to OpenAI and Groq and return both answers.
+
+    The calls are made sequentially (OpenAI first, then Groq).  Each
+    result includes the model name so the UI can label each column
+    independently of the order.
+
+    Args:
+        prompt: The user's prompt — sent unchanged to both models.
+
+    Returns:
+        A dict of the form::
+
+            {
+                "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
+                "model_b": {"model": "llama-3.3-70b-versatile", "reply": "..."},
+            }
+    """
+    # Call OpenAI first (typically higher latency due to more capable model).
     openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
 
-    # Step 2: Call open-source model endpoint
+    # Then call Groq — Groq's LPU hardware makes Llama responses very fast.
     groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
 
-    # Step 3: Package both replies with metadata for side-by-side UI rendering
+    # Bundle both results into a labelled dict so the API response and UI
+    # always know which reply came from which provider.
     return {
         "model_a": {"model": OPENAI_MODEL, "reply": openai_reply},
         "model_b": {"model": GROQ_MODEL, "reply": groq_reply},
-    }</code></pre>
+    }
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the arena over HTTP as <code>POST /arena</code>.</span>
-                <pre><code class="language-python">@bp.route("/arena", methods=["POST"])
+
+if __name__ == "__main__":
+    # Quick manual test: run `python arena.py` to print both replies side-by-side.
+    result = battle("Suggest one thing to do in Bangalore.")
+    print(f"{result['model_a']['model']}: {result['model_a']['reply']}\n")
+    print(f"{result['model_b']['model']}: {result['model_b']['reply']}")</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">42 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create API clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create API clients.
+
+This module is the single place that knows about API keys and base URLs.
+Every other module calls get_openai_client() or get_groq_client() instead
+of constructing the client themselves, so key management stays in one place.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Read key=value pairs from the .env file in the project root and inject
+# them into os.environ.  This call is safe to make at import time — if no
+# .env file exists (e.g. in production where env vars are set directly),
+# python-dotenv simply does nothing.
+load_dotenv()
+
+# Groq exposes an OpenAI-compatible REST API at this base URL.  Because
+# the interface is identical we can reuse the official `openai` package
+# by just pointing it at a different host — no extra SDK required.
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return an OpenAI client authenticated with OPENAI_API_KEY."""
+    # The OpenAI constructor reads api_key from the environment automatically
+    # if you pass it explicitly, which makes the dependency visible at the
+    # call site rather than relying on an implicit env lookup inside the SDK.
+    # We dont need BASE_URL as its the default for OpenAI as https://api.openai.com/v1
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY")) 
+
+
+def get_groq_client() -&gt; OpenAI:
+    """Return an OpenAI client pointed at the Groq API.
+
+    The returned object is an instance of the standard ``openai.OpenAI``
+    class — Groq's API is wire-compatible so no additional library is
+    needed.  Only ``api_key`` and ``base_url`` differ from the OpenAI
+    client above.
+    """
+    return OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=GROQ_BASE_URL)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">211 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing joke, travel, summarize, and arena endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing joke, travel, summarize, and arena endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/joke",
+  etc.  In production Nginx forwards ``/basic/...`` traffic to the container
+  and PATH_PREFIX is set to "/basic", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from arena import battle
+from joke import get_joke
+from rate_limiter import check_rate_limit
+from summarizer import MAX_TEXT_CHARS, PERSONALITIES, summarize, summarize_text
+from travel import get_travel_suggestion
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/basic") so the app
+# works correctly behind an Nginx location block.  Locally it is empty string,
+# which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/joke", methods=["POST"])
+def joke():
+    """Return a joke generated by Llama 3.3 70B on Groq.
+
+    Request body (JSON): ``{ "topic": "&lt;optional topic&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;joke text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    data = request.get_json(force=True)
+    # topic is optional; an empty string causes get_joke() to pick randomly.
+    topic = (data.get("topic") or "").strip()
+    try:
+        text = get_joke(topic)
+        response = jsonify({"result": text})
+        # Prevent the browser from caching joke responses — every click
+        # should fetch a fresh joke from the API.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/travel", methods=["POST"])
+def travel():
+    """Return a travel suggestion for a city via GPT-4o mini.
+
+    Request body (JSON): ``{ "city": "&lt;city name&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;suggestion text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    data = request.get_json(force=True)
+    # Fall back to Bangalore if the user submits an empty city, so the
+    # call to get_travel_suggestion() always has a usable value.
+    city = (data.get("city") or "").strip() or "Bangalore"
+    try:
+        text = get_travel_suggestion(city)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    """Summarize a URL (scraped) or pasted article text with GPT-4o mini.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }`` or
+                         ``{ "text": "&lt;article text&gt;" }``, plus an optional
+                         ``"personality"`` (friendly | snarky | eli5 | professional)
+    Response (JSON):     ``{ "result": "&lt;markdown summary&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (bad input)
+                         or HTTP 500 (API / scraping error)
+    """
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    article = (data.get("text") or "").strip()
+    personality = (data.get("personality") or "friendly").strip()
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper or model run on bad input.
+    if not url and not article:
+        return jsonify({"error": "A website URL or article text is required."}), 400
+    if personality not in PERSONALITIES:
+        return jsonify({"error": "Unknown personality."}), 400
+    if len(article) &gt; MAX_TEXT_CHARS:
+        return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
+    try:
+        text = summarize_text(article, personality) if article else summarize(url, personality)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/arena", methods=["POST"])
 def arena():
-    # Step 1: Parse the incoming JSON request payload
+    """Send one prompt to two models and return both responses.
+
+    Request body (JSON): ``{ "prompt": "&lt;user prompt&gt;" }``
+    Response (JSON)::
+
+        {
+          "result": {
+            "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
+            "model_b": {"model": "openai/gpt-oss-120b", "reply": "..."}
+          }
+        }
+
+    Error response: ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing prompt)
+                    or HTTP 500 (API error)
+    """
     data = request.get_json(force=True)
     prompt = (data.get("prompt") or "").strip()
-
-    # Step 2: Validate that a non-empty prompt was submitted
     if not prompt:
-        return jsonify({"error": "A prompt is required."}), 400  # validate at the boundary
-
-    # Step 3: Query both models in the battle arena and return combined results
+        return jsonify({"error": "A prompt is required."}), 400
     try:
         result = battle(prompt)
         return jsonify({"result": result})
     except Exception as e:
-        # Catch unexpected model/network failures and return HTTP 500
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-                <h2>Frontend voting</h2>
-                <span class="file-label">Shuffles the replies, hides model names, and reveals them on the first
-                    vote (<code>js/main.js</code>).</span>
-                <pre><code class="language-javascript">const renderArena = (data, result) => {
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/joke") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8080 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-frontend-voting">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-frontend-voting">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="frontend-voting" class="topic-title">Frontend voting<a class="headerlink" href="#frontend-voting"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-frontend-voting">
+                    <span class="file-label">Shuffles the replies, hides model names, and reveals them on the first
+                        vote (<code>js/main.js</code>).</span>
+                    <pre><code data-lang="javascript">const renderArena = (data, result) => {
     const models = [data.result.model_a, data.result.model_b];
     if (Math.random() &lt; 0.5) models.reverse();   // blind: random sides
 
@@ -185,42 +796,15 @@ def arena():
         renderTally();
     };
 };</code></pre>
+                </div>
+            </section>
 
-            </div>
-        </section>
+        </article>
     </main>
+    <footer class="study-footer">AI Playground &mdash; 🥊 LLM Arena &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

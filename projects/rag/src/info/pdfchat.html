@@ -4,127 +4,300 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — PDF Chat · RAG Lab</title>
     <meta name="description"
         content="How the PDF Chat demo works: RAG pipeline, Chroma, GPT-4o mini, and the code behind it." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>RAG Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; RAG Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-pdf-chat-py">pdf_chat.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F4C4; PDF Chat<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F4C4; PDF Chat</h1>
-                <p class="subtitle">RAG pipeline + Chroma + GPT-4o mini</p>
+            <p class="lede">RAG pipeline + Chroma + GPT-4o mini. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    PDF Chat is a complete end-to-end RAG pipeline applied to pasted PDF text. First, the text is
-                    chunked and embedded into an in-memory Chroma vector store (<code>/pdf-index</code>). Then, for
-                    each question, the most relevant chunks are retrieved and injected into a prompt that tells
-                    GPT-4o mini to answer only from the document.
-                </p>
-                <p>
-                    The in-memory store persists for the browser session on the server (<code>_pdf_state</code>).
-                    This keeps the server from storing uploaded files while still showing the full RAG pipeline
-                    on real document text.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>End-to-End Document Intelligence</strong></p>
-                <p>The PDF Chat demo combines chunking, vector storage, and grounded generation into a cohesive pipeline for querying real documents:</p>
-                <ul>
-                    <li><strong>Optimized Chunk Sizing:</strong> When you paste PDF text, <code>build_pdf_text_index()</code> splits it into 800-character chunks—larger than a standard text demo. This is intentional: PDF paragraphs often contain dense, continuous context, so a larger chunk size ensures that related concepts aren't prematurely cut off before being stored in the in-memory Chroma database.</li>
-                    <li><strong>Ephemeral Vector Storage:</strong> For an interactive web demo, spinning up a persistent database is overkill. This demo leverages an in-memory Chroma instance (<code>_pdf_state</code>). The vectors exist only as long as the server session, allowing you to ask multiple questions (using <code>ask_pdf()</code> to retrieve the top 4 chunks) without permanently saving your private PDF data to disk.</li>
-                    <li><strong>Reliability via Prompting:</strong> The <code>PDF_PROMPT</code> acts as a strict guardrail. By telling GPT-4o mini to explicitly state <em>"I couldn't find that in the document"</em> if the answer isn't in the context, we prioritize factual accuracy and trust over the model's natural inclination to invent plausible-sounding answers.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Paste PDF text, click "Index Text"</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /pdf-index</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">build_pdf_text_index()</span>
-                        <span class="flow-detail">chunk + embed into in-memory Chroma</span>
-                    </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Indexed! Now ask a question</span>
-                    </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /pdf-chat</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">ask_pdf(db, question)</span>
-                        <span class="flow-detail">retrieve top 4 chunks + GPT-4o mini</span>
-                    </div>
-                    <div class="flow-arrow-down">&#x2193;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Answer grounded in the document</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        PDF Chat is a complete end-to-end RAG pipeline applied to pasted PDF text. First, the text is
+                        chunked and embedded into an in-memory Chroma vector store (<code>/pdf-index</code>). Then, for
+                        each question, the most relevant chunks are retrieved and injected into a prompt that tells
+                        GPT-4o mini to answer only from the document.
+                    </p>
+                    <p>
+                        The in-memory store persists for the browser session on the server (<code>_pdf_state</code>).
+                        This keeps the server from storing uploaded files while still showing the full RAG pipeline
+                        on real document text.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser<br />PDF text"] -->|POST /pdf-index| B["app.py<br />pdf_index"]
-                        B -->|pdf_text| C["pdf_chat.py<br />build_pdf_text_index"]
-                        C -->|chunk + embed| D["in-memory Chroma<br />_pdf_state db"]
-                        D -->|Chroma db| B
-                        A2["Browser<br />question"] -->|POST /pdf-chat| E["app.py<br />pdf_chat"]
-                        E -->|db, question| F["pdf_chat.py<br />ask_pdf"]
-                        F -->|question| D
-                        D -->|top 4 chunks| F
-                        F -->|context + question| G["PDF_PROMPT<br />| GPT-4o mini"]
-                        G -->|answer| F
-                        F -->|answer text| E
-                        E -->|JSON result| A2
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>End-to-End Document Intelligence</strong></p>
+                    <p>The PDF Chat demo combines chunking, vector storage, and grounded generation into a cohesive pipeline for querying real documents:</p>
+                    <ul>
+                        <li><strong>Optimized Chunk Sizing:</strong> When you paste PDF text, <code>build_pdf_text_index()</code> splits it into 800-character chunks—larger than a standard text demo. This is intentional: PDF paragraphs often contain dense, continuous context, so a larger chunk size ensures that related concepts aren't prematurely cut off before being stored in the in-memory Chroma database.</li>
+                        <li><strong>Ephemeral Vector Storage:</strong> For an interactive web demo, spinning up a persistent database is overkill. This demo leverages an in-memory Chroma instance (<code>_pdf_state</code>). The vectors exist only as long as the server session, allowing you to ask multiple questions (using <code>ask_pdf()</code> to retrieve the top 4 chunks) without permanently saving your private PDF data to disk.</li>
+                        <li><strong>Reliability via Prompting:</strong> The <code>PDF_PROMPT</code> acts as a strict guardrail. By telling GPT-4o mini to explicitly state <em>"I couldn't find that in the document"</em> if the answer isn't in the context, we prioritize factual accuracy and trust over the model's natural inclination to invent plausible-sounding answers.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Indexes pasted PDF text and answers questions from its content.</span>
-                <pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Paste PDF text, click "Index Text"</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /pdf-index</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">build_pdf_text_index()</span>
+                            <span class="flow-detail">chunk + embed into in-memory Chroma</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Indexed! Now ask a question</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /pdf-chat</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">ask_pdf(db, question)</span>
+                            <span class="flow-detail">retrieve top 4 chunks + GPT-4o mini</span>
+                        </div>
+                        <div class="flow-arrow-down">&#x2193;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Answer grounded in the document</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser<br />PDF text"] -->|POST /pdf-index| B["app.py<br />pdf_index"]
+                            B -->|pdf_text| C["pdf_chat.py<br />build_pdf_text_index"]
+                            C -->|chunk + embed| D["in-memory Chroma<br />_pdf_state db"]
+                            D -->|Chroma db| B
+                            A2["Browser<br />question"] -->|POST /pdf-chat| E["app.py<br />pdf_chat"]
+                            E -->|db, question| F["pdf_chat.py<br />ask_pdf"]
+                            F -->|question| D
+                            D -->|top 4 chunks| F
+                            F -->|context + question| G["PDF_PROMPT<br />| GPT-4o mini"]
+                            G -->|answer| F
+                            F -->|answer text| E
+                            E -->|JSON result| A2
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-pdf-chat-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-pdf-chat-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-pdf-chat-py" class="topic-title is-file">pdf_chat.py<a class="headerlink" href="#source-pdf-chat-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">80 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-pdf-chat-py">
+                    <span class="file-path">src/python/pdf_chat.py</span>
+                    <p class="file-label">PDF Chat: index pasted PDF text and answer questions from its content.</p>
+                    <pre><code data-lang="python">"""PDF Chat: index pasted PDF text and answer questions from its content.
+
+This module combines the full RAG pipeline for PDF text: chunk pasted content,
+embed it into an in-memory Chroma store, then answer questions using only the
+document's content.
+
+Can be run directly:  ``docker compose run --rm pdf-chat``
+"""
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 
 from config import get_chat_model, get_embedder
 
-# Strict RAG system prompt that forces the LLM to ground answers exclusively in the PDF text
 PDF_PROMPT = ChatPromptTemplate.from_template("""
 You are a helpful PDF assistant. Answer the question using ONLY the context below.
 If the context doesn't contain the answer, say "I couldn't find that in the document."
@@ -145,15 +318,10 @@ def build_pdf_text_index(pdf_text: str) -&gt; Chroma:
     Returns:
         A ``Chroma`` vector store containing the embedded text chunks.
     """
-    # Step 1: Split PDF text with larger chunk size (800 chars / 100 overlap) to preserve multi-sentence paragraphs
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)  # bigger chunks than the chunking demo's 100/10 since PDF pages carry more context per paragraph
     chunks = splitter.create_documents([pdf_text])
-
-    # Step 2: Initialize embedding model
     embedder = get_embedder()
-
-    # Step 3: Create temporary in-memory Chroma vector store (persist_directory=None)
-    db = Chroma.from_documents(chunks, embedder)  # index is rebuilt each time new PDF text is submitted
+    db = Chroma.from_documents(chunks, embedder)  # in-memory only (no persist_directory) — index is rebuilt each time PDF text is submitted
     return db
 
 
@@ -167,23 +335,348 @@ def ask_pdf(db: Chroma, question: str) -&gt; str:
     Returns:
         The model's answer.
     """
-    # Step 1: Initialize LLM chat model
     model = get_chat_model()
-
-    # Step 2: Retrieve top 4 most relevant text chunks from the vector database
-    chunks = db.similarity_search(question, k=4)
-
-    # Step 3: Assemble retrieved chunks into unified context block
+    chunks = db.similarity_search(question, k=4)  # one more chunk than the rag.py demo's k=3, since PDF answers often span more context
     context = "\n\n".join(c.page_content for c in chunks)
-
-    # Step 4: Run LCEL prompt-to-model chain and extract textual response
     chain = PDF_PROMPT | model
-    return chain.invoke({"context": context, "question": question}).content</code></pre>
+    return chain.invoke({"context": context, "question": question}).content
 
-                <h2>API routes</h2>
-                <span class="file-label">Exposes the two-phase PDF pipeline over HTTP as <code>POST /pdf-index</code>
-                    and <code>POST /pdf-chat</code>.</span>
-                <pre><code class="language-python">@bp.route("/pdf-index", methods=["POST"])
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) &lt; 2:
+        print("Usage: python pdf_chat.py '&lt;pdf text&gt;'")
+        sys.exit(1)
+
+    pdf_text = sys.argv[1]
+    print("Indexing pasted PDF text...")
+    db = build_pdf_text_index(pdf_text)
+    print("PDF text indexed. Type your questions (Ctrl+C to quit).\n")
+
+    while True:
+        try:
+            question = input("Q: ")
+            if not question.strip():
+                continue
+            print(f"A: {ask_pdf(db, question)}\n")
+        except (KeyboardInterrupt, EOFError):
+            print("\nBye!")
+            break</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">52 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create model clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create model clients.
+
+This module is the single place that knows about API keys and model names.
+Every other module calls get_chat_model() or get_embedder() instead of
+constructing a client itself, so key and model management stays in one place.
+
+Two kinds of client are exposed because the features need different tools:
+  - get_chat_model()  → a LangChain ``ChatOpenAI`` for the RAG chain and
+                         PDF chat, which are built as LangChain chains
+                         (prompt | model).
+  - get_embedder()    → a ``HuggingFaceEmbeddings`` instance used by the
+                         vector store to embed documents and queries.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Every LLM feature in this project uses the cheap, fast gpt-4o-mini model.
+CHAT_MODEL = "gpt-4o-mini"
+
+# Free, fast, 384-dimension sentence embedding model — runs locally, no API key.
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+
+def get_chat_model(temperature: float = 0) -&gt; ChatOpenAI:
+    """Return a LangChain ChatOpenAI model.
+
+    Args:
+        temperature: Sampling temperature (0 = deterministic, 2 = very random).
+                     Defaults to 0 for factual RAG answers.
+
+    Returns:
+        A ``ChatOpenAI`` instance ready to be composed into a LangChain chain.
+    """
+    return ChatOpenAI(model=CHAT_MODEL, temperature=temperature)
+
+
+def get_embedder() -&gt; HuggingFaceEmbeddings:
+    """Return a HuggingFace sentence embedding model.
+
+    Uses ``all-MiniLM-L6-v2`` — a free, fast model that produces 384-dimension
+    vectors. Runs entirely on the local CPU; no API key required.
+    """
+    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">267 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/embeddings",
+  etc.  In production Nginx forwards ``/rag/...`` traffic to the container
+  and PATH_PREFIX is set to "/rag", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from chunk import chunk_text
+from embeddings import compare_similarity
+from index import build_index
+from rag import rag_answer
+from rerank import retrieve_with_rerank
+from pdf_chat import build_pdf_text_index, ask_pdf
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/rag") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+MAX_TEXTAREA_CHARS = 1000
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+# Server-side state for PDF chat — stores the in-memory Chroma index per
+# session.  In a production multi-user app this would use a session store;
+# for this learning project a single shared state is fine. It's a dict
+# (not a plain variable) so the route functions below can mutate it in
+# place without needing a `global` declaration.
+_pdf_state = {"db": None}
+
+
+def validate_textarea(value: str, label: str):
+    """Validate required textarea content and enforce the shared size cap."""
+    if not value:
+        return jsonify({"error": f"{label} is required."}), 400
+    if len(value) &gt; MAX_TEXTAREA_CHARS:
+        return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/embeddings", methods=["POST"])
+def embeddings_route():
+    """Compare two texts and return their cosine similarity.
+
+    Request body (JSON): ``{ "text_a": "&lt;text&gt;", "text_b": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    text_a = (data.get("text_a") or "").strip()
+    text_b = (data.get("text_b") or "").strip()
+    if not text_a or not text_b:
+        return jsonify({"error": "Both text_a and text_b are required."}), 400
+    try:
+        score = compare_similarity(text_a, text_b)
+        return jsonify({"result": {"similarity": round(score, 4)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/chunk", methods=["POST"])
+def chunk_route():
+    """Split text into overlapping chunks.
+
+    Request body (JSON): ``{ "text": "&lt;long text&gt;" }``
+    Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    text = (data.get("text") or "").strip()
+    validation = validate_textarea(text, "Text")
+    if validation:
+        return validation
+    try:
+        chunks = chunk_text(text)
+        return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rag", methods=["POST"])
+def rag_route():
+    """Answer a question using a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        # One "document" per non-blank line of the pasted knowledge base.
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # persist_directory=None keeps the index in memory only — it's rebuilt
+        # fresh from the request body on every call, nothing is written to disk.
+        db, _ = build_index(docs, persist_directory=None)
+        answer = rag_answer(question, db=db)
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rerank", methods=["POST"])
+def rerank_route():
+    """Retrieve and rerank results from a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    data = request.get_json(force=True)
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        db, _ = build_index(docs, persist_directory=None)
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        results = [doc.page_content for doc in reranked]
+        return jsonify({"result": {"results": results}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-index", methods=["POST"])
 def pdf_index():
     """Index pasted PDF text in an in-memory vector store.
 
@@ -191,16 +684,11 @@ def pdf_index():
     Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
     Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
-    # Step 1: Parse request JSON
     data = request.get_json(force=True)
     pdf_text = (data.get("pdf_text") or "").strip()
-
-    # Step 2: Validate that non-empty text was provided
     validation = validate_textarea(pdf_text, "PDF text")
     if validation:
         return validation
-
-    # Step 3: Build Chroma vector index and cache in session state dictionary
     try:
         _pdf_state["db"] = build_pdf_text_index(pdf_text)
         return jsonify({"result": "PDF text indexed. Ask me anything about it."})
@@ -216,57 +704,141 @@ def pdf_chat():
     Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
-    # Step 1: Parse request JSON and extract user query
     data = request.get_json(force=True)
     question = (data.get("question") or "").strip()
-
-    # Step 2: Validate question and verify that a PDF index has been uploaded
     if not question:
         return jsonify({"error": "A question is required."}), 400
     if _pdf_state["db"] is None:
         return jsonify({"error": "Please add PDF text first."}), 400
-
-    # Step 3: Perform vector search, prompt LLM, and return grounded answer
     try:
         answer = ask_pdf(_pdf_state["db"], question)
         return jsonify({"result": answer})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/rag") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8082 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">RAG Lab &mdash; 📄 PDF Chat &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

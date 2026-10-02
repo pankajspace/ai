@@ -84,23 +84,27 @@ def info(filename):
 
 ## 3. Shared assets
 
-Create once per project (not once per demo):
+Create once per project (not once per demo) by copying them verbatim from `projects/basic/src/` (all projects share identical copies; `projects/techtoday/css/info.css` differs only in its logo path, `../logo.svg`):
 
-- `src/css/info.css` — layout for the explainer pages: `.info-content` (prose), `.flow-diagram`/`.flow-step`/`.flow-arrow`/`.flow-branch` (the request-flow diagram), `.mermaid-wrap` (the code-flow diagram), and `pre`/`.copy-code` (syntax-highlighted code blocks with a gradient top edge, drop shadow, and a Copy button — see an existing `projects/basic/src/css/info.css` for the full rule set to copy).
-- `src/js/info.js` — runs `hljs.highlightAll()` and injects a "Copy" button into every `.info-content pre` that copies the code block's text to the clipboard.
+- `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
+- `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
 
 ## 4. One page per demo — `src/info/<demo>.html`
 
-Copy the structure of an existing page (e.g. `projects/basic/src/info/joke.html`) and adapt the content. Section order:
+Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
 
-1. **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a "&larr; Go Back" link.
-2. **Hero** — the card's emoji + title as `<h1>`, and a one-line subtitle (models/providers used).
-3. **Concept** — 1-2 short paragraphs: what the demo does and *why* that model/provider/approach was chosen.
-4. **Request flow** — a plain CSS box+arrow diagram (`.flow-diagram`) showing the browser → Flask route → module function → provider API → browser round trip. Use `.flow-diagram.flow-vertical` + `.flow-branch` instead of the default horizontal layout when a step fans out into parallel calls (e.g. calling two providers at once).
-5. **Code flow** — a Mermaid flowchart (see below) showing the actual function-call graph with labeled arrows for both directions: the data going *into* each call and the data *returned* back up.
-6. **Backend** / **API route** (one `<h2>` per source file involved, e.g. **Backend**, **Scraper**, **Summarizer**, **API route**) — the real source code for that file's relevant function(s), reproduced with genuine explanatory comments (pull from the actual source file; don't invent comments), inside `<pre><code class="language-python">…</code></pre>`.
-   - Do **not** put the file path in the `<h2>` — just "Backend", "API route", etc. A one-line `<span class="file-label">` under the heading can describe what the code does.
-   - Do **not** include a "Front end" / JS-wiring code section — the explainer is about the demo's logic, not the generic `setupCard()` plumbing shared by every card.
+- **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a `&larr; <Project>` `nav-back-link`.
+- **`<h1 id="how-it-works">`** — the card's emoji + title (CSS adds the "How it works" eyebrow), then a `p.lede` with the models/providers used.
+- **Toolbar** — topic count, explainer count, Python-file count, then Expand All / Collapse All.
+- **Unit 1 — How It Works**, one collapsed numbered `.topic-section` each:
+  1. **Concept** — what the demo does and *why* that model/provider/approach was chosen.
+  2. **Theory & Concepts** — the ideas the demo teaches.
+  3. **Request flow** — a plain CSS box+arrow diagram (`.flow-diagram`): browser → Flask route → module function → provider API → browser. Use `.flow-diagram.flow-vertical` + `.flow-branch` when a step fans out into parallel calls.
+  4. **Code flow** — a Mermaid flowchart (see below).
+- **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers), then `app.py` and `rate_limiter.py`. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
+- Do **not** include the generic front-end `setupCard()` wiring.
+
+Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`.
 
 ### Code-flow diagram — use Mermaid, not a hand-rolled tree
 
@@ -130,43 +134,21 @@ flowchart TD
   E -->|reply B| C
   ```
 - `<br/>` inside a node label (`A[Browser<br/>topic]`) is safe and renders as a line break — Mermaid supports it.
+- Keep each edge on **one line** — `A -->|label|` followed by a newline and the target node is a parse error.
 
-Load Mermaid via the classic UMD CDN bundle (works with a plain `<script>` tag, no bundler/ESM needed) and theme it to match the site's dark palette with an inline `mermaid.initialize()` call placed **immediately after** the script tag (before `</body>`, so it runs before Mermaid's own `DOMContentLoaded` auto-render):
+Load Mermaid with a plain script tag before `info.js`; `info.js` calls `mermaid.initialize({ startOnLoad: false, … })` with the course palette and renders each diagram when its topic opens. No inline init script and no highlight.js:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script>
-    mermaid.initialize({
-        startOnLoad: true,
-        theme: "base",
-        themeVariables: {
-            background: "#1e1e1e",
-            primaryColor: "#2a2a2a",
-            primaryTextColor: "#e0e0e0",
-            primaryBorderColor: "#90caf9",
-            lineColor: "#90caf9",
-            secondaryColor: "#2a2a2a",
-            tertiaryColor: "#2a2a2a",
-            fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-            fontSize: "14px",
-        },
-    });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script src="../js/info.js"></script>
-```
-
-Also load highlight.js's stylesheet in `<head>` for the code blocks:
-
-```html
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 ```
 
 ## 5. Verify
 
 - Check for errors on every edited/created file.
 - Open `src/index.html` in the integrated browser, confirm each card shows the green ⓘ icon that turns orange on hover with a tooltip reading "Explanation".
-- Open each `src/info/<demo>.html`, confirm: the request-flow diagram renders, the Mermaid code-flow diagram renders with labeled arrows (both call and return directions), code blocks are syntax-highlighted with a working Copy button, and "&larr; Go Back" returns to `index.html`.
+- Open each `src/info/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px, and the back link returns to the project index.
+- Diff each embedded file against its source (`html.unescape(code) == file.read_text().rstrip("\n")`) — the source topics must be complete and unedited.
 
 ## 6. Docs
 

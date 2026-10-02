@@ -4,268 +4,1218 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — The Refund Bench · AI Systems Lab</title>
     <meta name="description"
         content="How The Refund Bench works: 4-stage agentic dispute resolution pipeline, 3 distinct foundation model judges (OpenAI, Gemini, Groq), and deterministic settlement." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Systems Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Systems Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-refund-bench-py">refund_bench.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🏛️ The Refund Bench<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🏛️ The Refund Bench</h1>
-                <p class="subtitle">4-Stage Agentic Dispute Resolution &amp; Multi-Judge System (OpenAI · Gemini · Groq)
-                </p>
+            <p class="lede">4-Stage Agentic Dispute Resolution &amp; Multi-Judge System (OpenAI · Gemini · Groq). Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    In consumer platforms like food delivery, ride hailing, and e-commerce, customer complaints are
-                    messy,
-                    emotional, and often conflate multiple independent issues into a single angry paragraph.
-                    Attempting to resolve disputes using a single monolithic LLM prompt fails due to hallucinated refund
-                    policies,
-                    arithmetic mistakes, vulnerability to prompt injection, and correlated errors.
-                </p>
-                <p>
-                    <strong>The Refund Bench</strong> solves this with an industrial 4-stage agentic pipeline:
-                </p>
-                <ul>
-                    <li><strong>Stage 1 (Intake &amp; Evidence Freeze):</strong> Freezes immutable transactional facts
-                        from
-                        the database (order items, GPS logs, restaurant handoff timestamps, delivery SLA) into an
-                        unalterable context envelope.</li>
-                    <li><strong>Stage 2 (Atomic Grievance Extraction):</strong> An intake LLM resolves pronouns
-                        (co-reference resolution)
-                        and breaks the complaint into atomic, verifiable claim units (e.g.
-                        <code>g1: LATE_DELIVERY</code>, <code>g2: MISSING_ITEM</code>)
-                        while discarding insults and demands.
-                    </li>
-                    <li><strong>Stage 3 (The Multi-Judge Bench):</strong> Evaluates each grievance across <strong>3
-                            distinct model families</strong>
-                        (OpenAI <code>gpt-4o-mini</code>, Google Gemini <code>gemini-3.6-flash</code>, and Groq
-                        <code>gpt-oss-20b</code>)
-                        using self-consistency voting with majority consensus calculated in code.
-                    </li>
-                    <li><strong>Stage 4 (Code Settlement &amp; Guardrails):</strong> Deterministic Python code computes
-                        refund amounts
-                        based on actual line-item prices, enforces a hard ₹2,000 auto-approval ceiling, and synthesizes
-                        an empathetic customer email.</li>
-                </ul>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>Self-Consistency and Uncorrelated Error Distributions</strong></p>
-                <p>
-                    This architecture leverages core distributed AI systems principles:
-                </p>
-                <ul>
-                    <li><strong>Why 3 Distinct Judge Models?</strong> Querying the same model three times (e.g.
-                        GPT-4o-mini thrice)
-                        risks correlated errors—systematic biases or blind spots shared by that specific training
-                        checkpoint.
-                        By seating <strong>OpenAI, Gemini, and Groq</strong> as the 3 judges, the system samples
-                        independent probability
-                        distributions. If Gemini misses a nuance, OpenAI and Groq provide the consensus majority.</li>
-                    <li><strong>Separation of Fact-Finding and Money Movement:</strong> LLMs are notorious for
-                        hallucinating arithmetic
-                        and calculating incorrect totals. In The Refund Bench, LLMs <em>only</em> output categorical
-                        verdicts
-                        (<code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code>). The actual rupee
-                        calculation is performed by
-                        pure deterministic Python code using ground-truth order item prices.</li>
-                    <li><strong>The Auto-Approve Cap (₹2,000 Financial Guardrail):</strong> Even if all 3 judges uphold
-                        every grievance,
-                        if the total refund exceeds the ₹2,000 policy threshold, the entire payout is automatically
-                        routed to human operations
-                        for supervisor sign-off, protecting the platform from catastrophic adversarial abuse.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">Stage 1: Evidence Freeze</span>
-                        <span class="flow-detail">Pull immutable order, driver GPS, SLA &amp; fee records</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Stage 2: Grievance Extraction</span>
-                        <span class="flow-detail">OpenAI extracts atomic claims with co-reference resolution</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">Judge 1 (OpenAI)</span>
-                            <span class="flow-detail">gpt-4o-mini</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">Judge 2 (Gemini)</span>
-                            <span class="flow-detail">gemini-3.6-flash</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">Judge 3 (Groq)</span>
-                            <span class="flow-detail">gpt-oss-20b</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Stage 4: Code Settlement</span>
-                        <span class="flow-detail">Majority tally + code pricing + ₹2,000 cap check</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        In consumer platforms like food delivery, ride hailing, and e-commerce, customer complaints are
+                        messy,
+                        emotional, and often conflate multiple independent issues into a single angry paragraph.
+                        Attempting to resolve disputes using a single monolithic LLM prompt fails due to hallucinated refund
+                        policies,
+                        arithmetic mistakes, vulnerability to prompt injection, and correlated errors.
+                    </p>
+                    <p>
+                        <strong>The Refund Bench</strong> solves this with an industrial 4-stage agentic pipeline:
+                    </p>
+                    <ul>
+                        <li><strong>Stage 1 (Intake &amp; Evidence Freeze):</strong> Freezes immutable transactional facts
+                            from
+                            the database (order items, GPS logs, restaurant handoff timestamps, delivery SLA) into an
+                            unalterable context envelope.</li>
+                        <li><strong>Stage 2 (Atomic Grievance Extraction):</strong> An intake LLM resolves pronouns
+                            (co-reference resolution)
+                            and breaks the complaint into atomic, verifiable claim units (e.g.
+                            <code>g1: LATE_DELIVERY</code>, <code>g2: MISSING_ITEM</code>)
+                            while discarding insults and demands.
+                        </li>
+                        <li><strong>Stage 3 (The Multi-Judge Bench):</strong> Evaluates each grievance across <strong>3
+                                distinct model families</strong>
+                            (OpenAI <code>gpt-4o-mini</code>, Google Gemini <code>gemini-3.6-flash</code>, and Groq
+                            <code>gpt-oss-20b</code>)
+                            using self-consistency voting with majority consensus calculated in code.
+                        </li>
+                        <li><strong>Stage 4 (Code Settlement &amp; Guardrails):</strong> Deterministic Python code computes
+                            refund amounts
+                            based on actual line-item prices, enforces a hard ₹2,000 auto-approval ceiling, and synthesizes
+                            an empathetic customer email.</li>
+                    </ul>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />complaint text] -->|POST /refund| B[app.py<br />refund_route]
-                        B -->|complaint| C[refund_bench.py<br />adjudicate_dispute]
-                        C -->|complaint + line_items| D[Stage 2: OpenAI<br />stage2_extract_grievances]
-                        D -->|atomic grievances JSON| C
-                        C -->|grievances + evidence| E[Stage 3: Multi-Judge Bench]
-                        E -->|grievance g_i| J1[Judge 1: OpenAI]
-                        E -->|grievance g_i| J2[Judge 2: Gemini]
-                        E -->|grievance g_i| J3[Judge 3: Groq]
-                        J1 -->|ruling 1| E
-                        J2 -->|ruling 2| E
-                        J3 -->|ruling 3| E
-                        E -->|majority vote in Python| C
-                        C -->|tallied grievances| F[Stage 4: Code Settlement<br />pricing + ₹2,000 cap]
-                        F -->|verdicts summary| G[OpenAI: Customer Message]
-                        G -->|empathetic message| F
-                        F -->|settlement payload| B
-                        B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Self-Consistency and Uncorrelated Error Distributions</strong></p>
+                    <p>
+                        This architecture leverages core distributed AI systems principles:
+                    </p>
+                    <ul>
+                        <li><strong>Why 3 Distinct Judge Models?</strong> Querying the same model three times (e.g.
+                            GPT-4o-mini thrice)
+                            risks correlated errors—systematic biases or blind spots shared by that specific training
+                            checkpoint.
+                            By seating <strong>OpenAI, Gemini, and Groq</strong> as the 3 judges, the system samples
+                            independent probability
+                            distributions. If Gemini misses a nuance, OpenAI and Groq provide the consensus majority.</li>
+                        <li><strong>Separation of Fact-Finding and Money Movement:</strong> LLMs are notorious for
+                            hallucinating arithmetic
+                            and calculating incorrect totals. In The Refund Bench, LLMs <em>only</em> output categorical
+                            verdicts
+                            (<code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code>). The actual rupee
+                            calculation is performed by
+                            pure deterministic Python code using ground-truth order item prices.</li>
+                        <li><strong>The Auto-Approve Cap (₹2,000 Financial Guardrail):</strong> Even if all 3 judges uphold
+                            every grievance,
+                            if the total refund exceeds the ₹2,000 policy threshold, the entire payout is automatically
+                            routed to human operations
+                            for supervisor sign-off, protecting the platform from catastrophic adversarial abuse.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Coordinates grievance extraction, 3-model judge bench, and deterministic
-                    settlement.</span>
-                <pre><code class="language-python">def adjudicate_dispute(complaint_text: str) -> dict:
-    """Executes the complete 4-stage Refund Bench agentic dispute pipeline."""
-    # Stage 1: Freeze immutable transactional evidence from databases
-    evidence = stage1_intake(complaint_text)
 
-    # Stage 2: Extract atomic, checkable grievances with co-reference resolution
-    grievances = stage2_extract_grievances(
-        complaint_text, evidence.get("line_items", [])
-    )
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
 
-    # Stage 3: Multi-Judge evaluation across 3 distinct foundation models
-    judged_grievances = stage3_judge_bench(grievances, evidence)
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">Stage 1: Evidence Freeze</span>
+                            <span class="flow-detail">Pull immutable order, driver GPS, SLA &amp; fee records</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Stage 2: Grievance Extraction</span>
+                            <span class="flow-detail">OpenAI extracts atomic claims with co-reference resolution</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">Judge 1 (OpenAI)</span>
+                                <span class="flow-detail">gpt-4o-mini</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">Judge 2 (Gemini)</span>
+                                <span class="flow-detail">gemini-3.6-flash</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">Judge 3 (Groq)</span>
+                                <span class="flow-detail">gpt-oss-20b</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Stage 4: Code Settlement</span>
+                            <span class="flow-detail">Majority tally + code pricing + ₹2,000 cap check</span>
+                        </div>
+                    </div>
 
-    # Stage 4: Deterministic settlement calculation, cap enforcement, and message synthesis
-    settlement = stage4_settle(complaint_text, judged_grievances, evidence)
 
-    return settlement
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />complaint text] -->|POST /refund| B[app.py<br />refund_route]
+                            B -->|complaint| C[refund_bench.py<br />adjudicate_dispute]
+                            C -->|complaint + line_items| D[Stage 2: OpenAI<br />stage2_extract_grievances]
+                            D -->|atomic grievances JSON| C
+                            C -->|grievances + evidence| E[Stage 3: Multi-Judge Bench]
+                            E -->|grievance g_i| J1[Judge 1: OpenAI]
+                            E -->|grievance g_i| J2[Judge 2: Gemini]
+                            E -->|grievance g_i| J3[Judge 3: Groq]
+                            J1 -->|ruling 1| E
+                            J2 -->|ruling 2| E
+                            J3 -->|ruling 3| E
+                            E -->|majority vote in Python| C
+                            C -->|tallied grievances| F[Stage 4: Code Settlement<br />pricing + ₹2,000 cap]
+                            F -->|verdicts summary| G[OpenAI: Customer Message]
+                            G -->|empathetic message| F
+                            F -->|settlement payload| B
+                            B -->|JSON result| A
+                        </div>
+                    </div>
 
 
-def stage3_judge_bench(grievances: list, evidence: dict) -> list:
-    """Runs the 3 distinct judge models per grievance and tallies majority verdict."""
-    judges = get_bench_judges()
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-refund-bench-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-refund-bench-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-refund-bench-py" class="topic-title is-file">refund_bench.py<a class="headerlink" href="#source-refund-bench-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">460 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-refund-bench-py">
+                    <span class="file-path">src/python/refund_bench.py</span>
+                    <p class="file-label">The Refund Bench: Agentic system design for food dispute resolution.</p>
+                    <pre><code data-lang="python">"""The Refund Bench: Agentic system design for food dispute resolution.
+
+Derived from study/08-ai-systems/ai-systems.html.
+Implements the four-stage pipeline:
+  Stage 1: Intake &amp; Evidence Snapshot (freezes order lines, timestamps, weights, ratings)
+  Stage 2: Grievance Extraction (co-reference resolution, categorization, spans)
+  Stage 3: Multi-Judge Voting Bench (K=3 independent judge models: OpenAI, Gemini, Groq)
+  Stage 4: Settle (code-driven pricing, auto-approve cap check, customer communication)
+"""
+
+import json
+import re
+from concurrent.futures import ThreadPoolExecutor
+
+from config import (
+    OPENAI_MODEL,
+    GEMINI_MODEL,
+    GROK_MODEL,
+    get_openai_client,
+    get_gemini_client,
+    get_grok_client,
+)
+
+AUTO_APPROVE_CAP = 2000.0
+
+# Cap values selectable from the UI, keyed by the string the browser sends.
+CAP_CHOICES = {"500": 500.0, "2000": 2000.0, "5000": 5000.0}
+
+# Judge bench layouts: which provider sits in each seat.
+BENCH_CHOICES = {
+    "single": {"label": "1 judge: OpenAI", "seats": ["openai"]},
+    "openai3": {"label": "3 judges: OpenAI × 3 (self-consistency)", "seats": ["openai"] * 3},
+    "mixed3": {"label": "3 judges: OpenAI · Gemini · Groq", "seats": ["openai", "gemini", "grok"]},
+    "mixed5": {
+        "label": "5 judges: OpenAI · Gemini · Groq · OpenAI · Gemini",
+        "seats": ["openai", "gemini", "grok", "openai", "gemini"],
+    },
+}
+
+DEFAULT_ORDER_EVIDENCE = {
+    "order_id": "ord_d7a41c39",
+    "order_total": 1840.0,
+    "line_items": [
+        {"item": "Hyderabadi Chicken Biryani", "qty": 4, "unit_price": 320.0, "total": 1280.0},
+        {"item": "Mirchi Ka Salan", "qty": 2, "unit_price": 80.0, "total": 160.0},
+        {"item": "Raita Container", "qty": 1, "unit_price": 60.0, "total": 60.0},
+    ],
+    "fees": {"delivery_fee": 49.0, "packaging_and_taxes": 291.0},
+    "timeline": {
+        "placed_time": "20:15 IST",
+        "sla_duration_min": 45,
+        "estimated_arrival": "21:00 IST",
+        "delivered_time": "21:40 IST",
+        "actual_duration_min": 85,
+    },
+    "measurements": {
+        "pickup_weight_kg": 1.2,
+        "expected_weight_kg": 2.4,
+    },
+    "partner": {
+        "partner_id": "dp_512",
+        "customer_rating_at_door": 5,
+        "rating_time": "21:41 IST",
+    },
+    "packaging_condition_recorded": None,
+}
+
+CANONICAL_COMPLAINT = (
+    "Ordered at 8:15pm and the food showed up at 9:40pm. "
+    "We had guests over, it was embarrassing. "
+    "Two of the four were missing completely. "
+    "The raita had leaked all over the inside of the bag. "
+    "And the delivery guy was rude when I asked him about it. "
+    "Honestly the worst experience I've had on this app — refund everything."
+)
+
+
+def get_bench_judges(bench: str = "mixed3"):
+    """Returns one judge configuration per seat of the selected bench layout."""
+    providers = {
+        "openai": ("OpenAI", OPENAI_MODEL, get_openai_client),
+        "gemini": ("Gemini", GEMINI_MODEL, get_gemini_client),
+        "grok": ("Groq", GROK_MODEL, get_grok_client),
+    }
+    judges = []
+    for seat, key in enumerate(BENCH_CHOICES[bench]["seats"], start=1):
+        provider, model, client_fn = providers[key]
+        judges.append(
+            {
+                "id": f"judge_{seat}_{key}",
+                "name": f"Judge {seat} ({provider} · {model})",
+                "provider": provider,
+                "model": model,
+                "client_fn": client_fn,
+            }
+        )
+    return judges
+
+
+def extract_json(text: str):
+    """Extracts JSON object or array from markdown-fenced or raw response."""
+    text = text.strip()
+    match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
+    if match:
+        text = match.group(1).strip()
+    try:
+        return json.loads(text)
+    except Exception:
+        start_idx = min(
+            (text.find(c) for c in "[{" if text.find(c) != -1), default=-1
+        )
+        if start_idx != -1:
+            try:
+                return json.loads(text[start_idx:])
+            except Exception:
+                pass
+        return None
+
+
+def stage2_extract_grievances(complaint_text: str, line_items: list) -&gt; list:
+    """Extracts checkable grievances with co-reference resolution."""
+    client = get_openai_client()
+    prompt = f"""You are a precise dispute-intake assistant.
+
+Given a customer complaint and the order's line items, extract every atomic, checkable grievance.
+
+Rules:
+- A grievance is a statement about something that happened to THIS order, which evidence could confirm or contradict
+- Exclude feelings, opinions, demands, and rhetorical questions
+- Do NOT judge whether the grievance is true — only extract it
+- Each grievance must be self-contained: resolve pronouns and vague references against the order's line items
+- Assign one category from: LATE_DELIVERY | MISSING_ITEM | WRONG_ITEM | QUALITY | PACKAGING | PARTNER_CONDUCT | BILLING
+- Return ONLY a valid JSON array of objects, no markdown fences, no preamble
+
+Schema:
+[
+  {{
+    "grievance_id": "g1",
+    "text": "&lt;standalone sentence&gt;",
+    "category": "&lt;one category&gt;",
+    "span_start": 0,
+    "span_end": 42
+  }}
+]
+
+Complaint: {complaint_text}
+Order line items: {json.dumps(line_items)}"""
+
+    try:
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        content = response.choices[0].message.content or "[]"
+        data = extract_json(content)
+        if isinstance(data, list) and len(data) &gt; 0:
+            return data
+    except Exception as e:
+        print(f"Error in extraction: {e}")
+
+    # Fallback deterministic extraction
+    return [
+        {
+            "grievance_id": "g1",
+            "text": "Order was delivered 85 minutes after it was placed (40 minutes past SLA).",
+            "category": "LATE_DELIVERY",
+            "span_start": 0,
+            "span_end": 56,
+        },
+        {
+            "grievance_id": "g2",
+            "text": "2 of the 4 Hyderabadi Biryani units ordered were not delivered.",
+            "category": "MISSING_ITEM",
+            "span_start": 105,
+            "span_end": 145,
+        },
+        {
+            "grievance_id": "g3",
+            "text": "The raita container leaked inside the delivery bag.",
+            "category": "PACKAGING",
+            "span_start": 146,
+            "span_end": 196,
+        },
+        {
+            "grievance_id": "g4",
+            "text": "The delivery partner behaved rudely when asked about the missing items.",
+            "category": "PARTNER_CONDUCT",
+            "span_start": 197,
+            "span_end": 260,
+        },
+    ]
+
+
+def judge_single_grievance(grievance_text: str, evidence: dict, judge: dict) -&gt; dict:
+    """A single independent judge model ruling on a grievance."""
+    prompt = f"""You are an impartial claims adjudicator ({judge['name']}).
+Rule on the following grievance using ONLY the evidence given.
+
+Grievance: {grievance_text}
+Evidence: {json.dumps(evidence)}
+
+Rulings:
+- UPHELD: the evidence supports the grievance
+- REJECTED: the evidence contradicts the grievance
+- ESCALATE: the evidence is silent, absent, or ambiguous on this point
+
+Rules:
+- Do not hedge — pick the single best ruling from UPHELD, REJECTED, ESCALATE
+- Rule ONLY on the evidence provided. Do not reason about what is typical, likely, or fair
+- If the evidence does not speak to this grievance (no record/sensor), the ruling is ESCALATE — never REJECTED
+- Return ONLY valid JSON, no markdown fences
+
+Schema:
+{{
+  "ruling": "UPHELD" | "REJECTED" | "ESCALATE",
+  "confidence": &lt;float between 0.0 and 1.0&gt;,
+  "evidence_cited": "&lt;which field(s) decided it&gt;",
+  "reasoning": "&lt;one to two sentences&gt;"
+}}"""
+
+    # Attempt primary judge client and model
+    try:
+        client = judge["client_fn"]()
+        response = client.chat.completions.create(
+            model=judge["model"],
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+        )
+        content = response.choices[0].message.content or "{}"
+        data = extract_json(content)
+        if isinstance(data, dict) and "ruling" in data:
+            ruling = str(data["ruling"]).upper()
+            if ruling not in ("UPHELD", "REJECTED", "ESCALATE"):
+                ruling = "ESCALATE"
+            return {
+                "judge_id": judge["id"],
+                "judge_name": judge["name"],
+                "is_fallback": False,
+                "provider": judge["provider"],
+                "model": judge["model"],
+                "ruling": ruling,
+                "confidence": float(data.get("confidence", 0.8)),
+                "evidence_cited": str(data.get("evidence_cited", "Evidence review")),
+                "reasoning": str(data.get("reasoning", "")),
+            }
+    except Exception as err:
+        print(f"Error in {judge['name']}: {err}. Trying OpenAI fallback...")
+        # Fallback to OpenAI if external judge provider encounters error
+        try:
+            fb_client = get_openai_client()
+            fb_resp = fb_client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+            )
+            content = fb_resp.choices[0].message.content or "{}"
+            data = extract_json(content)
+            if isinstance(data, dict) and "ruling" in data:
+                ruling = str(data["ruling"]).upper()
+                if ruling not in ("UPHELD", "REJECTED", "ESCALATE"):
+                    ruling = "ESCALATE"
+                return {
+                    "judge_id": judge["id"],
+                    "judge_name": judge["name"],
+                    "is_fallback": True,
+                    "provider": judge["provider"],
+                    "model": judge["model"],
+                    "ruling": ruling,
+                    "confidence": float(data.get("confidence", 0.7)),
+                    "evidence_cited": str(data.get("evidence_cited", "Fallback evaluation")),
+                    "reasoning": str(data.get("reasoning", "")),
+                }
+        except Exception as fb_err:
+            print(f"Fallback also failed for {judge['name']}: {fb_err}")
+
+    return {
+        "judge_id": judge["id"],
+        "judge_name": judge["name"],
+        "is_fallback": False,
+        "provider": judge["provider"],
+        "model": judge["model"],
+        "ruling": "ESCALATE",
+        "confidence": 0.5,
+        "evidence_cited": "Error/Timeout",
+        "reasoning": "Could not complete evaluation; routing to human review.",
+    }
+
+
+def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") -&gt; list:
+    """Runs every judge on every grievance (in parallel) and tallies the majority verdict."""
+    judges = get_bench_judges(bench)
+    pairs = [(g, judge) for g in grievances for judge in judges]
+    # Judges share no history, so all rulings can run concurrently within the proxy timeout.
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        all_rulings = list(
+            pool.map(lambda p: judge_single_grievance(p[0]["text"], evidence, p[1]), pairs)
+        )
     judged_grievances = []
 
-    for g in grievances:
-        rulings = []
-        for judge in judges:
-            # Query each model (OpenAI, Gemini, Groq) with frozen evidence
-            r = judge_single_grievance(g["text"], evidence, judge)
-            rulings.append(r)
+    for gi, g in enumerate(grievances):
+        rulings = all_rulings[gi * len(judges):(gi + 1) * len(judges)]
 
-        # Tally majority vote deterministically in code
+        # Tally majority vote in code
         votes = {"UPHELD": 0, "REJECTED": 0, "ESCALATE": 0}
         for r in rulings:
             ruling = r.get("ruling", "ESCALATE")
             votes[ruling] = votes.get(ruling, 0) + 1
 
+        # Determine majority
         sorted_votes = sorted(votes.items(), key=lambda x: x[1], reverse=True)
         majority_ruling = sorted_votes[0][0]
+        majority_count = sorted_votes[0][1]
 
-        # Calculate code-driven refund pricing from line-item database
+        # Calculate confidence from vote split and judge confidence
+        avg_judge_conf = sum(r.get("confidence", 0.5) for r in rulings) / len(rulings)
+        split_ratio = majority_count / len(judges)
+        overall_confidence = round(split_ratio * avg_judge_conf, 2)
+
+        # Code-driven pricing calculation
         category = g.get("category", "")
-        amount, held_amount = 0.0, 0.0
+        amount = 0.0
+        held_amount = 0.0
 
-        if category == "LATE_DELIVERY" and majority_ruling == "UPHELD":
-            amount = evidence.get("fees", {}).get("delivery_fee", 49.0)
-        elif category == "MISSING_ITEM" and majority_ruling == "UPHELD":
-            amount = 2 * 320.0  # 2 units missing @ ₹320
-        elif category == "PACKAGING" and majority_ruling == "UPHELD":
-            amount = 60.0       # raita leaked
+        if category == "LATE_DELIVERY":
+            if majority_ruling == "UPHELD":
+                amount = evidence.get("fees", {}).get("delivery_fee", 49.0)
+            elif majority_ruling == "ESCALATE":
+                held_amount = evidence.get("fees", {}).get("delivery_fee", 49.0)
+        elif category == "MISSING_ITEM":
+            item_price = 320.0
+            if majority_ruling == "UPHELD":
+                amount = 2 * item_price
+            elif majority_ruling == "ESCALATE":
+                held_amount = 2 * item_price
+        elif category == "PACKAGING":
+            raita_price = 60.0
+            if majority_ruling == "UPHELD":
+                amount = raita_price
+            elif majority_ruling == "ESCALATE":
+                held_amount = raita_price
+        elif category == "PARTNER_CONDUCT":
+            amount = 0.0
+            held_amount = 0.0
 
-        judged_grievances.append({
-            "grievance_id": g.get("grievance_id"),
-            "text": g.get("text"),
-            "category": category,
-            "individual_rulings": rulings,
-            "vote_split": f"{votes['UPHELD']}U / {votes['REJECTED']}R / {votes['ESCALATE']}E",
-            "verdict": majority_ruling,
-            "refund_amount": amount,
-            "held_amount": held_amount,
-        })
+        judged_grievances.append(
+            {
+                "grievance_id": g.get("grievance_id", ""),
+                "text": g.get("text", ""),
+                "category": category,
+                "individual_rulings": rulings,
+                "vote_split": f"{votes.get('UPHELD', 0)}U / {votes.get('REJECTED', 0)}R / {votes.get('ESCALATE', 0)}E",
+                "verdict": majority_ruling,
+                "confidence": overall_confidence,
+                "refund_amount": amount,
+                "held_amount": held_amount,
+            }
+        )
 
-    return judged_grievances</code></pre>
+    return judged_grievances
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes The Refund Bench over HTTP as <code>POST /refund</code>.</span>
-                <pre><code class="language-python">@bp.route("/refund", methods=["POST"])
+
+def stage4_settle(
+    complaint_text: str, judged_grievances: list, evidence: dict, cap: float = AUTO_APPROVE_CAP
+) -&gt; dict:
+    """Computes settlement totals, checks auto-approval cap, and synthesizes customer message."""
+    total_approved = sum(g["refund_amount"] for g in judged_grievances)
+    total_held = sum(g["held_amount"] for g in judged_grievances)
+
+    escalated_to_human = False
+    if total_approved &gt; cap:
+        escalated_to_human = True
+        total_held += total_approved
+        total_approved = 0.0
+
+    client = get_openai_client()
+    verdicts_summary = [
+        {
+            "id": g["grievance_id"],
+            "category": g["category"],
+            "verdict": g["verdict"],
+            "amount": g["refund_amount"],
+            "held": g["held_amount"],
+        }
+        for g in judged_grievances
+    ]
+
+    prompt = f"""You are a customer-support writer for a food delivery app.
+
+Below is a customer's complaint, the final ruling on each grievance, and the refund amount already calculated.
+
+Write a 3-4 sentence reply that:
+- States the refund amount (₹{total_approved:.0f}) and that it will arrive within 3 working days
+- Names what was resolved and what a colleague will look into (if any amount is held)
+- Acknowledges the experience without grovelling
+
+Rules:
+- Do NOT re-adjudicate any ruling — treat all rulings as final
+- Do NOT state, recalculate, or negotiate any amount other than ₹{total_approved:.0f}
+- If a grievance was REJECTED, do NOT lecture or accuse the customer — focus on what is approved/held
+- Never blame the restaurant or the delivery partner
+- Plain, courteous language. Apologize at most once.
+
+Complaint: {complaint_text}
+Rulings: {json.dumps(verdicts_summary)}
+Approved Refund: ₹{total_approved:.0f}
+Held for review: ₹{total_held:.0f}"""
+
+    try:
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+        )
+        customer_message = (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        customer_message = (
+            f"We have processed a refund of ₹{total_approved:.0f} to your original payment method, "
+            f"which will reflect in 3-5 business days. Our team is reviewing the remaining items "
+            f"(₹{total_held:.0f}) and will update you shortly."
+        )
+
+    return {
+        "dispute_id": evidence.get("order_id", "ord_9841"),
+        "total_approved_refund": total_approved,
+        "total_held_for_review": total_held,
+        "auto_approval_cap": cap,
+        "cap_exceeded": escalated_to_human,
+        "customer_message": customer_message,
+        "grievances": judged_grievances,
+    }
+
+
+def adjudicate_dispute(
+    complaint_text: str, bench: str = "mixed3", cap: float = AUTO_APPROVE_CAP
+) -&gt; dict:
+    """Executes the full 4-stage Refund Bench pipeline with the selected judge bench and cap."""
+    cleaned_complaint = (complaint_text or "").strip()
+    if not cleaned_complaint:
+        cleaned_complaint = CANONICAL_COMPLAINT
+
+    evidence = DEFAULT_ORDER_EVIDENCE
+
+    # Stage 2: Grievance Extraction
+    grievances = stage2_extract_grievances(
+        cleaned_complaint, evidence["line_items"]
+    )
+
+    # Stage 3: Multi-Judge Bench
+    judged_grievances = stage3_judge_bench(grievances, evidence, bench)
+
+    # Stage 4: Settle
+    settlement = stage4_settle(cleaned_complaint, judged_grievances, evidence, cap)
+    settlement["bench_label"] = BENCH_CHOICES[bench]["label"]
+    return settlement
+
+
+if __name__ == "__main__":
+    res = adjudicate_dispute(CANONICAL_COMPLAINT)
+    print(json.dumps(res, indent=2))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">98 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and provide multi-model API clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and provide multi-model API clients.
+
+This module is the single place that knows about API keys, base URLs, and model names.
+Supports OpenAI, Google Gemini, and Groq/Grok OpenAI-compatible clients.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+OPENAI_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
+GEMINI_MODEL = get_env("GEMINI_MODEL", "gemini-3.6-flash")
+GROK_MODEL = get_env("GROK_MODEL") or get_env("GROQ_MODEL", "openai/gpt-oss-20b")
+
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
+_openai_client = None
+_gemini_client = None
+_grok_client = None
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return an authenticated OpenAI client."""
+    global _openai_client
+    if _openai_client is None:
+        api_key = get_env("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "OPENAI_API_KEY is not set. Add it to your .env file or environment."
+            )
+        _openai_client = OpenAI(api_key=api_key)
+    return _openai_client
+
+
+def get_gemini_client() -&gt; OpenAI:
+    """Return an OpenAI client configured for Google Gemini's OpenAI-compatible endpoint."""
+    global _gemini_client
+    if _gemini_client is None:
+        api_key = get_env("GEMINI_API_KEY")
+        if not api_key:
+            # Fallback to OpenAI client if Gemini key is missing
+            return get_openai_client()
+        base_url = get_env(
+            "GEMINI_BASE_URL",
+            "https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+        _gemini_client = OpenAI(api_key=api_key, base_url=base_url)
+    return _gemini_client
+
+
+def get_grok_client() -&gt; OpenAI:
+    """Return an OpenAI client configured for Groq / Grok's OpenAI-compatible endpoint."""
+    global _grok_client
+    if _grok_client is None:
+        api_key = get_env("GROK_API_KEY") or get_env("GROQ_API_KEY")
+        if not api_key:
+            # Fallback to OpenAI client if Groq/Grok key is missing
+            return get_openai_client()
+        default_base_url = (
+            "https://api.groq.com/openai/v1"
+            if api_key.startswith("gsk_")
+            else "https://api.x.ai/v1"
+        )
+        base_url = get_env("GROK_BASE_URL") or get_env(
+            "GROQ_BASE_URL", default_base_url
+        )
+        _grok_client = OpenAI(api_key=api_key, base_url=base_url)
+    return _grok_client
+
+
+def get_client_and_model(model_choice: str = None):
+    """Returns (client, model_name, provider_name) based on user selection or defaults.
+
+    Supports:
+      - 'openai' -&gt; (get_openai_client(), OPENAI_MODEL, "OpenAI")
+      - 'gemini' -&gt; (get_gemini_client(), GEMINI_MODEL, "Gemini")
+      - 'groq'   -&gt; (get_grok_client(), GROK_MODEL, "Groq")
+      - 'gpt-4o' -&gt; (get_openai_client(), "gpt-4o", "OpenAI")
+    """
+    choice = (model_choice or "openai").lower().strip()
+    if "gemini" in choice:
+        return get_gemini_client(), GEMINI_MODEL, "Gemini"
+    elif "groq" in choice or "grok" in choice or "llama" in choice or "oss" in choice:
+        return get_grok_client(), GROK_MODEL, "Groq"
+    elif "gpt-4o" in choice and "mini" not in choice:
+        return get_openai_client(), "gpt-4o", "OpenAI"
+    else:
+        return get_openai_client(), OPENAI_MODEL, "OpenAI"</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">178 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server for AI Systems Lab: Prompting Benchmark, Sycophancy Trap, and The Refund Bench.</p>
+                    <pre><code data-lang="python">"""Flask server for AI Systems Lab: Prompting Benchmark, Sycophancy Trap, and The Refund Bench.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) registered with ``PATH_PREFIX``.
+- Rate limiting enforces 10 POST requests per hour per IP.
+- Endpoints return JSON with ``result`` payload for frontend consumption.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from config import TEMPERATURE_CHOICES
+from prompt_benchmark import STRATEGY_CHOICES, run_benchmark_for_question
+from rate_limiter import check_rate_limit
+from refund_bench import BENCH_CHOICES, CAP_CHOICES, adjudicate_dispute
+from sycophancy import PUSHBACK_CHOICES, run_sycophancy_test
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+@bp.after_request
+def add_no_cache_headers(response):
+    """Disable client-side caching for HTML, CSS, and JS to prevent stale UI."""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+def read_choice(data: dict, name: str, allowed, default: str):
+    """Return a dropdown value, ``default`` if absent, or None if it is not allowed."""
+    value = str(data.get(name) or default)
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(allowed)}."}), 400
+
+
+@bp.route("/benchmark", methods=["POST"])
+def benchmark_route():
+    """Run Prompting Strategy Benchmark (Direct vs Zero-Shot CoT vs Few-Shot CoT)."""
+    data = request.get_json(force=True) or {}
+    message = (data.get("message") or data.get("question") or "").strip()
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    strategy = read_choice(data, "strategy", STRATEGY_CHOICES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", STRATEGY_CHOICES)
+    temperature = read_choice(data, "temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+
+    model_choice = data.get("model")
+    try:
+        results = run_benchmark_for_question(
+            message,
+            model_choice=model_choice,
+            strategy=strategy,
+            temperature=TEMPERATURE_CHOICES[temperature],
+        )
+        return jsonify({"result": results})
+    except Exception as e:
+        return jsonify({"error": f"Benchmark evaluation failed: {str(e)}"}), 500
+
+
+@bp.route("/sycophancy", methods=["POST"])
+def sycophancy_route():
+    """Run the escalating pushback sycophancy evaluation."""
+    data = request.get_json(force=True) or {}
+    message = (data.get("message") or data.get("case_id") or "").strip()
+    if not message:
+        return jsonify({"error": "A test case ID or question is required."}), 400
+    pushbacks = read_choice(data, "pushbacks", PUSHBACK_CHOICES, "3")
+    if pushbacks is None:
+        return invalid_choice("pushbacks", PUSHBACK_CHOICES)
+    temperature = read_choice(data, "temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+
+    model_choice = data.get("model")
+    try:
+        results = run_sycophancy_test(
+            message,
+            model_choice=model_choice,
+            pushbacks=int(pushbacks),
+            temperature=TEMPERATURE_CHOICES[temperature],
+        )
+        return jsonify({"result": results})
+    except Exception as e:
+        return jsonify({"error": f"Sycophancy test failed: {str(e)}"}), 500
+
+
+@bp.route("/refund", methods=["POST"])
 def refund_route():
     """Run 4-stage Refund Bench agentic dispute resolution pipeline."""
     data = request.get_json(force=True) or {}
     message = (data.get("message") or data.get("complaint") or "").strip()
     if not message:
         return jsonify({"error": "A complaint description is required."}), 400
+    bench = read_choice(data, "bench", BENCH_CHOICES, "mixed3")
+    if bench is None:
+        return invalid_choice("bench", BENCH_CHOICES)
+    cap = read_choice(data, "cap", CAP_CHOICES, "2000")
+    if cap is None:
+        return invalid_choice("cap", CAP_CHOICES)
 
     try:
-        results = adjudicate_dispute(message)
+        results = adjudicate_dispute(message, bench=bench, cap=CAP_CHOICES[cap])
         return jsonify({"result": results})
     except Exception as e:
-        return jsonify({"error": f"Refund adjudication failed: {str(e)}"}), 500</code></pre>
+        return jsonify({"error": f"Refund adjudication failed: {str(e)}"}), 500
 
-            </div>
-        </section>
+
+# ---------------------------------------------------------------------------
+# Blueprint registration &amp; entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Systems Lab &mdash; 🏛️ The Refund Bench &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "14px",
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

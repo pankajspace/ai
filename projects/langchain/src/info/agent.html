@@ -1,117 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Shop Agent · LangChain Lab</title>
-    <meta name="description" content="How the Shop Agent works." />
+    <meta name="description"
+        content="How the Shop Agent works." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
+
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>LangChain Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; LangChain Lab</a>
         </nav>
     </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🛍️ Shop Agent</h1>
-                <p class="subtitle">tool-using agent via OpenAI function calling</p>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-agent-py">agent.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🛍️ Shop Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">tool-using agent via OpenAI function calling. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
             </div>
-        </section>
-        <section>
-            <div class="container info-content">
-                <h2>Concept</h2>
-                <p>A tool-using agent — the LLM decides on its own when to call a tool. Three tools are available: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model uses OpenAI's function-calling protocol: it may request tool calls in its response, the server runs the real functions and appends the results, and the model is called again to phrase the final answer.</p>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-                <h2>Theory &amp; Concepts</h2>
-<p>The <b>Shop Agent</b> demo illustrates how Large Language Models (LLMs) can transition from passive chatbots into active problem-solvers using <b>Tool Calling</b> (Function Calling). By default, an LLM doesn't know the current price of shoes or if a bag is in stock. Instead of guessing, the Shop Agent is given a specific set of abilities it can use to find out.</p>
-<p>The demo operates in an autonomous loop using the OpenAI function-calling protocol:</p>
-<ul>
-    <li><b>Providing the Tools:</b> Before asking GPT-4o-mini a question, the application sends a JSON "menu" describing three available Python functions: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model knows what these tools do and what arguments they require (like the item name).</li>
-    <li><b>The Model's Decision:</b> When you ask, "Do you have shoes and how much are they?", the LLM realizes it needs external data. Instead of replying with a text answer, it returns a structured request asking the backend to run <code>check_stock("shoes")</code> and <code>get_price("shoes")</code>.</li>
-    <li><b>Backend Execution:</b> The Python backend intercepts this request, looks up the real functions in its <code>TOOL_FUNCTIONS</code> registry, and executes them against its mock database. The LLM never runs code itself; it only asks the backend to do it.</li>
-    <li><b>Final Synthesis:</b> The backend appends the results from those functions (e.g., "12 units in stock", "₹799") back into the conversation history as "tool" messages. The LLM is called one last time with this new context, allowing it to formulate a natural, accurate response based on the live shop data.</li>
-</ul>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">question</span>
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">app.py</span>
-                        <span class="flow-detail">POST /agent</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">agent.py</span>
-                        <span class="flow-detail">ask()</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">OpenAI API</span>
-                        <span class="flow-detail">with tools</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Tool Calls</span>
-                        <span class="flow-detail">dispatch results</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">JSON answer</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>A tool-using agent — the LLM decides on its own when to call a tool. Three tools are available: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model uses OpenAI's function-calling protocol: it may request tool calls in its response, the server runs the real functions and appends the results, and the model is called again to phrase the final answer.</p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A["Browser<br/>shopping question"] --&gt;|POST /agent| B["app.py<br/>shop_agent"]
-    B --&gt;|user_message| C["agent.py<br/>ask"]
-    C --&gt;|messages + TOOLS| D["OpenAI API<br/>GPT-4o mini"]
-    D --&gt;|tool_calls request| E["Tool dispatch<br/>TOOL_FUNCTIONS registry"]
-    E --&gt;|call get_price| F["get_price<br/>item"]
-    E --&gt;|call check_stock| G["check_stock<br/>item"]
-    E --&gt;|call apply_discount| H["apply_discount<br/>item"]
-    F --&gt;|price string| E
-    G --&gt;|stock string| E
-    H --&gt;|discounted price| E
-    E --&gt;|tool results| C
-    C --&gt;|messages + results| D
-    D --&gt;|final answer text| C
-    C --&gt;|answer| B
-    B --&gt;|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <b>Shop Agent</b> demo illustrates how Large Language Models (LLMs) can transition from passive chatbots into active problem-solvers using <b>Tool Calling</b> (Function Calling). By default, an LLM doesn't know the current price of shoes or if a bag is in stock. Instead of guessing, the Shop Agent is given a specific set of abilities it can use to find out.</p>
+                    <p>The demo operates in an autonomous loop using the OpenAI function-calling protocol:</p>
+                    <ul>
+                        <li><b>Providing the Tools:</b> Before asking GPT-4o-mini a question, the application sends a JSON "menu" describing three available Python functions: <code>get_price</code>, <code>check_stock</code>, and <code>apply_discount</code>. The model knows what these tools do and what arguments they require (like the item name).</li>
+                        <li><b>The Model's Decision:</b> When you ask, "Do you have shoes and how much are they?", the LLM realizes it needs external data. Instead of replying with a text answer, it returns a structured request asking the backend to run <code>check_stock("shoes")</code> and <code>get_price("shoes")</code>.</li>
+                        <li><b>Backend Execution:</b> The Python backend intercepts this request, looks up the real functions in its <code>TOOL_FUNCTIONS</code> registry, and executes them against its mock database. The LLM never runs code itself; it only asks the backend to do it.</li>
+                        <li><b>Final Synthesis:</b> The backend appends the results from those functions (e.g., "12 units in stock", "₹799") back into the conversation history as "tool" messages. The LLM is called one last time with this new context, allowing it to formulate a natural, accurate response based on the live shop data.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">agent.py — tool definitions &amp; ask function</span>
-                <pre><code class="language-python">import json
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">question</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">app.py</span>
+                            <span class="flow-detail">POST /agent</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">agent.py</span>
+                            <span class="flow-detail">ask()</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">with tools</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Tool Calls</span>
+                            <span class="flow-detail">dispatch results</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">JSON answer</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A["Browser<br/>shopping question"] --&gt;|POST /agent| B["app.py<br/>shop_agent"]
+                        B --&gt;|user_message| C["agent.py<br/>ask"]
+                        C --&gt;|messages + TOOLS| D["OpenAI API<br/>GPT-4o mini"]
+                        D --&gt;|tool_calls request| E["Tool dispatch<br/>TOOL_FUNCTIONS registry"]
+                        E --&gt;|call get_price| F["get_price<br/>item"]
+                        E --&gt;|call check_stock| G["check_stock<br/>item"]
+                        E --&gt;|call apply_discount| H["apply_discount<br/>item"]
+                        F --&gt;|price string| E
+                        G --&gt;|stock string| E
+                        H --&gt;|discounted price| E
+                        E --&gt;|tool results| C
+                        C --&gt;|messages + results| D
+                        D --&gt;|final answer text| C
+                        C --&gt;|answer| B
+                        B --&gt;|JSON result| A
+                                        </div>
+                                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink" href="#source-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">190 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-agent-py">
+                    <span class="file-path">src/python/agent.py</span>
+                    <p class="file-label">A tiny tool-using agent: an LLM plus multiple tools plus a loop.</p>
+                    <pre><code data-lang="python">"""A tiny tool-using agent: an LLM plus multiple tools plus a loop.
+
+This is the Class 2 "first agent" — the model decides on its own when to call
+a tool.  Here the tools are a price lookup, stock checker, and discount
+applier for a small shop.  The loop is:
+
+    think  -&gt;  (maybe) call tool(s)  -&gt;  answer
+
+The tool-calling protocol is expressed with the raw OpenAI SDK (via
+config.get_openai_client()) because the request/response shape of function
+calling is clearest in the native API.
+"""
+
+import json
 import random
 
 from config import CHAT_MODEL, get_openai_client
 
-# In-memory product catalogs representing shop inventory and pricing database
+# Our tiny "database" — dicts standing in for a real product catalog.
 PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
+
 STOCK = {"shoes": 12, "hat": 5, "bag": 0, "shorts": 8, "pants": 3}
+
 DISCOUNT_PERCENT = 10
 
 
-# Tool Function 1: Query price catalog
 def get_price(item: str) -&gt; str:
     """Look up the price of a shop item.
 
@@ -121,11 +307,9 @@ def get_price(item: str) -&gt; str:
     Returns:
         A rupee price string, or "₹unknown" if the item is not stocked.
     """
-    # Look up item in price dictionary; return formatted rupee string or fallback
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 
 
-# Tool Function 2: Query stock level
 def check_stock(item: str) -&gt; str:
     """Check the stock availability of a shop item.
 
@@ -136,18 +320,14 @@ def check_stock(item: str) -&gt; str:
         A string describing the stock level, or "unknown item" if not found.
     """
     item_lower = item.lower()
-    # Step 1: Check if product exists in inventory
     if item_lower not in STOCK:
         return f"{item} is not a known item in our shop."
-    # Step 2: Check current quantity count
     qty = STOCK[item_lower]
     if qty == 0:
         return f"{item} is currently out of stock."
-    # Step 3: Return stock availability message
     return f"{item} has {qty} units in stock."
 
 
-# Tool Function 3: Apply discount calculation
 def apply_discount(item: str) -&gt; str:
     """Apply a 10% discount to a shop item and return the discounted price.
 
@@ -158,24 +338,21 @@ def apply_discount(item: str) -&gt; str:
         A string with the original and discounted price, or an error message.
     """
     item_lower = item.lower()
-    # Step 1: Verify product is sold in store
     if item_lower not in PRICES:
         return f"{item} is not a known item in our shop."
-    # Step 2: Calculate discounted rate using integer arithmetic
     original = PRICES[item_lower]
     discounted = original - (original * DISCOUNT_PERCENT // 100)
-    # Step 3: Return original and discounted breakdown
     return f"{item}: ₹{original} → ₹{discounted} ({DISCOUNT_PERCENT}% off)"
 
 
-# Registry mapping tool schema names directly to callable Python functions
+# A registry mapping tool names to their Python functions.
 TOOL_FUNCTIONS = {
     "get_price": get_price,
     "check_stock": check_stock,
     "apply_discount": apply_discount,
 }
 
-# OpenAI Function-Calling JSON Schema: tells model which tools exist and argument types
+# Describe the tools so the model knows they exist and how to call them.
 TOOLS = [
     {
         "type": "function",
@@ -239,94 +416,463 @@ def ask(user_message: str) -&gt; str:
     client = get_openai_client()
     messages = [{"role": "user", "content": user_message}]
 
-    # Step 1: Initial call — model inspects available tools and decides whether to invoke one
+    # 1. First call — the model sees the tools menu and may ask for a tool.
     response = client.chat.completions.create(
         model=CHAT_MODEL, messages=messages, tools=TOOLS
     )
     msg = response.choices[0].message
 
-    # Step 2: Check if model issued tool call requests
+    # 2. Did it request one or more tool calls?
     if msg.tool_calls:
-        # Record assistant tool request in conversation history (required by OpenAI protocol)
+
+        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
         messages.append(msg)
 
         for call in msg.tool_calls:
             fn_name = call.function.name
-            # Parse argument JSON string (e.g. '{"item": "shoes"}')
+
+            # This is how it was used earlier when we had only one tool
+            # args = json.loads(call.function.arguments)  # read the request...
+            # result = get_price(args["item"])            # ...and run the tool
+
+            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
             args = json.loads(call.function.arguments)
-            # Dispatch to matched Python tool function
+            # Look up the tool function from the registry and call it.
             fn = TOOL_FUNCTIONS.get(fn_name)
             result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
-            # Append observation under role "tool" with matching tool_call_id
             messages.append(
                 {
-                    "role": "tool",
+                    "role": "tool",  # the third role, alongside user/assistant
                     "tool_call_id": call.id,
                     "content": result,
                 }
             )
-
-        # Step 3: Send tool results back so model formulates final conversational answer
+        # 3. Send tool results back so the model can answer in plain language.
         response = client.chat.completions.create(
             model=CHAT_MODEL, messages=messages
         )
         msg = response.choices[0].message
 
-    # Return synthesized assistant answer
-    return msg.content</code></pre>
+    return msg.content
 
-                <h2>API route</h2>
-                <span class="file-label">app.py</span>
-                <pre><code class="language-python">@bp.route("/agent", methods=["POST"])
-def shop_agent():
-    """Answer a shopping question, letting the agent call its price tool."""
-    # Step 1: Parse JSON request body from client
+
+if __name__ == "__main__":
+    # Quick manual tests:
+    print(ask("How much are the shoes?"))           # -&gt; uses get_price
+    print(ask("Are bags in stock?"))                # -&gt; uses check_stock
+    print(ask("Apply a discount on the pants"))     # -&gt; uses apply_discount
+    print(ask("Hi! What can you help with?"))       # -&gt; no tool needed</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">51 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create model clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create model clients.
+
+This module is the single place that knows about API keys and model names.
+Every other module calls get_chat_model() or get_openai_client() instead of
+constructing a client itself, so key and model management stays in one place.
+
+Two kinds of client are exposed because the features need different tools:
+  - get_chat_model()   → a LangChain ``ChatOpenAI`` for the summarizer and
+                         memory chat, which are built as LangChain chains
+                         (prompt | model | parser).
+  - get_openai_client() → the raw ``openai`` client for the shop agent, whose
+                         tool-calling loop is expressed most directly with the
+                         native SDK.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from openai import OpenAI
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Every feature in this project uses the cheap, fast gpt-4o-mini model.
+CHAT_MODEL = "gpt-4o-mini"
+
+
+def get_chat_model(temperature: float = 0.7) -&gt; ChatOpenAI:
+    """Return a LangChain ChatOpenAI model.
+
+    Args:
+        temperature: Sampling temperature (0 = deterministic, 2 = very random).
+                     Callers pick a lower value for factual tasks like
+                     summarization and a higher one for open conversation.
+
+    Returns:
+        A ``ChatOpenAI`` instance ready to be composed into a LangChain chain.
+    """
+    return ChatOpenAI(model=CHAT_MODEL, temperature=temperature)
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return a raw OpenAI client authenticated with OPENAI_API_KEY.
+
+    Used by the shop agent, whose function-calling loop is written directly
+    against the native OpenAI SDK rather than through LangChain.
+    """
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">202 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing summarize, chat, and agent endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing summarize, chat, and agent endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/summarize",
+  etc.  In production Nginx forwards ``/langchain/...`` traffic to the container
+  and PATH_PREFIX is set to "/langchain", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from agent import ask
+from chat import reply
+from rate_limiter import check_rate_limit
+from summarizer import summarize
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/langchain") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    """Scrape a URL and return a LangChain-generated markdown summary.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;markdown summary&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing url)
+                         or HTTP 500 (API / scraping error)
+    """
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper make a request with an empty URL.
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        text = summarize(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/scrape", methods=["POST"])
+def scrape():
+    """Scrape a URL and return its cleaned text.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;cleaned text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }``
+    """
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        from scraper import fetch_website_contents
+        text = fetch_website_contents(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/chat", methods=["POST"])
+def chat():
+    """Reply to a message using the conversation history for memory.
+
+    Request body (JSON)::
+
+        { "message": "&lt;user message&gt;", "history": [ {"role", "content"}, ... ] }
+
+    Response (JSON): ``{ "result": "&lt;assistant reply&gt;" }``
+    Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing message)
+                     or HTTP 500 (API error)
+    """
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
-
-    # Step 2: Validate that a non-empty message was supplied
+    # history is optional; default to an empty conversation for the first turn.
+    history = data.get("history") or []
     if not message:
         return jsonify({"error": "A message is required."}), 400
+    try:
+        text = reply(message, history)
+        response = jsonify({"result": text})
+        # Chat replies are turn-specific — never cache them.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    # Step 3: Execute the agent tool-calling loop and return the response
+
+@bp.route("/agent", methods=["POST"])
+def shop_agent():
+    """Answer a shopping question, letting the agent call its price tool.
+
+    Request body (JSON): ``{ "message": "&lt;user message&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;assistant reply&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing
+                         message) or HTTP 500 (API error)
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A message is required."}), 400
     try:
         text = ask(message)
         return jsonify({"result": text})
     except Exception as e:
-        # Gracefully return HTTP 500 on error
-        return jsonify({"error": str(e)}), 500</code></pre>
-            </div>
-        </section>
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/chat") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8081 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <footer class="study-footer">LangChain Lab &mdash; 🛍️ Shop Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
+
 </html>

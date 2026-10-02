@@ -4,110 +4,288 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Website Summarizer · LangChain Lab</title>
-    <meta name="description" content="How the Website Summarizer works." />
+    <meta name="description"
+        content="How the Website Summarizer works." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>LangChain Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; LangChain Lab</a>
         </nav>
     </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🔎 Website Summarizer</h1>
-                <p class="subtitle">LangChain chain + GPT-4o mini</p>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-scraper-py">scraper.py</a></li>
+                    <li><a href="#source-summarizer-py">summarizer.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🔎 Website Summarizer<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">LangChain chain + GPT-4o mini. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>9 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>5 Python Files in Full</span>
+                </div>
             </div>
-        </section>
-        <section>
-            <div class="container info-content">
-                <h2>Concept</h2>
-                <p>This demo uses a LangChain <code>prompt | model | parser</code> chain to summarize any web page.
-                    First, <code>WebBaseLoader</code> fetches and cleans the page text. Then the chain fills a prompt
-                    template with that text and calls GPT-4o mini with low temperature (0.3) for a factual, consistent
-                    summary. The <code>|</code> operator is LangChain's way of composing steps — each step's output
-                    becomes the next step's input.</p>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-                <h2>Theory &amp; Concepts</h2>
-<p>The <b>Website Summarizer</b> demo demonstrates how to build robust AI data pipelines using <b>LangChain</b> and its Expression Language (LCEL). Instead of manually concatenating strings and parsing complex API responses, this demo links specialized components together into a single, cohesive <b>Chain</b> where the output of one step flows naturally into the next using the pipe (<code>|</code>) operator.</p>
-<p>When you submit a URL to be summarized, the application processes it through a sequence of well-defined stages:</p>
-<ul>
-    <li><b>Document Loading:</b> Before the LLM can summarize a webpage, the raw HTML must be fetched and cleaned. The demo uses LangChain's <code>WebBaseLoader</code> to download the page (using custom headers to avoid basic bot detection) and extract just the readable text, stripping away messy navigation menus and scripts.</li>
-    <li><b>Prompt Templating:</b> The scraped text is then passed to a <code>ChatPromptTemplate</code>. Instead of hardcoding the prompt, this template holds a static instruction ("give a short, friendly summary") and dynamically injects the website's text into a <code>{website}</code> variable.</li>
-    <li><b>Model Execution:</b> The formatted prompt flows into the LLM (GPT-4o-mini). By using a low temperature (0.3), the model is instructed to be highly factual and consistent, ensuring the summary closely reflects the actual webpage content rather than hallucinated details.</li>
-    <li><b>Output Parsing:</b> Finally, the LLM returns a complex object containing token counts and metadata. The <code>StrOutputParser</code> at the end of the chain extracts just the raw markdown summary string, which is then sent back to your browser to be rendered cleanly in the UI.</li>
-</ul>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">URL</span>
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">app.py</span>
-                        <span class="flow-detail">POST /summarize</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">summarize(url)</span>
-                        <span class="flow-detail">summarizer.py</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">WebBaseLoader</span>
-                        <span class="flow-detail">fetch &amp; clean</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">LangChain</span>
-                        <span class="flow-detail">prompt | model</span>
-                    </div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">JSON summary</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>This demo uses a LangChain <code>prompt | model | parser</code> chain to summarize any web page.
+                        First, <code>WebBaseLoader</code> fetches and cleans the page text. Then the chain fills a prompt
+                        template with that text and calls GPT-4o mini with low temperature (0.3) for a factual, consistent
+                        summary. The <code>|</code> operator is LangChain's way of composing steps — each step's output
+                        becomes the next step's input.</p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser<br />URL"] --&gt;|POST /summarize| B["app.py<br />summarizer"]
-                        B --&gt;|url| C["summarizer.py<br />summarize"]
-                        C --&gt;|url| D["scraper.py<br />fetch_website_contents"]
-                        D --&gt;|HTTP GET| E["WebBaseLoader<br />target website"]
-                        E --&gt;|page text| D
-                        D --&gt;|title + body text| C
-                        C --&gt;|website text| F["LangChain chain<br />prompt | model | parser"]
-                        F --&gt;|prompt| G["OpenAI API<br />GPT-4o mini"]
-                        G --&gt;|markdown summary| F
-                        F --&gt;|summary text| C
-                        C --&gt;|summary text| B
-                        B --&gt;|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <b>Website Summarizer</b> demo demonstrates how to build robust AI data pipelines using <b>LangChain</b> and its Expression Language (LCEL). Instead of manually concatenating strings and parsing complex API responses, this demo links specialized components together into a single, cohesive <b>Chain</b> where the output of one step flows naturally into the next using the pipe (<code>|</code>) operator.</p>
+                    <p>When you submit a URL to be summarized, the application processes it through a sequence of well-defined stages:</p>
+                    <ul>
+                        <li><b>Document Loading:</b> Before the LLM can summarize a webpage, the raw HTML must be fetched and cleaned. The demo uses LangChain's <code>WebBaseLoader</code> to download the page (using custom headers to avoid basic bot detection) and extract just the readable text, stripping away messy navigation menus and scripts.</li>
+                        <li><b>Prompt Templating:</b> The scraped text is then passed to a <code>ChatPromptTemplate</code>. Instead of hardcoding the prompt, this template holds a static instruction ("give a short, friendly summary") and dynamically injects the website's text into a <code>{website}</code> variable.</li>
+                        <li><b>Model Execution:</b> The formatted prompt flows into the LLM (GPT-4o-mini). By using a low temperature (0.3), the model is instructed to be highly factual and consistent, ensuring the summary closely reflects the actual webpage content rather than hallucinated details.</li>
+                        <li><b>Output Parsing:</b> Finally, the LLM returns a complex object containing token counts and metadata. The <code>StrOutputParser</code> at the end of the chain extracts just the raw markdown summary string, which is then sent back to your browser to be rendered cleanly in the UI.</li>
+                    </ul>
 
-                <h2>Scraper</h2>
-                <span class="file-label">scraper.py — fetch_website_contents</span>
-                <pre><code class="language-python">from langchain_community.document_loaders import WebBaseLoader
 
-# Many servers block requests that don'''t look like a real browser.
-# Sending a realistic User-Agent avoids most simple bot-detection checks.
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">URL</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">app.py</span>
+                            <span class="flow-detail">POST /summarize</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">summarize(url)</span>
+                            <span class="flow-detail">summarizer.py</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">WebBaseLoader</span>
+                            <span class="flow-detail">fetch &amp; clean</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">LangChain</span>
+                            <span class="flow-detail">prompt | model</span>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">JSON summary</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser<br />URL"] --&gt;|POST /summarize| B["app.py<br />summarizer"]
+                            B --&gt;|url| C["summarizer.py<br />summarize"]
+                            C --&gt;|url| D["scraper.py<br />fetch_website_contents"]
+                            D --&gt;|HTTP GET| E["WebBaseLoader<br />target website"]
+                            E --&gt;|page text| D
+                            D --&gt;|title + body text| C
+                            C --&gt;|website text| F["LangChain chain<br />prompt | model | parser"]
+                            F --&gt;|prompt| G["OpenAI API<br />GPT-4o mini"]
+                            G --&gt;|markdown summary| F
+                            F --&gt;|summary text| C
+                            C --&gt;|summary text| B
+                            B --&gt;|JSON result| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-scraper-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-scraper-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-scraper-py" class="topic-title is-file">scraper.py<a class="headerlink" href="#source-scraper-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">68 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-scraper-py">
+                    <span class="file-path">src/python/scraper.py</span>
+                    <p class="file-label">Fetch and clean the readable text contents of a web page.</p>
+                    <pre><code data-lang="python">"""Fetch and clean the readable text contents of a web page.
+
+This module uses LangChain's WebBaseLoader to fetch and parse the page.
+It is kept separate from summarizer.py so it can be reused by any future
+feature that needs raw page text.
+"""
+
+from langchain_community.document_loaders import WebBaseLoader
+
+# Many servers block requests that don't look like a real browser.
+# Sending a realistic User-Agent and Accept header avoids most simple
+# bot-detection checks while staying well within normal usage.
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -118,37 +296,99 @@ HEADERS = {
 
 
 def fetch_website_contents(url: str) -&gt; str:
-    """Download a web page and return its title and cleaned text using LangChain."""
-    # Step 1: Ensure URL contains http/https scheme
+    """Download a web page and return its title and cleaned text using LangChain.
+
+    The text is cleaned so it can be included in an LLM prompt without
+    wasting tokens on HTML boilerplate. The function never raises — if
+    the page cannot be fetched it returns an error string.
+
+    Args:
+        url: The page to fetch. May be given without a scheme; ``https://``
+             will be prepended automatically.
+
+    Returns:
+        A string of the form::
+
+            Title: &lt;page title&gt;
+
+            Page contents:
+            &lt;cleaned body text&gt;
+
+        …or an error message prefixed with "Could not fetch the website."
+    """
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
+
     try:
-        # Step 2: Initialize WebBaseLoader (backed by requests and BeautifulSoup)
+        # WebBaseLoader uses requests and BeautifulSoup under the hood.
         loader = WebBaseLoader(url)
-        # Step 3: Pass browser spoofing headers and 15-second network timeout
+        # Pass headers and timeout via requests_kwargs
         loader.requests_kwargs = {"headers": HEADERS, "timeout": 15}
+        
         docs = loader.load()
         if not docs:
             return "Could not fetch the website."
-        # Step 4: Extract page metadata title and cleaned page text
+            
         title = docs[0].metadata.get("title", "No title found")
-        # WebBaseLoader parses text with soup.get_text() by default
+        # WebBaseLoader parses text with soup.get_text() by default.
         text = docs[0].page_content.strip()
+        
         return f"Title: {title}\n\nPage contents:\n{text}"
     except Exception as e:
-        # Return user-friendly error message on network failure
-        return f"Could not fetch the website. Error: {e}"</code></pre>
+        return f"Could not fetch the website. Error: {e}"
 
-                <h2>Summarizer</h2>
-                <span class="file-label">summarizer.py — summarize</span>
-                <pre><code class="language-python">from langchain_core.output_parsers import StrOutputParser
+
+if __name__ == "__main__":
+    # Quick manual test: run `python scraper.py` to print the cleaned text
+    # of example.com to the terminal.
+    print(fetch_website_contents("example.com"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-summarizer-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-summarizer-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-summarizer-py" class="topic-title is-file">summarizer.py<a class="headerlink" href="#source-summarizer-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">65 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-summarizer-py">
+                    <span class="file-path">src/python/summarizer.py</span>
+                    <p class="file-label">Summarize the contents of a website using a LangChain chain.</p>
+                    <pre><code data-lang="python">"""Summarize the contents of a website using a LangChain chain.
+
+This module chains two steps together:
+  1. scraper.fetch_website_contents() — downloads and cleans the page.
+  2. A LangChain ``prompt | model | parser`` chain — reads the cleaned text
+     and produces a short, friendly markdown summary.
+
+The LangChain expression ``prompt | model | parser`` (the "|" means "then")
+is the Class 2 way of composing the same request the basic project made with
+the raw SDK: a reusable prompt fills a blank, the model answers, and the
+parser hands back plain text.
+"""
+
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 from config import get_chat_model
 from scraper import fetch_website_contents
 
-# Reusable prompt template with a {website} placeholder filled by LCEL invocation.
-# Low temperature (0.3) ensures concise, factual markdown summaries.
+# A reusable prompt template with a {website} blank the chain fills in by name.
+# Asking for markdown lets the UI render headings and bullets natively, and
+# telling the model to ignore navigation discourages echoing site boilerplate.
 PROMPT = ChatPromptTemplate.from_template(
     "You analyze the contents of a website and give a short, friendly "
     "summary. Ignore navigation menus. Respond in markdown.\n\n"
@@ -156,67 +396,452 @@ PROMPT = ChatPromptTemplate.from_template(
 )
 
 
-def summarize(url: str) -&gt; str:
-    """Fetch a web page and return a short markdown summary of it."""
-    # Step 1: Download and clean webpage content
-    website = fetch_website_contents(url)
-    # Step 2: Assemble LCEL pipeline: Prompt | ChatModel | StrOutputParser
-    chain = PROMPT | get_chat_model(temperature=0.3) | StrOutputParser()
-    # Step 3: Invoke chain with webpage text and return generated markdown
-    return chain.invoke({"website": website})</code></pre>
+def _build_chain():
+    """Assemble the summarizer chain: prompt | model | parser.
 
-                <h2>API route</h2>
-                <span class="file-label">app.py</span>
-                <pre><code class="language-python">@bp.route("/summarize", methods=["POST"])
+    Built lazily inside a function (rather than at import time) so importing
+    this module never requires an API key — the model client is only created
+    when a summary is actually requested.  Low temperature keeps the summary
+    factual, and StrOutputParser unwraps the model's message into plain text.
+    """
+    return PROMPT | get_chat_model(temperature=0.3) | StrOutputParser()
+
+
+def summarize(url: str) -&gt; str:
+    """Fetch a web page and return a short markdown summary of it.
+
+    The function scrapes the URL first, then passes the cleaned text through
+    the LangChain chain.  If scraping fails, fetch_website_contents() returns
+    an error string — the model then summarizes that error, which the caller
+    or UI can detect and display accordingly.
+
+    Args:
+        url: The website URL to summarize.  Scheme is optional.
+
+    Returns:
+        A markdown-formatted summary string from the model.
+    """
+    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    website = fetch_website_contents(url)
+
+    # Step 2 — run the chain; the dict fills the {website} blank by name.
+    return _build_chain().invoke({"website": website})
+
+
+if __name__ == "__main__":
+    # Quick manual test: run `python summarizer.py` to print a summary
+    # of example.com to the terminal.
+    print(summarize("example.com"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">51 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create model clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create model clients.
+
+This module is the single place that knows about API keys and model names.
+Every other module calls get_chat_model() or get_openai_client() instead of
+constructing a client itself, so key and model management stays in one place.
+
+Two kinds of client are exposed because the features need different tools:
+  - get_chat_model()   → a LangChain ``ChatOpenAI`` for the summarizer and
+                         memory chat, which are built as LangChain chains
+                         (prompt | model | parser).
+  - get_openai_client() → the raw ``openai`` client for the shop agent, whose
+                         tool-calling loop is expressed most directly with the
+                         native SDK.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from openai import OpenAI
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Every feature in this project uses the cheap, fast gpt-4o-mini model.
+CHAT_MODEL = "gpt-4o-mini"
+
+
+def get_chat_model(temperature: float = 0.7) -&gt; ChatOpenAI:
+    """Return a LangChain ChatOpenAI model.
+
+    Args:
+        temperature: Sampling temperature (0 = deterministic, 2 = very random).
+                     Callers pick a lower value for factual tasks like
+                     summarization and a higher one for open conversation.
+
+    Returns:
+        A ``ChatOpenAI`` instance ready to be composed into a LangChain chain.
+    """
+    return ChatOpenAI(model=CHAT_MODEL, temperature=temperature)
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return a raw OpenAI client authenticated with OPENAI_API_KEY.
+
+    Used by the shop agent, whose function-calling loop is written directly
+    against the native OpenAI SDK rather than through LangChain.
+    """
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">202 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing summarize, chat, and agent endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing summarize, chat, and agent endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/summarize",
+  etc.  In production Nginx forwards ``/langchain/...`` traffic to the container
+  and PATH_PREFIX is set to "/langchain", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from agent import ask
+from chat import reply
+from rate_limiter import check_rate_limit
+from summarizer import summarize
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/langchain") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/summarize", methods=["POST"])
 def summarizer():
-    """Scrape a URL and return a LangChain-generated markdown summary."""
-    # Step 1: Parse request JSON payload
+    """Scrape a URL and return a LangChain-generated markdown summary.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;markdown summary&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing url)
+                         or HTTP 500 (API / scraping error)
+    """
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
-
-    # Step 2: Validate URL at API boundary before attempting scraping
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper make a request with an empty URL.
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
-
-    # Step 3: Scrape website and generate summary via LangChain chain
     try:
         text = summarize(url)
         return jsonify({"result": text})
     except Exception as e:
-        # Return HTTP 500 on unexpected errors
-        return jsonify({"error": str(e)}), 500</code></pre>
-            </div>
-        </section>
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/scrape", methods=["POST"])
+def scrape():
+    """Scrape a URL and return its cleaned text.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;cleaned text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }``
+    """
+    data = request.get_json(force=True)
+    url = (data.get("url") or "").strip()
+    if not url:
+        return jsonify({"error": "A website URL is required."}), 400
+    try:
+        from scraper import fetch_website_contents
+        text = fetch_website_contents(url)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/chat", methods=["POST"])
+def chat():
+    """Reply to a message using the conversation history for memory.
+
+    Request body (JSON)::
+
+        { "message": "&lt;user message&gt;", "history": [ {"role", "content"}, ... ] }
+
+    Response (JSON): ``{ "result": "&lt;assistant reply&gt;" }``
+    Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing message)
+                     or HTTP 500 (API error)
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    # history is optional; default to an empty conversation for the first turn.
+    history = data.get("history") or []
+    if not message:
+        return jsonify({"error": "A message is required."}), 400
+    try:
+        text = reply(message, history)
+        response = jsonify({"result": text})
+        # Chat replies are turn-specific — never cache them.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/agent", methods=["POST"])
+def shop_agent():
+    """Answer a shopping question, letting the agent call its price tool.
+
+    Request body (JSON): ``{ "message": "&lt;user message&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;assistant reply&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing
+                         message) or HTTP 500 (API error)
+    """
+    data = request.get_json(force=True)
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "A message is required."}), 400
+    try:
+        text = ask(message)
+        return jsonify({"result": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/chat") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8081 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rate-limiter-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">73 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rate-limiter-py">
+                    <span class="file-path">src/python/rate_limiter.py</span>
+                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
+                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
+
+Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
+across worker threads and container restarts without external dependencies.
+"""
+
+import sqlite3
+import time
+from pathlib import Path
+
+DB_PATH = Path("/tmp/ai_rate_limit.db")
+
+
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH), timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS request_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            timestamp REAL NOT NULL
+        );
+        """
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
+    )
+    return conn
+
+
+def get_client_ip(req):
+    forwarded = req.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+
+
+def check_rate_limit(req, max_requests=10, window_seconds=3600):
+    """Check if the requesting IP has exceeded max_requests in the sliding window.
+
+    Returns:
+        (is_blocked: bool, message: str or None, retry_after_seconds: int)
+    """
+    client_ip = get_client_ip(req)
+    now = time.time()
+    cutoff = now - window_seconds
+
+    with get_db() as conn:
+        # Purge entries older than the sliding window
+        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
+        # Count requests in the current window
+        cur = conn.execute(
+            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
+            (client_ip, cutoff),
+        )
+        count, oldest = cur.fetchone()
+
+        if count &gt;= max_requests:
+            remaining_seconds = int(window_seconds - (now - oldest))
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            msg = (
+                f"Rate limit exceeded (10 requests per hour). "
+                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
+            )
+            return True, msg, remaining_seconds
+
+        # Record this request
+        conn.execute(
+            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
+            (client_ip, now),
+        )
+        return False, None, 0</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <footer class="study-footer">LangChain Lab &mdash; 🔎 Website Summarizer &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 
