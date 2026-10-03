@@ -1,12 +1,10 @@
----
-description: "Use when: adding an info (ⓘ) icon to a project's demo card that links to a self-contained 'how this works' page explaining the concept, request flow, code flow, and source code for that demo"
-name: "code-explainer"
-argument-hint: "Project folder (e.g. projects/basic) and which card(s)/demo(s) to explain (defaults to all cards)"
----
+# Demo Explainer Pages (ⓘ)
+
+Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/basic`) and which card(s)/demo(s) to explain; defaults to all cards.
 
 Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explainer page under `src/info/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
 
-This skill assumes the project already follows the standard template layout (`src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py` with a Flask Blueprint serving `/css/<f>` and `/js/<f>`). See `create-container-project` for that layout.
+This assumes the project already follows the standard template layout (`src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py` with a Flask Blueprint serving `/css/<f>` and `/js/<f>`). See [SKILL.md](SKILL.md) for that layout.
 
 ## 1. Info icon on the card
 

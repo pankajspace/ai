@@ -1,9 +1,18 @@
 ---
-description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design (removing Gradio, agenda, LinkedIn content and class numbers) and regenerating its .md"
 name: "create-container-project"
-argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist"
-agent: "gemini"
+argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-demos/*.html class-notes page to simplify"
 ---
+
+This skill covers a container project and its two kinds of companion teaching page. Pick the task, then read only the file it needs:
+
+1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**.
+2. **Add ⓘ explainer pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
+3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-demos/*.html` into the DSA-course design and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
+
+When a new public project needs its catalog ⓘ link (Workflow step 11), build the target page with task 2 or 3.
+
+## Container Project
 
 Create or adapt a container project named `${input:projectName}` under `projects/`, using `projects/template` as the reference implementation and matching the structure and deployment conventions of the existing projects.
 
@@ -51,7 +60,7 @@ Proceed without extra questions if you have enough information.
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
 11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add the root `README.md` runbook entry under `## Project Runbooks` (`N. [<Display Name>](projects/<project-name>/README.md)`, above *Container App Template*). If the project should be public, follow `ADD_PROJECT.md` § 8 *Public project catalog card update*:
     1. Add a card to `projects/techtoday/study/ai-demos/ai-demos.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-demos.md`.
-    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-demos/` (built with the `class-notes-enhancer` skill), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built with the `code-explainer` skill, §7).
+    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-demos/` (built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
     3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Demos** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
 
 ## README Requirements
@@ -78,7 +87,7 @@ Every project must share one look and feel and present each feature as an intera
 
 ### CSS — copy verbatim, never restyle
 
-Copy `projects/template/src/css/style.css` unchanged into the new project. The only permitted edits are the top-of-file header comment naming the project and the two opt-in blocks documented in skills: the `.options`/`.option` dropdown row (see **Dropdowns for Choices**) and the `.info-link` icon (see the `code-explainer` skill). Do not fork colors, fonts, spacing, the CSS variables (`--bg`, `--bg-elevated`, `--accent`, `--text`, `--border`), the `.grid`, `.card`, `.card-wide`, `.spinner`, `.validation`, `.result`, or `.error` rules. If a design change is genuinely needed, change the template and re-copy so all projects stay in sync — do not patch one project.
+Copy `projects/template/src/css/style.css` unchanged into the new project. The only permitted edits are the top-of-file header comment naming the project and the two documented opt-in blocks: the `.options`/`.option` dropdown row (see **Dropdowns for Choices**) and the `.info-link` icon (see [explainer-pages.md](explainer-pages.md) §1). Do not fork colors, fonts, spacing, the CSS variables (`--bg`, `--bg-elevated`, `--accent`, `--text`, `--border`), the `.grid`, `.card`, `.card-wide`, `.spinner`, `.validation`, `.result`, or `.error` rules. If a design change is genuinely needed, change the template and re-copy so all projects stay in sync — do not patch one project.
 
 ### index.html — keep the shell, swap the cards
 

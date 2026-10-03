@@ -1,14 +1,10 @@
----
-name: class-notes-enhancer
-description: "Use when: simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design (dark theme, collapsible topic/part accordions, plain callouts), removing Gradio UI content, the agenda/flight-plan section, LinkedIn posting content and class numbers ('Class 2'), and regenerating the companion .md file"
-argument-hint: "HTML file to enhance, e.g. projects/techtoday/study/ai-demos/rag-embeddings.html"
----
+# Class Notes (Theory) Page
 
-# Class Notes Enhancer
+Part of the `create-container-project` skill. This is the "Theory" page a project's card links to from the AI Demos catalog.
 
 Rewrite one class-notes HTML page into the same simple design as the DSA courses, without losing teaching content, then regenerate its companion Markdown file.
 
-**Input:** the HTML file path passed as the skill argument. If none was given, ask for it.
+**Input:** the HTML file path, e.g. `projects/techtoday/study/ai-demos/rag-embeddings.html`. If none was given, ask for it.
 
 **Reference implementation:** `projects/techtoday/study/ai-demos/llms-prompting.html` (and its `.md`). It is the finished result of this workflow. Copy its `<head>` styles, topic/part markup, accordion script and sim patterns instead of inventing new ones.
 
