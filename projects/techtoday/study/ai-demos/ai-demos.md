@@ -15,7 +15,7 @@ Building small things with big ideas
 
 ### AI Playground
 
-Joke generator, travel suggestions, website summarizer, and LLM Arena — powered by OpenAI (GPT OSS) and OpenAI (GPT-4o mini), served through a Flask UI.
+Joke generator, travel suggestions, website summarizer, and LLM Arena — powered by Groq (GPT OSS 120B) and OpenAI (GPT-4o mini), served through a Flask UI.
 
 [Open project →](https://app.techtoday.click/basic/)
 

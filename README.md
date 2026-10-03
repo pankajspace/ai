@@ -29,7 +29,9 @@
 6. [AWS Strands Lab](projects/aws-strands/README.md)
 7. [InterviewIQ](projects/interviewiq/README.md)
 8. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
-9. [Container App Template](projects/template/README.md)
+9. [AI Systems Lab](projects/ai-systems/README.md)
+10. [AI Reliability Lab](projects/ai-reliability/README.md)
+11. [Container App Template](projects/template/README.md)
 
 ---
 

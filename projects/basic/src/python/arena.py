@@ -1,7 +1,7 @@
 """Send one prompt to two models and return both replies for comparison.
 
 The LLM Arena feature lets users compare how a proprietary model (GPT-4o mini
-via OpenAI) and an open-source model (Llama 3.3 70B via Groq) respond to the
+via OpenAI) and an open-weight model (GPT OSS 120B via Groq) respond to the
 exact same prompt.  Both calls are made sequentially; a future improvement
 could fire them concurrently using asyncio or threading.
 """
@@ -11,7 +11,7 @@ from config import get_groq_client, get_openai_client
 # Model A — OpenAI's GPT-4o mini: fast, cheap, high quality instruction-following.
 OPENAI_MODEL = "gpt-4o-mini"
 
-# Model B — Meta's Llama 3.3 70B served by Groq: open-source, free tier,
+# Model B — OpenAI's open-weight GPT OSS 120B served by Groq: free tier,
 # very fast inference thanks to Groq's custom LPU hardware.
 GROQ_MODEL = "openai/gpt-oss-120b"
 
@@ -46,14 +46,14 @@ def battle(prompt: str) -> dict:
         A dict of the form::
 
             {
-                "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
-                "model_b": {"model": "llama-3.3-70b-versatile", "reply": "..."},
+                "model_a": {"model": "gpt-4o-mini",         "reply": "..."},
+                "model_b": {"model": "openai/gpt-oss-120b", "reply": "..."},
             }
     """
     # Call OpenAI first (typically higher latency due to more capable model).
     openai_reply = _ask(get_openai_client(), OPENAI_MODEL, prompt)
 
-    # Then call Groq — Groq's LPU hardware makes Llama responses very fast.
+    # Then call Groq — Groq's LPU hardware makes GPT OSS responses very fast.
     groq_reply = _ask(get_groq_client(), GROQ_MODEL, prompt)
 
     # Bundle both results into a labelled dict so the API response and UI

@@ -13,7 +13,8 @@ The current next available values are:
 1. Local development port: `8089`.
 2. EC2 host port: `5009`.
 After adding a project, advance the local and EC2 values in this section so the
-next project does not reuse them.
+next project does not reuse them. Local port `8090` is reserved by
+`projects/template`, so the local value after `8089` is `8091`.
 
 For a new container app, choose:
 

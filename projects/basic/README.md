@@ -1,6 +1,6 @@
 # AI Infused Learning
 
-A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
+A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (GPT OSS 120B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
 
 The project is structured so that each feature lives in its own module (`joke.py`, `travel.py`, etc.) and is exposed through a thin Flask endpoint.  This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
@@ -183,7 +183,7 @@ docker compose -f ~/apps/basic/docker-compose.yml up -d
 ## Features
 
 ### 😂 Joke Generator
-Calls **Groq** (Llama 3.3 70B Versatile) to generate a joke on a topic you provide.  `temperature=1.3` pushes the model toward creative, varied responses so you get a fresh joke on every request.
+Calls **Groq** (GPT OSS 120B, `openai/gpt-oss-120b`) to generate a joke on a topic you provide.  `temperature=1.3` pushes the model toward creative, varied responses so you get a fresh joke on every request.
 
 ### ✈️ Travel Suggestion
 Calls **OpenAI** (GPT-4o mini) with a witty-travel-guide persona to suggest one thing to do in any city you enter.
@@ -210,7 +210,7 @@ projects/basic/
 └── src/
     ├── python/
     │   ├── config.py       # loads .env; exposes get_openai_client() / get_groq_client()
-    │   ├── joke.py         # Groq → Llama 3.3 70B → random joke
+    │   ├── joke.py         # Groq → GPT OSS 120B → random joke
     │   ├── travel.py       # OpenAI → GPT-4o mini → city activity suggestion
     │   ├── scraper.py      # requests + BeautifulSoup → cleaned page text
     │   ├── summarizer.py   # scraper + OpenAI → markdown page summary
@@ -232,7 +232,7 @@ projects/basic/
 - `get_groq_client()` — constructs an `OpenAI` client with `GROQ_API_KEY` and `base_url` set to `https://api.groq.com/openai/v1`.  No extra SDK is needed because Groq's API is wire-compatible with OpenAI's.
 
 **`joke.py`**
-- `get_joke(topic)` — sends a user prompt to `llama-3.3-70b-versatile` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
+- `get_joke(topic)` — sends a user prompt to `openai/gpt-oss-120b` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
 - Can be run directly from the project root: `python src/python/joke.py`.
 
 **`travel.py`**
@@ -286,7 +286,7 @@ groq_client = OpenAI(
 )
 
 response = groq_client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     messages=[{"role": "user", "content": "Hello!"}],
 )
 print(response.choices[0].message.content)
