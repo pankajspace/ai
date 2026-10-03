@@ -88,6 +88,14 @@ chain of 4 services, each 99.9% available
 >
 > Two rules of thumb worth memorising before anything else. **First: the network is not reliable, not fast, not secure, and its topology changes** — these are four of the famous *eight fallacies of distributed computing*, and every outage you will ever debug is someone having assumed one of them. **Second: you cannot make a distributed call as safe as a local one; you can only make its failure cheap.**
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Calling Another Service
+
+Choosing whether to wait for an answer, picking an API style, and finding a healthy instance to send the call to.
+
 <a id="1-sync-or-async"></a>
 
 ## Synchronous or Asynchronous
@@ -277,6 +285,14 @@ Then you pick one. The default everyone inherits is round robin, and it fails in
 One instance is *grey failing* — up, answering, passing a shallow `/healthz` that only proves the process can return 200, but slow. With round robin it keeps receiving its full share, so a fixed fraction of requests is slow and the tail moves while the median does not. The tell is the shape: if p99 tripled and p50 did not, look for a *subset* of instances, not a global regression.
 
 Three fixes, in increasing order of value: make health checks *deep* (check the dependencies the endpoint actually needs); switch to least-request load balancing so slowness is self-limiting; and add **outlier detection** so an instance whose error or latency profile deviates from its peers is ejected automatically for a cool-down period.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Surviving Failure
+
+Timeouts, retries, idempotency and circuit breakers — the tools that turn the third outcome from an outage into a blip.
 
 <a id="4-timeouts-and-deadlines"></a>
 
@@ -545,6 +561,14 @@ Four layers, each of which would have been enough on its own. **A short timeout*
 
 The framing to say out loud: *recommendations is a non-critical dependency, so the design fault was letting a non-critical dependency fail a critical path at all.* Classify every dependency as critical or not, and make the non-critical ones structurally incapable of taking you down.
 
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Asynchronous Messaging
+
+Putting a broker between services: how queues and topics decouple them, what delivery guarantees really promise, and what to do when consumers fall behind.
+
 <a id="8-queues-and-topics"></a>
 
 ## Queues & Topics
@@ -671,6 +695,14 @@ The other broker failure mode is quieter, and it is the one that kills processes
 >
 > **Every queue must be bounded, and the bound must come from a latency target rather than from available memory.** “Unbounded” always means “bounded by RAM, discovered during an incident”. Once bounded you have three real options when it fills: *push back* (stop reading, so the producer slows down), *shed* (reject with `503` plus `Retry-After`), or *drop by policy* (discard the oldest, which is right for live data whose value decays).
 
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Consistency Across Services
+
+Keeping data correct when one business action spans a database, a broker and several services that can each fail halfway through.
+
 <a id="11-the-outbox"></a>
 
 ## The Dual Write & the Outbox
@@ -786,6 +818,14 @@ One business operation, four services, four databases. You cannot wrap that in a
 For contrast, the mechanism sagas replace — two-phase commit — is worth understanding precisely so you can explain why you did not use it:
 
 > **Interactive animation:** `two-phase-commit` — rendered by the page script in the HTML version.
+
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — Reaching Clients & Long-Running Work
+
+Pushing updates to browsers and partners, handing back results that take minutes, and the whole course on one page.
 
 <a id="13-polling-sse-and-websockets"></a>
 

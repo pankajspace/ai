@@ -131,6 +131,14 @@ Every pattern in the next forty-two sections does exactly one of three jobs. It 
 - **Make the unknown harmless** — Idempotency keys, at-least-once delivery, the outbox, compensating transactions, CRDTs. These accept that duplicates and partial failures will happen and make the outcome correct anyway.
 - **Make the unknown visible** — Correlation ids, distributed tracing, queue depth and consumer lag, dead letter queues, reconciliation jobs. You cannot eliminate the third outcome, so you must be able to find it afterwards.
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Wire Foundations
+
+How tightly two services are bound, what actually travels across the wire, and how its shape can change without breaking anyone.
+
 <a id="2-the-coupling-spectrum"></a>
 
 ## 2. The Coupling Spectrum
@@ -354,6 +362,14 @@ const Envelope = z.object({
 > **Key idea**
 >
 > **Enforce compatibility in CI, not in code review.** `buf breaking` for protobuf, a schema registry with `FULL` compatibility for Avro and JSON Schema, and consumer-driven contract tests (section 44) for REST. Compatibility is a property a machine can check on every pull request, and a property humans reliably fail to check at 5 p.m. on a Friday.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Synchronous APIs & Routing
+
+The request–response styles — REST, gRPC and GraphQL — how they evolve, and the infrastructure that routes each call to a healthy instance.
 
 <a id="6-rest"></a>
 
@@ -845,6 +861,14 @@ per 1000 rps of sidecar overhead. That is the price list.
 > **Tip**
 >
 > **Ambient/sidecar-less meshes** (Istio ambient, Cilium) move the L4 work into a per-node agent and only inject an L7 proxy where you need L7 features. They cut the per-pod overhead substantially. The architectural trade is unchanged: you are still buying uniform policy with a control plane you must run, upgrade and debug.
+
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Resilience
+
+Timeouts, retries, idempotency, breakers, bulkheads and health checks — making failure cheap and contained instead of contagious.
 
 <a id="14-timeouts-and-deadlines"></a>
 
@@ -1356,6 +1380,14 @@ timeout too SHORT -> a 400 ms GC pause looks like death
 >
 > **Phi-accrual failure detectors** (Cassandra, Akka) replace the binary timeout with a *suspicion level* derived from the observed distribution of heartbeat arrival times. On a network that is normally jittery, the threshold adapts instead of being hand-tuned — and callers can react proportionally: stop sending new work at low suspicion, fail over at high.
 
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Asynchronous Messaging
+
+Queues, pub/sub and logs, what delivery and ordering guarantees really mean, and how to cope with poison messages and slow consumers.
+
 <a id="20-queues"></a>
 
 ## 20. Queues & Competing Consumers
@@ -1729,6 +1761,14 @@ await pipeline(
 > **Key idea**
 >
 > **An unbounded queue does not prevent overload, it hides it** — until it becomes an out-of-memory kill that loses everything in flight. Bound every buffer from a latency target; then choose deliberately what happens when it fills: *push back* when you can reach the producer, *shed* with `503` plus `Retry-After` when you cannot, or *drop by policy* (oldest-first) when the data's value decays with age.
+
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — Data Consistency & Workflows
+
+Keeping state correct across service boundaries with the outbox, CDC, events, CQRS, sagas and two-phase commit, plus composing and caching calls between services.
 
 <a id="27-outbox"></a>
 
@@ -2169,6 +2209,14 @@ A cache is the cheapest way to remove a network call, and the easiest way to bui
 > **Warning**
 >
 > **Invalidation across services is a distributed systems problem wearing a cache costume.** Publishing an `invalidate` event is itself a dual write (section 27), and it can be lost, delayed or reordered. That is why the honest default is a *short TTL*: it bounds staleness without requiring correctness from your invalidation path. Reach for event-driven invalidation only where the staleness window genuinely matters, and keep the TTL as a safety net.
+
+---
+
+<a id="unit-6"></a>
+
+## Unit 6 — Real-Time & Client-Facing Communication
+
+Getting updates to browsers and partners — polling, server-sent events, WebSockets and webhooks — and returning results for work that takes minutes.
 
 <a id="35-real-time-push"></a>
 
@@ -3059,6 +3107,14 @@ The responder's half - three rules:
 > **Key idea**
 >
 > **Once you return `202`, the job is a public API.** The handle must survive restarts and deploys (so it lives in a database, not in memory), creating it must be idempotent (so a retried `POST` does not start a second job), and it must have an explicit lifetime (so `/jobs/7` returns `410 Gone` next month rather than a confusing `404`). Teams that treat the job id as an implementation detail end up with clients polling handles that silently vanished.
+
+---
+
+<a id="unit-7"></a>
+
+## Unit 7 — Coordination, Operations & Review
+
+The theory underneath (consensus and time), the practice of observing and testing a distributed system, and the reference pages to keep.
 
 <a id="41-consensus"></a>
 
