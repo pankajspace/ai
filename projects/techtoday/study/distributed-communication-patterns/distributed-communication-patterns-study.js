@@ -2351,6 +2351,273 @@ VIZ["webhook-retry"] = {
     },
 };
 
+/* ---- Long polling: why the cursor is mandatory ---- */
+
+VIZ["long-poll-cursor"] = {
+    title: "Long polling: what happens to an event published between two polls",
+    legend: [["lg-act", "current message"], ["lg-done", "delivered / stored"], ["lg-idle", "lost or empty"]],
+    options: [
+        { value: "cursor", label: "With a cursor" },
+        { value: "none", label: "Without a cursor" },
+    ],
+    build(option = "cursor") {
+        const W = 860;
+        const H = 420;
+        const lanes = [
+            { x: 130, label: "Browser", sub: "" },
+            { x: 430, label: "Server", sub: "" },
+            { x: 730, label: option === "none" ? "Publisher" : "Event log", sub: option === "none" ? "fire and forget" : "ordered, durable" },
+        ];
+        if (option === "none") {
+            const script = [
+                { from: 0, to: 1, y: 110, text: "GET /updates  (parked)", note: "The browser asks for &ldquo;anything new&rdquo; and says nothing about what it has already seen. The server parks the request until the next event." },
+                { from: 2, to: 1, y: 150, text: "publish m41", note: "An event is published. The server hands it to whichever requests are parked right now." },
+                { from: 1, to: 0, y: 190, text: "200 [m41]", note: "Delivered, and the request is finished. Until the browser sends its next poll, <b>nobody is parked</b> for this user." },
+                { from: 2, to: 1, y: 230, text: "publish m42 \u2014 nobody parked", after: "e-idle", note: "<code>m42</code> arrives in that gap \u2014 a few milliseconds on a desk, whole seconds on a phone. The server has no parked request and no record of what this client has seen, so <b>there is nowhere to put it</b>." },
+                { from: 0, to: 1, y: 270, text: "GET /updates  (parked)", note: "The browser re-polls for &ldquo;anything new&rdquo;. From the server's point of view, <code>m42</code> is already old news." },
+                { from: 2, to: 1, y: 310, text: "publish m43", note: "The next event wakes the new request." },
+                { from: 1, to: 0, y: 350, text: "200 [m43]", note: "The client shows <code>m43</code> and never learns that <code>m42</code> existed. <b>No error was raised anywhere</b>: no exception, no log line, no metric." },
+            ];
+            return seqFrames(
+                W, H, lanes, script,
+                "Long polling without a cursor: the server holds a request open and answers it with the next event.",
+                "<b>Conclusion.</b> Without a cursor, long polling silently loses exactly the events published between two polls \u2014 rare in testing, routine on mobile networks. The real contract is not &ldquo;wait for the next event&rdquo;, it is <b>&ldquo;give me everything after N&rdquo;</b>, and that needs a durable, ordered log."
+            );
+        }
+        const script = [
+            { from: 0, to: 1, y: 110, text: "GET /updates?after=40", note: "The client says where it is: <code>after=40</code>. The server checks the log first, finds nothing newer, and only then parks the request." },
+            { from: 2, to: 1, y: 150, text: "append m41 \u00b7 wake", note: "<code>m41</code> is appended to the per-user log, which wakes the parked request." },
+            { from: 1, to: 0, y: 190, text: "200 [m41]  cursor=41", note: "The response carries the new cursor. The client stores <code>cursor=41</code> \u2014 in memory, and in <code>localStorage</code> if it should survive a reload." },
+            { from: 2, to: 2, y: 230, text: "append m42", after: "e-done", note: "<code>m42</code> lands in the gap again. This time it is not handed to a parked request; it is <b>appended to the log</b>, where it waits for anyone who asks." },
+            { from: 0, to: 1, y: 270, text: "GET /updates?after=41", note: "The browser re-polls from its cursor." },
+            { from: 1, to: 2, y: 310, text: "read after 41", note: "Before parking, the server reads the log after 41 \u2014 and <code>m42</code> is already there." },
+            { from: 1, to: 0, y: 350, text: "200 [m42]  cursor=42 (no wait)", note: "It answers <b>immediately</b>. The gap between polls is now harmless, however long it was." },
+            { from: 0, to: 1, y: 390, text: "after=42 \u2192 204 at 25 s, re-poll", after: "e-idle", note: "With nothing new, the server returns an empty <code>204</code> after 25 s \u2014 under every proxy's idle timeout \u2014 and the client simply asks again." },
+        ];
+        return seqFrames(
+            W, H, lanes, script,
+            "The same protocol with one extra number: the client sends the id of the last event it has seen.",
+            "<b>Conclusion.</b> The cursor makes long polling correct: answer &ldquo;everything after N&rdquo; from a durable log, park only when there is nothing, and return empty before any proxy gives up. The price is a <b>per-user ordered backlog</b> \u2014 the same backlog SSE resumes from in section 37."
+        );
+    },
+};
+
+/* ---- SSE: resumption across a deploy ---- */
+
+VIZ["sse-resume"] = {
+    title: "SSE across a deploy: what Last-Event-ID buys you",
+    legend: [["lg-act", "current message"], ["lg-done", "delivered"], ["lg-idle", "dropped or lost"]],
+    options: [
+        { value: "ids", label: "Events with ids + backlog" },
+        { value: "noids", label: "Events without ids" },
+    ],
+    build(option = "ids") {
+        const W = 900;
+        const H = 440;
+        if (option === "noids") {
+            const lanes = [
+                { x: 110, label: "Browser", sub: "EventSource" },
+                { x: 340, label: "Server A", sub: "" },
+                { x: 570, label: "Server B", sub: "" },
+                { x: 800, label: "Pub/sub", sub: "no history" },
+            ];
+            const script = [
+                { from: 0, to: 1, y: 110, text: "GET /orders/7/events", note: "The browser opens an <code>EventSource</code>; the load balancer sends it to server A." },
+                { from: 1, to: 0, y: 150, text: "data: preparing", note: "Events go out with a <code>data:</code> line and nothing else \u2014 no <code>id:</code>." },
+                { from: 1, to: 0, y: 190, text: "data: picked up", note: "The user sees the order move. So far, identical to the version with ids." },
+                { from: 1, to: 0, y: 230, text: "deploy: A drains \u2014 stream closed", after: "e-idle", note: "A deploy restarts A and every stream on it drops at once. <code>EventSource</code> notices and will reconnect by itself." },
+                { from: 3, to: 3, y: 270, text: "43 published: no listener", after: "e-idle", note: "While the browser is disconnected, the next status is published. Pub/sub delivers to <b>current</b> subscribers only, and this user has none. The event is gone." },
+                { from: 0, to: 2, y: 310, text: "GET /orders/7/events (no Last-Event-ID)", note: "The browser reconnects and lands on B. It has no id to send, so B cannot know anything was missed." },
+                { from: 3, to: 2, y: 350, text: "delivered", note: "The next live event reaches B through the backplane." },
+                { from: 2, to: 0, y: 390, text: "data: delivered", note: "The user jumps from &ldquo;picked up&rdquo; to &ldquo;delivered&rdquo;. Annoying here; for a chat message or a trade confirmation it is <b>data loss with no error</b>." },
+            ];
+            return seqFrames(
+                W, H, lanes, script,
+                "A stream of order updates with no event ids. Watch what a single deploy does to it.",
+                "<b>Conclusion.</b> Without ids, an SSE stream is <b>at-most-once</b>: anything published while a client is reconnecting is silently lost, and every deploy creates such a window for every client at once. Put an <code>id:</code> on every event and keep a short backlog to replay from."
+            );
+        }
+        const lanes = [
+            { x: 110, label: "Browser", sub: "EventSource" },
+            { x: 340, label: "Server A", sub: "" },
+            { x: 570, label: "Server B", sub: "" },
+            { x: 800, label: "Event backlog", sub: "per order, ordered" },
+        ];
+        const script = [
+            { from: 0, to: 1, y: 110, text: "GET /orders/7/events", note: "The browser opens an <code>EventSource</code>; the load balancer sends it to server A." },
+            { from: 1, to: 0, y: 144, text: "id: 41  data: preparing", note: "Every event carries an <code>id:</code>. The browser records it as <code>lastEventId</code> automatically \u2014 no application code." },
+            { from: 1, to: 0, y: 178, text: "id: 42  data: picked up", note: "<code>lastEventId</code> is now <code>42</code>." },
+            { from: 1, to: 0, y: 212, text: "deploy: A drains \u2014 stream closed", after: "e-idle", note: "A deploy restarts A and every stream on it drops at once. <code>EventSource</code> waits the <code>retry:</code> delay the server sent \u2014 jittered per connection, so two million clients do not return in the same second." },
+            { from: 3, to: 3, y: 246, text: "append 43", after: "e-done", note: "While the browser is away, event 43 is published. It is appended to a durable, ordered backlog as well as fanned out live." },
+            { from: 0, to: 2, y: 280, text: "GET /orders/7/events  Last-Event-ID: 42", note: "The browser reconnects, lands on B, and <b>sends <code>Last-Event-ID: 42</code> by itself</b>. This header is the whole resumption protocol." },
+            { from: 2, to: 3, y: 314, text: "subscribe live, then read after 42", note: "B subscribes to the live feed <em>first</em>, then reads the backlog after 42. The other order loses anything published between the two calls." },
+            { from: 3, to: 2, y: 348, text: "[43]", note: "The backlog returns the one event the browser missed." },
+            { from: 2, to: 0, y: 382, text: "id: 43  (replayed)", note: "B replays 43. The user sees every step, in order, despite the deploy." },
+            { from: 2, to: 0, y: 416, text: "id: 44  data: delivered  (live)", note: "Then live events continue. Anything that arrived during the replay is skipped by id, so nothing is shown twice." },
+        ];
+        return seqFrames(
+            W, H, lanes, script,
+            "A stream of order updates with an id on every event and a short backlog behind the fleet.",
+            "<b>Conclusion.</b> SSE resumption is three cheap things: an <b><code>id:</code> on every event</b>, a <b>backlog</b> any node can read &ldquo;after N&rdquo;, and <b>subscribe-before-replay</b> with dedupe by id. The browser does the rest. It costs a bounded per-stream history \u2014 minutes, not forever \u2014 and turns a deploy from data loss into a short pause."
+        );
+    },
+};
+
+/* ---- WebSockets: the backplane ---- */
+
+VIZ["websocket-backplane"] = {
+    title: "Two users, two servers: who can reach whom?",
+    legend: [["lg-act", "message moving"], ["lg-done", "connected / delivered"], ["lg-cmp", "backplane"], ["lg-out", "missed / restarting"]],
+    options: [
+        { value: "backplane", label: "With a pub/sub backplane" },
+        { value: "local", label: "Local broadcast only" },
+    ],
+    build(option = "backplane") {
+        const W = 860;
+        const H = 330;
+        const withBp = option === "backplane";
+        const draw = (st, caption) => {
+            let s = "";
+            const conn = (x1, y1, x2, y2, state) => edgeHTML(x1, y1, x2, y2, state || "e-idle");
+            s += conn(180, 74, 340, 74, st.connA);
+            s += conn(180, 254, 340, 254, st.connB);
+            if (st.connBA) s += conn(180, 246, 340, 90, st.connBA);
+            s += boxHTML(40, 50, 140, 48, "Alice", st.alice || "n-idle", st.aliceSub || "browser");
+            s += boxHTML(40, 230, 140, 48, "Bob", st.bob || "n-idle", st.bobSub || "browser");
+            s += boxHTML(340, 50, 170, 48, "WS node A", st.a || "n-idle", st.aSub || "");
+            s += boxHTML(340, 230, 170, 48, "WS node B", st.b || "n-idle", st.bSub || "");
+            if (withBp) s += boxHTML(660, 140, 170, 48, "Redis pub/sub", st.bp || "n-cmp", st.bpSub || "backplane");
+            if (st.aliceToA) s += arrowHTML(182, 66, 336, 66, st.aliceToA, st.aliceToALabel || "");
+            if (st.aToAlice) s += arrowHTML(338, 84, 184, 84, st.aToAlice, "");
+            if (withBp && st.aToBp) s += arrowHTML(512, 76, 656, 152, st.aToBp, "PUBLISH room:42");
+            if (withBp && st.bpToB) s += arrowHTML(656, 178, 512, 250, st.bpToB, "");
+            if (st.bToBob) s += arrowHTML(338, 262, 184, 262, st.bToBob, "");
+            if (st.bobToA) s += arrowHTML(184, 236, 336, 96, st.bobToA, "");
+            if (caption) s += capHTML(430, 322, caption);
+            return svgHTML(W, H, s);
+        };
+        const frames = [];
+        if (!withBp) {
+            frames.push({
+                stage: draw({ connA: "e-done", connB: "e-done", aSub: "holds Alice's socket", bSub: "holds Bob's socket" }),
+                note: "Alice and Bob are in chat room 42. The load balancer happened to put Alice's socket on node A and Bob's on node B, and <b>a socket lives on exactly one node</b> for its whole life.",
+            });
+            frames.push({
+                stage: draw({ connA: "e-done", connB: "e-done", alice: "n-act", a: "n-act", aliceToA: "e-act", aSub: "room 42 \u2192 who is here?", bSub: "holds Bob's socket" }),
+                note: "Alice sends a message. Node A looks up room 42 in <b>its own memory</b> to find the sockets it should forward to.",
+            });
+            frames.push({
+                stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", aliceSub: "sees her message", a: "n-done", aToAlice: "e-done", aSub: "1 local member", bSub: "has no idea" }, "delivered: 1 of 2"),
+                note: "A finds one member \u2014 Alice herself \u2014 and echoes the message to her. Her screen looks perfect.",
+            });
+            frames.push({
+                stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", a: "n-done", bob: "n-out", bobSub: "never sees it", b: "n-idle", bSub: "has no idea" }, "delivered: 1 of 2"),
+                note: "Bob never receives it. Nothing failed, so nothing is logged. This works flawlessly in development with one node and breaks the day you run two \u2014 and <b>sticky sessions do not help</b>, because Alice and Bob are different users.",
+            });
+            frames.push({
+                stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", a: "n-done", bob: "n-out", bobSub: "never sees it", bSub: "has no idea" }, "delivered: 1 of 2"),
+                note: "<b>Conclusion.</b> In-memory broadcast only reaches the sockets on the node that received the message. Any fleet larger than one needs every node to hear every relevant message \u2014 a <b>pub/sub backplane</b> \u2014 or a managed service that provides one.",
+            });
+            return frames;
+        }
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-done", aSub: "subscribed: room:42", bSub: "subscribed: room:42" }),
+            note: "Same layout, plus a backplane. Each node <b>subscribes to the channel of every room its sockets are in</b>, so both A and B listen on <code>room:42</code>.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-done", alice: "n-act", a: "n-act", aliceToA: "e-act", aSub: "subscribed: room:42", bSub: "subscribed: room:42" }),
+            note: "Alice sends a message with a client-generated id, so a resend after a reconnect can be deduplicated.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", a: "n-act", aToBp: "e-act", bp: "n-act", aSub: "persist, then publish", bSub: "subscribed: room:42" }),
+            note: "A stores the message (so it can be replayed later) and <b>publishes it to <code>room:42</code></b> instead of looking only at its own sockets.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", a: "n-done", aToBp: "e-done", bp: "n-cmp", bpToB: "e-act", b: "n-act", aToAlice: "e-done", aSub: "acked Alice", bSub: "room 42 \u2192 Bob" }),
+            note: "The backplane fans the message out to every subscribed node. A acks Alice; B finds Bob in room 42.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-done", alice: "n-done", a: "n-done", aToBp: "e-done", bpToB: "e-done", b: "n-done", bToBob: "e-done", bob: "n-done", bobSub: "seq 121", aSub: "", bSub: "" }, "delivered: 2 of 2"),
+            note: "Bob receives it, stamped with sequence number <code>121</code>. Any node can now reach any user, at the cost of one more hop and one more system to run.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-idle", alice: "n-done", a: "n-done", b: "n-out", bSub: "deploying", bob: "n-out", bobSub: "close 1012" }, "deploy: node B drains"),
+            note: "A deploy restarts B. It closes Bob's socket with code <code>1012</code> (service restart) so the client knows to reconnect rather than give up.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connB: "e-idle", alice: "n-done", a: "n-act", aSub: "resume after 121", b: "n-idle", bSub: "new version", bob: "n-act", bobSub: "reconnecting", bobToA: "e-act" }, "reconnect after a jittered delay"),
+            note: "After a <b>jittered</b> delay Bob reconnects \u2014 to A this time \u2014 and sends <code>resume after 121</code>. Without jitter, every client of B would arrive in the same instant.",
+        });
+        frames.push({
+            stage: draw({ connA: "e-done", connBA: "e-done", alice: "n-done", a: "n-done", aSub: "replayed 122\u2013124", b: "n-idle", bSub: "new version", bob: "n-done", bobSub: "caught up" }, "delivered: 2 of 2, nothing lost"),
+            note: "<b>Conclusion.</b> A replays what Bob missed from the message store, then streams live. A WebSocket fleet needs three things HTTP never asked of you: a <b>backplane</b> so any node can reach any user, <b>sequence numbers</b> so a reconnect can resume, and <b>jittered reconnects</b> so a deploy is not a stampede.",
+        });
+        return frames;
+    },
+};
+
+/* ---- Asynchronous request-reply ---- */
+
+VIZ["async-request-reply"] = {
+    title: "Asking now, answering later",
+    legend: [["lg-act", "current message"], ["lg-done", "settled"], ["lg-idle", "timed out / discarded"]],
+    options: [
+        { value: "http", label: "HTTP: 202 + status URL" },
+        { value: "queue", label: "Queues: reply_to + correlation id" },
+    ],
+    build(option = "http") {
+        if (option === "queue") {
+            const W = 900;
+            const H = 420;
+            const lanes = [
+                { x: 110, label: "Pricing svc", sub: "instance i3" },
+                { x: 340, label: "quote.requests", sub: "queue" },
+                { x: 570, label: "Quote worker", sub: "" },
+                { x: 800, label: "reply queue i3", sub: "exclusive to i3" },
+            ];
+            const script = [
+                { from: 0, to: 1, y: 110, text: "corr=c91 reply_to=i3", note: "The requester sends a request with two extra properties: <code>reply_to</code> (its own private reply queue) and a fresh <code>correlation_id</code>, which it stores in a map of waiting calls." },
+                { from: 1, to: 2, y: 146, text: "deliver c91", note: "Any worker can take it \u2014 the queue load-levels the work across however many workers are running." },
+                { from: 2, to: 3, y: 182, text: "reply corr=c91", note: "The worker publishes the answer to <code>reply_to</code>, copying the <code>correlation_id</code>, and only then acks the request." },
+                { from: 3, to: 0, y: 218, text: "c91 \u2192 resolve waiting call", note: "The requester looks up <code>c91</code>, finds the waiting call and completes it. The id is the only thing linking the answer to the question." },
+                { from: 0, to: 1, y: 254, text: "corr=c92  expires in 2 s", note: "A second request, with a 2-second deadline \u2014 also set as the message expiry, so a stale request is not worth doing." },
+                { from: 1, to: 2, y: 290, text: "deliver c92 (worker slow)", note: "This time the worker is slow: a GC pause, a cold cache, a noisy neighbour." },
+                { from: 0, to: 0, y: 326, text: "c92 timed out", after: "e-idle", note: "The requester's 2-second timer fires. It removes <code>c92</code> from the map \u2014 <b>never leak waiting entries</b> \u2014 and fails the call." },
+                { from: 2, to: 3, y: 362, text: "reply corr=c92 (late)", note: "The worker finishes anyway and replies. <b>The work happened</b>, even though the caller has given up." },
+                { from: 3, to: 0, y: 398, text: "c92 unknown \u2192 dropped", after: "e-idle", note: "The late reply matches nothing and is logged and dropped. If the caller retries, the request must be idempotent, because the first attempt succeeded." },
+            ];
+            return seqFrames(
+                W, H, lanes, script,
+                "Request-reply over a broker: a request queue, a private reply queue per requester, and a correlation id joining them.",
+                "<b>Conclusion.</b> Correlation ids give you load-levelled, location-transparent calls between services. They do not remove the third outcome: a timeout still means &ldquo;unknown&rdquo;, late replies are normal, and a caller that blocks for the answer is still synchronously coupled \u2014 just through more hops."
+            );
+        }
+        const W = 860;
+        const H = 420;
+        const lanes = [
+            { x: 130, label: "Client", sub: "" },
+            { x: 430, label: "Reports API", sub: "" },
+            { x: 730, label: "Worker", sub: "" },
+        ];
+        const script = [
+            { from: 0, to: 1, y: 110, text: "POST /reports  Idempotency-Key: k7", note: "The client asks for a report that takes minutes to build. The idempotency key, minted once per <em>intent</em>, makes a double click or a retry return the same job." },
+            { from: 1, to: 2, y: 146, text: "enqueue job 7 (via outbox)", note: "The API writes a job row and its <code>report.requested</code> event in one transaction. It does none of the work itself." },
+            { from: 1, to: 0, y: 182, text: "202  Location: /jobs/7  Retry-After: 5", note: "<b><code>202 Accepted</code> in milliseconds.</b> <code>Location</code> is the handle; <code>Retry-After</code> lets the server, not the client, set the polling rate." },
+            { from: 0, to: 1, y: 218, text: "GET /jobs/7", note: "Five seconds later, the client asks about the <em>job</em>, not the original request. No connection was held open in between." },
+            { from: 1, to: 0, y: 254, text: "200 running 40%  Retry-After: 10", note: "Still running, with progress for the UI. The server asks for a longer interval \u2014 during an incident it could ask for 60." },
+            { from: 2, to: 1, y: 290, text: "job 7 succeeded \u2192 /reports/7", note: "The worker finishes, stores the PDF as an ordinary resource, and marks the job done. A deploy during the build would only have delayed this." },
+            { from: 0, to: 1, y: 326, text: "GET /jobs/7", note: "The next poll." },
+            { from: 1, to: 0, y: 362, text: "303 See Other  Location: /reports/7", note: "<code>303</code> separates the transient job from the durable result. HTTP clients follow it automatically." },
+            { from: 0, to: 1, y: 398, text: "GET /reports/7 \u2192 200 PDF", note: "The result is a normal resource: cacheable, linkable, authorised like anything else. A failed job would instead have returned <code>200</code> with <code>status: failed</code> \u2014 the status request itself succeeded." },
+        ];
+        return seqFrames(
+            W, H, lanes, script,
+            "One slow operation split into two fast ones: start the job, then ask about it.",
+            "<b>Conclusion.</b> Async request-reply removes the long-held connection, so load balancer timeouts, retries and deploys stop killing (or duplicating) slow work. The price is a <b>job resource you must own</b>: durable, idempotent to create, with explicit expiry, and with a status URL that stays the source of truth even if you also push."
+        );
+    },
+};
+
 /* ---- 31. Leader election ---- */
 
 VIZ["raft-election"] = {
