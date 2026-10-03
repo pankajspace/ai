@@ -6,7 +6,7 @@ Stylesheets: ../dsa/dsa-study.css, ../../site-header.css
 Scripts: ../dsa/dsa-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
+Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
 
 FUTURE WITH SHIVANK · STUDENT REVISION GUIDE
 

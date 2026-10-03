@@ -6,7 +6,7 @@ Stylesheets: ../dsa/dsa-study.css, ../../site-header.css
 Scripts: ../dsa/dsa-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
+Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
 
 Beginner friendly · Build & ship today
 
@@ -729,4 +729,4 @@ For bigger jobs, we do what companies do: split work across specialists that han
 - **🔌 API call** — system / user / assistant.
 - **🎛️ You shipped** — Two real AI apps. 🎉
 
-TechToday Study Library — AI Projects
+TechToday Study Library — AI Demos
