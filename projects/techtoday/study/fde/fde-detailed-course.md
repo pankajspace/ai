@@ -56,6 +56,12 @@ The complete discipline, from first principles: where the role came from, why it
 35. [Pattern Recognition Playbook](#35-pattern-recognition-playbook)
 36. [Practice Roadmap](#36-practice-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — The Role
+
+What a Forward Deployed Engineer is, where the role came from, and why the economics work.
+
 <a id="1-what-a-forward-deployed-engineer-is"></a>
 
 ## 1. What a Forward Deployed Engineer Is
@@ -250,6 +256,12 @@ Compensation follows the scarcity. Reported 2026 figures — point-in-time, heav
 > **Tip**
 >
 > Two market details that change job-search strategy. Demand has concentrated in **New York rather than San Francisco** — fintech and regulated industries, where the integration and compliance work is hardest. And the 2026 market pays for **demonstrated ROI** rather than AI enthusiasm: the premium goes to engineers who can link a deployment to a retained account.
+
+<a id="unit-2"></a>
+
+## Unit 2 — Engagement, Discovery & Scoping
+
+Running an engagement from qualification and discovery to a scoped plan and a first shipped prototype.
 
 <a id="6-the-engagement-lifecycle"></a>
 
@@ -796,6 +808,12 @@ Demonstrate to operators before sponsors, on live data, and include a case you k
 > **Warning**
 >
 > The demo that hurts you most is the one that works perfectly on five curated cases. The sponsor concludes the problem is solved, the timeline compresses, and you spend the next quarter explaining why the remaining 30% is hard. Show the messy case deliberately.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Building the AI System
+
+Data integration, retrieval, prompts, tools, evaluation and graceful failure: the system you actually deliver.
 
 <a id="14-data-integration-and-pipelines"></a>
 
@@ -1364,6 +1382,12 @@ Every AI system must have a defined behaviour for "I do not know" and for "the d
 >
 > The most dangerous failure mode in a deployed AI system is the one that still returns a confident, well-formatted answer. Everything in this section exists to convert those into visible, human-routable events.
 
+<a id="unit-4"></a>
+
+## Unit 4 — Production, Adoption & Handover
+
+Identity, deployment, governance and reliability, then proving value and handing the system over.
+
 <a id="21-identity-and-authorisation"></a>
 
 ## 21. Identity and Authorisation
@@ -1849,6 +1873,12 @@ Not every field insight is a component. Three other channels matter as much, and
 > **Warning**
 >
 > If the home office treats the forward team as a revenue source rather than a feedback channel, the programme degrades into a consultancy within about two years. Protect the extraction time deliberately: block it, defend it, and report on it, because nobody else will.
+
+<a id="unit-5"></a>
+
+## Unit 5 — Failure Modes, People & Getting Hired
+
+What goes wrong with the model and the customer, how to communicate through it, how to get hired, and the revision material.
 
 <a id="29-failure-modes"></a>
 

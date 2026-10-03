@@ -62,6 +62,12 @@ Thirty-eight sections, ordered so that each one depends only on the ones before 
 37. [Pattern-Recognition Playbook](#37-playbook)
 38. [Practice Roadmap](#38-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Accounts, Identity & Access
+
+How AWS is organised and how every single API request is authenticated and authorised.
+
 <a id="1-what-aws-is"></a>
 
 ## 1. What AWS Is, and How to Think About It
@@ -691,6 +697,12 @@ boto3 offers three retry modes. `legacy` is the old default with few attempts; `
 
 Two rules cover the rest. **Classify before retrying:** throttling, 5xx, connection resets and timeouts are retryable; `AccessDenied`, `ValidationException`, `404` and conditional-check failures never are, and retrying them just burns your budget. **Retry at one layer only**, with a total time budget — three retries at each of five layers is 243 requests arriving at the service that is already struggling.
 
+<a id="unit-2"></a>
+
+## Unit 2 — Networking
+
+Building the private network your resources live in, and connecting it safely to everything else.
+
 <a id="8-vpc-fundamentals"></a>
 
 ## 8. VPC Fundamentals — CIDR, Subnets & Routes
@@ -938,6 +950,12 @@ For hybrid connectivity, the production pattern is **Direct Connect with a VPN b
 > **Key idea**
 >
 > **Design the address plan before the connectivity.** Every one of these options fails identically when CIDRs overlap, and the fix is renumbering, which means downtime. Allocate non-overlapping ranges per account and per Region from a central plan, and use IPAM to enforce it. This is the cheapest hour of architecture you will ever spend.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Compute, Load Balancing & Storage
+
+Running servers that scale, spreading traffic across them, and storing objects and files durably.
 
 <a id="12-ec2"></a>
 
@@ -1260,6 +1278,12 @@ Lifecycle rules apply to a prefix, a tag, or the whole bucket, and can act on cu
 >
 > **EFS is NFS, with NFS's latency.** Per-file operations cost a network round trip, so an application that opens thousands of small files — a Node.js `node_modules` tree, a Python site-packages directory — will be dramatically slower on EFS than on EBS. Use EFS for shared *data*, not for shared *code*.
 
+<a id="unit-4"></a>
+
+## Unit 4 — Databases & Caching
+
+Choosing and operating relational, key-value and in-memory data stores.
+
 <a id="18-rds-aurora"></a>
 
 ## 18. RDS & Aurora
@@ -1409,6 +1433,12 @@ The three failure modes worth designing against: **thundering herd**, where a po
 > **Key idea**
 >
 > **Every cached item needs a TTL, including the ones you invalidate explicitly.** Explicit invalidation will eventually be missed — a code path nobody remembered, a failed delete, a deploy that changed the key format. A TTL bounds how wrong you can be, and turns a permanent correctness bug into a temporary one.
+
+<a id="unit-5"></a>
+
+## Unit 5 — Serverless, Containers & Data Flow
+
+Running code without servers or in containers, and moving data between services as messages, streams and queries.
 
 <a id="21-lambda"></a>
 
@@ -1705,6 +1735,12 @@ The performance and cost rules for a lake are the same three every time: **colum
 > **Key idea**
 >
 > **Athena or Redshift?** Athena when the queries are ad hoc, intermittent, and over data that already lives in S3 — you pay only when you query. Redshift when the same complex queries run constantly over curated data and you need consistent sub-second dashboards, joins across large fact tables, and concurrency scaling. Many organisations use both: Athena for exploration on the raw lake, Redshift for the modelled warehouse serving the business.
+
+<a id="unit-6"></a>
+
+## Unit 6 — The Edge & Operating at Scale
+
+Serving users globally and running the estate well: DNS and CDN, observability, security, automation, cost and architecture review.
 
 <a id="28-route53"></a>
 

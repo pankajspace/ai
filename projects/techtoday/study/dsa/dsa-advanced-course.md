@@ -87,6 +87,12 @@ The complete Scaler DSA curriculum from first principles: comprehensive theory, 
 62. [Mandatory Skill Evaluation Test (MSET) DSA](#62-mandatory-skill-evaluation-test-mset-dsa)
 63. [DSA Certification Contest - Winter 2025](#63-dsa-certification-contest-winter-2025)
 
+<a id="unit-1"></a>
+
+## Unit 1 — DSA 1 — Intermediate Problem Solving
+
+Complexity, arrays, prefix sums, carry forward, sliding window, sorting basics, 2D arrays, bits and strings, closed by the intermediate contest.
+
 <a id="1-problem-solving"></a>
 
 ## 1. Problem Solving
@@ -10766,6 +10772,12 @@ function bobTheBuilder(A, B) {
 ### Problems
 
 *No additional homework problems for this session.*
+
+<a id="unit-2"></a>
+
+## Unit 2 — DSA 2 — Advanced Arrays, Recursion & Sorting
+
+Advanced array problems, bit manipulation, recursion, modular arithmetic, hashing and the core sorting algorithms, closed by Contest 1.
 
 <a id="13-arrays-one-dimensional"></a>
 
@@ -26547,6 +26559,12 @@ function sumUsingPrefixSum(A) {
 ### Problems
 
 *No additional homework problems for this session.*
+
+<a id="unit-3"></a>
+
+## Unit 3 — DSA 3 — Searching, Linked Lists, Stacks, Queues & Trees
+
+Binary search on arrays and answers, linked lists, stacks, queues, binary trees and BSTs, closed by Contest 2.
 
 <a id="26-searching-1-binary-search-on-array"></a>
 
@@ -45892,6 +45910,12 @@ const C = 3;
 ### Problems
 
 *No additional homework problems for this session.*
+
+<a id="unit-4"></a>
+
+## Unit 4 — DSA 4 — Maths, Two Pointers, Backtracking & Advanced Structures
+
+Combinatorics and primes, two pointers, backtracking, advanced linked lists, Morris traversal, LCA and hashing internals, closed by Contest 3.
 
 <a id="38-maths-combinatorics-basics-prime-numbers"></a>
 
@@ -67787,6 +67811,12 @@ function solve(A) {
 ### Problems
 
 *No additional homework problems for this session.*
+
+<a id="unit-5"></a>
+
+## Unit 5 — DSA 5 — Heaps, Greedy, Dynamic Programming & Graphs
+
+Heaps and greedy, 1D, 2D and knapsack DP, graph traversals, shortest paths and topological sort, closed by Contest 4 and the final evaluations.
 
 <a id="49-heaps-introduction"></a>
 

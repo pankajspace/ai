@@ -43,6 +43,12 @@ Kubernetes has hundreds of resource types and, as an application developer, you 
 14. [Shipping Safely — Rollbacks, Budgets & What You Own](#14-shipping)
 15. [The Whole Thing on One Page](#15-one-page)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Running Workloads
+
+The core objects that run your code, roll it out and keep it healthy.
+
 <a id="1-what-it-is-for"></a>
 
 ## 1. What Kubernetes Is For — and the One Idea Behind It
@@ -581,6 +587,12 @@ kubectl get pods -l app=api \
 >
 > **Do not put a secret in a ConfigMap, and do not treat a Secret as encryption.** Secrets are stored in etcd, base64-encoded, and are only as protected as your RBAC and your etcd encryption settings. For anything genuinely sensitive, keep the value in an external store and sync it in with an operator or a CSI driver — then reads are audited, rotation is minutes rather than a redeploy, and the value is never a durable object you have to remember to protect.
 
+<a id="unit-2"></a>
+
+## Unit 2 — Networking & Traffic
+
+How pods find each other, and how traffic from outside the cluster reaches them.
+
 <a id="7-services"></a>
 
 ## 7. Services, DNS & Endpoints
@@ -919,6 +931,12 @@ spec:
 > **Tip**
 >
 > The moment you have more than about three services, **distributed tracing stops being optional**. With one service, a log file answers "why was this slow?". With eight, per-service dashboards all look slightly bad and none of them says where the time went. Propagate the `traceparent` header through every hop — including message queues — and put the trace ID on every log line.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Operating the Cluster
+
+Day-two work: inspecting, debugging, storing state, scaling and shipping safely.
 
 <a id="10-kubectl"></a>
 

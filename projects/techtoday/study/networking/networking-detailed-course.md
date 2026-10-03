@@ -58,6 +58,12 @@ Thirty-eight sections, each depending only on the ones before it, from "why does
 37. [Pattern-Recognition Playbook](#37-pattern-playbook)
 38. [Practice Roadmap](#38-practice-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations
+
+Layers, encapsulation and the two numbers, latency and bandwidth, that govern every network.
+
 <a id="1-why-layers-exist"></a>
 
 ## 1. Why Layers Exist
@@ -220,6 +226,12 @@ iperf3 -c 10.30.0.7 -t 20            # single stream
 iperf3 -c 10.30.0.7 -t 20 -P 8       # eight streams: 8 windows in parallel
 ```
 
+<a id="unit-2"></a>
+
+## Unit 2 — The Link Layer
+
+Moving frames across a single local network.
+
 <a id="5-the-link-layer"></a>
 
 ## 5. The Link Layer and Ethernet
@@ -372,6 +384,12 @@ def next_hop(dst: str, my_ip: str, prefix: int, gateway: str) -> str:
     local = ipaddress.ip_network(f"{my_ip}/{prefix}", strict=False)
     return dst if ipaddress.ip_address(dst) in local else gateway
 ```
+
+<a id="unit-3"></a>
+
+## Unit 3 — The Network Layer
+
+Addressing and routing packets across networks, all the way up to the shape of the internet.
 
 <a id="8-ipv4-addressing"></a>
 
@@ -786,6 +804,12 @@ Because DHCP is broadcast-based, it does not cross routers. Networks that centra
 >
 > DHCP is unauthenticated, so a **rogue DHCP server** — a misconfigured home router plugged into an office port is the classic case — can hand out its own address as the gateway and intercept everything. The switch feature that prevents it is DHCP snooping, which only accepts offers from designated ports.
 
+<a id="unit-4"></a>
+
+## Unit 4 — The Transport Layer
+
+Ports, sockets, UDP and TCP: turning packets into conversations between programs.
+
 <a id="18-sockets"></a>
 
 ## 18. Ports, Sockets and the Socket API
@@ -1119,6 +1143,12 @@ Tuning follows one rule: **identify the binding constraint first**. Almost every
 >
 > **Do not copy sysctl blogs.** Every one of these settings is a trade — bigger buffers cost memory per connection and can worsen bufferbloat; a wider ephemeral range delays rather than prevents exhaustion; disabling Nagle increases packet count. Measure the actual constraint, change one thing, measure again. The most valuable optimisation in this whole section is not a sysctl at all: it is **reusing connections**.
 
+<a id="unit-5"></a>
+
+## Unit 5 — Application Protocols
+
+DNS, HTTP in all three versions, TLS, and writing network code yourself.
+
 <a id="25-dns"></a>
 
 ## 25. DNS in Depth
@@ -1414,6 +1444,12 @@ async function call(url, { budgetMs = 2000, attempts = 3 } = {}) {
     throw new Error(`budget exhausted: ${last}`);
 }
 ```
+
+<a id="unit-6"></a>
+
+## Unit 6 — Networks in Production
+
+Proxies, CDNs, cloud networks, security and performance debugging, plus the revision material.
 
 <a id="31-proxies"></a>
 

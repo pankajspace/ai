@@ -64,6 +64,12 @@ Forty sections, ordered so that each one only depends on the ones before it. We 
 39. [Pattern-Recognition Playbook](#39-pattern-recognition-playbook)
 40. [Practice Roadmap](#40-practice-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations
+
+The kernel's privileged role, and how programs cross into it.
+
 <a id="1-what-an-operating-system-is"></a>
 
 ## 1. What an Operating System Is
@@ -322,6 +328,12 @@ ps -eo pid,ppid,comm | awk '$2 == 2 || $1 == 2' | head
 # Orphans get re-parented to PID 1 (or to the nearest subreaper):
 bash -c 'sleep 60 & echo child $!; exit' ; sleep 1 ; ps -o pid,ppid,comm -C sleep
 ```
+
+<a id="unit-2"></a>
+
+## Unit 2 — Processes, Threads & Scheduling
+
+The process abstraction, how the CPU is shared, and who runs next.
 
 <a id="6-the-process-abstraction"></a>
 
@@ -1001,6 +1013,12 @@ except (FileNotFoundError, ValueError):
     pass
 ```
 
+<a id="unit-3"></a>
+
+## Unit 3 — Concurrency & Synchronisation
+
+Race conditions, locks, semaphores and condition variables, and how deadlock happens.
+
 <a id="15-concurrency-and-race-conditions"></a>
 
 ## 15. Concurrency and Race Conditions
@@ -1433,6 +1451,12 @@ def transfer_trylock(src, dst):
                     dst.release()
         time.sleep(random.uniform(0, 0.005))   # randomise, or you livelock
 ```
+
+<a id="unit-4"></a>
+
+## Unit 4 — Memory Management
+
+From physical memory to paging, the TLB, page replacement and allocators.
 
 <a id="20-memory-from-first-principles"></a>
 
@@ -1974,6 +1998,12 @@ os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)    # drop it after use
 os.close(fd)
 os.unlink(PATH)
 ```
+
+<a id="unit-5"></a>
+
+## Unit 5 — Communication, File Systems & I/O
+
+Processes talking to each other, files on disk, and the I/O path down to the device.
 
 <a id="28-inter-process-communication"></a>
 
@@ -2532,6 +2562,12 @@ fio --name=randread --ioengine=libaio --direct=1 --rw=randread \
 sudo systemctl status fstrim.timer
 lsblk --discard                              # DISC-GRAN non-zero = supported
 ```
+
+<a id="unit-6"></a>
+
+## Unit 6 — Protection, Virtualisation & Practice
+
+Security boundaries, virtual machines and containers, debugging on Linux, and the revision material.
 
 <a id="35-protection-and-security"></a>
 

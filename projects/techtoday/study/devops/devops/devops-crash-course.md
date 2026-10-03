@@ -38,6 +38,12 @@ DevOps is taught as a pile of tools — Docker, Kubernetes, Terraform, Jenkins, 
 13. [Security in the Pipeline](#13-security)
 14. [The Whole Thing on One Page](#14-one-page)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Flow & the Source of Truth
+
+What DevOps optimises, and the two habits everything else builds on: one source of truth and build-once artifacts.
+
 <a id="1-delivery-loop"></a>
 
 ## 1. The Delivery Loop & the Four Metrics That Matter
@@ -270,6 +276,12 @@ spec:
 > **Tip**
 >
 > The strongest version of this idea is a **reproducible build**: same source in, byte-identical artifact out, on any machine, at any time. It requires pinning the base image by digest, committing a lockfile, and zeroing timestamps — and it is worth the effort mainly for security, because it lets someone else rebuild your artifact and verify that what you published is what your source produces.
+
+<a id="unit-2"></a>
+
+## Unit 2 — Runtime & Infrastructure
+
+Where the software runs, and how that environment is itself defined as code.
 
 <a id="4-containers"></a>
 
@@ -518,6 +530,12 @@ terraform apply tfplan
 > **Tip**
 >
 > Split state by **blast radius and change frequency**, not by tidiness. Networking and IAM change rarely and break everything; application resources change daily. Keeping them in one state means every routine deploy holds a lock on your VPC and can propose changes to it. Separate states, wired together with data sources or remote state outputs, keep a bad plan small.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Delivery
+
+Getting a change from main to production safely, repeatably and reversibly.
 
 <a id="7-ci"></a>
 
@@ -874,6 +892,12 @@ psql -c "SELECT pg_cancel_backend(PID);"
 > **Tip**
 >
 > Give every feature flag an owner, a created date and a removal date at the moment it is introduced, and put a recurring item on the team's board to clear expired ones. Flags are debt with a useful purpose — the interest is paid in test combinations and in the confusion of the next person who reads the code and cannot tell which branch production actually takes.
+
+<a id="unit-4"></a>
+
+## Unit 4 — Operating in Production
+
+Knowing what production is doing, keeping it inside its SLOs, and securing the pipeline itself.
 
 <a id="11-observability"></a>
 

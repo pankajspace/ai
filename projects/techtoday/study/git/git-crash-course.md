@@ -38,6 +38,12 @@ Most people learn Git as a list of incantations: `add`, `commit`, `push`, and a 
 13. [Getting Out of Trouble — `reflog` and `bisect`](#13-recovery)
 14. [The Whole Thing on One Page](#14-one-page)
 
+<a id="unit-1"></a>
+
+## Unit 1 — How Git Thinks
+
+The mental model: three trees, snapshot commits and branches that are just pointers.
+
 <a id="1-three-trees"></a>
 
 ## 1. The Three Trees — Working Tree, Index, HEAD
@@ -250,6 +256,12 @@ git switch rescue
 # If even the reflog was pruned:
 git fsck --lost-found
 ```
+
+<a id="unit-2"></a>
+
+## Unit 2 — Everyday Work
+
+The daily loop: stage deliberately, read what changed, and undo safely.
 
 <a id="4-staging"></a>
 
@@ -473,6 +485,12 @@ pip install git-filter-repo
 git filter-repo --invert-paths --path config/secrets.yml
 #    ... then force-push, and tell every clone to re-clone.
 ```
+
+<a id="unit-3"></a>
+
+## Unit 3 — Branching, Merging & Rewriting History
+
+Combining lines of work, resolving conflicts and reshaping history before anyone else sees it.
 
 <a id="7-merging"></a>
 
@@ -849,6 +867,12 @@ git tag -a v2.4.1 -m "hotfix: retry on 503" && git push --tags
 # Make sure main is not missing the fix
 git switch main && git cherry -v origin/release/2.4
 ```
+
+<a id="unit-4"></a>
+
+## Unit 4 — Collaboration & Recovery
+
+Sharing work through remotes, and getting out of trouble when things go wrong.
 
 <a id="12-remotes"></a>
 

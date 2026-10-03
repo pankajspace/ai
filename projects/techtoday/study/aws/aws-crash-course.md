@@ -38,6 +38,12 @@ AWS has over two hundred services and you need about fifteen of them. This page 
 13. [Building Things That Survive](#13-resilience)
 14. [The Whole Thing on One Page](#14-one-page)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations
+
+The ground rules every AWS resource lives under: where it runs, who can touch it, how it is networked and what it costs.
+
 <a id="1-regions-and-azs"></a>
 
 ## 1. Regions, Availability Zones & the Shape of AWS
@@ -415,6 +421,12 @@ aws ec2 describe-snapshots --owner-ids self \
 > **Tip**
 >
 > **The five-minute setup every account should have.** A budget with an email alert at 80% of expected spend. Cost Anomaly Detection enabled. Log group retention set to something finite — the default is "forever", and CloudWatch Logs storage quietly becomes a top-five line item. A tagging policy with at least `owner`, `env` and `service`, activated as cost allocation tags. And S3 lifecycle rules that abort incomplete multipart uploads after seven days.
+
+<a id="unit-2"></a>
+
+## Unit 2 — Core Building Blocks
+
+The services almost every application is assembled from: storage, compute, databases, the front door and the queues between them.
 
 <a id="5-s3"></a>
 
@@ -921,6 +933,12 @@ EmailRule:
 > **Warning**
 >
 > **Set the visibility timeout deliberately.** If it is shorter than your processing time, SQS hands the message to a second consumer while the first is still working — guaranteed duplicate work, and it looks exactly like a bug in your code. For Lambda consumers, AWS recommends the queue's visibility timeout be at least six times the function timeout.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Running It in Production
+
+Making a working system dependable: observable, secured, reproducible and able to survive failure.
 
 <a id="10-observability"></a>
 

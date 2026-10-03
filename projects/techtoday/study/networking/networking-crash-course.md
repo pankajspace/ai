@@ -120,6 +120,12 @@ with socket.create_connection(("10.0.4.21", 5432), timeout=2) as s:
 
 ---
 
+<a id="unit-1"></a>
+
+## Unit 1 — Getting Packets Across
+
+How a packet crosses one link and then the internet: MAC addresses, IP addressing, routing and NAT.
+
 <a id="1-the-link-layer"></a>
 
 ## The Link Layer — MAC, Switches & ARP
@@ -357,6 +363,12 @@ ss -tino state established '( dport = :5432 )'
 ```
 
 ---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Transport
+
+How two programs hold a reliable conversation over an unreliable network.
 
 <a id="4-ports-and-transports"></a>
 
@@ -626,6 +638,12 @@ ss -ti dst 10.20.0.9 | grep -E 'cwnd|rtt|send'
 
 ---
 
+<a id="unit-3"></a>
+
+## Unit 3 — Applications & the Web
+
+The protocols every web request depends on: naming, HTTP, encryption and the boxes in between.
+
 <a id="8-dns"></a>
 
 ## DNS
@@ -807,6 +825,12 @@ The other machine in the middle is a cache close to the user. Its main product i
 > **A padlock in the browser says nothing about your internal network.** If TLS terminates at the load balancer, the traffic behind it is plaintext unless you re-encrypt. Decide that deliberately — and if the answer is "the internal network is trusted", make sure you can defend why.
 
 ---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Putting It to Work
+
+A systematic way to debug network problems, and the whole stack on one page.
 
 <a id="12-debugging"></a>
 

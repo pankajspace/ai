@@ -60,6 +60,12 @@ Forty sections, built from the bottom up. We start with the four object types in
 39. [Pattern-Recognition Playbook](#39-playbook)
 40. [Practice Roadmap](#40-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations & the Object Model
+
+Git from the inside out: the repository on disk and its content-addressed objects.
+
 <a id="1-what-git-is"></a>
 
 ## 1. What Git Is, and Why It Won
@@ -384,6 +390,12 @@ Because every commit names its parents and nothing names its children, history i
 >
 > `A..B` and `A...B` mean *different things* to `git log` and to `git diff`. For `log`, two dots is set subtraction and three dots is symmetric difference. For `diff`, two dots compares the two endpoints directly and three dots compares B against the *merge base* — the latter is what a pull request shows. Mixing them up is why a diff sometimes contains other people's commits.
 
+<a id="unit-2"></a>
+
+## Unit 2 — The Working Model
+
+How changes flow from the working tree into commits, and how refs and branches name them.
+
 <a id="7-three-trees"></a>
 
 ## 7. The Three Trees in Depth
@@ -646,6 +658,12 @@ git branch --merged main | grep -vE '^\*|main' | xargs -r git branch -d
 >
 > `git branch --merged` answers a *reachability* question, not “did this work land”. After a squash-merge or a rebase-merge the branch's original commits are not ancestors of `main`, so the branch is reported as unmerged and `-d` refuses to delete it. That is correct and it is also why teams using squash-merge end up typing `-D` routinely. `git cherry -v main feature` answers the content question instead: it lists commits whose changes are not already upstream.
 
+<a id="unit-3"></a>
+
+## Unit 3 — Inspecting & Undoing
+
+Reading history and undoing work at every level, safely.
+
 <a id="12-log"></a>
 
 ## 12. Reading History with `git log`
@@ -899,6 +917,12 @@ Reverting a merge has a consequence that catches teams out at least once. `git r
 > **Warning**
 >
 > A revert removes a change from the current *state*; it does not remove it from *history*. For a leaked credential this is not enough — the value is still in the object database and in every existing clone. Rotate the credential first (section 37), then decide separately whether a history rewrite is worth its cost.
+
+<a id="unit-4"></a>
+
+## Unit 4 — Integrating & Rewriting History
+
+Merging, rebasing, cherry-picking and stashing, with the reflog as the safety net.
 
 <a id="18-merging"></a>
 
@@ -1327,6 +1351,12 @@ The limits are as important as the capability. The reflog is **per-repository an
 >
 > Two settings worth applying globally: `git config --global gc.reflogExpireUnreachable 90.days` keeps orphaned commits for a quarter instead of a month, and `git config --global gc.pruneExpire 30.days` gives unreachable objects a longer stay of execution. Neither costs anything you will notice on a normal repository.
 
+<a id="unit-5"></a>
+
+## Unit 5 — Remotes & Collaboration
+
+How repositories talk to each other, and the workflows teams build on top.
+
 <a id="27-remote-model"></a>
 
 ## 27. The Remote Model
@@ -1573,6 +1603,12 @@ jobs:
         run: |
           git rebase --exec 'make test' origin/${{ github.base_ref }}
 ```
+
+<a id="unit-6"></a>
+
+## Unit 6 — Power Tools & Maintenance
+
+Hooks, bisect, worktrees, big repos, maintenance and security, plus the revision material.
 
 <a id="32-hooks"></a>
 

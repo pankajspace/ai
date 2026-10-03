@@ -64,6 +64,12 @@ Forty sections, ordered so that each one depends only on the ones before it. We 
 39. [Pattern-Recognition Playbook](#39-playbook)
 40. [Practice Roadmap](#40-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — DevOps Foundations
+
+The problem DevOps solves and how to measure the flow of work from idea to production.
+
 <a id="1-what-devops-is"></a>
 
 ## 1. What DevOps Is and the Problem It Solves
@@ -248,6 +254,12 @@ The point of the exercise is almost always the same discovery: the great majorit
 > **Tip**
 >
 > Run this exercise with the whole team and real timestamps from the last ten changes rather than from memory. Estimates of waiting time are consistently wrong in the same direction — people remember the work and not the queue — and the map is only persuasive if the numbers came from the tools.
+
+<a id="unit-2"></a>
+
+## Unit 2 — Source, Builds & Artifacts
+
+From a commit to a reproducible, versioned artifact that can be promoted unchanged.
 
 <a id="4-git"></a>
 
@@ -621,6 +633,12 @@ If the artifact is identical everywhere, an environment is defined entirely by t
 > **Key idea**
 >
 > **Everything that differs between environments must be injected, and the test is concrete:** can you run the production image on a laptop, pointing at a local database, changing nothing but environment variables? If yes, config is separated from code. If it needs a different build, a different tag, or an `if ENV == "prod"` branch, then your environments are running different programs and every "it worked in staging" is a coincidence.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Containers & Kubernetes
+
+The runtime layer, from Linux primitives to container images to a Kubernetes cluster.
 
 <a id="9-linux"></a>
 
@@ -1580,6 +1598,12 @@ helm rollback api 7 --wait --timeout 5m
 >
 > **Do not template what should be a separate resource.** A chart with forty conditional blocks to support five deployment shapes is harder to reason about than five explicit manifests. The test is whether a reader can predict the rendered output without running the renderer; when the answer is no, the abstraction has stopped paying for itself.
 
+<a id="unit-4"></a>
+
+## Unit 4 — Infrastructure as Code & Cloud
+
+Declaring the environment itself as code, and the cloud foundations it runs on.
+
 <a id="19-iac-model"></a>
 
 ## 19. Infrastructure as Code — the Declarative Model
@@ -1861,6 +1885,12 @@ The decision to run something yourself or buy the managed version is a DevOps de
 > **Key idea**
 >
 > **The test for "should we run this ourselves?" is not whether you can — it is whether you will still be doing it well in eighteen months.** Running your own database is straightforward on day one and demanding on the day the primary fails at 3 a.m., which is the day you find out whether the restore procedure was ever tested. Choose self-hosting when you have a specific requirement the managed offering cannot meet, and be explicit about who owns the operational burden.
+
+<a id="unit-5"></a>
+
+## Unit 5 — Continuous Integration & Delivery
+
+Turning every merge into a gated, safe and reversible release.
 
 <a id="23-ci-design"></a>
 
@@ -2645,6 +2675,12 @@ done | sort
 > **Tip**
 >
 > Emit the flag state as a **span attribute and a log field**, not as a metric label — high-cardinality context belongs on traces (§32). Being able to ask "was this failing request on the new code path?" is what turns a flag from a switch into an experiment, and it costs one line at the point of evaluation.
+
+<a id="unit-6"></a>
+
+## Unit 6 — Operating & Securing Production
+
+Observability, SLOs, incidents, capacity and supply-chain security, plus the revision material.
 
 <a id="32-observability-1"></a>
 
