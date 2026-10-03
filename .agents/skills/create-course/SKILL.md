@@ -24,7 +24,7 @@ projects/techtoday/study/<slug>/      ← <slug> = lowercase-hyphenated topic
 - **Markdown first, then HTML.** Every `.html` has a same-named `.md` beside it; update both in the same change.
 - **Incremental.** Write a few sections at a time, appending to the file. Never generate a whole course in one pass.
 - No frameworks, build step or CDN. The folder is self-contained except the shared `../../site-header.css`.
-- Catalog naming: `-courses.html` (`-guides.html` only where it already exists, e.g. git, devops).
+- Catalog naming: always `<slug>-courses.html` (every catalog uses it, including git and devops). The one legacy exception is `programming-languages/programming-languages.html`; don't copy that name.
 - **Related topics** (e.g. "Rust, Go" → Systems Languages): nest as `study/<tile-slug>/<slug>/` with one catalog at `study/<tile-slug>/<tile-slug>-courses.html` and one hub tile. Nested pages need an extra `../` (`../../../site-header.css`). See `study/programming-languages/` and `study/devops/`.
 
 ---
@@ -33,10 +33,10 @@ projects/techtoday/study/<slug>/      ← <slug> = lowercase-hyphenated topic
 
 Confirm both TOCs before writing; every Markdown anchor and HTML ID hangs off them. IDs are `<n>-<kebab-title>` and numbering runs 1…N straight through the course. The Markdown heading carries the number (`## 14. Sorting`); in HTML the number moves into the topic badge and the title stays clean (`<span class="topic-badge">14</span><h2 id="14-sorting" class="topic-title">Sorting</h2>`, see §5).
 
-**Group sections into broad units.** Both courses split their sections into 3–6 units, like the DSA crash course (Foundational Linear Structures → High-Speed & Relational Structures → Core Algorithms) or Design Patterns (Design Principles → Creational → Structural → Behavioural → Patterns in Practice). A unit is a teaching arc, not a filing label: order sections so each unit builds on the previous one, and move a section rather than leave it in the wrong unit. Units get a divider with a one-sentence description; they don't appear in the TOC or the sidebar, and they don't restart section numbering. A single prerequisite section may sit before Unit 1, and the closing summary sits inside the last unit.
+**Group sections into broad units.** Both courses split their sections into 3–7 units (crash courses usually 3–5, detailed courses 5–7), like the DSA crash course (Foundational Linear Structures → High-Speed & Relational Structures → Core Algorithms) or Design Patterns (Design Principles → Creational → Structural → Behavioural → Patterns in Practice). A unit is a teaching arc, not a filing label: order sections so each unit builds on the previous one, and move a section rather than leave it in the wrong unit. Units get a divider with a one-sentence description; they don't appear in the TOC or the sidebar, and they don't restart section numbering. A single prerequisite section may sit before Unit 1, and the closing summary sits inside the last unit.
 
-1. **Crash course** (`<body class="is-crash">`) — 10–14 sections: what a practitioner touches weekly plus the fundamentals that make it legible. Mental model first; idiomatic code only. Open with the one prerequisite idea (DSA: Big-O); close with a one-page summary and "Where to go next" (numbered links to the detailed course, the catalog, and 2–3 external resources). ~2,500–3,000 HTML lines.
-2. **Detailed course** (no body class) — 25–40 sections, each depending only on earlier ones. First principles, then proof and edge cases; full implementations in both languages, plus from-scratch versions where a language lacks the feature. Section 1 has a `callout-key` pointing to the crash course. End with a cheat sheet, pattern-recognition playbook, and practice roadmap. ~8,000–10,000 HTML lines.
+1. **Crash course** (`<body class="is-crash">`) — 12–16 sections: what a practitioner touches weekly plus the fundamentals that make it legible. Mental model first; idiomatic code only. Open with the one prerequisite idea (DSA: Big-O); close with a one-page summary and "Where to go next" (numbered links to the detailed course, the catalog, and 2–3 external resources). ~2,200–3,200 HTML lines.
+2. **Detailed course** (no body class) — 35–45 sections, each depending only on earlier ones. First principles, then proof and edge cases; full implementations in both languages, plus from-scratch versions where a language lacks the feature. Section 1 has a `callout-key` pointing to the crash course. End with a cheat sheet, pattern-recognition playbook, and practice roadmap. ~5,000–7,000 HTML lines (DSA and Design Patterns run longer because of their full implementations).
 
 Each crash-course section follows this rhythm:
 
@@ -151,7 +151,7 @@ cp design-patterns/design-patterns-study.js  <slug>/<slug>-study.js
 Copy from Design Patterns, not DSA: DSA's own `dsa-study.css`/`.js` lack the accordion (DSA keeps it in inline `<style>`/`<script>` blocks), while the Design Patterns files carry the DSA engine plus the accordion, collapsible questions and diagram helpers in one place.
 
 1. **CSS** — update the header comment and both eyebrows: `.study>h1:first-child::before { content: "<Topic>"; }` and `body.is-crash .study>h1:first-child::before { content: "<Topic> crash course"; }`. Strip any eyebrow rules for other body classes (`is-quick`, `is-advanced`) you don't use.
-2. **JS** — update the header comment and `const LANG_KEY = "tt-<slug>-lang";`. Delete the copied topic widgets (every `VIZ[...]` between the `Design pattern widgets` banner and the `viz player` marker) but keep the shared helpers above them (`scene`, `classHTML`, `linkHTML`, `chipHTML`/`rowHTML`/`stackHTML`), the player, the collapsible-questions block and the accordion block at the end. Rename the banner to `<Topic> widgets`. Run `node --check <slug>-study.js`.
+2. **JS** — update the header comment and `const LANG_KEY = "tt-<slug>-lang";`. Delete the copied topic widgets (every `VIZ[...]` between the `Design pattern widgets` banner and the `viz player` marker, including the whole `Detailed-course widgets` section) but keep everything above the banner (the engine helpers, including `bandHTML`/`pathHTML`, and the `Extra render helpers`), the shared helpers just under it (`linkHTML`, `classHTML`, `scene`, `chipHTML`/`rowHTML`/`stackHTML`), the player, the collapsible-questions block and the accordion block at the end. Rename the banner to `<Topic> widgets`. Run `node --check <slug>-study.js`.
 3. **Other languages** — extend the built-in highlighter (keyword/builtin `Set`, a `LANG_SPEC` entry, a `buildTokenizer` branch, a `LANG_LABEL` entry). No highlighting library. Typed languages can reuse a parent's sets (TypeScript = JavaScript sets plus `interface implements private readonly …`).
 
 ---
@@ -345,7 +345,7 @@ Copy `study/dsa/dsa-courses.html`; change title, description, favicon emoji, her
 
 ## 8. Homepage hub tile
 
-Append or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`:
+Add or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`. Many future topics already have a **WIP placeholder tile** (LLD, HLD, Databases, HTML & CSS, React Stack, MERN, Software Architecture, Software Projects, Web Performance, Web Security). If one matches, convert it in place rather than appending a duplicate: keep its position, `data-tile-id` and icon, switch `hub-status wip`/`WIP` to `live`/`Live`, and replace its `<p class="hub-tile-desc">coming soon...</p>` with the bullet list. Otherwise append a new tile:
 
 ```html
 <!-- <Topic> Tile -->
@@ -373,7 +373,7 @@ Append or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.htm
 - Keep `is-collapsed`, `data-tile-id` and the header's `role`/`tabindex`/`aria-*` attributes (collapsible, accessible).
 - Icon: inline SVG with glowing gradients/filters matching the dark theme.
 - Status: `live`, or `wip` for upcoming topics.
-- No `<p class="hub-tile-desc">` and no `.hub-cta` block; links go only in `ul.hub-bullet-list` (renders as horizontal pills).
+- Live tiles have no `<p class="hub-tile-desc">` and no `.hub-cta` block; links go only in `ul.hub-bullet-list` (renders as horizontal pills). Only WIP placeholders use `hub-tile-desc`.
 - Multi-topic tiles list crash + detailed for each topic. The last bullet is always `Show All &rarr;` to the catalog.
 
 ---
@@ -381,7 +381,8 @@ Append or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.htm
 ## 9. Update the docs
 
 1. Root `README.md` — under `# Learn`, add a `## <Topic>` block with the two course links, like the Python and DSA entries.
-2. `projects/techtoday/README.md` — add the folder and catalog to *Project Structure*; bump the tile count and category list in *Design* item 3.
+2. `projects/techtoday/README.md` — add the folder and catalog to *Project Structure*. Keep the tile counts in sync with `index.html`: the `index.html` comment in the structure tree and *Design* item 3 (total tiles, the category list, and the "N are populated" count). Converting a WIP placeholder changes only the populated count; a new tile changes all three.
+3. Root `TODO.md` — if the topic is listed under *Software & AI Engineering Courses*, mark it `// done`.
 
 ---
 
@@ -397,4 +398,4 @@ Append or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.htm
 - [ ] Language tabs switch and persist after reload; copy buttons work; no unescaped `<` `>` in code.
 - [ ] Crash ↔ detailed ↔ catalog ↔ homepage links resolve, including `../../index.html`.
 - [ ] No external network requests (CDN scripts, fonts, images).
-- [ ] Both READMEs updated.
+- [ ] Both READMEs updated (tile counts match `grep -c 'class="hub-tile is-collapsed"' projects/techtoday/index.html`), and `TODO.md` marked done.

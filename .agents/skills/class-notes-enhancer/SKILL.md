@@ -1,6 +1,6 @@
 ---
 name: class-notes-enhancer
-description: "Use when: simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design (dark theme, collapsible topic/part accordions, plain callouts), removing Gradio UI content, the agenda/flight-plan section, LinkedIn posting content and class numbers ("Class 2"), and regenerating the companion .md file"
+description: "Use when: simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design (dark theme, collapsible topic/part accordions, plain callouts), removing Gradio UI content, the agenda/flight-plan section, LinkedIn posting content and class numbers ('Class 2'), and regenerating the companion .md file"
 argument-hint: "HTML file to enhance, e.g. projects/techtoday/study/ai-demos/rag-embeddings.html"
 ---
 
@@ -39,10 +39,10 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
 
 ## 3. Rebuild the page structure
 
-1. **Head:** keep any existing base-href script, meta, title and icon. Link `../dsa/dsa-study.css` and `../../site-header.css`. Drop the old bespoke `<style>`, `ai-study-theme.css` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the sim helpers you actually use.
+1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css` and `../../site-header.css`. Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the sim helpers you actually use.
 2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
-   - site header
+   - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../../index.html` and `<a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`
    - `.progress`
    - `main.study-layout`, containing:
      - `nav.topic-menu` with a numbered `ol.table-of-contents`. Its links point at the topic `h2` ids.
@@ -89,7 +89,7 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
 1. Create `<name>.new.html` with the full rewritten page, then `mv` it over the original. Use the terminal only for the move.
 2. Regenerate the companion `<name>.md` the same way (`.new.md` → `mv`). Mirror the new HTML exactly:
    - header comment with Source, Title, Theme-color, `Stylesheets: ../dsa/dsa-study.css, ../../site-header.css` and `Scripts: ../dsa/dsa-study.js`
-   - navigation line, eyebrow, `# h1`, lede, chips, Table of Contents
+   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)`, eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
    - fenced code with language tags; diagrams as ```` ```mermaid ```` blocks
@@ -107,6 +107,7 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
    - `document.documentElement.scrollWidth <= innerWidth`
    - click each sim's primary button and confirm its output element changed
 3. Check the content inventory from step 1: every non-removed item is present.
+4. `grep -c 'base.href' <file>` returns 0, and the page's card in `ai-demos.html` has a corner ⓘ `data-tooltip="Theory"` link that resolves to it (add one, mirrored in `ai-demos.md`, if the card lacks it).
 
 ## 8. Report
 

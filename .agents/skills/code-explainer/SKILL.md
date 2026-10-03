@@ -84,10 +84,12 @@ def info(filename):
 
 ## 3. Shared assets
 
-Create once per project (not once per demo) by copying them verbatim from `projects/basic/src/` (all projects share identical copies; `projects/techtoday/css/info.css` differs only in its logo path, `../logo.svg`):
+Create once per project (not once per demo) by copying these two files verbatim from `projects/basic/src/`:
 
 - `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
 - `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
+
+Every project (`ai-reliability`, `ai-systems`, `aws-strands`, `basic`, `docker`, `langchain`, `rag`) carries byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
 
 ## 4. One page per demo — `src/info/<demo>.html`
 
@@ -104,7 +106,7 @@ Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `
 - **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers), then `app.py` and `rate_limiter.py`. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
 - Do **not** include the generic front-end `setupCard()` wiring.
 
-Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`.
+Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`. Use the same topic IDs on every page so deep links are predictable: `concept`, `theory-concepts`, `request-flow`, `code-flow`, then `source-<file-name-kebab>-py` per file (`source-joke-py`, `source-rate-limiter-py`). Units are `unit-1` and `unit-2`. End with `<footer class="study-footer"><Project> &mdash; <emoji> <Demo> &middot; How it works</footer>`.
 
 ### Code-flow diagram — use Mermaid, not a hand-rolled tree
 
@@ -149,7 +151,18 @@ Load Mermaid with a plain script tag before `info.js`; `info.js` calls `mermaid.
 - Open `src/index.html` in the integrated browser, confirm each card shows the green ⓘ icon that turns orange on hover with a tooltip reading "Explanation".
 - Open each `src/info/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px, and the back link returns to the project index.
 - Diff each embedded file against its source (`html.unescape(code) == file.read_text().rstrip("\n")`) — the source topics must be complete and unedited.
+- Confirm the shared assets are still identical: `md5sum projects/*/src/css/info.css projects/*/src/js/info.js projects/techtoday/js/info.js` shows one hash per file type.
 
 ## 6. Docs
 
 Update the project's `README.md` project-structure listing and module-responsibilities section to mention `src/info/` (one page per demo), `src/css/info.css`, and `src/js/info.js`, and that each card's title has an ⓘ info icon linking to its explainer page.
+
+## 7. Project-level explainer on the TechToday site (optional)
+
+Some projects also get one "how the whole project works" page on the static site, linked from their card in the AI Demos catalog. Use this for projects without per-card explainers (`interviewiq`, `shipment-exception-desk`) or when the project needs an overview across all its demos (`ai-reliability`).
+
+1. **Location** — `projects/techtoday/info/<project-name>.html`, using the TechToday copies `../css/info.css` and `../js/info.js` (no Flask route needed; the site is static).
+2. **Shell** — same as a demo page (§4) except: the brand links to `../`, the back link is `<a href="../study/ai-demos/ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`, the `<h1 id="how-it-works">` is the project's emoji + name, the lede lists the demos it covers, and the footer reads `TechToday &mdash; <emoji> <Project> &middot; How it works`.
+3. **Topics** — Unit 1 has the same four topics, covering the whole project (request and code flow for every demo, with Mermaid fan-outs where demos share modules). Unit 2 embeds every Python file the project runs, complete and unedited, with `span.file-path` written from the `projects/` root (`interviewiq/src/python/agent.py`).
+4. **Catalog link** — in `projects/techtoday/study/ai-demos/ai-demos.html`, the project's card starts with a corner icon `<a class="info-link corner-link" href="../../info/<project-name>.html" data-tooltip="Explanation" title="Explanation" aria-label="Explanation">&#x24D8;</a>` (class-notes cards use `data-tooltip="Theory"` pointing at their study page instead). Mirror it in `ai-demos.md` as `[ⓘ](../../info/<project-name>.html)` above the card's `###` title.
+5. **Docs** — add the page to the `info/` listing in `projects/techtoday/README.md` *Project Structure*.

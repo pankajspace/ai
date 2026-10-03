@@ -5,17 +5,22 @@ argument-hint: "Class Markdown file to populate (defaults to the active file)"
 ---
 Create or update the `# My Notes` section of a study-class Markdown file so it becomes a thorough, self-contained set of learning notes — covering every main concept AND every code example (with explanations) from the class's source material. If no file is given, use the active file.
 
-This skill is the detailed counterpart to the `quick-review` skill: `# Quick Review of Concepts` is a fast skimmable refresher, whereas `# My Notes` is the full walkthrough a learner reads to actually understand and re-implement the class.
+This skill is the detailed counterpart to the `quick-review-concepts` skill: `# Quick Review of Concepts` is a fast skimmable refresher, whereas `# My Notes` is the full walkthrough a learner reads to actually understand and re-implement the class.
 
 ## Where these files live
-- Study notes live at `study/NN-<Class-Name>/<class-name>.md` (e.g. [study/01-llms-prompting/llms-prompting.md](../../../study/01-llms-prompting/llms-prompting.md)).
-- Each `.md` has a companion source in the SAME folder — usually a `.html` slide/lecture deck with the same base name, and occasionally a `.pdf`. That companion is the source of truth.
-- The `.md` typically contains: a top nav link line, `# AI Infused Learning - N`, `# Links`, optionally `# Contact` / `# Homework`, then `# My Notes` (the target), then `# Quick Review of Concepts`.
+- Study notes live at `study/NN-<class-slug>/<class-slug>.md` (e.g. [study/01-llms-prompting/llms-prompting.md](../../../study/01-llms-prompting/llms-prompting.md)); project classes use `study/NN-project-<name>/project-<name>.md`. Each is listed with its class date in the root `README.md` under `# Study AI`.
+- Sources sit in the SAME folder, and a folder may have any mix of them:
+  - a companion `.html` slide/lecture deck with the same base name (folders 01–05 and 08), occasionally a `.pdf`;
+  - a `notes/` subfolder with the class's code files (`*.py`, `README.md`, `requirements.txt`, sub-project folders, sometimes a `GUIDE.html`);
+  - for project classes, the problem statement and instructor script under `notes/` (`Problem_Statement_and_Milestones.md`, `Instructor_Class_Script.md`), plus a reference solution folder beside `notes/` (e.g. `inretviewiq/`, `shipment-exception-desk/`).
+- Some folders (e.g. `09-ai-reliability`, `10-mcp`) have no `.html` deck; use `notes/` and the links in the `.md` itself. If a folder has no source at all, tell the user rather than inventing notes.
+- The `.md` typically contains: a top nav line (`[<- README](../../README.md) | [Notes](<class-slug>.html)`, or a bare `[Notes]` when there is no deck), `# <Class Title>`, optionally `# Contact` / `# Links` / `# Homework`, then `# My Notes` (the target), then optionally `# Quick Review of Concepts`.
 
 ## Source
 - Read the target `.md` file first to see existing structure, links, and any notes already present.
-- Then read the companion source **fully** before writing:
+- Then read every source in the folder **fully** before writing:
   - **HTML decks**: the top ~300 lines are usually CSS; real content starts after `<body>` / `<header class="hero">`. Grep for `<h2`, `<h3`, `<h4`, `<pre`, `class="def"`, `class="lab"`, `class="analogy"`, `class="note"`, `class="tag"` to jump to concept sections and code blocks fast.
+  - **`notes/` code files**: these are plain source, so copy them verbatim (no HTML decoding). When the same code also appears in the deck, prefer the `notes/` file and use the deck for the explanation around it.
   - **PDF**: read the whole document; extract concepts and code in reading order.
 - Base the notes ONLY on content actually present in the source — do not invent concepts, code, or APIs.
 - Process the source in the order it appears so the notes follow the class's teaching flow.
@@ -25,14 +30,14 @@ HTML code blocks are inside `<pre>` tags with syntax-highlight `<span class="...
 - Decode HTML entities: `&lt;` → `<`, `&gt;` → `>`, `&amp;` → `&`, `&quot;` → `"`, `&#39;` → `'`, `&nbsp;` → space.
 - Strip all `<span ...>` / `</span>` and other markup, keeping only the code text.
 - Preserve indentation, blank lines, inline comments, and the filename/label shown in the code bar (e.g. `<span>rag.py</span>`) — put that filename as the first comment line inside the fenced block.
-- After decoding a non-trivial block, spot-verify it against the raw HTML (e.g. `grep_search` for a distinctive function name) so no characters were dropped or mis-decoded.
+- After decoding a non-trivial block, spot-verify it against the raw HTML (e.g. search the file for a distinctive function name) so no characters were dropped or mis-decoded.
 - Never paraphrase or "improve" the code — reproduce it faithfully.
 
 ## Output — the `# My Notes` section
-- Write into the target `.md` file, under the existing `# My Notes` heading, above `# Quick Review of Concepts`. If `# My Notes` is missing, add it.
+- Write into the target `.md` file, under the existing `# My Notes` heading, above `# Quick Review of Concepts` when that section exists (otherwise at the end of the file). If `# My Notes` is missing, add it after the `# Links` / `# Homework` blocks.
 - If the section already has content, modify/extend it to fully cover the source rather than duplicating.
 - Preserve all existing content and sections, links, and the file's overall structure.
-- Do not touch the `# Quick Review of Concepts` section.
+- Do not touch the `# Quick Review of Concepts` section (generate it with the `quick-review-concepts` skill).
 
 ### Structure and style
 - Organize the notes as numbered `##` sections that follow the class's flow (e.g. `## 1. Why RAG Exists`, `## 2. The Mental Model`). Use `###` subsections for sub-topics and each build step.

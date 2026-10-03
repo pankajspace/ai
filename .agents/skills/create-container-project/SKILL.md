@@ -13,11 +13,12 @@ Create or adapt a container project named `${input:projectName}` under `projects
 
 Read before editing:
 
-1. [projects/ADD_PROJECT.md](../../projects/ADD_PROJECT.md) — `Pick Project Values` and the final documentation steps.
-2. [projects/ARCHITECTURE.md](../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
-3. [projects/template/README.md](../../projects/template/README.md) and [projects/template/src/python/app.py](../../projects/template/src/python/app.py).
-4. A neighboring project ([basic](../../projects/basic), [langchain](../../projects/langchain), or [rag](../../projects/rag)) when its structure helps.
-5. The matching `study/` file, if one exists, for feature context and source material.
+1. [projects/ADD_PROJECT.md](../../../projects/ADD_PROJECT.md) — `Pick Project Values` and the final documentation steps.
+2. [projects/ARCHITECTURE.md](../../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
+3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the `staging` → `main` branch flow the README must describe.
+4. [projects/template/README.md](../../../projects/template/README.md) and [projects/template/src/python/app.py](../../../projects/template/src/python/app.py).
+5. A neighboring project ([basic](../../../projects/basic), [langchain](../../../projects/langchain), or [rag](../../../projects/rag)) when its structure helps.
+6. The matching `study/NN-<topic>/` folder, if one exists, for feature context and source material: its `.md`, the companion `.html` deck, and the class code under `notes/` (project classes also ship a reference solution folder beside `notes/`).
 
 ## Inputs To Resolve
 
@@ -27,7 +28,7 @@ Proceed without extra questions if you have enough information.
 
 ## Workflow
 
-1. Confirm the next-port allocation from `ADD_PROJECT.md`.
+1. Confirm the next-port allocation from `ADD_PROJECT.md`. Local `8090` is taken by `projects/template` itself, so skip it when allocating or advancing local ports.
 2. Create `projects/<project-name>/` by copying `projects/template/` if it does not exist.
 3. Set the `web` service to publish `<local-port>:5000` in `docker-compose.yml`.
 4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
@@ -48,7 +49,10 @@ Proceed without extra questions if you have enough information.
     grep -nE 'PROJECT_NAME|HOSTPORT' .github/workflows/deploy-<project-name>.yml   # must print nothing
     ```
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
-11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add a project card under `projects/techtoday/study/ai-demos/ai-demos.html` (and update `projects/techtoday/index.html` if featured on the homepage) if the project should be public.
+11. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add the root `README.md` runbook entry under `## Project Runbooks` (`N. [<Display Name>](projects/<project-name>/README.md)`, above *Container App Template*). If the project should be public, follow `ADD_PROJECT.md` § 8 *Public project catalog card update*:
+    1. Add a card to `projects/techtoday/study/ai-demos/ai-demos.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-demos.md`.
+    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-demos/` (built with the `class-notes-enhancer` skill), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built with the `code-explainer` skill, §7).
+    3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Demos** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
 
 ## README Requirements
 
@@ -326,7 +330,7 @@ The stock `deploy.yml.template` is self-provisioning but single-service: it buil
 
 1. Still create `.github/workflows/deploy-<project-name>.yml` — never skip it.
 2. Ensure an ECR repository exists and build/push an image for **every** build context, or build them together via `docker compose build` against the production Compose file.
-3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service.
+3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service. Name every service explicitly in both `docker compose pull` and `docker compose up -d --wait`, including dependency services (databases, Redis, Chroma) and services behind `--profile` flags. A bare `up -d --wait` acts on every service in the file, so a leftover or broken entry from another project in a shared Compose file aborts the whole rollout. Prefer the template's per-project `~/apps/<project-name>/docker-compose.yml`; `.github/workflows/deploy-docker.yml` is the working multi-service example (it still uses the shared `~/docker-compose.yml`, which is why it names its services).
 4. If examples are keyless and rarely change, automating only the gateway is acceptable — but say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
 5. Never call a complex project deploy-ready while the workflow covers only the gateway image.
 
