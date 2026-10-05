@@ -9,6 +9,7 @@
   <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../dsa/dsa-study.css" />
   <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="stylesheet" href="ai-demos.css" />
   <style>
     body.is-ai .study>h1:first-child::before {
       content: "Future with Shivank · AI Agents on AWS";
@@ -18,6 +19,7 @@
     .topic-title em {
       color: var(--accent);
     }
+
   </style>
 </head>
 
@@ -169,23 +171,27 @@ aws sts get-caller-identity
                 <li>Click <strong>Modify model access</strong>. Tick the models below, then submit.</li>
               </ol>
               <table>
-                <tr>
+<thead>
+<tr>
                   <th>Model</th>
                   <th>Used for</th>
                 </tr>
-                <tr>
-                  <td>Amazon Nova Lite</td>
-                  <td>Module 1 Hello World (cheap, fast)</td>
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Model">Amazon Nova Lite</td>
+                  <td data-label="Used for">Module 1 Hello World (cheap, fast)</td>
                 </tr>
-                <tr>
-                  <td>Claude Haiku 4.5</td>
-                  <td>Module 1 LangGraph example, Module 2 tools</td>
+<tr>
+                  <td data-label="Model">Claude Haiku 4.5</td>
+                  <td data-label="Used for">Module 1 LangGraph example, Module 2 tools</td>
                 </tr>
-                <tr>
-                  <td>Claude Sonnet 4.5</td>
-                  <td>Stronger reasoning. Useful later.</td>
+<tr>
+                  <td data-label="Model">Claude Sonnet 4.5</td>
+                  <td data-label="Used for">Stronger reasoning. Useful later.</td>
                 </tr>
-              </table>
+</tbody>
+</table>
               <p>Use the terminal to check which Anthropic models are active in your account:</p>
               <span class="code-tab-label">terminal</span>
               <pre><code data-lang="text">
@@ -333,22 +339,26 @@ python 00_check_setup.py
               </ul>
               <p>You can fix this in two ways without retraining the model:</p>
               <table>
-                <tr>
+<thead>
+<tr>
                   <th>Approach</th>
                   <th>What it adds</th>
                   <th>The model becomes…</th>
                 </tr>
-                <tr>
-                  <td><strong>RAG</strong></td>
-                  <td>Relevant context fetched from your data</td>
-                  <td>A better-informed <em>knowledge retriever</em></td>
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Approach"><strong>RAG</strong></td>
+                  <td data-label="What it adds">Relevant context fetched from your data</td>
+                  <td data-label="The model becomes…">A better-informed <em>knowledge retriever</em></td>
                 </tr>
-                <tr>
-                  <td><strong>Agents</strong></td>
-                  <td>The ability to reason and <em>use tools</em></td>
-                  <td>An <em>actor</em> that gets things done</td>
+<tr>
+                  <td data-label="Approach"><strong>Agents</strong></td>
+                  <td data-label="What it adds">The ability to reason and <em>use tools</em></td>
+                  <td data-label="The model becomes…">An <em>actor</em> that gets things done</td>
                 </tr>
-              </table>
+</tbody>
+</table>
               <p>Here is the key point. Many teams build a RAG system. Then users ask the AI to do the work: book the meeting, update the record, or run the workflow. Teams often get stuck when they move from a passive retriever to an active agent. These two modules help you make that move.</p>
             </div>
           </div>
@@ -650,32 +660,36 @@ flowchart TD
                 </figcaption>
               </figure>
               <table>
-                <tr>
-                  <th></th>
+<thead>
+<tr>
+                  <th>Feature</th>
                   <th>MCP</th>
                   <th>A2A</th>
                 </tr>
-                <tr>
-                  <td>Connects an agent to…</td>
-                  <td>Tools, data, prompts</td>
-                  <td>Other agents</td>
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Feature">Connects an agent to…</td>
+                  <td data-label="MCP">Tools, data, prompts</td>
+                  <td data-label="A2A">Other agents</td>
                 </tr>
-                <tr>
-                  <td>The other side is…</td>
-                  <td>A server that exposes capabilities</td>
-                  <td>A peer agent with its own reasoning</td>
+<tr>
+                  <td data-label="Feature">The other side is…</td>
+                  <td data-label="MCP">A server that exposes capabilities</td>
+                  <td data-label="A2A">A peer agent with its own reasoning</td>
                 </tr>
-                <tr>
-                  <td>Discovery via</td>
-                  <td>A list of tools, resources, and prompts</td>
-                  <td>The agent card</td>
+<tr>
+                  <td data-label="Feature">Discovery via</td>
+                  <td data-label="MCP">A list of tools, resources, and prompts</td>
+                  <td data-label="A2A">The agent card</td>
                 </tr>
-                <tr>
-                  <td>Analogy</td>
-                  <td>USB port for abilities</td>
-                  <td>Colleagues calling each other</td>
+<tr>
+                  <td data-label="Feature">Analogy</td>
+                  <td data-label="MCP">USB port for abilities</td>
+                  <td data-label="A2A">Colleagues calling each other</td>
                 </tr>
-              </table>
+</tbody>
+</table>
               <figcaption style="text-align:left;margin-top:-6px">Diagram 7 — MCP vs A2A, side by side</figcaption>
               <div class="callout callout-tip">
 
@@ -1026,23 +1040,27 @@ print(status)
               <p>If you ask the agent <em>"Is the staging server running?"</em>, it says it cannot check server status. The agent cannot discover your function by itself. That is the gap.</p>
               <p>The bridge is <strong>function calling</strong>, also called tool use. Add three things:</p>
               <table>
-                <tr>
+<thead>
+<tr>
                   <th>Add this</th>
                   <th>Why</th>
                 </tr>
-                <tr>
-                  <td><code>@tool</code> decorator</td>
-                  <td>Tells Strands to make this function available to agents.</td>
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Add this"><code>@tool</code> decorator</td>
+                  <td data-label="Why">Tells Strands to make this function available to agents.</td>
                 </tr>
-                <tr>
-                  <td>Type hints</td>
-                  <td>Tell the agent what data types to expect.</td>
+<tr>
+                  <td data-label="Add this">Type hints</td>
+                  <td data-label="Why">Tell the agent what data types to expect.</td>
                 </tr>
-                <tr>
-                  <td>A proper docstring</td>
-                  <td>Describes what the function does, so the agent knows when to use it.</td>
+<tr>
+                  <td data-label="Add this">A proper docstring</td>
+                  <td data-label="Why">Describes what the function does, so the agent knows when to use it.</td>
                 </tr>
-              </table>
+</tbody>
+</table>
               <span class="code-tab-label">two/01_function_to_tool.py</span>
               <pre><code data-lang="python">
 from strands import Agent, tool
@@ -1700,32 +1718,36 @@ python two/09_async_tools.py
 
               <p>Build an agent that answers: <em>"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should I pack and what will it cost?"</em> The agent should reason across weather, packing, and budget before it answers.</p>
               <table>
-                <tr>
+<thead>
+<tr>
                   <th>Tool</th>
                   <th>Job</th>
                   <th>Skill practised</th>
                 </tr>
-                <tr>
-                  <td><code>get_weather_forecast</code></td>
-                  <td>Return conditions for a city and date range</td>
-                  <td>Custom tool, mock data</td>
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Tool"><code>get_weather_forecast</code></td>
+                  <td data-label="Job">Return conditions for a city and date range</td>
+                  <td data-label="Skill practised">Custom tool, mock data</td>
                 </tr>
-                <tr>
-                  <td><code>suggest_packing_list</code></td>
-                  <td>Turn weather and trip length into a packing list</td>
-                  <td>Tool that consumes another tool's output</td>
+<tr>
+                  <td data-label="Tool"><code>suggest_packing_list</code></td>
+                  <td data-label="Job">Turn weather and trip length into a packing list</td>
+                  <td data-label="Skill practised">Tool that consumes another tool's output</td>
                 </tr>
-                <tr>
-                  <td><code>estimate_trip_cost</code></td>
-                  <td>Estimate rough cost from city, days, and travellers</td>
-                  <td>Numeric logic and a dict return</td>
+<tr>
+                  <td data-label="Tool"><code>estimate_trip_cost</code></td>
+                  <td data-label="Job">Estimate rough cost from city, days, and travellers</td>
+                  <td data-label="Skill practised">Numeric logic and a dict return</td>
                 </tr>
-                <tr>
-                  <td><code>calculator</code></td>
-                  <td>Budget maths</td>
-                  <td>Pre-built community tool</td>
+<tr>
+                  <td data-label="Tool"><code>calculator</code></td>
+                  <td data-label="Job">Budget maths</td>
+                  <td data-label="Skill practised">Pre-built community tool</td>
                 </tr>
-              </table>
+</tbody>
+</table>
             </div>
           </div>
           <div class="part-section is-collapsed" id="s17-starter-code">
@@ -2031,49 +2053,53 @@ env | grep AWS               # what credentials are actually set?
 
 
               <table>
-                <tr>
+<thead>
+<tr>
                   <th style="width:40%">Symptom</th>
                   <th>Cause and fix</th>
                 </tr>
-                <tr>
-                  <td><code>ResourceNotFoundException … end of its life</code> /
+</thead>
+<tbody>
+<tr>
+                  <td data-label="Symptom"><code>ResourceNotFoundException … end of its life</code> /
                     <code>marked by provider as Legacy</code>
                   </td>
-                  <td>Retired model. Run <code class="inl">python 01_list_models.py</code>, pick an active model, and change <code class="inl">MODEL_ID</code> in <code class="inl">config.py</code>.</td>
+                  <td data-label="Cause and fix">Retired model. Run <code class="inl">python 01_list_models.py</code>, pick an active model, and change <code class="inl">MODEL_ID</code> in <code class="inl">config.py</code>.</td>
                 </tr>
-                <tr>
-                  <td><code>AccessDeniedException</code></td>
-                  <td>The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both.</td>
+<tr>
+                  <td data-label="Symptom"><code>AccessDeniedException</code></td>
+                  <td data-label="Cause and fix">The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both.</td>
                 </tr>
-                <tr>
-                  <td><code>InvalidClientTokenId</code></td>
-                  <td>Credentials are stale or deleted. Create a new access key and rerun <code class="inl">aws configure</code>.</td>
+<tr>
+                  <td data-label="Symptom"><code>InvalidClientTokenId</code></td>
+                  <td data-label="Cause and fix">Credentials are stale or deleted. Create a new access key and rerun <code class="inl">aws configure</code>.</td>
                 </tr>
-                <tr>
-                  <td><code>ModuleNotFoundError: No module named 'strands'</code></td>
-                  <td>Wrong Python. Activate the venv. In Jupyter, switch the kernel.</td>
+<tr>
+                  <td data-label="Symptom"><code>ModuleNotFoundError: No module named 'strands'</code></td>
+                  <td data-label="Cause and fix">Wrong Python. Activate the venv. In Jupyter, switch the kernel.</td>
                 </tr>
-                <tr>
-                  <td>Notebook cell stuck on <code>[*]</code></td>
-                  <td>A tool is waiting for consent. Type <code class="inl">y</code> at the hidden prompt, or set <code class="inl">BYPASS_TOOL_CONSENT="true"</code> in an earlier cell.</td>
+<tr>
+                  <td data-label="Symptom">Notebook cell stuck on <code>[*]</code></td>
+                  <td data-label="Cause and fix">A tool is waiting for consent. Type <code class="inl">y</code> at the hidden prompt, or set <code class="inl">BYPASS_TOOL_CONSENT="true"</code> in an earlier cell.</td>
                 </tr>
-                <tr>
-                  <td>Terminal shows <code>quote&gt;</code> or <code>:</code> and seems frozen</td>
-                  <td><code class="inl">quote&gt;</code> means an unclosed quote. Press Ctrl+C. <code class="inl">:</code> is the AWS CLI pager. Press <code class="inl">q</code>. Set <code class="inl">export AWS_PAGER=""</code> to stop it.</td>
+<tr>
+                  <td data-label="Symptom">Terminal shows <code>quote&gt;</code> or <code>:</code> and seems frozen</td>
+                  <td data-label="Cause and fix"><code class="inl">quote&gt;</code> means an unclosed quote. Press Ctrl+C. <code class="inl">:</code> is the AWS CLI pager. Press <code class="inl">q</code>. Set <code class="inl">export AWS_PAGER=""</code> to stop it.</td>
                 </tr>
-                <tr>
-                  <td>Agent ignores your tool</td>
-                  <td>The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used.</td>
+<tr>
+                  <td data-label="Symptom">Agent ignores your tool</td>
+                  <td data-label="Cause and fix">The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used.</td>
                 </tr>
-                <tr>
-                  <td><code>ModuleNotFoundError: No module named 'config'</code></td>
-                  <td>You ran from inside a subfolder. Run from the project root: <code class="inl">python one/01_hello_world_agent.py</code>.</td>
+<tr>
+                  <td data-label="Symptom"><code>ModuleNotFoundError: No module named 'config'</code></td>
+                  <td data-label="Cause and fix">You ran from inside a subfolder. Run from the project root: <code class="inl">python one/01_hello_world_agent.py</code>.</td>
                 </tr>
-                <tr>
-                  <td>Worked yesterday but fails today</td>
-                  <td>Usually expired SSO credentials. Paste a fresh block, then run <code class="inl">python 00_check_setup.py</code>.</td>
+<tr>
+                  <td data-label="Symptom">Worked yesterday but fails today</td>
+                  <td data-label="Cause and fix">Usually expired SSO credentials. Paste a fresh block, then run <code class="inl">python 00_check_setup.py</code>.</td>
                 </tr>
-              </table>
+</tbody>
+</table>
             </div>
           </div>
           <div class="part-section is-collapsed" id="s18-the-five-sentences-to-remember">

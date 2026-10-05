@@ -2,7 +2,7 @@
 Source: ai-demos.html
 Title: TechToday - AI Demos
 Description: TechToday is a set of small, hands-on AI and software projects. Each one shows what you can build with modern tools.
-Stylesheets: ../../style.css
+Stylesheets: ../../style.css, ai-demos.css
 -->
 
 Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
