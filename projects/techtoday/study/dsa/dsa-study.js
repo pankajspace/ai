@@ -349,13 +349,42 @@ const renderMermaid = (source, uid) => {
         });
     }
 
+    const measureEdgeLabel = (text) => {
+        if (!text) return 0;
+        let charUnits = 0;
+        for (const ch of text) {
+            charUnits += ch.codePointAt(0) > 0x2000 ? 2 : 1;
+        }
+        return Math.ceil(charUnits * 6.8 + 16);
+    };
+
     const PAD = 16;
-    const GAP_ACROSS = horizontal ? 18 : 26;
-    const GAP_ALONG = horizontal ? 64 : 52;
+    const GAP_ACROSS = horizontal ? 18 : 28;
+    const DEFAULT_GAP_ALONG = horizontal ? 64 : 56;
     const across = (n) => (horizontal ? n.h : n.w);
     const along = (n) => (horizontal ? n.w : n.h);
     const spans = layers.map((layer) => layer.reduce((s, n) => s + across(n), 0) + GAP_ACROSS * (layer.length - 1));
     const maxSpan = Math.max(...spans);
+
+    // Dynamic layer gaps along flow direction based on edge labels between adjacent layers
+    const layerGaps = [];
+    for (let r = 0; r < layers.length - 1; r++) {
+        let reqGap = DEFAULT_GAP_ALONG;
+        edges.forEach((e) => {
+            const rA = rank.get(e.from);
+            const rB = rank.get(e.to);
+            const minR = Math.min(rA, rB);
+            const maxR = Math.max(rA, rB);
+            if (minR === r && maxR === r + 1 && e.label) {
+                if (horizontal) {
+                    const lw = measureEdgeLabel(e.label);
+                    reqGap = Math.max(reqGap, lw + 36);
+                }
+            }
+        });
+        layerGaps[r] = reqGap;
+    }
+
     let cursor = PAD;
     layers.forEach((layer, r) => {
         const depth = Math.max(...layer.map(along));
@@ -367,10 +396,8 @@ const renderMermaid = (source, uid) => {
             n.y = horizontal ? a : b;
             offset += across(n) + GAP_ACROSS;
         });
-        cursor += depth + GAP_ALONG;
+        cursor += depth + (r < layers.length - 1 ? layerGaps[r] : 0);
     });
-    const width = Math.ceil(horizontal ? cursor - GAP_ALONG + PAD : maxSpan + PAD * 2);
-    const height = Math.ceil(horizontal ? maxSpan + PAD * 2 : cursor - GAP_ALONG + PAD);
 
     const clip = (n, dx, dy) => {
         const hw = n.w / 2;
@@ -383,6 +410,20 @@ const renderMermaid = (source, uid) => {
 
     let body = `<defs><marker id="mm-arrow-${uid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="mm-arrowhead"/></marker></defs>`;
     let labelsSvg = "";
+
+    const pairCounts = new Map();
+    edges.forEach((e) => {
+        const key = `${e.from}-->${e.to}`;
+        pairCounts.set(key, (pairCounts.get(key) || 0) + 1);
+    });
+    const pairSeen = new Map();
+
+    let minX = 0, minY = 0, maxX = cursor + PAD, maxY = maxSpan + PAD * 2;
+    if (!horizontal) {
+        maxX = maxSpan + PAD * 2;
+        maxY = cursor + PAD;
+    }
+
     edges.forEach((e) => {
         const a = nodes.get(e.from);
         const b = nodes.get(e.to);
@@ -394,24 +435,59 @@ const renderMermaid = (source, uid) => {
         const y2 = b.y - dy * clip(b, -dx, -dy);
         const cls = `mm-edge${e.dashed ? " is-dashed" : ""}${e.thick ? " is-thick" : ""}`;
         const marker = e.arrow ? ` marker-end="url(#mm-arrow-${uid})"` : "";
-        let mx = x1 + (x2 - x1) * 0.6;
-        let my = y1 + (y2 - y1) * 0.6;
-        if (e.back || a === b || Math.abs(rank.get(e.to) - rank.get(e.from)) > 1) {
+
+        const key = `${e.from}-->${e.to}`;
+        const totalThisDir = pairCounts.get(key) || 1;
+        const seenIdx = pairSeen.get(key) || 0;
+        pairSeen.set(key, seenIdx + 1);
+
+        let mx = (x1 + x2) / 2;
+        let my = (y1 + y2) / 2;
+        const isBidiCollinear = edges.some((other) => other.from === e.to && other.to === e.from) && (horizontal ? Math.abs(dy) < 30 : Math.abs(dx) < 30);
+        if (isBidiCollinear) {
+            const shift = e.from < e.to ? -14 : 14;
+            if (horizontal) mx += shift;
+            else my += shift;
+        }
+        const isMulti = totalThisDir > 1;
+
+        if (e.back || a === b || Math.abs(rank.get(e.to) - rank.get(e.from)) > 1 || isMulti) {
             const len = Math.hypot(dx, dy) || 1;
-            const cx = mx + (-dy / len) * 46;
-            const cy = my + (dx / len) * 46;
+            let nx = -dy / len;
+            let ny = dx / len;
+            let curveOffset = 46;
+            if (isMulti) {
+                curveOffset = (seenIdx % 2 === 0 ? 1 : -1) * (40 + Math.floor(seenIdx / 2) * 30);
+            } else {
+                const centerVal = horizontal ? (maxSpan / 2) : (cursor / 2);
+                const curVal = horizontal ? my : mx;
+                const normVal = horizontal ? ny : nx;
+                if ((curVal < centerVal && normVal > 0) || (curVal >= centerVal && normVal < 0)) {
+                    curveOffset = -curveOffset;
+                }
+            }
+            const cx = mx + nx * curveOffset;
+            const cy = my + ny * curveOffset;
             body += `<path d="M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}" class="${cls}"${marker}/>`;
             mx = (mx + cx) / 2;
             my = (my + cy) / 2;
+            minX = Math.min(minX, cx - 20, mx - 20);
+            maxX = Math.max(maxX, cx + 20, mx + 20);
+            minY = Math.min(minY, cy - 20, my - 20);
+            maxY = Math.max(maxY, cy + 20, my + 20);
         } else {
             body += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cls}"${marker}/>`;
         }
+
         if (e.label) {
-            const w = e.label.length * 6.6 + 12;
+            const w = measureEdgeLabel(e.label);
             labelsSvg += `<rect x="${mx - w / 2}" y="${my - 10}" width="${w}" height="20" rx="4" class="mm-edge-bg"/><text x="${mx}" y="${my}" class="mm-edge-label">${esc(e.label)}</text>`;
+            minX = Math.min(minX, mx - w / 2 - 4);
+            maxX = Math.max(maxX, mx + w / 2 + 4);
+            minY = Math.min(minY, my - 14);
+            maxY = Math.max(maxY, my + 14);
         }
     });
-    body += labelsSvg;
 
     list.forEach((n) => {
         const cls = `mm-node${n.cls ? ` mm-${n.cls}` : ""}`;
@@ -425,7 +501,15 @@ const renderMermaid = (source, uid) => {
         body += `<g class="${cls}">${shape}<text class="mm-text">${text}</text></g>`;
     });
 
-    return `<svg viewBox="0 0 ${width} ${height}" width="${width}" class="mm-svg" role="img" aria-label="Diagram">${body}</svg>`;
+    body += labelsSvg;
+
+    const padBox = PAD;
+    const vbX = Math.floor(minX - (minX < 0 ? padBox : 0));
+    const vbY = Math.floor(minY - (minY < 0 ? padBox : 0));
+    const width = Math.ceil(maxX - vbX + padBox);
+    const height = Math.ceil(maxY - vbY + padBox);
+
+    return `<svg viewBox="${vbX} ${vbY} ${width} ${height}" width="${width}" class="mm-svg" role="img" aria-label="Diagram">${body}</svg>`;
 };
 
 document.querySelectorAll("pre.mermaid").forEach((block, i) => {

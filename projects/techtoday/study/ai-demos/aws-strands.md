@@ -376,8 +376,6 @@ MCP connects an agent to **tools and data**. A server exposes capabilities. A cl
 ```mermaid
 flowchart LR
   A[Agent (MCP client)<br>has the model<br>and the reasoning]
-  Q[1 · what can you do?]
-  R[2 · list of tools / resources / prompts]
   S[MCP server<br>• Tools — actions the agent can perform<br>• Resources — data the agent can read<br>• Prompts — reusable prompt templates]
   A -->|1 · what can you do?| S
   S -->|2 · list of tools / resources / prompts| A

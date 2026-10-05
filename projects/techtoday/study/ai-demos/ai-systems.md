@@ -214,10 +214,6 @@ flowchart LR
   NOTE --> R
   DATA["disputes · grievances · evidence · rulings"]
   DATA --> L
-  NOTE["independent · no shared history · same evidence · T > 0"]
-  NOTE --> R
-  DATA["disputes · grievances · evidence · rulings"]
-  DATA --> L
 ```
 
 Stage 2 must finish before stage 3 can start. You cannot fan out until you know how many grievances there are. That one sequential call means wall-clock time depends on the fan-out after it, not on the number of stages.
@@ -540,7 +536,7 @@ flowchart LR
   W -->|14 calls| L[LLM providers<br>429 retry with jitter]
   API --> DB[(Ledger<br>freeze evidence)]
   W -->|checkpoint each stage| DB
-  APP -->|GET status| API
+  APP -.->|GET status| API
 ```
 
 The counter clerk, the REST API, takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.

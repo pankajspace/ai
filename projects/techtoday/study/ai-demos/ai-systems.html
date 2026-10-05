@@ -752,10 +752,6 @@
   NOTE["independent · no shared history · same evidence · T &gt; 0"]
   NOTE --&gt; R
   DATA["disputes · grievances · evidence · rulings"]
-  DATA --&gt; L
-  NOTE["independent · no shared history · same evidence · T &gt; 0"]
-  NOTE --&gt; R
-  DATA["disputes · grievances · evidence · rulings"]
   DATA --&gt; L</pre>
                 <figcaption>Stage 2 must finish before stage 3 can start. You cannot fan out until you know how many grievances there are. That one sequential call means wall-clock time depends on the fan-out after it, not on the number of stages.</figcaption>
               </figure>
@@ -1416,7 +1412,7 @@ settlement    1.0 sec
   W --&gt;|14 calls| L[LLM providers&lt;br&gt;429 retry with jitter]
   API --&gt; DB[(Ledger&lt;br&gt;freeze evidence)]
   W --&gt;|checkpoint each stage| DB
-  APP --&gt;|GET status| API</pre>
+  APP -.-&gt;|GET status| API</pre>
                 <figcaption>The counter clerk, the REST API, takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.</figcaption>
               </figure>
               <div>
