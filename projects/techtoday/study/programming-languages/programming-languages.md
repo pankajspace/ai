@@ -11,12 +11,6 @@ Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
 Deep-dive language internals, runtime architectures, OOP patterns & asynchronous models
 
-### Python My Course
-
-Fast-track essentials covering variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, and error handling.
-
-[Start learning →](python/python-my-course.html)
-
 ### Python Crash Course
 
 Fast-paced guide covering language syntax, collections, functions, list comprehensions, and core idiomatic patterns.
@@ -28,6 +22,12 @@ Fast-paced guide covering language syntax, collections, functions, list comprehe
 In-depth study covering OOP, magic methods, decorators, generators, async/await, type hints, and the CPython memory model.
 
 [Start learning →](python/python-detailed-course.html)
+
+### Python My Course
+
+Fast-track essentials covering variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, and error handling.
+
+[Start learning →](python/python-my-course.html)
 
 ### JavaScript Crash Course
 
