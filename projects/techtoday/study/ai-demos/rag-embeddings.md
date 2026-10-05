@@ -312,12 +312,15 @@ chunk.py
 ```python
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+# ① choose chunk size and overlap so nearby context stays connected
 splitter = RecursiveCharacterTextSplitter(
     chunk_size=800,        # aim for ~800 chars per chunk
     chunk_overlap=100,     # adjacent chunks share 100 chars (context glue)
 )
 
+# ② split the long document into chunks ready for embedding
 chunks = splitter.split_text(your_long_document)
+# ③ print how many chunks will go into the vector search index
 print(len(chunks))    # → e.g. 47 chunks ready to embed
 ```
 
@@ -534,12 +537,17 @@ rerank.py
 ```python
 from sentence_transformers import CrossEncoder
 
+# ① load a cross-encoder that can score a question with one chunk
 reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")   # free, fast
 
 def retrieve_with_rerank(question, top_k=3):
+    # ① retrieve more cheap candidates than you finally need
     candidates = db.similarity_search(question, k=25)        # grab 25 cheap candidates
+    # ② pair the same question with each candidate chunk for scoring
     pairs = [(question, c.page_content) for c in candidates]
+    # ③ score every question chunk pair with the cross-encoder
     scores = reranker.predict(pairs)                          # cross-encoder scores each pair
+    # ④ sort by score and return the best chunks
     return [c for _, c in sorted(zip(scores, candidates), reverse=True)[:top_k]]
 ```
 
@@ -650,10 +658,12 @@ pdf_chat.py · part 2
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
+# ① load the API key and create the PDF assistant model
 load_dotenv()
 
 model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
+# ② define the grounded answer prompt and source-citation format
 prompt = ChatPromptTemplate.from_template("""
 You are a helpful PDF assistant. Answer the question using ONLY the context below.
 If the context doesn't contain the answer, say "I couldn't find that in the document."
@@ -666,10 +676,14 @@ Question: {question}
 """)
 
 def ask(db, question):
+    # ① retrieve the most relevant PDF chunks for the question
     chunks  = db.similarity_search(question, k=4)
+    # ② include page numbers beside each chunk before prompting the model
     context = "\n\n".join(
         f"[page {c.metadata['page']+1}] {c.page_content}" for c in chunks)
+    # ③ connect the prompt to the model for this answer
     chain = prompt | model
+    # ④ ask the model using only the retrieved PDF context
     return chain.invoke({"context": context, "question": question}).content
 ```
 

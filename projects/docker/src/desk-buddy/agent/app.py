@@ -76,12 +76,16 @@ TOOL_DEFS = [
 def call_tool(name: str, args: dict) -> dict:
     """Actually execute a tool by calling the tools microservice over HTTP."""
     try:
+        # ① send calculator requests to the calculator endpoint
         if name == "calculator":
             return httpx.post(f"{TOOLS_URL}/calculator", json=args, timeout=10).json()
+        # ② send datetime requests to the datetime endpoint
         if name == "get_datetime":
             return httpx.get(f"{TOOLS_URL}/datetime", timeout=10).json()
+        # ③ report unknown tool names instead of guessing
         return {"error": f"unknown tool: {name}"}
     except Exception as e:
+        # ④ turn tool-service failures into JSON the agent can read
         return {"error": f"tool call failed: {e}"}
 
 
@@ -101,12 +105,12 @@ def health():
 
 @app.post("/chat")
 def chat(req: Chat):
-    # --- 1. Load this session's memory from Redis ---------------------------
+    # ① load this session's memory from Redis and append the new user message
     key = f"history:{req.session_id}"
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]
     history.append({"role": "user", "content": req.message})
 
-    # --- 2. The agent loop: think -> act -> observe -> repeat ---------------
+    # ② run the bounded agent loop: think, act, observe, repeat
     msg = None
     for _ in range(5):  # safety fuse: max 5 laps
         resp = llm.chat.completions.create(
@@ -116,9 +120,11 @@ def chat(req: Chat):
         )
         msg = resp.choices[0].message
 
+        # ③ stop looping when the model answers in normal text
         if not msg.tool_calls:
             break  # the LLM answered in words - we're done
 
+        # ④ run one or more tools and append their results for the next lap
         # The LLM asked to run one or more tools
         history.append(msg.model_dump(exclude_none=True))
         for tc in msg.tool_calls:
@@ -131,7 +137,7 @@ def chat(req: Chat):
                 }
             )
 
-    # --- 3. Save memory back to Redis and return the answer -----------------
+    # ⑤ save memory back to Redis and return the final answer
     history.append({"role": "assistant", "content": msg.content})
     r.delete(key)
     for m in history:

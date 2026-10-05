@@ -38,7 +38,6 @@
                     <li><a href="#source-interview-bank-py">interview_bank.py</a></li>
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -52,11 +51,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>10 Topics</span>
+                    <span>9 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>6 Python Files in Full</span>
+                    <span>5 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -351,7 +350,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">610 lines</span>
+                        <span class="topic-meta-chip">660 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -413,6 +412,7 @@ class InterviewSessionMemory:
         category: str = "", question_id: int = 0,
         expected_keywords: list | None = None,
     ) -&gt; None:
+        # ① store this answer and every tool result as the next interview turn
         self._turns.append({
             "turn_id": len(self._turns) + 1,
             "question_id": question_id,
@@ -430,21 +430,25 @@ class InterviewSessionMemory:
         to explicitly avoid recency bias — the weakest area is the globally
         worst turn, not the most recent one.
         """
+        # ① stop early when no answers have been recorded
         if not self._turns:
             return None
 
+        # ② define how to rank turns from weakest to strongest
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
             star = r.get("check_star_structure", {}).get("star_score", 50)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
-            # Lower relevance, lower STAR, higher fillers = weaker.
+            # ① lower relevance, lower STAR, higher fillers = weaker
             return (rel, star, -fillers)
 
+        # ③ pick the globally weakest turn and unpack its tool scores
         weakest = min(self._turns, key=sort_key)
         rel_data = weakest["results"].get("score_relevance", {})
         star_data = weakest["results"].get("check_star_structure", {})
         filler_data = weakest["results"].get("detect_filler_words", {})
+        # ④ return only the weakness details needed by the UI and report
         return {
             "turn_id": weakest["turn_id"],
             "question_id": weakest["question_id"],
@@ -458,9 +462,11 @@ class InterviewSessionMemory:
 
     def get_strongest_area(self) -&gt; dict | None:
         """Return the turn with the highest composite score."""
+        # ① stop early when no answers have been recorded
         if not self._turns:
             return None
 
+        # ② define how to rank turns from weakest to strongest
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
@@ -468,10 +474,12 @@ class InterviewSessionMemory:
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
             return (rel, star, -fillers)
 
+        # ③ pick the strongest turn and unpack its tool scores
         strongest = max(self._turns, key=sort_key)
         rel_data = strongest["results"].get("score_relevance", {})
         star_data = strongest["results"].get("check_star_structure", {})
         filler_data = strongest["results"].get("detect_filler_words", {})
+        # ④ return only the strength details needed by the UI and report
         return {
             "turn_id": strongest["turn_id"],
             "question_id": strongest["question_id"],
@@ -483,11 +491,13 @@ class InterviewSessionMemory:
         }
 
     def get_average_relevance(self) -&gt; float:
+        # ① collect relevance scores from turns that have relevance data
         scores = [
             t["results"].get("score_relevance", {}).get("score", 0)
             for t in self._turns
             if "score_relevance" in t["results"]
         ]
+        # ② average available scores, or return zero before any scoring
         return round(sum(scores) / len(scores), 1) if scores else 0.0
 
     def get_total_questions(self) -&gt; int:
@@ -495,13 +505,16 @@ class InterviewSessionMemory:
 
     def get_scorecard(self) -&gt; list[dict]:
         """Return a structured summary list for the scorecard table."""
+        # ① start an empty list of rows for the scorecard table
         card = []
         for t in self._turns:
+            # ② pull the three visible scores from this turn's tool results
             r = t["results"]
             rel = r.get("score_relevance", {}).get("score", 0)
             star = r.get("check_star_structure", {}).get("star_score", 0)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
             q_text = t["question"]
+            # ③ append a compact learner-facing row for this question
             card.append({
                 "Turn": t["turn_id"],
                 "Category": t["category"],
@@ -514,6 +527,7 @@ class InterviewSessionMemory:
 
     def get_category_breakdown(self) -&gt; dict:
         """Compute category-wise average performance."""
+        # ① collect relevance and STAR scores under each question category
         cat_stats: dict[str, list] = {}
         for t in self._turns:
             cat = t["category"]
@@ -524,15 +538,18 @@ class InterviewSessionMemory:
                 "relevance_score": r.get("score_relevance", {}).get("score", 0),
                 "star_score": r.get("check_star_structure", {}).get("star_score", 0),
             })
+        # ② average the collected scores for each category
         breakdown = {}
         for cat, items in cat_stats.items():
             avg_rel = round(sum(i["relevance_score"] for i in items) / len(items), 1)
             avg_star = round(sum(i["star_score"] for i in items) / len(items), 1)
             breakdown[cat] = {"count": len(items), "avg_relevance": avg_rel, "avg_star": avg_star}
+        # ③ return the category summary for reports and scorecards
         return breakdown
 
     def generate_final_report_dict(self) -&gt; dict:
         """Generate a comprehensive report as a dict with report_text markdown."""
+        # ① return an empty-session report before calculating aggregates
         if not self._turns:
             return {
                 "total_questions": 0,
@@ -543,6 +560,7 @@ class InterviewSessionMemory:
                 "report_text": "No questions have been answered yet in this session.",
             }
 
+        # ② calculate session-wide counts, averages, and strongest/weakest areas
         total_questions = len(self._turns)
         avg_relevance = self.get_average_relevance()
         weakest = self.get_weakest_area()
@@ -559,6 +577,7 @@ class InterviewSessionMemory:
         star_rate = round((star_compliant / total_questions) * 100, 1)
         category_breakdown = self.get_category_breakdown()
 
+        # ③ start the markdown report with top-line metrics
         lines = [
             "# 🎯 InterviewIQ Final Assessment Report",
             f"**Total Questions Answered:** {total_questions} | "
@@ -568,6 +587,7 @@ class InterviewSessionMemory:
             "",
             "## 📊 Key Highlights &amp; Aggregations",
         ]
+        # ④ add strongest and weakest highlights when available
         if strongest:
             lines.append(
                 f"1. **Strongest Area:** {strongest['category']} "
@@ -582,6 +602,7 @@ class InterviewSessionMemory:
                 f"   - Question: *\"{weakest['question']}\"*\n"
                 f"   - Missing Concepts: {missed}"
             )
+        # ⑤ append per-category averages to show topic-level patterns
         lines.append("\n## 📈 Category Breakdown")
         for cat, stats in category_breakdown.items():
             lines.append(
@@ -589,6 +610,7 @@ class InterviewSessionMemory:
                 f"Avg Relevance: {stats['avg_relevance']}/100 | "
                 f"Avg STAR: {stats['avg_star']}%"
             )
+        # ⑥ add coaching recommendations based on the aggregate scores
         lines.append("\n## 💡 Coach Recommendations")
         if avg_relevance &gt;= 80:
             lines.append("- **Knowledge Depth**: Excellent domain grasp and comprehensive keyword coverage.")
@@ -606,6 +628,7 @@ class InterviewSessionMemory:
         else:
             lines.append("- **Structure**: Consistently strong STAR narrative with measurable Results.")
 
+        # ⑦ return structured fields plus the rendered markdown report
         return {
             "total_questions": total_questions,
             "average_relevance": avg_relevance,
@@ -720,10 +743,11 @@ class EvaluatorAgent:
     """
 
     def __init__(self, memory: InterviewSessionMemory | None = None):
+        # ① reuse supplied memory and choose the configured LLM provider
         self.memory = memory or InterviewSessionMemory()
         self._client, self._model = get_openai_client()
 
-        # Register the tool functions.  generate_final_report is a method on
+        # ② register the tool functions; generate_final_report is a method on
         # this instance so it can access self.memory.
         self._tool_functions = {
             "detect_filler_words": lambda args: detect_filler_words(args["answer"]),
@@ -750,16 +774,19 @@ class EvaluatorAgent:
         ``relevance_evaluation``, ``star_evaluation``, ``filler_evaluation``
         that the UI's ``renderEvaluationResult`` expects.
         """
+        # ① unpack question fields needed by tools and session memory
         question = question_data["question"]
         expected_keywords = question_data.get("expected_keywords", [])
         category = question_data.get("category", "")
         question_id = question_data.get("id", 0)
 
+        # ② fall back to deterministic scoring when no LLM provider is configured
         if not self._client:
             return self._deterministic_evaluate(
                 question, answer, expected_keywords, category, question_id,
             )
 
+        # ③ build the prompt with the question, answer, and scoring rubric
         user_msg = (
             f"Question: {question}\n"
             f"Candidate's answer: {answer}\n"
@@ -767,11 +794,13 @@ class EvaluatorAgent:
             f"Evaluate this answer using the available tools, then give "
             f"short feedback."
         )
+        # ④ start the tool-calling conversation with system and user messages
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_msg},
         ]
 
+        # ⑤ run the agent loop and save the evaluated turn in memory
         results: dict = {}
         feedback = self._run_loop(messages, results_out=results)
         self.memory.add_turn(
@@ -781,6 +810,7 @@ class EvaluatorAgent:
             expected_keywords=expected_keywords,
         )
 
+        # ⑥ return the UI-shaped evaluation payload
         return {
             "turn": self.memory.turn_count,
             "feedback": feedback,
@@ -795,9 +825,11 @@ class EvaluatorAgent:
         Uses the same tool-calling loop — the LLM decides whether to call
         generate_final_report to answer the question.
         """
+        # ① use the deterministic report when no LLM provider is configured
         if not self._client:
             return self.generate_final_report()
 
+        # ② send the meta-question through the same tool-calling loop
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
@@ -809,14 +841,17 @@ class EvaluatorAgent:
 
         Called as a tool by the LLM, or directly by the UI.
         """
+        # ① read recorded turns and stop if nothing has been scored
         turns = self.memory.turns
         if not turns:
             return "No answers scored yet."
 
+        # ② prepare report lines and running totals
         lines = [f"Interview Report — {len(turns)} question(s) answered so far\n"]
         relevance_scores: list[tuple[int, str]] = []
         total_fillers = 0
 
+        # ③ summarize each turn's tool results into readable report lines
         for t in turns:
             results = t["results"]
             lines.append(f"Q{t['turn_id']}: {t['question']}")
@@ -845,6 +880,7 @@ class EvaluatorAgent:
                 missed_str = ", ".join(missed[:4]) if missed else "none"
                 lines.append(f"   - Relevance: {score}/100 (missed: {missed_str})")
 
+        # ④ add average relevance and weakest area when relevance scores exist
         if relevance_scores:
             avg = round(sum(s for s, _ in relevance_scores) / len(relevance_scores))
             weakest = self.memory.get_weakest_area()
@@ -856,6 +892,7 @@ class EvaluatorAgent:
                     f"(relevance {w_score}/100)"
                 )
 
+        # ⑤ append the delivery total and return the final report text
         lines.append(f"Total filler words across the session: {total_fillers}")
         return "\n".join(lines)
 
@@ -873,13 +910,16 @@ class EvaluatorAgent:
         rejects as unknown.  Regenerating almost always fixes it.
         """
         last_error = None
+        # ① try the chat completion a few times in case the provider glitches
         for _ in range(MAX_GLITCH_RETRIES):
             try:
                 return self._client.chat.completions.create(**kwargs)
             except BadRequestError as e:
+                # ② retry only the known Groq tool-call formatting glitch
                 if getattr(e, "code", None) != "tool_use_failed":
                     raise
                 last_error = e
+        # ③ raise the final retryable error after all attempts fail
         raise last_error
 
     def _run_loop(self, messages: list, results_out: dict | None = None) -&gt; str:
@@ -893,6 +933,7 @@ class EvaluatorAgent:
         it by tool name — used by ``evaluate_answer`` to build a session turn.
         """
         for _ in range(MAX_TOOL_ROUNDS):
+            # ① ask the model whether to call tools or answer directly
             response = self._create_with_retry(
                 model=self._model,
                 messages=messages,
@@ -901,11 +942,13 @@ class EvaluatorAgent:
             )
             msg = response.choices[0].message
 
+            # ② return the final reply once the model stops requesting tools
             if not msg.tool_calls:
                 return msg.content or ""
 
             messages.append(msg)
             for call in msg.tool_calls:
+                # ③ parse arguments and execute the requested Python tool
                 args = (
                     json.loads(call.function.arguments)
                     if call.function.arguments
@@ -914,7 +957,7 @@ class EvaluatorAgent:
                 fn = self._tool_functions[call.function.name]
                 result = fn(args)
 
-                # Record tool results for session logging (except the report
+                # ④ record tool results for session logging (except the report
                 # itself, which is meta-data, not per-answer evaluation).
                 if (
                     results_out is not None
@@ -922,6 +965,7 @@ class EvaluatorAgent:
                 ):
                     results_out[call.function.name] = result
 
+                # ⑤ append tool output so the model can continue reasoning
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.id,
@@ -930,7 +974,7 @@ class EvaluatorAgent:
                     ),
                 })
 
-        # Ran out of rounds — ask for a final answer without offering tools.
+        # ⑥ ran out of rounds — ask for a final answer without offering tools
         response = self._create_with_retry(
             model=self._model, messages=messages
         )
@@ -945,15 +989,18 @@ class EvaluatorAgent:
         Runs all three tools deterministically and formats a plain-text
         summary.  No LLM synthesis.
         """
+        # ① run all deterministic tools against the same answer
         filler = detect_filler_words(answer)
         star = check_star_structure(answer)
         relevance = score_relevance(answer, expected_keywords)
 
+        # ② package results under the same names used by tool calls
         results = {
             "detect_filler_words": filler,
             "check_star_structure": star,
             "score_relevance": relevance,
         }
+        # ③ record the deterministic turn in shared session memory
         self.memory.add_turn(
             question, answer, results,
             category=category,
@@ -961,11 +1008,13 @@ class EvaluatorAgent:
             expected_keywords=expected_keywords,
         )
 
+        # ④ format concise feedback from the three tool messages
         lines = [
             f"Relevance: {relevance['message']}",
             f"STAR: {star['message']}",
             f"Fillers: {filler['message']}",
         ]
+        # ⑤ return the same UI payload shape as the LLM path
         return {
             "turn": self.memory.turn_count,
             "feedback": "\n".join(lines),
@@ -986,7 +1035,7 @@ class EvaluatorAgent:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">288 lines</span>
+                        <span class="topic-meta-chip">306 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1039,6 +1088,7 @@ def detect_filler_words(answer: str) -&gt; dict[str, Any]:
     Returns a structured dict with detected fillers, total count, density per
     100 words, and a verdict message.
     """
+    # ① reject empty answers before running pattern matching
     if not answer or not answer.strip():
         return {
             "detected_fillers": {},
@@ -1048,10 +1098,12 @@ def detect_filler_words(answer: str) -&gt; dict[str, Any]:
             "message": "No answer provided or answer is empty.",
         }
 
+    # ② normalize the answer and prepare filler counters
     text_lower = answer.lower()
     detected_fillers: dict[str, int] = {}
     total_count = 0
 
+    # ③ count each filler pattern and accumulate totals
     for name, pattern in FILLER_PATTERNS:
         matches = re.findall(pattern, text_lower, flags=re.IGNORECASE)
         count = len(matches)
@@ -1059,11 +1111,12 @@ def detect_filler_words(answer: str) -&gt; dict[str, Any]:
             detected_fillers[name] = count
             total_count += count
 
-    # Compute word count for density calculation.
+    # ④ compute word count for density calculation
     words = re.findall(r"\b\w+\b", text_lower)
     word_count = len(words)
     density = round((total_count / max(word_count, 1)) * 100, 1)
 
+    # ⑤ build a learner-friendly message based on detected fillers
     if total_count &gt; 0:
         details = ", ".join(
             f"{k} ({v})"
@@ -1073,6 +1126,7 @@ def detect_filler_words(answer: str) -&gt; dict[str, Any]:
     else:
         message = "Excellent! No filler words detected in this answer."
 
+    # ⑥ return structured score data for the agent and UI
     return {
         "detected_fillers": detected_fillers,
         "total_filler_count": total_count,
@@ -1119,6 +1173,7 @@ def check_star_structure(answer: str) -&gt; dict[str, Any]:
     Returns a structured dict with per-component coverage, a percentage score,
     and a recommendation message.
     """
+    # ① reject empty answers before checking STAR components
     if not answer or not answer.strip():
         return {
             "situation": False,
@@ -1132,11 +1187,13 @@ def check_star_structure(answer: str) -&gt; dict[str, Any]:
             "message": "Answer is empty. Please provide a detailed response.",
         }
 
+    # ② normalize the answer and prepare component tracking buckets
     text_lower = answer.lower()
     covered: list[str] = []
     missing: list[str] = []
     components_status: dict[str, bool] = {}
 
+    # ③ scan each STAR component's cue patterns in the answer
     for component, patterns in STAR_PATTERNS.items():
         found = any(
             re.search(pattern, text_lower, flags=re.IGNORECASE)
@@ -1148,9 +1205,11 @@ def check_star_structure(answer: str) -&gt; dict[str, Any]:
         else:
             missing.append(component)
 
+    # ④ convert covered components into a percentage completion score
     star_score = round((len(covered) / 4) * 100, 1)
     is_complete = len(covered) == 4
 
+    # ⑤ choose a coaching message based on STAR coverage
     if is_complete:
         message = "Outstanding! All 4 STAR components are clearly present."
     elif len(covered) &gt;= 2:
@@ -1158,6 +1217,7 @@ def check_star_structure(answer: str) -&gt; dict[str, Any]:
     else:
         message = f"Weak structure ({star_score}% STAR). Missing: {', '.join(missing)}."
 
+    # ⑥ return per-component status for feedback and aggregation
     return {
         "situation": components_status.get("situation", False),
         "task": components_status.get("task", False),
@@ -1178,28 +1238,28 @@ def check_star_structure(answer: str) -&gt; dict[str, Any]:
 
 def _build_keyword_pattern(kw_clean: str) -&gt; str:
     """Build a regex pattern that matches a keyword and common inflections."""
-    # Multi-word phrases and hyphenated/underscored terms.
+    # ① handle multi-word phrases and hyphenated/underscored terms
     if " " in kw_clean or "-" in kw_clean or "_" in kw_clean:
         tokens = [re.escape(t) for t in re.split(r"[\s\-_]+", kw_clean) if t]
         return r"\b" + r"[\s\-_]+".join(tokens) + r"\b"
 
-    # -tion → verb forms (resolution → resolve, resolving, …)
+    # ② expand -tion into verb forms (resolution → resolve, resolving, …)
     if kw_clean.endswith("tion") and len(kw_clean) &gt; 5:
         stem = re.escape(kw_clean[:-4])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}t(?:e|es|ed|ing)?|{stem[:-1]}v(?:e|es|ed|ing)?)\b"
-    # -ment → verb forms (alignment → align, aligning, …)
+    # ③ expand -ment into verb forms (alignment → align, aligning, …)
     if kw_clean.endswith("ment") and len(kw_clean) &gt; 5:
         stem = re.escape(kw_clean[:-4])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:s|ed|ing|e)?)\b"
-    # -e ending (cache → caching, cached, …)
+    # ④ expand -e endings (cache → caching, cached, …)
     if kw_clean.endswith("e") and len(kw_clean) &gt; 3:
         stem = re.escape(kw_clean[:-1])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:ing|ed|es|able|ability)?)\b"
-    # -y ending (delivery → deliveries, …)
+    # ⑤ expand -y endings (delivery → deliveries, …)
     if kw_clean.endswith("y") and len(kw_clean) &gt; 3:
         stem = re.escape(kw_clean[:-1])
         return rf"\b(?:{re.escape(kw_clean)}|{stem}(?:ies|ied|ying))\b"
-    # Default: base + common suffixes.
+    # ⑥ default to base plus common suffixes
     base = re.escape(kw_clean)
     return rf"\b(?:{base}|{base}(?:s|es|ed|ing)?)\b"
 
@@ -1210,6 +1270,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
     Uses regex-based matching with grammatical inflection support and a
     calibrated tiered scoring curve.
     """
+    # ① reject empty answers and mark all expected keywords as unmatched
     if not answer or not answer.strip():
         return {
             "score": 0,
@@ -1221,6 +1282,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
             "message": "Answer is empty. Relevance score is 0.",
         }
 
+    # ② give full credit when no keyword rubric was supplied
     if not expected_keywords:
         return {
             "score": 100,
@@ -1232,10 +1294,12 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
             "message": "No expected keywords specified.",
         }
 
+    # ③ normalize the answer and prepare matched/unmatched buckets
     text_lower = answer.lower()
     matched_keywords: list[str] = []
     unmatched_keywords: list[str] = []
 
+    # ④ match each expected keyword using an inflection-aware regex
     for kw in expected_keywords:
         kw_clean = kw.lower().strip()
         if not kw_clean:
@@ -1246,11 +1310,12 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
         else:
             unmatched_keywords.append(kw)
 
+    # ⑤ compute coverage totals used by the scoring curve
     total_expected = len(expected_keywords)
     total_matched = len(matched_keywords)
     coverage_ratio = total_matched / max(total_expected, 1)
 
-    # Calibrated scoring curve:
+    # ⑥ apply the calibrated scoring curve
     #   &gt;= 70% coverage -&gt; 90-100 score
     #   &gt;= 45% coverage -&gt; 75-89 score
     #   &gt;= 25% coverage -&gt; 50-74 score
@@ -1268,6 +1333,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
     else:
         score = max(5, int(round((coverage_ratio / 0.25) * 45)))
 
+    # ⑦ write the feedback message for the score band
     if score &gt;= 80:
         message = f"High relevance ({score}/100). Hit {total_matched}/{total_expected} expected concepts."
     elif score &gt;= 50:
@@ -1277,6 +1343,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
         tops = ", ".join(unmatched_keywords[:4])
         message = f"Low relevance ({score}/100). Hit only {total_matched}/{total_expected}. Missed: {tops}."
 
+    # ⑧ return structured relevance data for the agent and UI
     return {
         "score": score,
         "matched_keywords": matched_keywords,
@@ -1299,7 +1366,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">154 lines</span>
+                        <span class="topic-meta-chip">157 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1456,9 +1523,12 @@ def get_all_questions() -&gt; list[dict]:
 
 def get_question_by_id(question_id: int) -&gt; dict | None:
     """Retrieve a specific question by its ID."""
+    # ① scan the question bank for the requested id
     for q in QUESTIONS:
+        # ② return the first matching question record
         if q["id"] == question_id:
             return q
+    # ③ return None when the id is not in the bank
     return None
 
 
@@ -1478,7 +1548,7 @@ def get_question_categories() -&gt; list[str]:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">58 lines</span>
+                        <span class="topic-meta-chip">62 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1533,8 +1603,10 @@ def get_openai_client():
         A tuple of ``(client, model_name)`` or ``(None, None)`` when no API
         key is available.
     """
+    # ① import the client only when a provider lookup is needed
     from openai import OpenAI
 
+    # ② use Groq first because it is the preferred free-tier provider
     if GROQ_API_KEY:
         return (
             OpenAI(
@@ -1544,9 +1616,11 @@ def get_openai_client():
             "openai/gpt-oss-20b",
         )
 
+    # ③ fall back to OpenAI when no Groq key is configured
     if OPENAI_API_KEY:
         return OpenAI(api_key=OPENAI_API_KEY), "gpt-4o-mini"
 
+    # ④ signal deterministic-only mode when no API keys are available
     return None, None</code></pre>
                 </div>
             </section>
@@ -1561,7 +1635,7 @@ def get_openai_client():
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">204 lines</span>
+                        <span class="topic-meta-chip">224 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1624,11 +1698,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit mutating API requests
     if request.method == "POST":
+        # ② ask the shared rate limiter whether this client is blocked
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 response with a retry hint for the browser
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -1649,12 +1726,15 @@ _agent = EvaluatorAgent(memory=_memory)
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the frontend HTML template from the static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② replace the empty data-api-base with the deployment path prefix
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML response to the browser
     return app.response_class(html, mimetype="text/html")
 
 
@@ -1687,21 +1767,26 @@ def evaluate():
     Response (JSON): ``{"turn": 1, "feedback": "...", "relevance_evaluation": {...},
         "star_evaluation": {...}, "filler_evaluation": {...}}``
     """
+    # ① parse the JSON payload and normalize the answer text
     data = request.get_json(force=True)
     question_id = data.get("question_id")
     answer = (data.get("answer") or "").strip()
 
+    # ② reject empty answers before doing any scoring
     if not answer:
         return jsonify({"error": "An answer is required."}), 400
 
+    # ③ find the requested question in the interview bank
     q = get_question_by_id(question_id)
     if not q:
         return jsonify({"error": f"Question ID {question_id} not found."}), 400
 
     try:
+        # ④ let the evaluator agent score the answer and update memory
         result = _agent.evaluate_answer(q, answer)
         return jsonify(result)
     except Exception as e:
+        # ⑤ return scoring errors as JSON so the frontend can display them
         return jsonify({"error": str(e)}), 500
 
 
@@ -1712,16 +1797,20 @@ def coach():
     Request body (JSON): ``{"query": "How am I doing?"}``
     Response (JSON): ``{"response": "..."}``
     """
+    # ① parse the candidate's coaching question from either supported field
     data = request.get_json(force=True)
     message = (data.get("query") or data.get("message") or "").strip()
 
+    # ② reject empty coaching questions
     if not message:
         return jsonify({"error": "A question is required."}), 400
 
     try:
+        # ③ ask the agent to answer using current session memory
         reply = _agent.ask_agent(message)
         return jsonify({"response": reply})
     except Exception as e:
+        # ④ return agent errors as JSON for the frontend
         return jsonify({"error": str(e)}), 500
 
 
@@ -1732,6 +1821,7 @@ def scorecard():
     Response (JSON): ``{"scorecard": [...], "average_relevance": 75.5,
         "total_questions": 3, "weakest_area": {...}}``
     """
+    # ① gather live session metrics into one scorecard response
     return jsonify({
         "scorecard": _memory.get_scorecard(),
         "average_relevance": _memory.get_average_relevance(),
@@ -1747,8 +1837,10 @@ def report():
     Response (JSON): ``{"report_text": "...", "total_questions": 3, ...}``
     """
     try:
+        # ① ask memory to aggregate all turns into a final report
         return jsonify(_memory.generate_final_report_dict())
     except Exception as e:
+        # ② return report-generation errors as JSON for the frontend
         return jsonify({"error": str(e)}), 500
 
 
@@ -1758,7 +1850,9 @@ def reset():
 
     Response (JSON): ``{"status": "ok", "message": "Session reset successfully."}``
     """
+    # ① clear session state in memory and the evaluator agent
     _agent.reset()
+    # ② confirm the fresh session to the browser
     return jsonify({"status": "ok", "message": "Session reset successfully."})
 
 
@@ -1777,104 +1871,6 @@ if __name__ == "__main__":
     # outside the container; port 5000 is mapped to host port 8085 by
     # docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 10 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">10</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">interviewiq/src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

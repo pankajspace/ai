@@ -21,9 +21,11 @@ def calculate_delay_compensation(
     - Minimum courtesy credit of $15.00
     - Capped at 100% of shipment value
     """
+    # ① reject invalid negative values before applying policy
     if shipment_value < 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② return no payout when the shipment has no declared value
     if shipment_value == 0:
         return {
             "category": "delayed",
@@ -33,10 +35,11 @@ def calculate_delay_compensation(
         }
 
     base_compensation = shipment_value * 0.20
-    # Apply minimum courtesy credit, but never exceed shipment value
+    # ③ apply minimum courtesy credit, but never exceed shipment value
     compensation = max(base_compensation, 15.0)
     compensation = min(compensation, shipment_value)
 
+    # ④ return rounded delay payout details for the pipeline
     return {
         "category": "delayed",
         "amount": round(compensation, 2),
@@ -57,13 +60,16 @@ def calculate_damage_compensation(
     - Partial damage: 50% of shipment value
     - Total/severe damage: 100% of shipment value
     """
+    # ① reject invalid negative values before applying damage policy
     if shipment_value < 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② normalize severity and pick full or partial reimbursement rate
     severity = damage_severity.strip().lower()
     rate = 1.0 if severity in ("total", "severe", "complete") else 0.50
     compensation = shipment_value * rate
 
+    # ③ return rounded damage payout details for the pipeline
     return {
         "category": "damaged",
         "amount": round(compensation, 2),
@@ -81,9 +87,11 @@ def calculate_lost_compensation(shipment_value: float) -> Dict[str, Any]:
     Policy:
     - 100% full replacement value of the shipment
     """
+    # ① reject invalid negative values before replacement payout
     if shipment_value < 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② return full replacement value for a lost shipment
     return {
         "category": "lost",
         "amount": round(shipment_value, 2),
@@ -94,10 +102,10 @@ def calculate_lost_compensation(shipment_value: float) -> Dict[str, Any]:
 
 def calculate_unknown_compensation(shipment_value: float) -> Dict[str, Any]:
     """Fallback compensation calculator for unclassified or garbled reports."""
+    # ① return zero automatic payout so manual review handles unclear reports
     return {
         "category": "unknown",
         "amount": 0.0,
         "currency": "USD",
         "reason": "Unclassified exception: no automatic compensation calculated; routed for manual review",
     }
-

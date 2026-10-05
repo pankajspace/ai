@@ -28,10 +28,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply rate limits only to state-changing post requests
     if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return http 429 with retry timing when the request is blocked
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -43,9 +46,12 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html with API base injected for local/prod parity."""
+    # ① read the static dashboard page from the configured static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix so browser api calls use the right base
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified page as html
     return app.response_class(html, mimetype="text/html")
 
 
@@ -70,25 +76,31 @@ def health_check():
 @bp.route("/api/triage", methods=["POST"])
 def triage_report():
     """Process an incoming shipment exception report."""
+    # ① parse and normalize request fields from the json body
     data = request.get_json(force=True) or {}
     report_text = (data.get("report_text") or "").strip()
     shipment_value = data.get("shipment_value")
     customer_tier = (data.get("customer_tier") or "standard").strip().lower()
 
+    # ② reject missing report text before invoking the ai workflow
     if not report_text:
         return jsonify({"detail": "Report text cannot be empty."}), 400
 
+    # ③ convert shipment value to a number or return validation error
     try:
         shipment_value = float(shipment_value)
     except (TypeError, ValueError):
         return jsonify({"detail": "Shipment value must be a valid number."}), 400
 
+    # ④ reject negative values because compensation cannot be negative
     if shipment_value < 0:
         return jsonify({"detail": "Shipment value cannot be negative."}), 400
 
+    # ⑤ accept only supported service tiers for policy lookup
     if customer_tier not in {"standard", "premium"}:
         return jsonify({"detail": "Customer tier must be standard or premium."}), 400
 
+    # ⑥ run the triage pipeline and return its structured result
     try:
         result = process_exception(
             report_text=report_text,
@@ -97,6 +109,7 @@ def triage_report():
             log_to_session=True,
         )
         return jsonify(result)
+    # ⑦ return pipeline errors as client-readable json
     except Exception as exc:
         return jsonify({"detail": str(exc)}), 500
 
@@ -116,7 +129,9 @@ def fetch_summary():
 @bp.route("/api/reset", methods=["POST"])
 def reset_session():
     """Clear session records."""
+    # ① clear the in-memory ledger for a fresh demo session
     clear_session()
+    # ② confirm the reset so the dashboard can refresh state
     return jsonify({"status": "session_cleared"})
 
 
@@ -124,4 +139,5 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
 if __name__ == "__main__":
+    # ① start flask when this file is executed directly
     app.run(host="0.0.0.0", port=5000)

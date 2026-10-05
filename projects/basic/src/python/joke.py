@@ -24,11 +24,14 @@ def get_joke(topic: str = "") -> str:
     Returns:
         The text of the assistant's reply — just the joke, no preamble.
     """
+    # ① choose the requested topic or a random fallback so the prompt is clear
     # Fall back to "random" so the prompt is always explicit about what we want
     # rather than sending an empty string which could confuse the model.
     subject = topic.strip() if topic.strip() else "random"
 
+    # ② create the Groq client that will run the open-weight joke model
     client = get_groq_client()
+    # ③ send a high-temperature prompt so the model produces a fresh joke
     response = client.chat.completions.create(
         model=JOKE_MODEL,
         # temperature controls randomness: 0 = deterministic, 2 = very random.
@@ -50,6 +53,7 @@ def get_joke(topic: str = "") -> str:
             },
         ],
     )
+    # ④ return the first assistant reply so the UI can display just the joke
     # choices[0] is the first (and only) completion; .message.content is the
     # assistant's reply text.
     return response.choices[0].message.content

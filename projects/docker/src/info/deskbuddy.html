@@ -36,7 +36,6 @@
                     <li><a href="#source-desk-buddy-agent-app-py">desk-buddy/agent/app.py</a></li>
                     <li><a href="#source-desk-buddy-tools-app-py">desk-buddy/tools/app.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -50,11 +49,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>8 Topics</span>
+                    <span>7 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Python Files in Full</span>
+                    <span>3 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -246,7 +245,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -261,7 +260,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">140 lines</span>
+                        <span class="topic-meta-chip">146 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -351,12 +350,16 @@ TOOL_DEFS = [
 def call_tool(name: str, args: dict) -&gt; dict:
     """Actually execute a tool by calling the tools microservice over HTTP."""
     try:
+        # ① send calculator requests to the calculator endpoint
         if name == "calculator":
             return httpx.post(f"{TOOLS_URL}/calculator", json=args, timeout=10).json()
+        # ② send datetime requests to the datetime endpoint
         if name == "get_datetime":
             return httpx.get(f"{TOOLS_URL}/datetime", timeout=10).json()
+        # ③ report unknown tool names instead of guessing
         return {"error": f"unknown tool: {name}"}
     except Exception as e:
+        # ④ turn tool-service failures into JSON the agent can read
         return {"error": f"tool call failed: {e}"}
 
 
@@ -376,12 +379,12 @@ def health():
 
 @app.post("/chat")
 def chat(req: Chat):
-    # --- 1. Load this session's memory from Redis ---------------------------
+    # ① load this session's memory from Redis and append the new user message
     key = f"history:{req.session_id}"
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]
     history.append({"role": "user", "content": req.message})
 
-    # --- 2. The agent loop: think -&gt; act -&gt; observe -&gt; repeat ---------------
+    # ② run the bounded agent loop: think, act, observe, repeat
     msg = None
     for _ in range(5):  # safety fuse: max 5 laps
         resp = llm.chat.completions.create(
@@ -391,9 +394,11 @@ def chat(req: Chat):
         )
         msg = resp.choices[0].message
 
+        # ③ stop looping when the model answers in normal text
         if not msg.tool_calls:
             break  # the LLM answered in words - we're done
 
+        # ④ run one or more tools and append their results for the next lap
         # The LLM asked to run one or more tools
         history.append(msg.model_dump(exclude_none=True))
         for tc in msg.tool_calls:
@@ -406,7 +411,7 @@ def chat(req: Chat):
                 }
             )
 
-    # --- 3. Save memory back to Redis and return the answer -----------------
+    # ⑤ save memory back to Redis and return the final answer
     history.append({"role": "assistant", "content": msg.content})
     r.delete(key)
     for m in history:
@@ -426,7 +431,7 @@ def chat(req: Chat):
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">42 lines</span>
+                        <span class="topic-meta-chip">43 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -467,12 +472,13 @@ def health():
 def calculator(c: Calc):
     """Evaluate a math expression like '23*47' or '(100-8)/4'."""
     try:
-        # Demo only — never use eval on untrusted input in production!
+        # ① demo only — never use eval on untrusted input in production!
         # The empty __builtins__ blocks access to dangerous functions,
         # but a real system would use a proper math parser.
         result = eval(c.expression, {"__builtins__": {}})
         return {"result": result}
     except Exception as e:
+        # ② return parser or evaluation errors as JSON for the agent
         return {"error": str(e)}
 
 
@@ -493,7 +499,7 @@ def now():
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">197 lines</span>
+                        <span class="topic-meta-chip">222 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -555,10 +561,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so page assets stay fast
     if request.method == "POST":
+        # ② check the caller's hourly quota before proxying work
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 with Retry-After when the quota is used up
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -585,19 +594,23 @@ def proxy_request(method, url, json_body=None):
     Returns a tuple of (response_dict, http_status_code). On connection
     errors, returns a helpful error message instead of crashing.
     """
+    # ① forward the request to the selected internal service
     try:
         if method == "GET":
             resp = http_client.get(url, timeout=PROXY_TIMEOUT)
         else:
             resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        # ② pass through the service JSON and HTTP status code
         return resp.json(), resp.status_code
     except http_client.ConnectionError:
+        # ③ turn connection failures into a helpful service-start message
         service = url.split("//")[1].split(":")[0]
         return {
             "error": f"Service '{service}' is not running. "
                      f"Start it with: docker compose up {service}"
         }, 503
     except Exception as e:
+        # ④ return unexpected proxy failures as JSON instead of crashing
         return {"error": str(e)}, 500
 
 
@@ -609,9 +622,12 @@ def proxy_request(method, url, json_body=None):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static homepage template from the shared src folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime API prefix so browser calls hit this gateway
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the rendered HTML with the correct MIME type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -641,15 +657,20 @@ def info(filename):
 @bp.route("/quickbite/predict", methods=["POST"])
 def quickbite_predict():
     """Proxy ETA prediction to the QuickBite FastAPI service."""
+    # ① parse the browser's order JSON
     body = request.get_json(force=True)
+    # ② proxy the order to the QuickBite prediction service
     data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/quickbite/status")
 def quickbite_status():
     """Check if QuickBite service is running."""
+    # ① ask QuickBite for its health payload
     data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -661,15 +682,20 @@ def quickbite_status():
 @bp.route("/scalergpt/ask", methods=["POST"])
 def scalergpt_ask():
     """Proxy RAG question to the ScalerGPT FastAPI service."""
+    # ① parse the browser's question JSON
     body = request.get_json(force=True)
+    # ② proxy the question to the ScalerGPT RAG service
     data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/scalergpt/status")
 def scalergpt_status():
     """Check if ScalerGPT service is running and how many docs are indexed."""
+    # ① ask ScalerGPT for its health and index summary
     data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -681,15 +707,20 @@ def scalergpt_status():
 @bp.route("/deskbuddy/chat", methods=["POST"])
 def deskbuddy_chat():
     """Proxy chat message to the DeskBuddy agent service."""
+    # ① parse the browser's chat JSON
     body = request.get_json(force=True)
+    # ② proxy the message to the DeskBuddy agent loop
     data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    # ③ return the agent JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/deskbuddy/status")
 def deskbuddy_status():
     """Check if DeskBuddy agent service is running."""
+    # ① ask DeskBuddy for its health payload
     data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -702,104 +733,6 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 8 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

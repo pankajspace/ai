@@ -69,12 +69,15 @@ Answer: 60
 
 def get_model_response(prompt: str, client=None, model_name: str = None, temperature: float = TEMPERATURE):
     """Sends a prompt to the model and returns response text and token counts with retry on rate limits."""
+    # ① choose the default model client when the caller did not pass one
     if client is None or model_name is None:
         client, model_name, _ = get_client_and_model()
     max_retries = 3
     last_error = None
+    # ② try the model call a few times so temporary rate limits can recover
     for attempt in range(max_retries):
         try:
+            # ③ send the prompt to the chat model and collect token usage
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
@@ -92,6 +95,7 @@ def get_model_response(prompt: str, client=None, model_name: str = None, tempera
             if (
                 "429" in err_msg or "resource_exhausted" in err_msg.lower()
             ) and attempt < max_retries - 1:
+                # ④ back off before retrying a rate-limited request
                 delay = 3.0 * (attempt + 1)
                 retry_match = re.search(
                     r"retry\s+in\s+([0-9.]+)\s*s", err_msg, re.IGNORECASE
@@ -104,21 +108,26 @@ def get_model_response(prompt: str, client=None, model_name: str = None, tempera
                 time.sleep(min(delay, 10.0))
                 continue
             return f"Error: {e}", 0, 0
+    # ⑤ return an error-shaped response if every retry failed
     return f"Error: {last_error}", 0, 0
 
 
 def extract_final_answer(response_text: str) -> str:
     """Isolates the model's stated final answer from a full response."""
+    # ① treat API failures as non-answers for the scorer
     if response_text.startswith("Error:"):
         return "(API Error)"
     text = response_text.strip()
+    # ② prefer the final explicit answer label if the model supplied one
     matches = list(re.finditer(r"answer\s*:", text, flags=re.IGNORECASE))
     if matches:
         segment = text[matches[-1].end() :]
     else:
+        # ③ otherwise use the last non-empty line as the answer candidate
         lines = [ln for ln in text.splitlines() if ln.strip()]
         segment = lines[-1] if lines else ""
 
+    # ④ strip markdown punctuation so comparisons are stable
     segment = segment.strip().splitlines()[0] if segment.strip() else ""
     return segment.replace("*", "").replace("`", "").strip().lower()
 
@@ -134,12 +143,15 @@ def first_clause(segment: str) -> str:
 
 def evaluate_accuracy(response_text: str, correct_answer) -> bool:
     """Checks whether the model's final answer matches an expected answer."""
+    # ① skip scoring when the API call failed
     if response_text.startswith("Error:"):
         return False
 
+    # ② normalise the expected answer into a list of acceptable values
     accepted = (
         [correct_answer] if isinstance(correct_answer, str) else list(correct_answer)
     )
+    # ③ extract the model's asserted answer and prepare it for comparison
     answer_segment = extract_final_answer(response_text)
     if not answer_segment:
         return False
@@ -147,6 +159,7 @@ def evaluate_accuracy(response_text: str, correct_answer) -> bool:
     clause = first_clause(answer_segment)
     cleaned_clause = clause.replace("$", "").replace(",", "")
 
+    # ④ accept exact, numeric, or standalone text matches against known answers
     for candidate in accepted:
         cleaned_answer = candidate.strip().lower().replace("$", "").replace(",", "")
         if cleaned_clause.rstrip(".") == cleaned_answer:
@@ -171,16 +184,19 @@ def run_benchmark_for_question(
     temperature: float = TEMPERATURE,
 ) -> dict:
     """Runs the selected strategy (or all three) for a given question or preset."""
+    # ① choose the requested provider and model before building prompts
     client, model_name, provider = get_client_and_model(model_choice)
     matched_preset = None
     cleaned_input = question_input.strip()
 
+    # ② match the user input to a preset ID or exact preset question
     # Check if input matches an ID or matches one of the preset questions
     for preset in BENCHMARK_DATA:
         if cleaned_input.lower() == preset["id"] or cleaned_input == preset["question"]:
             matched_preset = preset
             break
 
+    # ③ resolve the actual question and expected answer for scoring
     if matched_preset:
         question = matched_preset["question"]
         expected_answer = matched_preset["answer"]
@@ -188,6 +204,7 @@ def run_benchmark_for_question(
         question = cleaned_input
         expected_answer = None
 
+    # ④ build the prompt variants that demonstrate each reasoning strategy
     strategies = [
         (
             "direct",
@@ -205,12 +222,14 @@ def run_benchmark_for_question(
             f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>'.\n\n{FEW_SHOT_EXAMPLES}\n\nQuestion: {question}",
         ),
     ]
+    # ⑤ optionally keep only the single strategy chosen in the UI
     if strategy != "all":
         strategies = [s for s in strategies if s[0] == strategy]
 
     results = []
     baseline_tokens = None
 
+    # ⑥ run each selected strategy and capture answer, tokens, and latency
     for idx, (_, name, prompt) in enumerate(strategies):
         if idx > 0:
             time.sleep(1.0)
@@ -229,6 +248,7 @@ def run_benchmark_for_question(
         if name == "Direct":
             baseline_tokens = max(total_tokens, 1)
 
+        # ⑦ compare token cost with Direct, or leave it blank if Direct was skipped
         # Multipliers are relative to Direct, so they are None when Direct was not run.
         token_mult = (
             round(total_tokens / baseline_tokens, 1) if baseline_tokens else None
@@ -248,6 +268,7 @@ def run_benchmark_for_question(
             }
         )
 
+    # ⑧ format the expected answer label for the frontend summary
     expected_label = (
         (
             expected_answer[0]
@@ -270,8 +291,9 @@ def run_benchmark_for_question(
 if __name__ == "__main__":
     import json
 
+    # ① pick a preset question for a local smoke test
     q = BENCHMARK_DATA[0]["question"]
     print("Testing prompt benchmark with question:", q)
+    # ② run the benchmark and print the JSON payload
     output = run_benchmark_for_question(q)
     print(json.dumps(output, indent=2))
-

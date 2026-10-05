@@ -50,10 +50,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit POST requests because static pages are safe to serve
     if request.method == "POST":
+        # ② ask the shared limiter whether this client has exceeded the window
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 response when the limiter says the client is blocked
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -68,12 +71,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the bundled HTML shell from the static source directory
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix so browser fetch calls hit the API
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML with the correct content type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -103,16 +109,21 @@ def joke():
     Response (JSON):     ``{ "result": "<joke text>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 500
     """
+    # ① parse the JSON request body from the browser
     data = request.get_json(force=True)
+    # ② normalize the optional topic so get_joke can choose random if empty
     # topic is optional; an empty string causes get_joke() to pick randomly.
     topic = (data.get("topic") or "").strip()
     try:
+        # ③ generate the joke through the Groq-backed feature module
         text = get_joke(topic)
+        # ④ wrap the joke in JSON and disable caching so each click is fresh
         response = jsonify({"result": text})
         # Prevent the browser from caching joke responses — every click
         # should fetch a fresh joke from the API.
         response.headers["Cache-Control"] = "no-store"
         return response
+    # ⑤ convert unexpected model or API failures into a JSON error
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -125,13 +136,18 @@ def travel():
     Response (JSON):     ``{ "result": "<suggestion text>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 500
     """
+    # ① parse the JSON request body from the browser
     data = request.get_json(force=True)
+    # ② choose the submitted city or a Bangalore default for empty input
     # Fall back to Bangalore if the user submits an empty city, so the
     # call to get_travel_suggestion() always has a usable value.
     city = (data.get("city") or "").strip() or "Bangalore"
     try:
+        # ③ ask the travel feature module for one suggestion
         text = get_travel_suggestion(city)
+        # ④ return the suggestion in the response shape the UI expects
         return jsonify({"result": text})
+    # ⑤ convert unexpected model or API failures into a JSON error
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -147,10 +163,13 @@ def summarizer():
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 (bad input)
                          or HTTP 500 (API / scraping error)
     """
+    # ① parse the JSON request body from the browser
     data = request.get_json(force=True)
+    # ② normalize URL, article text, and summary personality inputs
     url = (data.get("url") or "").strip()
     article = (data.get("text") or "").strip()
     personality = (data.get("personality") or "friendly").strip()
+    # ③ validate at the boundary before spending scraper or model work
     # Validate at the boundary — return 400 immediately rather than letting
     # the scraper or model run on bad input.
     if not url and not article:
@@ -160,8 +179,11 @@ def summarizer():
     if len(article) > MAX_TEXT_CHARS:
         return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
     try:
+        # ④ summarize pasted text directly, otherwise scrape and summarize the URL
         text = summarize_text(article, personality) if article else summarize(url, personality)
+        # ⑤ return the markdown summary in the response shape the UI expects
         return jsonify({"result": text})
+    # ⑥ convert unexpected scraper or model failures into a JSON error
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -183,13 +205,19 @@ def arena():
     Error response: ``{ "error": "<message>" }`` with HTTP 400 (missing prompt)
                     or HTTP 500 (API error)
     """
+    # ① parse the JSON request body from the browser
     data = request.get_json(force=True)
+    # ② normalize the prompt before validating it
     prompt = (data.get("prompt") or "").strip()
+    # ③ reject empty prompts before calling either model
     if not prompt:
         return jsonify({"error": "A prompt is required."}), 400
     try:
+        # ④ send the prompt to both arena models for comparison
         result = battle(prompt)
+        # ⑤ return both labelled model replies to the UI
         return jsonify({"result": result})
+    # ⑥ convert unexpected model or API failures into a JSON error
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

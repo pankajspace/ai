@@ -27,12 +27,13 @@ def health():
 def calculator(c: Calc):
     """Evaluate a math expression like '23*47' or '(100-8)/4'."""
     try:
-        # Demo only — never use eval on untrusted input in production!
+        # ① demo only — never use eval on untrusted input in production!
         # The empty __builtins__ blocks access to dangerous functions,
         # but a real system would use a proper math parser.
         result = eval(c.expression, {"__builtins__": {}})
         return {"result": result}
     except Exception as e:
+        # ② return parser or evaluation errors as JSON for the agent
         return {"error": str(e)}
 
 

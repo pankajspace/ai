@@ -41,7 +41,6 @@
                     <li><a href="#source-app-py">app.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                     <li><a href="#source-triage-check-py">triage_check.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -55,11 +54,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>13 Topics</span>
+                    <span>12 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>9 Python Files in Full</span>
+                    <span>8 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -316,7 +315,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">154 lines</span>
+                        <span class="topic-meta-chip">160 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -359,7 +358,7 @@ except ImportError:
     )
     from session import log_exception
 
-# Compensation escalation thresholds
+# ① set compensation escalation thresholds for manager review
 # Premium customers receive manager intervention at a lower dollar threshold ($50 vs $100)
 ESCALATION_THRESHOLDS = {
     "standard": 100.0,
@@ -378,18 +377,22 @@ def evaluate_escalation(
     - Unknown or unclassifiable exceptions escalate automatically regardless of value.
     - Escalates if compensation exceeds tier threshold (Standard: $100, Premium: $50).
     """
+    # ① normalize the tier and choose its escalation threshold
     tier_normalized = customer_tier.strip().lower()
     threshold = ESCALATION_THRESHOLDS.get(tier_normalized, 100.0)
 
+    # ② escalate unclear reports so a human can review them
     if category == "unknown":
         return True, "Unclassifiable or garbled report requires manual operations review."
 
+    # ③ escalate payouts that exceed the tier approval limit
     if compensation_amount &gt; threshold:
         return (
             True,
             f"Compensation amount (${compensation_amount:.2f}) exceeds {tier_normalized.capitalize()} tier threshold (${threshold:.2f}).",
         )
 
+    # ④ auto-approve payouts that stay inside the tier limit
     return (
         False,
         f"Compensation (${compensation_amount:.2f}) is within {tier_normalized.capitalize()} tier auto-approval limit (${threshold:.2f}).",
@@ -403,15 +406,16 @@ def process_exception(
     log_to_session: bool = True,
 ) -&gt; Dict[str, Any]:
     """Process an incoming shipment exception report through the full triage pipeline."""
+    # ① prepare the decision trail and normalize inputs for consistent rules
     steps: List[str] = []
     customer_tier = customer_tier.strip().lower()
     shipment_value = float(shipment_value)
 
-    # 1. Classify Report
+    # ② classify report with the classifier chain
     category = classify_chain.invoke({"report_text": report_text})
     steps.append(f"Step 1 [Classify]: Report classified as '{category.upper()}' via LLM.")
 
-    # 2. Route to Compensation Calculator
+    # ③ route to compensation calculator by category
     if category == "delayed":
         comp_result = calculate_delay_compensation(shipment_value)
     elif category == "damaged":
@@ -427,7 +431,7 @@ def process_exception(
         f"Step 2 [Compensate]: Calculated compensation ${comp_amount:.2f} ({comp_reason})."
     )
 
-    # 3. Escalation Decision
+    # ④ make the escalation decision from tier and payout
     escalated, escalation_reason = evaluate_escalation(
         category=category,
         compensation_amount=comp_amount,
@@ -436,7 +440,7 @@ def process_exception(
     action_taken = "Escalated to Manager" if escalated else "Auto-Resolved"
     steps.append(f"Step 3 [Escalation Check]: {action_taken} — {escalation_reason}")
 
-    # 4. Draft Appropriate Message
+    # ⑤ draft appropriate message for manager or customer
     if escalated:
         draft = escalate_chain.invoke(
             {
@@ -462,6 +466,7 @@ def process_exception(
         )
         steps.append("Step 4 [Draft]: Generated customer resolution &amp; apology email.")
 
+    # ⑥ package every pipeline decision into the API/CLI result
     result = {
         "report_text": report_text,
         "shipment_value": shipment_value,
@@ -476,7 +481,7 @@ def process_exception(
         "steps": steps,
     }
 
-    # 5. Log to session
+    # ⑦ log to session for daily aggregation when requested
     if log_to_session:
         log_exception(result)
         steps.append("Step 5 [Session]: Exception logged into daily triage ledger.")
@@ -495,7 +500,7 @@ def process_exception(
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">116 lines</span>
+                        <span class="topic-meta-chip">121 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -525,7 +530,7 @@ except ImportError:
     from llm import llm
 
 
-# --- 1. Classification Chain ---
+# ① classification chain: define the prompt that maps reports to one category
 _classify_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -548,14 +553,17 @@ _classify_prompt = ChatPromptTemplate.from_messages(
 
 def _clean_category(raw_output: str) -&gt; str:
     """Normalize and validate the classification output."""
+    # ① normalize raw model text before comparing it to known categories
     cleaned = raw_output.strip().lower().replace('"', "").replace("'", "")
-    # Check for known categories in the output
+    # ② check for known categories in the output
     for cat in ["delayed", "damaged", "lost", "unknown"]:
         if cat in cleaned:
             return cat
+    # ③ fall back to unknown when the model output is not trustworthy
     return "unknown"
 
 
+# ② connect prompt, model, parser, and cleanup into one classifier
 classify_chain = (
     _classify_prompt
     | llm
@@ -564,7 +572,7 @@ classify_chain = (
 )
 
 
-# --- 2. Escalation Chain ---
+# ① escalation chain: define the prompt for internal manager briefings
 _escalate_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -592,10 +600,11 @@ _escalate_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# ② connect the escalation prompt to the model and string parser
 escalate_chain = _escalate_prompt | llm | StrOutputParser()
 
 
-# --- 3. Draft Email Chain ---
+# ① draft email chain: define the customer prompt for auto-resolved claims
 _draft_email_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -622,6 +631,7 @@ _draft_email_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# ② connect the email prompt to the model and string parser
 draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
                 </div>
             </section>
@@ -636,7 +646,7 @@ draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">21 lines</span>
+                        <span class="topic-meta-chip">22 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -652,17 +662,18 @@ from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 from langchain_openai import ChatOpenAI
 
-# Load .env file from project root or current working directory
+# ① load .env file from project root or current working directory
 dotenv_path = find_dotenv(usecwd=True)
 if not dotenv_path:
-    # Try looking in parent directory if executing from within src/
+    # ② try looking in parent directory if executing from within src
     parent_env = Path(__file__).resolve().parent.parent / ".env"
     if parent_env.exists():
         dotenv_path = str(parent_env)
 
+# ③ load environment variables before creating the model client
 load_dotenv(dotenv_path)
 
-# Initialize ChatOpenAI instance
+# ④ initialize the ChatOpenAI instance used by all chains
 llm = ChatOpenAI(
     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
     temperature=0.0,
@@ -681,7 +692,7 @@ llm = ChatOpenAI(
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">102 lines</span>
+                        <span class="topic-meta-chip">111 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -716,9 +727,11 @@ def calculate_delay_compensation(
     - Minimum courtesy credit of $15.00
     - Capped at 100% of shipment value
     """
+    # ① reject invalid negative values before applying policy
     if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② return no payout when the shipment has no declared value
     if shipment_value == 0:
         return {
             "category": "delayed",
@@ -728,10 +741,11 @@ def calculate_delay_compensation(
         }
 
     base_compensation = shipment_value * 0.20
-    # Apply minimum courtesy credit, but never exceed shipment value
+    # ③ apply minimum courtesy credit, but never exceed shipment value
     compensation = max(base_compensation, 15.0)
     compensation = min(compensation, shipment_value)
 
+    # ④ return rounded delay payout details for the pipeline
     return {
         "category": "delayed",
         "amount": round(compensation, 2),
@@ -752,13 +766,16 @@ def calculate_damage_compensation(
     - Partial damage: 50% of shipment value
     - Total/severe damage: 100% of shipment value
     """
+    # ① reject invalid negative values before applying damage policy
     if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② normalize severity and pick full or partial reimbursement rate
     severity = damage_severity.strip().lower()
     rate = 1.0 if severity in ("total", "severe", "complete") else 0.50
     compensation = shipment_value * rate
 
+    # ③ return rounded damage payout details for the pipeline
     return {
         "category": "damaged",
         "amount": round(compensation, 2),
@@ -776,9 +793,11 @@ def calculate_lost_compensation(shipment_value: float) -&gt; Dict[str, Any]:
     Policy:
     - 100% full replacement value of the shipment
     """
+    # ① reject invalid negative values before replacement payout
     if shipment_value &lt; 0:
         raise ValueError("Shipment value cannot be negative.")
 
+    # ② return full replacement value for a lost shipment
     return {
         "category": "lost",
         "amount": round(shipment_value, 2),
@@ -789,6 +808,7 @@ def calculate_lost_compensation(shipment_value: float) -&gt; Dict[str, Any]:
 
 def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
     """Fallback compensation calculator for unclassified or garbled reports."""
+    # ① return zero automatic payout so manual review handles unclear reports
     return {
         "category": "unknown",
         "amount": 0.0,
@@ -808,7 +828,7 @@ def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">144 lines</span>
+                        <span class="topic-meta-chip">152 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -837,9 +857,12 @@ _SESSION_RECORDS: List[Dict[str, Any]] = []
 
 def log_exception(record: Dict[str, Any]) -&gt; Dict[str, Any]:
     """Append an exception triage result to the daily session ledger."""
+    # ① copy the result so logging does not mutate the caller's object
     entry = dict(record)
+    # ② add a timestamp when the pipeline did not provide one
     if "timestamp" not in entry:
         entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # ③ store the entry in the in-memory ledger and return it
     _SESSION_RECORDS.append(entry)
     return entry
 
@@ -866,8 +889,10 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
     - detailed category breakdown
     - formatted markdown summary
     """
+    # ① count logged exceptions before aggregating metrics
     total_exceptions = len(_SESSION_RECORDS)
 
+    # ② return an empty summary when no claims have been processed
     if total_exceptions == 0:
         return {
             "total_exceptions": 0,
@@ -884,6 +909,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
             ),
         }
 
+    # ③ total compensation and escalation outcomes across the session
     total_compensation = sum(
         float(r.get("compensation_amount", 0.0)) for r in _SESSION_RECORDS
     )
@@ -891,7 +917,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
     resolved_count = total_exceptions - escalated_count
     escalation_rate = (escalated_count / total_exceptions) * 100.0
 
-    # Aggregate by category
+    # ④ aggregate by category for claim counts, payouts, and escalations
     categories = ["delayed", "damaged", "lost", "unknown"]
     category_breakdown: Dict[str, Dict[str, Any]] = {}
 
@@ -906,7 +932,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
             "escalated": escalated_cat,
         }
 
-    # Determine costliest category by total compensation paid
+    # ⑤ determine costliest category by total compensation paid
     # Find category with highest cumulative payout; fallback to "None" if total is 0
     payout_per_category = {
         cat: category_breakdown[cat]["total_compensation"] for cat in categories
@@ -923,7 +949,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
         costliest_category = "None"
         costliest_amount = 0.0
 
-    # Build formatted Markdown summary
+    # ⑥ build formatted Markdown summary for the dashboard
     summary_lines = [
         "### 📊 Northwind Logistics — Daily Triage Summary",
         f"- **Total Exceptions Processed**: {total_exceptions}",
@@ -936,6 +962,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
         "| :--- | :--- | :--- | :--- | :--- |",
     ]
 
+    # ⑦ append each category row with its share of total payouts
     for cat in sorted(
         categories,
         key=lambda c: category_breakdown[c]["total_compensation"],
@@ -953,6 +980,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
 
     markdown_summary = "\n".join(summary_lines)
 
+    # ⑧ return machine-readable metrics plus the formatted markdown summary
     return {
         "total_exceptions": total_exceptions,
         "total_compensation": round(total_compensation, 2),
@@ -977,7 +1005,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">127 lines</span>
+                        <span class="topic-meta-chip">143 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1019,10 +1047,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply rate limits only to state-changing post requests
     if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return http 429 with retry timing when the request is blocked
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -1034,9 +1065,12 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html with API base injected for local/prod parity."""
+    # ① read the static dashboard page from the configured static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix so browser api calls use the right base
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified page as html
     return app.response_class(html, mimetype="text/html")
 
 
@@ -1061,25 +1095,31 @@ def health_check():
 @bp.route("/api/triage", methods=["POST"])
 def triage_report():
     """Process an incoming shipment exception report."""
+    # ① parse and normalize request fields from the json body
     data = request.get_json(force=True) or {}
     report_text = (data.get("report_text") or "").strip()
     shipment_value = data.get("shipment_value")
     customer_tier = (data.get("customer_tier") or "standard").strip().lower()
 
+    # ② reject missing report text before invoking the ai workflow
     if not report_text:
         return jsonify({"detail": "Report text cannot be empty."}), 400
 
+    # ③ convert shipment value to a number or return validation error
     try:
         shipment_value = float(shipment_value)
     except (TypeError, ValueError):
         return jsonify({"detail": "Shipment value must be a valid number."}), 400
 
+    # ④ reject negative values because compensation cannot be negative
     if shipment_value &lt; 0:
         return jsonify({"detail": "Shipment value cannot be negative."}), 400
 
+    # ⑤ accept only supported service tiers for policy lookup
     if customer_tier not in {"standard", "premium"}:
         return jsonify({"detail": "Customer tier must be standard or premium."}), 400
 
+    # ⑥ run the triage pipeline and return its structured result
     try:
         result = process_exception(
             report_text=report_text,
@@ -1088,6 +1128,7 @@ def triage_report():
             log_to_session=True,
         )
         return jsonify(result)
+    # ⑦ return pipeline errors as client-readable json
     except Exception as exc:
         return jsonify({"detail": str(exc)}), 500
 
@@ -1107,7 +1148,9 @@ def fetch_summary():
 @bp.route("/api/reset", methods=["POST"])
 def reset_session():
     """Clear session records."""
+    # ① clear the in-memory ledger for a fresh demo session
     clear_session()
+    # ② confirm the reset so the dashboard can refresh state
     return jsonify({"status": "session_cleared"})
 
 
@@ -1115,6 +1158,7 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
 if __name__ == "__main__":
+    # ① start flask when this file is executed directly
     app.run(host="0.0.0.0", port=5000)</code></pre>
                 </div>
             </section>
@@ -1129,7 +1173,7 @@ if __name__ == "__main__":
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">106 lines</span>
+                        <span class="topic-meta-chip">118 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1159,6 +1203,7 @@ from session import generate_daily_summary, get_triage_log
 
 
 def print_result(res: dict) -&gt; None:
+    # ① print the high-level report and policy inputs
     print("\n" + "=" * 65)
     print("NORTHWIND LOGISTICS — EXCEPTION TRIAGE RESULT")
     print("=" * 65)
@@ -1166,27 +1211,32 @@ def print_result(res: dict) -&gt; None:
     print(f"Shipment Value     : ${res['shipment_value']:.2f}")
     print(f"Customer Tier      : {res['customer_tier'].capitalize()}")
     print("-" * 65)
+    # ② print classification, compensation, and escalation details
     print(f"Classified Category: {res['category'].upper()}")
     print(f"Compensation Amount: ${res['compensation_amount']:.2f}")
     print(f"Compensation Reason: {res['compensation'].get('reason', 'N/A')}")
     print(f"Escalation Status  : {'[ESCALATED]' if res['escalated'] else '[AUTO-RESOLVED]'}")
     print(f"Escalation Details : {res['escalation_reason']}")
     print("-" * 65)
+    # ③ replay the pipeline decision trail for the operator
     print("Decision Trail:")
     for step in res["steps"]:
         print(f"  • {step}")
     print("-" * 65)
+    # ④ label the draft based on whether this case escalated
     action_label = (
         "INTERNAL MANAGER ESCALATION BRIEFING"
         if res["escalated"]
         else "CUSTOMER RESOLUTION EMAIL DRAFT"
     )
+    # ⑤ print the generated draft for review
     print(f"Generated Draft ({action_label}):\n")
     print(res["draft"])
     print("=" * 65 + "\n")
 
 
 def main() -&gt; None:
+    # ① define command-line options for report, value, tier, and demo mode
     parser = argparse.ArgumentParser(
         description="Northwind Logistics Shipment Exception Desk CLI"
     )
@@ -1214,14 +1264,16 @@ def main() -&gt; None:
         help="Run a standard delay demo scenario",
     )
 
+    # ② parse user arguments before choosing an input source
     args = parser.parse_args()
 
+    # ③ use the supplied report when the caller provides one
     if args.report:
         report_text = args.report
         value = args.value
         tier = args.tier
+    # ④ run the default demo when no report is supplied
     elif args.demo or len(sys.argv) == 1:
-        # Default demo
         print("Running demo exception report...")
         report_text = (
             "Hi, my package was supposed to arrive 3 days ago. "
@@ -1230,22 +1282,26 @@ def main() -&gt; None:
         value = 120.0
         tier = "standard"
     else:
+        # ⑤ otherwise collect the report details interactively
         report_text = input("Enter shipment exception report: ").strip()
         val_input = input("Enter shipment value in USD (default 100): ").strip()
         value = float(val_input) if val_input else 100.0
         tier_input = input("Enter customer tier (standard/premium, default standard): ").strip()
         tier = tier_input.lower() if tier_input in ["standard", "premium"] else "standard"
 
+    # ⑥ run the triage pipeline and log the case in the session
     res = process_exception(
         report_text=report_text,
         shipment_value=value,
         customer_tier=tier,
         log_to_session=True,
     )
+    # ⑦ print the result in a learner-friendly cli format
     print_result(res)
 
 
 if __name__ == "__main__":
+    # ① run the cli entry point when invoked as a script
     main()</code></pre>
                 </div>
             </section>
@@ -1260,7 +1316,7 @@ if __name__ == "__main__":
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">142 lines</span>
+                        <span class="topic-meta-chip">151 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1286,7 +1342,7 @@ Also validates session aggregation and costliest-category calculation.
 import sys
 from pathlib import Path
 
-# Ensure src directory is in python path
+# ① ensure src directory is in python path for local imports
 src_dir = Path(__file__).resolve().parent
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
@@ -1343,13 +1399,16 @@ SCENARIOS = [
 
 
 def run_checks() -&gt; bool:
+    # ① print the verification banner
     print("=" * 70)
     print("NORTHWIND LOGISTICS — TRIAGE PIPELINE VERIFICATION")
     print("=" * 70)
 
+    # ② reset session state before running canned scenarios
     clear_session()
     all_passed = True
 
+    # ③ run each canned scenario through the full pipeline
     for i, s in enumerate(SCENARIOS, 1):
         print(f"\n[{i}/4] Testing: {s['name']}")
         print(f"    Value: ${s['shipment_value']:.2f} | Tier: {s['customer_tier']}")
@@ -1362,6 +1421,7 @@ def run_checks() -&gt; bool:
             log_to_session=True,
         )
 
+        # ④ compare category and escalation results with expectations
         cat_match = res["category"] == s["expected_category"]
         esc_match = res["escalated"] == s["expected_escalated"]
 
@@ -1371,6 +1431,7 @@ def run_checks() -&gt; bool:
         print(f"    Action Taken     : {res['action_taken']}")
         print(f"    Draft Preview    :\n      {res['draft'].strip().splitlines()[0]}")
 
+        # ⑤ mark the run failed if a scenario misses either expectation
         if not (cat_match and esc_match):
             all_passed = False
             print("    &gt;&gt;&gt; FAILED SCENARIO &lt;&lt;&lt;")
@@ -1379,6 +1440,7 @@ def run_checks() -&gt; bool:
     print("VERIFYING DAILY SESSION AGGREGATION")
     print("=" * 70)
 
+    # ⑥ load aggregate metrics from the session ledger
     summary = generate_daily_summary()
     total_exceptions = summary["total_exceptions"]
     total_comp = summary["total_compensation"]
@@ -1390,6 +1452,7 @@ def run_checks() -&gt; bool:
     print(f"Escalation Rate            : {escalation_rate:.1f}% (Expected: 50.0%)")
     print(f"Costliest Category         : {costliest_category} (Expected: lost)")
 
+    # ⑦ compare session summary values with expected outcomes
     if total_exceptions != 4:
         all_passed = False
         print("✗ Session total exceptions mismatch!")
@@ -1401,6 +1464,7 @@ def run_checks() -&gt; bool:
         print("✗ Costliest category mismatch!")
 
     print("\n" + "=" * 70)
+    # ⑧ print final pass/fail result and return it
     if all_passed:
         print("🎉 ALL 4 SCENARIOS &amp; SESSION AGGREGATIONS PASSED SUCCESSFULLY!")
         print("=" * 70)
@@ -1412,106 +1476,9 @@ def run_checks() -&gt; bool:
 
 
 if __name__ == "__main__":
+    # ① run checks and map the boolean result to a process exit code
     success = run_checks()
     sys.exit(0 if success else 1)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 13 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">13</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">shipment-exception-desk/src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

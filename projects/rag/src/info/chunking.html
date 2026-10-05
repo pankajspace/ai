@@ -35,7 +35,6 @@
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-chunk-py">chunk.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -49,11 +48,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>7 Topics</span>
+                    <span>6 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>3 Python Files in Full</span>
+                    <span>2 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -252,7 +251,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -267,7 +266,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">47 lines</span>
+                        <span class="topic-meta-chip">53 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -305,14 +304,17 @@ def chunk_text(
     Returns:
         A list of chunk strings.
     """
+    # ① configure the splitter with the requested chunk size and overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
+    # ② split the long text into overlapping pieces for retrieval
     return splitter.split_text(text)
 
 
 if __name__ == "__main__":
+    # ① create a repeated sample so chunk boundaries are easy to see
     sample = (
         "Our return policy allows refunds within 30 days of purchase. "
         "Shipping is free for orders above ₹999 across India. "
@@ -320,9 +322,12 @@ if __name__ == "__main__":
         "Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm. "
     ) * 10  # repeat to make it long enough for chunking to be visible
 
+    # ② split the sample with the default demo settings
     chunks = chunk_text(sample)
+    # ③ print the input size and how many chunks were created
     print(f"Input length : {len(sample)} characters")
     print(f"Chunk count  : {len(chunks)}")
+    # ④ preview each chunk so learners can inspect the overlap
     for i, c in enumerate(chunks):
         print(f"\n--- Chunk {i + 1} ({len(c)} chars) ---")
         print(c[:120] + ("…" if len(c) &gt; 120 else ""))</code></pre>
@@ -339,7 +344,7 @@ if __name__ == "__main__":
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">267 lines</span>
+                        <span class="topic-meta-chip">311 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -406,10 +411,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① rate-limit only POST requests because they run the demo features
     if request.method == "POST":
+        # ② ask the shared limiter whether this request exceeds the quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 response with retry timing when the quota is spent
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -426,10 +434,13 @@ _pdf_state = {"db": None}
 
 def validate_textarea(value: str, label: str):
     """Validate required textarea content and enforce the shared size cap."""
+    # ① reject missing text before the feature code runs
     if not value:
         return jsonify({"error": f"{label} is required."}), 400
+    # ② reject oversized text so demos stay responsive
     if len(value) &gt; MAX_TEXTAREA_CHARS:
         return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    # ③ signal that validation passed
     return None
 
 
@@ -441,12 +452,15 @@ def validate_textarea(value: str, label: str):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from disk
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime path prefix so browser fetch calls hit the API
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the customized HTML response
     return app.response_class(html, mimetype="text/html")
 
 
@@ -476,12 +490,16 @@ def embeddings_route():
     Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize both input texts before validation
     text_a = (data.get("text_a") or "").strip()
     text_b = (data.get("text_b") or "").strip()
+    # ③ require both texts so the similarity comparison is meaningful
     if not text_a or not text_b:
         return jsonify({"error": "Both text_a and text_b are required."}), 400
     try:
+        # ④ compute cosine similarity and return a rounded JSON result
         score = compare_similarity(text_a, text_b)
         return jsonify({"result": {"similarity": round(score, 4)}})
     except Exception as e:
@@ -496,12 +514,16 @@ def chunk_route():
     Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the submitted text before validation
     text = (data.get("text") or "").strip()
+    # ③ enforce required text and the shared textarea size limit
     validation = validate_textarea(text, "Text")
     if validation:
         return validation
     try:
+        # ④ split the text and return both chunks and count
         chunks = chunk_text(text)
         return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
     except Exception as e:
@@ -516,21 +538,29 @@ def rag_route():
     Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
+    # ④ require a question so the RAG chain has a query
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # ⑤ turn each non-blank knowledge-base line into one document
         # One "document" per non-blank line of the pasted knowledge base.
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
         # persist_directory=None keeps the index in memory only — it's rebuilt
         # fresh from the request body on every call, nothing is written to disk.
         db, _ = build_index(docs, persist_directory=None)
+        # ⑦ answer the question using the freshly built index
         answer = rag_answer(question, db=db)
+        # ⑧ return the grounded answer as JSON
         return jsonify({"result": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -544,19 +574,28 @@ def rerank_route():
     Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
+    # ④ require a question so retrieval has a query
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # ⑤ turn each non-blank knowledge-base line into one document
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
         db, _ = build_index(docs, persist_directory=None)
+        # ⑦ retrieve and rerank the top chunks for the question
         reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        # ⑧ extract plain text so the browser receives simple JSON
         results = [doc.page_content for doc in reranked]
+        # ⑨ return the reranked results as JSON
         return jsonify({"result": {"results": results}})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -570,13 +609,18 @@ def pdf_index():
     Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
     Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the pasted PDF text before validation
     pdf_text = (data.get("pdf_text") or "").strip()
+    # ③ validate required PDF text and the shared size limit
     validation = validate_textarea(pdf_text, "PDF text")
     if validation:
         return validation
     try:
+        # ④ build and store the in-memory PDF index for later questions
         _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        # ⑤ confirm that the PDF text is ready for chat
         return jsonify({"result": "PDF text indexed. Ask me anything about it."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -590,14 +634,19 @@ def pdf_chat():
     Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize and validate the question
     question = (data.get("question") or "").strip()
     if not question:
         return jsonify({"error": "A question is required."}), 400
+    # ③ require a previously indexed PDF before answering
     if _pdf_state["db"] is None:
         return jsonify({"error": "Please add PDF text first."}), 400
     try:
+        # ④ answer from the stored PDF index
         answer = ask_pdf(_pdf_state["db"], question)
+        # ⑤ return the PDF-grounded answer as JSON
         return jsonify({"result": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -618,104 +667,6 @@ if __name__ == "__main__":
     # outside the container; port 5000 is mapped to host port 8082 by
     # docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 7 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">7</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

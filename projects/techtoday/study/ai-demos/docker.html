@@ -1231,21 +1231,26 @@ joblib==1.4.2</code></pre>
                      <pre><code data-lang="python">import pandas as pd, numpy as np, joblib
 from sklearn.ensemble import RandomForestRegressor
 
+# ① make the fake training data reproducible
 np.random.seed(42)
 n = 5000
+# ② generate sample orders with the same features the API will receive
 df = pd.DataFrame({
     "distance_km": np.random.uniform(0.5, 12, n),
     "prep_time_min": np.random.uniform(5, 30, n),
     "rider_available": np.random.randint(0, 2, n),
     "is_raining": np.random.randint(0, 2, n),
 })
+# ③ compute a noisy ETA target so the model has a pattern to learn
 # ETA = base + distance*3 + prep + rain penalty + rider penalty + noise
 df["eta_min"] = (8 + df.distance_km*3 + df.prep_time_min*0.7
                  + df.is_raining*9 + (1-df.rider_available)*6
                  + np.random.normal(0, 2, n))
 
+# ④ train the model to predict eta_min from the order features
 X, y = df.drop(columns=["eta_min"]), df["eta_min"]
 model = RandomForestRegressor(n_estimators=60, random_state=42).fit(X, y)
+# ⑤ save the trained model so the API can load it without retraining
 joblib.dump(model, "eta_model.pkl")
 print("Model saved: eta_model.pkl ✅")</code></pre>
                      <div class="callout callout-tip">
@@ -1307,9 +1312,11 @@ print("Model saved: eta_model.pkl ✅")</code></pre>
 from pydantic import BaseModel
 import joblib, pandas as pd
 
+# ① create the API and load the trained model once at startup
 app = FastAPI(title="QuickBite ETA")
 model = joblib.load("eta_model.pkl")
 
+# ② describe the order fields every prediction request must send
 class Order(BaseModel):
     distance_km: float
     prep_time_min: float
@@ -1322,8 +1329,11 @@ def health():
 
 @app.post("/predict")
 def predict(order: Order):
+    # ① convert validated JSON into the dataframe shape the model expects
     X = pd.DataFrame([order.model_dump()])
+    # ② run the model and round the ETA for display
     eta = round(float(model.predict(X)[0]), 1)
+    # ③ send the prediction back as JSON for the caller
     return {"eta_minutes": eta, "message": f"Your food arrives in {eta} min 🍔"}</code></pre>
                      <div class="callout callout-tip">
                         <strong>
@@ -1409,26 +1419,26 @@ def predict(order: Order):
                            <span class="code-tab-label">
                               Dockerfile
                            </span>
-                           <pre><code data-lang="text"># 1. Base image = rent a ready-made kitchen (from Docker Hub)
+                           <pre><code data-lang="text"># ① Base image = rent a ready-made kitchen (from Docker Hub)
 FROM python:3.12-slim
 
-# 2. Set up your counter inside that kitchen
+# ② Set up your counter inside that kitchen
 WORKDIR /app
 
-# 3. Copy ONLY the shopping list first (caching trick — explained below)
+# ③ Copy ONLY the shopping list first (caching trick — explained below)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 4. NOW copy the rest of your code
+# ④ NOW copy the rest of your code
 COPY . .
 
-# 5. Train the model INSIDE the image (baked in at build time)
+# ⑤ Train the model INSIDE the image (baked in at build time)
 RUN python train.py
 
-# 6. Declare which window the food comes out of (documentation)
+# ⑥ Declare which window the food comes out of (documentation)
 EXPOSE 8000
 
-# 7. What runs the moment the tiffin is opened
+# ⑦ What runs the moment the tiffin is opened
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
                            <div class="decode">
                               <p class="decode-title">
@@ -2466,6 +2476,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="ScalerGPT")
 
+# ① fail loudly if the key is missing instead of showing a cryptic traceback
 # Fail LOUDLY and clearly if the key is missing - not with a cryptic traceback
 API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 if not API_KEY or API_KEY.startswith("sk-paste"):
@@ -2473,30 +2484,39 @@ if not API_KEY or API_KEY.startswith("sk-paste"):
 
 llm = OpenAI(api_key=API_KEY)
 
+# ② create the embedder Chroma will use for similarity search
 # The thin client has no built-in embedder - we must supply one explicitly
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
     api_key=API_KEY, model_name="text-embedding-3-small")
 
+# ③ read the Chroma network address from environment variables
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
 
 def connect_to_chroma(retries=30, delay=2):
+    # ① retry because Chroma may be started before it is ready
     # Chroma takes a few seconds to boot. depends_on only waits for its
     # container to START, not to be READY - so we knock politely and retry.
     for attempt in range(1, retries + 1):
         try:
+            # ② create a client and prove the service answers a heartbeat
             client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
             client.heartbeat()
             print(f"[ScalerGPT] Connected to chroma at {CHROMA_HOST}:{CHROMA_PORT}", flush=True)
+            # ③ return the ready client so the app can continue startup
             return client
         except Exception as e:
+            # ④ wait before trying again so startup races can self-heal
             print(f"[ScalerGPT] Waiting for chroma ({attempt}/{retries}): {type(e).__name__}", flush=True)
             time.sleep(delay)
+    # ⑤ stop with a clear message if Chroma never becomes reachable
     sys.exit(f"[ScalerGPT] Could not reach chroma at {CHROMA_HOST}:{CHROMA_PORT}")
 
+# ④ connect to Chroma and open the notes collection
 chroma = connect_to_chroma()
 collection = chroma.get_or_create_collection(name="notes", embedding_function=openai_ef)
 
+# ⑤ define the request body shape for /ask
 class Question(BaseModel):
     query: str
 
@@ -2507,21 +2527,23 @@ def health():
 
 @app.post("/ask")
 def ask(q: Question):
+    # ① stop early if no documents were indexed
     if collection.count() == 0:
         raise HTTPException(status_code=400,
             detail="No documents indexed. Run: docker compose exec app python ingest.py")
-    # 1. RETRIEVE - find the 3 most relevant chunks
+    # ② RETRIEVE - find the 3 most relevant chunks
     hits = collection.query(query_texts=[q.query], n_results=3)
     documents = hits.get("documents") or [[]]
     context = "\n\n---\n\n".join(documents[0])
-    # 2. AUGMENT - paste those chunks into the prompt
+    # ③ AUGMENT - paste those chunks into the prompt
     system_prompt = ("You are ScalerGPT, a helpful teaching assistant. "
         "Answer using ONLY the context below. If it does not contain the answer, "
         f"say you don't know.\n\nCONTEXT:\n{context}")
-    # 3. GENERATE - let the LLM write the final answer
+    # ④ GENERATE - let the LLM write the final answer
     resp = llm.chat.completions.create(model="gpt-4o-mini",
         messages=[{"role": "system", "content": system_prompt},
                   {"role": "user", "content": q.query}])
+    # ⑤ return the model answer plus how many chunks supported it
     return {"question": q.query, "answer": resp.choices[0].message.content,
             "sources_used": len(documents[0])}</code></pre>
                      <div class="callout callout-tip">
@@ -2735,29 +2757,36 @@ def ask(q: Question):
                            <span class="code-tab-label">
                               docker-compose.yml
                            </span>
-                           <pre><code data-lang="text">services:
+                           <pre><code data-lang="text"># ① define the containers that make up the RAG stack
+services:
   app:
+    # ② build and run the FastAPI app from this folder
     build: .
     container_name: scalergpt-app
     ports:
       - "8000:8000"
+    # ③ pass secrets and Chroma's internal address to the app
     env_file: .env
     environment:
       - CHROMA_HOST=chroma
       - CHROMA_PORT=8000     # INTERNAL port - see the port trap below!
+    # ④ start Chroma first and restart the app if it crashes
     depends_on:
       - chroma
     restart: unless-stopped
 
   chroma:
+    # ⑤ run the vector database and expose it to the host on port 8001
     image: chromadb/chroma:0.6.3
     container_name: scalergpt-chroma
     ports:
       - "8001:8000"
+    # ⑥ persist Chroma data outside the container filesystem
     volumes:
       - chroma_data:/chroma/chroma
     restart: unless-stopped
 
+# ⑦ create the named volume used by the Chroma service
 volumes:
   chroma_data:</code></pre>
                            <div class="decode">
@@ -3439,21 +3468,26 @@ touch tools/app.py tools/requirements.txt tools/Dockerfile</code></pre>
 from pydantic import BaseModel
 import datetime
 
+# ① create a tiny API that exposes utility tools
 app = FastAPI(title="DeskBuddy Tools")
 
+# ② describe the calculator request body
 class Calc(BaseModel):
     expression: str
 
 @app.post("/calculator")
 def calculator(c: Calc):
     try:
+        # ① evaluate the expression in a stripped-down namespace for the demo
         # demo only - never use eval in production!
         return {"result": eval(c.expression, {"__builtins__": {}})}
     except Exception as e:
+        # ② report tool errors as data so the agent can continue
         return {"error": str(e)}
 
 @app.get("/datetime")
 def now():
+    # ① return the current timestamp for the agent's clock tool
     return {"now": datetime.datetime.now().isoformat()}</code></pre>
                      <div class="callout callout-tip">
                         <strong>
@@ -3505,27 +3539,34 @@ def now():
                      <span class="code-tab-label">
                         agent/app.py — the heart of it
                      </span>
-                     <pre><code data-lang="text">r = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=6379, decode_responses=True)
+                     <pre><code data-lang="text"># ① connect to shared Redis memory and the private tools service
+r = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=6379, decode_responses=True)
 TOOLS_URL = os.getenv("TOOLS_URL", "http://tools:7000")
 
 @app.post("/chat")
 def chat(req: Chat):
+    # ① load this session's memory and append the new user message
     key = f"history:{req.session_id}"
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]   # load memory
     history.append({"role": "user", "content": req.message})
 
+    # ② let the model decide whether it needs a tool, up to five rounds
     for _ in range(5):                                  # the agent loop
+        # ③ ask the model for the next assistant message or tool call
         resp = llm.chat.completions.create(
             model="gpt-4o-mini", messages=history, tools=TOOL_DEFS)
         msg = resp.choices[0].message
         if not msg.tool_calls:                            # no tool needed?
             break                                         # then we're done
+        # ④ save the assistant tool request before running the tool
         history.append(msg.model_dump(exclude_none=True))
         for tc in msg.tool_calls:                        # run each requested tool
+            # ⑤ execute each requested tool and feed its result back to the model
             result = call_tool(tc.function.name, json.loads(tc.function.arguments))
             history.append({"role": "tool", "tool_call_id": tc.id,
                             "content": json.dumps(result)})
 
+    # ⑥ save memory back to Redis, then return the final answer
     # save memory back to redis, return final answer</code></pre>
                      <div class="callout callout-tip">
                         <strong>
@@ -3597,29 +3638,36 @@ def chat(req: Chat):
                            <span class="code-tab-label">
                               docker-compose.yml
                            </span>
-                           <pre><code data-lang="text">services:
+                           <pre><code data-lang="text"># ① define the agent, tool, and memory containers
+services:
   agent:
+    # ② build the public chat API from the agent folder
     build: ./agent
     ports:
       - "9000:9000"
+    # ③ give the agent secrets and private service names
     env_file: .env
     environment:
       - TOOLS_URL=http://tools:7000
       - REDIS_HOST=redis
+    # ④ start the helper services before the agent
     depends_on: [tools, redis]
     restart: unless-stopped
 
   tools:
+    # ⑤ build the internal tools API without exposing host ports
     build: ./tools
     restart: unless-stopped
     # NOTE: no ports! Explained below - this is the security gem
 
   redis:
+    # ⑥ run Redis and keep its data in a named volume
     image: redis:7-alpine
     volumes:
       - agent_memory:/data
     restart: unless-stopped
 
+# ⑦ create the named volume Redis uses for memory
 volumes:
   agent_memory:</code></pre>
                            <div class="decode">

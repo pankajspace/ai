@@ -15,9 +15,12 @@ _SESSION_RECORDS: List[Dict[str, Any]] = []
 
 def log_exception(record: Dict[str, Any]) -> Dict[str, Any]:
     """Append an exception triage result to the daily session ledger."""
+    # ① copy the result so logging does not mutate the caller's object
     entry = dict(record)
+    # ② add a timestamp when the pipeline did not provide one
     if "timestamp" not in entry:
         entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # ③ store the entry in the in-memory ledger and return it
     _SESSION_RECORDS.append(entry)
     return entry
 
@@ -44,8 +47,10 @@ def generate_daily_summary() -> Dict[str, Any]:
     - detailed category breakdown
     - formatted markdown summary
     """
+    # ① count logged exceptions before aggregating metrics
     total_exceptions = len(_SESSION_RECORDS)
 
+    # ② return an empty summary when no claims have been processed
     if total_exceptions == 0:
         return {
             "total_exceptions": 0,
@@ -62,6 +67,7 @@ def generate_daily_summary() -> Dict[str, Any]:
             ),
         }
 
+    # ③ total compensation and escalation outcomes across the session
     total_compensation = sum(
         float(r.get("compensation_amount", 0.0)) for r in _SESSION_RECORDS
     )
@@ -69,7 +75,7 @@ def generate_daily_summary() -> Dict[str, Any]:
     resolved_count = total_exceptions - escalated_count
     escalation_rate = (escalated_count / total_exceptions) * 100.0
 
-    # Aggregate by category
+    # ④ aggregate by category for claim counts, payouts, and escalations
     categories = ["delayed", "damaged", "lost", "unknown"]
     category_breakdown: Dict[str, Dict[str, Any]] = {}
 
@@ -84,7 +90,7 @@ def generate_daily_summary() -> Dict[str, Any]:
             "escalated": escalated_cat,
         }
 
-    # Determine costliest category by total compensation paid
+    # ⑤ determine costliest category by total compensation paid
     # Find category with highest cumulative payout; fallback to "None" if total is 0
     payout_per_category = {
         cat: category_breakdown[cat]["total_compensation"] for cat in categories
@@ -101,7 +107,7 @@ def generate_daily_summary() -> Dict[str, Any]:
         costliest_category = "None"
         costliest_amount = 0.0
 
-    # Build formatted Markdown summary
+    # ⑥ build formatted Markdown summary for the dashboard
     summary_lines = [
         "### 📊 Northwind Logistics — Daily Triage Summary",
         f"- **Total Exceptions Processed**: {total_exceptions}",
@@ -114,6 +120,7 @@ def generate_daily_summary() -> Dict[str, Any]:
         "| :--- | :--- | :--- | :--- | :--- |",
     ]
 
+    # ⑦ append each category row with its share of total payouts
     for cat in sorted(
         categories,
         key=lambda c: category_breakdown[c]["total_compensation"],
@@ -131,6 +138,7 @@ def generate_daily_summary() -> Dict[str, Any]:
 
     markdown_summary = "\n".join(summary_lines)
 
+    # ⑧ return machine-readable metrics plus the formatted markdown summary
     return {
         "total_exceptions": total_exceptions,
         "total_compensation": round(total_compensation, 2),
@@ -142,4 +150,3 @@ def generate_daily_summary() -> Dict[str, Any]:
         "category_breakdown": category_breakdown,
         "markdown_summary": markdown_summary,
     }
-

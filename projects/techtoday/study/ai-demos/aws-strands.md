@@ -499,12 +499,15 @@ from strands import Agent
 from strands.models.bedrock import BedrockModel
 from config import NOVA_LITE
 
-# Nova Lite: Amazon's cheapest model — ideal for a first run.
+# ① nova lite: amazon's cheapest model — ideal for a first run
 model = BedrockModel(model_id=NOVA_LITE)
 
+# ② wrap the model in a strands agent
 agent = Agent(model=model)
 
+# ③ send one user message and capture the agent's reply
 response = agent("Hello! Tell me a fun fact about AI agents.")
+# ④ print the reply so learners can see the result
 print(response)
 ```
 
@@ -531,28 +534,28 @@ from langgraph.prebuilt import create_react_agent
 from config import MODEL_ID
 
 
-# Define a simple tool
+# ① define a simple langchain greeting tool
 @tool
 def greet(name: str) -> str:
     """Greet someone by name."""
     return f"Hello, {name}! Welcome to the world of AI agents."
 
 
-# Initialize the LLM via Bedrock
+# ② initialize the llm via bedrock using config.py
 llm = init_chat_model(
     MODEL_ID,
     model_provider="bedrock_converse",
 )
 
-# Create a ReAct agent with the tool
+# ③ create a react agent with the tool so it can decide calls
 agent = create_react_agent(model=llm, tools=[greet])
 
-# Run the agent
+# ④ run the agent with a request that should trigger tool calls
 response = agent.invoke(
     {"messages": [{"role": "user", "content": "Please greet Alice and Bob."}]}
 )
 
-# Print every step so you can see the loop
+# ⑤ print every step so you can see the loop
 for message in response["messages"]:
     print(f"{message.type}: {message.text}")
 ```
@@ -630,14 +633,17 @@ import requests
 
 def check_server_status(server_url):
     """Check if a server is responding."""
+    # ① call the url and report success if it responds in time
     try:
         response = requests.get(server_url, timeout=5)
         return f"Server is up. Status code: {response.status_code}"
     except requests.exceptions.RequestException:
+        # ② return a clear status when the request fails
         return "Server is down or unreachable"
 
-# You use it like this:
+# ① use the helper like this with a sample server url
 status = check_server_status("https://staging.myapp.com")
+# ② print what the helper returned
 print(status)
 # "Server is up. Status code: 200"
 ```
@@ -668,10 +674,12 @@ def check_server_status(server_url: str) -> str:      # 2. type hints
     Returns:
         A message indicating whether the server is up or down
     """                                           # 3. docstring
+    # ① call the server and return success if it responds
     try:
         response = requests.get(server_url, timeout=5)
         return f"Server is up. Status code: {response.status_code}"
     except requests.exceptions.RequestException:
+        # ② return a clear down or unreachable message on request errors
         return "Server is down or unreachable"
 ```
 
@@ -719,10 +727,12 @@ def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1
         tip_percentage: Tip percentage (e.g., 15, 18, 20)
         num_people: Number of people splitting the bill (default: 1)
     """
+    # ① compute the tip, total bill, and per-person share from the inputs
     tip = bill_amount * (tip_percentage / 100)
     total = bill_amount + tip
     per_person = total / num_people
 
+    # ② return rounded values so the agent can explain them cleanly
     return {
         "bill": bill_amount,
         "tip": round(tip, 2),
@@ -730,9 +740,12 @@ def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1
         "per_person": round(per_person, 2)
     }
 
+# ① create an agent that is allowed to call the calculator
 agent = Agent(tools=[calculate_tip])
 
+# ② ask in plain english so the model extracts the numbers
 response = agent("The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?")
+# ③ print the final natural-language answer
 print(response.message['content'][0]['text'])
 ```
 
@@ -771,24 +784,29 @@ The scenario: you ask a sales assistant to *"pull last quarter's sales data and 
 ```python
 from strands import Agent, tool
 
+# ① make sales lookup available as the first tool
 @tool
 def get_sales_data(quarter: str) -> dict:
     """Retrieve sales data for a specific quarter."""
     return {"revenue": 1250000, "deals": 47, "quarter": quarter}
 
+# ② make the analysis step available as a second tool
 @tool
 def analyze_sales(revenue: int, deals: int, quarter: str) -> str:
     """Calculate key metrics from sales data."""
     avg_deal = revenue / deals
     return f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"
 
+# ③ make the delivery step available as a third tool
 @tool
 def send_email(to: str, subject: str, body: str) -> str:
     """Send an email message."""
     return f"Email sent to {to}"
 
+# ④ register all tools with one agent so it can chain them
 agent = Agent(tools=[get_sales_data, analyze_sales, send_email])
 
+# ⑤ give one business request and let the agent choose the order
 response = agent("Pull last quarter's sales data and email a summary to the team")
 ```
 
@@ -835,11 +853,13 @@ You don't have to write everything. `strands_tools` ships ready-made tools — i
 from strands import Agent
 from strands_tools import calculator
 
+# ① create an agent with the calculator tool and math-focused instructions
 agent = Agent(
     tools=[calculator],
     system_prompt="You are a helpful math assistant."
 )
 
+# ② ask several math questions so the same tool can be reused
 agent("What's 42 raised to the power of 9?")
 agent("Solve the equation x^2 + 5x + 6 = 0")
 agent("What's the derivative of sin(x) * cos(x)?")
@@ -866,13 +886,16 @@ import os
 from strands import Agent
 from strands_tools import http_request, calculator, file_write
 
+# ① create an agent with web, calculator, and file-writing tools
 agent = Agent(
     tools=[http_request, calculator, file_write],
     system_prompt="You help with data analysis tasks."
 )
 
+# ② turn off interactive tool approval for this unattended demo
 os.environ["BYPASS_TOOL_CONSENT"] = "true"
 
+# ③ give one end-to-end request that uses all three tools
 agent("""
 Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d,
 extract the latest closing prices,
@@ -907,11 +930,13 @@ One tool, many services. `use_aws` translates plain English into AWS API calls.
 from strands import Agent
 from strands_tools import use_aws
 
+# ① create an aws assistant with the prebuilt use_aws tool
 agent = Agent(
     tools=[use_aws],
     system_prompt="You are an AWS assistant that helps manage cloud resources."
 )
 
+# ② ask a read-only cloud question in plain english
 agent("List all S3 buckets in my account")
 ```
 
@@ -964,23 +989,27 @@ def check_inventory(product_id: str) -> str:
     Args:
         product_id: The product ID to check (e.g., "PROD-123")
     """
-    # This is where you'd query your actual database
+    # ① use a mock table where you'd query your actual database
     inventory = {
         "PROD-123": 15,
         "PROD-456": 0,
         "PROD-789": 8
     }
 
+    # ② pull the requested product quantity, defaulting missing items to zero
     quantity = inventory.get(product_id, 0)
 
+    # ③ return an in-stock message when quantity is positive
     if quantity > 0:
         return f"Product {product_id} is in stock. We have {quantity} units available."
     else:
+        # ④ return an out-of-stock message otherwise
         return f"Product {product_id} is currently out of stock."
 
+# ① give the inventory tool to the agent
 agent = Agent(tools=[check_inventory])
 
-# All of these work — the agent understands intent, not just keywords
+# ② all of these work because the agent understands intent, not just keywords
 agent("Is PROD-123 in stock?")
 agent("Do we have PROD-456 available?")
 agent("Check inventory for PROD-789")
@@ -1020,7 +1049,7 @@ from strands import Agent, tool
 
 class InventoryTools:
     def __init__(self):
-        # Shared resource: all tools access the same data store.
+        # ① shared resource: all tools access the same data store
         # In production: self.db = connect_to_database()
         self.products = {
             "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
@@ -1035,9 +1064,12 @@ class InventoryTools:
         Args:
             product_id: The product ID to check
         """
+        # ① find the product in the shared inventory
         product = self.products.get(product_id)
+        # ② return a not-found message for unknown ids
         if not product:
             return f"Product {product_id} not found"
+        # ③ report stock and price when the product exists
         return f"{product['name']}: {product['quantity']} units at ${product['price']}"
 
     @tool
@@ -1048,15 +1080,19 @@ class InventoryTools:
             product_id: The product ID to update
             quantity: New quantity to set
         """
+        # ① update the shared inventory when the id exists
         if product_id in self.products:
             self.products[product_id]["quantity"] = quantity
             return f"Updated {product_id} to {quantity} units"
+        # ② report not-found when no product matched
         return f"Product {product_id} not found"
 
-# One instance, shared state, multiple tools
+# ① create one instance with shared state for multiple tools
 inventory = InventoryTools()
+# ② register both class methods with the agent
 agent = Agent(tools=[inventory.check_stock, inventory.update_stock])
 
+# ③ ask the agent to read and then update inventory through the tools
 agent("Check stock for PROD-123")
 agent("Update PROD-456 stock to 25 units, then confirm the new level")
 ```
@@ -1088,16 +1124,19 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -> dict:
         product_id: Product ID to check
         warehouse: Warehouse identifier (e.g., "east", "west", "central")
     """
-    # Simulate API call delay
+    # ① simulate api call delay with a two-second wait
     await asyncio.sleep(2)
 
+    # ② load mock inventory for each warehouse
     data = {
         "east":    {"PROD-123": 45, "PROD-456": 12},
         "west":    {"PROD-123": 30, "PROD-456": 0},
         "central": {"PROD-123": 60, "PROD-456": 25},
     }
 
+    # ③ read the requested quantity, defaulting missing items to zero
     quantity = data.get(warehouse, {}).get(product_id, 0)
+    # ④ return a structured result the agent can compare across warehouses
     return {
         "warehouse": warehouse,
         "product_id": product_id,
@@ -1105,15 +1144,20 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -> dict:
     }
 
 async def main():
+    # ① create an agent that can call the async warehouse tool
     agent = Agent(tools=[check_warehouse_inventory])
+    # ② start a timer before the agent makes parallel tool calls
     start = time.time()
+    # ③ ask for all warehouses so the model can call the tool concurrently
     response = await agent.invoke_async(
         "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
     )
+    # ④ calculate and print elapsed time to compare with sequential calls
     elapsed = time.time() - start
     print(response.message['content'][0]['text'])
     print(f"\nTotal time: {elapsed:.1f}s (sequential would be ~6s)")
 
+# ① run the async demo in notebook-style environments
 await main()
 ```
 
@@ -1168,14 +1212,16 @@ def get_weather_forecast(city: str, days: int) -> dict:
         city: Destination city name (e.g., "Goa", "Bangalore")
         days: Number of days in the trip
     """
-    # Mock data — replace with a real weather API to go further
+    # ① use mock data — replace with a real weather api to go further
     forecasts = {
         "goa":       {"high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"},
         "bangalore": {"high_c": 27, "low_c": 18, "conditions": "mild, light evening rain"},
         "jaipur":    {"high_c": 38, "low_c": 25, "conditions": "hot and dry"},
         "manali":    {"high_c": 14, "low_c": 3,  "conditions": "cold, chance of snow"},
     }
+    # ② pick matching city weather or a default forecast for unknown cities
     data = forecasts.get(city.lower(), {"high_c": 28, "low_c": 20, "conditions": "moderate"})
+    # ③ return the requested city and trip length with forecast fields
     return {"city": city, "days": days, **data}
 
 
@@ -1189,19 +1235,25 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) ->
         days: Number of days in the trip
         conditions: Short description of expected weather
     """
+    # ① start with essentials based on trip length
     items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
 
+    # ② add hot-weather items when daytime temperatures are high
     if high_c >= 30:
         items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
+    # ③ add warm layers when nights are cool or cold
     if low_c <= 15:
         items += ["warm jacket", "thermal layer"]
     elif low_c <= 22:
         items += ["light jacket for evenings"]
+    # ④ add rain gear when conditions mention rain or showers
     if "rain" in conditions.lower() or "shower" in conditions.lower():
         items += ["compact umbrella", "quick-dry footwear"]
+    # ⑤ add snow gear when snow appears in the forecast
     if "snow" in conditions.lower():
         items += ["gloves", "woollen cap", "waterproof boots"]
 
+    # ⑥ return the final packing checklist
     return items
 
 
@@ -1214,12 +1266,16 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
         days: Number of days
         travellers: Number of people travelling (default: 1)
     """
+    # ① estimate lodging from city-specific nightly rates
     per_night = {"goa": 3500, "bangalore": 3000, "jaipur": 2500, "manali": 2800}
     stay = per_night.get(city.lower(), 3000) * days
+    # ② estimate food and local travel for the whole trip
     food = 1200 * days * travellers
     local_travel = 800 * days
+    # ③ add the cost categories into one total
     total = stay + food + local_travel
 
+    # ④ return a structured cost breakdown for the agent
     return {
         "city": city,
         "days": days,
@@ -1231,8 +1287,10 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     }
 
 
+# ① choose the bedrock model for the capstone agent
 model = BedrockModel(model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0")
 
+# ② register weather, packing, cost, and calculator tools
 agent = Agent(
     model=model,
     tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
@@ -1245,10 +1303,12 @@ agent = Agent(
 )
 
 if __name__ == "__main__":
+    # ① ask one realistic travel-planning question
     response = agent(
         "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
         "What should I pack, and does it fit my budget?"
     )
+    # ② print the agent's plan and budget answer
     print(response)
 ```
 
@@ -1370,4 +1430,3 @@ Section 18
 3. A tool is just a Python function plus a decorator, type hints, and a good docstring.
 4. The docstring is the model's user manual — write it for the model, not for yourself.
 5. Build small, single-purpose tools; the agent handles the sequencing.
-

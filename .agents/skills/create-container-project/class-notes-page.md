@@ -64,6 +64,7 @@ Remove only these. Keep everything else, reworded only where a removal leaves a 
     - Use `<span class="code-tab-label">filename</span>` + `<pre><code data-lang="python">` holding raw, HTML-escaped code at column 0 (`&lt;`, `&gt;`, `&amp;`).
     - Use `data-lang="text"` for bash, `.env` and output.
     - Remove all hand-written highlight spans and copy-button scripts; `dsa-study.js` highlights and adds Copy buttons itself.
+    - Give every real code snippet (Python, Dockerfile, compose) numbered step comments — `# ① load your documents …` on its own line above each step — following [explainer-pages.md](explainer-pages.md) *Numbered step comments*. Skip output, prompts and one-line commands, and keep any numbering the prose already refers to.
 11. Delete decorative-only markup: reveal-on-scroll classes and observers, hero orbs, the sticky top nav, and duplicate progress bars.
 
 ## 5. Keep interactive sims working

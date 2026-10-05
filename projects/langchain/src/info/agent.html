@@ -36,7 +36,6 @@
                     <li><a href="#source-agent-py">agent.py</a></li>
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -50,11 +49,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>8 Topics</span>
+                    <span>7 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Python Files in Full</span>
+                    <span>3 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -245,7 +244,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -260,7 +259,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">190 lines</span>
+                        <span class="topic-meta-chip">204 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -319,9 +318,12 @@ def check_stock(item: str) -&gt; str:
     Returns:
         A string describing the stock level, or "unknown item" if not found.
     """
+    # ① normalize the item name so lookups work no matter how the user types it
     item_lower = item.lower()
+    # ② reject items that are not in the shop catalog before checking quantity
     if item_lower not in STOCK:
         return f"{item} is not a known item in our shop."
+    # ③ read the quantity and turn it into a shopper-friendly stock message
     qty = STOCK[item_lower]
     if qty == 0:
         return f"{item} is currently out of stock."
@@ -337,9 +339,12 @@ def apply_discount(item: str) -&gt; str:
     Returns:
         A string with the original and discounted price, or an error message.
     """
+    # ① normalize the item name so the price lookup matches the catalog keys
     item_lower = item.lower()
+    # ② reject unknown items before calculating a discount
     if item_lower not in PRICES:
         return f"{item} is not a known item in our shop."
+    # ③ calculate the discounted rupee price from the original catalog price
     original = PRICES[item_lower]
     discounted = original - (original * DISCOUNT_PERCENT // 100)
     return f"{item}: ₹{original} → ₹{discounted} ({DISCOUNT_PERCENT}% off)"
@@ -413,19 +418,23 @@ def ask(user_message: str) -&gt; str:
     Returns:
         The assistant's final natural-language reply.
     """
+    # ① create the client and start the conversation with the user's question
     client = get_openai_client()
     messages = [{"role": "user", "content": user_message}]
 
-    # 1. First call — the model sees the tools menu and may ask for a tool.
+    # ② first call: the model sees the tools menu and may ask for a tool
     response = client.chat.completions.create(
         model=CHAT_MODEL, messages=messages, tools=TOOLS
     )
     msg = response.choices[0].message
 
-    # 2. Did it request one or more tool calls?
+    # ③ check whether it requested one or more tool calls
     if msg.tool_calls:
 
-        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
+        # ④ record the tool request before adding any tool results
+        # Required: every "tool" result must follow the assistant message that
+        # asked for it (matched by tool_call_id), or the API rejects the next
+        # call for context.
         messages.append(msg)
 
         for call in msg.tool_calls:
@@ -435,11 +444,14 @@ def ask(user_message: str) -&gt; str:
             # args = json.loads(call.function.arguments)  # read the request...
             # result = get_price(args["item"])            # ...and run the tool
 
-            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            # ⑤ parse the model's JSON arguments into a Python dict
+            # The model's arguments arrive as a JSON string, e.g.
+            # '{"item": "shoes"}', so we can read args["item"].
             args = json.loads(call.function.arguments)
-            # Look up the tool function from the registry and call it.
+            # ⑥ look up the requested Python tool and run it with the item
             fn = TOOL_FUNCTIONS.get(fn_name)
             result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
+            # ⑦ append the tool result in the protocol format the API expects
             messages.append(
                 {
                     "role": "tool",  # the third role, alongside user/assistant
@@ -447,12 +459,13 @@ def ask(user_message: str) -&gt; str:
                     "content": result,
                 }
             )
-        # 3. Send tool results back so the model can answer in plain language.
+        # ⑧ send tool results back so the model can answer in plain language
         response = client.chat.completions.create(
             model=CHAT_MODEL, messages=messages
         )
         msg = response.choices[0].message
 
+    # ⑨ return the model's final text, whether it used tools or not
     return msg.content
 
 
@@ -551,7 +564,7 @@ def get_openai_client() -&gt; OpenAI:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">202 lines</span>
+                        <span class="topic-meta-chip">224 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -614,10 +627,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so static pages stay fast
     if request.method == "POST":
+        # ② ask the shared limiter whether this client has exceeded the window
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 response with retry guidance when the client is blocked
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -633,12 +649,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment prefix so browser fetch calls hit the right API
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
-    # locally).  For production we replace it with the actual path prefix so
-    # all fetch() calls in the browser target the right endpoint.
+    # locally). For production we replace it with the actual path prefix so all
+    # fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML with the correct content type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -669,16 +688,20 @@ def summarizer():
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing url)
                          or HTTP 500 (API / scraping error)
     """
+    # ① parse the JSON body and normalize the website URL
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
-    # Validate at the boundary — return 400 immediately rather than letting
-    # the scraper make a request with an empty URL.
+    # ② validate the URL at the boundary before scraping
+    # Return 400 immediately rather than letting the scraper make a request
+    # with an empty URL.
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
     try:
+        # ③ call the summarizer feature and return its markdown as JSON
         text = summarize(url)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected scrape or model errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -690,15 +713,19 @@ def scrape():
     Response (JSON):     ``{ "result": "&lt;cleaned text&gt;" }``
     Error response:      ``{ "error": "&lt;message&gt;" }``
     """
+    # ① parse the JSON body and normalize the website URL
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
+    # ② validate the URL at the boundary before scraping
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
     try:
+        # ③ import the scraper lazily, fetch the page, and return cleaned text
         from scraper import fetch_website_contents
         text = fetch_website_contents(url)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected scrape errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -714,19 +741,23 @@ def chat():
     Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing message)
                      or HTTP 500 (API error)
     """
+    # ① parse the JSON body and normalize the new user message
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
-    # history is optional; default to an empty conversation for the first turn.
+    # ② history is optional; default to an empty conversation for the first turn
     history = data.get("history") or []
+    # ③ validate the message at the boundary before calling the chat feature
     if not message:
         return jsonify({"error": "A message is required."}), 400
     try:
+        # ④ call the chat feature with history and package its reply as JSON
         text = reply(message, history)
         response = jsonify({"result": text})
-        # Chat replies are turn-specific — never cache them.
+        # ⑤ chat replies are turn-specific, so never cache them
         response.headers["Cache-Control"] = "no-store"
         return response
     except Exception as e:
+        # ⑥ turn unexpected chat errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -739,14 +770,18 @@ def shop_agent():
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing
                          message) or HTTP 500 (API error)
     """
+    # ① parse the JSON body and normalize the shopper's message
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
+    # ② validate the message at the boundary before calling the agent
     if not message:
         return jsonify({"error": "A message is required."}), 400
     try:
+        # ③ call the tool-using agent and return its final answer as JSON
         text = ask(message)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected agent errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -765,104 +800,6 @@ if __name__ == "__main__":
     # outside the container; port 5000 is mapped to host port 8081 by
     # docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 8 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

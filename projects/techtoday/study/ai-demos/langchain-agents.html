@@ -1093,13 +1093,16 @@ print(chain.invoke({"history": history, "question": "What's my name?"}).content)
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+# ① load the API key and create the OpenAI client
 load_dotenv()
 client = OpenAI()
 
 PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
 
 def get_price(item):
+    # ① log the tool call so learners can see when it fired
     print(f"🔧 tool called: get_price({item})")     # so you SEE it happen
+    # ② look up the item and return a readable price string
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 </code></pre>
               <p>Two tiny notes for the Python: <code>PRICES</code> is an ordinary dict standing in for a database,

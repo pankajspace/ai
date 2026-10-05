@@ -1034,6 +1034,7 @@ OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
               <pre><code data-lang="python">
 # pip install python-dotenv
 from dotenv import load_dotenv
+# ① load secret values from .env into your environment
 load_dotenv()                 # loads everything from .env
 
 # now OpenAI() finds the key automatically — no key in your code 🎉
@@ -1071,10 +1072,13 @@ load_dotenv()                 # loads everything from .env
 from dotenv import load_dotenv
 # pip install openai
 from openai import OpenAI
+# ① load the API key from .env so the client can find it
 load_dotenv()                 # loads everything from .env
 
+# ② create the OpenAI client that will send chat requests
 client = OpenAI()   # reads your API key from the environment
 
+# ③ ask the model with a system role and a user question
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[
@@ -1082,6 +1086,7 @@ response = client.chat.completions.create(
         {"role": "user",   "content": "Suggest one thing to do in Bangalore."},
     ],
 )
+# ④ print the assistant message from the first choice
 print(response.choices[0].message.content)
 
 
@@ -1186,14 +1191,16 @@ print(response.choices[0].message.content)
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+# ① load environment variables for the Groq key
 load_dotenv()
 
-# point the SAME client at Groq instead of OpenAI 👇
+# ② point the SAME client at Groq instead of OpenAI 👇
 client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY"),
     base_url="https://api.groq.com/openai/v1",
 )
 
+# ③ ask the Llama model the same travel-guide question
 response = client.chat.completions.create(
     model="llama-3.3-70b-versatile",        # a free Llama model on Groq
     messages=[
@@ -1201,6 +1208,7 @@ response = client.chat.completions.create(
         {"role": "user",   "content": "Suggest one thing to do in Bangalore."},
     ],
 )
+# ④ print the assistant message from the first choice
 print(response.choices[0].message.content)
 </code></pre>
               <blockquote>
@@ -1304,22 +1312,26 @@ HEADERS = {
 }
 
 def fetch_website_contents(url):
-    # add scheme if the user forgot it
+    # ① add scheme if the user forgot it
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
+    # ② download the page and return a friendly error if it fails
     try:
         response = requests.get(url, headers=HEADERS, timeout=15)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         return f"Could not fetch the website. Error: {e}"
 
+    # ③ parse the HTML and keep the page title for context
     soup = BeautifulSoup(response.text, "html.parser")
     title = soup.title.string if soup.title else "No title found"
 
+    # ④ remove page chrome so the summary focuses on useful text
     for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
         tag.decompose()
 
+    # ⑤ turn the cleaned page into text for the model
     text = soup.get_text(separator="\n", strip=True)
     return f"Title: {title}\n\nPage contents:\n{text}"
 </code></pre>
@@ -1347,15 +1359,20 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from scraper import fetch_website_contents
 
+# ① load the .env file so OpenAI can read the API key
 load_dotenv()          # &lt;-- this reads your .env file
+# ② create the model client once so summarize can reuse it
 client = OpenAI()
 
+# ③ define the website-summary instructions for the model
 system_prompt = """You analyze the contents of a website and
 give a short, friendly summary. Ignore navigation menus.
 Respond in markdown."""
 
 def summarize(url):
+    # ① scrape the page so the model receives text instead of a URL
     website = fetch_website_contents(url)
+    # ② send the scraped text to the chat model with the system prompt
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -1363,6 +1380,7 @@ def summarize(url):
             {"role":"user",   "content": f"Summarize this website:\n\n{website}"},
         ],
     )
+    # ③ return only the assistant's written summary
     return response.choices[0].message.content
 </code></pre>
               <div class="callout callout-key">
@@ -1396,7 +1414,9 @@ def summarize(url):
               <pre><code data-lang="python">
 from summarizer import summarize
 
+# ① ask the learner which website to summarize
 url = input("Website URL: ")
+# ② summarize that URL and print the model response
 print(summarize(url))
 </code></pre>
 
@@ -1508,14 +1528,16 @@ Website URL: https://example.com
               <span class="code-tab-label">arena.py — the whole idea</span>
               <pre><code data-lang="python">
 def battle(prompt):
+    # ① wrap the learner prompt in the chat format both models expect
     msgs = [{"role": "user", "content": prompt}]
 
-    # Model A — OpenAI's GPT
+    # ② ask Model A — OpenAI's GPT
     a = openai_client.chat.completions.create(model="gpt-4o-mini", messages=msgs)
 
-    # Model B — Llama on Groq (same code, different brain!)
+    # ③ ask Model B — Llama on Groq (same code, different brain!)
     b = groq_client.chat.completions.create(model="llama-3.3-70b-versatile", messages=msgs)
 
+    # ④ return both answers so the app can compare them
     return a.choices[0].message.content, b.choices[0].message.content
 # …now we turn this into a tiny terminal app with 👍/👎 voting 👇
 </code></pre>
@@ -1527,30 +1549,40 @@ def battle(prompt):
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+# ① load API keys for both providers
 load_dotenv()
 
+# ② create one client for OpenAI and one for Groq
 openai_client = OpenAI()                                  # uses OPENAI_API_KEY
 groq_client   = OpenAI(api_key=os.getenv("GROQ_API_KEY"),
                        base_url="https://api.groq.com/openai/v1")
 
 def ask(client, model, prompt):
+    # ① send the prompt to whichever model client was passed in
     r = client.chat.completions.create(
         model=model, messages=[{"role": "user", "content": prompt}])
+    # ② return just the assistant text from the first choice
     return r.choices[0].message.content
 
 def battle(prompt):
+    # ① ask OpenAI and Groq the same prompt
     a = ask(openai_client, "gpt-4o-mini", prompt)
     b = ask(groq_client, "llama-3.3-70b-versatile", prompt)
+    # ② return both answers so the learner can compare them
     return a, b
 
 def vote(label):
     return f"🗳️ Thanks! You voted: {label}"   # in real apps, save this to a file/DB
 
+# ③ read one prompt to send to both models
 prompt = input("Ask both models the same thing: ")
+# ④ collect both model answers
 a, b = battle(prompt)
+# ⑤ show both answers before asking for a vote
 print("\n🤖 Model A:\n" + a)
 print("\n🤖 Model B:\n" + b)
 
+# ⑥ collect the winner and show a thank-you message
 choice = input("\nWhich answer was better? (A/B): ").strip().upper()
 print(vote(f"👍 Model {choice}"))
 </code></pre>
@@ -1720,10 +1752,14 @@ Ask both models the same thing: Explain recursion in 2 sentences.
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
+# ① describe how the website text should be summarized
 prompt = ChatPromptTemplate.from_template("Summarize this website: {content}")
+# ② choose the chat model that will do the writing
 model  = ChatOpenAI(model="gpt-4o-mini")
 
+# ③ pipe the prompt into the model to make a reusable chain
 chain = prompt | model            # "|" = send the prompt INTO the model
+# ④ run the chain with one page's text
 chain.invoke({"content": website_text})   # reuse it for any page!
 </code></pre>
               <div class="analogy">

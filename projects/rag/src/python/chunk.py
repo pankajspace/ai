@@ -24,14 +24,17 @@ def chunk_text(
     Returns:
         A list of chunk strings.
     """
+    # ① configure the splitter with the requested chunk size and overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
+    # ② split the long text into overlapping pieces for retrieval
     return splitter.split_text(text)
 
 
 if __name__ == "__main__":
+    # ① create a repeated sample so chunk boundaries are easy to see
     sample = (
         "Our return policy allows refunds within 30 days of purchase. "
         "Shipping is free for orders above ₹999 across India. "
@@ -39,9 +42,12 @@ if __name__ == "__main__":
         "Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm. "
     ) * 10  # repeat to make it long enough for chunking to be visible
 
+    # ② split the sample with the default demo settings
     chunks = chunk_text(sample)
+    # ③ print the input size and how many chunks were created
     print(f"Input length : {len(sample)} characters")
     print(f"Chunk count  : {len(chunks)}")
+    # ④ preview each chunk so learners can inspect the overlap
     for i, c in enumerate(chunks):
         print(f"\n--- Chunk {i + 1} ({len(c)} chars) ---")
         print(c[:120] + ("…" if len(c) > 120 else ""))

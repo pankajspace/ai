@@ -36,7 +36,6 @@
                     <li><a href="#source-prompt-benchmark-py">prompt_benchmark.py</a></li>
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -50,11 +49,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>8 Topics</span>
+                    <span>7 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Python Files in Full</span>
+                    <span>3 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -265,7 +264,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -280,7 +279,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">276 lines</span>
+                        <span class="topic-meta-chip">299 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -363,12 +362,15 @@ Answer: 60
 
 def get_model_response(prompt: str, client=None, model_name: str = None, temperature: float = TEMPERATURE):
     """Sends a prompt to the model and returns response text and token counts with retry on rate limits."""
+    # ① choose the default model client when the caller did not pass one
     if client is None or model_name is None:
         client, model_name, _ = get_client_and_model()
     max_retries = 3
     last_error = None
+    # ② try the model call a few times so temporary rate limits can recover
     for attempt in range(max_retries):
         try:
+            # ③ send the prompt to the chat model and collect token usage
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
@@ -386,6 +388,7 @@ def get_model_response(prompt: str, client=None, model_name: str = None, tempera
             if (
                 "429" in err_msg or "resource_exhausted" in err_msg.lower()
             ) and attempt &lt; max_retries - 1:
+                # ④ back off before retrying a rate-limited request
                 delay = 3.0 * (attempt + 1)
                 retry_match = re.search(
                     r"retry\s+in\s+([0-9.]+)\s*s", err_msg, re.IGNORECASE
@@ -398,21 +401,26 @@ def get_model_response(prompt: str, client=None, model_name: str = None, tempera
                 time.sleep(min(delay, 10.0))
                 continue
             return f"Error: {e}", 0, 0
+    # ⑤ return an error-shaped response if every retry failed
     return f"Error: {last_error}", 0, 0
 
 
 def extract_final_answer(response_text: str) -&gt; str:
     """Isolates the model's stated final answer from a full response."""
+    # ① treat API failures as non-answers for the scorer
     if response_text.startswith("Error:"):
         return "(API Error)"
     text = response_text.strip()
+    # ② prefer the final explicit answer label if the model supplied one
     matches = list(re.finditer(r"answer\s*:", text, flags=re.IGNORECASE))
     if matches:
         segment = text[matches[-1].end() :]
     else:
+        # ③ otherwise use the last non-empty line as the answer candidate
         lines = [ln for ln in text.splitlines() if ln.strip()]
         segment = lines[-1] if lines else ""
 
+    # ④ strip markdown punctuation so comparisons are stable
     segment = segment.strip().splitlines()[0] if segment.strip() else ""
     return segment.replace("*", "").replace("`", "").strip().lower()
 
@@ -428,12 +436,15 @@ def first_clause(segment: str) -&gt; str:
 
 def evaluate_accuracy(response_text: str, correct_answer) -&gt; bool:
     """Checks whether the model's final answer matches an expected answer."""
+    # ① skip scoring when the API call failed
     if response_text.startswith("Error:"):
         return False
 
+    # ② normalise the expected answer into a list of acceptable values
     accepted = (
         [correct_answer] if isinstance(correct_answer, str) else list(correct_answer)
     )
+    # ③ extract the model's asserted answer and prepare it for comparison
     answer_segment = extract_final_answer(response_text)
     if not answer_segment:
         return False
@@ -441,6 +452,7 @@ def evaluate_accuracy(response_text: str, correct_answer) -&gt; bool:
     clause = first_clause(answer_segment)
     cleaned_clause = clause.replace("$", "").replace(",", "")
 
+    # ④ accept exact, numeric, or standalone text matches against known answers
     for candidate in accepted:
         cleaned_answer = candidate.strip().lower().replace("$", "").replace(",", "")
         if cleaned_clause.rstrip(".") == cleaned_answer:
@@ -465,16 +477,19 @@ def run_benchmark_for_question(
     temperature: float = TEMPERATURE,
 ) -&gt; dict:
     """Runs the selected strategy (or all three) for a given question or preset."""
+    # ① choose the requested provider and model before building prompts
     client, model_name, provider = get_client_and_model(model_choice)
     matched_preset = None
     cleaned_input = question_input.strip()
 
+    # ② match the user input to a preset ID or exact preset question
     # Check if input matches an ID or matches one of the preset questions
     for preset in BENCHMARK_DATA:
         if cleaned_input.lower() == preset["id"] or cleaned_input == preset["question"]:
             matched_preset = preset
             break
 
+    # ③ resolve the actual question and expected answer for scoring
     if matched_preset:
         question = matched_preset["question"]
         expected_answer = matched_preset["answer"]
@@ -482,6 +497,7 @@ def run_benchmark_for_question(
         question = cleaned_input
         expected_answer = None
 
+    # ④ build the prompt variants that demonstrate each reasoning strategy
     strategies = [
         (
             "direct",
@@ -499,12 +515,14 @@ def run_benchmark_for_question(
             f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: &lt;value&gt;'.\n\n{FEW_SHOT_EXAMPLES}\n\nQuestion: {question}",
         ),
     ]
+    # ⑤ optionally keep only the single strategy chosen in the UI
     if strategy != "all":
         strategies = [s for s in strategies if s[0] == strategy]
 
     results = []
     baseline_tokens = None
 
+    # ⑥ run each selected strategy and capture answer, tokens, and latency
     for idx, (_, name, prompt) in enumerate(strategies):
         if idx &gt; 0:
             time.sleep(1.0)
@@ -523,6 +541,7 @@ def run_benchmark_for_question(
         if name == "Direct":
             baseline_tokens = max(total_tokens, 1)
 
+        # ⑦ compare token cost with Direct, or leave it blank if Direct was skipped
         # Multipliers are relative to Direct, so they are None when Direct was not run.
         token_mult = (
             round(total_tokens / baseline_tokens, 1) if baseline_tokens else None
@@ -542,6 +561,7 @@ def run_benchmark_for_question(
             }
         )
 
+    # ⑧ format the expected answer label for the frontend summary
     expected_label = (
         (
             expected_answer[0]
@@ -564,8 +584,10 @@ def run_benchmark_for_question(
 if __name__ == "__main__":
     import json
 
+    # ① pick a preset question for a local smoke test
     q = BENCHMARK_DATA[0]["question"]
     print("Testing prompt benchmark with question:", q)
+    # ② run the benchmark and print the JSON payload
     output = run_benchmark_for_question(q)
     print(json.dumps(output, indent=2))</code></pre>
                 </div>
@@ -581,7 +603,7 @@ if __name__ == "__main__":
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">98 lines</span>
+                        <span class="topic-meta-chip">116 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -627,12 +649,15 @@ _grok_client = None
 def get_openai_client() -&gt; OpenAI:
     """Return an authenticated OpenAI client."""
     global _openai_client
+    # ① create the client once, then reuse it on later calls
     if _openai_client is None:
+        # ② read and require the OpenAI API key before constructing the client
         api_key = get_env("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError(
                 "OPENAI_API_KEY is not set. Add it to your .env file or environment."
             )
+        # ③ build the authenticated OpenAI client
         _openai_client = OpenAI(api_key=api_key)
     return _openai_client
 
@@ -640,15 +665,19 @@ def get_openai_client() -&gt; OpenAI:
 def get_gemini_client() -&gt; OpenAI:
     """Return an OpenAI client configured for Google Gemini's OpenAI-compatible endpoint."""
     global _gemini_client
+    # ① create the Gemini-compatible client once, then reuse it
     if _gemini_client is None:
         api_key = get_env("GEMINI_API_KEY")
         if not api_key:
+            # ② fall back to OpenAI when a Gemini key is not configured
             # Fallback to OpenAI client if Gemini key is missing
             return get_openai_client()
+        # ③ choose the configured Gemini base URL or the default endpoint
         base_url = get_env(
             "GEMINI_BASE_URL",
             "https://generativelanguage.googleapis.com/v1beta/openai/",
         )
+        # ④ build an OpenAI-compatible client pointed at Gemini
         _gemini_client = OpenAI(api_key=api_key, base_url=base_url)
     return _gemini_client
 
@@ -656,19 +685,25 @@ def get_gemini_client() -&gt; OpenAI:
 def get_grok_client() -&gt; OpenAI:
     """Return an OpenAI client configured for Groq / Grok's OpenAI-compatible endpoint."""
     global _grok_client
+    # ① create the Groq/Grok-compatible client once, then reuse it
     if _grok_client is None:
+        # ② accept either Grok or Groq environment variable names for the key
         api_key = get_env("GROK_API_KEY") or get_env("GROQ_API_KEY")
         if not api_key:
+            # ③ fall back to OpenAI when a Groq/Grok key is not configured
             # Fallback to OpenAI client if Groq/Grok key is missing
             return get_openai_client()
+        # ④ infer the default base URL from the key style
         default_base_url = (
             "https://api.groq.com/openai/v1"
             if api_key.startswith("gsk_")
             else "https://api.x.ai/v1"
         )
+        # ⑤ choose an explicit base URL if the environment provides one
         base_url = get_env("GROK_BASE_URL") or get_env(
             "GROQ_BASE_URL", default_base_url
         )
+        # ⑥ build an OpenAI-compatible client pointed at Groq or Grok
         _grok_client = OpenAI(api_key=api_key, base_url=base_url)
     return _grok_client
 
@@ -682,14 +717,19 @@ def get_client_and_model(model_choice: str = None):
       - 'groq'   -&gt; (get_grok_client(), GROK_MODEL, "Groq")
       - 'gpt-4o' -&gt; (get_openai_client(), "gpt-4o", "OpenAI")
     """
+    # ① normalise the UI selection before routing it to a provider
     choice = (model_choice or "openai").lower().strip()
     if "gemini" in choice:
+        # ② route Gemini choices to the Gemini-compatible client
         return get_gemini_client(), GEMINI_MODEL, "Gemini"
     elif "groq" in choice or "grok" in choice or "llama" in choice or "oss" in choice:
+        # ③ route Groq/Grok choices to the Groq-compatible client
         return get_grok_client(), GROK_MODEL, "Groq"
     elif "gpt-4o" in choice and "mini" not in choice:
+        # ④ allow the UI to request full GPT-4o instead of the default mini model
         return get_openai_client(), "gpt-4o", "OpenAI"
     else:
+        # ⑤ default to the configured OpenAI model
         return get_openai_client(), OPENAI_MODEL, "OpenAI"</code></pre>
                 </div>
             </section>
@@ -704,7 +744,7 @@ def get_client_and_model(model_choice: str = None):
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">178 lines</span>
+                        <span class="topic-meta-chip">200 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -749,11 +789,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit POST requests because static reads are harmless
     if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 response with a retry hint for the frontend
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -763,9 +806,11 @@ def enforce_rate_limit():
 @bp.after_request
 def add_no_cache_headers(response):
     """Disable client-side caching for HTML, CSS, and JS to prevent stale UI."""
+    # ① add browser headers that force fresh assets during demos
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
+    # ② return the modified response to Flask
     return response
 
 
@@ -777,9 +822,12 @@ def add_no_cache_headers(response):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the project bundle
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix before returning the page
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return HTML instead of JSON for the browser entry point
     return app.response_class(html, mimetype="text/html")
 
 
@@ -803,7 +851,9 @@ def info(filename):
 
 def read_choice(data: dict, name: str, allowed, default: str):
     """Return a dropdown value, ``default`` if absent, or None if it is not allowed."""
+    # ① read the submitted dropdown value or fall back to the default
     value = str(data.get(name) or default)
+    # ② accept the value only when it appears in the allowlist
     return value if value in allowed else None
 
 
@@ -814,10 +864,12 @@ def invalid_choice(name: str, allowed):
 @bp.route("/benchmark", methods=["POST"])
 def benchmark_route():
     """Run Prompting Strategy Benchmark (Direct vs Zero-Shot CoT vs Few-Shot CoT)."""
+    # ① parse JSON and require a benchmark question
     data = request.get_json(force=True) or {}
     message = (data.get("message") or data.get("question") or "").strip()
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ② validate strategy and temperature dropdown choices
     strategy = read_choice(data, "strategy", STRATEGY_CHOICES, "all")
     if strategy is None:
         return invalid_choice("strategy", STRATEGY_CHOICES)
@@ -826,6 +878,7 @@ def benchmark_route():
         return invalid_choice("temperature", TEMPERATURE_CHOICES)
 
     model_choice = data.get("model")
+    # ③ call the benchmark feature module and return its JSON payload
     try:
         results = run_benchmark_for_question(
             message,
@@ -835,16 +888,19 @@ def benchmark_route():
         )
         return jsonify({"result": results})
     except Exception as e:
+        # ④ convert unexpected benchmark errors into a frontend-safe JSON error
         return jsonify({"error": f"Benchmark evaluation failed: {str(e)}"}), 500
 
 
 @bp.route("/sycophancy", methods=["POST"])
 def sycophancy_route():
     """Run the escalating pushback sycophancy evaluation."""
+    # ① parse JSON and require a test case ID or custom question
     data = request.get_json(force=True) or {}
     message = (data.get("message") or data.get("case_id") or "").strip()
     if not message:
         return jsonify({"error": "A test case ID or question is required."}), 400
+    # ② validate pushback count and temperature dropdown choices
     pushbacks = read_choice(data, "pushbacks", PUSHBACK_CHOICES, "3")
     if pushbacks is None:
         return invalid_choice("pushbacks", PUSHBACK_CHOICES)
@@ -853,6 +909,7 @@ def sycophancy_route():
         return invalid_choice("temperature", TEMPERATURE_CHOICES)
 
     model_choice = data.get("model")
+    # ③ call the sycophancy feature module and return its JSON payload
     try:
         results = run_sycophancy_test(
             message,
@@ -862,16 +919,19 @@ def sycophancy_route():
         )
         return jsonify({"result": results})
     except Exception as e:
+        # ④ convert unexpected sycophancy errors into a frontend-safe JSON error
         return jsonify({"error": f"Sycophancy test failed: {str(e)}"}), 500
 
 
 @bp.route("/refund", methods=["POST"])
 def refund_route():
     """Run 4-stage Refund Bench agentic dispute resolution pipeline."""
+    # ① parse JSON and require a complaint description
     data = request.get_json(force=True) or {}
     message = (data.get("message") or data.get("complaint") or "").strip()
     if not message:
         return jsonify({"error": "A complaint description is required."}), 400
+    # ② validate judge-bench and auto-approval-cap dropdown choices
     bench = read_choice(data, "bench", BENCH_CHOICES, "mixed3")
     if bench is None:
         return invalid_choice("bench", BENCH_CHOICES)
@@ -879,10 +939,12 @@ def refund_route():
     if cap is None:
         return invalid_choice("cap", CAP_CHOICES)
 
+    # ③ call the refund feature module and return its JSON payload
     try:
         results = adjudicate_dispute(message, bench=bench, cap=CAP_CHOICES[cap])
         return jsonify({"result": results})
     except Exception as e:
+        # ④ convert unexpected refund errors into a frontend-safe JSON error
         return jsonify({"error": f"Refund adjudication failed: {str(e)}"}), 500
 
 
@@ -894,104 +956,6 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 8 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

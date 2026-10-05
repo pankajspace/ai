@@ -37,7 +37,9 @@ def build_system_prompt(personality: str = DEFAULT_PERSONALITY) -> str:
     boilerplate that slipped through the scraper; asking for markdown lets the
     UI render headings / bullets.
     """
+    # ① choose the requested summary style or fall back to friendly
     style = PERSONALITIES.get(personality, PERSONALITIES[DEFAULT_PERSONALITY])
+    # ② build one system prompt that tells the model how to summarize
     return (
         f"You analyze the contents of a website or article and {style}. "
         "Ignore navigation menus.\nRespond in markdown."
@@ -45,7 +47,9 @@ def build_system_prompt(personality: str = DEFAULT_PERSONALITY) -> str:
 
 
 def _complete(user_content: str, personality: str) -> str:
+    # ① create the OpenAI client that will run the summarizer model
     client = get_openai_client()
+    # ② send the system instructions and content to the model
     response = client.chat.completions.create(
         model=SUMMARIZER_MODEL,
         messages=[
@@ -53,6 +57,7 @@ def _complete(user_content: str, personality: str) -> str:
             {"role": "user", "content": user_content},
         ],
     )
+    # ③ return the model's markdown summary text
     return response.choices[0].message.content
 
 
@@ -71,7 +76,9 @@ def summarize(url: str, personality: str = DEFAULT_PERSONALITY) -> str:
     Returns:
         A markdown-formatted summary string from the model.
     """
+    # ① fetch and clean the website text before using any model tokens
     website = fetch_website_contents(url)
+    # ② ask the shared completion helper to summarize the cleaned page
     return _complete(f"Summarize this website:\n\n{website}", personality)
 
 

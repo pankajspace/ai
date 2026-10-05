@@ -52,10 +52,10 @@ def summarize(url: str) -> str:
     Returns:
         A markdown-formatted summary string from the model.
     """
-    # Step 1 — get the page text (title + body, scripts/nav stripped).
+    # ① get the page text (title + body, scripts/nav stripped)
     website = fetch_website_contents(url)
 
-    # Step 2 — run the chain; the dict fills the {website} blank by name.
+    # ② run the chain; the dict fills the {website} blank by name
     return _build_chain().invoke({"website": website})
 
 

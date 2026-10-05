@@ -81,8 +81,10 @@ SAMPLE_QUERIES = [
 
 def build_condition(name_style: str, desc_style: str) -> tuple[list, dict]:
     """Return (tools, lookup) where lookup maps emitted names to canonical slots."""
+    # ① choose the name and description set for this calibration condition
     names = NAME_SETS[name_style]
     descs = DESCRIPTION_SETS[desc_style]
+    # ② build OpenAI tool schemas for the same three weather capabilities
     tools = [
         {
             "type": "function",
@@ -98,13 +100,16 @@ def build_condition(name_style: str, desc_style: str) -> tuple[list, dict]:
         }
         for c in CANONICAL
     ]
+    # ③ return the schemas plus a lookup back to the canonical answer labels
     return tools, {names[c]: c for c in CANONICAL}
 
 
 def select_tool(query: str, name_style: str, desc_style: str) -> str:
     """Return the canonical slot the model routed to, '(no call)', or '(error)'."""
+    # ① build the exact tool menu for this name-description condition
     tools, lookup = build_condition(name_style, desc_style)
     try:
+        # ② force the model to choose one tool so routing can be measured directly
         response = get_openai_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": query}],
@@ -112,25 +117,31 @@ def select_tool(query: str, name_style: str, desc_style: str) -> str:
             tool_choice="required",
             temperature=TEMPERATURE,
         )
+        # ③ read the selected tool call and map it back to current/forecast/history
         calls = response.choices[0].message.tool_calls
         if not calls:
             return "(no call)"
         return lookup.get(calls[0].function.name, calls[0].function.name)
     except Exception:
+        # ④ keep API failures visible as a routing outcome instead of crashing
         return "(error)"
 
 
 def run_routing(query: str, names: str = "both", descriptions: str = "both") -> str:
     """Route ``query`` under the selected conditions and score the labelled sample."""
+    # ① trim the learner's question and choose the requested 2x2 conditions
     query = query.strip()[:MAX_QUERY_CHARS]
     conditions = [
         c for c in CONDITIONS
         if names in ("both", c[1]) and descriptions in ("both", c[2])
     ]
+    # ② queue the learner query first, then the labelled sample for each condition
     jobs = [(query, n, d) for _, n, d in conditions]
     jobs += [(q, n, d) for _, n, d in conditions for q, _ in SAMPLE_QUERIES]
+    # ③ run all routing decisions in parallel to keep the demo responsive
     picks = parallel_map(lambda job: select_tool(*job), jobs)
 
+    # ④ split personal picks from sample picks and score each condition
     yours, sample = picks[: len(conditions)], picks[len(conditions):]
     total = len(SAMPLE_QUERIES)
     scores = {}
@@ -138,11 +149,13 @@ def run_routing(query: str, names: str = "both", descriptions: str = "both") -> 
         chunk = sample[i * total:(i + 1) * total]
         scores[label] = sum(p == exp for p, (_, exp) in zip(chunk, SAMPLE_QUERIES))
 
+    # ⑤ report how the learner's question routed under every selected condition
     lines = [f"Your question · {CHAT_MODEL} · temperature {TEMPERATURE} · tool_choice=required"]
     for (label, n, d), pick in zip(conditions, yours):
         tool_name = NAME_SETS[n].get(pick, pick)
         lines.append(f"  {label} {n} names + {d} descs → {tool_name} ({pick})")
 
+    # ⑥ add the labelled-sample accuracy matrix and lift comparisons
     lines += ["", f"Routing accuracy on {total} labelled queries"]
     for label, n, d in conditions:
         lines.append(f"  {label} {n:<11} + {d:<5}  {bar(scores[label], total)}")
@@ -159,6 +172,7 @@ def run_routing(query: str, names: str = "both", descriptions: str = "both") -> 
     if lift_lines:
         lines += [""] + lift_lines
 
+    # ⑦ explain either how to see the full grid or what the grid shows
     lines.append("")
     if len(scores) < 4:
         lines.append("Tip: set both dropdowns to 'Both' for the full 2x2 and a verdict.")
@@ -183,4 +197,5 @@ def run_routing(query: str, names: str = "both", descriptions: str = "both") -> 
 
 
 if __name__ == "__main__":
+    # ① run one forecast-style example when this module is executed directly
     print(run_routing("Will it snow in Oslo this weekend?"))

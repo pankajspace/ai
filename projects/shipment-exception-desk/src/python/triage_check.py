@@ -12,7 +12,7 @@ Also validates session aggregation and costliest-category calculation.
 import sys
 from pathlib import Path
 
-# Ensure src directory is in python path
+# ① ensure src directory is in python path for local imports
 src_dir = Path(__file__).resolve().parent
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
@@ -69,13 +69,16 @@ SCENARIOS = [
 
 
 def run_checks() -> bool:
+    # ① print the verification banner
     print("=" * 70)
     print("NORTHWIND LOGISTICS — TRIAGE PIPELINE VERIFICATION")
     print("=" * 70)
 
+    # ② reset session state before running canned scenarios
     clear_session()
     all_passed = True
 
+    # ③ run each canned scenario through the full pipeline
     for i, s in enumerate(SCENARIOS, 1):
         print(f"\n[{i}/4] Testing: {s['name']}")
         print(f"    Value: ${s['shipment_value']:.2f} | Tier: {s['customer_tier']}")
@@ -88,6 +91,7 @@ def run_checks() -> bool:
             log_to_session=True,
         )
 
+        # ④ compare category and escalation results with expectations
         cat_match = res["category"] == s["expected_category"]
         esc_match = res["escalated"] == s["expected_escalated"]
 
@@ -97,6 +101,7 @@ def run_checks() -> bool:
         print(f"    Action Taken     : {res['action_taken']}")
         print(f"    Draft Preview    :\n      {res['draft'].strip().splitlines()[0]}")
 
+        # ⑤ mark the run failed if a scenario misses either expectation
         if not (cat_match and esc_match):
             all_passed = False
             print("    >>> FAILED SCENARIO <<<")
@@ -105,6 +110,7 @@ def run_checks() -> bool:
     print("VERIFYING DAILY SESSION AGGREGATION")
     print("=" * 70)
 
+    # ⑥ load aggregate metrics from the session ledger
     summary = generate_daily_summary()
     total_exceptions = summary["total_exceptions"]
     total_comp = summary["total_compensation"]
@@ -116,6 +122,7 @@ def run_checks() -> bool:
     print(f"Escalation Rate            : {escalation_rate:.1f}% (Expected: 50.0%)")
     print(f"Costliest Category         : {costliest_category} (Expected: lost)")
 
+    # ⑦ compare session summary values with expected outcomes
     if total_exceptions != 4:
         all_passed = False
         print("✗ Session total exceptions mismatch!")
@@ -127,6 +134,7 @@ def run_checks() -> bool:
         print("✗ Costliest category mismatch!")
 
     print("\n" + "=" * 70)
+    # ⑧ print final pass/fail result and return it
     if all_passed:
         print("🎉 ALL 4 SCENARIOS & SESSION AGGREGATIONS PASSED SUCCESSFULLY!")
         print("=" * 70)
@@ -138,6 +146,6 @@ def run_checks() -> bool:
 
 
 if __name__ == "__main__":
+    # ① run checks and map the boolean result to a process exit code
     success = run_checks()
     sys.exit(0 if success else 1)
-

@@ -36,7 +36,6 @@
                     <li><a href="#source-stock-agent-py">stock_agent.py</a></li>
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -50,11 +49,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>8 Topics</span>
+                    <span>7 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Python Files in Full</span>
+                    <span>3 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -241,7 +240,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -256,7 +255,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-meta-chip">73 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -284,6 +283,7 @@ from config import MODEL_ID, agent_text
 
 class InventoryTools:
     def __init__(self):
+        # ① create one shared product store for every stock tool
         # Shared resource: all tools access the same data store.
         # In production: self.db = connect_to_database()   &lt;-- opened ONCE
         self.products = {
@@ -299,9 +299,12 @@ class InventoryTools:
         Args:
             product_id: The product ID to check
         """
+        # ① look up the product in the shared in-memory store
         product = self.products.get(product_id)
+        # ② stop early if the requested product does not exist
         if not product:
             return f"Product {product_id} not found"
+        # ③ return the current quantity and price for found products
         return f"{product['name']}: {product['quantity']} units at ${product['price']}"
 
     @tool
@@ -312,23 +315,30 @@ class InventoryTools:
             product_id: The product ID to update
             quantity: New quantity to set
         """
+        # ① check whether this product exists before mutating the store
         if product_id in self.products:
+            # ② save the new quantity in the shared store
             self.products[product_id]["quantity"] = quantity
+            # ③ confirm the update so the agent can report success
             return f"Updated {product_id} to {quantity} units"
+        # ④ explain that missing products cannot be updated
         return f"Product {product_id} not found"
 
 
+# ① keep one tool instance so stock changes persist across requests
 # One shared instance — state persists across web requests.
 _inventory = InventoryTools()
 
 
 def manage(question: str) -&gt; str:
     """Answer a stock request with the class-based, stateful inventory tools."""
+    # ① create an agent that can check and update the shared inventory
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[_inventory.check_stock, _inventory.update_stock],
         callback_handler=None,
     )
+    # ② send the request and return the agent's final stock answer
     return agent_text(agent(question))</code></pre>
                 </div>
             </section>
@@ -343,7 +353,7 @@ def manage(question: str) -&gt; str:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">46 lines</span>
+                        <span class="topic-meta-chip">50 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -395,11 +405,15 @@ def agent_text(response) -&gt; str:
     Strands returns a rich result object; ``str(response)`` yields the final
     assistant text, which is what the browser needs.
     """
+    # ① convert the rich Strands response into displayable text
     text = str(response)
+    # ② strip hidden thinking blocks some models include before the answer
     # Some models (e.g. Amazon Nova) wrap their reasoning in &lt;thinking&gt;...&lt;/thinking&gt;
     # tags — strip those blocks (and any stray tags) so only the answer is shown.
     text = re.sub(r"&lt;thinking&gt;.*?&lt;/thinking&gt;", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # ③ remove any leftover thinking tags without touching the answer text
     text = re.sub(r"&lt;/?thinking&gt;", "", text, flags=re.IGNORECASE)
+    # ④ trim surrounding whitespace before returning text to the browser
     return text.strip()</code></pre>
                 </div>
             </section>
@@ -414,7 +428,7 @@ def agent_text(response) -&gt; str:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">252 lines</span>
+                        <span class="topic-meta-chip">298 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -485,10 +499,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit api calls that submit work
     if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a retryable 429 response when the quota is exhausted
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -504,9 +521,12 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the html shell from the static source directory
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix before serving the page
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return html with the correct content type for the browser
     return app.response_class(html, mimetype="text/html")
 
 
@@ -540,12 +560,17 @@ def ask_route():
     Request body (JSON): ``{ "message": "&lt;prompt&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the user prompt
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A prompt is required."}), 400
+    # ④ call the plain agent and return its reply as json
     try:
         return jsonify({"result": ask(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -557,12 +582,17 @@ def tip_route():
     Request body (JSON): ``{ "message": "&lt;tip question&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the tip question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the tip agent and return its reply as json
     try:
         return jsonify({"result": calculate(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -574,12 +604,17 @@ def math_route():
     Request body (JSON): ``{ "message": "&lt;math question&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the math question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the math agent and return its reply as json
     try:
         return jsonify({"result": solve(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -591,12 +626,17 @@ def inventory_route():
     Request body (JSON): ``{ "message": "&lt;stock question&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the stock question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the inventory agent and return its reply as json
     try:
         return jsonify({"result": check(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -608,12 +648,17 @@ def sales_route():
     Request body (JSON): ``{ "message": "&lt;sales request&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the sales request
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A request is required."}), 400
+    # ④ call the sales agent and return its reply as json
     try:
         return jsonify({"result": report(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -625,12 +670,17 @@ def stock_route():
     Request body (JSON): ``{ "message": "&lt;stock request&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the stock request
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A request is required."}), 400
+    # ④ call the stateful stock agent and return its reply as json
     try:
         return jsonify({"result": manage(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -642,12 +692,17 @@ def warehouse_route():
     Request body (JSON): ``{ "message": "&lt;warehouse question&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the warehouse question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the warehouse agent and return its reply as json
     try:
         return jsonify({"result": lookup(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -659,12 +714,17 @@ def travel_route():
     Request body (JSON): ``{ "message": "&lt;trip description&gt;" }``
     Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the trip description
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A trip description is required."}), 400
+    # ④ call the travel agent and return its reply as json
     try:
         return jsonify({"result": plan(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -678,104 +738,6 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 8 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

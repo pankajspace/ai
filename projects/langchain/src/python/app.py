@@ -49,10 +49,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so static pages stay fast
     if request.method == "POST":
+        # ② ask the shared limiter whether this client has exceeded the window
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 response with retry guidance when the client is blocked
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -68,12 +71,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment prefix so browser fetch calls hit the right API
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
-    # locally).  For production we replace it with the actual path prefix so
-    # all fetch() calls in the browser target the right endpoint.
+    # locally). For production we replace it with the actual path prefix so all
+    # fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML with the correct content type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -104,16 +110,20 @@ def summarizer():
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 (missing url)
                          or HTTP 500 (API / scraping error)
     """
+    # ① parse the JSON body and normalize the website URL
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
-    # Validate at the boundary — return 400 immediately rather than letting
-    # the scraper make a request with an empty URL.
+    # ② validate the URL at the boundary before scraping
+    # Return 400 immediately rather than letting the scraper make a request
+    # with an empty URL.
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
     try:
+        # ③ call the summarizer feature and return its markdown as JSON
         text = summarize(url)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected scrape or model errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -125,15 +135,19 @@ def scrape():
     Response (JSON):     ``{ "result": "<cleaned text>" }``
     Error response:      ``{ "error": "<message>" }``
     """
+    # ① parse the JSON body and normalize the website URL
     data = request.get_json(force=True)
     url = (data.get("url") or "").strip()
+    # ② validate the URL at the boundary before scraping
     if not url:
         return jsonify({"error": "A website URL is required."}), 400
     try:
+        # ③ import the scraper lazily, fetch the page, and return cleaned text
         from scraper import fetch_website_contents
         text = fetch_website_contents(url)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected scrape errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -149,19 +163,23 @@ def chat():
     Error response:  ``{ "error": "<message>" }`` with HTTP 400 (missing message)
                      or HTTP 500 (API error)
     """
+    # ① parse the JSON body and normalize the new user message
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
-    # history is optional; default to an empty conversation for the first turn.
+    # ② history is optional; default to an empty conversation for the first turn
     history = data.get("history") or []
+    # ③ validate the message at the boundary before calling the chat feature
     if not message:
         return jsonify({"error": "A message is required."}), 400
     try:
+        # ④ call the chat feature with history and package its reply as JSON
         text = reply(message, history)
         response = jsonify({"result": text})
-        # Chat replies are turn-specific — never cache them.
+        # ⑤ chat replies are turn-specific, so never cache them
         response.headers["Cache-Control"] = "no-store"
         return response
     except Exception as e:
+        # ⑥ turn unexpected chat errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 
@@ -174,14 +192,18 @@ def shop_agent():
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 (missing
                          message) or HTTP 500 (API error)
     """
+    # ① parse the JSON body and normalize the shopper's message
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
+    # ② validate the message at the boundary before calling the agent
     if not message:
         return jsonify({"error": "A message is required."}), 400
     try:
+        # ③ call the tool-using agent and return its final answer as JSON
         text = ask(message)
         return jsonify({"result": text})
     except Exception as e:
+        # ④ turn unexpected agent errors into a JSON 500
         return jsonify({"error": str(e)}), 500
 
 

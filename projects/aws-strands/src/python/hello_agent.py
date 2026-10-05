@@ -12,5 +12,7 @@ from config import MODEL_ID, agent_text
 
 def ask(prompt: str) -> str:
     """Send a prompt to a plain, tool-less agent and return its reply."""
+    # ① create a plain agent so the model answers without tools
     agent = Agent(model=BedrockModel(model_id=MODEL_ID), callback_handler=None)
+    # ② send the prompt and return the final text for the page
     return agent_text(agent(prompt))

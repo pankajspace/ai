@@ -38,16 +38,23 @@ def build_index(
     Returns:
         The ``Chroma`` vector store instance.
     """
+    # ① configure the text splitter for production-sized document chunks
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
+    # ② convert raw documents into overlapping LangChain document chunks
     chunks = splitter.create_documents(docs)
+    # ③ load the local embedding model that turns chunks into vectors
     embedder = get_embedder()
+    # ④ build and optionally persist the Chroma vector store
     db = Chroma.from_documents(chunks, embedder, persist_directory=persist_directory)
+    # ⑤ return the database plus the chunk count for display
     return db, len(chunks)
 
 
 if __name__ == "__main__":
+    # ① build an index from the small demo knowledge base
     db, count = build_index(DEMO_DOCS)
+    # ② report how many chunks were saved
     print(f"Indexed {count} chunks 🎉")

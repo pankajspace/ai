@@ -48,6 +48,7 @@ class InterviewSessionMemory:
         category: str = "", question_id: int = 0,
         expected_keywords: list | None = None,
     ) -> None:
+        # ① store this answer and every tool result as the next interview turn
         self._turns.append({
             "turn_id": len(self._turns) + 1,
             "question_id": question_id,
@@ -65,21 +66,25 @@ class InterviewSessionMemory:
         to explicitly avoid recency bias — the weakest area is the globally
         worst turn, not the most recent one.
         """
+        # ① stop early when no answers have been recorded
         if not self._turns:
             return None
 
+        # ② define how to rank turns from weakest to strongest
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
             star = r.get("check_star_structure", {}).get("star_score", 50)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
-            # Lower relevance, lower STAR, higher fillers = weaker.
+            # ① lower relevance, lower STAR, higher fillers = weaker
             return (rel, star, -fillers)
 
+        # ③ pick the globally weakest turn and unpack its tool scores
         weakest = min(self._turns, key=sort_key)
         rel_data = weakest["results"].get("score_relevance", {})
         star_data = weakest["results"].get("check_star_structure", {})
         filler_data = weakest["results"].get("detect_filler_words", {})
+        # ④ return only the weakness details needed by the UI and report
         return {
             "turn_id": weakest["turn_id"],
             "question_id": weakest["question_id"],
@@ -93,9 +98,11 @@ class InterviewSessionMemory:
 
     def get_strongest_area(self) -> dict | None:
         """Return the turn with the highest composite score."""
+        # ① stop early when no answers have been recorded
         if not self._turns:
             return None
 
+        # ② define how to rank turns from weakest to strongest
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
@@ -103,10 +110,12 @@ class InterviewSessionMemory:
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
             return (rel, star, -fillers)
 
+        # ③ pick the strongest turn and unpack its tool scores
         strongest = max(self._turns, key=sort_key)
         rel_data = strongest["results"].get("score_relevance", {})
         star_data = strongest["results"].get("check_star_structure", {})
         filler_data = strongest["results"].get("detect_filler_words", {})
+        # ④ return only the strength details needed by the UI and report
         return {
             "turn_id": strongest["turn_id"],
             "question_id": strongest["question_id"],
@@ -118,11 +127,13 @@ class InterviewSessionMemory:
         }
 
     def get_average_relevance(self) -> float:
+        # ① collect relevance scores from turns that have relevance data
         scores = [
             t["results"].get("score_relevance", {}).get("score", 0)
             for t in self._turns
             if "score_relevance" in t["results"]
         ]
+        # ② average available scores, or return zero before any scoring
         return round(sum(scores) / len(scores), 1) if scores else 0.0
 
     def get_total_questions(self) -> int:
@@ -130,13 +141,16 @@ class InterviewSessionMemory:
 
     def get_scorecard(self) -> list[dict]:
         """Return a structured summary list for the scorecard table."""
+        # ① start an empty list of rows for the scorecard table
         card = []
         for t in self._turns:
+            # ② pull the three visible scores from this turn's tool results
             r = t["results"]
             rel = r.get("score_relevance", {}).get("score", 0)
             star = r.get("check_star_structure", {}).get("star_score", 0)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
             q_text = t["question"]
+            # ③ append a compact learner-facing row for this question
             card.append({
                 "Turn": t["turn_id"],
                 "Category": t["category"],
@@ -149,6 +163,7 @@ class InterviewSessionMemory:
 
     def get_category_breakdown(self) -> dict:
         """Compute category-wise average performance."""
+        # ① collect relevance and STAR scores under each question category
         cat_stats: dict[str, list] = {}
         for t in self._turns:
             cat = t["category"]
@@ -159,15 +174,18 @@ class InterviewSessionMemory:
                 "relevance_score": r.get("score_relevance", {}).get("score", 0),
                 "star_score": r.get("check_star_structure", {}).get("star_score", 0),
             })
+        # ② average the collected scores for each category
         breakdown = {}
         for cat, items in cat_stats.items():
             avg_rel = round(sum(i["relevance_score"] for i in items) / len(items), 1)
             avg_star = round(sum(i["star_score"] for i in items) / len(items), 1)
             breakdown[cat] = {"count": len(items), "avg_relevance": avg_rel, "avg_star": avg_star}
+        # ③ return the category summary for reports and scorecards
         return breakdown
 
     def generate_final_report_dict(self) -> dict:
         """Generate a comprehensive report as a dict with report_text markdown."""
+        # ① return an empty-session report before calculating aggregates
         if not self._turns:
             return {
                 "total_questions": 0,
@@ -178,6 +196,7 @@ class InterviewSessionMemory:
                 "report_text": "No questions have been answered yet in this session.",
             }
 
+        # ② calculate session-wide counts, averages, and strongest/weakest areas
         total_questions = len(self._turns)
         avg_relevance = self.get_average_relevance()
         weakest = self.get_weakest_area()
@@ -194,6 +213,7 @@ class InterviewSessionMemory:
         star_rate = round((star_compliant / total_questions) * 100, 1)
         category_breakdown = self.get_category_breakdown()
 
+        # ③ start the markdown report with top-line metrics
         lines = [
             "# 🎯 InterviewIQ Final Assessment Report",
             f"**Total Questions Answered:** {total_questions} | "
@@ -203,6 +223,7 @@ class InterviewSessionMemory:
             "",
             "## 📊 Key Highlights & Aggregations",
         ]
+        # ④ add strongest and weakest highlights when available
         if strongest:
             lines.append(
                 f"1. **Strongest Area:** {strongest['category']} "
@@ -217,6 +238,7 @@ class InterviewSessionMemory:
                 f"   - Question: *\"{weakest['question']}\"*\n"
                 f"   - Missing Concepts: {missed}"
             )
+        # ⑤ append per-category averages to show topic-level patterns
         lines.append("\n## 📈 Category Breakdown")
         for cat, stats in category_breakdown.items():
             lines.append(
@@ -224,6 +246,7 @@ class InterviewSessionMemory:
                 f"Avg Relevance: {stats['avg_relevance']}/100 | "
                 f"Avg STAR: {stats['avg_star']}%"
             )
+        # ⑥ add coaching recommendations based on the aggregate scores
         lines.append("\n## 💡 Coach Recommendations")
         if avg_relevance >= 80:
             lines.append("- **Knowledge Depth**: Excellent domain grasp and comprehensive keyword coverage.")
@@ -241,6 +264,7 @@ class InterviewSessionMemory:
         else:
             lines.append("- **Structure**: Consistently strong STAR narrative with measurable Results.")
 
+        # ⑦ return structured fields plus the rendered markdown report
         return {
             "total_questions": total_questions,
             "average_relevance": avg_relevance,
@@ -355,10 +379,11 @@ class EvaluatorAgent:
     """
 
     def __init__(self, memory: InterviewSessionMemory | None = None):
+        # ① reuse supplied memory and choose the configured LLM provider
         self.memory = memory or InterviewSessionMemory()
         self._client, self._model = get_openai_client()
 
-        # Register the tool functions.  generate_final_report is a method on
+        # ② register the tool functions; generate_final_report is a method on
         # this instance so it can access self.memory.
         self._tool_functions = {
             "detect_filler_words": lambda args: detect_filler_words(args["answer"]),
@@ -385,16 +410,19 @@ class EvaluatorAgent:
         ``relevance_evaluation``, ``star_evaluation``, ``filler_evaluation``
         that the UI's ``renderEvaluationResult`` expects.
         """
+        # ① unpack question fields needed by tools and session memory
         question = question_data["question"]
         expected_keywords = question_data.get("expected_keywords", [])
         category = question_data.get("category", "")
         question_id = question_data.get("id", 0)
 
+        # ② fall back to deterministic scoring when no LLM provider is configured
         if not self._client:
             return self._deterministic_evaluate(
                 question, answer, expected_keywords, category, question_id,
             )
 
+        # ③ build the prompt with the question, answer, and scoring rubric
         user_msg = (
             f"Question: {question}\n"
             f"Candidate's answer: {answer}\n"
@@ -402,11 +430,13 @@ class EvaluatorAgent:
             f"Evaluate this answer using the available tools, then give "
             f"short feedback."
         )
+        # ④ start the tool-calling conversation with system and user messages
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_msg},
         ]
 
+        # ⑤ run the agent loop and save the evaluated turn in memory
         results: dict = {}
         feedback = self._run_loop(messages, results_out=results)
         self.memory.add_turn(
@@ -416,6 +446,7 @@ class EvaluatorAgent:
             expected_keywords=expected_keywords,
         )
 
+        # ⑥ return the UI-shaped evaluation payload
         return {
             "turn": self.memory.turn_count,
             "feedback": feedback,
@@ -430,9 +461,11 @@ class EvaluatorAgent:
         Uses the same tool-calling loop — the LLM decides whether to call
         generate_final_report to answer the question.
         """
+        # ① use the deterministic report when no LLM provider is configured
         if not self._client:
             return self.generate_final_report()
 
+        # ② send the meta-question through the same tool-calling loop
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
@@ -444,14 +477,17 @@ class EvaluatorAgent:
 
         Called as a tool by the LLM, or directly by the UI.
         """
+        # ① read recorded turns and stop if nothing has been scored
         turns = self.memory.turns
         if not turns:
             return "No answers scored yet."
 
+        # ② prepare report lines and running totals
         lines = [f"Interview Report — {len(turns)} question(s) answered so far\n"]
         relevance_scores: list[tuple[int, str]] = []
         total_fillers = 0
 
+        # ③ summarize each turn's tool results into readable report lines
         for t in turns:
             results = t["results"]
             lines.append(f"Q{t['turn_id']}: {t['question']}")
@@ -480,6 +516,7 @@ class EvaluatorAgent:
                 missed_str = ", ".join(missed[:4]) if missed else "none"
                 lines.append(f"   - Relevance: {score}/100 (missed: {missed_str})")
 
+        # ④ add average relevance and weakest area when relevance scores exist
         if relevance_scores:
             avg = round(sum(s for s, _ in relevance_scores) / len(relevance_scores))
             weakest = self.memory.get_weakest_area()
@@ -491,6 +528,7 @@ class EvaluatorAgent:
                     f"(relevance {w_score}/100)"
                 )
 
+        # ⑤ append the delivery total and return the final report text
         lines.append(f"Total filler words across the session: {total_fillers}")
         return "\n".join(lines)
 
@@ -508,13 +546,16 @@ class EvaluatorAgent:
         rejects as unknown.  Regenerating almost always fixes it.
         """
         last_error = None
+        # ① try the chat completion a few times in case the provider glitches
         for _ in range(MAX_GLITCH_RETRIES):
             try:
                 return self._client.chat.completions.create(**kwargs)
             except BadRequestError as e:
+                # ② retry only the known Groq tool-call formatting glitch
                 if getattr(e, "code", None) != "tool_use_failed":
                     raise
                 last_error = e
+        # ③ raise the final retryable error after all attempts fail
         raise last_error
 
     def _run_loop(self, messages: list, results_out: dict | None = None) -> str:
@@ -528,6 +569,7 @@ class EvaluatorAgent:
         it by tool name — used by ``evaluate_answer`` to build a session turn.
         """
         for _ in range(MAX_TOOL_ROUNDS):
+            # ① ask the model whether to call tools or answer directly
             response = self._create_with_retry(
                 model=self._model,
                 messages=messages,
@@ -536,11 +578,13 @@ class EvaluatorAgent:
             )
             msg = response.choices[0].message
 
+            # ② return the final reply once the model stops requesting tools
             if not msg.tool_calls:
                 return msg.content or ""
 
             messages.append(msg)
             for call in msg.tool_calls:
+                # ③ parse arguments and execute the requested Python tool
                 args = (
                     json.loads(call.function.arguments)
                     if call.function.arguments
@@ -549,7 +593,7 @@ class EvaluatorAgent:
                 fn = self._tool_functions[call.function.name]
                 result = fn(args)
 
-                # Record tool results for session logging (except the report
+                # ④ record tool results for session logging (except the report
                 # itself, which is meta-data, not per-answer evaluation).
                 if (
                     results_out is not None
@@ -557,6 +601,7 @@ class EvaluatorAgent:
                 ):
                     results_out[call.function.name] = result
 
+                # ⑤ append tool output so the model can continue reasoning
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.id,
@@ -565,7 +610,7 @@ class EvaluatorAgent:
                     ),
                 })
 
-        # Ran out of rounds — ask for a final answer without offering tools.
+        # ⑥ ran out of rounds — ask for a final answer without offering tools
         response = self._create_with_retry(
             model=self._model, messages=messages
         )
@@ -580,15 +625,18 @@ class EvaluatorAgent:
         Runs all three tools deterministically and formats a plain-text
         summary.  No LLM synthesis.
         """
+        # ① run all deterministic tools against the same answer
         filler = detect_filler_words(answer)
         star = check_star_structure(answer)
         relevance = score_relevance(answer, expected_keywords)
 
+        # ② package results under the same names used by tool calls
         results = {
             "detect_filler_words": filler,
             "check_star_structure": star,
             "score_relevance": relevance,
         }
+        # ③ record the deterministic turn in shared session memory
         self.memory.add_turn(
             question, answer, results,
             category=category,
@@ -596,11 +644,13 @@ class EvaluatorAgent:
             expected_keywords=expected_keywords,
         )
 
+        # ④ format concise feedback from the three tool messages
         lines = [
             f"Relevance: {relevance['message']}",
             f"STAR: {star['message']}",
             f"Fillers: {filler['message']}",
         ]
+        # ⑤ return the same UI payload shape as the LLM path
         return {
             "turn": self.memory.turn_count,
             "feedback": "\n".join(lines),
@@ -608,4 +658,3 @@ class EvaluatorAgent:
             "star_evaluation": star,
             "filler_evaluation": filler,
         }
-

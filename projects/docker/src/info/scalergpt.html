@@ -36,7 +36,6 @@
                     <li><a href="#source-scaler-gpt-ingest-py">scaler-gpt/ingest.py</a></li>
                     <li><a href="#source-scaler-gpt-app-py">scaler-gpt/app.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
-                    <li><a href="#source-rate-limiter-py">rate_limiter.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -50,11 +49,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>8 Topics</span>
+                    <span>7 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Python Files in Full</span>
+                    <span>3 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -236,7 +235,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes and rate limiter.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
                 </div>
             </div>
 
@@ -251,7 +250,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">65 lines</span>
+                        <span class="topic-meta-chip">74 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -277,6 +276,7 @@ import time
 import chromadb
 from chromadb.utils import embedding_functions
 
+# ① validate the API key and configure the embedding model
 API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 if not API_KEY or API_KEY.startswith("sk-paste"):
     sys.exit("[ingest] OPENAI_API_KEY is missing. Put a real key in .env and recreate.")
@@ -286,6 +286,7 @@ openai_ef = embedding_functions.OpenAIEmbeddingFunction(
     model_name="text-embedding-3-small",
 )
 
+# ② connect to Chroma, retrying until the service is ready
 host = os.getenv("CHROMA_HOST", "localhost")
 port = int(os.getenv("CHROMA_PORT", "8000"))
 
@@ -301,31 +302,38 @@ for attempt in range(10):
 if chroma is None:
     sys.exit(f"[ingest] Could not reach chroma at {host}:{port}")
 
+# ③ open the notes collection and find source files to ingest
 collection = chroma.get_or_create_collection(name="notes", embedding_function=openai_ef)
 
 files = sorted(glob.glob("docs/*.txt") + glob.glob("docs/*.md"))
 if not files:
     sys.exit("No files found in docs/ — add some .txt or .md notes first.")
 
+# ④ prepare containers for every chunk, document, and source label
 ids, documents, metadatas = [], [], []
 for path in files:
+    # ⑤ read each file and split it into useful paragraph chunks
     with open(path, "r", encoding="utf-8") as f:
         text = f.read().strip()
 
     # Simple chunking: split on blank lines, keep chunks of reasonable size
     chunks = [c.strip() for c in text.split("\n\n") if len(c.strip()) &gt; 40]
 
+    # ⑥ attach stable ids and source metadata to every chunk
     for i, chunk in enumerate(chunks):
         ids.append(f"{os.path.basename(path)}::{i}")
         documents.append(chunk)
         metadatas.append({"source": os.path.basename(path)})
 
+# ⑦ stop if the files did not produce any useful chunks
 if not documents:
     sys.exit("Files found but no usable chunks. Make paragraphs a bit longer.")
 
+# ⑧ upsert chunks so re-running this script refreshes the index safely
 # upsert = add or overwrite, so re-running this script is safe
 collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
 
+# ⑨ report how many chunks were indexed
 print(f"Ingested {len(documents)} chunks from {len(files)} file(s) ✅")
 print(f"Collection now holds {collection.count()} chunks total.")</code></pre>
                 </div>
@@ -341,7 +349,7 @@ print(f"Collection now holds {collection.count()} chunks total.")</code></pre>
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">115 lines</span>
+                        <span class="topic-meta-chip">120 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -399,6 +407,7 @@ def connect_to_chroma(retries: int = 30, delay: int = 2):
     the container to START, not to be READY - so we retry here instead of
     crashing on the first refused connection.
     """
+    # ① try to create a Chroma client and prove it is ready
     for attempt in range(1, retries + 1):
         try:
             client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
@@ -406,12 +415,14 @@ def connect_to_chroma(retries: int = 30, delay: int = 2):
             print(f"[ScalerGPT] Connected to chroma at {CHROMA_HOST}:{CHROMA_PORT}")
             return client
         except Exception as e:
+            # ② wait before retrying while Chroma finishes booting
             print(
                 f"[ScalerGPT] Waiting for chroma "
                 f"({attempt}/{retries}): {type(e).__name__}",
                 flush=True,
             )
             time.sleep(delay)
+    # ③ stop the service with a clear message after all retries fail
     sys.exit(f"\n[ScalerGPT] Could not reach chroma at {CHROMA_HOST}:{CHROMA_PORT}\n")
 
 
@@ -435,18 +446,19 @@ def health():
 
 @app.post("/ask")
 def ask(q: Question):
+    # ① reject questions until the vector index has documents
     if collection.count() == 0:
         raise HTTPException(
             status_code=400,
             detail="No documents indexed yet. Run: docker compose exec scalergpt python ingest.py",
         )
 
-    # 1. RETRIEVE - find the most relevant chunks from the vector DB
+    # ② RETRIEVE - find the most relevant chunks from the vector DB
     hits = collection.query(query_texts=[q.query], n_results=3)
     documents = hits.get("documents") or [[]]
     context = "\n\n---\n\n".join(documents[0])
 
-    # 2. AUGMENT - stuff that context into the prompt
+    # ③ AUGMENT - stuff that context into the prompt
     system_prompt = (
         "You are ScalerGPT, a helpful teaching assistant. "
         "Answer the user's question using ONLY the context below. "
@@ -454,7 +466,7 @@ def ask(q: Question):
         f"CONTEXT:\n{context}"
     )
 
-    # 3. GENERATE - let the LLM write the final answer
+    # ④ GENERATE - let the LLM write the final answer
     resp = llm.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -463,6 +475,7 @@ def ask(q: Question):
         ],
     )
 
+    # ⑤ return the answer and how many source chunks were used
     return {
         "question": q.query,
         "answer": resp.choices[0].message.content,
@@ -481,7 +494,7 @@ def ask(q: Question):
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">197 lines</span>
+                        <span class="topic-meta-chip">222 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -543,10 +556,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so page assets stay fast
     if request.method == "POST":
+        # ② check the caller's hourly quota before proxying work
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 with Retry-After when the quota is used up
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -573,19 +589,23 @@ def proxy_request(method, url, json_body=None):
     Returns a tuple of (response_dict, http_status_code). On connection
     errors, returns a helpful error message instead of crashing.
     """
+    # ① forward the request to the selected internal service
     try:
         if method == "GET":
             resp = http_client.get(url, timeout=PROXY_TIMEOUT)
         else:
             resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        # ② pass through the service JSON and HTTP status code
         return resp.json(), resp.status_code
     except http_client.ConnectionError:
+        # ③ turn connection failures into a helpful service-start message
         service = url.split("//")[1].split(":")[0]
         return {
             "error": f"Service '{service}' is not running. "
                      f"Start it with: docker compose up {service}"
         }, 503
     except Exception as e:
+        # ④ return unexpected proxy failures as JSON instead of crashing
         return {"error": str(e)}, 500
 
 
@@ -597,9 +617,12 @@ def proxy_request(method, url, json_body=None):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static homepage template from the shared src folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime API prefix so browser calls hit this gateway
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the rendered HTML with the correct MIME type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -629,15 +652,20 @@ def info(filename):
 @bp.route("/quickbite/predict", methods=["POST"])
 def quickbite_predict():
     """Proxy ETA prediction to the QuickBite FastAPI service."""
+    # ① parse the browser's order JSON
     body = request.get_json(force=True)
+    # ② proxy the order to the QuickBite prediction service
     data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/quickbite/status")
 def quickbite_status():
     """Check if QuickBite service is running."""
+    # ① ask QuickBite for its health payload
     data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -649,15 +677,20 @@ def quickbite_status():
 @bp.route("/scalergpt/ask", methods=["POST"])
 def scalergpt_ask():
     """Proxy RAG question to the ScalerGPT FastAPI service."""
+    # ① parse the browser's question JSON
     body = request.get_json(force=True)
+    # ② proxy the question to the ScalerGPT RAG service
     data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/scalergpt/status")
 def scalergpt_status():
     """Check if ScalerGPT service is running and how many docs are indexed."""
+    # ① ask ScalerGPT for its health and index summary
     data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -669,15 +702,20 @@ def scalergpt_status():
 @bp.route("/deskbuddy/chat", methods=["POST"])
 def deskbuddy_chat():
     """Proxy chat message to the DeskBuddy agent service."""
+    # ① parse the browser's chat JSON
     body = request.get_json(force=True)
+    # ② proxy the message to the DeskBuddy agent loop
     data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    # ③ return the agent JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/deskbuddy/status")
 def deskbuddy_status():
     """Check if DeskBuddy agent service is running."""
+    # ① ask DeskBuddy for its health payload
     data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -690,104 +728,6 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)</code></pre>
-                </div>
-            </section>
-<!-- ============================================================ 8 -->
-
-            <section class="topic-section is-collapsed" id="sec-source-rate-limiter-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-rate-limiter-py">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
-                        <h2 id="source-rate-limiter-py" class="topic-title is-file">rate_limiter.py<a class="headerlink" href="#source-rate-limiter-py"
-                                title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-meta-chip">73 lines</span>
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-source-rate-limiter-py">
-                    <span class="file-path">src/python/rate_limiter.py</span>
-                    <p class="file-label">IP-based rate limiter enforcing a strict sliding window quota.</p>
-                    <pre><code data-lang="python">"""IP-based rate limiter enforcing a strict sliding window quota.
-
-Uses SQLite with WAL mode for lightweight, persistent, and concurrent tracking
-across worker threads and container restarts without external dependencies.
-"""
-
-import sqlite3
-import time
-from pathlib import Path
-
-DB_PATH = Path("/tmp/ai_rate_limit.db")
-
-
-def get_db():
-    conn = sqlite3.connect(str(DB_PATH), timeout=10)
-    conn.execute("PRAGMA journal_mode=WAL;")
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS request_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ip TEXT NOT NULL,
-            timestamp REAL NOT NULL
-        );
-        """
-    )
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_ip_ts ON request_log (ip, timestamp);"
-    )
-    return conn
-
-
-def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
-
-
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
-    """Check if the requesting IP has exceeded max_requests in the sliding window.
-
-    Returns:
-        (is_blocked: bool, message: str or None, retry_after_seconds: int)
-    """
-    client_ip = get_client_ip(req)
-    now = time.time()
-    cutoff = now - window_seconds
-
-    with get_db() as conn:
-        # Purge entries older than the sliding window
-        conn.execute("DELETE FROM request_log WHERE timestamp &lt; ?", (cutoff,))
-        # Count requests in the current window
-        cur = conn.execute(
-            "SELECT COUNT(*), MIN(timestamp) FROM request_log WHERE ip = ? AND timestamp &gt;= ?",
-            (client_ip, cutoff),
-        )
-        count, oldest = cur.fetchone()
-
-        if count &gt;= max_requests:
-            remaining_seconds = int(window_seconds - (now - oldest))
-            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
-            msg = (
-                f"Rate limit exceeded (10 requests per hour). "
-                f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
-            )
-            return True, msg, remaining_seconds
-
-        # Record this request
-        conn.execute(
-            "INSERT INTO request_log (ip, timestamp) VALUES (?, ?)",
-            (client_ip, now),
-        )
-        return False, None, 0</code></pre>
                 </div>
             </section>
 

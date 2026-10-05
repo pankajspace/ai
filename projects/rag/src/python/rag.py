@@ -37,18 +37,26 @@ def rag_answer(question: str, persist_directory: str = "./chroma_db", db=None) -
     Returns:
         The model's answer, grounded in the retrieved context.
     """
+    # ① load the persisted vector store when one was not passed in
     if db is None:
         embedder = get_embedder()
         db = Chroma(persist_directory=persist_directory, embedding_function=embedder)
+    # ② load the chat model that will write the final answer
     model = get_chat_model()
 
+    # ③ retrieve the most relevant chunks for the user question
     chunks = db.similarity_search(question, k=3)
+    # ④ join retrieved chunks into the prompt context
     context = "\n\n".join(c.page_content for c in chunks)
+    # ⑤ compose the prompt and model into a RAG chain
     chain = RAG_PROMPT | model
+    # ⑥ ask the model to answer using only the retrieved context
     return chain.invoke({"context": context, "question": question}).content
 
 
 if __name__ == "__main__":
+    # ① choose a sample question for the persisted demo index
     question = "How long do I have to return something?"
+    # ② print the question and grounded answer
     print(f"Q: {question}")
     print(f"A: {rag_answer(question)}")

@@ -143,13 +143,15 @@ def get_all_questions() -> list[dict]:
 
 def get_question_by_id(question_id: int) -> dict | None:
     """Retrieve a specific question by its ID."""
+    # ① scan the question bank for the requested id
     for q in QUESTIONS:
+        # ② return the first matching question record
         if q["id"] == question_id:
             return q
+    # ③ return None when the id is not in the bank
     return None
 
 
 def get_question_categories() -> list[str]:
     """Return unique categories across the question bank."""
     return list(dict.fromkeys(q["category"] for q in QUESTIONS))
-

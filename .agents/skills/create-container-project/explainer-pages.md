@@ -101,10 +101,29 @@ Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `
   2. **Theory & Concepts** — the ideas the demo teaches.
   3. **Request flow** — a plain CSS box+arrow diagram (`.flow-diagram`): browser → Flask route → module function → provider API → browser. Use `.flow-diagram.flow-vertical` + `.flow-branch` when a step fans out into parallel calls.
   4. **Code flow** — a Mermaid flowchart (see below).
-- **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers), then `app.py` and `rate_limiter.py`. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
+- **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers), then `app.py`. Leave out `rate_limiter.py` — it is shared plumbing, not AI-specific code. Before embedding, make sure each file carries numbered step comments (`# ① load the documents …`, see **Numbered step comments** below) in the real source file, so the page and the code stay identical. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
 - Do **not** include the generic front-end `setupCard()` wiring.
 
-Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`. Use the same topic IDs on every page so deep links are predictable: `concept`, `theory-concepts`, `request-flow`, `code-flow`, then `source-<file-name-kebab>-py` per file (`source-joke-py`, `source-rate-limiter-py`). Units are `unit-1` and `unit-2`. End with `<footer class="study-footer"><Project> &mdash; <emoji> <Demo> &middot; How it works</footer>`.
+Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`. Use the same topic IDs on every page so deep links are predictable: `concept`, `theory-concepts`, `request-flow`, `code-flow`, then `source-<file-name-kebab>-py` per file (`source-joke-py`, `source-app-py`). Units are `unit-1` and `unit-2`. End with `<footer class="study-footer"><Project> &mdash; <emoji> <Demo> &middot; How it works</footer>`.
+
+### Numbered step comments
+
+Every embedded file (and every code snippet on a class-notes page) carries numbered step comments so a learner can read the logic in order:
+
+```python
+# ① split the pasted text into overlapping chunks
+splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+chunks = splitter.create_documents([pdf_text])
+
+# ② embed the chunks into an in-memory Chroma store
+db = Chroma.from_documents(chunks, get_embedder())
+```
+
+- Circled numerals `①`–`⑩` (then `⑪`…), one full-line comment directly above each step, indented to match it (`//` in JavaScript).
+- Restart at `①` in each function, route handler, `__main__` block or script top level; group lines into 2–7 meaningful steps rather than numbering every line; skip trivial one-liners, imports and constants.
+- Turn an existing comment that already describes a step into the numbered one instead of duplicating it, but keep all of its original explanation.
+- Only comments change — `ast.dump(ast.parse(...))` of the file must be identical before and after.
+- Add them to the real source file first, then re-embed, so the page stays a verbatim copy.
 
 ### Code-flow diagram — use Mermaid, not a hand-rolled tree
 

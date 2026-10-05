@@ -53,10 +53,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① rate-limit only POST requests because they run the demo features
     if request.method == "POST":
+        # ② ask the shared limiter whether this request exceeds the quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 response with retry timing when the quota is spent
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -73,10 +76,13 @@ _pdf_state = {"db": None}
 
 def validate_textarea(value: str, label: str):
     """Validate required textarea content and enforce the shared size cap."""
+    # ① reject missing text before the feature code runs
     if not value:
         return jsonify({"error": f"{label} is required."}), 400
+    # ② reject oversized text so demos stay responsive
     if len(value) > MAX_TEXTAREA_CHARS:
         return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    # ③ signal that validation passed
     return None
 
 
@@ -88,12 +94,15 @@ def validate_textarea(value: str, label: str):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from disk
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime path prefix so browser fetch calls hit the API
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the customized HTML response
     return app.response_class(html, mimetype="text/html")
 
 
@@ -123,12 +132,16 @@ def embeddings_route():
     Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize both input texts before validation
     text_a = (data.get("text_a") or "").strip()
     text_b = (data.get("text_b") or "").strip()
+    # ③ require both texts so the similarity comparison is meaningful
     if not text_a or not text_b:
         return jsonify({"error": "Both text_a and text_b are required."}), 400
     try:
+        # ④ compute cosine similarity and return a rounded JSON result
         score = compare_similarity(text_a, text_b)
         return jsonify({"result": {"similarity": round(score, 4)}})
     except Exception as e:
@@ -143,12 +156,16 @@ def chunk_route():
     Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the submitted text before validation
     text = (data.get("text") or "").strip()
+    # ③ enforce required text and the shared textarea size limit
     validation = validate_textarea(text, "Text")
     if validation:
         return validation
     try:
+        # ④ split the text and return both chunks and count
         chunks = chunk_text(text)
         return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
     except Exception as e:
@@ -163,21 +180,29 @@ def rag_route():
     Response (JSON):     ``{ "result": "<answer>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
+    # ④ require a question so the RAG chain has a query
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # ⑤ turn each non-blank knowledge-base line into one document
         # One "document" per non-blank line of the pasted knowledge base.
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
         # persist_directory=None keeps the index in memory only — it's rebuilt
         # fresh from the request body on every call, nothing is written to disk.
         db, _ = build_index(docs, persist_directory=None)
+        # ⑦ answer the question using the freshly built index
         answer = rag_answer(question, db=db)
+        # ⑧ return the grounded answer as JSON
         return jsonify({"result": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -191,19 +216,28 @@ def rerank_route():
     Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
+    # ④ require a question so retrieval has a query
     if not question:
         return jsonify({"error": "A question is required."}), 400
     try:
+        # ⑤ turn each non-blank knowledge-base line into one document
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
         db, _ = build_index(docs, persist_directory=None)
+        # ⑦ retrieve and rerank the top chunks for the question
         reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        # ⑧ extract plain text so the browser receives simple JSON
         results = [doc.page_content for doc in reranked]
+        # ⑨ return the reranked results as JSON
         return jsonify({"result": {"results": results}})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -217,13 +251,18 @@ def pdf_index():
     Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
     Error response:  ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the pasted PDF text before validation
     pdf_text = (data.get("pdf_text") or "").strip()
+    # ③ validate required PDF text and the shared size limit
     validation = validate_textarea(pdf_text, "PDF text")
     if validation:
         return validation
     try:
+        # ④ build and store the in-memory PDF index for later questions
         _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        # ⑤ confirm that the PDF text is ready for chat
         return jsonify({"result": "PDF text indexed. Ask me anything about it."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -237,14 +276,19 @@ def pdf_chat():
     Response (JSON):     ``{ "result": "<answer>" }``
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 or 500
     """
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize and validate the question
     question = (data.get("question") or "").strip()
     if not question:
         return jsonify({"error": "A question is required."}), 400
+    # ③ require a previously indexed PDF before answering
     if _pdf_state["db"] is None:
         return jsonify({"error": "Please add PDF text first."}), 400
     try:
+        # ④ answer from the stored PDF index
         answer = ask_pdf(_pdf_state["db"], question)
+        # ⑤ return the PDF-grounded answer as JSON
         return jsonify({"result": answer})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

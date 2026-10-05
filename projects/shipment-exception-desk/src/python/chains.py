@@ -16,7 +16,7 @@ except ImportError:
     from llm import llm
 
 
-# --- 1. Classification Chain ---
+# ① classification chain: define the prompt that maps reports to one category
 _classify_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -39,14 +39,17 @@ _classify_prompt = ChatPromptTemplate.from_messages(
 
 def _clean_category(raw_output: str) -> str:
     """Normalize and validate the classification output."""
+    # ① normalize raw model text before comparing it to known categories
     cleaned = raw_output.strip().lower().replace('"', "").replace("'", "")
-    # Check for known categories in the output
+    # ② check for known categories in the output
     for cat in ["delayed", "damaged", "lost", "unknown"]:
         if cat in cleaned:
             return cat
+    # ③ fall back to unknown when the model output is not trustworthy
     return "unknown"
 
 
+# ② connect prompt, model, parser, and cleanup into one classifier
 classify_chain = (
     _classify_prompt
     | llm
@@ -55,7 +58,7 @@ classify_chain = (
 )
 
 
-# --- 2. Escalation Chain ---
+# ① escalation chain: define the prompt for internal manager briefings
 _escalate_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -83,10 +86,11 @@ _escalate_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# ② connect the escalation prompt to the model and string parser
 escalate_chain = _escalate_prompt | llm | StrOutputParser()
 
 
-# --- 3. Draft Email Chain ---
+# ① draft email chain: define the customer prompt for auto-resolved claims
 _draft_email_prompt = ChatPromptTemplate.from_messages(
     [
         (
@@ -113,5 +117,5 @@ _draft_email_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# ② connect the email prompt to the model and string parser
 draft_email_chain = _draft_email_prompt | llm | StrOutputParser()
-
