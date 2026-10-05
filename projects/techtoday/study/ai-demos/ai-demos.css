@@ -228,38 +228,109 @@ body.is-ai .viz-note {
 }
 
 /* --------------------------------------------------------------------------
-   3. Desktop Table Styles
+   3. Unified Table-to-Card Styles (Consistent Mobile & Desktop Design)
    -------------------------------------------------------------------------- */
 body.is-ai .table-wrap {
+    overflow-x: visible;
+    border: none;
+    background: transparent;
     margin: 12px 0;
-    border-radius: 7px;
 }
 
 body.is-ai table,
 body.is-ai .static-table {
+    display: block;
     width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
+    background: transparent;
+    border: none;
+    border-collapse: separate;
+    margin: 10px 0;
 }
 
-body.is-ai th,
-body.is-ai td,
-body.is-ai .static-table th,
-body.is-ai .static-table td {
-    padding: 7px 10px;
-    border: 1px solid var(--line);
-    vertical-align: top;
-}
-
+body.is-ai thead,
+body.is-ai table tr:first-child:has(th),
+body.is-ai .static-table tr:first-child:has(th),
 body.is-ai th,
 body.is-ai .static-table th {
-    color: var(--accent);
-    background: var(--surface-raised);
-    text-align: left;
+    display: none !important;
+}
+
+body.is-ai tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    width: 100%;
+}
+
+body.is-ai table tr:not(:first-child:has(th)),
+body.is-ai .static-table tr:not(:first-child:has(th)),
+body.is-ai tbody tr {
+    display: block;
+    background: var(--surface-raised, #171c22);
+    border: 1px solid var(--line, #28303a);
+    border-left: 3px solid var(--accent, #e0af68);
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.15s ease;
+}
+
+body.is-ai table tr:not(:first-child:has(th)):hover,
+body.is-ai .static-table tr:not(:first-child:has(th)):hover,
+body.is-ai tbody tr:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    border-left-color: var(--accent, #e0af68);
+}
+
+body.is-ai table td,
+body.is-ai .static-table td {
+    display: block;
+    padding: 6px 0;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: transparent;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+body.is-ai table td:first-child,
+body.is-ai .static-table td:first-child {
+    padding-top: 0;
+}
+
+body.is-ai table td:last-child,
+body.is-ai .static-table td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+body.is-ai table td[data-label]::before,
+body.is-ai .static-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent, #e0af68);
+    margin-bottom: 2px;
+}
+
+body.is-ai table td[data-label=""]::before,
+body.is-ai .static-table td[data-label=""]::before {
+    display: none;
+}
+
+body.is-ai td code,
+body.is-ai th code {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.6;
 }
 
 /* --------------------------------------------------------------------------
-   4. Mobile Responsive & Table-to-Card Replacement (< 768px)
+   4. Mobile Responsive Tweaks (< 768px)
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
 
@@ -334,88 +405,15 @@ body.is-ai .static-table th {
         margin: 8px 0;
     }
 
-    /* Transform HTML tables into sleek responsive card stacks */
-    body.is-ai .table-wrap {
-        overflow-x: visible;
-        border: none;
-        background: transparent;
-        margin: 10px 0;
-    }
-
-    body.is-ai table,
-    body.is-ai .static-table {
-        display: block;
-        width: 100%;
-        background: transparent;
-        border: none;
-    }
-
-    body.is-ai thead,
-    body.is-ai table tr:first-child:has(th),
-    body.is-ai .static-table tr:first-child:has(th) {
-        display: none !important;
-    }
-
-    body.is-ai tbody {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-    }
-
     body.is-ai table tr:not(:first-child:has(th)),
-    body.is-ai .static-table tr:not(:first-child:has(th)) {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        background: var(--surface-raised, #171c22);
-        border: 1px solid var(--line, #28303a);
-        border-left: 3px solid var(--accent, #e0af68);
-        border-radius: 7px;
-        padding: 8px 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-    }
-
-    body.is-ai table tr:not(:first-child:has(th)):hover,
-    body.is-ai .static-table tr:not(:first-child:has(th)):hover {
-        border-color: rgba(56, 189, 248, 0.35);
+    body.is-ai .static-table tr:not(:first-child:has(th)),
+    body.is-ai tbody tr {
+        padding: 8px 11px;
     }
 
     body.is-ai table td,
     body.is-ai .static-table td {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 3px 0;
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        background: transparent;
         font-size: 13px;
         line-height: 1.45;
-    }
-
-    body.is-ai table td:last-child,
-    body.is-ai .static-table td:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    body.is-ai table td[data-label]::before,
-    body.is-ai .static-table td[data-label]::before {
-        content: attr(data-label);
-        display: inline-block;
-        font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--accent, #e0af68);
-        margin-bottom: 1px;
-    }
-
-    body.is-ai td code,
-    body.is-ai th code {
-        white-space: normal;
-        word-break: break-word;
     }
 }
