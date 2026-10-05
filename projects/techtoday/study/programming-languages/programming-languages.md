@@ -11,11 +11,11 @@ Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
 Deep-dive language internals, runtime architectures, OOP patterns & asynchronous models
 
-### Python Quick Course
+### Python My Course
 
 Fast-track essentials covering variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, and error handling.
 
-[Start learning →](python/python-quick-course.html)
+[Start learning →](python/python-my-course.html)
 
 ### Python Crash Course
 

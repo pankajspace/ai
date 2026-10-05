@@ -1,16 +1,16 @@
 <!--
-Source: python-quick-course.html
-Title: Python Quick Course | TechToday
+Source: python-my-course.html
+Title: Python My Course | TechToday
 Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, and error handling.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
 
-<a id="python-quick-course"></a>
+<a id="python-my-course"></a>
 
-# Python Quick Course
+# Python My Course
 
-The high-yield Python quick reference: common everyday syntax, core collections, functions, and practical problem solutions.
+The high-yield Python course reference: common everyday syntax, core collections, functions, and practical problem solutions.
 
 <a id="table-of-contents"></a>
 

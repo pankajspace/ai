@@ -47,6 +47,7 @@
 
 ## Python
 1. [Python Quick Course](projects/techtoday/study/programming-languages/python/python-quick-course.html)
+1. [Python My Course](projects/techtoday/study/programming-languages/python/python-my-course.html)
 2. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
 3. [Python Detailed Course](projects/techtoday/study/programming-languages/python/python-detailed-course.html)
 
@@ -58,6 +59,7 @@
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
 3. [DSA Quick Course](projects/techtoday/study/dsa/dsa-quick-course.html)
+3. [DSA My Course](projects/techtoday/study/dsa/dsa-my-course.html)
 4. [DSA Advanced Course](projects/techtoday/study/dsa/dsa-advanced-course.html)
 
 ## Design Patterns

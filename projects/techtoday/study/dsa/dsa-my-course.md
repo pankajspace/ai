@@ -1,10 +1,110 @@
-[<- DSA](00-dsa-quick.md)
+<!--
+Source: dsa-my-course.html
+Title: DSA My Course | TechToday
+Description: Fast-track Scaler DSA curriculum covering time complexity, numbers, arrays, prefix sums, carry forward, contribution technique, sliding window, strings, bit manipulation, recursion, hashing, sorting, searching, linked lists, stacks, queues, trees, backtracking, heaps, DP, and graphs.
+Theme-color: #0b0d10
+Stylesheets: dsa-study.css, ../../site-header.css
+Scripts: dsa-study.js
+Body-class: is-my
+Back-href: dsa-courses.html
+Back-label: DSA Courses
+Footer: DSA My Course
+-->
 
-# DSA 1
+Navigation: [TechToday](../../index.html) · [← DSA Courses](dsa-courses.html)
 
-# 1. Time Complexity
+<a id="dsa-my-course"></a>
 
-## Theory
+# DSA My Course
+
+The fast-track Scaler DSA curriculum: core theory, essential formulas, and high-frequency problem patterns with Python and JavaScript solutions, test cases, and time and space complexity analysis.
+
+<a id="table-of-contents"></a>
+
+## Table of Contents
+
+### Unit 1 — DSA 1: Intermediate Problem Solving
+1. [Time Complexity](#1-time-complexity)
+2. [Numbers](#2-numbers)
+3. [1D Arrays Basics](#3-1d-arrays-basics)
+4. [Subarrays](#4-subarrays)
+5. [Prefix Sum Basics](#5-prefix-sum-basics)
+6. [Carry Forward](#6-carry-forward)
+7. [Contribution Technique](#7-contribution-technique)
+8. [2D Arrays / Matrix Basics](#8-2d-arrays-matrix-basics)
+9. [Sliding Window Fixed](#9-sliding-window-fixed)
+10. [Sliding Window Dynamic](#10-sliding-window-dynamic)
+11. [Strings Basics](#11-strings-basics)
+12. [Strings | Two Pointers](#12-strings-two-pointers)
+13. [Sorting Basics](#13-sorting-basics)
+14. [Boyer-Moore Voting Algorithm](#14-boyer-moore-voting-algorithm)
+15. [Bit Manipulations Basics](#15-bit-manipulations-basics)
+16. [Multiple Approaches](#16-multiple-approaches)
+
+### Unit 2 — DSA 2: Advanced Arrays, Recursion & Sorting
+17. [1D Arrays Advanced](#17-1d-arrays-advanced)
+18. [Prefix Sum Advanced](#18-prefix-sum-advanced)
+19. [Two Pointers](#19-two-pointers)
+20. [Interval Technique](#20-interval-technique)
+21. [Kadane's Algorithm](#21-kadane-s-algorithm)
+22. [2D Arrays / Matrix Advanced](#22-2d-arrays-matrix-advanced)
+23. [Bit Manipulation Advanced](#23-bit-manipulation-advanced)
+24. [Recursion](#24-recursion)
+25. [Hashing (Set)](#25-hashing-set)
+26. [Hashing (Map)](#26-hashing-map)
+27. [Count Sort](#27-count-sort)
+28. [Merge Sort](#28-merge-sort)
+29. [Quick Sort](#29-quick-sort)
+30. [Custom Sort / Comparison Based Sorting](#30-custom-sort-comparison-based-sorting)
+
+### Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
+31. [Searching 1: Binary Search on Array](#31-searching-1-binary-search-on-array)
+32. [Searching 2: Binary Search on Answer](#32-searching-2-binary-search-on-answer)
+33. [Linked List Introduction](#33-linked-list-introduction)
+34. [Linked List: Basic Problems](#34-linked-list-basic-problems)
+35. [Stacks](#35-stacks)
+36. [Queues](#36-queues)
+37. [Trees 1: Structure & Traversal](#37-trees-1-structure-traversal)
+38. [Trees 2: BST](#38-trees-2-bst)
+
+### Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
+39. [Two Pointers](#39-two-pointers)
+40. [Backtracking](#40-backtracking)
+41. [Linked List, Sorting and Fast + Slow Pointer](#41-linked-list-sorting-and-fast-slow-pointer)
+42. [Doubly Linked List and Detecting Loop](#42-doubly-linked-list-and-detecting-loop)
+43. [Trees 3: Morris Inorder Traversal & LCA](#43-trees-3-morris-inorder-traversal-lca)
+44. [Hashing 3: Internal Implementation & Problems](#44-hashing-3-internal-implementation-problems)
+45. [Maths: Combinatorics Basics & Prime Numbers](#45-maths-combinatorics-basics-prime-numbers)
+46. [Multiple Approaches](#46-multiple-approaches)
+
+### Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
+47. [Heaps Introduction](#47-heaps-introduction)
+48. [Heap Sort & Greedy](#48-heap-sort-greedy)
+49. [DP 1: One Dimensional](#49-dp-1-one-dimensional)
+50. [DP 2: Two Dimensional](#50-dp-2-two-dimensional)
+51. [DP 3: Knapsack](#51-dp-3-knapsack)
+52. [Graphs 1: Introduction, DFS & Cycle Detection](#52-graphs-1-introduction-dfs-cycle-detection)
+53. [Graphs 2: BFS & MST](#53-graphs-2-bfs-mst)
+54. [Graphs 3: Dijkstra Algo & Topological Sort](#54-graphs-3-dijkstra-algo-topological-sort)
+55. [Multiple Approaches](#55-multiple-approaches)
+56. [Interview Problems](#56-interview-problems)
+
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — DSA 1: Intermediate Problem Solving
+
+Core complexity analysis, number theory, 1D/2D arrays, prefix sums, carry forward, sliding window, strings, and bit manipulation basics.
+
+---
+
+<a id="1-time-complexity"></a>
+
+## 1. Time Complexity
+
+### Theory
+
 1.  O(1)          - Constant time complexity.
 2.  O(log log n)  - Double logarithmic time complexity.
 3.  O(log n)      - Logarithmic time complexity.
@@ -20,19 +120,9 @@
 - Online editors have a time limit of 1 sec which is equivalent to **10^9 instructions**.
 - To avoid TLE in online editors, optimize the code to reduce the number of **iterations** to **10^8 or less**.
 
-## Questions
+### Questions
 
-### 1. Constant Time Complexity
-```js
-function constant(n) {
-  process.stdout.write(n + " ");
-}
-
-// For example, if n = 10
-constant(10);
-
-// Time complexity: O(1) as there is only one operation
-```
+1. Constant Time Complexity
 
 ```python
 import sys
@@ -48,19 +138,18 @@ constant(10)
 # Time complexity: O(1) as there is only one operation
 ```
 
-### 2. Double Logarithm complexity
-```js
-function loglog(n) {
-  for (let i = 1; i <= n; i = i * i) {
-    process.stdout.write(i + " ");
-  }
+```javascript
+function constant(n) {
+  process.stdout.write(n + " ");
 }
 
-// For example, if n = 128, then i will take values 1, 2, 4, 8, 16, 32, 64, 128
-log2(128);
+// For example, if n = 10
+constant(10);
 
-// Time complexity: O(log log n) as the loop runs log log n times.
+// Time complexity: O(1) as there is only one operation
 ```
+
+2. Double Logarithm complexity
 
 ```python
 import sys
@@ -79,11 +168,9 @@ loglog(128)
 # Time complexity: O(log log n) as the loop runs log log n times.
 ```
 
-### 3. Logarithm complexity (Base 2)
-```js
-function log2(n) {
-  // Its a Geometric progression
-  for (let i = 1; i <= n; i = i * 2) {
+```javascript
+function loglog(n) {
+  for (let i = 1; i <= n; i = i * i) {
     process.stdout.write(i + " ");
   }
 }
@@ -91,8 +178,10 @@ function log2(n) {
 // For example, if n = 128, then i will take values 1, 2, 4, 8, 16, 32, 64, 128
 log2(128);
 
-// Time complexity: O(log n) as the loop runs log n times. base 2
+// Time complexity: O(log log n) as the loop runs log log n times.
 ```
+
+3. Logarithm complexity (Base 2)
 
 ```python
 import sys
@@ -112,22 +201,21 @@ log2(128)
 # Time complexity: O(log n) as the loop runs log n times. base 2
 ```
 
-### 4. Square root complexity
-```js
-function sqrt(n) {
-  // for (let i = 1; i <= Math.sqrt(n); i++) {
-  // for (let i = 1; i <= n/i; i++) {
-  for (let i = 1; i * i <= n; i++) {
-    process.stdout.write(i * i + " ");
+```javascript
+function log2(n) {
+  // Its a Geometric progression
+  for (let i = 1; i <= n; i = i * 2) {
+    process.stdout.write(i + " ");
   }
 }
 
-// For example, if n = 128, then i will take values 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121
-sqrt(128);
+// For example, if n = 128, then i will take values 1, 2, 4, 8, 16, 32, 64, 128
+log2(128);
 
-// Time complexity: O(sqrt(n)) as the loop runs sqrt(n) times
-// Its can also be written as O(n^(1/2))
+// Time complexity: O(log n) as the loop runs log n times. base 2
 ```
+
+4. Square root complexity
 
 ```python
 import sys
@@ -148,19 +236,23 @@ sqrt(128)
 # It can also be written as O(n^(1/2))
 ```
 
-### 5. Linear complexity
-```js
-function linear(n) {
-  for (let i = 1; i <= n; i++) {
-    process.stdout.write(i + " ");
+```javascript
+function sqrt(n) {
+  // for (let i = 1; i <= Math.sqrt(n); i++) {
+  // for (let i = 1; i <= n/i; i++) {
+  for (let i = 1; i * i <= n; i++) {
+    process.stdout.write(i * i + " ");
   }
 }
 
-// For example, if n = 10, then i will take values 1, 2, 3, ..., 10
-linear(10);
+// For example, if n = 128, then i will take values 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121
+sqrt(128);
 
-// Time complexity: O(n) as the loop runs n times
+// Time complexity: O(sqrt(n)) as the loop runs sqrt(n) times
+// Its can also be written as O(n^(1/2))
 ```
+
+5. Linear complexity
 
 ```python
 import sys
@@ -177,21 +269,20 @@ linear(10)
 # Time complexity: O(n) as the loop runs n times
 ```
 
-### 6. Linearithmic complexity
-```js
-function linearithmic(n) {
+```javascript
+function linear(n) {
   for (let i = 1; i <= n; i++) {
-    for (let j = 1; j <= n; j = j * 2) {
-      process.stdout.write(i + " ");
-    }
+    process.stdout.write(i + " ");
   }
 }
 
-// For example, if n = 8, then i will take values 1, 2, 3, ..., 8 and j will take values 1, 2, 4, 8
-linearithmic(8);
+// For example, if n = 10, then i will take values 1, 2, 3, ..., 10
+linear(10);
 
-// Time complexity: O(n log n) as the outer loop runs n times and the inner loop runs log n times
+// Time complexity: O(n) as the loop runs n times
 ```
+
+6. Linearithmic complexity
 
 ```python
 import sys
@@ -211,22 +302,22 @@ linearithmic(8)
 # Time complexity: O(n log n) as the outer loop runs n times and the inner loop runs log n times
 ```
 
-### 7. Quadratic complexity
-```js
-function quadratic(n) {
+```javascript
+function linearithmic(n) {
   for (let i = 1; i <= n; i++) {
-    for (let j = 1; j <= n; j++) {
-      process.stdout.write(i + j + " ");
+    for (let j = 1; j <= n; j = j * 2) {
+      process.stdout.write(i + " ");
     }
   }
 }
 
-// For example, if n = 3, then i will take values 1, 2, 3 and j will take values 1, 2, 3
-quadratic(3);
+// For example, if n = 8, then i will take values 1, 2, 3, ..., 8 and j will take values 1, 2, 4, 8
+linearithmic(8);
 
-// Time complexity: O(n^2) as the outer loop runs n times and the inner loop runs n times
-// This is equivalent to O(n * n)
+// Time complexity: O(n log n) as the outer loop runs n times and the inner loop runs log n times
 ```
+
+7. Quadratic complexity
 
 ```python
 import sys
@@ -244,24 +335,23 @@ quadratic(3)
 # Time complexity: O(n^2) as the outer loop runs n times and the inner loop runs n times
 ```
 
-### 8. Cubic complexity
-```js
-function cubic(n) {
+```javascript
+function quadratic(n) {
   for (let i = 1; i <= n; i++) {
     for (let j = 1; j <= n; j++) {
-      for (let k = 1; k <= n; k++) {
-        process.stdout.write(i + j + k + " ");
-      }
+      process.stdout.write(i + j + " ");
     }
   }
 }
 
-// For example, if n = 3, then i will take values 1, 2, 3 and j will take values 1, 2, 3 and k will take values 1, 2, 3
-cubic(3);
+// For example, if n = 3, then i will take values 1, 2, 3 and j will take values 1, 2, 3
+quadratic(3);
 
-// Time complexity: O(n^3) as the outer loop runs n times and the inner loop runs n times and the innermost loop runs n times
-// This is equivalent to O(n * n * n)
+// Time complexity: O(n^2) as the outer loop runs n times and the inner loop runs n times
+// This is equivalent to O(n * n)
 ```
+
+8. Cubic complexity
 
 ```python
 import sys
@@ -280,8 +370,41 @@ cubic(3)
 # Time complexity: O(n^3) as the outer loop runs n times and the inner loops run n times
 ```
 
-### 9. Exponential complexity
-```js
+```javascript
+function cubic(n) {
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= n; j++) {
+      for (let k = 1; k <= n; k++) {
+        process.stdout.write(i + j + k + " ");
+      }
+    }
+  }
+}
+
+// For example, if n = 3, then i will take values 1, 2, 3 and j will take values 1, 2, 3 and k will take values 1, 2, 3
+cubic(3);
+
+// Time complexity: O(n^3) as the outer loop runs n times and the inner loop runs n times and the innermost loop runs n times
+// This is equivalent to O(n * n * n)
+```
+
+9. Exponential complexity
+
+```python
+import sys
+
+
+def exponential2(n):
+    for i in range(2 ** n):
+        sys.stdout.write(str(i) + " ")
+
+
+# For example, if n = 3, then i will take values 0, 1, 2, ..., 7
+exponential2(3)
+# Time complexity: O(2^n) as the loop runs 2^n times
+```
+
+```javascript
 function exponential2(n) {
     for (let i = 0; i < 2 ** n; i++) {
         process.stdout.write(i + " ");
@@ -301,22 +424,37 @@ exponential3(3);
 // Time complexity: O(3^n) as the loop runs 3^n times
 ```
 
+10. Factorial complexity
+
 ```python
-import sys
+"""
+ALGORITHM EXPLANATION:
+This function demonstrates a recursive branching structure that results in
+factorial time complexity.
+
+1. The function takes an integer 'n'.
+2. It uses a loop to spawn 'n' recursive calls, each reducing 'n' by 1: factorial(n - 1).
+3. The base case stops the recursion when 'n <= 1'.
+4. This produces a branching pattern where the number of operations is proportional to n!.
+"""
 
 
-def exponential2(n):
-    for i in range(2 ** n):
-        sys.stdout.write(str(i) + " ")
+def factorial_complexity(n):
+    if n <= 1:
+        return
+
+    # Loop runs 'n' times, each iteration making a recursive call
+    for i in range(n):
+        factorial_complexity(n - 1)
 
 
-# For example, if n = 3, then i will take values 0, 1, 2, ..., 7
-exponential2(3)
-# Time complexity: O(2^n) as the loop runs 2^n times
+factorial_complexity(3)
+
+# Time complexity: O(n!) - Factorial complexity
+# Space complexity: O(n) - Call stack depth is at most n
 ```
 
-### 10. Factorial complexity
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  * This function demonstrates a recursive branching structure that results in
@@ -372,37 +510,14 @@ factorialComplexityRecursive(3);
  */
 ```
 
-```python
-"""
-ALGORITHM EXPLANATION:
-This function demonstrates a recursive branching structure that results in
-factorial time complexity.
+---
 
-1. The function takes an integer 'n'.
-2. It uses a loop to spawn 'n' recursive calls, each reducing 'n' by 1: factorial(n - 1).
-3. The base case stops the recursion when 'n <= 1'.
-4. This produces a branching pattern where the number of operations is proportional to n!.
-"""
+<a id="2-numbers"></a>
 
+## 2. Numbers
 
-def factorial_complexity(n):
-    if n <= 1:
-        return
+### Theory
 
-    # Loop runs 'n' times, each iteration making a recursive call
-    for i in range(n):
-        factorial_complexity(n - 1)
-
-
-factorial_complexity(3)
-
-# Time complexity: O(n!) - Factorial complexity
-# Space complexity: O(n) - Call stack depth is at most n
-```
-
-# 2. Numbers
-
-## Theory
 1. Sum of first N natural numbers = N * (N + 1) / 2.
 2. [a, b] inclusive range of numbers. [a, b] = b - a + 1.
 3. (a, b) exclusive range of numbers. (a, b) = b - a - 1.
@@ -413,10 +528,45 @@ factorial_complexity(3)
 1. 2³ = 8 means ∛8 = 2 means log₂(8) = 3.
 2. 3⁴ = 81 means ∜81 = 3 means log₃(81) = 4.
 
-## Questions
+### Questions
 
-### 1. Count factors of a number. **O(sqrt(N)), O(1)**
-```js
+1. Count factors of a number. **O(sqrt(N)), O(1)**
+
+```python
+def count_factors(N):
+    # Initialize the count of factors to 0. This variable will store our final result.
+    count = 0
+
+    # We iterate from i = 1 up to (and including) the square root of N.
+    i = 1
+    while i * i <= N:
+        # Check if 'i' is a factor of N.
+        if N % i == 0:
+            # If the divisors are equal (e.g., for N=36, i=6 and N/i=6),
+            # it means N is a perfect square. We count this factor only once.
+            if i == N // i:
+                count += 1
+            else:
+                # If the divisors are distinct (e.g., for N=36, i=4 and N/i=9),
+                # we count both 'i' and its counterpart 'N/i'. Thus, we add 2.
+                count += 2
+        i += 1
+
+    # Return the total count of factors found.
+    return count
+
+
+print(count_factors(24))  # 8
+print(count_factors(36))  # 9
+print(count_factors(1))   # 1
+print(count_factors(10))  # 4
+print(count_factors(100)) # 9
+
+# Time Complexity: O(sqrt(N))
+# Space Complexity: O(1)
+```
+
+```javascript
 function countFactors(N) {
   // Initialize the count of factors to 0. This variable will store our final result.
   let count = 0;
@@ -464,47 +614,29 @@ console.log(`Factors of 36: ${countFactors(36)}`); // Expected: 9 (Factors are 1
 // regardless of the size of the input N. This is known as constant space complexity.
 ```
 
+2. Prime Number Check. **O(sqrt(N)), O(1)**
+
+```text
+Prime number is a number that can only be divided evenly (without leaving a remainder) by 1 and the number itself.
+Thus it has exactly 2 factors. For example, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 are prime numbers.
+```
+
 ```python
-def count_factors(N):
-    # Initialize the count of factors to 0. This variable will store our final result.
-    count = 0
-
-    # We iterate from i = 1 up to (and including) the square root of N.
-    i = 1
-    while i * i <= N:
-        # Check if 'i' is a factor of N.
-        if N % i == 0:
-            # If the divisors are equal (e.g., for N=36, i=6 and N/i=6),
-            # it means N is a perfect square. We count this factor only once.
-            if i == N // i:
-                count += 1
-            else:
-                # If the divisors are distinct (e.g., for N=36, i=4 and N/i=9),
-                # we count both 'i' and its counterpart 'N/i'. Thus, we add 2.
-                count += 2
-        i += 1
-
-    # Return the total count of factors found.
-    return count
+def is_prime(N):
+    if count_factors(N) == 2:
+        return True
+    return False
 
 
-print(count_factors(24))  # 8
-print(count_factors(36))  # 9
-print(count_factors(1))   # 1
-print(count_factors(10))  # 4
-print(count_factors(100)) # 9
+print(is_prime(5))   # True
+print(is_prime(10))  # False
+print(is_prime(1))   # False (1 is not prime as it has only 1 factor)
 
 # Time Complexity: O(sqrt(N))
 # Space Complexity: O(1)
 ```
 
-### 2. Prime Number Check. **O(sqrt(N)), O(1)**
-```
-Prime number is a number that can only be divided evenly (without leaving a remainder) by 1 and the number itself.
-Thus it has exactly 2 factors. For example, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 are prime numbers.
-```
-
-```js
+```javascript
 function isPrime(N) {
   if (countFactors(N) == 2) {
     return true;
@@ -524,23 +656,43 @@ console.log(isPrime(2)); // true
 // - Only uses a constant number of variables.
 ```
 
+3. Count Prime Numbers below given number. **O(N * sqrt(N)), O(1)**
+
 ```python
+def count_factors(N):
+    count = 0
+    i = 1
+    while i * i <= N:
+        if N % i == 0:
+            if i == N // i:
+                count += 1
+            else:
+                count += 2
+        i += 1
+    return count
+
+
 def is_prime(N):
-    if count_factors(N) == 2:
-        return True
-    return False
+    return count_factors(N) == 2
 
 
-print(is_prime(5))   # True
-print(is_prime(10))  # False
-print(is_prime(1))   # False (1 is not prime as it has only 1 factor)
+def count_primes(N):
+    count = 0
+    for i in range(1, N + 1):
+        if is_prime(i):
+            count += 1
+    return count
 
-# Time Complexity: O(sqrt(N))
+
+print(count_primes(5))   # 3 (Primes are 2, 3, 5)
+print(count_primes(10))  # 4 (Primes are 2, 3, 5, 7)
+print(count_primes(19))  # 8 (Primes are 2, 3, 5, 7, 11, 13, 17, 19)
+
+# Time Complexity: O(N * sqrt(N))
 # Space Complexity: O(1)
 ```
 
-### 3. Count Prime Numbers below given number. **O(N * sqrt(N)), O(1)**
-```js
+```javascript
 function countFactors(N) {
   let count = 0;
   for (let i = 1; i * i <= N; i++) {
@@ -588,46 +740,41 @@ console.log(countPrimes(20)); // 8 // Prime numbers are 2, 3, 5, 7, 11, 13, 17, 
 // - Only uses a constant number of variables across all function calls.
 ```
 
+---
+
+<a id="3-1d-arrays-basics"></a>
+
+## 3. 1D Arrays Basics
+
+### Questions
+
+1. Reversing an array involves swapping elements from the start and end. **O(N), O(1)**
+
 ```python
-def count_factors(N):
-    count = 0
-    i = 1
-    while i * i <= N:
-        if N % i == 0:
-            if i == N // i:
-                count += 1
-            else:
-                count += 2
+# Reverse the array elements from start to end
+def reverse(Arr, start, end):
+    i = start
+    j = end
+    while i < j:
+        Arr[i], Arr[j] = Arr[j], Arr[i]
         i += 1
-    return count
+        j -= 1
+    return Arr
 
 
-def is_prime(N):
-    return count_factors(N) == 2
+# Reverse whole array
+Arr = [1, 2, 3, 4, 5]
+print("Reverse whole array: ", reverse(Arr, 0, len(Arr) - 1))  # [5, 4, 3, 2, 1]
 
+# Reverse array from start index to end index
+Arr2 = [1, 2, 3, 4, 5]
+print("Reverse array from index 1 to 3: ", reverse(Arr2, 1, 3))  # [1, 4, 3, 2, 5]
 
-def count_primes(N):
-    count = 0
-    for i in range(1, N + 1):
-        if is_prime(i):
-            count += 1
-    return count
-
-
-print(count_primes(5))   # 3 (Primes are 2, 3, 5)
-print(count_primes(10))  # 4 (Primes are 2, 3, 5, 7)
-print(count_primes(19))  # 8 (Primes are 2, 3, 5, 7, 11, 13, 17, 19)
-
-# Time Complexity: O(N * sqrt(N))
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-# 3. 1D Arrays Basics
-
-## Questions
-
-### 1. Reversing an array involves swapping elements from the start and end. **O(N), O(1)**
-```js
+```javascript
 // Reverse the array elements from start to end
 function reverse(Arr, start, end){
   let i = start;
@@ -658,67 +805,7 @@ console.log(reverse([1, 2, 3, 4, 5], 1, 3)); // [ 1, 4, 3, 2, 5 ]
 // - Swap is done in-place using a single temp variable.
 ```
 
-```python
-# Reverse the array elements from start to end
-def reverse(Arr, start, end):
-    i = start
-    j = end
-    while i < j:
-        Arr[i], Arr[j] = Arr[j], Arr[i]
-        i += 1
-        j -= 1
-    return Arr
-
-
-# Reverse whole array
-Arr = [1, 2, 3, 4, 5]
-print("Reverse whole array: ", reverse(Arr, 0, len(Arr) - 1))  # [5, 4, 3, 2, 1]
-
-# Reverse array from start index to end index
-Arr2 = [1, 2, 3, 4, 5]
-print("Reverse array from index 1 to 3: ", reverse(Arr2, 1, 3))  # [1, 4, 3, 2, 5]
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Rotating an array involves reversing segments of the array. **O(N), O(1)**
-```js
-function rotateArray(A, B) {
-    // Reverse the array elements from start to end
-    function reverse(Arr, start, end) {
-        let i = start;
-        let j = end;
-        while (i < j) {
-            let temp = Arr[i];
-            Arr[i] = Arr[j];
-            Arr[j] = temp;
-            i++;
-            j--;
-        }
-    }
-
-    // Calculate the effective rotation offset as B modulo the array length because rotating by the array's length results in the same array. Also, if B is larger than the array length, we only need to rotate by the remainder. This ensures we don't perform unnecessary rotations.
-    let offset = B % A.length;
-
-    reverse(A, 0, A.length - 1); // reverse all elements
-    reverse(A, 0, offset - 1); // reverse first half. why we are using (offset - 1), because we are using 0 based index.
-    reverse(A, offset, A.length - 1); // reverse second half
-
-    return A;
-}
-
-console.log(rotateArray([1, 2, 3, 4, 5], 2)); // [ 4, 5, 1, 2, 3 ]
-console.log(rotateArray([1, 2, 3, 4, 5], 8)); // [ 3, 4, 5, 1, 2 ]
-console.log(rotateArray([1, 2, 3, 4, 5], 11)); // [ 5, 1, 2, 3, 4 ]
-
-// Time Complexity: O(N)
-// - Three reverse calls, each traversing a portion of the array.
-// - Total elements reversed = N + offset + (N - offset) = 2N, which is O(N).
-
-// Space Complexity: O(1)
-// - All reversals are done in-place using swaps.
-```
+2. Rotating an array involves reversing segments of the array. **O(N), O(1)**
 
 ```python
 def rotate_array(A, B):
@@ -755,9 +842,51 @@ print(rotate_array([1, 2, 3, 4, 5], 3))  # [3, 4, 5, 1, 2]
 # Space Complexity: O(1)
 ```
 
-# 4. Subarrays
+```javascript
+function rotateArray(A, B) {
+    // Reverse the array elements from start to end
+    function reverse(Arr, start, end) {
+        let i = start;
+        let j = end;
+        while (i < j) {
+            let temp = Arr[i];
+            Arr[i] = Arr[j];
+            Arr[j] = temp;
+            i++;
+            j--;
+        }
+    }
 
-## Theory
+    // Calculate the effective rotation offset as B modulo the array length because rotating by the array's length results in the same array. Also, if B is larger than the array length, we only need to rotate by the remainder. This ensures we don't perform unnecessary rotations.
+    let offset = B % A.length;
+
+    reverse(A, 0, A.length - 1); // reverse all elements
+    reverse(A, 0, offset - 1); // reverse first half. why we are using (offset - 1), because we are using 0 based index.
+    reverse(A, offset, A.length - 1); // reverse second half
+
+    return A;
+}
+
+console.log(rotateArray([1, 2, 3, 4, 5], 2)); // [ 4, 5, 1, 2, 3 ]
+console.log(rotateArray([1, 2, 3, 4, 5], 8)); // [ 3, 4, 5, 1, 2 ]
+console.log(rotateArray([1, 2, 3, 4, 5], 11)); // [ 5, 1, 2, 3, 4 ]
+
+// Time Complexity: O(N)
+// - Three reverse calls, each traversing a portion of the array.
+// - Total elements reversed = N + offset + (N - offset) = 2N, which is O(N).
+
+// Space Complexity: O(1)
+// - All reversals are done in-place using swaps.
+```
+
+---
+
+<a id="4-subarrays"></a>
+
+## 4. Subarrays
+
+### Theory
+
 1. Total number of subarrays in an array of size N = N * (N + 1) / 2.
 For example, [1, 2, 3] size of array = 3, total number of subarrays = 3 * (3 + 1) / 2 = 6. Subarrays are [1], [1, 2], [1, 2, 3], [2], [2, 3], [3].
 2. Total number of subarrays of size K in an array of size N = N - K + 1.
@@ -765,10 +894,31 @@ For example, [1, 2, 3, 4, 5] size of array = 5, size of subarray = 3, total numb
 3. Length of subarray = end - start + 1. This is an inclusive range example [a, b] = b - a + 1.
 For example, in [1, 2, 3, 4, 5], if we have a subarray starting at index 2 and ending at index 4, the length of the subarray is 4 - 2 + 1 = 3. The subarray would include the elements at indices 2, 3, and 4. So [3, 4, 5].
 
-## Questions
+### Questions
 
-### 1. Print all possible Subarrays of the array. No optimised solution available | Three Nested For Loops **O(N^3), O(N^3)**
-```js
+1. Print all possible Subarrays of the array. No optimised solution available | Three Nested For Loops **O(N^3), O(N^3)**
+
+```python
+def print_all_subarrays(A):
+    result = []
+    n = len(A)
+    for i in range(n):
+        for j in range(i, n):
+            subarray = []
+            for k in range(i, j + 1):
+                subarray.append(A[k])
+            result.append(subarray)
+    return result
+
+
+print(print_all_subarrays([1, 2, 3]))
+# Output: [[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]]
+
+# Time Complexity: O(n^3) - Three nested loops
+# Space Complexity: O(n^3) - To store all subarrays in result
+```
+
+```javascript
 function printAllSubarrays(A) {
     const result = [];
     for (let i = 0; i < A.length; i++) {
@@ -795,28 +945,34 @@ console.log(printAllSubarrays([1, 2])); // [ [ 1 ], [ 1, 2 ], [ 2 ] ]
 // - Storing all N*(N+1)/2 subarrays, with total elements across all subarrays = O(N^3).
 ```
 
+2. Count all possible Subarrays of the array | Two Nested For Loops **O(N^2), O(1)** | Using formula **O(1), O(1)**
+
 ```python
-def print_all_subarrays(A):
-    result = []
+def count_all_subarrays(A):
+    count = 0
     n = len(A)
     for i in range(n):
         for j in range(i, n):
-            subarray = []
-            for k in range(i, j + 1):
-                subarray.append(A[k])
-            result.append(subarray)
-    return result
+            count += 1
+    return count
 
 
-print(print_all_subarrays([1, 2, 3]))
-# Output: [[1], [1, 2], [1, 2, 3], [2], [2, 3], [3]]
+print(count_all_subarrays([1, 2, 3]))  # 6
+# Time Complexity: O(n^2) - Two nested loops
+# Space Complexity: O(1) - Constant extra space
 
-# Time Complexity: O(n^3) - Three nested loops
-# Space Complexity: O(n^3) - To store all subarrays in result
+
+def count_all_subarrays_formula(A):
+    n = len(A)
+    return n * (n + 1) // 2
+
+
+print(count_all_subarrays_formula([1, 2, 3]))  # 6
+# Time Complexity: O(1)
+# Space Complexity: O(1)
 ```
 
-### 2. Count all possible Subarrays of the array | Two Nested For Loops **O(N^2), O(1)** | Using formula **O(1), O(1)**
-```js
+```javascript
 function countAllSubarrays(A) {
     let count = 0;
     for (let i = 0; i < A.length; i++) {
@@ -844,49 +1000,15 @@ function countAllSubarrays(A) {
 // Space Complexity: O(1)
 ```
 
-```python
-def count_all_subarrays(A):
-    count = 0
-    n = len(A)
-    for i in range(n):
-        for j in range(i, n):
-            count += 1
-    return count
+---
 
+<a id="5-prefix-sum-basics"></a>
 
-print(count_all_subarrays([1, 2, 3]))  # 6
-# Time Complexity: O(n^2) - Two nested loops
-# Space Complexity: O(1) - Constant extra space
+## 5. Prefix Sum Basics
 
+### Questions
 
-def count_all_subarrays_formula(A):
-    n = len(A)
-    return n * (n + 1) // 2
-
-
-print(count_all_subarrays_formula([1, 2, 3]))  # 6
-# Time Complexity: O(1)
-# Space Complexity: O(1)
-```
-
-# 5. Prefix Sum Basics
-
-### 1. Create a prefix sum array. **O(N), O(N)**
-```js
-function createPrefixSumArray(A) {
-    const psa = [];
-    psa[0] = A[0];
-    for (let i = 1; i < A.length; i++) {
-        psa[i] = psa[i - 1] + A[i];
-    }
-    return psa;
-}
-
-console.log(createPrefixSumArray([2, 3, 1, 6, 4, 5])); // [2, 5, 6, 12, 16, 21]
-
-// Time Complexity: O(n)
-// Space Complexity: O(n)
-```
+1. Create a prefix sum array. **O(N), O(N)**
 
 ```python
 def create_prefix_sum_array(A):
@@ -903,8 +1025,49 @@ print(create_prefix_sum_array([1, 2, 3, 4, 5]))  # [1, 3, 6, 10, 15]
 # Space Complexity: O(N)
 ```
 
-### 2. Calculate the sum of elements in an array in a given range. / Range Sum Query **O(N), O(N)**
-```js
+```javascript
+function createPrefixSumArray(A) {
+    const psa = [];
+    psa[0] = A[0];
+    for (let i = 1; i < A.length; i++) {
+        psa[i] = psa[i - 1] + A[i];
+    }
+    return psa;
+}
+
+console.log(createPrefixSumArray([2, 3, 1, 6, 4, 5])); // [2, 5, 6, 12, 16, 21]
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+```
+
+2. Calculate the sum of elements in an array in a given range. / Range Sum Query **O(N), O(N)**
+
+```python
+def prefix_sum(A, Q):
+    # prefix sum array of all elements
+    psa = [0] * len(A)
+    psa[0] = A[0]
+    for i in range(1, len(A)):
+        psa[i] = psa[i - 1] + A[i]
+
+    ans = []
+    for s, e in Q:
+        if s == 0:
+            ans.append(psa[e])
+        else:
+            ans.append(psa[e] - psa[s - 1])
+    return ans
+
+
+print(prefix_sum([-3, 6, 2, 4, 5, 2, 8, -9, 3, 1], [[4, 8], [3, 7], [1, 3], [0, 4], [7, 7]]))
+# [8, 4, 12, 14, -9]
+
+# Time Complexity: O(N + Q)
+# Space Complexity: O(N)
+```
+
+```javascript
 function prefixSum(A, Q) {
     // prefix sum array of all elements
     const psa = [];
@@ -935,45 +1098,7 @@ console.log(prefixSum([-3, 6, 2, 4, 5, 2, 8, -9, 3, 1], [[4, 8], [3, 7], [1, 3],
 // Space Complexity: O(n)
 ```
 
-```python
-def prefix_sum(A, Q):
-    # prefix sum array of all elements
-    psa = [0] * len(A)
-    psa[0] = A[0]
-    for i in range(1, len(A)):
-        psa[i] = psa[i - 1] + A[i]
-
-    ans = []
-    for s, e in Q:
-        if s == 0:
-            ans.append(psa[e])
-        else:
-            ans.append(psa[e] - psa[s - 1])
-    return ans
-
-
-print(prefix_sum([-3, 6, 2, 4, 5, 2, 8, -9, 3, 1], [[4, 8], [3, 7], [1, 3], [0, 4], [7, 7]]))
-# [8, 4, 12, 14, -9]
-
-# Time Complexity: O(N + Q)
-# Space Complexity: O(N)
-```
-
-### 3. In place prefix sum. **O(N), O(1)**
-```js
-function inPlacePrefixSum(A) {
-    for (let i = 1; i < A.length; i++) {
-        A[i] = A[i] + A[i - 1];
-    }
-    return A;
-}
-
-console.log("inPlacePrefixSum", inPlacePrefixSum([1, 2, 3, 4, 5])); // [1, 3, 6, 10, 15]
-console.log("inPlacePrefixSum", inPlacePrefixSum([1, 2, 3, 4, 5, 6])); // [1, 3, 6, 10, 15, 21]
-
-// Time Complexity: O(N)
-// Space Complexity: O(1)
-```
+3. In place prefix sum. **O(N), O(1)**
 
 ```python
 def in_place_prefix_sum(A):
@@ -988,10 +1113,54 @@ print("inPlacePrefixSum", in_place_prefix_sum([1, 2, 3, 4, 5]))  # [1, 3, 6, 10,
 # Space Complexity: O(1)
 ```
 
-# 6. Carry Forward
+```javascript
+function inPlacePrefixSum(A) {
+    for (let i = 1; i < A.length; i++) {
+        A[i] = A[i] + A[i - 1];
+    }
+    return A;
+}
 
-### 1. Print Subarrays sums starting from given index | Carry Forward **O(N), O(1)**
-```js
+console.log("inPlacePrefixSum", inPlacePrefixSum([1, 2, 3, 4, 5])); // [1, 3, 6, 10, 15]
+console.log("inPlacePrefixSum", inPlacePrefixSum([1, 2, 3, 4, 5, 6])); // [1, 3, 6, 10, 15, 21]
+
+// Time Complexity: O(N)
+// Space Complexity: O(1)
+```
+
+---
+
+<a id="6-carry-forward"></a>
+
+## 6. Carry Forward
+
+### Questions
+
+1. Print Subarrays sums starting from given index | Carry Forward **O(N), O(1)**
+
+```python
+def print_subarrays_sums_from_index(A, start_index):
+    subarray_sum = 0
+    total_sum = 0
+    for j in range(start_index, len(A)):
+        # we are carrying forward the subarraySum to the next iteration
+        subarray_sum += A[j]
+        print(f"Sum of subarray from {start_index} to {j} is {subarray_sum}")
+        total_sum += subarray_sum
+    return total_sum
+
+
+print("Total sum: " + str(print_subarrays_sums_from_index([1, 2, 3], 0)))
+# Sum of subarray from 0 to 0 is 1
+# Sum of subarray from 0 to 1 is 3
+# Sum of subarray from 0 to 2 is 6
+# Total sum: 10
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function printSubarraysSumsFromIndex(A, startIndex) {
     let subarraySum = 0;
     let totalSum = 0;
@@ -1016,30 +1185,30 @@ printSubarraysSumsFromIndex([1, 2, 3, 4], 0); // [1] [1, 2] [1, 2, 3] [1, 2, 3, 
 // - Only uses two variables (subarraySum, totalSum) regardless of input size.
 ```
 
+2. Sum of all Subarrays sums | Carry Forward **O(N^2), O(1)**
+
 ```python
-def print_subarrays_sums_from_index(A, start_index):
-    subarray_sum = 0
+def sum_of_all_subarrays(A):
     total_sum = 0
-    for j in range(start_index, len(A)):
-        # we are carrying forward the subarraySum to the next iteration
-        subarray_sum += A[j]
-        print(f"Sum of subarray from {start_index} to {j} is {subarray_sum}")
-        total_sum += subarray_sum
+    n = len(A)
+    for i in range(n):
+        subarray_sum = 0
+        # Calculate sum of subarray starting from i to end of array
+        for j in range(i, n):
+            # Carry forward the sum of subarray from i to j-1
+            subarray_sum += A[j]
+            total_sum += subarray_sum
     return total_sum
 
 
-print("Total sum: " + str(print_subarrays_sums_from_index([1, 2, 3], 0)))
-# Sum of subarray from 0 to 0 is 1
-# Sum of subarray from 0 to 1 is 3
-# Sum of subarray from 0 to 2 is 6
-# Total sum: 10
+print(sum_of_all_subarrays([1, 2, 3]))  # 20
+print(sum_of_all_subarrays([2, 1, 3]))  # 19
 
-# Time Complexity: O(N)
+# Time Complexity: O(N^2)
 # Space Complexity: O(1)
 ```
 
-### 2. Sum of all Subarrays sums | Carry Forward **O(N^2), O(1)**
-```js
+```javascript
 function sumOfAllSubarrays(A) {
   let totalSum = 0;
   for (let i = 0; i < A.length; i++) {
@@ -1064,29 +1233,31 @@ console.log(sumOfAllSubarrays([1, 2, 3, 4])); // [1] [1, 2] [1, 2, 3] [1, 2, 3, 
 // - Only uses a few variables (totalSum, subarraySum).
 ```
 
+3. Count of pairs of two given characters in an array (AG) | Carry Forward **O(N), O(1)**
+
 ```python
-def sum_of_all_subarrays(A):
-    total_sum = 0
-    n = len(A)
-    for i in range(n):
-        subarray_sum = 0
-        # Calculate sum of subarray starting from i to end of array
-        for j in range(i, n):
-            # Carry forward the sum of subarray from i to j-1
-            subarray_sum += A[j]
-            total_sum += subarray_sum
-    return total_sum
+def count_of_pairs(A):
+    pair_count = 0  # Total number of "ag" pairs found
+    a_count = 0     # Running count of 'a' characters encountered
+
+    for ch in A:
+        if ch == 'a':
+            a_count += 1
+        elif ch == 'g':
+            # Every 'g' pairs with all preceding 'a' characters
+            pair_count += a_count
+
+    return pair_count
 
 
-print(sum_of_all_subarrays([1, 2, 3]))  # 20
-print(sum_of_all_subarrays([2, 1, 3]))  # 19
+print(count_of_pairs(['a', 'b', 'e', 'g', 'a', 'g']))  # 3
+print(count_of_pairs("abegag"))  # 3
 
-# Time Complexity: O(N^2)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 3. Count of pairs of two given characters in an array (AG) | Carry Forward **O(N), O(1)**
-```js
+```javascript
 function countOfPairs(A) {
   let pairCount = 0; // Total number of "ag" pairs found
   let aCount = 0;    // Running count of 'a' characters encountered
@@ -1114,30 +1285,47 @@ console.log("countOfPairs", countOfPairs(['a', 'g', 'a', 'a', 'a', 'a'])); // Ou
 // - Only two variables (pairCount, aCount) are used.
 ```
 
+4. Smallest subarray containing min & max elements | Carry Forward **O(N), O(1)**
+
 ```python
-def count_of_pairs(A):
-    pair_count = 0  # Total number of "ag" pairs found
-    a_count = 0     # Running count of 'a' characters encountered
+# Optimised solution using carry forward technique
+def smallest_subarray_containing_min_max(A):
+    # Find the minimum and maximum elements of the array
+    min_element = min(A)
+    max_element = max(A)
 
-    for ch in A:
-        if ch == 'a':
-            a_count += 1
-        elif ch == 'g':
-            # Every 'g' pairs with all preceding 'a' characters
-            pair_count += a_count
+    # If min and max are the same, the smallest subarray is of length 1
+    if min_element == max_element:
+        return 1
 
-    return pair_count
+    last_min_index = -1
+    last_max_index = -1
+    min_length = len(A)
+
+    # Iterate through the array to find the smallest subarray
+    for i, val in enumerate(A):
+        if val == min_element:
+            last_min_index = i
+            # If we have already seen a max element, calculate length
+            if last_max_index != -1:
+                min_length = min(min_length, i - last_max_index + 1)
+        elif val == max_element:
+            last_max_index = i
+            # If we have already seen a min element, calculate length
+            if last_min_index != -1:
+                min_length = min(min_length, i - last_min_index + 1)
+
+    return min_length
 
 
-print(count_of_pairs(['a', 'b', 'e', 'g', 'a', 'g']))  # 3
-print(count_of_pairs("abegag"))  # 3
+print(smallest_subarray_containing_min_max([1, 2, 3, 1, 3, 4, 6, 4, 6, 3]))  # 4
+print(smallest_subarray_containing_min_max([2, 2, 2, 2]))  # 1
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 4. Smallest subarray containing min & max elements | Carry Forward **O(N), O(1)**
-```js
+```javascript
 // Optimised solution using carry forward technique
 function smallestSubarrayContainingMinMax(A) {
   // Find the minimum and maximum elements of the array
@@ -1203,50 +1391,15 @@ console.log("smallestSubarrayContainingMinMax", smallestSubarrayContainingMinMax
 // - Only a fixed number of variables (minElement, maxElement, minIndex, maxIndex, length).
 ```
 
-```python
-# Optimised solution using carry forward technique
-def smallest_subarray_containing_min_max(A):
-    # Find the minimum and maximum elements of the array
-    min_element = min(A)
-    max_element = max(A)
+---
 
-    # If min and max are the same, the smallest subarray is of length 1
-    if min_element == max_element:
-        return 1
+<a id="7-contribution-technique"></a>
 
-    last_min_index = -1
-    last_max_index = -1
-    min_length = len(A)
+## 7. Contribution Technique
 
-    # Iterate through the array to find the smallest subarray
-    for i, val in enumerate(A):
-        if val == min_element:
-            last_min_index = i
-            # If we have already seen a max element, calculate length
-            if last_max_index != -1:
-                min_length = min(min_length, i - last_max_index + 1)
-        elif val == max_element:
-            last_max_index = i
-            # If we have already seen a min element, calculate length
-            if last_min_index != -1:
-                min_length = min(min_length, i - last_min_index + 1)
+### Questions
 
-    return min_length
-
-
-print(smallest_subarray_containing_min_max([1, 2, 3, 1, 3, 4, 6, 4, 6, 3]))  # 4
-print(smallest_subarray_containing_min_max([2, 2, 2, 2]))  # 1
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 7. Contribution Technique
-
-### 1. Sum of all Subarrays sums. **O(N), O(1)**
-![alt text](contribution-1.png)
-![alt text](contribution-2.png)
-![alt text](contribution-3.png)
+1. Sum of all Subarrays sums. **O(N), O(1)**
 
 **Diagram 1: Brute force vs contribution (A = [6, 8, -1])**
 ```
@@ -1311,7 +1464,25 @@ Total subarrays containing index i = (i + 1) * (n - i)
 Contribution of A[i]               = A[i] * (i + 1) * (n - i)
 ```
 
-```js
+```python
+def sum_of_all_subarrays_sums(A):
+    total = 0
+    N = len(A)
+    for i in range(N):
+        # For each element A[i], it contributes to (i + 1) * (N - i) subarrays
+        contribution = (i + 1) * (N - i) * A[i]
+        total += contribution
+    return total
+
+
+print(sum_of_all_subarrays_sums([1, 2, 3]))  # 20
+print(sum_of_all_subarrays_sums([2, 1, 3]))  # 19
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function sumOfAllSubarraysSums(A) {
   let sum = 0;
   const N = A.length;
@@ -1340,28 +1511,7 @@ console.log(sumOfAllSubarraysSums([1, 2, 3, 4])); // 50
 // - Only uses a few variables (sum, subarrayCount, contribution).
 ```
 
-```python
-def sum_of_all_subarrays_sums(A):
-    total = 0
-    N = len(A)
-    for i in range(N):
-        # For each element A[i], it contributes to (i + 1) * (N - i) subarrays
-        contribution = (i + 1) * (N - i) * A[i]
-        total += contribution
-    return total
-
-
-print(sum_of_all_subarrays_sums([1, 2, 3]))  # 20
-print(sum_of_all_subarrays_sums([2, 1, 3]))  # 19
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Sum of all Submatrices sums. **O(N^2), O(1)**
-![alt text](matrix-contribution-1.png)
-![alt text](matrix-contribution-2.png)
-![alt text](matrix-contribution-3.png)
+2. Sum of all Submatrices sums. **O(N^2), O(1)**
 
 **Diagram 1: Brute force vs contribution (2 x 3 matrix)**
 ```
@@ -1450,7 +1600,45 @@ freq(i, j)         = count TL * count BR = (i+1) * (j+1) * (N-i) * (M-j)
 contribution(i, j) = freq(i, j) * mat[i][j]
 ```
 
-```js
+```python
+"""
+Calculates the sum of all possible submatrices in a given matrix
+using an efficient, contribution-based mathematical approach.
+
+@param {number[][]} matrix - The input 2D array (n x m).
+@returns {number} The total sum of all submatrices.
+"""
+
+
+def sum_of_all_submatrices_sums(matrix):
+    n = len(matrix)
+    m = len(matrix[0])
+    total_sum = 0
+
+    for i in range(n):
+        for j in range(m):
+            # Number of possible top-left corners for a submatrix containing (i, j)
+            top_left_choices = (i + 1) * (j + 1)
+
+            # Number of possible bottom-right corners for a submatrix containing (i, j)
+            bottom_right_choices = (n - i) * (m - j)
+
+            # Total occurrences of matrix[i][j] across all submatrices
+            occurrences = top_left_choices * bottom_right_choices
+
+            total_sum += matrix[i][j] * occurrences
+
+    return total_sum
+
+
+print(sum_of_all_submatrices_sums([[1, 1], [1, 1]]))  # 16
+print(sum_of_all_submatrices_sums([[1, 2], [3, 4]]))  # 40
+
+# Time Complexity: O(n * m)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * Calculates the sum of all possible submatrices in a given matrix
  * using an efficient, contribution-based mathematical approach.
@@ -1526,48 +1714,31 @@ console.log(sumOfSubmatricesSums([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // 500
 // numbers. The space required does not grow with the size of the input matrix.
 ```
 
+---
+
+<a id="8-2d-arrays-matrix-basics"></a>
+
+## 8. 2D Arrays / Matrix Basics
+
+### Questions
+
+1. Creating and printing a 2D Array. **O(N * M), O(N * M)**
+
 ```python
-"""
-Calculates the sum of all possible submatrices in a given matrix
-using an efficient, contribution-based mathematical approach.
+rows = 3  # number of rows
+cols = 3  # number of columns
+arr = [[0] * cols for _ in range(rows)]
 
-@param {number[][]} matrix - The input 2D array (n x m).
-@returns {number} The total sum of all submatrices.
-"""
+for i in range(rows):
+    for j in range(cols):
+        print(arr[i][j], end=" ")
+    print()
 
-
-def sum_of_all_submatrices_sums(matrix):
-    n = len(matrix)
-    m = len(matrix[0])
-    total_sum = 0
-
-    for i in range(n):
-        for j in range(m):
-            # Number of possible top-left corners for a submatrix containing (i, j)
-            top_left_choices = (i + 1) * (j + 1)
-
-            # Number of possible bottom-right corners for a submatrix containing (i, j)
-            bottom_right_choices = (n - i) * (m - j)
-
-            # Total occurrences of matrix[i][j] across all submatrices
-            occurrences = top_left_choices * bottom_right_choices
-
-            total_sum += matrix[i][j] * occurrences
-
-    return total_sum
-
-
-print(sum_of_all_submatrices_sums([[1, 1], [1, 1]]))  # 16
-print(sum_of_all_submatrices_sums([[1, 2], [3, 4]]))  # 40
-
-# Time Complexity: O(n * m)
-# Space Complexity: O(1)
+# Time Complexity: O(N * M)
+# Space Complexity: O(N * M)
 ```
 
-# 8. 2D Arrays / Matrix Basics
-
-### 1. Creating and printing a 2D Array. **O(N * M), O(N * M)**
-```js
+```javascript
 let rows = 3; // number of rows
 let cols = 3; // number of columns
 let arr = Array.from({ length: rows }, () => new Array(cols).fill(0));
@@ -1593,22 +1764,27 @@ for (let i = 0; i < rows; i++) {
 // - The 2D array itself takes N*M space to store.
 ```
 
-```python
-rows = 3  # number of rows
-cols = 3  # number of columns
-arr = [[0] * cols for _ in range(rows)]
+2. Given a matrix print row-wise sum. **O(N*M), O(1)**
 
-for i in range(rows):
-    for j in range(cols):
-        print(arr[i][j], end=" ")
-    print()
+```python
+def row_wise_sum(arr):
+    rows = len(arr)
+    cols = len(arr[0])
+    for i in range(rows):
+        row_sum = 0
+        for j in range(cols):
+            row_sum += arr[i][j]
+            print(arr[i][j], end=" ")
+        print(f"Row {i} Sum: {row_sum}")
+
+
+row_wise_sum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 # Time Complexity: O(N * M)
-# Space Complexity: O(N * M)
+# Space Complexity: O(1)
 ```
 
-### 2. Given a matrix print row-wise sum. **O(N*M), O(1)**
-```js
+```javascript
 function rowWiseSum(arr) {
     let rows = arr.length;
     let cols = arr[0].length;
@@ -1633,26 +1809,27 @@ console.log(rowWiseSum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // 6 15 24
 // - Only a single sum variable is reused per row.
 ```
 
+3. Given a matrix print col-wise sum. **O(N*M), O(1)**
+
 ```python
-def row_wise_sum(arr):
+def col_wise_sum(arr):
     rows = len(arr)
     cols = len(arr[0])
-    for i in range(rows):
-        row_sum = 0
-        for j in range(cols):
-            row_sum += arr[i][j]
+    for j in range(cols):
+        col_sum = 0
+        for i in range(rows):
+            col_sum += arr[i][j]
             print(arr[i][j], end=" ")
-        print(f"Row {i} Sum: {row_sum}")
+        print(f"Col {j} Sum: {col_sum}")
 
 
-row_wise_sum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+col_wise_sum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 # Time Complexity: O(N * M)
 # Space Complexity: O(1)
 ```
 
-### 3. Given a matrix print col-wise sum. **O(N*M), O(1)**
-```js
+```javascript
 function colWiseSum(arr) {
     let rows = arr.length;
     let cols = arr[0].length;
@@ -1676,44 +1853,7 @@ console.log(colWiseSum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // 12 15 18
 // - Only a single sum variable is reused per column.
 ```
 
-```python
-def col_wise_sum(arr):
-    rows = len(arr)
-    cols = len(arr[0])
-    for j in range(cols):
-        col_sum = 0
-        for i in range(rows):
-            col_sum += arr[i][j]
-            print(arr[i][j], end=" ")
-        print(f"Col {j} Sum: {col_sum}")
-
-
-col_wise_sum([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-
-# Time Complexity: O(N * M)
-# Space Complexity: O(1)
-```
-
-### 4. Given a square matrix print principal diagonal. **O(N), O(1)**
-```js
-function printMainDiagonal(arr){
-  let n = arr.length;
-  let i = 0;
-  let j = 0;
-  while(i < n && j < n){
-    process.stdout.write(arr[i][j] + " ")
-    i++;
-    j++;
-  }
-}
-console.log(printMainDiagonal([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // 1 5 9
-
-// Time Complexity: O(N)
-// - Single loop traverses N diagonal elements (where row == col).
-
-// Space Complexity: O(1)
-// - Only uses two pointer variables (i, j).
-```
+4. Given a square matrix print principal diagonal. **O(N), O(1)**
 
 ```python
 import sys
@@ -1736,8 +1876,50 @@ print_main_diagonal([[1, 2, 3], [4, 5, 6], [7, 8, 9]])  # 1 5 9
 # Space Complexity: O(1)
 ```
 
-### 5. Given a square matrix print anti-diagonal. **O(N), O(1)**
-```js
+```javascript
+function printMainDiagonal(arr){
+  let n = arr.length;
+  let i = 0;
+  let j = 0;
+  while(i < n && j < n){
+    process.stdout.write(arr[i][j] + " ")
+    i++;
+    j++;
+  }
+}
+console.log(printMainDiagonal([[1, 2, 3], [4, 5, 6], [7, 8, 9]])); // 1 5 9
+
+// Time Complexity: O(N)
+// - Single loop traverses N diagonal elements (where row == col).
+
+// Space Complexity: O(1)
+// - Only uses two pointer variables (i, j).
+```
+
+5. Given a square matrix print anti-diagonal. **O(N), O(1)**
+
+```python
+import sys
+
+
+def print_anti_diagonal(arr):
+    n = len(arr)
+    i = 0
+    j = n - 1
+    while i < n and j >= 0:
+        sys.stdout.write(str(arr[i][j]) + " ")
+        i += 1
+        j -= 1
+    print()
+
+
+print_anti_diagonal([[1, 2, 3], [4, 5, 6], [7, 8, 9]])  # 3 5 7
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function printAntiDiagonal(arr) {
     let n = arr.length;
     // let str = "";
@@ -1773,29 +1955,49 @@ console.log(printAntiDiagonal(matrix)); // 3 5 7
 // - Only uses two pointer variables (i, j).
 ```
 
+6. Print all anti-diagonals in a rec matrix (right to left). **O(N*M), O(1)**
+
 ```python
 import sys
 
 
-def print_anti_diagonal(arr):
-    n = len(arr)
-    i = 0
-    j = n - 1
-    while i < n and j >= 0:
-        sys.stdout.write(str(arr[i][j]) + " ")
-        i += 1
-        j -= 1
-    print()
+def print_anti_diagonals(arr):
+    total_rows = len(arr)
+    total_cols = len(arr[0])
+
+    # Print all anti-diagonals starting from the 0th row
+    for col in range(total_cols):
+        i = 0
+        j = col
+        while i < total_rows and j >= 0:
+            sys.stdout.write(str(arr[i][j]) + " ")
+            i += 1
+            j -= 1
+        print()
+
+    # Print all anti-diagonals starting from the last column (excluding row 0)
+    for row in range(1, total_rows):
+        i = row
+        j = total_cols - 1
+        while i < total_rows and j >= 0:
+            sys.stdout.write(str(arr[i][j]) + " ")
+            i += 1
+            j -= 1
+        print()
 
 
-print_anti_diagonal([[1, 2, 3], [4, 5, 6], [7, 8, 9]])  # 3 5 7
+matrix = [
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12]
+]
+print_anti_diagonals(matrix)
 
-# Time Complexity: O(N)
+# Time Complexity: O(N * M)
 # Space Complexity: O(1)
 ```
 
-### 6. Print all anti-diagonals in a rec matrix (right to left). **O(N*M), O(1)**
-```js
+```javascript
 function printAntiDiagonals(arr) {
     let totalRows = arr.length; // Number of rows
     let totalCols = arr[0].length; // Number of columns
@@ -1855,48 +2057,34 @@ console.log(printAntiDiagonals(matrix2));
 // - Only pointer variables (i, j, row, col) are used. Output is printed directly.
 ```
 
+7. Transpose of a square matrix. Swap A[i][j] with A[j][i]. **O(N*N), O(1)**
+
 ```python
-import sys
+def transpose(matrix):
+    size = len(matrix)
 
+    # We only iterate over the UPPER triangle (col starts at row+1, not 0).
+    for row in range(size):
+        for col in range(row + 1, size):
+            # In-place swap
+            matrix[row][col], matrix[col][row] = matrix[col][row], matrix[row][col]
 
-def print_anti_diagonals(arr):
-    total_rows = len(arr)
-    total_cols = len(arr[0])
-
-    # Print all anti-diagonals starting from the 0th row
-    for col in range(total_cols):
-        i = 0
-        j = col
-        while i < total_rows and j >= 0:
-            sys.stdout.write(str(arr[i][j]) + " ")
-            i += 1
-            j -= 1
-        print()
-
-    # Print all anti-diagonals starting from the last column (excluding row 0)
-    for row in range(1, total_rows):
-        i = row
-        j = total_cols - 1
-        while i < total_rows and j >= 0:
-            sys.stdout.write(str(arr[i][j]) + " ")
-            i += 1
-            j -= 1
-        print()
+    return matrix
 
 
 matrix = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12]
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
 ]
-print_anti_diagonals(matrix)
+print(transpose(matrix))
+# [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
 
-# Time Complexity: O(N * M)
+# Time Complexity: O(N^2)
 # Space Complexity: O(1)
 ```
 
-### 7. Transpose of a square matrix. Swap A[i][j] with A[j][i]. **O(N*N), O(1)**
-```js
+```javascript
 function transpose(matrix) {
     let size = matrix.length;
 
@@ -1944,15 +2132,21 @@ console.log(transpose(matrix));
 // - Swap is done in-place using a single temp variable.
 ```
 
-```python
-def transpose(matrix):
-    size = len(matrix)
+8. Rotate a matrix 90 degree clockwise. Transpose + Reverse rows. **O(N*N), O(1)**
 
-    # We only iterate over the UPPER triangle (col starts at row+1, not 0).
-    for row in range(size):
-        for col in range(row + 1, size):
-            # In-place swap
-            matrix[row][col], matrix[col][row] = matrix[col][row], matrix[row][col]
+```python
+# Key insight: a 90° clockwise rotation = Transpose + Reverse each row.
+def rotate_matrix(matrix):
+    n = len(matrix)
+
+    # Step 1: Transpose the matrix in-place (swap matrix[i][j] with matrix[j][i])
+    for i in range(n):
+        for j in range(i + 1, n):
+            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+
+    # Step 2: Reverse each row in-place
+    for i in range(n):
+        matrix[i].reverse()
 
     return matrix
 
@@ -1962,15 +2156,14 @@ matrix = [
     [4, 5, 6],
     [7, 8, 9]
 ]
-print(transpose(matrix))
-# [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+print(rotate_matrix(matrix))
+# [[7, 4, 1], [8, 5, 2], [9, 6, 3]]
 
 # Time Complexity: O(N^2)
 # Space Complexity: O(1)
 ```
 
-### 8. Rotate a matrix 90 degree clockwise. Transpose + Reverse rows. **O(N*N), O(1)**
-```js
+```javascript
 // Key insight: a 90° clockwise rotation = Transpose + Reverse each row.
 // Why this works:
 //   Original col 0 (top→bottom) becomes row 0 (left→right) after clockwise rotation.
@@ -2028,39 +2221,38 @@ console.log(rotateMatrix(matrix));
 // - Both transpose and row reversal are done in-place.
 ```
 
+---
+
+<a id="9-sliding-window-fixed"></a>
+
+## 9. Sliding Window Fixed
+
+### Questions
+
+1. Count all Subarrays of given length K | Sliding Window Fixed (While Loop) **O(N), O(1)**
+
 ```python
-# Key insight: a 90° clockwise rotation = Transpose + Reverse each row.
-def rotate_matrix(matrix):
-    n = len(matrix)
+def count_subarrays_of_length_k(A, K):
+    count = 0
+    start = 0
+    end = K - 1
 
-    # Step 1: Transpose the matrix in-place (swap matrix[i][j] with matrix[j][i])
-    for i in range(n):
-        for j in range(i + 1, n):
-            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+    while end < len(A):
+        print(f"Start index: {start}, End index: {end}")
+        count += 1
+        start += 1
+        end += 1
 
-    # Step 2: Reverse each row in-place
-    for i in range(n):
-        matrix[i].reverse()
-
-    return matrix
+    return count
 
 
-matrix = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
-]
-print(rotate_matrix(matrix))
-# [[7, 4, 1], [8, 5, 2], [9, 6, 3]]
+print(count_subarrays_of_length_k([1, 2, 3, 4, 5], 3))  # 3
 
-# Time Complexity: O(N^2)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-# 9. Sliding Window Fixed
-
-### 1. Count all Subarrays of given length K | Sliding Window Fixed (While Loop) **O(N), O(1)**
-```js
+```javascript
 function countSubarraysOfLengthK(A, K) {
   let count = 0;
   let start = 0;
@@ -2091,29 +2283,37 @@ console.log(countSubarraysOfLengthK([1, 2, 3, 4, 5], 3)); // 3
 // Alternatively, we can use the formula: Number of subarrays of length K = N - K + 1, where N is the length of the array.
 ```
 
-```python
-def count_subarrays_of_length_k(A, K):
-    count = 0
-    start = 0
-    end = K - 1
+2. Find maximum subarray sum of length K. **O(N), O(1)**
 
+```python
+def max_subarray_sum(A, K):
+    current_window_sum = 0
+    # Calculate sum of first K elements
+    for i in range(K):
+        current_window_sum += A[i]
+
+    max_sum = current_window_sum
+
+    # Slide the window across the rest of the array
+    start = 1
+    end = K
     while end < len(A):
-        print(f"Start index: {start}, End index: {end}")
-        count += 1
+        # Subtract element leaving the window, add element entering
+        current_window_sum = current_window_sum - A[start - 1] + A[end]
+        max_sum = max(max_sum, current_window_sum)
         start += 1
         end += 1
 
-    return count
+    return max_sum
 
 
-print(count_subarrays_of_length_k([1, 2, 3, 4, 5], 3))  # 3
+print(max_subarray_sum([-3, 4, -2, 5, 3, -2, 8, 2, -1, 4], 5))  # 14
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 2. Find maximum subarray sum of length K. **O(N), O(1)**
-```js
+```javascript
 function maxSubarraySum(A, K) {
   let currentWindowSum = 0;
   // Calculate sum of first K elements
@@ -2146,36 +2346,41 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 // - Only uses a few variables (currentWindowSum, maxSum, start, end).
 ```
 
+3. Check if there is a subarray with given sum and length K. **O(N), O(1)**
+
 ```python
-def max_subarray_sum(A, K):
+def subarray_with_given_sum(arr, subarray_length, target_sum):
+    n = len(arr)
+    if subarray_length > n:
+        return 0
+
     current_window_sum = 0
-    # Calculate sum of first K elements
-    for i in range(K):
-        current_window_sum += A[i]
+    for i in range(subarray_length):
+        current_window_sum += arr[i]
 
-    max_sum = current_window_sum
+    if current_window_sum == target_sum:
+        return 1
 
-    # Slide the window across the rest of the array
     start = 1
-    end = K
-    while end < len(A):
-        # Subtract element leaving the window, add element entering
-        current_window_sum = current_window_sum - A[start - 1] + A[end]
-        max_sum = max(max_sum, current_window_sum)
+    end = subarray_length
+    while end < n:
+        current_window_sum = current_window_sum - arr[start - 1] + arr[end]
+        if current_window_sum == target_sum:
+            return 1
         start += 1
         end += 1
 
-    return max_sum
+    return 0
 
 
-print(max_subarray_sum([-3, 4, -2, 5, 3, -2, 8, 2, -1, 4], 5))  # 14
+print(subarray_with_given_sum([4, 2, 2, 5, 1], 3, 8))   # 1
+print(subarray_with_given_sum([4, 2, 2, 5, 1], 3, 100)) # 0
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 3. Check if there is a subarray with given sum and length K. **O(N), O(1)**
-```js
+```javascript
 function subarrayWithGivenSum(arr, subarrayLength, targetSum) {
   let n = arr.length;
   if (subarrayLength > n) {
@@ -2221,42 +2426,45 @@ console.log(subarrayWithGivenSum([4, 3, 2, 6, 1], 3, 11)); // 1
 // - Only uses a few variables (currentSum, start, end).
 ```
 
+---
+
+<a id="10-sliding-window-dynamic"></a>
+
+## 10. Sliding Window Dynamic
+
+### Questions
+
+1. Maximum Subarray Sum less than or equal to given sum. Positive Numbers Only | Brute Force **O(N^2), O(1)** | Sliding Window Dynamic **O(N), O(1)**
+
 ```python
-def subarray_with_given_sum(arr, subarray_length, target_sum):
-    n = len(arr)
-    if subarray_length > n:
-        return 0
+def find_max_subarray_sum_optimal(arr, target_sum):
+    max_sum = 0
+    current_sum = 0
+    start = 0
 
-    current_window_sum = 0
-    for i in range(subarray_length):
-        current_window_sum += arr[i]
+    for end in range(len(arr)):
+        current_sum += arr[end]
 
-    if current_window_sum == target_sum:
-        return 1
+        # Shrink window if current_sum exceeds target_sum
+        while current_sum > target_sum and start <= end:
+            current_sum -= arr[start]
+            start += 1
 
-    start = 1
-    end = subarray_length
-    while end < n:
-        current_window_sum = current_window_sum - arr[start - 1] + arr[end]
-        if current_window_sum == target_sum:
-            return 1
-        start += 1
-        end += 1
+        if current_sum <= target_sum:
+            max_sum = max(max_sum, current_sum)
 
-    return 0
+    return max_sum
 
 
-print(subarray_with_given_sum([4, 2, 2, 5, 1], 3, 8))   # 1
-print(subarray_with_given_sum([4, 2, 2, 5, 1], 3, 100)) # 0
+print(find_max_subarray_sum_optimal([1, 2, 3, 4, 5], 10))  # 10
+print(find_max_subarray_sum_optimal([2, 1, 3, 4, 5], 12))  # 12
+print(find_max_subarray_sum_optimal([2, 2, 2], 1))         # 0
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-# 10. Sliding Window Dynamic
-
-### 1. Maximum Subarray Sum less than or equal to given sum. Positive Numbers Only | Brute Force **O(N^2), O(1)** | Sliding Window Dynamic **O(N), O(1)**
-```js
+```javascript
 function findMaxSubarraySumOptimal(arr, targetSum) {
     // Initialize the maximum sum found so far to 0.
     let maxSum = 0;
@@ -2307,36 +2515,38 @@ console.log(`Max sum for [${arr2}] with limit ${targetSum2} is: ${findMaxSubarra
 // We only use a few variables (maxSum, currentSum, start, end) to store the state. The space required does not grow with the size of the input array.
 ```
 
+2. Counting Subarrays with Sum less than given sum. Positive Numbers Only | Brute Force (Carry forward technique) **O(N^2), O(1)** | Sliding Window Dynamic / Two Pointers. **O(N), O(1)**
+
 ```python
-def find_max_subarray_sum_optimal(arr, target_sum):
-    max_sum = 0
+def count_subarrays_with_sum(arr, target_sum):
+    if not arr or len(arr) == 0:
+        return 0
+
+    count = 0
     current_sum = 0
     start = 0
 
     for end in range(len(arr)):
         current_sum += arr[end]
 
-        # Shrink window if current_sum exceeds target_sum
-        while current_sum > target_sum and start <= end:
+        while current_sum >= target_sum and start <= end:
             current_sum -= arr[start]
             start += 1
 
-        if current_sum <= target_sum:
-            max_sum = max(max_sum, current_sum)
+        # All subarrays ending at 'end' starting from 'start' to 'end' have sum < target_sum
+        count += (end - start + 1)
 
-    return max_sum
+    return count
 
 
-print(find_max_subarray_sum_optimal([1, 2, 3, 4, 5], 10))  # 10
-print(find_max_subarray_sum_optimal([2, 1, 3, 4, 5], 12))  # 12
-print(find_max_subarray_sum_optimal([2, 2, 2], 1))         # 0
+print(count_subarrays_with_sum([1, 11, 2, 3, 15], 10))  # 4
+print(count_subarrays_with_sum([1, 2, 3], 6))           # 5
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 2. Counting Subarrays with Sum less than given sum. Positive Numbers Only | Brute Force (Carry forward technique) **O(N^2), O(1)** | Sliding Window Dynamic / Two Pointers. **O(N), O(1)**
-```js
+```javascript
 function countSubarraysWithSum(arr, targetSum) {
     // Handle edge case of an empty array.
     if (!arr || arr.length === 0) {
@@ -2387,39 +2597,36 @@ console.log("Count of subarrays:", countSubarraysWithSum([1, 2, 3], 3)); // 4
 // - Only uses a few variables (count, currentSum, start, end).
 ```
 
+---
+
+<a id="11-strings-basics"></a>
+
+## 11. Strings Basics
+
+### Questions
+
+1. Toggling case of a string / Toggling Case of each character in a string. **O(N), O(N)**
+
 ```python
-def count_subarrays_with_sum(arr, target_sum):
-    if not arr or len(arr) == 0:
-        return 0
-
-    count = 0
-    current_sum = 0
-    start = 0
-
-    for end in range(len(arr)):
-        current_sum += arr[end]
-
-        while current_sum >= target_sum and start <= end:
-            current_sum -= arr[start]
-            start += 1
-
-        # All subarrays ending at 'end' starting from 'start' to 'end' have sum < target_sum
-        count += (end - start + 1)
-
-    return count
+def toggle_case_string(s):
+    result = []
+    for ch in s:
+        if 'a' <= ch <= 'z':
+            result.append(chr(ord(ch) - 32))
+        elif 'A' <= ch <= 'Z':
+            result.append(chr(ord(ch) + 32))
+        else:
+            result.append(ch)
+    return "".join(result)
 
 
-print(count_subarrays_with_sum([1, 11, 2, 3, 15], 10))  # 4
-print(count_subarrays_with_sum([1, 2, 3], 6))           # 5
+print(toggle_case_string("Hello World!"))  # hELLO wORLD!
 
 # Time Complexity: O(N)
-# Space Complexity: O(1)
+# Space Complexity: O(N)
 ```
 
-# 11. Strings Basics
-
-### 1. Toggling case of a string / Toggling Case of each character in a string. **O(N), O(N)**
-```js
+```javascript
 function toggleCaseString(str) {
   let result = [];
 
@@ -2454,31 +2661,36 @@ console.log(toggleCaseString("Hello")); // hELLO
 // - The result array stores N characters before joining into a string.
 ```
 
-```python
-def toggle_case_string(s):
-    result = []
-    for ch in s:
-        if 'a' <= ch <= 'z':
-            result.append(chr(ord(ch) - 32))
-        elif 'A' <= ch <= 'Z':
-            result.append(chr(ord(ch) + 32))
-        else:
-            result.append(ch)
-    return "".join(result)
+2. Count occurrences of a given substring in a string. **O(N*M), O(M)**
 
-
-print(toggle_case_string("Hello World!"))  # hELLO wORLD!
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-### 2. Count occurrences of a given substring in a string. **O(N*M), O(M)**
-```
+```text
 (Better solution will be KMP -> O(N + M), O(M))
 ```
 
-```js
+```python
+def count_occurrences(A, sub):
+    count = 0
+    start = 0
+    sub_len = len(sub)
+    end = sub_len - 1
+
+    while end < len(A):
+        if A[start:end + 1] == sub:
+            count += 1
+        start += 1
+        end += 1
+
+    return count
+
+
+print(count_occurrences("abcdebcd", "bcd"))   # 2
+print(count_occurrences("aaaaa", "aa"))       # 4
+
+# Time Complexity: O(N * M)
+# Space Complexity: O(M)
+```
+
+```javascript
 function countOccurrences(A, sub) {
     let count = 0;
     let start = 0;
@@ -2528,31 +2740,36 @@ console.log(countOccurrences("aaaa", "aa")); // 3
 // - slice() creates a new string of length M on each iteration.
 ```
 
-```python
-def count_occurrences(A, sub):
-    count = 0
-    start = 0
-    sub_len = len(sub)
-    end = sub_len - 1
+3. Count all the substrings of a string starting with a vowel. **O(N), O(1)**
 
-    while end < len(A):
-        if A[start:end + 1] == sub:
-            count += 1
-        start += 1
-        end += 1
+```python
+def count_vowel_substrings(A):
+    if not A or len(A) == 0:
+        return 0
+
+    n = len(A)
+    count = 0
+    vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
+
+    for i in range(n):
+        if A[i] in vowels:
+            # If A[i] is a vowel, every substring starting at i and ending at j (i <= j < n)
+            # is a valid substring. There are (n - i) such substrings.
+            count = (count + (n - i)) % 10003
 
     return count
 
 
-print(count_occurrences("abcdebcd", "bcd"))   # 2
-print(count_occurrences("aaaaa", "aa"))       # 4
+print(count_vowel_substrings("ABEC"))   # 5
+print(count_vowel_substrings("a"))      # 1
+print(count_vowel_substrings("b"))      # 0
+print(count_vowel_substrings("aeiou"))  # 15
 
-# Time Complexity: O(N * M)
-# Space Complexity: O(M)
+# Time Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-### 3. Count all the substrings of a string starting with a vowel. **O(N), O(1)**
-```js
+```javascript
 function countVowelSubstrings(A) {
     // If A is null, undefined, or empty, there are no substrings
     if (!A || A.length === 0) {
@@ -2589,35 +2806,35 @@ console.log(countVowelSubstrings("baceb"));   // 6 // 'a' at index 1 -> 4 substr
 // - The vowels array is a fixed constant (10 elements), does not grow with input.
 ```
 
+4. Longest common prefix in an array of strings. **O(N*M), O(1)**
+
 ```python
-def count_vowel_substrings(A):
-    if not A or len(A) == 0:
-        return 0
+def longest_common_prefix(strs):
+    if not strs:
+        return ""
 
-    n = len(A)
-    count = 0
-    vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
+    prefix = strs[0]
 
-    for i in range(n):
-        if A[i] in vowels:
-            # If A[i] is a vowel, every substring starting at i and ending at j (i <= j < n)
-            # is a valid substring. There are (n - i) such substrings.
-            count = (count + (n - i)) % 10003
+    for i in range(1, len(strs)):
+        # While the current string does not start with the prefix
+        while not strs[i].startswith(prefix):
+            # Shorten the prefix by removing the last character
+            prefix = prefix[:-1]
+            if not prefix:
+                return ""
 
-    return count
+    return prefix
 
 
-print(count_vowel_substrings("ABEC"))   # 5
-print(count_vowel_substrings("a"))      # 1
-print(count_vowel_substrings("b"))      # 0
-print(count_vowel_substrings("aeiou"))  # 15
+print(longest_common_prefix(["flower", "flow", "flight"]))  # "fl"
+print(longest_common_prefix(["dog", "racecar", "car"]))     # ""
+print(longest_common_prefix(["interspecies", "interstellar", "interstate"]))  # "inters"
 
-# Time Complexity: O(N)
+# Time Complexity: O(N * M)
 # Space Complexity: O(1)
 ```
 
-### 4. Longest common prefix in an array of strings. **O(N*M), O(1)**
-```js
+```javascript
 function longestCommonPrefix(strs) {
     // If the input array is empty, return an empty string since no common prefix exists.
     if (strs.length === 0) return "";
@@ -2653,36 +2870,34 @@ console.log(longestCommonPrefix(["flower", "flow", "flight"])); // fl
 // - Only uses the prefix variable (a reference to a substring, no extra data structure).
 ```
 
+---
+
+<a id="12-strings-two-pointers"></a>
+
+## 12. Strings | Two Pointers
+
+### Questions
+
+1. Checking whether the given string is palindrome or not. **O(N), O(1)**
+
 ```python
-def longest_common_prefix(strs):
-    if not strs:
-        return ""
-
-    prefix = strs[0]
-
-    for i in range(1, len(strs)):
-        # While the current string does not start with the prefix
-        while not strs[i].startswith(prefix):
-            # Shorten the prefix by removing the last character
-            prefix = prefix[:-1]
-            if not prefix:
-                return ""
-
-    return prefix
+def is_palindrome(s, start_index, end_index):
+    while start_index < end_index:
+        if s[start_index] != s[end_index]:
+            return False
+        start_index += 1
+        end_index -= 1
+    return True
 
 
-print(longest_common_prefix(["flower", "flow", "flight"]))  # "fl"
-print(longest_common_prefix(["dog", "racecar", "car"]))     # ""
-print(longest_common_prefix(["interspecies", "interstellar", "interstate"]))  # "inters"
+print(is_palindrome("madam", 0, 4))  # True
+print(is_palindrome("apple", 0, 4))  # False
 
-# Time Complexity: O(N * M)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-# 12. Strings | Two Pointers
-
-### 1. Checking whether the given string is palindrome or not. **O(N), O(1)**
-```js
+```javascript
 function isPalindrome(str, startIndex, endIndex) {
   while (startIndex < endIndex) {
     if (str[startIndex] !== str[endIndex]) {
@@ -2705,29 +2920,53 @@ console.log(isPalindrome("abccbad", 1, 4)); // true
 // - Only uses two pointer variables (startIndex, endIndex).
 ```
 
-```python
-def is_palindrome(s, start_index, end_index):
-    while start_index < end_index:
-        if s[start_index] != s[end_index]:
-            return False
-        start_index += 1
-        end_index -= 1
-    return True
+2. Longest palindrome substring. **O(N^2), O(1)**
 
-
-print(is_palindrome("madam", 0, 4))  # True
-print(is_palindrome("apple", 0, 4))  # False
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Longest palindrome substring. **O(N^2), O(1)**
-```
+```text
 Better solution will be: Manacher's Algo -> O(N), O(N)
 ```
 
-```js
+```python
+def longest_palindrome_substring(s):
+    max_len = 0
+    if not s or len(s) == 0:
+        return max_len
+
+    n = len(s)
+
+    # 1. Check for ODD length palindromes
+    for i in range(n):
+        left = i
+        right = i
+        while left >= 0 and right < n and s[left] == s[right]:
+            current_len = right - left + 1
+            max_len = max(max_len, current_len)
+            left -= 1
+            right += 1
+
+    # 2. Check for EVEN length palindromes
+    for i in range(n - 1):
+        left = i
+        right = i + 1
+        while left >= 0 and right < n and s[left] == s[right]:
+            current_len = right - left + 1
+            max_len = max(max_len, current_len)
+            left -= 1
+            right += 1
+
+    return max_len
+
+
+print(longest_palindrome_substring("babad"))  # 3 ("bab" or "aba")
+print(longest_palindrome_substring("cbbd"))   # 2 ("bb")
+print(longest_palindrome_substring("a"))      # 1
+print(longest_palindrome_substring("racecar"))# 7
+
+# Time Complexity: O(N^2)
+# Space Complexity: O(1)
+```
+
+```javascript
 function longestPalindromeSubstring(str) {
     // Initialize a variable to track the length of the longest palindrome found
     let maxLen = 0;
@@ -2792,48 +3031,37 @@ console.log(longestPalindromeSubstring("babad"));   // 3 (Sub-palindrome: "bab" 
 // - The space does not grow with the input size.
 ```
 
+3. Reverse vowels in a string | Two Pointers: **O(N), O(N)**
+
 ```python
-def longest_palindrome_substring(s):
-    max_len = 0
-    if not s or len(s) == 0:
-        return max_len
+def reverse_vowels(s):
+    vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
+    arr = list(s)
+    i = 0
+    j = len(arr) - 1
 
-    n = len(s)
+    while i < j:
+        while i < j and arr[i] not in vowels:
+            i += 1
+        while i < j and arr[j] not in vowels:
+            j -= 1
 
-    # 1. Check for ODD length palindromes
-    for i in range(n):
-        left = i
-        right = i
-        while left >= 0 and right < n and s[left] == s[right]:
-            current_len = right - left + 1
-            max_len = max(max_len, current_len)
-            left -= 1
-            right += 1
+        if i < j:
+            arr[i], arr[j] = arr[j], arr[i]
+            i += 1
+            j -= 1
 
-    # 2. Check for EVEN length palindromes
-    for i in range(n - 1):
-        left = i
-        right = i + 1
-        while left >= 0 and right < n and s[left] == s[right]:
-            current_len = right - left + 1
-            max_len = max(max_len, current_len)
-            left -= 1
-            right += 1
-
-    return max_len
+    return "".join(arr)
 
 
-print(longest_palindrome_substring("babad"))  # 3 ("bab" or "aba")
-print(longest_palindrome_substring("cbbd"))   # 2 ("bb")
-print(longest_palindrome_substring("a"))      # 1
-print(longest_palindrome_substring("racecar"))# 7
+print(reverse_vowels("hello"))     # "holle"
+print(reverse_vowels("leetcode"))  # "leotcede"
 
-# Time Complexity: O(N^2)
-# Space Complexity: O(1)
+# Time Complexity: O(N)
+# Space Complexity: O(N)
 ```
 
-### 3. Reverse vowels in a string | Two Pointers: **O(N), O(N)**
-```js
+```javascript
 function reverseVowels(str) {
     const vowels = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'];
     const arr = str.split('');
@@ -2868,42 +3096,39 @@ console.log(reverseVowels("casio")); // cosia
 // - Strings in JS are immutable, so we need this array to swap characters.
 ```
 
-```python
-def reverse_vowels(s):
-    vowels = {'a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'}
-    arr = list(s)
-    i = 0
-    j = len(arr) - 1
+---
 
-    while i < j:
-        while i < j and arr[i] not in vowels:
-            i += 1
-        while i < j and arr[j] not in vowels:
-            j -= 1
+<a id="13-sorting-basics"></a>
 
-        if i < j:
-            arr[i], arr[j] = arr[j], arr[i]
-            i += 1
-            j -= 1
+## 13. Sorting Basics
 
-    return "".join(arr)
+### Questions
 
+1. Minimize the cost to empty an array | Sorting & Contribution **O(N log N), O(1)**
 
-print(reverse_vowels("hello"))     # "holle"
-print(reverse_vowels("leetcode"))  # "leotcede"
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-# 13. Sorting Basics
-
-### 1. Minimize the cost to empty an array | Sorting & Contribution **O(N log N), O(1)**
-```
+```text
 The cost of removing an element is the sum of the elements present in the array before removing the element.
 ```
 
-```js
+```python
+def min_cost_to_empty_array(arr):
+    arr.sort(reverse=True)  # Descending order
+    n = len(arr)
+    cost = 0
+    for i in range(n):
+        contribution = arr[i] * (i + 1)
+        cost += contribution
+    return cost
+
+
+print(min_cost_to_empty_array([2, 1, 4]))     # 11 (4*1 + 2*2 + 1*3 = 11)
+print(min_cost_to_empty_array([3, 5, 1, -3]))  # 15
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function minCostToEmptyArray(arr) {
   arr.sort((a, b) => b - a); // Descending order
   let n = arr.length;
@@ -2926,30 +3151,30 @@ console.log(minCostToEmptyArray([3, 1, 2, 4]));
 // - Sorting is done in-place. Only a few variables (cost, contribution) are used.
 ```
 
+2. Find count of Noble Integers | Sorting **O(N log N), O(1)**
+
+```text
+A number is called Noble if the count of elements less than the given element is equal to the integer itself.
+```
+
 ```python
-def min_cost_to_empty_array(arr):
-    arr.sort(reverse=True)  # Descending order
-    n = len(arr)
-    cost = 0
-    for i in range(n):
-        contribution = arr[i] * (i + 1)
-        cost += contribution
-    return cost
+def count_noble_integers(arr):
+    arr.sort()  # Ascending order
+    count = 0
+    for i in range(len(arr)):
+        if arr[i] == i:
+            count += 1
+    return count
 
 
-print(min_cost_to_empty_array([2, 1, 4]))     # 11 (4*1 + 2*2 + 1*3 = 11)
-print(min_cost_to_empty_array([3, 5, 1, -3]))  # 15
+print(count_noble_integers([-1, -5, 3, 5, -10, 4]))  # 3
+print(count_noble_integers([-10, 1, 1, 3, 100]))     # 0
 
 # Time Complexity: O(N log N)
 # Space Complexity: O(1)
 ```
 
-### 2. Find count of Noble Integers | Sorting **O(N log N), O(1)**
-```
-A number is called Noble if the count of elements less than the given element is equal to the integer itself.
-```
-
-```js
+```javascript
 function countNobleIntegers(arr) {
   arr.sort((a, b) => a - b); // Ascending order
 
@@ -2970,25 +3195,33 @@ console.log(countNobleIntegers([-3, 0, 2, 5])); // 1 // 2 is noble because count
 // Space complexity: O(1) auxiliary space (or O(log N) / O(N) depending on sort implementation)
 ```
 
+3. Find count of Nobel integers (Not Distinct) | Sorting **O(N log N), O(1)**
+
 ```python
-def count_noble_integers(arr):
-    arr.sort()  # Ascending order
+def count_noble_integers_duplicates(arr):
+    arr.sort()
     count = 0
+    smaller_count = 0
+
     for i in range(len(arr)):
-        if arr[i] == i:
+        # If current element is different from previous, update smaller_count
+        if i > 0 and arr[i] != arr[i - 1]:
+            smaller_count = i
+
+        if arr[i] == smaller_count:
             count += 1
+
     return count
 
 
-print(count_noble_integers([-1, -5, 3, 5, -10, 4]))  # 3
-print(count_noble_integers([-10, 1, 1, 3, 100]))     # 0
+print(count_noble_integers_duplicates([1, 2, 2, 3]))       # 0
+print(count_noble_integers_duplicates([-10, 1, 1, 2, 4, 4, 4, 8, 10]))  # 4
 
 # Time Complexity: O(N log N)
 # Space Complexity: O(1)
 ```
 
-### 3. Find count of Nobel integers (Not Distinct) | Sorting **O(N log N), O(1)**
-```js
+```javascript
 function countNobleIntegers(arr) {
   // Sort in ascending order so that for any element at index i,
   // all elements before it (indices 0..i-1) are strictly less than or equal to arr[i].
@@ -3024,38 +3257,54 @@ console.log(countNobleIntegers([-10, 1, 1, 2, 4, 4, 4, 8, 10])); // 5 // [1, 1, 
 // - Sorting is done in-place. Only a few variables (count, lessCount) are used.
 ```
 
-```python
-def count_noble_integers_duplicates(arr):
-    arr.sort()
-    count = 0
-    smaller_count = 0
+---
 
-    for i in range(len(arr)):
-        # If current element is different from previous, update smaller_count
-        if i > 0 and arr[i] != arr[i - 1]:
-            smaller_count = i
+<a id="14-boyer-moore-voting-algorithm"></a>
 
-        if arr[i] == smaller_count:
-            count += 1
+## 14. Boyer-Moore Voting Algorithm
 
-    return count
+### Questions
 
+1. Majority Element. **O(N), O(1)**
 
-print(count_noble_integers_duplicates([1, 2, 2, 3]))       # 0
-print(count_noble_integers_duplicates([-10, 1, 1, 2, 4, 4, 4, 8, 10]))  # 4
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(1)
-```
-
-# 14. Boyer-Moore Voting Algorithm
-
-### 1. Majority Element. **O(N), O(1)**
-```
+```text
 Majority Element is an element that occurs more than n/2 times.
 ```
 
-```js
+```python
+def find_majority_element(arr):
+    candidate = None
+    count = 0
+
+    # Step 1: Find a candidate
+    for num in arr:
+        if count == 0:
+            candidate = num
+            count = 1
+        elif num == candidate:
+            count += 1
+        else:
+            count -= 1
+
+    # Step 2: Verify candidate
+    freq = 0
+    for num in arr:
+        if num == candidate:
+            freq += 1
+
+    if freq > len(arr) // 2:
+        return candidate
+    return -1
+
+
+print(find_majority_element([2, 2, 1, 1, 1, 2, 2]))  # 2
+print(find_majority_element([1, 2, 3, 4]))           # -1
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function findMajorityElement(arr) {
     // Candidate to potentially be the majority element.
     let candidate = null;
@@ -3107,42 +3356,13 @@ console.log(findMajorityElement([1, 1, 2, 2])); // null
 // - Only uses a few variables (candidate, count, occurrences).
 ```
 
-```python
-def find_majority_element(arr):
-    candidate = None
-    count = 0
+---
 
-    # Step 1: Find a candidate
-    for num in arr:
-        if count == 0:
-            candidate = num
-            count = 1
-        elif num == candidate:
-            count += 1
-        else:
-            count -= 1
+<a id="15-bit-manipulations-basics"></a>
 
-    # Step 2: Verify candidate
-    freq = 0
-    for num in arr:
-        if num == candidate:
-            freq += 1
+## 15. Bit Manipulations Basics
 
-    if freq > len(arr) // 2:
-        return candidate
-    return -1
-
-
-print(find_majority_element([2, 2, 1, 1, 1, 2, 2]))  # 2
-print(find_majority_element([1, 2, 3, 4]))           # -1
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 15. Bit Manipulations Basics
-
-## Theory
+### Theory
 
 ### 1. Decimal Number System
 - Base 10 number system
@@ -3172,12 +3392,11 @@ print(find_majority_element([1, 2, 3, 4]))           # -1
 
 ### 3. Truth Table
 ```
-| a   | b   | a & b | a OR b | a ^ b | ~ a |
-| --- | --- | ----- | ------ | ----- | --- |
-| 0   | 0   | 0     | 0      | 0     | 1   |
-| 0   | 1   | 0     | 1      | 1     | 1   |
-| 1   | 0   | 0     | 1      | 1     | 0   |
-| 1   | 1   | 1     | 1      | 0     | 0   |
+Bitwise Truth Table Values:
+1. `a = 0, b = 0`: `a & b = 0`, `a | b = 0`, `a ^ b = 0`, `~a = 1`
+2. `a = 0, b = 1`: `a & b = 0`, `a | b = 1`, `a ^ b = 1`, `~a = 1`
+3. `a = 1, b = 0`: `a & b = 0`, `a | b = 1`, `a ^ b = 1`, `~a = 0`
+4. `a = 1, b = 1`: `a & b = 1`, `a | b = 1`, `a ^ b = 0`, `~a = 0`
 ```
 
 ### 4. Bitwise Operations Example
@@ -3213,10 +3432,11 @@ def bitwise_operations(num1, num2):
 bitwise_operations(5, 3)
 ```
 
-## Questions
+### Questions
 
-### 1. Binary to Decimal Conversion. **O(log N), O(1)**
-```js
+1. Binary to Decimal Conversion. **O(log N), O(1)**
+
+```javascript
 function binaryToDecimal(n) {
   let decimalNumber = 0;
   const base = 2;
@@ -3238,8 +3458,9 @@ function binaryToDecimal(n) {
 binaryToDecimal(1101) // 13
 ```
 
-### 2. Decimal to Binary Conversion. **O(log N), O(1)**
-```js
+2. Decimal to Binary Conversion. **O(log N), O(1)**
+
+```javascript
 function decimalToBinary(n) {
   let binaryNumber = 0;
   const base = 10;
@@ -3261,12 +3482,19 @@ function decimalToBinary(n) {
 decimalToBinary(13) // 1101
 ```
 
-# 16. Multiple Approaches
+---
 
-### 1. Find sum of all subarrays sums
+<a id="16-multiple-approaches"></a>
+
+## 16. Multiple Approaches
+
+### Questions
+
+1. Find sum of all subarrays sums
 
 #### 1. Find sum of all subarrays sums | Brute Force Approach: **O(N^3), O(1)**
-```js
+
+```javascript
 function sumOfAllSubarrays(A) {
   let sum = 0;
   for (let i = 0; i < A.length; i++) {
@@ -3287,7 +3515,8 @@ console.log(sumOfAllSubarrays([1, 2, 3, 4])); // 50
 ```
 
 #### 2. Find sum of all subarrays sums | Prefix Sum: **O(N^2), O(N)**
-```js
+
+```javascript
 function sumOfAllSubarrays(A) {
     // Calculate prefix sum
     let prefixSum = [];
@@ -3319,7 +3548,8 @@ console.log(sumOfAllSubarrays([1, 2, 3, 4])); // 50
 ```
 
 #### 3. Find sum of all subarrays sums | Carry Forward Technique: **O(N^2), O(1)**
-```js
+
+```javascript
 function sumOfAllSubarrays(A) {
   let sum = 0;
   for (let i = 0; i < A.length; i++) {
@@ -3342,7 +3572,8 @@ console.log(sumOfAllSubarrays([1, 2, 3, 4])); // 50
 ```
 
 #### 4. Find sum of all subarrays sums | Contribution Technique: **O(N), O(1)**
-```js
+
+```javascript
 function sumOfAllSubarrays(A) {
   let sum = 0;
   const N = A.length;
@@ -3367,10 +3598,11 @@ console.log(sumOfAllSubarrays([1, 2, 3, 4])); // 50
 // Space Complexity: O(1)
 ```
 
-### 2. Find maximum subarray sum of length K
+2. Find maximum subarray sum of length K
 
 #### 1. Find maximum subarray sum of length K | Brute Force Approach: **O(N*K), O(1)**
-```js
+
+```javascript
 function maxSubarraySum(A, K) {
     let start = 0;
     let end = K - 1;
@@ -3399,7 +3631,8 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 ```
 
 #### 2. Find maximum subarray sum of length K | Prefix Sum: **O(N), O(N)**
-```js
+
+```javascript
 function maxSubarraySum(A, K) {
     let prefixSum = [A[0]];
     for (let i = 1; i < A.length; i++) {
@@ -3433,7 +3666,8 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 ```
 
 #### 3. Find maximum subarray sum of length K | Sliding Window Fixed: **O(N), O(1)**
-```js
+
+```javascript
 function maxSubarraySum(A, K) {
     let currentWindowSum = 0;
     // Calculate sum of first K elements
@@ -3461,19 +3695,19 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 // Space Complexity: O(1)
 ```
 
-### 3. Find maximum subarray sum less than or equal to sum K
+3. Find maximum subarray sum less than or equal to sum K
 
 #### 1. Positive Numbers Only | Sliding Window Dynamic **O(N), O(1)**
 
 #### 2. With Negative Numbers | Balanced BST **O(N log N), O(N)**
 
-### 4. Find the unique element in an array where every element appears twice except for one. | Binary Search on Array | Bit Manipulation **O(log N), O(1)**
+4. Find the unique element in an array where every element appears twice except for one. | Binary Search on Array | Bit Manipulation **O(log N), O(1)**
 
 #### 1. Using Binary Search on Array
 
 #### 2. Using Bit Manipulation
 
-### 5. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
+5. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
 
 #### 1. Using Brute Force T(n^2), S(1)
 
@@ -3483,7 +3717,7 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 #### 4. Using Two Pointers T(n), S(1)
 
-### 6. Print Valid Parenthesis | Backtracking **O(N), O(1)**
+6. Print Valid Parenthesis | Backtracking **O(N), O(1)**
 
 #### 1. Recursive Proactive Approach
 
@@ -3493,7 +3727,7 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 #### 4. Dynamic Programming
 
-### 7. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
+7. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
 
 #### 1. Using Brute Force T(n^2), S(1)
 
@@ -3505,12 +3739,48 @@ console.log(maxSubarraySum([1, 2, 3, 4, 5], 3)); // 12
 
 ---
 
-# DSA 2
+<a id="unit-2"></a>
 
-# 1. 1D Arrays Advanced
+## Unit 2 — DSA 2: Advanced Arrays, Recursion & Sorting
 
-### 1. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Brute Force **O(N^3), O(1)**
-```js
+Advanced array transformations, intervals, Kadane's algorithm, bit manipulation, recursion, hashing, count sort, merge sort, and quick sort.
+
+
+---
+
+<a id="17-1d-arrays-advanced"></a>
+
+## 17. 1D Arrays Advanced
+
+### Questions
+
+1. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Brute Force **O(N^3), O(1)**
+
+```python
+def find_maximum_subarray_sum(arr):
+    n = len(arr)
+    max_sum = arr[0]
+
+    for i in range(n):
+        for j in range(i, n):
+            sub_sum = 0
+            for k in range(i, j + 1):
+                sub_sum += arr[k]
+
+            if sub_sum > max_sum:
+                max_sum = sub_sum
+
+    return max_sum
+
+
+print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))           # 6
+print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
+
+# Time Complexity: O(n^3)
+# Space Complexity: O(1)
+```
+
+```javascript
 function findMaximumSubarraySum(arr) {
   const n = arr.length;
   let maxSum = arr[0]; // Initialize maxSum with the first element of the array
@@ -3537,64 +3807,7 @@ console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
 // Space Complexity: O(1)
 ```
 
-```python
-def find_maximum_subarray_sum(arr):
-    n = len(arr)
-    max_sum = arr[0]
-
-    for i in range(n):
-        for j in range(i, n):
-            sub_sum = 0
-            for k in range(i, j + 1):
-                sub_sum += arr[k]
-
-            if sub_sum > max_sum:
-                max_sum = sub_sum
-
-    return max_sum
-
-
-print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))           # 6
-print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
-
-# Time Complexity: O(n^3)
-# Space Complexity: O(1)
-```
-
-### 2. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Prefix Sum **O(N), O(N)**
-```js
-function findMaximumSubarraySum(arr) {
-  let n = arr.length;
-  let prefixSum = [];
-  prefixSum[0] = arr[0];
-  for (let i = 1; i < n; i++) {
-    prefixSum[i] = prefixSum[i - 1] + arr[i];
-  }
-
-  let maxSum = arr[0];
-  for (let i = 0; i < n; i++) {
-    let sum = 0;
-    for (let j = i; j < n; j++) {
-      if (i === 0) {
-        sum = prefixSum[j];
-      } else {
-        sum = prefixSum[j] - prefixSum[i - 1];
-      }
-
-      if (sum > maxSum) {
-        maxSum = sum;
-      }
-    }
-  }
-
-  return maxSum;
-}
-console.log(findMaximumSubarraySum([1, 2, 3, -9, 5])); // 6
-console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
-
-// Time Complexity: O(n^2)
-// Space Complexity: O(n)
-```
+2. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Prefix Sum **O(N), O(N)**
 
 ```python
 def find_maximum_subarray_sum(arr):
@@ -3629,15 +3842,25 @@ print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
 # Space Complexity: O(n)
 ```
 
-### 3. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Carry Forward **O(N), O(1)**
-```js
+```javascript
 function findMaximumSubarraySum(arr) {
-  let maxSum = Number.MIN_SAFE_INTEGER; // or -Infinity
   let n = arr.length;
+  let prefixSum = [];
+  prefixSum[0] = arr[0];
+  for (let i = 1; i < n; i++) {
+    prefixSum[i] = prefixSum[i - 1] + arr[i];
+  }
+
+  let maxSum = arr[0];
   for (let i = 0; i < n; i++) {
     let sum = 0;
     for (let j = i; j < n; j++) {
-      sum += arr[j];
+      if (i === 0) {
+        sum = prefixSum[j];
+      } else {
+        sum = prefixSum[j] - prefixSum[i - 1];
+      }
+
       if (sum > maxSum) {
         maxSum = sum;
       }
@@ -3650,8 +3873,10 @@ console.log(findMaximumSubarraySum([1, 2, 3, -9, 5])); // 6
 console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
 
 // Time Complexity: O(n^2)
-// Space Complexity: O(1)
+// Space Complexity: O(n)
 ```
+
+3. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Carry Forward **O(N), O(1)**
 
 ```python
 def find_maximum_subarray_sum(arr):
@@ -3675,8 +3900,59 @@ print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
 # Space Complexity: O(1)
 ```
 
-### 4. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Kadanes Algorithm **O(N), O(1)**
-```js
+```javascript
+function findMaximumSubarraySum(arr) {
+  let maxSum = Number.MIN_SAFE_INTEGER; // or -Infinity
+  let n = arr.length;
+  for (let i = 0; i < n; i++) {
+    let sum = 0;
+    for (let j = i; j < n; j++) {
+      sum += arr[j];
+      if (sum > maxSum) {
+        maxSum = sum;
+      }
+    }
+  }
+
+  return maxSum;
+}
+console.log(findMaximumSubarraySum([1, 2, 3, -9, 5])); // 6
+console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
+
+// Time Complexity: O(n^2)
+// Space Complexity: O(1)
+```
+
+4. Find Maximum Subarray Sum i.e. The subarray with maximum sum | Kadanes Algorithm **O(N), O(1)**
+
+```python
+def find_maximum_subarray_sum(arr):
+    max_sum = arr[0]
+    curr_sum = 0
+
+    for num in arr:
+        curr_sum += num
+
+        if curr_sum > max_sum:
+            max_sum = curr_sum
+
+        if curr_sum < 0:
+            curr_sum = 0
+
+    return max_sum
+
+
+print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))             # 6
+print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))    # 8
+print(find_maximum_subarray_sum([-2, -3, -1]))                 # -1
+print(find_maximum_subarray_sum([1, 2, 3, 4, 5]))             # 15
+print(find_maximum_subarray_sum([-1, -2, -3, -4, -5]))         # -1
+
+# Time Complexity: O(n)
+# Space Complexity: O(1)
+```
+
+```javascript
 function findMaximumSubarraySum(arr) {
   const n = arr.length;
 
@@ -3713,41 +3989,43 @@ console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
 // Space Complexity: O(1)
 ```
 
-```python
-def find_maximum_subarray_sum(arr):
-    max_sum = arr[0]
-    curr_sum = 0
+---
 
-    for num in arr:
-        curr_sum += num
+<a id="18-prefix-sum-advanced"></a>
 
-        if curr_sum > max_sum:
-            max_sum = curr_sum
+## 18. Prefix Sum Advanced
 
-        if curr_sum < 0:
-            curr_sum = 0
+### Questions
 
-    return max_sum
+1. Zero Based Queries I (Perform multiple Queries from i to last index) (Beggars Outside Temple) | Prefix Sum **O(N), O(N)**.
 
-
-print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))             # 6
-print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))    # 8
-print(find_maximum_subarray_sum([-2, -3, -1]))                 # -1
-print(find_maximum_subarray_sum([1, 2, 3, 4, 5]))             # 15
-print(find_maximum_subarray_sum([-1, -2, -3, -4, -5]))         # -1
-
-# Time Complexity: O(n)
-# Space Complexity: O(1)
-```
-
-# 2. Prefix Sum Advanced
-
-### 1. Zero Based Queries I (Perform multiple Queries from i to last index) (Beggars Outside Temple) | Prefix Sum **O(N), O(N)**.
 `N` beggars are sitting in a row outside a temple, and initially each beggar has `0` coins. Whenever a donor arrives, they choose a beggar at index `start` and give `value` coins to every beggar from `start` to the last beggar.
 
 Each zero-based query is represented as `[start, value]`. Apply all queries and return an array containing the total coins held by each beggar.
 
-```js
+```python
+def perform_queries(arr, queries):
+    for start, val in queries:
+        arr[start] += val
+
+    # Prefix sum to carry forward values to the end
+    for i in range(1, len(arr)):
+        arr[i] += arr[i - 1]
+
+    return arr
+
+
+queries1 = [[1, 3], [0, 2], [4, 1], [0, -3]]
+print(perform_queries([0, 0, 0, 0, 0], queries1))  # [-1, 2, 2, 2, 3]
+
+queries2 = [[1, 2], [0, 3], [4, 5], [0, -6]]
+print(perform_queries([0, 0, 0, 0, 0], queries2))  # [-3, -1, -1, -1, 4]
+
+# Time Complexity: O(N + Q)
+# Space Complexity: O(1)
+```
+
+```javascript
 function performQueries(arr, queries) {
   for (let i = 0; i < queries.length; i++) {
     let [start, val] = queries[i];
@@ -3784,32 +4062,36 @@ console.log(performQueries([0, 0, 0, 0, 0], queries2)); // [-3, -1, -1, -1, 4]
 // Space Complexity: O(n)
 ```
 
-```python
-def perform_queries(arr, queries):
-    for start, val in queries:
-        arr[start] += val
+2. Zero Based Queries II (Perform multiple Queries from index i to j) (Beggars Outside Temple) | Prefix Sum **O(N), O(N)**.
 
-    # Prefix sum to carry forward values to the end
-    for i in range(1, len(arr)):
-        arr[i] += arr[i - 1]
-
-    return arr
-
-
-queries1 = [[1, 3], [0, 2], [4, 1], [0, -3]]
-print(perform_queries([0, 0, 0, 0, 0], queries1))  # [-1, 2, 2, 2, 3]
-
-queries2 = [[1, 2], [0, 3], [4, 5], [0, -6]]
-print(perform_queries([0, 0, 0, 0, 0], queries2))  # [-3, -1, -1, -1, 4]
-
-# Time Complexity: O(N + Q)
-# Space Complexity: O(1)
-```
-
-### 2. Zero Based Queries II (Perform multiple Queries from index i to j) (Beggars Outside Temple) | Prefix Sum **O(N), O(N)**.
 Here we are stopping the donation at index j instead of going to the last beggar. Each zero-based query is represented as `[start, end, value]`. Apply all queries and return an array containing the total coins held by each beggar.
 
-```js
+```python
+def perform_queries(arr, queries):
+    n = len(arr)
+
+    for start, end, val in queries:
+        arr[start] += val
+        if end + 1 < n:
+            arr[end + 1] -= val
+
+    # Convert recorded changes into final prefix sums
+    prefix_sum = [0] * n
+    prefix_sum[0] = arr[0]
+    for i in range(1, n):
+        prefix_sum[i] = prefix_sum[i - 1] + arr[i]
+
+    return prefix_sum
+
+
+queries = [[1, 3, 2], [5, 6, -1], [2, 5, 5], [0, 1, 4]]
+print(perform_queries([0, 0, 0, 0, 0, 0, 0], queries))  # [4, 6, 7, 7, 5, 4, -1]
+
+# Time Complexity: O(n + q)
+# Space Complexity: O(n)
+```
+
+```javascript
 function performQueries(arr, queries) {
     const n = arr.length;
 
@@ -3838,35 +4120,40 @@ console.log(performQueries([0, 0, 0, 0, 0, 0, 0], queries)); // [4, 6, 7, 7, 5, 
 // Space Complexity: O(n)
 ```
 
+3. Zero Based Queries III (Perform multiple Queries from index i to j) (Beggars Outside Temple) when the initial array is non zero | Prefix Sum **O(N), O(N)**.
+
+Here we already have an initial array of coins for the beggars. Each zero-based query is represented as `[start, end, value]`. Apply all queries and return an array containing the total coins held by each beggar.
+
 ```python
+from collections import defaultdict
+
+
 def perform_queries(arr, queries):
-    n = len(arr)
+    # Store query changes in a hash map: index -> net change
+    diff = defaultdict(int)
 
     for start, end, val in queries:
-        arr[start] += val
-        if end + 1 < n:
-            arr[end + 1] -= val
+        diff[start] += val
+        diff[end + 1] -= val
 
-    # Convert recorded changes into final prefix sums
-    prefix_sum = [0] * n
-    prefix_sum[0] = arr[0]
-    for i in range(1, n):
-        prefix_sum[i] = prefix_sum[i - 1] + arr[i]
+    # Build the final array
+    result = [0] * len(arr)
+    running_add = 0
+    for i in range(len(arr)):
+        running_add += diff[i]
+        result[i] = arr[i] + running_add
 
-    return prefix_sum
+    return result
 
 
 queries = [[1, 3, 2], [5, 6, -1], [2, 5, 5], [0, 1, 4]]
 print(perform_queries([0, 0, 0, 0, 0, 0, 0], queries))  # [4, 6, 7, 7, 5, 4, -1]
 
 # Time Complexity: O(n + q)
-# Space Complexity: O(n)
+# Space Complexity: O(q)
 ```
 
-### 3. Zero Based Queries III (Perform multiple Queries from index i to j) (Beggars Outside Temple) when the initial array is non zero | Prefix Sum **O(N), O(N)**.
-Here we already have an initial array of coins for the beggars. Each zero-based query is represented as `[start, end, value]`. Apply all queries and return an array containing the total coins held by each beggar.
-
-```js
+```javascript
 function performQueries(arr, queries) {
   // Store query changes separately from the original values.
   let diffArr = new Array(arr.length).fill(0);
@@ -3900,38 +4187,16 @@ console.log(performQueries([1, 2, 3, 4, 5], queries)); // [3, 7, 12, 11, 9]
 // Space Complexity: O(n)
 ```
 
-```python
-from collections import defaultdict
+---
 
+<a id="19-two-pointers"></a>
 
-def perform_queries(arr, queries):
-    # Store query changes in a hash map: index -> net change
-    diff = defaultdict(int)
+## 19. Two Pointers
 
-    for start, end, val in queries:
-        diff[start] += val
-        diff[end + 1] -= val
+### Questions
 
-    # Build the final array
-    result = [0] * len(arr)
-    running_add = 0
-    for i in range(len(arr)):
-        running_add += diff[i]
-        result[i] = arr[i] + running_add
+1. Trapping Rain Water / Rain Water Trapped | Prefix Sum **O(N), O(N)** | Two Pointers **O(N), O(1)**.
 
-    return result
-
-
-queries = [[1, 3, 2], [5, 6, -1], [2, 5, 5], [0, 1, 4]]
-print(perform_queries([0, 0, 0, 0, 0, 0, 0], queries))  # [4, 6, 7, 7, 5, 4, -1]
-
-# Time Complexity: O(n + q)
-# Space Complexity: O(q)
-```
-
-# 3. Two Pointers
-
-### 1. Trapping Rain Water / Rain Water Trapped | Prefix Sum **O(N), O(N)** | Two Pointers **O(N), O(1)**.
 Imagine a histogram where the bars' heights are given by the array A. Each bar is of uniform width, which is 1 unit. When it rains, water will accumulate in the valleys between the bars.
 
 Your task is to calculate the total amount of water that can be trapped in these valleys.
@@ -3962,7 +4227,42 @@ Water:     0  3  1  3  0  2  0
 Total trapped water = 9 units
 ```
 
-```js
+```python
+def trap(heights):
+    if not heights or len(heights) < 3:
+        return 0
+
+    left = 0
+    right = len(heights) - 1
+    left_max = 0
+    right_max = 0
+    trapped_water = 0
+
+    while left < right:
+        if heights[left] <= heights[right]:
+            if heights[left] >= left_max:
+                left_max = heights[left]
+            else:
+                trapped_water += left_max - heights[left]
+            left += 1
+        else:
+            if heights[right] >= right_max:
+                right_max = heights[right]
+            else:
+                trapped_water += right_max - heights[right]
+            right -= 1
+
+    return trapped_water
+
+
+print(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]))  # 6
+print(trap([4, 2, 0, 3, 2, 5]))                      # 9
+
+# Time Complexity: O(n)
+# Space Complexity: O(1)
+```
+
+```javascript
 function trap(heights) {
     // Pointers delimit the part of the array that is not processed yet.
     let left = 0, right = heights.length - 1;
@@ -4029,45 +4329,47 @@ console.log(trap([5, 2, 1, 4])); // 5
 // Space Complexity: O(1)
 ```
 
+---
+
+<a id="20-interval-technique"></a>
+
+## 20. Interval Technique
+
+### Questions
+
+1. Merge Overlapping Intervals. **O(N), O(1)**.
+
 ```python
-def trap(heights):
-    if not heights or len(heights) < 3:
-        return 0
+def merge_intervals(intervals):
+    if not intervals:
+        return []
 
-    left = 0
-    right = len(heights) - 1
-    left_max = 0
-    right_max = 0
-    trapped_water = 0
+    # Sort intervals by start time
+    intervals.sort(key=lambda x: x[0])
 
-    while left < right:
-        if heights[left] <= heights[right]:
-            if heights[left] >= left_max:
-                left_max = heights[left]
-            else:
-                trapped_water += left_max - heights[left]
-            left += 1
+    merged = [intervals[0]]
+
+    for i in range(1, len(intervals)):
+        curr_start, curr_end = intervals[i]
+        last_start, last_end = merged[-1]
+
+        if curr_start <= last_end:
+            # Overlapping intervals, merge them
+            merged[-1] = [last_start, max(last_end, curr_end)]
         else:
-            if heights[right] >= right_max:
-                right_max = heights[right]
-            else:
-                trapped_water += right_max - heights[right]
-            right -= 1
+            merged.append(intervals[i])
 
-    return trapped_water
+    return merged
 
 
-print(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]))  # 6
-print(trap([4, 2, 0, 3, 2, 5]))                      # 9
+print(merge_intervals([[1, 3], [2, 6], [8, 10], [15, 18]]))  # [[1, 6], [8, 10], [15, 18]]
+print(merge_intervals([[1, 4], [4, 5]]))                      # [[1, 5]]
 
-# Time Complexity: O(n)
-# Space Complexity: O(1)
+# Time Complexity: O(N log N) - due to sorting
+# Space Complexity: O(1) - excluding output
 ```
 
-# 4. Interval Technique
-
-### 1. Merge Overlapping Intervals. **O(N), O(1)**.
-```js
+```javascript
 function mergeIntervals(intervals) {
     // If there are no intervals or only one, no merging is needed.
     if (!intervals || intervals.length <= 1) {
@@ -4144,39 +4446,13 @@ console.log(mergeIntervals(intervals3)); // [[0, 3], [4, 9]]
 // Space Complexity: O(n)
 ```
 
-```python
-def merge_intervals(intervals):
-    if not intervals:
-        return []
+---
 
-    # Sort intervals by start time
-    intervals.sort(key=lambda x: x[0])
+<a id="21-kadane-s-algorithm"></a>
 
-    merged = [intervals[0]]
+## 21. Kadane's Algorithm
 
-    for i in range(1, len(intervals)):
-        curr_start, curr_end = intervals[i]
-        last_start, last_end = merged[-1]
-
-        if curr_start <= last_end:
-            # Overlapping intervals, merge them
-            merged[-1] = [last_start, max(last_end, curr_end)]
-        else:
-            merged.append(intervals[i])
-
-    return merged
-
-
-print(merge_intervals([[1, 3], [2, 6], [8, 10], [15, 18]]))  # [[1, 6], [8, 10], [15, 18]]
-print(merge_intervals([[1, 4], [4, 5]]))                      # [[1, 5]]
-
-# Time Complexity: O(N log N) - due to sorting
-# Space Complexity: O(1) - excluding output
-```
-
-# 5. Kadane's Algorithm
-
-## Theory
+### Theory
 
 ### Core Idea
 Kadane's Algorithm finds the **optimal contiguous subarray** in O(N) time, O(1) space. It works by making a single **greedy decision at every index**: should I **extend** the current subarray to include this element, or **restart** a fresh subarray starting here?
@@ -4204,10 +4480,37 @@ Use Kadane's whenever a problem asks you to find **the best contiguous subarray*
 4. **Is the "extend" condition based on structure (increasing/decreasing)?** → Use condition-based restart instead of sum-based restart.
 5. **Does the operation have sign-flipping behavior (like multiplication)?** → Track both min and max (like Max Product Subarray).
 
-## Questions
+### Questions
 
-### 1. Max Sum Contiguous Subarray / Maximum Subarray Sum. Negative numbers allowed. **O(N), O(1)**.
-```js
+1. Max Sum Contiguous Subarray / Maximum Subarray Sum. Negative numbers allowed. **O(N), O(1)**.
+
+```python
+def find_maximum_subarray_sum(arr):
+    n = len(arr)
+    max_sum = arr[0]
+    curr_sum = 0
+
+    for i in range(n):
+        curr_sum += arr[i]
+
+        if curr_sum > max_sum:
+            max_sum = curr_sum
+
+        if curr_sum < 0:
+            curr_sum = 0
+
+    return max_sum
+
+
+print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))           # 6
+print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
+print(find_maximum_subarray_sum([-2, -3, -1]))               # -1
+
+# Time Complexity: O(n)
+# Space Complexity: O(1)
+```
+
+```javascript
 function findMaximumSubarraySum(arr) {
   const n = arr.length;
 
@@ -4244,68 +4547,7 @@ console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // 8
 // Space Complexity: O(1)
 ```
 
-```python
-def find_maximum_subarray_sum(arr):
-    n = len(arr)
-    max_sum = arr[0]
-    curr_sum = 0
-
-    for i in range(n):
-        curr_sum += arr[i]
-
-        if curr_sum > max_sum:
-            max_sum = curr_sum
-
-        if curr_sum < 0:
-            curr_sum = 0
-
-    return max_sum
-
-
-print(find_maximum_subarray_sum([1, 2, 3, -9, 5]))           # 6
-print(find_maximum_subarray_sum([-3, 2, 4, -1, 3, -4, 3]))  # 8
-print(find_maximum_subarray_sum([-2, -3, -1]))               # -1
-
-# Time Complexity: O(n)
-# Space Complexity: O(1)
-```
-
-### 2. Find the maximum subarray sum as well as the subarray itself. Negative numbers allowed. **O(N), O(1)**.
-
-```js
-function findMaximumSubarraySum(arr) {
-  let maxSum = arr[0];
-  let currSum = 0;
-  let start = 0;
-  let end = 0;
-  let tempStart = 0;
-
-  for (let i = 0; i < arr.length; i++) {
-    currSum += arr[i];
-
-    if (currSum > maxSum) {
-      maxSum = currSum;
-      start = tempStart;
-      end = i;
-    }
-
-    if (currSum < 0) {
-      currSum = 0;
-      tempStart = i + 1;
-    }
-  }
-
-  return { maxSum, subarray: arr.slice(start, end + 1) };
-}
-console.log(findMaximumSubarraySum([1, 2, 3, -9, 5])); // { maxSum: 6, subarray: [1, 2, 3] }
-console.log(findMaximumSubarraySum([1, 2, 3, -9, 5, 4])); // { maxSum: 9 , subarray: [5, 4] }
-console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // { maxSum: 8, subarray: [2, 4, -1, 3] }
-console.log(findMaximumSubarraySum([-2, -3, -1])); // { maxSum: -1, subarray: [-1] }
-console.log(findMaximumSubarraySum([1, 2, 3, 4, 5])); // { maxSum: 15, subarray: [1, 2, 3, 4, 5] }
-
-// Time Complexity: O(n)
-// Space Complexity: O(1)
-```
+2. Find the maximum subarray sum as well as the subarray itself. Negative numbers allowed. **O(N), O(1)**.
 
 ```python
 def find_maximum_subarray_sum(arr):
@@ -4340,8 +4582,44 @@ print(find_maximum_subarray_sum([1, 2, 3, 4, 5]))           # {'max_sum': 15, 's
 # Space Complexity: O(1)
 ```
 
-### 3. Flip. Maximize 1s in Binary String. Return indices of flip. **O(N), O(1)**.
+```javascript
+function findMaximumSubarraySum(arr) {
+  let maxSum = arr[0];
+  let currSum = 0;
+  let start = 0;
+  let end = 0;
+  let tempStart = 0;
+
+  for (let i = 0; i < arr.length; i++) {
+    currSum += arr[i];
+
+    if (currSum > maxSum) {
+      maxSum = currSum;
+      start = tempStart;
+      end = i;
+    }
+
+    if (currSum < 0) {
+      currSum = 0;
+      tempStart = i + 1;
+    }
+  }
+
+  return { maxSum, subarray: arr.slice(start, end + 1) };
+}
+console.log(findMaximumSubarraySum([1, 2, 3, -9, 5])); // { maxSum: 6, subarray: [1, 2, 3] }
+console.log(findMaximumSubarraySum([1, 2, 3, -9, 5, 4])); // { maxSum: 9 , subarray: [5, 4] }
+console.log(findMaximumSubarraySum([-3, 2, 4, -1, 3, -4, 3])); // { maxSum: 8, subarray: [2, 4, -1, 3] }
+console.log(findMaximumSubarraySum([-2, -3, -1])); // { maxSum: -1, subarray: [-1] }
+console.log(findMaximumSubarraySum([1, 2, 3, 4, 5])); // { maxSum: 15, subarray: [1, 2, 3, 4, 5] }
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
 ```
+
+3. Flip. Maximize 1s in Binary String. Return indices of flip. **O(N), O(1)**.
+
+```text
 You are given a binary string A(i.e., with characters 0 and 1) consisting of characters A1, A2, ..., AN. In a single operation, you can choose two indices, L and R, such that 1 ≤ L ≤ R ≤ N and flip the characters AL, AL+1, ..., AR. By flipping, we mean changing character 0 to 1 and vice-versa.
 
 Your aim is to perform ATMOST one operation such that in the final string number of 1s is maximized.
@@ -4352,7 +4630,8 @@ NOTE: Pair (a, b) is lexicographically smaller than pair (c, d) if a < c or, if 
 ```
 
 #### Input / Output
-```
+
+```text
 Input : A = "010"
 Output : [1, 1]
 Explanation : Flipping the first element will give us 110 which is the maximum number of 1s we can have. We cant flip the second or third element as it will give us 101 or 011 which is same as flipping the first element. So we return the lexicographically smallest pair [1, 1].
@@ -4366,7 +4645,50 @@ Output : [1, 3]
 Explanation : Flipping the whole array will give us 111 which is the maximum number of 1s we can have.
 ```
 
-```js
+```python
+def flip(A):
+    n = len(A)
+    max_sum = 0
+    current_sum = 0
+    start = 0
+    end = 0
+    temp_start = 0
+    no_change = True
+
+    # Kadane's algorithm: map '0' -> +1, '1' -> -1
+    for i in range(n):
+        val = 1 if A[i] == '0' else -1
+        current_sum += val
+
+        if current_sum > max_sum:
+            max_sum = current_sum
+            start = temp_start
+            end = i
+            no_change = False
+
+        if current_sum < 0:
+            current_sum = 0
+            temp_start = i + 1
+
+    if no_change:
+        return []
+
+    # Return 1-based indices
+    return [start + 1, end + 1]
+
+
+print(flip("010"))     # [1, 1]
+print(flip("111"))     # []
+print(flip("000"))     # [1, 3]
+print(flip("110"))     # [3, 3]
+print(flip("101"))     # [2, 2]
+print(flip("111000"))  # [4, 6]
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function flip(A) {
   const n = A.length;
   let maxSum = 0;
@@ -4417,53 +4739,55 @@ console.log(flip("111000")); // [4, 6]
 // Space Complexity : O(1)
 ```
 
+---
+
+<a id="22-2d-arrays-matrix-advanced"></a>
+
+## 22. 2D Arrays / Matrix Advanced
+
+### Questions
+
+1. Find element in rowwise and colwise sorted matrix. | Staircase Search **O(N+M), O(1)**
+
 ```python
-def flip(A):
-    n = len(A)
-    max_sum = 0
-    current_sum = 0
-    start = 0
-    end = 0
-    temp_start = 0
-    no_change = True
+def find_element(matrix, target):
+    if not matrix or not matrix[0]:
+        return False
 
-    # Kadane's algorithm: map '0' -> +1, '1' -> -1
-    for i in range(n):
-        val = 1 if A[i] == '0' else -1
-        current_sum += val
+    rows = len(matrix)
+    cols = len(matrix[0])
 
-        if current_sum > max_sum:
-            max_sum = current_sum
-            start = temp_start
-            end = i
-            no_change = False
+    # Start at top-right corner
+    r = 0
+    c = cols - 1
 
-        if current_sum < 0:
-            current_sum = 0
-            temp_start = i + 1
+    while r < rows and c >= 0:
+        val = matrix[r][c]
+        if val == target:
+            return True
+        elif val > target:
+            c -= 1
+        else:
+            r += 1
 
-    if no_change:
-        return []
-
-    # Return 1-based indices
-    return [start + 1, end + 1]
+    return False
 
 
-print(flip("010"))     # [1, 1]
-print(flip("111"))     # []
-print(flip("000"))     # [1, 3]
-print(flip("110"))     # [3, 3]
-print(flip("101"))     # [2, 2]
-print(flip("111000"))  # [4, 6]
+matrix = [
+    [1, 4, 7, 11, 15],
+    [2, 5, 8, 12, 19],
+    [3, 6, 9, 16, 22],
+    [10, 13, 14, 17, 24],
+    [18, 21, 23, 26, 30]
+]
+print(find_element(matrix, 5))   # True
+print(find_element(matrix, 20))  # False
 
-# Time Complexity: O(N)
+# Time Complexity: O(N + M)
 # Space Complexity: O(1)
 ```
 
-# 6. 2D Arrays / Matrix Advanced
-
-### 1. Find element in rowwise and colwise sorted matrix. | Staircase Search **O(N+M), O(1)**
-```js
+```javascript
 function findElement(matrix, target) {
   // if matrix is empty return false
   if (!matrix || matrix.length === 0 || matrix[0].length === 0) return false;
@@ -4518,71 +4842,7 @@ console.log(findElement(mat, 20));  // false // path [ '[0, 4]', '[1, 4]', '[2, 
 // Space Complexity: O(1)
 ```
 
-```python
-def find_element(matrix, target):
-    if not matrix or not matrix[0]:
-        return False
-
-    rows = len(matrix)
-    cols = len(matrix[0])
-
-    # Start at top-right corner
-    r = 0
-    c = cols - 1
-
-    while r < rows and c >= 0:
-        val = matrix[r][c]
-        if val == target:
-            return True
-        elif val > target:
-            c -= 1
-        else:
-            r += 1
-
-    return False
-
-
-matrix = [
-    [1, 4, 7, 11, 15],
-    [2, 5, 8, 12, 19],
-    [3, 6, 9, 16, 22],
-    [10, 13, 14, 17, 24],
-    [18, 21, 23, 26, 30]
-]
-print(find_element(matrix, 5))   # True
-print(find_element(matrix, 20))  # False
-
-# Time Complexity: O(N + M)
-# Space Complexity: O(1)
-```
-
-### 2. Row with maximum number of ones. | Staircase Search **O(N+M), O(1)**
-```js
-function maxOnesRow(A) {
-  const rows = A.length;
-  const cols = A[0].length;
-
-  let maxRow = -1; // To store the row index with the maximum 1s
-  let col = cols - 1; // Start from the top-right corner
-
-  // Traverse rows from top to bottom
-  for (let row = 0; row < rows; row++) {
-    // Move left while there are 1s in the current row
-    while (col >= 0 && A[row][col] === 1) {
-      col--; // Move left
-      maxRow = row; // Update maxRow to the current row
-    }
-  }
-
-  return maxRow; // Return the row with the maximum number of 1s
-}
-console.log(maxOnesRow([[0, 1, 1], [0, 0, 1], [0, 1, 1]])); // 0
-console.log(maxOnesRow([[0, 1, 1, 1], [0, 0, 1, 1], [0, 1, 1, 1], [0, 0, 0, 1]])); // 0
-console.log(maxOnesRow([[0, 0, 0, 0], [0, 0, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1]])); // 3
-
-// Time Complexity : O(N + M)
-// Space Complexity : O(1)
-```
+2. Row with maximum number of ones. | Staircase Search **O(N+M), O(1)**
 
 ```python
 def max_ones_row(A):
@@ -4614,8 +4874,75 @@ print(max_ones_row(matrix))  # 0
 # Space Complexity: O(1)
 ```
 
-### 3. Print Boundary Elements of a 2D Matrix in Clockwise Manner / 2D Matrix Spiral Traversal. | Boundary Traversal **O(N*M), O(1)**
-```js
+```javascript
+function maxOnesRow(A) {
+  const rows = A.length;
+  const cols = A[0].length;
+
+  let maxRow = -1; // To store the row index with the maximum 1s
+  let col = cols - 1; // Start from the top-right corner
+
+  // Traverse rows from top to bottom
+  for (let row = 0; row < rows; row++) {
+    // Move left while there are 1s in the current row
+    while (col >= 0 && A[row][col] === 1) {
+      col--; // Move left
+      maxRow = row; // Update maxRow to the current row
+    }
+  }
+
+  return maxRow; // Return the row with the maximum number of 1s
+}
+console.log(maxOnesRow([[0, 1, 1], [0, 0, 1], [0, 1, 1]])); // 0
+console.log(maxOnesRow([[0, 1, 1, 1], [0, 0, 1, 1], [0, 1, 1, 1], [0, 0, 0, 1]])); // 0
+console.log(maxOnesRow([[0, 0, 0, 0], [0, 0, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1]])); // 3
+
+// Time Complexity : O(N + M)
+// Space Complexity : O(1)
+```
+
+3. Print Boundary Elements of a 2D Matrix in Clockwise Manner / 2D Matrix Spiral Traversal. | Boundary Traversal **O(N*M), O(1)**
+
+```python
+def print_boundary(matrix):
+    if not matrix:
+        return []
+
+    total_rows = len(matrix)
+    total_cols = len(matrix[0])
+    result = []
+
+    # Top boundary: left to right
+    for c in range(total_cols - 1):
+        result.append(matrix[0][c])
+
+    # Right boundary: top to bottom
+    for r in range(total_rows - 1):
+        result.append(matrix[r][total_cols - 1])
+
+    # Bottom boundary: right to left
+    for c in range(total_cols - 1, 0, -1):
+        result.append(matrix[total_rows - 1][c])
+
+    # Left boundary: bottom to top
+    for r in range(total_rows - 1, 0, -1):
+        result.append(matrix[r][0])
+
+    return result
+
+
+matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+]
+print(print_boundary(matrix))  # [1, 2, 3, 6, 9, 8, 7, 4]
+
+# Time Complexity: O(N + M)
+# Space Complexity: O(1)
+```
+
+```javascript
 function printBoundary(matrix) {
     const totalRows = matrix.length;
     const totalCols = matrix[0].length;
@@ -4667,47 +4994,65 @@ console.log(printBoundary(matrix)); // [1, 2, 3, 4, 8, 12, 16, 15, 14, 13, 9, 5]
 // Space Complexity: O(1)
 ```
 
+4. Lawn Mowing Problem / Print whole matrix in a clockwise manner. | Boundary Traversal **O(N*M), O(1)**
+
 ```python
-def print_boundary(matrix):
+def print_spiral(matrix):
     if not matrix:
         return []
 
-    total_rows = len(matrix)
-    total_cols = len(matrix[0])
+    n = len(matrix)
+    row = 0
+    col = 0
+    length = n - 1
     result = []
 
-    # Top boundary: left to right
-    for c in range(total_cols - 1):
-        result.append(matrix[0][c])
+    while length >= 1:
+        # Move right
+        for k in range(length):
+            result.append(matrix[row][col])
+            col += 1
 
-    # Right boundary: top to bottom
-    for r in range(total_rows - 1):
-        result.append(matrix[r][total_cols - 1])
+        # Move down
+        for k in range(length):
+            result.append(matrix[row][col])
+            row += 1
 
-    # Bottom boundary: right to left
-    for c in range(total_cols - 1, 0, -1):
-        result.append(matrix[total_rows - 1][c])
+        # Move left
+        for k in range(length):
+            result.append(matrix[row][col])
+            col -= 1
 
-    # Left boundary: bottom to top
-    for r in range(total_rows - 1, 0, -1):
-        result.append(matrix[r][0])
+        # Move up
+        for k in range(length):
+            result.append(matrix[row][col])
+            row -= 1
+
+        row += 1
+        col += 1
+        length -= 2
+
+    # If n is odd, add center element
+    if length == 0:
+        result.append(matrix[row][col])
 
     return result
 
 
 matrix = [
-    [1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 9]
+    [1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+    [13, 14, 15, 16]
 ]
-print(print_boundary(matrix))  # [1, 2, 3, 6, 9, 8, 7, 4]
+print(print_spiral(matrix))
+# [1, 2, 3, 4, 8, 12, 16, 15, 14, 13, 9, 5, 6, 7, 11, 10]
 
-# Time Complexity: O(N + M)
+# Time Complexity: O(N^2)
 # Space Complexity: O(1)
 ```
 
-### 4. Lawn Mowing Problem / Print whole matrix in a clockwise manner. | Boundary Traversal **O(N*M), O(1)**
-```js
+```javascript
 function printSpiral(matrix) {
   // Get the size of the square matrix (assumes n x n)
   const size = matrix.length;
@@ -4795,77 +5140,15 @@ printSpiral(mat2);
 // Space Complexity: O(1)
 ```
 
-```python
-def print_spiral(matrix):
-    if not matrix:
-        return []
+---
 
-    n = len(matrix)
-    row = 0
-    col = 0
-    length = n - 1
-    result = []
+<a id="23-bit-manipulation-advanced"></a>
 
-    while length >= 1:
-        # Move right
-        for k in range(length):
-            result.append(matrix[row][col])
-            col += 1
+## 23. Bit Manipulation Advanced
 
-        # Move down
-        for k in range(length):
-            result.append(matrix[row][col])
-            row += 1
+### Questions
 
-        # Move left
-        for k in range(length):
-            result.append(matrix[row][col])
-            col -= 1
-
-        # Move up
-        for k in range(length):
-            result.append(matrix[row][col])
-            row -= 1
-
-        row += 1
-        col += 1
-        length -= 2
-
-    # If n is odd, add center element
-    if length == 0:
-        result.append(matrix[row][col])
-
-    return result
-
-
-matrix = [
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12],
-    [13, 14, 15, 16]
-]
-print(print_spiral(matrix))
-# [1, 2, 3, 4, 8, 12, 16, 15, 14, 13, 9, 5, 6, 7, 11, 10]
-
-# Time Complexity: O(N^2)
-# Space Complexity: O(1)
-```
-
-# 7. Bit Manipulation Advanced
-
-### 1. Checking even/odd. Check if the last bit is 0, then number is even, else odd. **O(1), O(1)**
-```js
-// If the last bit is zero, then number is even, else odd.
-function isEven(num) {
-    return (num & 1) === 0;
-}
-console.log(isEven(0)); // true // 0000 & 0001 = 0000
-console.log(isEven(4)); // true // 0100 & 0001 = 0000
-console.log(isEven(5)); // false // 0101 & 0001 = 0001
-
-// Time Complexity : O(1)
-// Space Complexity : O(1)
-```
+1. Checking even/odd. Check if the last bit is 0, then number is even, else odd. **O(1), O(1)**
 
 ```python
 # If the last bit is zero, then number is even, else odd.
@@ -4880,20 +5163,22 @@ print(is_even(5))  # False
 # Space Complexity: O(1)
 ```
 
-### 2. Power of Left Shift Operator
+```javascript
+// If the last bit is zero, then number is even, else odd.
+function isEven(num) {
+    return (num & 1) === 0;
+}
+console.log(isEven(0)); // true // 0000 & 0001 = 0000
+console.log(isEven(4)); // true // 0100 & 0001 = 0000
+console.log(isEven(5)); // false // 0101 & 0001 = 0001
+
+// Time Complexity : O(1)
+// Space Complexity : O(1)
+```
+
+2. Power of Left Shift Operator
 
 #### 1. Set ith bit | **O(1), O(1)**
-```js
-function setBit(n, i) {
-  // Set ith bit
-  n = n | (1 << i);
-  return n;
-}
-console.log(setBit(5, 0)); // 5  // 0101 | 0001 = 0101
-console.log(setBit(5, 1)); // 7  // 0101 | 0010 = 0111
-console.log(setBit(5, 2)); // 5  // 0101 | 0100 = 0101
-console.log(setBit(5, 3)); // 13 // 0101 | 1000 = 1101
-```
 
 ```python
 def set_bit(n, i):
@@ -4907,18 +5192,19 @@ print(set_bit(5, 1))  # 7 (0101 -> 0111)
 # Space Complexity: O(1)
 ```
 
-#### 2. Toggle ith bit | **O(1), O(1)**
-```js
-function toggleBit(n, i) {
-  // Toggle ith bit
-  n = n ^ (1 << i);
+```javascript
+function setBit(n, i) {
+  // Set ith bit
+  n = n | (1 << i);
   return n;
 }
-console.log(toggleBit(5, 0)); // 4 // 5 in binary is 0101, toggling 0th bit gives us 0100 which is 4
-console.log(toggleBit(5, 1)); // 7 // 5 in binary is 0101, toggling 1st bit gives us 0111 which is 7
-console.log(toggleBit(5, 2)); // 1 // 5 in binary is 0101, toggling 2nd bit gives us 0001 which is 1
-console.log(toggleBit(5, 3)); // 13 // 5 in binary is 0101, toggling 3rd bit gives us 1101 which is 13
+console.log(setBit(5, 0)); // 5  // 0101 | 0001 = 0101
+console.log(setBit(5, 1)); // 7  // 0101 | 0010 = 0111
+console.log(setBit(5, 2)); // 5  // 0101 | 0100 = 0101
+console.log(setBit(5, 3)); // 13 // 0101 | 1000 = 1101
 ```
+
+#### 2. Toggle ith bit | **O(1), O(1)**
 
 ```python
 def toggle_bit(n, i):
@@ -4933,20 +5219,19 @@ print(toggle_bit(7, 1))  # 5 (0111 -> 0101)
 # Space Complexity: O(1)
 ```
 
-#### 3. Check ith bit | **O(1), O(1)**
-```js
-// Check if ith bit is set or unset
-function isBitSet(n, i) {
-  if ((n & (1 << i)) != 0) { // ith bit is set
-    return true;
-  }
-  return false; // ith bit is unset
+```javascript
+function toggleBit(n, i) {
+  // Toggle ith bit
+  n = n ^ (1 << i);
+  return n;
 }
-console.log(isBitSet(5, 0)); // true // 5 in binary is 0101, 0th bit is set
-console.log(isBitSet(5, 1)); // false // 5 in binary is 0101, 1st bit is unset
-console.log(isBitSet(5, 2)); // true // 5 in binary is 0101, 2nd bit is set
-console.log(isBitSet(5, 3)); // false // 5 in binary is 0101, 3rd bit is unset
+console.log(toggleBit(5, 0)); // 4 // 5 in binary is 0101, toggling 0th bit gives us 0100 which is 4
+console.log(toggleBit(5, 1)); // 7 // 5 in binary is 0101, toggling 1st bit gives us 0111 which is 7
+console.log(toggleBit(5, 2)); // 1 // 5 in binary is 0101, toggling 2nd bit gives us 0001 which is 1
+console.log(toggleBit(5, 3)); // 13 // 5 in binary is 0101, toggling 3rd bit gives us 1101 which is 13
 ```
+
+#### 3. Check ith bit | **O(1), O(1)**
 
 ```python
 def is_bit_set(n, i):
@@ -4960,8 +5245,34 @@ print(is_bit_set(5, 1))  # False (bit 1 is 0 in 101)
 # Space Complexity: O(1)
 ```
 
+```javascript
+// Check if ith bit is set or unset
+function isBitSet(n, i) {
+  if ((n & (1 << i)) != 0) { // ith bit is set
+    return true;
+  }
+  return false; // ith bit is unset
+}
+console.log(isBitSet(5, 0)); // true // 5 in binary is 0101, 0th bit is set
+console.log(isBitSet(5, 1)); // false // 5 in binary is 0101, 1st bit is unset
+console.log(isBitSet(5, 2)); // true // 5 in binary is 0101, 2nd bit is set
+console.log(isBitSet(5, 3)); // false // 5 in binary is 0101, 3rd bit is unset
+```
+
 #### 4. Unset ith bit | **O(1), O(1)**
-```js
+
+```python
+def unset_bit(n, i):
+    return n & ~(1 << i)
+
+
+print(unset_bit(7, 1))  # 5 (0111 -> 0101)
+
+# Time Complexity: O(1)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Unset ith bit
 function unsetBit(n, i) {
   // If ith bit is set, unset it
@@ -4983,31 +5294,7 @@ function unsetBit(n, i) {
 }
 ```
 
-```python
-def unset_bit(n, i):
-    return n & ~(1 << i)
-
-
-print(unset_bit(7, 1))  # 5 (0111 -> 0101)
-
-# Time Complexity: O(1)
-# Space Complexity: O(1)
-```
-
-### 3. Single Number 1. Every element appears twice except one. **O(N), O(1)**
-```js
-// Using XOR. as XORing a number with itself gives 0, so all same number cancels out each other
-// Example: [4, 1, 2, 1, 2] -> (4 ^ 1 ^ 2 ^ 1 ^ 2) -> 4 ^ (1 ^ 1) ^ (2 ^ 2) -> 4 ^ 0 ^ 0 -> 4
-function singleNumber(nums) {
-  let result = 0;
-  for (let num of nums) {
-    result ^= num;
-  }
-  return result;
-}
-console.log(singleNumber([4, 1, 2, 1, 2])); // 4
-console.log(singleNumber([2, 2, 1])); // 1
-```
+3. Single Number 1. Every element appears twice except one. **O(N), O(1)**
 
 ```python
 def single_number(arr):
@@ -5023,8 +5310,43 @@ print(single_number([1, 2, 2, 3, 1]))  # 3
 # Space Complexity: O(1)
 ```
 
-### 4. Single Number 2. Every element appears thrice except one. **O(N), O(1)**
-```js
+```javascript
+// Using XOR. as XORing a number with itself gives 0, so all same number cancels out each other
+// Example: [4, 1, 2, 1, 2] -> (4 ^ 1 ^ 2 ^ 1 ^ 2) -> 4 ^ (1 ^ 1) ^ (2 ^ 2) -> 4 ^ 0 ^ 0 -> 4
+function singleNumber(nums) {
+  let result = 0;
+  for (let num of nums) {
+    result ^= num;
+  }
+  return result;
+}
+console.log(singleNumber([4, 1, 2, 1, 2])); // 4
+console.log(singleNumber([2, 2, 1])); // 1
+```
+
+4. Single Number 2. Every element appears thrice except one. **O(N), O(1)**
+
+```python
+def single_number_2(arr):
+    ans = 0
+    for i in range(32):
+        count = 0
+        for num in arr:
+            if (num & (1 << i)) != 0:
+                count += 1
+        # If count of set bits is not a multiple of 3, ith bit belongs to the single number
+        if count % 3 != 0:
+            ans |= (1 << i)
+    return ans
+
+
+print(single_number_2([1, 2, 4, 3, 3, 2, 2, 3, 1, 1]))  # 4
+
+# Time Complexity: O(32 * N) = O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Problem: Find the unique number in an array where every other number repeats 'k' times.
 // 1. Iterate through each bit position (0 to 31).
 // 2. Count the number of set bits (1s) at the current position across all numbers.
@@ -5096,28 +5418,38 @@ console.log(singleNumber([1, 1, 1, 4, 3, 3, 3, 5, 5, 5], 3)); // 4
 // Final Result = 4
 ```
 
+5. Single Number 3. Every element appears twice except two. **O(N), O(1)**
+
 ```python
-def single_number_2(arr):
-    ans = 0
-    for i in range(32):
-        count = 0
-        for num in arr:
-            if (num & (1 << i)) != 0:
-                count += 1
-        # If count of set bits is not a multiple of 3, ith bit belongs to the single number
-        if count % 3 != 0:
-            ans |= (1 << i)
-    return ans
+def single_number_3(arr):
+    xor_all = 0
+    for num in arr:
+        xor_all ^= num
+
+    # Find the rightmost set bit
+    pos = 0
+    while (xor_all & (1 << pos)) == 0:
+        pos += 1
+
+    # Split numbers into two groups based on the set bit
+    group1 = 0
+    group2 = 0
+    for num in arr:
+        if (num & (1 << pos)) != 0:
+            group1 ^= num
+        else:
+            group2 ^= num
+
+    return sorted([group1, group2])
 
 
-print(single_number_2([1, 2, 4, 3, 3, 2, 2, 3, 1, 1]))  # 4
+print(single_number_3([1, 2, 3, 1, 2, 4]))  # [3, 4]
 
-# Time Complexity: O(32 * N) = O(N)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 5. Single Number 3. Every element appears twice except two. **O(N), O(1)**
-```js
+```javascript
 // Problem: Find two unique numbers in an array where every other number repeats twice.
 // Approach:
 // 1. XOR all numbers. The result will be (uniqueA ^ uniqueB) since paired numbers cancel out.
@@ -5225,51 +5557,7 @@ console.log(singleNumber([1, 2])); // [1, 2]
 // Space Complexity : O(1)
 ```
 
-```python
-def single_number_3(arr):
-    xor_all = 0
-    for num in arr:
-        xor_all ^= num
-
-    # Find the rightmost set bit
-    pos = 0
-    while (xor_all & (1 << pos)) == 0:
-        pos += 1
-
-    # Split numbers into two groups based on the set bit
-    group1 = 0
-    group2 = 0
-    for num in arr:
-        if (num & (1 << pos)) != 0:
-            group1 ^= num
-        else:
-            group2 ^= num
-
-    return sorted([group1, group2])
-
-
-print(single_number_3([1, 2, 3, 1, 2, 4]))  # [3, 4]
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 6. Number of 1 Bits. Count the number of 1 bits in binary representation. **O(1), O(1)**
-```js
-function numSetBits(A) {
-  let count = 0;
-  while (A > 0) { // Iterate till A is greater than 0
-    count += A & 1; // Check if last bit is set in A and increment count if it is set
-    A = A >> 1; // Shift A to right side by 1 bit to check next bit in next iteration
-  }
-  return count;
-}
-console.log(numSetBits(11)); // 3 // 1011
-console.log(numSetBits(15)); // 4 // 1111
-
-// Time Complexity : O(1)
-// Space Complexity : O(1)
-```
+6. Number of 1 Bits. Count the number of 1 bits in binary representation. **O(1), O(1)**
 
 ```python
 def num_set_bits(A):
@@ -5286,20 +5574,23 @@ print(num_set_bits(11))  # 3 (1011 in binary)
 # Space Complexity: O(1)
 ```
 
-### 7. Set Bit. Set the A-th bit and B-th bit in 0 and return output in decimal Number System. **O(1), O(1)**
-```js
-function setBits(A, B) {
-  let n = 0;
-  n = n | (1 << A)
-  n = n | (1 << B)
-  return n;
+```javascript
+function numSetBits(A) {
+  let count = 0;
+  while (A > 0) { // Iterate till A is greater than 0
+    count += A & 1; // Check if last bit is set in A and increment count if it is set
+    A = A >> 1; // Shift A to right side by 1 bit to check next bit in next iteration
+  }
+  return count;
 }
-console.log(setBits(3, 5)); // 40 // 00000000 // 1 << 3 = 00001000 = 8, 1 << 5 = 00100000 = 32, 8 | 32 = 00101000 = 40
-console.log(setBits(4, 4)); // 16 // 00000000 // 1 << 4 = 00010000 = 16, 1 << 4 = 00010000 = 16, 16 | 16 = 00010000 = 16
+console.log(numSetBits(11)); // 3 // 1011
+console.log(numSetBits(15)); // 4 // 1111
 
 // Time Complexity : O(1)
 // Space Complexity : O(1)
 ```
+
+7. Set Bit. Set the A-th bit and B-th bit in 0 and return output in decimal Number System. **O(1), O(1)**
 
 ```python
 def set_bits(A, B):
@@ -5315,7 +5606,21 @@ print(set_bits(3, 5))  # 40 (2^3 + 2^5 = 8 + 32 = 40)
 # Space Complexity: O(1)
 ```
 
-### 8. Subarrays with OR 0. Count the number of subarrays where the bitwise OR of all elements in the subarray is 0 | Arrays Miscellaneous | Subarrays counting **O(N), O(1)**
+```javascript
+function setBits(A, B) {
+  let n = 0;
+  n = n | (1 << A)
+  n = n | (1 << B)
+  return n;
+}
+console.log(setBits(3, 5)); // 40 // 00000000 // 1 << 3 = 00001000 = 8, 1 << 5 = 00100000 = 32, 8 | 32 = 00101000 = 40
+console.log(setBits(4, 4)); // 16 // 00000000 // 1 << 4 = 00010000 = 16, 1 << 4 = 00010000 = 16, 16 | 16 = 00010000 = 16
+
+// Time Complexity : O(1)
+// Space Complexity : O(1)
+```
+
+8. Subarrays with OR 0. Count the number of subarrays where the bitwise OR of all elements in the subarray is 0 | Arrays Miscellaneous | Subarrays counting **O(N), O(1)**
 
 **Approach:**
 - The bitwise OR of a subarray is `0` if and only if **all elements in that subarray are `0`** (e.g., `0 | 0 = 0`, but `0 | 1 = 1`).
@@ -5346,7 +5651,29 @@ print(set_bits(3, 5))  # 40 (2^3 + 2^5 = 8 + 32 = 40)
   - `totalCount += 1` (becomes 4).
 - **Return:** `4`.
 
-```js
+```python
+def subarrays_with_or_0(arr):
+    total_zeros = 0
+    zero_count = 0
+
+    for num in arr:
+        if num == 0:
+            zero_count += 1
+        else:
+            total_zeros += zero_count * (zero_count + 1) // 2
+            zero_count = 0
+
+    total_zeros += zero_count * (zero_count + 1) // 2
+    return total_zeros
+
+
+print(subarrays_with_or_0([1, 0, 0, 0, 1]))  # 6 ([0], [0], [0], [0, 0], [0, 0], [0, 0, 0])
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // subarraysWithOR0: Counts the number of subarrays where the bitwise OR is 0
 // A subarray's OR is 0 only if every element in it is 0.
 // Thus, we just need to count subarrays composed entirely of 0s.
@@ -5386,29 +5713,7 @@ console.log(subarraysWithOR0([0, 1]));          // 1   (run of 1 zero  → 1*2/2
 // Space Complexity: O(1) — only a few variables regardless of input size
 ```
 
-```python
-def subarrays_with_or_0(arr):
-    total_zeros = 0
-    zero_count = 0
-
-    for num in arr:
-        if num == 0:
-            zero_count += 1
-        else:
-            total_zeros += zero_count * (zero_count + 1) // 2
-            zero_count = 0
-
-    total_zeros += zero_count * (zero_count + 1) // 2
-    return total_zeros
-
-
-print(subarrays_with_or_0([1, 0, 0, 0, 1]))  # 6 ([0], [0], [0], [0, 0], [0, 0], [0, 0, 0])
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 9. Subarrays with OR 1. Count the number of subarrays where the bitwise OR of all elements in the subarray is 1 | Arrays Miscellaneous | Subarrays counting **O(N), O(1)**
+9. Subarrays with OR 1. Count the number of subarrays where the bitwise OR of all elements in the subarray is 1 | Arrays Miscellaneous | Subarrays counting **O(N), O(1)**
 
 **Approach:**
 - A subarray's bitwise OR is `1` if it contains **at least one `1`**. The only time a subarray's OR is `0` is when **all** its elements are `0`.
@@ -5435,7 +5740,33 @@ print(subarrays_with_or_0([1, 0, 0, 0, 1]))  # 6 ([0], [0], [0], [0, 0], [0, 0],
   - `totalZeroSubArrs` becomes `4`.
 - **Return:** `totalSubArrs - totalZeroSubArrs = 15 - 4 = 11`.
 
-```js
+```python
+def subarrays_with_or_1(arr):
+    n = len(arr)
+    total_subarrays = n * (n + 1) // 2
+
+    # Count subarrays with OR 0 (i.e. all elements are 0)
+    zero_subarrays = 0
+    zero_count = 0
+    for num in arr:
+        if num == 0:
+            zero_count += 1
+        else:
+            zero_subarrays += zero_count * (zero_count + 1) // 2
+            zero_count = 0
+
+    zero_subarrays += zero_count * (zero_count + 1) // 2
+    return total_subarrays - zero_subarrays
+
+
+print(subarrays_with_or_1([1, 0, 1]))        # 5
+print(subarrays_with_or_1([1, 0, 0, 0, 1]))  # 9
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // subarraysWithOR1: Counts the number of subarrays where the bitwise OR is 1
 // We find this by subtracting the number of all-zero subarrays from the total number of subarrays
 function subarraysWithOR1(A) {
@@ -5481,35 +5812,13 @@ console.log(subarraysWithOR1([0, 0, 0]));       // 0
 // Space Complexity: O(1) — uses only a few counters regardless of input size
 ```
 
-```python
-def subarrays_with_or_1(arr):
-    n = len(arr)
-    total_subarrays = n * (n + 1) // 2
+---
 
-    # Count subarrays with OR 0 (i.e. all elements are 0)
-    zero_subarrays = 0
-    zero_count = 0
-    for num in arr:
-        if num == 0:
-            zero_count += 1
-        else:
-            zero_subarrays += zero_count * (zero_count + 1) // 2
-            zero_count = 0
+<a id="24-recursion"></a>
 
-    zero_subarrays += zero_count * (zero_count + 1) // 2
-    return total_subarrays - zero_subarrays
+## 24. Recursion
 
-
-print(subarrays_with_or_1([1, 0, 1]))        # 5
-print(subarrays_with_or_1([1, 0, 0, 0, 1]))  # 9
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 8. Recursion
-
-## Theory
+### Theory
 
 ### Steps to write recursive functions
 1. Expectation → Decide what our function is supposed to do. Fix the exact input → output contract (parameters, return value) and never change its meaning midway.
@@ -5610,19 +5919,9 @@ Every problem that can be solved using recursion can also be solved using iterat
 If we want to convert a recursive solution to an iterative one, we often use data structures like stacks or queues to simulate the function call stack used in recursion.
 ```
 
-## Questions
+### Questions
 
-### 1. Sum of n natural numbers. **O(N), O(N)**
-```js
-function sum(n) {
-  if (n == 0) {
-    return 0;
-  }
-
-  return n + sum(n - 1);
-}
-console.log(sum(5)); // 15
-```
+1. Sum of n natural numbers. **O(N), O(N)**
 
 ```python
 def sum_n(n):
@@ -5637,17 +5936,18 @@ print(sum_n(5))  # 15
 # Space Complexity: O(N)
 ```
 
-### 2. Factorial of a number. **O(N), O(N)**
-```js
-function factorial(n) {
+```javascript
+function sum(n) {
   if (n == 0) {
-    return 1;
+    return 0;
   }
 
-  return n * factorial(n - 1);
+  return n + sum(n - 1);
 }
-console.log(factorial(5)); // 120
+console.log(sum(5)); // 15
 ```
+
+2. Factorial of a number. **O(N), O(N)**
 
 ```python
 def factorial(n):
@@ -5662,19 +5962,18 @@ print(factorial(5))  # 120
 # Space Complexity: O(N)
 ```
 
-### 3. Increasing order / Print 1 to N. **O(N), O(N)**
-```js
-function increasing(n) {
+```javascript
+function factorial(n) {
   if (n == 0) {
-    return;
+    return 1;
   }
 
-  increasing(n - 1);
-
-  console.log(n);
+  return n * factorial(n - 1);
 }
-increasing(5); // 1 2 3 4 5
+console.log(factorial(5)); // 120
 ```
+
+3. Increasing order / Print 1 to N. **O(N), O(N)**
 
 ```python
 def increasing(n):
@@ -5691,24 +5990,25 @@ print()
 # Space Complexity: O(N)
 ```
 
-### 4. Decreasing order / Whirpool's countdown timer / Print N to 1 function. **O(N), O(N)**
-```
-Whirlpool wants to design a timer for their washing machines. This feature is a simple countdown timer. When a user sets a time, for example, 10 minutes, the washing machine needs to show each minute passing, counting down until it reaches 0.
-
-Your task is to write a program that takes an integer A (the time in minutes set by the user) and then prints out each minute as it counts down to 0. The requirement is that after a user sets a timer for the washing machine for some time say A, the washing machine should display each minute after that decremented one by one till the time becomes 0.
-```
-
-```js
-function decreasing(n) {
+```javascript
+function increasing(n) {
   if (n == 0) {
     return;
   }
 
-  console.log(n);
+  increasing(n - 1);
 
-  decreasing(n - 1);
+  console.log(n);
 }
-decreasing(5); // 5 4 3 2 1
+increasing(5); // 1 2 3 4 5
+```
+
+4. Decreasing order / Whirpool's countdown timer / Print N to 1 function. **O(N), O(N)**
+
+```text
+Whirlpool wants to design a timer for their washing machines. This feature is a simple countdown timer. When a user sets a time, for example, 10 minutes, the washing machine needs to show each minute passing, counting down until it reaches 0.
+
+Your task is to write a program that takes an integer A (the time in minutes set by the user) and then prints out each minute as it counts down to 0. The requirement is that after a user sets a timer for the washing machine for some time say A, the washing machine should display each minute after that decremented one by one till the time becomes 0.
 ```
 
 ```python
@@ -5726,8 +6026,36 @@ print()
 # Space Complexity: O(N)
 ```
 
-### 5. Fibonacci series / Find Nth Fibonacci number using recursion. **O(2^n), O(n)**
-```js
+```javascript
+function decreasing(n) {
+  if (n == 0) {
+    return;
+  }
+
+  console.log(n);
+
+  decreasing(n - 1);
+}
+decreasing(5); // 5 4 3 2 1
+```
+
+5. Fibonacci series / Find Nth Fibonacci number using recursion. **O(2^n), O(n)**
+
+```python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+
+print(fibonacci(5))  # 5
+print(fibonacci(7))  # 13
+
+# Time Complexity: O(2^N)
+# Space Complexity: O(N)
+```
+
+```javascript
 function fibonacci(n) {
   if (n <= 1) {
     return n;
@@ -5744,22 +6072,29 @@ console.log(fibonacci(6)); // 8
 console.log(fibonacci(7)); // 13
 ```
 
+6. Fibonacci series using Memoization / Find Nth Fibonacci number using memoization. **O(N), O(N)**
+
 ```python
-def fibonacci(n):
+# TOP-DOWN MEMOIZATION (Recursive + Cache)
+def fibonacci_memo(n, memo=None):
+    if memo is None:
+        memo = {}
     if n <= 1:
         return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
+    if n in memo:
+        return memo[n]
+    memo[n] = fibonacci_memo(n - 1, memo) + fibonacci_memo(n - 2, memo)
+    return memo[n]
 
 
-print(fibonacci(5))  # 5
-print(fibonacci(7))  # 13
+print(fibonacci_memo(10))  # 55
+print(fibonacci_memo(50))  # 12586269025
 
-# Time Complexity: O(2^N)
+# Time Complexity: O(N)
 # Space Complexity: O(N)
 ```
 
-### 6. Fibonacci series using Memoization / Find Nth Fibonacci number using memoization. **O(N), O(N)**
-```js
+```javascript
 // TOP-DOWN MEMOIZATION (Recursive + Cache)
 //
 // Why memoize?
@@ -5809,29 +6144,9 @@ console.log(fibonacci(6)); // 8
 console.log(fibonacci(7)); // 13
 ```
 
-```python
-# TOP-DOWN MEMOIZATION (Recursive + Cache)
-def fibonacci_memo(n, memo=None):
-    if memo is None:
-        memo = {}
-    if n <= 1:
-        return n
-    if n in memo:
-        return memo[n]
-    memo[n] = fibonacci_memo(n - 1, memo) + fibonacci_memo(n - 2, memo)
-    return memo[n]
-
-
-print(fibonacci_memo(10))  # 55
-print(fibonacci_memo(50))  # 12586269025
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
 #### Dry Run — `fibonacci(5)`
 
-```
+```text
 fibonacci(5)  → memo = {}  (nothing cached yet, must compute)
 ├── fibonacci(4)  → memo = {}  (not cached, recurse deeper)
 │   ├── fibonacci(3)  → memo = {}  (not cached, recurse deeper)
@@ -5854,8 +6169,27 @@ Total function calls: 9  (with memo)  vs  15 (without memo)
   → fib(2) and fib(3) were each needed twice but computed only once.
 ```
 
-### 7. Fibonacci series using Tabulation / Find Nth Fibonacci number using tabulation. **O(N), O(N)**
-```js
+7. Fibonacci series using Tabulation / Find Nth Fibonacci number using tabulation. **O(N), O(N)**
+
+```python
+# BOTTOM-UP TABULATION (Iterative + Array)
+def fibonacci_tab(n):
+    if n <= 1:
+        return n
+    dp = [0] * (n + 1)
+    dp[1] = 1
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]
+    return dp[n]
+
+
+print(fibonacci_tab(10))  # 55
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 // BOTTOM-UP TABULATION (Iterative + Array)
 //
 // Why tabulation?
@@ -5900,27 +6234,9 @@ console.log(fibonacci(6)); // 8
 console.log(fibonacci(7)); // 13
 ```
 
-```python
-# BOTTOM-UP TABULATION (Iterative + Array)
-def fibonacci_tab(n):
-    if n <= 1:
-        return n
-    dp = [0] * (n + 1)
-    dp[1] = 1
-    for i in range(2, n + 1):
-        dp[i] = dp[i - 1] + dp[i - 2]
-    return dp[n]
-
-
-print(fibonacci_tab(10))  # 55
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
 #### Dry Run — `fibonacci(5)`
 
-```
+```text
 Initial: dp = [0, 1]  (base cases seeded)
 
 i = 2: dp[2] = dp[1] + dp[0] = 1 + 0 = 1  → dp = [0, 1, 1]
@@ -5936,21 +6252,7 @@ Key observations:
   → Total iterations: n - 1 = 4 (constant work per iteration → O(n) overall).
 ```
 
-### 8. Sum of Digits! Find the sum of digits of a given number using recursion. **O(log(n)), O(log(n))**
-```js
-function sumOfDigits(n) {
-  if (n === 0) return 0;
-  const lastDigit = n % 10;
-  const remainingDigits = Math.floor(n / 10);
-  return lastDigit + sumOfDigits(remainingDigits);
-}
-console.log(sumOfDigits(56789)); // 35
-console.log(sumOfDigits(12345)); // 15
-console.log(sumOfDigits(0)); // 0
-
-// Time Complexity: O(log n) - In each call divides n by 10, so the number of calls equals the number of digits, ≈ ⌊log₁₀ n⌋ + 1. Work per call is O(1).
-// Space Complexity: O(log n) - The recursion is not tail-call optimized in JS engines (V8 doesn't implement TCO), so the call stack grows to the same depth as the digit count. No extra data structures.
-```
+8. Sum of Digits! Find the sum of digits of a given number using recursion. **O(log(n)), O(log(n))**
 
 ```python
 def sum_of_digits(n):
@@ -5966,22 +6268,22 @@ print(sum_of_digits(46))     # 10
 # Space Complexity: O(log10 N)
 ```
 
-### 9. Decreasing & Increasing in one function. / Print 1 to N and N to 1 in one function. **O(N), O(N)**
-```js
-function decInc(A) {
-  if (A == 0) {
-    return 0;
-  }
-  process.stdout.write(A + " "); // Print the current number before the recursive call, this will handle the decreasing part.
-  decInc(A - 1);
-  process.stdout.write(A + " "); // Print the current number after the recursive call, this will handle the increasing part.
+```javascript
+function sumOfDigits(n) {
+  if (n === 0) return 0;
+  const lastDigit = n % 10;
+  const remainingDigits = Math.floor(n / 10);
+  return lastDigit + sumOfDigits(remainingDigits);
 }
+console.log(sumOfDigits(56789)); // 35
+console.log(sumOfDigits(12345)); // 15
+console.log(sumOfDigits(0)); // 0
 
-decInc(5); // 5 4 3 2 1 1 2 3 4 5
-
-// Time Complexity: O(n)
-// Space Complexity: O(n)
+// Time Complexity: O(log n) - In each call divides n by 10, so the number of calls equals the number of digits, ≈ ⌊log₁₀ n⌋ + 1. Work per call is O(1).
+// Space Complexity: O(log n) - The recursion is not tail-call optimized in JS engines (V8 doesn't implement TCO), so the call stack grows to the same depth as the digit count. No extra data structures.
 ```
+
+9. Decreasing & Increasing in one function. / Print 1 to N and N to 1 in one function. **O(N), O(N)**
 
 ```python
 import sys
@@ -6002,19 +6304,23 @@ print()
 # Space Complexity: O(N)
 ```
 
-### 10. Power function. **O(N), O(N)**
-```js
-function power(base, exponent) {
-  if(exponent === 0) return 1;
-
-  return base * power(base, exponent - 1);
+```javascript
+function decInc(A) {
+  if (A == 0) {
+    return 0;
+  }
+  process.stdout.write(A + " "); // Print the current number before the recursive call, this will handle the decreasing part.
+  decInc(A - 1);
+  process.stdout.write(A + " "); // Print the current number after the recursive call, this will handle the increasing part.
 }
-console.log(power(2, 3)); // 8
-console.log(power(2, 0)); // 1
+
+decInc(5); // 5 4 3 2 1 1 2 3 4 5
 
 // Time Complexity: O(n)
 // Space Complexity: O(n)
 ```
+
+10. Power function. **O(N), O(N)**
 
 ```python
 def power(base, exponent):
@@ -6030,8 +6336,32 @@ print(power(3, 4))  # 81
 # Space Complexity: O(N)
 ```
 
-### 11. Fast Power function. **O(log N), O(log N)**
-```js
+```javascript
+function power(base, exponent) {
+  if(exponent === 0) return 1;
+
+  return base * power(base, exponent - 1);
+}
+console.log(power(2, 3)); // 8
+console.log(power(2, 0)); // 1
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+```
+
+11. Fast Power function. **O(log N), O(log N)**
+
+```python
+# Sub-optimal implementation without caching subcall: O(N)
+def fast_power_suboptimal(base, exponent):
+    if exponent == 0:
+        return 1
+    if exponent % 2 == 0:
+        return fast_power_suboptimal(base, exponent // 2) * fast_power_suboptimal(base, exponent // 2)
+    return base * fast_power_suboptimal(base, exponent // 2) * fast_power_suboptimal(base, exponent // 2)
+```
+
+```javascript
 // Incorrect / Sub-optimal implementation of fast power function
 function fastPowerIncorrect(base, exponent) {
   // Base case: Any number to the power 0 is 1
@@ -6056,16 +6386,30 @@ function fastPowerIncorrect(base, exponent) {
 ```
 
 ```python
-# Sub-optimal implementation without caching subcall: O(N)
-def fast_power_suboptimal(base, exponent):
+def fast_power(base, exponent):
+    # Base case: Any number raised to 0 is 1
     if exponent == 0:
         return 1
+
+    # Divide step: Compute power for half the exponent
+    half_power = fast_power(base, exponent // 2)
+
+    # If exponent is even
     if exponent % 2 == 0:
-        return fast_power_suboptimal(base, exponent // 2) * fast_power_suboptimal(base, exponent // 2)
-    return base * fast_power_suboptimal(base, exponent // 2) * fast_power_suboptimal(base, exponent // 2)
+        return half_power * half_power
+    # If exponent is odd
+    else:
+        return base * half_power * half_power
+
+
+print(fast_power(2, 10))  # 1024
+print(fast_power(3, 5))   # 243
+
+# Time Complexity: O(log N)
+# Space Complexity: O(log N)
 ```
 
-```js
+```javascript
 function fastPower(base, exponent) {
   // Base case: Any number raised to the power of 0 is 1 (base^0 = 1).
   if (exponent === 0) {
@@ -6094,33 +6438,13 @@ console.log(fastPower(3, 5)); // 243
 // Space Complexity: O(log n) - Call stack depth is proportional to the number of divisions, ⌊log₂ n⌋ + 1.
 ```
 
-```python
-def fast_power(base, exponent):
-    # Base case: Any number raised to 0 is 1
-    if exponent == 0:
-        return 1
+---
 
-    # Divide step: Compute power for half the exponent
-    half_power = fast_power(base, exponent // 2)
+<a id="25-hashing-set"></a>
 
-    # If exponent is even
-    if exponent % 2 == 0:
-        return half_power * half_power
-    # If exponent is odd
-    else:
-        return base * half_power * half_power
+## 25. Hashing (Set)
 
-
-print(fast_power(2, 10))  # 1024
-print(fast_power(3, 5))   # 243
-
-# Time Complexity: O(log N)
-# Space Complexity: O(log N)
-```
-
-# 9. Hashing (Set)
-
-## Theory
+### Theory
 
 ### HashSet operations
 1. add(value) - add the value to the set: Time Complexity: O(1) on average, O(n) in worst case
@@ -6128,20 +6452,11 @@ print(fast_power(3, 5))   # 243
 3. has(value) - check if the value is present in the set: Time Complexity: O(1) on average, O(n) in worst case
 4. size - get the size of the set: Time Complexity: O(1)
 
-## Questions
+### Questions
 
-### 1. Count of Distinct Elements | Set **O(N), O(N)**
+1. Count of Distinct Elements | Set **O(N), O(N)**
+
 Given an n elements array, find the count of distinct elements in the array.
-```js
-function countDistinct(arr) {
-  const set = new Set(arr);
-  return set.size;
-}
-const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6]
-console.log(countDistinct(arr)); // 6
-// Time Complexity: O(n)
-// Space Complexity: O(n)
-```
 
 ```python
 def count_distinct(arr):
@@ -6155,8 +6470,36 @@ print(count_distinct([1, 2, 2, 3, 4, 4, 5]))  # 5
 # Space Complexity: O(N)
 ```
 
-### 2. Check if pair with sum K exists / Good Pair | Set **O(N), O(N)**
-```js
+```javascript
+function countDistinct(arr) {
+  const set = new Set(arr);
+  return set.size;
+}
+const arr = [2, 6, 3, 8, 2, 8, 2, 8, 10, 6]
+console.log(countDistinct(arr)); // 6
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+```
+
+2. Check if pair with sum K exists / Good Pair | Set **O(N), O(N)**
+
+```python
+def good_pair(arr, K):
+    seen = set()
+    for num in arr:
+        complement = K - num
+        if complement in seen:
+            return 1
+        seen.add(num)
+    return 0
+
+print(good_pair([1, 2, 3, 4], 7))   # 1
+print(good_pair([1, 2, 4, 3], 2))   # 0
+print(good_pair([1, 9, 3, 4], 4))   # 1
+print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
+```
+
+```javascript
 function goodPair(arr, K) {
     let set = new Set();
 
@@ -6177,24 +6520,32 @@ console.log(goodPair([1, 9, 3, 4], 4)); // 1
 console.log(goodPair([-2, 1, 5, 8], 3)); // 1 (pair -2, 5)
 ```
 
+3. Check if subarray with sum 0 exists | Set & Carry Forward **O(N), O(N)**
+
 ```python
-def good_pair(arr, K):
-    seen = set()
+def subarray_sum_k(arr, K):
+    seen_sums = set()
+    curr_sum = K
+
     for num in arr:
-        complement = K - num
-        if complement in seen:
+        curr_sum += num
+        # If prefix sum is K or was seen before, subarray sum is K
+        if curr_sum == K or curr_sum in seen_sums:
             return 1
-        seen.add(num)
+        seen_sums.add(curr_sum)
+
     return 0
 
-print(good_pair([1, 2, 3, 4], 7))   # 1
-print(good_pair([1, 2, 4, 3], 2))   # 0
-print(good_pair([1, 9, 3, 4], 4))   # 1
-print(good_pair([-2, 1, 5, 8], 3))  # 1 (pair -2, 5)
+
+print(subarray_sum_k([1, 2, 3, 4, 5], 0))  # 0
+print(subarray_sum_k([4, -1, 1], 0))       # 1
+print(subarray_sum_k([1, -1], 0))          # 1
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
 ```
 
-### 3. Check if subarray with sum 0 exists | Set & Carry Forward **O(N), O(N)**
-```js
+```javascript
 function subarraySumZero(arr) {
   // Create a Set to store the prefix sums encountered so far.
   let set = new Set();
@@ -6247,31 +6598,33 @@ console.log(subarraySumZero([1, 2, 3, 4, 5])); // false
 // In the worst case, the set will store n distinct prefix sums.
 ```
 
+4. Longest Substring Without Repeating Characters | Set & Two Pointers. **O(N), O(N)**
+
 ```python
-def subarray_sum_k(arr, K):
-    seen_sums = set()
-    curr_sum = K
+def length_of_longest_substring(s):
+    char_set = set()
+    left = 0
+    max_len = 0
 
-    for num in arr:
-        curr_sum += num
-        # If prefix sum is K or was seen before, subarray sum is K
-        if curr_sum == K or curr_sum in seen_sums:
-            return 1
-        seen_sums.add(curr_sum)
+    for right in range(len(s)):
+        while s[right] in char_set:
+            char_set.remove(s[left])
+            left += 1
+        char_set.add(s[right])
+        max_len = max(max_len, right - left + 1)
 
-    return 0
+    return max_len
 
 
-print(subarray_sum_k([1, 2, 3, 4, 5], 0))  # 0
-print(subarray_sum_k([4, -1, 1], 0))       # 1
-print(subarray_sum_k([1, -1], 0))          # 1
+print(length_of_longest_substring("abcabcbb"))  # 3 // "abc"
+print(length_of_longest_substring("bbbbb"))     # 1 // "b"
+print(length_of_longest_substring("pwwkew"))    # 3 // "wke"
 
 # Time Complexity: O(N)
-# Space Complexity: O(N)
+# Space Complexity: O(min(N, M)) where M is character set size
 ```
 
-### 4. Longest Substring Without Repeating Characters | Set & Two Pointers. **O(N), O(N)**
-```js
+```javascript
 function lengthOfLongestSubstring(s) {
   let n = s.length;
   let maxLength = 0;
@@ -6313,33 +6666,13 @@ console.log(lengthOfLongestSubstring("abcdbefdghij")); // 8 // "cbefdghi"
 // Space Complexity: O(min(n, m)), where n is the length of the string and m is the size of the character set
 ```
 
-```python
-def length_of_longest_substring(s):
-    char_set = set()
-    left = 0
-    max_len = 0
+---
 
-    for right in range(len(s)):
-        while s[right] in char_set:
-            char_set.remove(s[left])
-            left += 1
-        char_set.add(s[right])
-        max_len = max(max_len, right - left + 1)
+<a id="26-hashing-map"></a>
 
-    return max_len
+## 26. Hashing (Map)
 
-
-print(length_of_longest_substring("abcabcbb"))  # 3 // "abc"
-print(length_of_longest_substring("bbbbb"))     # 1 // "b"
-print(length_of_longest_substring("pwwkew"))    # 3 // "wke"
-
-# Time Complexity: O(N)
-# Space Complexity: O(min(N, M)) where M is character set size
-```
-
-# 10. Hashing (Map)
-
-## Theory
+### Theory
 
 ### HashMap operations
 1. set(key, value) - set the value for the key: Time Complexity: O(1) on average, O(n) in worst case
@@ -6348,11 +6681,29 @@ print(length_of_longest_substring("pwwkew"))    # 3 // "wke"
 4. has(key) - check if the key is present in the hashmap: Time Complexity: O(1) on average, O(n) in worst case
 5. size - get the size of the hashmap: Time Complexity: O(1)
 
-## Questions
+### Questions
 
-### 1. Count frequence of elements in array /Frequency of given elements / Frequency of element query | Map **O(N), O(N)**
+1. Count frequence of elements in array /Frequency of given elements / Frequency of element query | Map **O(N), O(N)**
+
 Given an n elements array, and q queries, find the frequency of each element in the array.
-```js
+
+```python
+def frequency(arr, queries):
+    freq_map = {}
+    for num in arr:
+        freq_map[num] = freq_map.get(num, 0) + 1
+
+    return [freq_map.get(q, 0) for q in queries]
+
+
+print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
+print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
+
+# Time Complexity: O(N + Q)
+# Space Complexity: O(N)
+```
+
+```javascript
 function frequency(arr, queries) {
   const map = new Map();
   for (const elem of arr) {
@@ -6380,24 +6731,26 @@ console.log(frequency([2, 6, 3, 8, 2, 8, 2, 8, 10, 6], [2, 8, 3, 5])); // [3, 3,
 // Space Complexity: O(n)
 ```
 
+2. Count of pairs with sum K | Map **O(N), O(N)**
+
 ```python
-def frequency(arr, queries):
-    freq_map = {}
+def count_pairs_sum(arr, k):
+    freq = dict()
+    count = 0
+
     for num in arr:
-        freq_map[num] = freq_map.get(num, 0) + 1
+        complement = k - num
+        count += freq.get(complement, 0)
+        freq[num] = freq.get(num, 0) + 1
 
-    return [freq_map.get(q, 0) for q in queries]
+    return count
 
 
-print(frequency([1, 2, 1, 1], [1, 2]))  # [3, 1]
-print(frequency([2, 5, 9, 2, 8], [3, 2]))  # [0, 2]
-
-# Time Complexity: O(N + Q)
-# Space Complexity: O(N)
+print(count_pairs_sum([1, 2, 3, 2, 1], 3))  # 4
+print(count_pairs_sum([1, 1, 1], 2))        # 3
 ```
 
-### 2. Count of pairs with sum K | Map **O(N), O(N)**
-```js
+```javascript
 function countPairsSum(arr, k) {
   const target = BigInt(k);
   const map = new Map();
@@ -6429,25 +6782,35 @@ console.log(countPairsSum([3, 5, 1, 2], 8)); // 1
 console.log(countPairsSum([1, 2, 1, 2], 3)); // 4 // [[1, 2], [2, 1], [1, 2], [2, 1]]
 ```
 
+3. Count subarrays with sum 0 | Map & Prefix Sum. **O(N), O(N)**
+
 ```python
-def count_pairs_sum(arr, k):
-    freq = dict()
+from collections import defaultdict
+
+
+def count_subarrays_with_sum_zero(arr):
+    freq = defaultdict(int)
+    freq[0] = 1  # Base case for prefix sum 0
+    curr_sum = 0
     count = 0
 
     for num in arr:
-        complement = k - num
-        count += freq.get(complement, 0)
-        freq[num] = freq.get(num, 0) + 1
+        curr_sum += num
+        count += freq[curr_sum]
+        freq[curr_sum] += 1
 
     return count
 
 
-print(count_pairs_sum([1, 2, 3, 2, 1], 3))  # 4
-print(count_pairs_sum([1, 1, 1], 2))        # 3
+print(count_subarrays_with_sum_zero([1, -1, -2, 2]))     # 3
+print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 2
+print(count_subarrays_with_sum_zero([0, 0, 0]))          # 6
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
 ```
 
-### 3. Count subarrays with sum 0 | Map & Prefix Sum. **O(N), O(N)**
-```js
+```javascript
 function countSubarraysWithSumZero(arr) {
   let map = new Map();
   let sum = 0;
@@ -6494,34 +6857,30 @@ console.log(countSubarraysWithSumZero([1, 2, -2, 4, -4])); // 3 // [2, -2], [4, 
 // Space Complexity: O(n)
 ```
 
+4. Check subarray with sum K exists | Map. **O(N), O(N)**
+
 ```python
-from collections import defaultdict
-
-
-def count_subarrays_with_sum_zero(arr):
-    freq = defaultdict(int)
-    freq[0] = 1  # Base case for prefix sum 0
+def subarray_sum_k(arr, k):
+    seen = {0}
     curr_sum = 0
-    count = 0
 
     for num in arr:
         curr_sum += num
-        count += freq[curr_sum]
-        freq[curr_sum] += 1
+        if (curr_sum - k) in seen:
+            return True
+        seen.add(curr_sum)
 
-    return count
+    return False
 
 
-print(count_subarrays_with_sum_zero([1, -1, -2, 2]))     # 3
-print(count_subarrays_with_sum_zero([-1, 2, -1]))        # 2
-print(count_subarrays_with_sum_zero([0, 0, 0]))          # 6
+print(subarray_sum_k([10, 2, -2, -20, 10], -10))  # True
+print(subarray_sum_k([1, 2, 3], 7))                 # False
 
 # Time Complexity: O(N)
 # Space Complexity: O(N)
 ```
 
-### 4. Check subarray with sum K exists | Map. **O(N), O(N)**
-```js
+```javascript
 function subarraySumK(arr, k) {
   let map = new Map();
   let sum = 0;
@@ -6560,29 +6919,31 @@ console.log(subarraySumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // true // [2, 3
 // Space Complexity: O(n)
 ```
 
+5. Count subarrays with sum K | Map & Prefix Sum. **O(N), O(N)**
+
 ```python
-def subarray_sum_k(arr, k):
-    seen = {0}
+def count_subarrays_with_sum_k(arr, k):
+    freq = dict()
+    # freq[0] = 1
     curr_sum = 0
+    count = 0
 
     for num in arr:
         curr_sum += num
-        if (curr_sum - k) in seen:
-            return True
-        seen.add(curr_sum)
+        # Alternatively if we don't initialize freq[0] = 1 at the beginning, we need to check if the current sum itself equals k.
+        if curr_sum == k:
+            count += 1
+        count += freq.get(curr_sum - k, 0)
+        freq[curr_sum] = freq.get(curr_sum, 0) + 1
 
-    return False
+    return count
 
-
-print(subarray_sum_k([10, 2, -2, -20, 10], -10))  # True
-print(subarray_sum_k([1, 2, 3], 7))                 # False
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
+print(count_subarrays_with_sum_k([1, 0, 1], 1))    # 4
+print(count_subarrays_with_sum_k([0, 0, 0], 0))    # 6
+print(count_subarrays_with_sum_k([1, 2, 3], 3))    # 2
 ```
 
-### 5. Count subarrays with sum K | Map & Prefix Sum. **O(N), O(N)**
-```js
+```javascript
 function countSubarraysWithSumK(arr, k) {
     // A Map to store the frequency of prefix sums encountered so far.
     // Key = Prefix Sum, Value = How many times this sum has occurred.
@@ -6631,30 +6992,32 @@ console.log(countSubarraysWithSumK([2, 3, 9, -4, 1, 5, 6, 2, 5], 11)); // 3 // [
 console.log(countSubarraysWithSumK([4, 2, 3, 7, -1, 9, 15, 16, -8], 20)); // 1 // [2, 3, 7, -1, 9]
 ```
 
+6. Find common elements in 2 arrays | Map **O(N), O(N)**
+
 ```python
-def count_subarrays_with_sum_k(arr, k):
-    freq = dict()
-    # freq[0] = 1
-    curr_sum = 0
-    count = 0
+from collections import Counter
 
-    for num in arr:
-        curr_sum += num
-        # Alternatively if we don't initialize freq[0] = 1 at the beginning, we need to check if the current sum itself equals k.
-        if curr_sum == k:
-            count += 1
-        count += freq.get(curr_sum - k, 0)
-        freq[curr_sum] = freq.get(curr_sum, 0) + 1
 
-    return count
+def common_elements(A, B):
+    freq_a = Counter(A)
+    freq_b = Counter(B)
+    ans = []
 
-print(count_subarrays_with_sum_k([1, 0, 1], 1))    # 4
-print(count_subarrays_with_sum_k([0, 0, 0], 0))    # 6
-print(count_subarrays_with_sum_k([1, 2, 3], 3))    # 2
+    for num in freq_a:
+        if num in freq_b:
+            common_count = min(freq_a[num], freq_b[num])
+            ans.extend([num] * common_count)
+
+    return ans
+
+
+print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
+
+# Time Complexity: O(N + M)
+# Space Complexity: O(N + M)
 ```
 
-### 6. Find common elements in 2 arrays | Map **O(N), O(N)**
-```js
+```javascript
 function commonElements(A, B) {
   // Always build the frequency map on the smaller array
   if (B.length < A.length) {
@@ -6693,32 +7056,13 @@ console.log(commonElements([2, 1, 4, 10], [3, 6, 2, 10, 10])); // [2, 10]
 // Space Complexity: O(n)
 ```
 
-```python
-from collections import Counter
+---
 
+<a id="27-count-sort"></a>
 
-def common_elements(A, B):
-    freq_a = Counter(A)
-    freq_b = Counter(B)
-    ans = []
+## 27. Count Sort
 
-    for num in freq_a:
-        if num in freq_b:
-            common_count = min(freq_a[num], freq_b[num])
-            ans.extend([num] * common_count)
-
-    return ans
-
-
-print(common_elements([1, 2, 2, 1], [2, 3, 1, 2]))  # [1, 2, 2]
-
-# Time Complexity: O(N + M)
-# Space Complexity: O(N + M)
-```
-
-# 11. Count Sort
-
-## Theory
+### Theory
 
 ### Ideal range for Count Sort
 ```
@@ -6733,10 +7077,35 @@ A sorting algorithm is stable if it preserves the relative order of equal elemen
 ### Inplace Sort
 A sorting algorithm is inplace if it preserves the original array and does not require additional space for sorting. For example, if an algorithm sorts an array in place, it modifies the original array without creating a new one.
 
-## Questions
+### Questions
 
-### 1. Count sort of positive numbers | Count Sort. **O(N + K), O(K)**
-```js
+1. Count sort of positive numbers | Count Sort. **O(N + K), O(K)**
+
+```python
+def count_sort_positive(arr):
+    if not arr:
+        return []
+
+    max_val = max(arr)
+    count = [0] * (max_val + 1)
+
+    for num in arr:
+        count[num] += 1
+
+    ans = []
+    for val, freq in enumerate(count):
+        ans.extend([val] * freq)
+
+    return ans
+
+
+print(count_sort_positive([4, 2, 2, 8, 3, 3, 1]))  # [1, 2, 2, 3, 3, 4, 8]
+
+# Time Complexity: O(N + K) where K is max element
+# Space Complexity: O(K)
+```
+
+```javascript
 /**
  * Implementation of Counting Sort.
  * Note: This algorithm works best for numbers with a reasonable range (K).
@@ -6794,32 +7163,36 @@ console.log(countingSort([7, 6, 2, 15, 12, 12, 11, 3, 3, 2, 1, 7, 9, 11, 12]));
 // Space Complexity: O(K) for the frequency map
 ```
 
+2. Count sort of negative numbers | Count Sort. **O(N), O(N)**
+
 ```python
-def count_sort_positive(arr):
+def count_sort_negative(arr):
     if not arr:
         return []
 
+    min_val = min(arr)
     max_val = max(arr)
-    count = [0] * (max_val + 1)
+    range_val = max_val - min_val + 1
 
+    count = [0] * range_val
     for num in arr:
-        count[num] += 1
+        count[num - min_val] += 1
 
     ans = []
-    for val, freq in enumerate(count):
-        ans.extend([val] * freq)
+    for i in range(range_val):
+        ans.extend([i + min_val] * count[i])
 
     return ans
 
 
-print(count_sort_positive([4, 2, 2, 8, 3, 3, 1]))  # [1, 2, 2, 3, 3, 4, 8]
+print(count_sort_negative([-5, -10, 0, -3, 8, 5, -1, 10]))
+# [-10, -5, -3, -1, 0, 5, 8, 10]
 
-# Time Complexity: O(N + K) where K is max element
+# Time Complexity: O(N + K) where K is max - min + 1
 # Space Complexity: O(K)
 ```
 
-### 2. Count sort of negative numbers | Count Sort. **O(N), O(N)**
-```js
+```javascript
 /** Counting Sort implementation capable of handling negative numbers.
  * Strategy: Normalize the range of numbers to start from 0 by using an offset.
  * Time Complexity: O(n + k) -> n is array length, k is the range (max - min)
@@ -6869,61 +7242,7 @@ console.log(countSort([-2, 1, 4, 2, -2, 6, 1, -3, 4, -1])); // [-3, -2, -2, -1, 
 // Space Complexity: O(k) for the frequency map
 ```
 
-```python
-def count_sort_negative(arr):
-    if not arr:
-        return []
-
-    min_val = min(arr)
-    max_val = max(arr)
-    range_val = max_val - min_val + 1
-
-    count = [0] * range_val
-    for num in arr:
-        count[num - min_val] += 1
-
-    ans = []
-    for i in range(range_val):
-        ans.extend([i + min_val] * count[i])
-
-    return ans
-
-
-print(count_sort_negative([-5, -10, 0, -3, 8, 5, -1, 10]))
-# [-10, -5, -3, -1, 0, 5, 8, 10]
-
-# Time Complexity: O(N + K) where K is max - min + 1
-# Space Complexity: O(K)
-```
-
-
-### 3. Sort by color. Sort an array in such a way that same colored elements are adjacent / Dutch National Flag Problem | Count Sort. **O(N), O(N)**
-```js
-// Using count sort
-function sortColors(arr) {
-  let count = new Array(3).fill(0);
-  let ans = [];
-  for (const num of arr) {
-    count[num]++;
-  }
-
-  for (let i = 0; i < count.length; i++) {
-    let frequency = count[i];
-    while (frequency > 0) {
-      ans.push(i);
-      frequency--;
-    }
-  }
-
-  return ans;
-}
-
-console.log(sortColors([0, 1, 2, 0, 1, 2])); // [0, 0, 1, 1, 2, 2]
-console.log(sortColors([0])); // [0]
-
-// Time Complexity: O(n)
-// Space Complexity: O(1)
-```
+3. Sort by color. Sort an array in such a way that same colored elements are adjacent / Dutch National Flag Problem | Count Sort. **O(N), O(N)**
 
 ```python
 # Using Counting Sort / Dutch National Flag
@@ -6960,9 +7279,40 @@ print(sort_colors([2, 0, 2, 1, 1, 0]))  # [0, 0, 1, 1, 2, 2]
 # Space Complexity: O(1)
 ```
 
-# 12. Merge Sort
+```javascript
+// Using count sort
+function sortColors(arr) {
+  let count = new Array(3).fill(0);
+  let ans = [];
+  for (const num of arr) {
+    count[num]++;
+  }
 
-## Theory
+  for (let i = 0; i < count.length; i++) {
+    let frequency = count[i];
+    while (frequency > 0) {
+      ans.push(i);
+      frequency--;
+    }
+  }
+
+  return ans;
+}
+
+console.log(sortColors([0, 1, 2, 0, 1, 2])); // [0, 0, 1, 1, 2, 2]
+console.log(sortColors([0])); // [0]
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+```
+
+---
+
+<a id="28-merge-sort"></a>
+
+## 28. Merge Sort
+
+### Theory
 
 ### Mid calculation optimization
 ```js
@@ -6973,10 +7323,44 @@ const mid = lo + Math.floor((hi - lo) / 2);
 mid = lo + (hi - lo) // 2
 ```
 
-## Questions
+### Questions
 
-### 1. Merge two sorted arrays | Merge Sort. **O(N), O(N)**
-```js
+1. Merge two sorted arrays | Merge Sort. **O(N), O(N)**
+
+```python
+def merge_two_sorted_arrays(A, B):
+    n = len(A)
+    m = len(B)
+    merged = []
+    i = 0
+    j = 0
+
+    while i < n and j < m:
+        if A[i] <= B[j]:
+            merged.append(A[i])
+            i += 1
+        else:
+            merged.append(B[j])
+            j += 1
+
+    while i < n:
+        merged.append(A[i])
+        i += 1
+
+    while j < m:
+        merged.append(B[j])
+        j += 1
+
+    return merged
+
+
+print(merge_two_sorted_arrays([1, 3, 5], [2, 4, 6]))  # [1, 2, 3, 4, 5, 6]
+
+# Time Complexity: O(N + M)
+# Space Complexity: O(N + M)
+```
+
+```javascript
 /**
  * Splitting Function
  * Separates the input array into two lists: Evens and Odds.
@@ -7048,40 +7432,7 @@ console.log(mergeSortedArrays([1, 5, 2, 4, 9, 6, 8])); // [1, 2, 4, 5, 6, 8, 9]
 // Space Complexity: O(n)
 ```
 
-```python
-def merge_two_sorted_arrays(A, B):
-    n = len(A)
-    m = len(B)
-    merged = []
-    i = 0
-    j = 0
-
-    while i < n and j < m:
-        if A[i] <= B[j]:
-            merged.append(A[i])
-            i += 1
-        else:
-            merged.append(B[j])
-            j += 1
-
-    while i < n:
-        merged.append(A[i])
-        i += 1
-
-    while j < m:
-        merged.append(B[j])
-        j += 1
-
-    return merged
-
-
-print(merge_two_sorted_arrays([1, 3, 5], [2, 4, 6]))  # [1, 2, 3, 4, 5, 6]
-
-# Time Complexity: O(N + M)
-# Space Complexity: O(N + M)
-```
-
-### 2. Merge sort | Merge Sort. **O(N), O(N)**
+2. Merge sort | Merge Sort. **O(N), O(N)**
 
 ```mermaid
 flowchart TD
@@ -7134,7 +7485,43 @@ flowchart TD
   N5_6 -->|Step 14| N6_6
 ```
 
-```js
+```python
+def merge(left, right):
+    result = []
+    i = 0
+    j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+
+    return merge(left, right)
+
+
+print(merge_sort([38, 27, 43, 3, 9, 82, 10]))  # [3, 9, 10, 27, 38, 43, 82]
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Helper function to merge two sorted arrays into a single sorted array.
  * Uses the "Two Pointer" technique.
@@ -7208,46 +7595,35 @@ console.log(mergeSort([4, 2, 7, 7, 3, 2, 1, 8])); // [1, 2, 2, 3, 4, 7, 7, 8]
 // Merge sort is not an inplace sort because it requires additional space for the merged array.
 ```
 
+---
+
+<a id="29-quick-sort"></a>
+
+## 29. Quick Sort
+
+### Questions
+
+1. Partition the array. All 0s on the left and all 1s on the right. | Partitioning Algorithm **O(N), O(1)**
+
 ```python
-def merge(left, right):
-    result = []
-    i = 0
-    j = 0
-
-    while i < len(left) and j < len(right):
-        if left[i] <= right[j]:
-            result.append(left[i])
-            i += 1
-        else:
-            result.append(right[j])
-            j += 1
-
-    result.extend(left[i:])
-    result.extend(right[j:])
-    return result
+def partition(arr):
+    low = 0
+    high = 0
+    while high < len(arr):
+        if arr[high] == 0:
+            arr[low], arr[high] = arr[high], arr[low]
+            low += 1
+        high += 1
+    return arr
 
 
-def merge_sort(arr):
-    if len(arr) <= 1:
-        return arr
+print(partition([0, 1, 0, 1, 1, 0]))  # [0, 0, 0, 1, 1, 1]
 
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])
-    right = merge_sort(arr[mid:])
-
-    return merge(left, right)
-
-
-print(merge_sort([38, 27, 43, 3, 9, 82, 10]))  # [3, 9, 10, 27, 38, 43, 82]
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(N)
+# Time Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-# 13. Quick Sort
-
-### 1. Partition the array. All 0s on the left and all 1s on the right. | Partitioning Algorithm **O(N), O(1)**
-```js
+```javascript
 function partition(arr) {
   let low = 0;
   let high = 0;
@@ -7274,26 +7650,33 @@ console.log(partition([1, 0, 1, 1, 0, 0, 1, 0, 1, 0]));
 // Space Complexity: O(1)
 ```
 
+2. Partition the integer array with pivot. All elements less than pivot on the left and all elements greater than pivot on the right. | Quick Sort. **O(N), O(N)**
+
 ```python
-def partition(arr):
+def partition_array(arr):
     low = 0
     high = 0
+    pivot = arr[0]
+
     while high < len(arr):
-        if arr[high] == 0:
+        if arr[high] <= pivot:
             arr[low], arr[high] = arr[high], arr[low]
             low += 1
         high += 1
+
+    # Place pivot in its correct position
+    arr[0], arr[low - 1] = arr[low - 1], arr[0]
     return arr
 
 
-print(partition([0, 1, 0, 1, 1, 0]))  # [0, 0, 0, 1, 1, 1]
+print(partition_array([54, 26, 93, 17, 77, 31, 44, 55, 20]))
+# [20, 26, 44, 17, 31, 54, 77, 55, 93]
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 2. Partition the integer array with pivot. All elements less than pivot on the left and all elements greater than pivot on the right. | Quick Sort. **O(N), O(N)**
-```js
+```javascript
 function partitionArray(arr) {
   let low = 0;
   let high = 0;
@@ -7334,32 +7717,41 @@ console.log(partitionArray([20, 55, 44, 31, 77, 17, 93, 26, 54])); // arr.length
 // Space Complexity: O(1)
 ```
 
+3. Quick Sort. | Quick Sort. **O(N), O(N)**
+
 ```python
-def partition_array(arr):
-    low = 0
-    high = 0
-    pivot = arr[0]
+def partition_lomuto(arr, low, high):
+    pivot = arr[high]
+    i = low - 1
 
-    while high < len(arr):
-        if arr[high] <= pivot:
-            arr[low], arr[high] = arr[high], arr[low]
-            low += 1
-        high += 1
+    for j in range(low, high):
+        if arr[j] < pivot:
+            i += 1
+            arr[i], arr[j] = arr[j], arr[i]
 
-    # Place pivot in its correct position
-    arr[0], arr[low - 1] = arr[low - 1], arr[0]
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+    return i + 1
+
+
+def quick_sort_helper(arr, low, high):
+    if low < high:
+        pi = partition_lomuto(arr, low, high)
+        quick_sort_helper(arr, low, pi - 1)
+        quick_sort_helper(arr, pi + 1, high)
+
+
+def quick_sort(arr):
+    quick_sort_helper(arr, 0, len(arr) - 1)
     return arr
 
 
-print(partition_array([54, 26, 93, 17, 77, 31, 44, 55, 20]))
-# [20, 26, 44, 17, 31, 54, 77, 55, 93]
+print(quick_sort([10, 7, 8, 9, 1, 5]))  # [1, 5, 7, 8, 9, 10]
 
-# Time Complexity: O(N)
-# Space Complexity: O(1)
+# Time Complexity: O(N log N) average, O(N^2) worst case
+# Space Complexity: O(log N) auxiliary recursion stack
 ```
 
-### 3. Quick Sort. | Quick Sort. **O(N), O(N)**
-```js
+```javascript
 /**
  * Helper function to partition the array.
  * Its goal is to place the pivot element in its correct sorted position
@@ -7441,44 +7833,17 @@ console.log(arr); // [17, 20, 26, 31, 44, 55, 77, 93]
 // Space Complexity: O(log n)
 ```
 
-```python
-def partition_lomuto(arr, low, high):
-    pivot = arr[high]
-    i = low - 1
+---
 
-    for j in range(low, high):
-        if arr[j] < pivot:
-            i += 1
-            arr[i], arr[j] = arr[j], arr[i]
+<a id="30-custom-sort-comparison-based-sorting"></a>
 
-    arr[i + 1], arr[high] = arr[high], arr[i + 1]
-    return i + 1
+## 30. Custom Sort / Comparison Based Sorting
 
+### Theory
 
-def quick_sort_helper(arr, low, high):
-    if low < high:
-        pi = partition_lomuto(arr, low, high)
-        quick_sort_helper(arr, low, pi - 1)
-        quick_sort_helper(arr, pi + 1, high)
+### JavaScript basic sorting
 
-
-def quick_sort(arr):
-    quick_sort_helper(arr, 0, len(arr) - 1)
-    return arr
-
-
-print(quick_sort([10, 7, 8, 9, 1, 5]))  # [1, 5, 7, 8, 9, 10]
-
-# Time Complexity: O(N log N) average, O(N^2) worst case
-# Space Complexity: O(log N) auxiliary recursion stack
-```
-
-# 14. Custom Sort / Comparison Based Sorting
-
-## Theory
-
-## JavaScript basic sorting
-```js
+```javascript
 const arr = [1, 2, 10, 5];
 
 // ascending
@@ -7510,10 +7875,40 @@ console.log(arr);
 // [10, 5, 2, 1]
 ```
 
-## Questions
+### Questions
 
-### 1. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
-```js
+1. Sorting based on factors of the elements. | Custom Comparator **O(N log N), O(1)**
+
+```python
+import math
+from functools import cmp_to_key
+
+
+def get_factors_count(num):
+    count = 0
+    i = 1
+    while i * i <= num:
+        if num % i == 0:
+            count += 1
+            if i != num // i:
+                count += 1
+        i += 1
+    return count
+
+
+def sort_by_factors(arr):
+    # Sort primarily by factor count ascending, secondarily by value ascending
+    return sorted(arr, key=lambda x: (get_factors_count(x), x))
+
+
+print(sort_by_factors([4, 7, 6, 9, 8, 2, 10]))  # [2, 7, 4, 9, 6, 8, 10]
+print(sort_by_factors([10, 5, 6, 2, 3, 4]))      # [2, 3, 4, 5, 6, 10]
+
+# Time Complexity: O(N * sqrt(max_val) + N log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function getFactorsCount(num) {
   let count = 0;
   for (let i = 1; i <= Math.sqrt(num); i++) {
@@ -7555,42 +7950,43 @@ console.log(sortByFactors([4, 7, 6, 9, 8, 2, 10])); // [2, 7, 4, 9, 6, 8, 10]
 console.log(sortByFactors([10, 5, 6, 2, 3, 4])); // [2, 3, 4, 5, 6, 10]
 ```
 
-```python
-import math
-from functools import cmp_to_key
+2. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
 
-
-def get_factors_count(num):
-    count = 0
-    i = 1
-    while i * i <= num:
-        if num % i == 0:
-            count += 1
-            if i != num // i:
-                count += 1
-        i += 1
-    return count
-
-
-def sort_by_factors(arr):
-    # Sort primarily by factor count ascending, secondarily by value ascending
-    return sorted(arr, key=lambda x: (get_factors_count(x), x))
-
-
-print(sort_by_factors([4, 7, 6, 9, 8, 2, 10]))  # [2, 7, 4, 9, 6, 8, 10]
-print(sort_by_factors([10, 5, 6, 2, 3, 4]))      # [2, 3, 4, 5, 6, 10]
-
-# Time Complexity: O(N * sqrt(max_val) + N log N)
-# Space Complexity: O(1)
-```
-
-### 2. Largest Number. Sort the array to form the largest number. | Custom Comparator **O(N log N), O(1)**
-```
+```text
 Given an array of non negative integers, sort the array in such a way that the largest number is formed by rearranging the elements of the array.
 Return the largest number as a string.
 ```
 
-```js
+```python
+from functools import cmp_to_key
+
+
+def largest_number(arr):
+    # Custom comparator: compare concatenation order
+    def compare(a, b):
+        ab = str(a) + str(b)
+        ba = str(b) + str(a)
+        if ab > ba:
+            return -1
+        elif ab < ba:
+            return 1
+        return 0
+
+    sorted_arr = sorted(arr, key=cmp_to_key(compare))
+    result = "".join(str(x) for x in sorted_arr)
+
+    # Edge case: if highest value is "0", result is "0"
+    return "0" if result[0] == "0" else result
+
+
+print(largest_number([989, 9, 767, 11, 1, 0]))  # "998987671110"
+print(largest_number([10, 5, 2, 8, 200]))        # "85220010"
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * @param {number[]} arr - Array of non-negative integers
  * @return {string} - The largest formed number as a string
@@ -7638,42 +8034,23 @@ console.log(largestNumber([10, 5, 2, 8, 200])); // "85220010"
 // Space Complexity: O(n)
 ```
 
-```python
-from functools import cmp_to_key
+---
 
+<a id="unit-3"></a>
 
-def largest_number(arr):
-    # Custom comparator: compare concatenation order
-    def compare(a, b):
-        ab = str(a) + str(b)
-        ba = str(b) + str(a)
-        if ab > ba:
-            return -1
-        elif ab < ba:
-            return 1
-        return 0
+## Unit 3 — DSA 3: Searching, Linked Lists, Stacks & Trees
 
-    sorted_arr = sorted(arr, key=cmp_to_key(compare))
-    result = "".join(str(x) for x in sorted_arr)
+Binary search on arrays and answer spaces, linked list fundamentals, stacks, queues, and binary search trees.
 
-    # Edge case: if highest value is "0", result is "0"
-    return "0" if result[0] == "0" else result
-
-
-print(largest_number([989, 9, 767, 11, 1, 0]))  # "998987671110"
-print(largest_number([10, 5, 2, 8, 200]))        # "85220010"
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(N)
-```
 
 ---
 
-# DSA 3
+<a id="31-searching-1-binary-search-on-array"></a>
 
-# 1. Searching 1: Binary Search on Array
+## 31. Searching 1: Binary Search on Array
 
-## Theory
+### Theory
+
 Searching can be done if we know the following 2 things:
 1. The target
 2. The search space
@@ -7682,10 +8059,36 @@ Binary Search, also known as the "Divide and Conquer" approach, works on the pri
 
 It is not necessary that the array is sorted, but it is necessary that the array can be divided into halves in a meaningful way based on some condition.
 
-## Questions
+### Questions
 
-### 1. Search element K in sorted array | Binary Search on Array **O(log N), O(1)**
-```js
+1. Search element K in sorted array | Binary Search on Array **O(log N), O(1)**
+
+```python
+def binary_search_iterative(arr, k):
+    low = 0
+    high = len(arr) - 1
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if arr[mid] == k:
+            return mid
+        elif arr[mid] < k:
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    return -1
+
+
+print(binary_search_iterative([1, 2, 3, 4, 5, 6, 7], 4))  # 3
+print(binary_search_iterative([1, 2, 3, 4, 5, 6, 7], 8))  # -1
+
+# Time Complexity: O(log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Iterative implementation of binary search on a sorted array
 function binarySearch(arr, k) {
   let low = 0;
@@ -7716,31 +8119,29 @@ console.log(binarySearch([3, 6, 9, 12, 14, 19, 20, 23, 25, 27], 21)); // -1
 ```
 
 ```python
-def binary_search_iterative(arr, k):
-    low = 0
-    high = len(arr) - 1
+def binary_search_recursive(arr, low, high, k):
+    if low > high:
+        return -1
 
-    while low <= high:
-        mid = low + (high - low) // 2
+    mid = low + (high - low) // 2
 
-        if arr[mid] == k:
-            return mid
-        elif arr[mid] < k:
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    return -1
+    if arr[mid] == k:
+        return mid
+    elif arr[mid] < k:
+        return binary_search_recursive(arr, mid + 1, high, k)
+    else:
+        return binary_search_recursive(arr, low, mid - 1, k)
 
 
-print(binary_search_iterative([1, 2, 3, 4, 5, 6, 7], 4))  # 3
-print(binary_search_iterative([1, 2, 3, 4, 5, 6, 7], 8))  # -1
+arr = [1, 2, 3, 4, 5, 6, 7]
+print(binary_search_recursive(arr, 0, len(arr) - 1, 4))  # 3
+print(binary_search_recursive(arr, 0, len(arr) - 1, 8))  # -1
 
 # Time Complexity: O(log N)
-# Space Complexity: O(1)
+# Space Complexity: O(log N) due to recursive call stack
 ```
 
-```js
+```javascript
 // Recursive implementation of binary search on a sorted array
 function binarySearchRecursive(arr, k, low = 0, hign = arr.length - 1) {
     if (low > hign) {
@@ -7767,59 +8168,7 @@ console.log(binarySearchRecursive([3, 6, 9, 12, 14, 19, 20, 23, 25, 27], 21)); /
 // Space Complexity: O(log n) due to recursion stack
 ```
 
-```python
-def binary_search_recursive(arr, low, high, k):
-    if low > high:
-        return -1
-
-    mid = low + (high - low) // 2
-
-    if arr[mid] == k:
-        return mid
-    elif arr[mid] < k:
-        return binary_search_recursive(arr, mid + 1, high, k)
-    else:
-        return binary_search_recursive(arr, low, mid - 1, k)
-
-
-arr = [1, 2, 3, 4, 5, 6, 7]
-print(binary_search_recursive(arr, 0, len(arr) - 1, 4))  # 3
-print(binary_search_recursive(arr, 0, len(arr) - 1, 8))  # -1
-
-# Time Complexity: O(log N)
-# Space Complexity: O(log N) due to recursive call stack
-```
-
-### 2. Find first occurrence in a sorted array | Binary Search on Array **O(log N), O(1)**
-```js
-function findFirstOccurrence(arr, k) {
-  let low = 0;
-  let hign = arr.length - 1;
-  let ans = -1;
-
-  while (low <= hign) {
-    const mid = low + Math.floor((hign - low) / 2); // Calculate mid index
-
-    if (arr[mid] === k) {
-      ans = mid; // Update ans if target is found
-      hign = mid - 1; // Search in the left half for the first occurrence
-    } else if (arr[mid] < k) {
-      low = mid + 1; // Search in the right half
-    } else {
-      hign = mid - 1; // Search in the left half
-    }
-  }
-
-  return ans; // First occurrence of k not found
-}
-
-console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 9)); // 2
-console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 27)); // 8
-console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 21)); // -1
-
-// Time Complexity: O(log n)
-// Space Complexity: O(1)
-```
+2. Find first occurrence in a sorted array | Binary Search on Array **O(log N), O(1)**
 
 ```python
 def find_first_occurrence(arr, k):
@@ -7849,8 +8198,75 @@ print(find_first_occurrence([1, 2, 3, 4, 5], 6))        # -1
 # Space Complexity: O(1)
 ```
 
-### 3. Local Minima in an Array. A local minima is an element which is smaller than its neighbours | Binary Search on Array **O(log N), O(1)**
-```js
+```javascript
+function findFirstOccurrence(arr, k) {
+  let low = 0;
+  let hign = arr.length - 1;
+  let ans = -1;
+
+  while (low <= hign) {
+    const mid = low + Math.floor((hign - low) / 2); // Calculate mid index
+
+    if (arr[mid] === k) {
+      ans = mid; // Update ans if target is found
+      hign = mid - 1; // Search in the left half for the first occurrence
+    } else if (arr[mid] < k) {
+      low = mid + 1; // Search in the right half
+    } else {
+      hign = mid - 1; // Search in the left half
+    }
+  }
+
+  return ans; // First occurrence of k not found
+}
+
+console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 9)); // 2
+console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 27)); // 8
+console.log(findFirstOccurrence([3, 6, 9, 9, 9, 19, 20, 23, 27, 27], 21)); // -1
+
+// Time Complexity: O(log n)
+// Space Complexity: O(1)
+```
+
+3. Local Minima in an Array. A local minima is an element which is smaller than its neighbours | Binary Search on Array **O(log N), O(1)**
+
+```python
+def find_local_minima(arr):
+    n = len(arr)
+    if n == 1:
+        return arr[0]
+
+    # Check boundaries
+    if arr[0] < arr[1]:
+        return arr[0]
+    if arr[n - 1] < arr[n - 2]:
+        return arr[n - 1]
+
+    low = 1
+    high = n - 2
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if arr[mid] < arr[mid - 1] and arr[mid] < arr[mid + 1]:
+            return arr[mid]
+        elif arr[mid - 1] > arr[mid] and arr[mid] > arr[mid + 1]:
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    return -1
+
+
+print(find_local_minima([5, 9, 15, 16, 20, 21]))      # 5
+print(find_local_minima([21, 20, 19, 17, 15, 9, 7]))  # 7
+print(find_local_minima([3, 6, 1, 0, 9, 15, 8]))      # 0
+
+# Time Complexity: O(log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function findLocalMinima(arr) {
   const n = arr.length;
 
@@ -7915,44 +8331,42 @@ console.log(findLocalMinima([3, 6, 1, 0, 9, 15, 8]));       // 0  (Binary search
 // Space Complexity: O(1)    - We only use a few variables for pointers.
 ```
 
+4. Finding the square root of a number. | Binary Search on Array **O(log N), O(1)**
+
 ```python
-def find_local_minima(arr):
-    n = len(arr)
-    if n == 1:
-        return arr[0]
+def find_square_root(n):
+    if n < 0:
+        return -1
+    if n == 0 or n == 1:
+        return n
 
-    # Check boundaries
-    if arr[0] < arr[1]:
-        return arr[0]
-    if arr[n - 1] < arr[n - 2]:
-        return arr[n - 1]
-
-    low = 1
-    high = n - 2
+    low = 0
+    high = n
+    ans = 1
 
     while low <= high:
         mid = low + (high - low) // 2
 
-        if arr[mid] < arr[mid - 1] and arr[mid] < arr[mid + 1]:
-            return arr[mid]
-        elif arr[mid - 1] > arr[mid] and arr[mid] > arr[mid + 1]:
+        if mid * mid == n:
+            return mid
+        elif mid * mid < n:
+            ans = mid
             low = mid + 1
         else:
             high = mid - 1
 
-    return -1
+    return ans
 
 
-print(find_local_minima([5, 9, 15, 16, 20, 21]))      # 5
-print(find_local_minima([21, 20, 19, 17, 15, 9, 7]))  # 7
-print(find_local_minima([3, 6, 1, 0, 9, 15, 8]))      # 0
+print(find_square_root(25))  # 5
+print(find_square_root(20))  # 4
+print(find_square_root(1))   # 1
 
 # Time Complexity: O(log N)
 # Space Complexity: O(1)
 ```
 
-### 4. Finding the square root of a number. | Binary Search on Array **O(log N), O(1)**
-```js
+```javascript
 function findSquareRoot(n) {
     // --- SEARCH RANGE ---
     // The square root of 'n' must be between 0 and 'n'.
@@ -8008,41 +8422,9 @@ console.log(findSquareRoot(99)); // 9 (9*9=81 is < 99, but 10*10=100 is > 99. Re
 // Space Complexity: O(1)
 ```
 
-```python
-def find_square_root(n):
-    if n < 0:
-        return -1
-    if n == 0 or n == 1:
-        return n
+5. Find a peak element | Binary Search on Array **O(log N), O(1)**
 
-    low = 0
-    high = n
-    ans = 1
-
-    while low <= high:
-        mid = low + (high - low) // 2
-
-        if mid * mid == n:
-            return mid
-        elif mid * mid < n:
-            ans = mid
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    return ans
-
-
-print(find_square_root(25))  # 5
-print(find_square_root(20))  # 4
-print(find_square_root(1))   # 1
-
-# Time Complexity: O(log N)
-# Space Complexity: O(1)
-```
-
-### 5. Find a peak element | Binary Search on Array **O(log N), O(1)**
-```
+```text
 Given an array of integers A, find and return the peak element in it.
 An array element is considered a peak if it is not smaller than its neighbors.
 For corner elements, we need to consider only one neighbor.
@@ -8057,7 +8439,41 @@ We can optimize this to O(log N) using Binary Search. The observation is that if
 4. If `A[mid]` is smaller than `A[mid+1]`, then a peak must exist on the right side (move `low` to `mid + 1`).
 5. Otherwise, `A[mid]` is a peak.
 
-```js
+```python
+def find_peak(arr):
+    n = len(arr)
+    if n == 1:
+        return arr[0]
+    if arr[0] >= arr[1]:
+        return arr[0]
+    if arr[n - 1] >= arr[n - 2]:
+        return arr[n - 1]
+
+    low = 1
+    high = n - 2
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if arr[mid] >= arr[mid - 1] and arr[mid] >= arr[mid + 1]:
+            return arr[mid]
+        elif arr[mid - 1] > arr[mid]:
+            high = mid - 1
+        else:
+            low = mid + 1
+
+    return -1
+
+
+print(find_peak([1, 2, 3, 4, 5]))     # 5
+print(find_peak([5, 4, 3, 2, 1]))     # 5
+print(find_peak([1, 2, 1, 3, 5, 6, 4])) # 2 or 6
+
+# Time Complexity: O(log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Optimized Binary Search Implementation by our way
 function findPeak(arr) {
   const n = arr.length;
@@ -8187,44 +8603,17 @@ console.log(findPeakWithDuplicates([1, 2, 3, 1])); // 3
 // Space Complexity: O(1)
 ```
 
-```python
-def find_peak(arr):
-    n = len(arr)
-    if n == 1:
-        return arr[0]
-    if arr[0] >= arr[1]:
-        return arr[0]
-    if arr[n - 1] >= arr[n - 2]:
-        return arr[n - 1]
+---
 
-    low = 1
-    high = n - 2
+<a id="32-searching-2-binary-search-on-answer"></a>
 
-    while low <= high:
-        mid = low + (high - low) // 2
+## 32. Searching 2: Binary Search on Answer
 
-        if arr[mid] >= arr[mid - 1] and arr[mid] >= arr[mid + 1]:
-            return arr[mid]
-        elif arr[mid - 1] > arr[mid]:
-            high = mid - 1
-        else:
-            low = mid + 1
+### Questions
 
-    return -1
+1. Painter's Partition. Find minimum largest workload. | Binary Search on Answer **O(log N), O(1)**
 
-
-print(find_peak([1, 2, 3, 4, 5]))     # 5
-print(find_peak([5, 4, 3, 2, 1]))     # 5
-print(find_peak([1, 2, 1, 3, 5, 6, 4])) # 2 or 6
-
-# Time Complexity: O(log N)
-# Space Complexity: O(1)
-```
-
-# 2. Searching 2: Binary Search on Answer
-
-### 1. Painter's Partition. Find minimum largest workload. | Binary Search on Answer **O(log N), O(1)**
-```
+```text
 Given an array containing lenghts of boards called A[], there are K painters available to paint these boards.
 Each painter takes T unit of time to paint 1 unit of board length.
 Calculate the minimum time required to paint all the boards under the following constraints:
@@ -8232,7 +8621,47 @@ Calculate the minimum time required to paint all the boards under the following 
 2. A painter can only paint one board at a time.
 ```
 
-```js
+```python
+def is_possible(boards, painters, max_time_per_painter):
+    num_painters = 1
+    current_time = 0
+
+    for length in boards:
+        if current_time + length <= max_time_per_painter:
+            current_time += length
+        else:
+            num_painters += 1
+            current_time = length
+            if num_painters > painters:
+                return False
+
+    return True
+
+
+def painters_partition(boards, painters):
+    low = max(boards)
+    high = sum(boards)
+    ans = high
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if is_possible(boards, painters, mid):
+            ans = mid
+            high = mid - 1
+        else:
+            low = mid + 1
+
+    return ans
+
+
+print(painters_partition([10, 20, 30, 40], 2))  # 60
+
+# Time Complexity: O(N * log(sum - max))
+# Space Complexity: O(1)
+```
+
+```javascript
 // PAINTER'S PARTITION PROBLEM
 // Problem: Given N boards of different lengths, K painters, and time T per unit length,
 // find the minimum time required to paint all boards when:
@@ -8327,32 +8756,40 @@ console.log(minTime([4, 2, 2, 3], 2, 3)); // 8
 //   - Only using constant extra space for variables
 ```
 
-```python
-def is_possible(boards, painters, max_time_per_painter):
-    num_painters = 1
-    current_time = 0
+2. Email Response Handlers. Find minimum largest workload. | Binary Search on Answer **O(log N), O(1)**
 
-    for length in boards:
-        if current_time + length <= max_time_per_painter:
-            current_time += length
+```text
+Imagine you tasked with developing a system for evenly distributing the workload among a team of email response handlers in a customer service department. Each email is assigned a 'complexity' score, which represents the estimated time and effort required to address it. The complexity scores are represented as an array, where each email corresponds to a single email.
+
+The goal is to divide the array into K contiguous blocks(where k is the number of email handlers), such that the maximum sum of complexity scores in any block is minimized. The approach aims to ensure that no single email handler is overwhelmed with highly complex emails, while others are left with simpler ones.
+```
+
+```python
+def is_feasible_handlers(complexity, max_handlers, max_load):
+    handlers = 1
+    current_load = 0
+
+    for score in complexity:
+        if current_load + score <= max_load:
+            current_load += score
         else:
-            num_painters += 1
-            current_time = length
-            if num_painters > painters:
+            handlers += 1
+            current_load = score
+            if handlers > max_handlers:
                 return False
 
     return True
 
 
-def painters_partition(boards, painters):
-    low = max(boards)
-    high = sum(boards)
+def min_max_response_complexity(complexity, k):
+    low = max(complexity)
+    high = sum(complexity)
     ans = high
 
     while low <= high:
         mid = low + (high - low) // 2
 
-        if is_possible(boards, painters, mid):
+        if is_feasible_handlers(complexity, k, mid):
             ans = mid
             high = mid - 1
         else:
@@ -8361,20 +8798,13 @@ def painters_partition(boards, painters):
     return ans
 
 
-print(painters_partition([10, 20, 30, 40], 2))  # 60
+print(min_max_response_complexity([12, 34, 67, 90], 2))  # 113
 
 # Time Complexity: O(N * log(sum - max))
 # Space Complexity: O(1)
 ```
 
-### 2. Email Response Handlers. Find minimum largest workload. | Binary Search on Answer **O(log N), O(1)**
-```
-Imagine you tasked with developing a system for evenly distributing the workload among a team of email response handlers in a customer service department. Each email is assigned a 'complexity' score, which represents the estimated time and effort required to address it. The complexity scores are represented as an array, where each email corresponds to a single email.
-
-The goal is to divide the array into K contiguous blocks(where k is the number of email handlers), such that the maximum sum of complexity scores in any block is minimized. The approach aims to ensure that no single email handler is overwhelmed with highly complex emails, while others are left with simpler ones.
-```
-
-```js
+```javascript
 // For binary search
 // 1. target: max sum of complexity scores in any block
 // 2. search space:
@@ -8478,48 +8908,9 @@ console.log(minMaxSum([7, 2, 5, 10, 8], 2)); // Output: 18
 // We only store a few integer variables (low, high, mid, ans, blocks, curr).
 ```
 
-```python
-def is_feasible_handlers(complexity, max_handlers, max_load):
-    handlers = 1
-    current_load = 0
+3. Aggresive Cows. Find largest minimum distance. | Binary Search on Answer **O(log N), O(1)**
 
-    for score in complexity:
-        if current_load + score <= max_load:
-            current_load += score
-        else:
-            handlers += 1
-            current_load = score
-            if handlers > max_handlers:
-                return False
-
-    return True
-
-
-def min_max_response_complexity(complexity, k):
-    low = max(complexity)
-    high = sum(complexity)
-    ans = high
-
-    while low <= high:
-        mid = low + (high - low) // 2
-
-        if is_feasible_handlers(complexity, k, mid):
-            ans = mid
-            high = mid - 1
-        else:
-            low = mid + 1
-
-    return ans
-
-
-print(min_max_response_complexity([12, 34, 67, 90], 2))  # 113
-
-# Time Complexity: O(N * log(sum - max))
-# Space Complexity: O(1)
-```
-
-### 3. Aggresive Cows. Find largest minimum distance. | Binary Search on Answer **O(log N), O(1)**
-```
+```text
 Given K cows and N stalls, there is an array A[] denoting the location of stalls.
 Place all K cows in such a way that the minimum distance between any two cows is as long as possible. Find the largest minimum distance.
 
@@ -8535,7 +8926,46 @@ Problem Constraints:
 2 <= K <= N
 ```
 
-```js
+```python
+def is_feasible_cows(stalls, dist, cows):
+    count = 1
+    last_pos = stalls[0]
+
+    for i in range(1, len(stalls)):
+        if stalls[i] - last_pos >= dist:
+            count += 1
+            last_pos = stalls[i]
+            if count >= cows:
+                return True
+
+    return False
+
+
+def aggressive_cows(stalls, cows):
+    stalls.sort()
+    low = 1
+    high = stalls[-1] - stalls[0]
+    ans = 0
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if is_feasible_cows(stalls, mid, cows):
+            ans = mid
+            low = mid + 1
+        else:
+            high = mid - 1
+
+    return ans
+
+
+print(aggressive_cows([1, 2, 8, 4, 9], 3))  # 3
+
+# Time Complexity: O(N log N + N * log(max_dist))
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * Helper function: isFeasible
  * Determines if it is possible to place 'k' cows such that
@@ -8643,47 +9073,9 @@ console.log(largestMinDistance([1, 2, 4, 8, 9], 3));
 //   - We only use a few variables for tracking indices and bounds.
 ```
 
-```python
-def is_feasible_cows(stalls, dist, cows):
-    count = 1
-    last_pos = stalls[0]
+4. Least Capacity to Ship Packages A Within B Days. Find minimum ship capacity. | Binary Search on Answer **O(log N), O(1)**
 
-    for i in range(1, len(stalls)):
-        if stalls[i] - last_pos >= dist:
-            count += 1
-            last_pos = stalls[i]
-            if count >= cows:
-                return True
-
-    return False
-
-
-def aggressive_cows(stalls, cows):
-    stalls.sort()
-    low = 1
-    high = stalls[-1] - stalls[0]
-    ans = 0
-
-    while low <= high:
-        mid = low + (high - low) // 2
-
-        if is_feasible_cows(stalls, mid, cows):
-            ans = mid
-            low = mid + 1
-        else:
-            high = mid - 1
-
-    return ans
-
-
-print(aggressive_cows([1, 2, 8, 4, 9], 3))  # 3
-
-# Time Complexity: O(N log N + N * log(max_dist))
-# Space Complexity: O(1)
-```
-
-### 4. Least Capacity to Ship Packages A Within B Days. Find minimum ship capacity. | Binary Search on Answer **O(log N), O(1)**
-```
+```text
 A conveyor belt has N packages that must be shipped from one port to another within B days.
 
 The ith package on the conveyor belt has a weight of A[i]. Each day, we load the ship with packages on the conveyor belt (in the order given by A). We may not load more weight than the maximum weight capacity of the ship.
@@ -8691,7 +9083,47 @@ The ith package on the conveyor belt has a weight of A[i]. Each day, we load the
 Return the least weight capacity of the ship that will result in all the packages on the conveyor belt being shipped within B days.
 ```
 
-```js
+```python
+def can_ship(weights, days, capacity):
+    days_needed = 1
+    current_weight = 0
+
+    for w in weights:
+        if current_weight + w <= capacity:
+            current_weight += w
+        else:
+            days_needed += 1
+            current_weight = w
+            if days_needed > days:
+                return False
+
+    return True
+
+
+def least_capacity_to_ship(weights, days):
+    low = max(weights)
+    high = sum(weights)
+    ans = high
+
+    while low <= high:
+        mid = low + (high - low) // 2
+
+        if can_ship(weights, days, mid):
+            ans = mid
+            high = mid - 1
+        else:
+            low = mid + 1
+
+    return ans
+
+
+print(least_capacity_to_ship([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5))  # 15
+
+# Time Complexity: O(N * log(sum - max))
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * Main function: leastCapacityToShip
  * Finds the minimum ship capacity required to ship all packages within B days.
@@ -8791,48 +9223,9 @@ console.log(leastCapacityToShip([1, 2, 3, 1, 1], 4)); // 3
 //   - We only use variables for tracking limits and sums.
 ```
 
-```python
-def can_ship(weights, days, capacity):
-    days_needed = 1
-    current_weight = 0
+5. Allocate Books | Binary Search on Answer **O(Nlog(Sum-Max)), O(1)**
 
-    for w in weights:
-        if current_weight + w <= capacity:
-            current_weight += w
-        else:
-            days_needed += 1
-            current_weight = w
-            if days_needed > days:
-                return False
-
-    return True
-
-
-def least_capacity_to_ship(weights, days):
-    low = max(weights)
-    high = sum(weights)
-    ans = high
-
-    while low <= high:
-        mid = low + (high - low) // 2
-
-        if can_ship(weights, days, mid):
-            ans = mid
-            high = mid - 1
-        else:
-            low = mid + 1
-
-    return ans
-
-
-print(least_capacity_to_ship([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5))  # 15
-
-# Time Complexity: O(N * log(sum - max))
-# Space Complexity: O(1)
-```
-
-### 5. Allocate Books | Binary Search on Answer **O(Nlog(Sum-Max)), O(1)**
-```
+```text
 Given an array of integers A of size N and an integer B.
 The College library has N books. The ith book has A[i] number of pages.
 You have to allocate books to B number of students so that the maximum number of pages allocated to a student is minimum.
@@ -8840,50 +9233,6 @@ You have to allocate books to B number of students so that the maximum number of
 A book will be allocated to exactly one student.
 Each student has to be allocated at least one book.
 Allotment should be in contiguous order, for example: A student cannot be allocated book 1 and book 3, skipping book 2.
-```
-
-```js
-function isFeasible(A, dist, k) {
-  let students = 1;
-  let curr = 0;
-  for (let i = 0; i < A.length; i++) {
-    curr += A[i];
-    if (curr > dist) {
-      students++;
-      curr = A[i];
-    }
-    if (students > k) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function allocateBooks(A, k) {
-  // if we have more students than books, impossible
-  if (k > A.length) return -1;
-
-  let low = Math.max(...A);
-  let high = A.reduce((acc, item) => acc + item, 0);
-  let ans = -1;
-
-  while (low <= high) {
-    let mid = Math.floor(low + (high - low) / 2);
-    if (isFeasible(A, mid, k)) {
-      ans = mid;
-      high = mid - 1;
-    } else {
-      low = mid + 1;
-    }
-  }
-
-  return ans;
-}
-console.log(allocateBooks([12, 34, 67, 90], 2)); // 113
-console.log(allocateBooks([12, 15, 78], 4)); // -1
-
-// Time complexity: O(Nlog(high-low))
-// Space complexity: O(1)
 ```
 
 ```python
@@ -8929,9 +9278,57 @@ print(allocate_books([12, 34, 67, 90], 2))  # 113
 # Space Complexity: O(1)
 ```
 
-# 3. Linked List Introduction
+```javascript
+function isFeasible(A, dist, k) {
+  let students = 1;
+  let curr = 0;
+  for (let i = 0; i < A.length; i++) {
+    curr += A[i];
+    if (curr > dist) {
+      students++;
+      curr = A[i];
+    }
+    if (students > k) {
+      return false;
+    }
+  }
+  return true;
+}
 
-## Theory
+function allocateBooks(A, k) {
+  // if we have more students than books, impossible
+  if (k > A.length) return -1;
+
+  let low = Math.max(...A);
+  let high = A.reduce((acc, item) => acc + item, 0);
+  let ans = -1;
+
+  while (low <= high) {
+    let mid = Math.floor(low + (high - low) / 2);
+    if (isFeasible(A, mid, k)) {
+      ans = mid;
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+
+  return ans;
+}
+console.log(allocateBooks([12, 34, 67, 90], 2)); // 113
+console.log(allocateBooks([12, 15, 78], 4)); // -1
+
+// Time complexity: O(Nlog(high-low))
+// Space complexity: O(1)
+```
+
+---
+
+<a id="33-linked-list-introduction"></a>
+
+## 33. Linked List Introduction
+
+### Theory
 
 ### Linked List Operations
 1. append: Add a new node at the end of the list. Time complexity: O(1) if you have a tail pointer; O(n) if you must traverse from the head. **O(1), O(1)**
@@ -8941,22 +9338,9 @@ print(allocate_books([12, 34, 67, 90], 2))  # 113
 5. isValuePresent: Check if a value K exists in the list. Time complexity O(n). **O(N), O(1)**
 6. getSize: Calculate the size of the linked list. Time complexity: O(1) if a size property is maintained; O(n) if you must count nodes manually. **O(N), O(1)**
 
-## Questions
+### Questions
 
-### 1. Given the head of a linked list, return the kth element. | Linked List **O(N), O(1)**
-```js
-function getKthElement(head, k) {
-  let current = head;
-
-  for (let i = 0; i < k; i++) {
-    current = current.next;
-  }
-
-  return current.data;
-}
-const head = { data: 1, next: { data: 2, next: { data: 3, next: { data: 4, next: { data: 5, next: null } } } } };
-console.log(getKthElement(head, 2)); // 3
-```
+1. Given the head of a linked list, return the kth element. | Linked List **O(N), O(1)**
 
 ```python
 class ListNode:
@@ -8978,8 +9362,42 @@ def get_kth_element(head, k):
 # Space Complexity: O(1)
 ```
 
-### 2. Print Linked List | Linked List **O(N), O(1)**
-```js
+```javascript
+function getKthElement(head, k) {
+  let current = head;
+
+  for (let i = 0; i < k; i++) {
+    current = current.next;
+  }
+
+  return current.data;
+}
+const head = { data: 1, next: { data: 2, next: { data: 3, next: { data: 4, next: { data: 5, next: null } } } } };
+console.log(getKthElement(head, 2)); // 3
+```
+
+2. Print Linked List | Linked List **O(N), O(1)**
+
+```python
+class ListNode:
+    def __init__(self, data=0, next=None):
+        self.data = data
+        self.next = next
+
+
+def print_linked_list(head):
+    current = head
+    while current is not None:
+        print(current.data, end=" -> ")
+        current = current.next
+    print("None")
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 class ListNode {
   constructor(data) {
     this.data = data;
@@ -9024,6 +9442,12 @@ list.append(4);
 list.printList(); // 1 2 3 4
 ```
 
+3. kth Node in a List | Linked List **O(N), O(1)**
+
+```text
+You are given a singly linked list and an integer k. Your task is to access the node at the k-th index (0-based indexing) in the list and return its value. If the index is out of bounds, return -1.
+```
+
 ```python
 class ListNode:
     def __init__(self, data=0, next=None):
@@ -9031,24 +9455,22 @@ class ListNode:
         self.next = next
 
 
-def print_linked_list(head):
+def get_kth_node(head, k):
     current = head
+    idx = 0
     while current is not None:
-        print(current.data, end=" -> ")
+        if idx == k:
+            return current.data
         current = current.next
-    print("None")
+        idx += 1
+    return -1
 
 
-# Time Complexity: O(N)
+# Time Complexity: O(k)
 # Space Complexity: O(1)
 ```
 
-### 3. kth Node in a List | Linked List **O(N), O(1)**
-```
-You are given a singly linked list and an integer k. Your task is to access the node at the k-th index (0-based indexing) in the list and return its value. If the index is out of bounds, return -1.
-```
-
-```js
+```javascript
 class ListNode {
   constructor(data) {
     this.data = data;
@@ -9094,32 +9516,43 @@ console.log(JSON.stringify(list.head)); // Output the original list
 console.log(list.getKthElement(2)); // 5
 ```
 
+---
+
+<a id="34-linked-list-basic-problems"></a>
+
+## 34. Linked List: Basic Problems
+
+### Questions
+
+1. Simple linked list implementation. **O(N), O(1)**
+
 ```python
-class ListNode:
+class Node:
     def __init__(self, data=0, next=None):
         self.data = data
         self.next = next
 
 
-def get_kth_node(head, k):
-    current = head
-    idx = 0
-    while current is not None:
-        if idx == k:
-            return current.data
-        current = current.next
-        idx += 1
-    return -1
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def append(self, data):
+        new_node = Node(data)
+        if not self.head:
+            self.head = new_node
+            return
+        curr = self.head
+        while curr.next:
+            curr = curr.next
+        curr.next = new_node
 
 
-# Time Complexity: O(k)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-# 4. Linked List: Basic Problems
-
-### 1. Simple linked list implementation. **O(N), O(1)**
-```js
+```javascript
 class Node {
     constructor(data) {
         this.data = data; // store the value carried by this node
@@ -9168,34 +9601,23 @@ console.log(JSON.stringify(list.head));
 // { "data": 1, "next": { "data": 2, "next": { "data": 3, "next": null } } }
 ```
 
+2. Check if value K is present in the linked list or not. **O(N), O(1)**
+
 ```python
-class Node:
-    def __init__(self, data=0, next=None):
-        self.data = data
-        self.next = next
-
-
-class LinkedList:
-    def __init__(self):
-        self.head = None
-
-    def append(self, data):
-        new_node = Node(data)
-        if not self.head:
-            self.head = new_node
-            return
-        curr = self.head
-        while curr.next:
-            curr = curr.next
-        curr.next = new_node
+def is_value_present(head, k):
+    current = head
+    while current is not None:
+        if current.data == k:
+            return True
+        current = current.next
+    return False
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 2. Check if value K is present in the linked list or not. **O(N), O(1)**
-```js
+```javascript
 function isValuePresent(head, k) {
   let current = head;
   while (current !== null) {
@@ -9213,22 +9635,33 @@ console.log(isValuePresent(head, 4)); // false
 console.log(isValuePresent(head, 5)); // true
 ```
 
+3. Insert a new node with data V at position P in the linked list. / Insert in Linked List. **O(N), O(1)**
+
 ```python
-def is_value_present(head, k):
+def insert_at_position(head, p, v):
+    new_node = Node(v)
+    if p == 0:
+        new_node.next = head
+        return new_node
+
     current = head
-    while current is not None:
-        if current.data == k:
-            return True
+    for _ in range(p - 1):
+        if current is None:
+            break
         current = current.next
-    return False
+
+    if current is not None:
+        new_node.next = current.next
+        current.next = new_node
+
+    return head
 
 
-# Time Complexity: O(N)
+# Time Complexity: O(P)
 # Space Complexity: O(1)
 ```
 
-### 3. Insert a new node with data V at position P in the linked list. / Insert in Linked List. **O(N), O(1)**
-```js
+```javascript
 function getNodeAtPosition(head, P) {
   let current = head;
   for (let i = 0; i < P && current !== null; i++) {
@@ -9261,45 +9694,7 @@ console.log(JSON.stringify(newHead)); // Output the new head of the list
 // { data: 1, next: { data: 4, next: { data: 2, next: { data: 3, next: null } } } }
 ```
 
-```python
-def insert_at_position(head, p, v):
-    new_node = Node(v)
-    if p == 0:
-        new_node.next = head
-        return new_node
-
-    current = head
-    for _ in range(p - 1):
-        if current is None:
-            break
-        current = current.next
-
-    if current is not None:
-        new_node.next = current.next
-        current.next = new_node
-
-    return head
-
-
-# Time Complexity: O(P)
-# Space Complexity: O(1)
-```
-
-### 4. Size of the linked list. **O(N), O(1)**
-```js
-function getSize(head) {
-  let size = 0;
-  let current = head;
-  while (current !== null) {
-    size++; // Increment size for each node
-    current = current.next; // Move to the next node
-  }
-  return size; // Return the size of the list
-}
-
-const head = { data: 1, next: { data: 2, next: { data: 3, next: null } } }; // Create a linked list
-console.log(getSize(head)); // Output the size of the list
-```
+4. Size of the linked list. **O(N), O(1)**
 
 ```python
 def get_size(head):
@@ -9315,12 +9710,52 @@ def get_size(head):
 # Space Complexity: O(1)
 ```
 
-### 5. Deletion in the linked list. / Delete in Linked List. **O(N), O(1)**
+```javascript
+function getSize(head) {
+  let size = 0;
+  let current = head;
+  while (current !== null) {
+    size++; // Increment size for each node
+    current = current.next; // Move to the next node
+  }
+  return size; // Return the size of the list
+}
+
+const head = { data: 1, next: { data: 2, next: { data: 3, next: null } } }; // Create a linked list
+console.log(getSize(head)); // Output the size of the list
 ```
+
+5. Deletion in the linked list. / Delete in Linked List. **O(N), O(1)**
+
+```text
 Delete the first occurrence of value X in the linked list. If the value is not found, leave the list unchanged.
 ```
 
-```js
+```python
+def delete_node(head, x):
+    if head is None:
+        return None
+
+    if x == 0:
+        return head.next
+
+    current = head
+    for _ in range(x - 1):
+        if current is None or current.next is None:
+            return head
+        current = current.next
+
+    if current.next is not None:
+        current.next = current.next.next
+
+    return head
+
+
+# Time Complexity: O(X)
+# Space Complexity: O(1)
+```
+
+```javascript
 function deleteNode(head, X) {
   if (head === null) return null; // If the list is empty, return null
 
@@ -9348,32 +9783,27 @@ console.log(JSON.stringify(newHead)); // Output the new head of the list
 // { data: 1, next: { data: 3, next: null } }
 ```
 
+6. Reverse the linked list given the head of the linked list. **O(N), O(1)**
+
 ```python
-def delete_node(head, x):
-    if head is None:
-        return None
+def reverse_linked_list(head):
+    prev = None
+    curr = head
 
-    if x == 0:
-        return head.next
+    while curr is not None:
+        next_node = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_node
 
-    current = head
-    for _ in range(x - 1):
-        if current is None or current.next is None:
-            return head
-        current = current.next
-
-    if current.next is not None:
-        current.next = current.next.next
-
-    return head
+    return prev
 
 
-# Time Complexity: O(X)
+# Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 6. Reverse the linked list given the head of the linked list. **O(N), O(1)**
-```js
+```javascript
 function reverseLinkedList(head) {
   let prev = null; // Previous node
   let current = head; // Current node
@@ -9395,27 +9825,13 @@ console.log(JSON.stringify(newHead)); // Output the new head of the reversed lis
 // { data: 3, next: { data: 2, next: { data: 1, next: null } } }
 ```
 
-```python
-def reverse_linked_list(head):
-    prev = None
-    curr = head
+---
 
-    while curr is not None:
-        next_node = curr.next
-        curr.next = prev
-        prev = curr
-        curr = next_node
+<a id="35-stacks"></a>
 
-    return prev
+## 35. Stacks
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 5. Stacks
-
-## Theory
+### Theory
 
 ### Infix VS Postfix VS Prefix
 1. Infix: Operator is placed between operands. Example: `A + B`
@@ -9437,10 +9853,44 @@ Answer: 50.833
 4. Size: Get the number of elements currently in the stack. Usually maintained by a simple counter variable. Time complexity O(1). **O(1), O(1)**
 5. IsEmpty: Check if the stack is empty (i.e., no elements are inside). A simple check if the size is zero or the top pointer is null. Time complexity O(1). **O(1), O(1)**
 
-## Questions
+### Questions
 
-### 1. Implementation of Stack using static array. **O(N), O(1)**
-```js
+1. Implementation of Stack using static array. **O(N), O(1)**
+
+```python
+class StaticArrayStack:
+    def __init__(self, capacity=8):
+        self.capacity = capacity
+        self.array = [None] * capacity
+        self.top_idx = -1
+
+    def push(self, val):
+        if self.top_idx == self.capacity - 1:
+            raise OverflowError("Stack Overflow")
+        self.top_idx += 1
+        self.array[self.top_idx] = val
+
+    def pop(self):
+        if self.is_empty():
+            raise IndexError("Stack Underflow")
+        val = self.array[self.top_idx]
+        self.top_idx -= 1
+        return val
+
+    def peek(self):
+        if self.is_empty():
+            return None
+        return self.array[self.top_idx]
+
+    def is_empty(self):
+        return self.top_idx == -1
+
+
+# Time Complexity: O(1) for push, pop, peek
+# Space Complexity: O(capacity)
+```
+
+```javascript
 class Stack {
   constructor() {
     this.array = new Array(8); // Array to hold stack elements
@@ -9514,41 +9964,39 @@ console.log(stack.size()); // 4
 stack.display(); // 10 20 30 40
 ```
 
+2. Implementation of Stack using dynamic array. **O(N), O(1)**
+
 ```python
-class StaticArrayStack:
-    def __init__(self, capacity=8):
-        self.capacity = capacity
-        self.array = [None] * capacity
-        self.top_idx = -1
+class DynamicStack:
+    def __init__(self):
+        # Using Python built-in list as dynamic stack
+        self.stack = []
 
     def push(self, val):
-        if self.top_idx == self.capacity - 1:
-            raise OverflowError("Stack Overflow")
-        self.top_idx += 1
-        self.array[self.top_idx] = val
+        self.stack.append(val)
 
     def pop(self):
         if self.is_empty():
-            raise IndexError("Stack Underflow")
-        val = self.array[self.top_idx]
-        self.top_idx -= 1
-        return val
+            return None
+        return self.stack.pop()
 
     def peek(self):
         if self.is_empty():
             return None
-        return self.array[self.top_idx]
+        return self.stack[-1]
 
     def is_empty(self):
-        return self.top_idx == -1
+        return len(self.stack) == 0
+
+    def size(self):
+        return len(self.stack)
 
 
-# Time Complexity: O(1) for push, pop, peek
-# Space Complexity: O(capacity)
+# Time Complexity: O(1) amortized
+# Space Complexity: O(N)
 ```
 
-### 2. Implementation of Stack using dynamic array. **O(N), O(1)**
-```js
+```javascript
 class Stack {
   constructor() {
     this.array = []; // Initialize an empty array to hold stack elements
@@ -9612,42 +10060,36 @@ console.log(stack.size()); // 4
 stack.display(); // 10 20 30 40
 ```
 
-```python
-class DynamicStack:
-    def __init__(self):
-        # Using Python built-in list as dynamic stack
-        self.stack = []
+3. Balanced Parenthesis. **O(N), O(1)**
 
-    def push(self, val):
-        self.stack.append(val)
-
-    def pop(self):
-        if self.is_empty():
-            return None
-        return self.stack.pop()
-
-    def peek(self):
-        if self.is_empty():
-            return None
-        return self.stack[-1]
-
-    def is_empty(self):
-        return len(self.stack) == 0
-
-    def size(self):
-        return len(self.stack)
-
-
-# Time Complexity: O(1) amortized
-# Space Complexity: O(N)
-```
-
-### 3. Balanced Parenthesis. **O(N), O(1)**
-```
+```text
 Check whether the given sequence of parentheses is valid or not.
 ```
 
-```js
+```python
+def is_balanced_parentheses(s):
+    stack = []
+    matching = {')': '(', '}': '{', ']': '['}
+
+    for ch in s:
+        if ch in "({[":
+            stack.append(ch)
+        elif ch in matching:
+            if not stack or stack[-1] != matching[ch]:
+                return False
+            stack.pop()
+
+    return len(stack) == 0
+
+
+print(is_balanced_parentheses("({[]})"))  # True
+print(is_balanced_parentheses("([)]"))    # False
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 // Balanced Parentheses Checker
 function isMatchingPair(opening, closing) {
   return (opening === '(' && closing === ')') ||
@@ -9719,37 +10161,45 @@ console.log(isValidParentheses("{[]}"));   // true
 // Space Complexity: O(n), for the stack used to hold opening brackets
 ```
 
-```python
-def is_balanced_parentheses(s):
-    stack = []
-    matching = {')': '(', '}': '{', ']': '['}
+4. Evaluate Postfix Expression. **O(N), O(1)**
 
-    for ch in s:
-        if ch in "({[":
-            stack.append(ch)
-        elif ch in matching:
-            if not stack or stack[-1] != matching[ch]:
-                return False
-            stack.pop()
-
-    return len(stack) == 0
-
-
-print(is_balanced_parentheses("({[]})"))  # True
-print(is_balanced_parentheses("([)]"))    # False
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-### 4. Evaluate Postfix Expression. **O(N), O(1)**
-```
+```text
 Given a postfix expression, evaluate and calculate its value.
 
 Demonstrated how to resolve postfix expressions using a stack to store operands and apply operators in sequence.
 ```
 
-```js
+```python
+def evaluate_postfix(tokens):
+    stack = []
+
+    for token in tokens:
+        if token in {"+", "-", "*", "/"}:
+            val2 = stack.pop()
+            val1 = stack.pop()
+            if token == "+":
+                stack.append(val1 + val2)
+            elif token == "-":
+                stack.append(val1 - val2)
+            elif token == "*":
+                stack.append(val1 * val2)
+            elif token == "/":
+                # Integer division truncating toward zero
+                stack.append(int(val1 / val2))
+        else:
+            stack.append(int(token))
+
+    return stack[0]
+
+
+print(evaluate_postfix(["2", "1", "+", "3", "*"]))  # 9
+print(evaluate_postfix(["4", "13", "5", "/", "+"]))  # 6
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 // Function to calculate the result of two values based on the operator
 function evaluate(val1, val2, operator) {
   switch (operator) {
@@ -9794,76 +10244,11 @@ console.log(evaluatePostfix("3 5 + 2 - 2 5 * -")); // -4
 // Space Complexity: O(n), for the stack used to hold operands
 ```
 
-```python
-def evaluate_postfix(tokens):
-    stack = []
-
-    for token in tokens:
-        if token in {"+", "-", "*", "/"}:
-            val2 = stack.pop()
-            val1 = stack.pop()
-            if token == "+":
-                stack.append(val1 + val2)
-            elif token == "-":
-                stack.append(val1 - val2)
-            elif token == "*":
-                stack.append(val1 * val2)
-            elif token == "/":
-                # Integer division truncating toward zero
-                stack.append(int(val1 / val2))
-        else:
-            stack.append(int(token))
-
-    return stack[0]
-
-
-print(evaluate_postfix(["2", "1", "+", "3", "*"]))  # 9
-print(evaluate_postfix(["4", "13", "5", "/", "+"]))  # 6
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-```
+```text
 Given an array, find the index of the nearest smaller element on the left for all i index in A[].
 Formally, for all i, find the largest j < i such that A[j] < A[i]. If no such j exists, return -1.
 
 For each element in an array, find the nearest smaller element on the left
-```
-
-```js
-function nextSmallerIndexOnLeft(arr) {
-    const stack = []; // Stack to hold indices of elements
-    const result = []; // Array to hold the result
-
-    stack.push(0); // Push the first index onto the stack
-    result.push(-1); // The first element has no smaller element on the left
-
-    for (let i = 1; i < arr.length; i++) {
-        console.log(stack, i); // Debug: Print the current state of the stack and current index
-        // While the stack is not empty and the top element is greater than or equal to the current element
-        while (stack.length > 0 && arr[stack[stack.length - 1]] >= arr[i]) {
-            stack.pop(); // Pop elements from the stack until we find a smaller element
-        }
-        if (stack.length === 0) {
-            result.push(-1); // No smaller element found, push -1
-        } else { // The top of the stack is the index of the nearest smaller element
-            result.push(stack[stack.length - 1]); // Push the index of the nearest smaller element
-        }
-        stack.push(i); // Push the current index onto the stack
-        console.log(stack, i); // Debug: Print the current state of the stack and current index
-        console.log("----------"); // Debug: Separator for clarity
-    }
-
-    return result; // Return the result array
-}
-
-console.log(nextSmallerIndexOnLeft([10, 16, 5, 9, 12, 8, 25, 7, 13])); // [-1, 0, -1, 2, 3, 2, 5, 2, 7]
-console.log(nextSmallerIndexOnLeft([18, 3, 13, 19, 5, 24, 4])); // [-1, -1, 1, 2, 1, 4, 1]
-console.log(nextSmallerIndexOnLeft([4, 6, 10, 11, 7, 8, 3, 5])); // [-1, 0, 1, 2, 1, 4, -1, 6]
-console.log(nextSmallerIndexOnLeft([4, 5, 2, 10, 8, 2])); // [-1, 0, -1, 2, 2, -1]
-
-// Time Complexity: O(n), where n is the length of the array
-// Space Complexity: O(n), for the stack used to hold indices
 ```
 
 ```python
@@ -9891,15 +10276,7 @@ print(next_smaller_index_on_left([4, 5, 2, 10, 8]))  # [-1, 0, -1, 2, 2]
 # Space Complexity: O(N)
 ```
 
-### 5. Nearest Smaller Element Index on Left. **O(N), O(1)**
-```
-Given an array, find the index of the nearest smaller element on the left for all i index in A[].
-Formally, for all i, find the largest j < i such that A[j] < A[i]. If no such j exists, return -1.
-
-For each element in an array, find the nearest smaller element on the left
-```
-
-```js
+```javascript
 function nextSmallerIndexOnLeft(arr) {
     const stack = []; // Stack to hold indices of elements
     const result = []; // Array to hold the result
@@ -9935,6 +10312,15 @@ console.log(nextSmallerIndexOnLeft([4, 5, 2, 10, 8, 2])); // [-1, 0, -1, 2, 2, -
 // Space Complexity: O(n), for the stack used to hold indices
 ```
 
+5. Nearest Smaller Element Index on Left. **O(N), O(1)**
+
+```text
+Given an array, find the index of the nearest smaller element on the left for all i index in A[].
+Formally, for all i, find the largest j < i such that A[j] < A[i]. If no such j exists, return -1.
+
+For each element in an array, find the nearest smaller element on the left
+```
+
 ```python
 def next_smaller_index_on_left(arr):
     stack = []
@@ -9956,13 +10342,71 @@ print(next_smaller_index_on_left([4, 5, 2, 10, 8]))  # [-1, 0, -1, 2, 2]
 # Space Complexity: O(N)
 ```
 
-### 6. Nearest Greater Element Index on Left. **O(N), O(1)**
+```javascript
+function nextSmallerIndexOnLeft(arr) {
+    const stack = []; // Stack to hold indices of elements
+    const result = []; // Array to hold the result
+
+    stack.push(0); // Push the first index onto the stack
+    result.push(-1); // The first element has no smaller element on the left
+
+    for (let i = 1; i < arr.length; i++) {
+        console.log(stack, i); // Debug: Print the current state of the stack and current index
+        // While the stack is not empty and the top element is greater than or equal to the current element
+        while (stack.length > 0 && arr[stack[stack.length - 1]] >= arr[i]) {
+            stack.pop(); // Pop elements from the stack until we find a smaller element
+        }
+        if (stack.length === 0) {
+            result.push(-1); // No smaller element found, push -1
+        } else { // The top of the stack is the index of the nearest smaller element
+            result.push(stack[stack.length - 1]); // Push the index of the nearest smaller element
+        }
+        stack.push(i); // Push the current index onto the stack
+        console.log(stack, i); // Debug: Print the current state of the stack and current index
+        console.log("----------"); // Debug: Separator for clarity
+    }
+
+    return result; // Return the result array
+}
+
+console.log(nextSmallerIndexOnLeft([10, 16, 5, 9, 12, 8, 25, 7, 13])); // [-1, 0, -1, 2, 3, 2, 5, 2, 7]
+console.log(nextSmallerIndexOnLeft([18, 3, 13, 19, 5, 24, 4])); // [-1, -1, 1, 2, 1, 4, 1]
+console.log(nextSmallerIndexOnLeft([4, 6, 10, 11, 7, 8, 3, 5])); // [-1, 0, 1, 2, 1, 4, -1, 6]
+console.log(nextSmallerIndexOnLeft([4, 5, 2, 10, 8, 2])); // [-1, 0, -1, 2, 2, -1]
+
+// Time Complexity: O(n), where n is the length of the array
+// Space Complexity: O(n), for the stack used to hold indices
 ```
+
+6. Nearest Greater Element Index on Left. **O(N), O(1)**
+
+```text
 Given an array, find the index of the nearest greater element on the left for all i index in A[].
 Formally, for all i, find the largest j < i such that A[j] > A[i]. If no such j exists, return -1.
 ```
 
-```js
+```python
+def next_greater_index_on_left(arr):
+    stack = []
+    result = []
+
+    for i, val in enumerate(arr):
+        while stack and arr[stack[-1]] <= val:
+            stack.pop()
+
+        result.append(stack[-1] if stack else -1)
+        stack.append(i)
+
+    return result
+
+
+print(next_greater_index_on_left([4, 5, 2, 10, 8]))  # [-1, -1, 1, -1, 3]
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 function nextGreaterIndexOnLeft(arr) {
   const stack = []; // Stack to hold indices of elements
   const result = []; // Array to hold the result
@@ -9993,34 +10437,38 @@ console.log(nextGreaterIndexOnLeft([4, 5, 2, 10, 8, 2])); // [-1, -1, 1, -1, 3, 
 // Space Complexity: O(n), for the stack used to hold indices
 ```
 
-```python
-def next_greater_index_on_left(arr):
-    stack = []
-    result = []
+7. Nearest Smaller Element Index on Right. **O(N), O(1)**
 
-    for i, val in enumerate(arr):
-        while stack and arr[stack[-1]] <= val:
+```text
+Given an array, find the index of the nearest smaller element on the right for all i index in A[].
+Formally, for all i, find the smallest j > i such that A[j] < A[i]. If no such j exists, return -1.
+```
+
+```python
+def next_smaller_index_on_right(arr):
+    n = len(arr)
+    stack = []
+    result = [n] * n
+
+    for i in range(n - 1, -1, -1):
+        while stack and arr[stack[-1]] >= arr[i]:
             stack.pop()
 
-        result.append(stack[-1] if stack else -1)
+        if stack:
+            result[i] = stack[-1]
+
         stack.append(i)
 
     return result
 
 
-print(next_greater_index_on_left([4, 5, 2, 10, 8]))  # [-1, -1, 1, -1, 3]
+print(next_smaller_index_on_right([4, 5, 2, 10, 8]))  # [2, 2, 5, 4, 5]
 
 # Time Complexity: O(N)
 # Space Complexity: O(N)
 ```
 
-### 7. Nearest Smaller Element Index on Right. **O(N), O(1)**
-```
-Given an array, find the index of the nearest smaller element on the right for all i index in A[].
-Formally, for all i, find the smallest j > i such that A[j] < A[i]. If no such j exists, return -1.
-```
-
-```js
+```javascript
 function nextSmallerIndexOnRight(arr) {
     const stack = []; // Stack to hold indices of elements
     const result = new Array(arr.length).fill(-1); // Initialize result array with -1
@@ -10049,60 +10497,11 @@ console.log(nextSmallerIndexOnRight([4, 5, 2, 10, 8, 2])); // [2, 2, -1, 4, 5, -
 // Space Complexity: O(n), for the stack used to hold indices
 ```
 
-```python
-def next_smaller_index_on_right(arr):
-    n = len(arr)
-    stack = []
-    result = [n] * n
+8. Nearest Greater Element Index on Right. **O(N), O(1)**
 
-    for i in range(n - 1, -1, -1):
-        while stack and arr[stack[-1]] >= arr[i]:
-            stack.pop()
-
-        if stack:
-            result[i] = stack[-1]
-
-        stack.append(i)
-
-    return result
-
-
-print(next_smaller_index_on_right([4, 5, 2, 10, 8]))  # [2, 2, 5, 4, 5]
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-### 8. Nearest Greater Element Index on Right. **O(N), O(1)**
-```
+```text
 Given an array, find the index of the nearest greater element on the right for all i index in A[].
 Formally, for all i, find the smallest j > i such that A[j] > A[i]. If no such j exists, return -1.
-```
-
-```js
-function nextGreaterIndexOnRight(arr) {
-  const stack = []; // Stack to hold indices of elements
-  const result = new Array(arr.length).fill(-1); // Initialize result array with -1
-
-  for (let i = arr.length - 1; i >= 0; i--) {
-    while (stack.length > 0 && arr[stack[stack.length - 1]] <= arr[i]) {
-      stack.pop(); // Pop elements from the stack until we find a greater element
-    }
-    if (stack.length > 0) {
-      result[i] = stack[stack.length - 1]; // Set the index of the nearest greater element
-    }
-    stack.push(i); // Push the current index onto the stack
-  }
-  return result; // Return the result array
-}
-
-console.log(nextGreaterIndexOnRight([10, 16, 5, 9, 12, 8, 25, 7, 13])); // [1, 6, 3, 4, 6, 6, -1, 8, -1]
-console.log(nextGreaterIndexOnRight([18, 3, 13, 19, 5, 24, 4])); // [3, 2, 3, 5, 5, -1, -1]
-console.log(nextGreaterIndexOnRight([4, 6, 10, 11, 7, 8, 3, 5])); // [1, 2, 3, -1, 5, -1, 7, -1]
-console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, -1]
-
-// Time Complexity: O(n), where n is the length of the array
-// Space Complexity: O(n), for the stack used to hold indices
 ```
 
 ```python
@@ -10129,9 +10528,39 @@ print(next_greater_index_on_right([4, 5, 2, 10, 8]))  # [1, 3, 3, 5, 5]
 # Space Complexity: O(N)
 ```
 
-# 6. Queues
+```javascript
+function nextGreaterIndexOnRight(arr) {
+  const stack = []; // Stack to hold indices of elements
+  const result = new Array(arr.length).fill(-1); // Initialize result array with -1
 
-## Theory
+  for (let i = arr.length - 1; i >= 0; i--) {
+    while (stack.length > 0 && arr[stack[stack.length - 1]] <= arr[i]) {
+      stack.pop(); // Pop elements from the stack until we find a greater element
+    }
+    if (stack.length > 0) {
+      result[i] = stack[stack.length - 1]; // Set the index of the nearest greater element
+    }
+    stack.push(i); // Push the current index onto the stack
+  }
+  return result; // Return the result array
+}
+
+console.log(nextGreaterIndexOnRight([10, 16, 5, 9, 12, 8, 25, 7, 13])); // [1, 6, 3, 4, 6, 6, -1, 8, -1]
+console.log(nextGreaterIndexOnRight([18, 3, 13, 19, 5, 24, 4])); // [3, 2, 3, 5, 5, -1, -1]
+console.log(nextGreaterIndexOnRight([4, 6, 10, 11, 7, 8, 3, 5])); // [1, 2, 3, -1, 5, -1, 7, -1]
+console.log(nextGreaterIndexOnRight([4, 5, 2, 10, 8, 2])); // [1, 3, 3, -1, -1, -1]
+
+// Time Complexity: O(n), where n is the length of the array
+// Space Complexity: O(n), for the stack used to hold indices
+```
+
+---
+
+<a id="36-queues"></a>
+
+## 36. Queues
+
+### Theory
 
 ### Queue Operations (Using Singly Linked List)
 1. Enqueue: Add an element to the rear of the queue. Time complexity is O(1). **O(1), O(1)**
@@ -10140,10 +10569,11 @@ print(next_greater_index_on_right([4, 5, 2, 10, 8]))  # [1, 3, 3, 5, 5]
 4. IsEmpty: Check if the queue is empty. Time complexity is O(1). **O(1), O(1)**
 5. Size: Get the number of elements in the queue. Time complexity is O(1). **O(1), O(1)**
 
-## Questions
+### Questions
 
-### 1. Implementation of queue | JavaScript Dynamic Array. **O(N), O(1)**
-```
+1. Implementation of queue | JavaScript Dynamic Array. **O(N), O(1)**
+
+```text
 Implent a Queue using JavaScript Array methods.
 - Enqueue: Add an element to the end of the array. O(1)
 - Dequeue: Remove an element from the front of the array. O(n) because it requires shifting all elements.
@@ -10152,7 +10582,40 @@ Implent a Queue using JavaScript Array methods.
 - Size: Return the length of the array. O(1)
 ```
 
-```js
+```python
+from collections import deque
+
+
+class Queue:
+    def __init__(self):
+        # Python collections.deque provides O(1) append and popleft
+        self.queue = deque()
+
+    def enqueue(self, val):
+        self.queue.append(val)
+
+    def dequeue(self):
+        if self.is_empty():
+            return None
+        return self.queue.popleft()
+
+    def peek(self):
+        if self.is_empty():
+            return None
+        return self.queue[0]
+
+    def is_empty(self):
+        return len(self.queue) == 0
+
+    def size(self):
+        return len(self.queue)
+
+
+# Time Complexity: O(1) for enqueue and dequeue
+# Space Complexity: O(N)
+```
+
+```javascript
 // To implement a Queue with O(1) time complexity for enqueue, dequeue, front, isEmpty, and size using JavaScript,
 // we can use a circular indexing strategy (also known as a "two-pointer" approach).
 // This avoids the O(n) cost of Array.prototype.shift().
@@ -10207,41 +10670,9 @@ console.log(queue.isEmpty()); // true
 console.log(queue.size()); // 0
 ```
 
-```python
-from collections import deque
+2. Implementation of queue | Singly Linked List using tail pointer. **O(N), O(1)**
 
-
-class Queue:
-    def __init__(self):
-        # Python collections.deque provides O(1) append and popleft
-        self.queue = deque()
-
-    def enqueue(self, val):
-        self.queue.append(val)
-
-    def dequeue(self):
-        if self.is_empty():
-            return None
-        return self.queue.popleft()
-
-    def peek(self):
-        if self.is_empty():
-            return None
-        return self.queue[0]
-
-    def is_empty(self):
-        return len(self.queue) == 0
-
-    def size(self):
-        return len(self.queue)
-
-
-# Time Complexity: O(1) for enqueue and dequeue
-# Space Complexity: O(N)
-```
-
-### 2. Implementation of queue | Singly Linked List using tail pointer. **O(N), O(1)**
-```
+```text
 Implent a Queue using Singly Linked List.
 - Enqueue: Add an element to the end of the array. O(1) because we maintain a tail pointer.
 - Dequeue: Remove an element from the front of the array. O(1)
@@ -10250,7 +10681,47 @@ Implent a Queue using Singly Linked List.
 - Size: Return the length of the array. O(1)
 ```
 
-```js
+```python
+class Node:
+    def __init__(self, data=0, next=None):
+        self.data = data
+        self.next = next
+
+
+class LinkedListQueue:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self._size = 0
+
+    def enqueue(self, data):
+        new_node = Node(data)
+        if not self.tail:
+            self.head = self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
+        self._size += 1
+
+    def dequeue(self):
+        if not self.head:
+            return None
+        val = self.head.data
+        self.head = self.head.next
+        if not self.head:
+            self.tail = None
+        self._size -= 1
+        return val
+
+    def is_empty(self):
+        return self._size == 0
+
+
+# Time Complexity: O(1) for enqueue and dequeue
+# Space Complexity: O(N)
+```
+
+```javascript
 class Node {
     constructor(data) {
         this.data = data;
@@ -10375,48 +10846,9 @@ console.log(`Is empty? ${q.isEmpty()}`); // true
 console.log(`Queue size: ${q.size()}`); // 0
 ```
 
-```python
-class Node:
-    def __init__(self, data=0, next=None):
-        self.data = data
-        self.next = next
+3. Implementation of queue | Stack (push efficient approach). **O(N), O(1)**
 
-
-class LinkedListQueue:
-    def __init__(self):
-        self.head = None
-        self.tail = None
-        self._size = 0
-
-    def enqueue(self, data):
-        new_node = Node(data)
-        if not self.tail:
-            self.head = self.tail = new_node
-        else:
-            self.tail.next = new_node
-            self.tail = new_node
-        self._size += 1
-
-    def dequeue(self):
-        if not self.head:
-            return None
-        val = self.head.data
-        self.head = self.head.next
-        if not self.head:
-            self.tail = None
-        self._size -= 1
-        return val
-
-    def is_empty(self):
-        return self._size == 0
-
-
-# Time Complexity: O(1) for enqueue and dequeue
-# Space Complexity: O(N)
-```
-
-### 3. Implementation of queue | Stack (push efficient approach). **O(N), O(1)**
-```
+```text
 Implent a Queue using Stack.
 - Enqueue: Add an element to the end of the array. O(1)
 - Dequeue: Remove an element from the front of the array. Amortized O(1) OR O(n) because it requires transferring elements from one stack to another.
@@ -10425,7 +10857,36 @@ Implent a Queue using Stack.
 - Size: Return the length of the array. O(1)
 ```
 
-```js
+```python
+class QueueTwoStacksPushEfficient:
+    def __init__(self):
+        self.s1 = []
+        self.s2 = []
+
+    def enqueue(self, x):
+        self.s1.append(x)
+
+    def dequeue(self):
+        if not self.s2:
+            while self.s1:
+                self.s2.append(self.s1.pop())
+        return self.s2.pop() if self.s2 else None
+
+    def peek(self):
+        if not self.s2:
+            while self.s1:
+                self.s2.append(self.s1.pop())
+        return self.s2[-1] if self.s2 else None
+
+    def is_empty(self):
+        return not self.s1 and not self.s2
+
+
+# Time Complexity: O(1) enqueue, O(1) amortized dequeue
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION: Queue using Two Stacks
  *
@@ -10541,37 +11002,9 @@ console.log(q.size());     // 2
 console.log(q.isEmpty());  // false
 ```
 
-```python
-class QueueTwoStacksPushEfficient:
-    def __init__(self):
-        self.s1 = []
-        self.s2 = []
+4. Implementation of queue | Stack (pop efficient approach). **O(N), O(1)**
 
-    def enqueue(self, x):
-        self.s1.append(x)
-
-    def dequeue(self):
-        if not self.s2:
-            while self.s1:
-                self.s2.append(self.s1.pop())
-        return self.s2.pop() if self.s2 else None
-
-    def peek(self):
-        if not self.s2:
-            while self.s1:
-                self.s2.append(self.s1.pop())
-        return self.s2[-1] if self.s2 else None
-
-    def is_empty(self):
-        return not self.s1 and not self.s2
-
-
-# Time Complexity: O(1) enqueue, O(1) amortized dequeue
-# Space Complexity: O(N)
-```
-
-### 4. Implementation of queue | Stack (pop efficient approach). **O(N), O(1)**
-```
+```text
 Implent a Queue using Stack.
 - Enqueue: Add an element to the end of the array. O(n)
 - Dequeue: Remove an element from the front of the array. O(1)
@@ -10580,7 +11013,34 @@ Implent a Queue using Stack.
 - Size: Return the length of the array. O(1)
 ```
 
-```js
+```python
+class QueueTwoStacksPopEfficient:
+    def __init__(self):
+        self.s1 = []
+        self.s2 = []
+
+    def enqueue(self, x):
+        while self.s1:
+            self.s2.append(self.s1.pop())
+        self.s1.append(x)
+        while self.s2:
+            self.s1.append(self.s2.pop())
+
+    def dequeue(self):
+        return self.s1.pop() if self.s1 else None
+
+    def peek(self):
+        return self.s1[-1] if self.s1 else None
+
+    def is_empty(self):
+        return len(self.s1) == 0
+
+
+# Time Complexity: O(N) enqueue, O(1) dequeue
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ALGORITHM: Queue using Stack (Enqueue-Heavy)
  *
@@ -10671,35 +11131,9 @@ console.log(q.size());     // 2 (Remaining elements: 3 and 2)
 console.log(q.isEmpty());  // false
 ```
 
-```python
-class QueueTwoStacksPopEfficient:
-    def __init__(self):
-        self.s1 = []
-        self.s2 = []
+5. Doubly Ended Queue | Doubly Linked List. **O(N), O(1)**
 
-    def enqueue(self, x):
-        while self.s1:
-            self.s2.append(self.s1.pop())
-        self.s1.append(x)
-        while self.s2:
-            self.s1.append(self.s2.pop())
-
-    def dequeue(self):
-        return self.s1.pop() if self.s1 else None
-
-    def peek(self):
-        return self.s1[-1] if self.s1 else None
-
-    def is_empty(self):
-        return len(self.s1) == 0
-
-
-# Time Complexity: O(N) enqueue, O(1) dequeue
-# Space Complexity: O(N)
-```
-
-### 5. Doubly Ended Queue | Doubly Linked List. **O(N), O(1)**
-```
+```text
 A Doubly Ended Queue (Deque) allows insertion and deletion of elements from both ends.
 - EnqueueFront: Add an element to the front of the deque. O(1)
 - EnqueueRear: Add an element to the rear of the deque. O(1)
@@ -10711,7 +11145,24 @@ A Doubly Ended Queue (Deque) allows insertion and deletion of elements from both
 - Size: Get the number of elements in the deque. O(1)
 ```
 
-```js
+```python
+from collections import deque
+
+# Python built-in deque supports O(1) appends and pops from both sides:
+# append(x), appendleft(x), pop(), popleft()
+dq = deque()
+dq.append(1)
+dq.append(2)
+dq.appendleft(0)
+print(dq)          # deque([0, 1, 2])
+print(dq.popleft())# 0
+print(dq.pop())    # 2
+
+# Time Complexity: O(1) for all operations
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  *
@@ -10860,30 +11311,46 @@ console.log(dq.size());     // 1
 console.log(dq.isEmpty());  // false
 ```
 
-```python
-from collections import deque
+6. Sliding Window Maximum | Sliding Window Technique & Double Ended Queue (Deque). **O(N), O(1)**
 
-# Python built-in deque supports O(1) appends and pops from both sides:
-# append(x), appendleft(x), pop(), popleft()
-dq = deque()
-dq.append(1)
-dq.append(2)
-dq.appendleft(0)
-print(dq)          # deque([0, 1, 2])
-print(dq.popleft())# 0
-print(dq.pop())    # 2
-
-# Time Complexity: O(1) for all operations
-# Space Complexity: O(N)
-```
-
-### 6. Sliding Window Maximum | Sliding Window Technique & Double Ended Queue (Deque). **O(N), O(1)**
-```
+```text
 Given an array of integers and a window size, find the maximum element in each sliding window of the given size.
 Implement the solution using Sliding Window technique with a Double Ended Queue (Deque) to achieve O(n) time complexity.
 ```
 
-```js
+```python
+from collections import deque
+
+
+def max_sliding_window(nums, k):
+    dq = deque()  # stores indices
+    result = []
+
+    for i, val in enumerate(nums):
+        # Remove indices that fall outside the current window
+        while dq and dq[0] < i - k + 1:
+            dq.popleft()
+
+        # Remove elements smaller than current element from back
+        while dq and nums[dq[-1]] <= val:
+            dq.pop()
+
+        dq.append(i)
+
+        # Append to result once first window is complete
+        if i >= k - 1:
+            result.append(nums[dq[0]])
+
+    return result
+
+
+print(max_sliding_window([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
+
+# Time Complexity: O(N)
+# Space Complexity: O(K)
+```
+
+```javascript
 /*
  * ALGORITHM: SLIDING WINDOW MAXIMUM (MONOTONIC QUEUE)
  *
@@ -11102,35 +11569,32 @@ console.log("Sliding window maximums:", result); // [3, 3, 5, 5, 6, 7]
 from collections import deque
 
 
-def max_sliding_window(nums, k):
-    dq = deque()  # stores indices
-    result = []
+def sliding_window_max(A, B):
+    dq = deque()
+    res = []
 
-    for i, val in enumerate(nums):
-        # Remove indices that fall outside the current window
-        while dq and dq[0] < i - k + 1:
+    for i in range(len(A)):
+        if dq and dq[0] <= i - B:
             dq.popleft()
 
-        # Remove elements smaller than current element from back
-        while dq and nums[dq[-1]] <= val:
+        while dq and A[dq[-1]] <= A[i]:
             dq.pop()
 
         dq.append(i)
 
-        # Append to result once first window is complete
-        if i >= k - 1:
-            result.append(nums[dq[0]])
+        if i >= B - 1:
+            res.append(A[dq[0]])
 
-    return result
+    return res
 
 
-print(max_sliding_window([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
+print(sliding_window_max([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
 
 # Time Complexity: O(N)
-# Space Complexity: O(K)
+# Space Complexity: O(B)
 ```
 
-```js
+```javascript
 // Alternate implementation of Sliding Window Maximum using Monotonic Deque
 /*
  * ALGORITHM EXPLANATION:
@@ -11217,37 +11681,9 @@ console.log(maxSlidingWindowDeque([1, 3, -1, -3, 5, 3, 6, 7], 3)); // [3, 3, 5, 
 // Space Complexity: O(K)
 ```
 
-```python
-from collections import deque
+7. Parking Ice Cream Truck | Sliding Window Maximum Problem. **O(N), O(B)**
 
-
-def sliding_window_max(A, B):
-    dq = deque()
-    res = []
-
-    for i in range(len(A)):
-        if dq and dq[0] <= i - B:
-            dq.popleft()
-
-        while dq and A[dq[-1]] <= A[i]:
-            dq.pop()
-
-        dq.append(i)
-
-        if i >= B - 1:
-            res.append(A[dq[0]])
-
-    return res
-
-
-print(sliding_window_max([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
-
-# Time Complexity: O(N)
-# Space Complexity: O(B)
-```
-
-### 7. Parking Ice Cream Truck | Sliding Window Maximum Problem. **O(N), O(B)**
-```
+```text
 Imagine you're an ice cream truck driver in a beachside town. The beach is divided into several sections, and each section has varying numbers of beachgoers wanting ice cream given by the array of integers A.
 
 For simplicity, let's say the beach is divided into 8 sections. One day, you note down the number of potential customers in each section: [5, 12, 3, 4, 8, 10, 2, 7]. This means there are 5 people in the first section, 12 in the second, and so on.
@@ -11259,7 +11695,37 @@ For all B consecutive sections, identify the busiest stretch to park your ice cr
 NOTE: If B > length of the array, return 1 element with the max of the array.
 ```
 
-```js
+```python
+from collections import deque
+
+
+def parking_ice_cream_truck(A, B):
+    # Same as Sliding Window Maximum
+    dq = deque()
+    ans = []
+
+    for i in range(len(A)):
+        if dq and dq[0] <= i - B:
+            dq.popleft()
+
+        while dq and A[dq[-1]] <= A[i]:
+            dq.pop()
+
+        dq.append(i)
+
+        if i >= B - 1:
+            ans.append(A[dq[0]])
+
+    return ans
+
+
+print(parking_ice_cream_truck([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
+
+# Time Complexity: O(N)
+# Space Complexity: O(B)
+```
+
+```javascript
 /**
  * Given an array A of potential customers in each beach section,
  * and a window size B (number of consecutive sections you can park in),
@@ -11337,43 +11803,33 @@ console.log(maxSlidingWindow(A2, B2)); // [7, 7, 7, 7]
 // Space Complexity: O(B)
 ```
 
-```python
-from collections import deque
+---
 
+<a id="37-trees-1-structure-traversal"></a>
 
-def parking_ice_cream_truck(A, B):
-    # Same as Sliding Window Maximum
-    dq = deque()
-    ans = []
+## 37. Trees 1: Structure & Traversal
 
-    for i in range(len(A)):
-        if dq and dq[0] <= i - B:
-            dq.popleft()
+### Questions
 
-        while dq and A[dq[-1]] <= A[i]:
-            dq.pop()
+1. Pre-order traversal **O(N), O(1)**
 
-        dq.append(i)
-
-        if i >= B - 1:
-            ans.append(A[dq[0]])
-
-    return ans
-
-
-print(parking_ice_cream_truck([1, 3, -1, -3, 5, 3, 6, 7], 3))  # [3, 3, 5, 5, 6, 7]
-
-# Time Complexity: O(N)
-# Space Complexity: O(B)
-```
-
-# 7. Trees 1: Structure & Traversal
-
-### 1. Pre-order traversal **O(N), O(1)**
 Pre-order traversal is a depth-first traversal method where the nodes are visited in the following order:
 Node -> Left Subtree -> Right Subtree
 
-```js
+```python
+def pre_order_traversal(root):
+    if root is None:
+        return
+    print(root.data, end=" ")
+    pre_order_traversal(root.left)
+    pre_order_traversal(root.right)
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H) where H is tree height
+```
+
+```javascript
 function preOrderTraversal(node) {
     if (node === null) return;
     console.log(node.data); // Visit the node
@@ -11390,24 +11846,25 @@ function preOrderTraversal(node) {
 // 1 2 4 5 3 6 7
 ```
 
-```python
-def pre_order_traversal(root):
-    if root is None:
-        return
-    print(root.data, end=" ")
-    pre_order_traversal(root.left)
-    pre_order_traversal(root.right)
+2. In-order traversal **O(N), O(1)**
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(H) where H is tree height
-```
-
-### 2. In-order traversal **O(N), O(1)**
 In-order traversal is a depth-first traversal method where the nodes are visited in the following order:
 Left Subtree -> Node -> Right Subtree
 
-```js
+```python
+def in_order_traversal(root):
+    if root is None:
+        return
+    in_order_traversal(root.left)
+    print(root.data, end=" ")
+    in_order_traversal(root.right)
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 function inOrderTraversal(node) {
     if (node === null) return;
     inOrderTraversal(node.left); // Traverse left subtree
@@ -11438,24 +11895,25 @@ const root = {
 inOrderTraversal(root); // 4 2 5 1 6 3 7
 ```
 
+3. Post-order traversal **O(N), O(1)**
+
+Post-order traversal is a depth-first traversal method where the nodes are visited in the following order:
+Left Subtree -> Right Subtree -> Node
+
 ```python
-def in_order_traversal(root):
+def post_order_traversal(root):
     if root is None:
         return
-    in_order_traversal(root.left)
+    post_order_traversal(root.left)
+    post_order_traversal(root.right)
     print(root.data, end=" ")
-    in_order_traversal(root.right)
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(H)
 ```
 
-### 3. Post-order traversal **O(N), O(1)**
-Post-order traversal is a depth-first traversal method where the nodes are visited in the following order:
-Left Subtree -> Right Subtree -> Node
-
-```js
+```javascript
 function postOrderTraversal(node) {
     if (node === null) return;
     postOrderTraversal(node.left); // Traverse left subtree
@@ -11486,21 +11944,9 @@ const root = {
 postOrderTraversal(root); // 4 5 2 6 7 3 1
 ```
 
-```python
-def post_order_traversal(root):
-    if root is None:
-        return
-    post_order_traversal(root.left)
-    post_order_traversal(root.right)
-    print(root.data, end=" ")
+4. Iterative in-order traversal | Stack **O(N), O(1)**
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 4. Iterative in-order traversal | Stack **O(N), O(1)**
-```
+```text
 Iterative in-order traversal can be implemented using a stack to keep track of nodes.
 We are going to use a stack to simulate the recursive behavior of in-order traversal.
 Step 1: First push the root node to the stack.
@@ -11510,7 +11956,29 @@ State 1: In Area: Print the data, increase the state, add the right child to the
 State 2: Post Area: Simply pop the node from the stack.
 ```
 
-```js
+```python
+def iterative_in_order(root):
+    stack = []
+    curr = root
+    result = []
+
+    while curr or stack:
+        while curr:
+            stack.append(curr)
+            curr = curr.left
+
+        curr = stack.pop()
+        result.append(curr.data)
+        curr = curr.right
+
+    return result
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 class Node {
   constructor(data) {
     this.data = data;    // The value of the node
@@ -11587,30 +12055,9 @@ iterativeInOrderTraversal(root); // 4 2 5 1 6 3 7
 // Space Complexity: O(n) for the stack
 ```
 
-```python
-def iterative_in_order(root):
-    stack = []
-    curr = root
-    result = []
+5. Iterative level-order traversal | Deque **O(N), O(1)**
 
-    while curr or stack:
-        while curr:
-            stack.append(curr)
-            curr = curr.left
-
-        curr = stack.pop()
-        result.append(curr.data)
-        curr = curr.right
-
-    return result
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 5. Iterative level-order traversal | Deque **O(N), O(1)**
-```
+```text
 Level order traversal is a breadth-first traversal method where the nodes are visited level by level from left to right. It can be implemented using a queue.
 Step 1: Start by pushing the root node to the queue.
 Then repeat the following steps until the queue is empty:
@@ -11619,7 +12066,40 @@ Then repeat the following steps until the queue is empty:
 3. Enqueue the children of the dequeued node (left child first, then right child).
 ```
 
-```js
+```python
+from collections import deque
+
+
+def level_order_traversal(root):
+    if not root:
+        return []
+
+    queue = deque([root])
+    result = []
+
+    while queue:
+        level_size = len(queue)
+        current_level = []
+
+        for _ in range(level_size):
+            node = queue.popleft()
+            current_level.append(node.data)
+
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+        result.append(current_level)
+
+    return result
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 class Node {
     constructor(data) {
         this.data = data;    // The value of the node
@@ -11677,48 +12157,49 @@ levelOrderTraversal(root); // 1 2 3 4 5 6 7
 // Space Complexity: O(n) for the queue
 ```
 
-```python
-from collections import deque
+6. Left view and right view of a binary tree | Deque **O(N), O(1)**
 
-
-def level_order_traversal(root):
-    if not root:
-        return []
-
-    queue = deque([root])
-    result = []
-
-    while queue:
-        level_size = len(queue)
-        current_level = []
-
-        for _ in range(level_size):
-            node = queue.popleft()
-            current_level.append(node.data)
-
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
-
-        result.append(current_level)
-
-    return result
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-### 6. Left view and right view of a binary tree | Deque **O(N), O(1)**
-```
+```text
 Left view of a binary tree is the set of nodes visible when the tree is viewed from the left side.
 Right view is similar but viewed from the right side. We can use level order traversal to achieve this.
 Left view can be obtained by printing the first node of each level during level order traversal.
 Right view can be obtained by printing the last node of each level.
 ```
 
-```js
+```python
+from collections import deque
+
+
+def left_and_right_view(root):
+    if not root:
+        return {"left": [], "right": []}
+
+    queue = deque([root])
+    left_view = []
+    right_view = []
+
+    while queue:
+        level_size = len(queue)
+        for i in range(level_size):
+            node = queue.popleft()
+            if i == 0:
+                left_view.append(node.data)
+            if i == level_size - 1:
+                right_view.append(node.data)
+
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+    return {"left": left_view, "right": right_view}
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 class Node {
   constructor(data) {
     this.data = data;    // The value of the node
@@ -11788,43 +12269,17 @@ leftRightView(root);
 // Space Complexity: O(n) for the queue
 ```
 
-```python
-from collections import deque
+---
 
+<a id="38-trees-2-bst"></a>
 
-def left_and_right_view(root):
-    if not root:
-        return {"left": [], "right": []}
+## 38. Trees 2: BST
 
-    queue = deque([root])
-    left_view = []
-    right_view = []
+### Questions
 
-    while queue:
-        level_size = len(queue)
-        for i in range(level_size):
-            node = queue.popleft()
-            if i == 0:
-                left_view.append(node.data)
-            if i == level_size - 1:
-                right_view.append(node.data)
+1. Searching in Binary Search Tree **O(N), O(1)**
 
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
-
-    return {"left": left_view, "right": right_view}
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-# 8. Trees 2: BST
-
-### 1. Searching in Binary Search Tree **O(N), O(1)**
-```
+```text
 Given Root of a BST and a value K, return true if the value is present in the BST, otherwise return false.
        4
       / \
@@ -11833,7 +12288,24 @@ Given Root of a BST and a value K, return true if the value is present in the BS
    1   3
 ```
 
-```js
+```python
+def search_bst_iterative(root, val):
+    curr = root
+    while curr:
+        if curr.data == val:
+            return True
+        elif val < curr.data:
+            curr = curr.left
+        else:
+            curr = curr.right
+    return False
+
+
+# Time Complexity: O(H) where H is tree height
+# Space Complexity: O(1)
+```
+
+```javascript
 // Iterative approach to search in BST
 
 class TreeNode {
@@ -11873,23 +12345,22 @@ console.log(searchInBST(root, 5)); // false
 ```
 
 ```python
-def search_bst_iterative(root, val):
-    curr = root
-    while curr:
-        if curr.data == val:
-            return True
-        elif val < curr.data:
-            curr = curr.left
-        else:
-            curr = curr.right
-    return False
+def search_bst_recursive(root, val):
+    if root is None:
+        return False
+    if root.data == val:
+        return True
+    elif val < root.data:
+        return search_bst_recursive(root.left, val)
+    else:
+        return search_bst_recursive(root.right, val)
 
 
-# Time Complexity: O(H) where H is tree height
-# Space Complexity: O(1)
+# Time Complexity: O(H)
+# Space Complexity: O(H) recursion stack
 ```
 
-```js
+```javascript
 // Recursive approach to search in BST
 class TreeNode {
   constructor(val = 0, left = null, right = null) {
@@ -11918,28 +12389,37 @@ console.log(searchInBSTRecursive(rootRecursive, 2)); // true
 console.log(searchInBSTRecursive(rootRecursive, 5)); // false
 ```
 
-```python
-def search_bst_recursive(root, val):
-    if root is None:
-        return False
-    if root.data == val:
-        return True
-    elif val < root.data:
-        return search_bst_recursive(root.left, val)
-    else:
-        return search_bst_recursive(root.right, val)
+2. Insertion in Binary Search Tree **O(N), O(1)**
 
-
-# Time Complexity: O(H)
-# Space Complexity: O(H) recursion stack
-```
-
-### 2. Insertion in Binary Search Tree **O(N), O(1)**
-```
+```text
 Given Root of a BST and a value K, insert the value K into the BST and return the root of the modified BST.
 ```
 
-```js
+```python
+class TreeNode:
+    def __init__(self, data=0):
+        self.data = data
+        self.left = None
+        self.right = None
+
+
+def insert_bst_recursive(root, val):
+    if root is None:
+        return TreeNode(val)
+
+    if val < root.data:
+        root.left = insert_bst_recursive(root.left, val)
+    elif val > root.data:
+        root.right = insert_bst_recursive(root.right, val)
+
+    return root
+
+
+# Time Complexity: O(H)
+# Space Complexity: O(H)
+```
+
+```javascript
 // Recursive approach to insert into BST
 
 class TreeNode {
@@ -11983,30 +12463,36 @@ console.log(JSON.stringify(insertIntoBST(rootInsert, 5))); // BST with 5 inserte
 ```
 
 ```python
-class TreeNode:
-    def __init__(self, data=0):
-        self.data = data
-        self.left = None
-        self.right = None
-
-
-def insert_bst_recursive(root, val):
+def insert_bst_iterative(root, val):
+    new_node = TreeNode(val)
     if root is None:
-        return TreeNode(val)
+        return new_node
 
-    if val < root.data:
-        root.left = insert_bst_recursive(root.left, val)
-    elif val > root.data:
-        root.right = insert_bst_recursive(root.right, val)
+    curr = root
+    parent = None
+
+    while curr:
+        parent = curr
+        if val < curr.data:
+            curr = curr.left
+        elif val > curr.data:
+            curr = curr.right
+        else:
+            return root  # Value already exists
+
+    if val < parent.data:
+        parent.left = new_node
+    else:
+        parent.right = new_node
 
     return root
 
 
 # Time Complexity: O(H)
-# Space Complexity: O(H)
+# Space Complexity: O(1)
 ```
 
-```js
+```javascript
 // Iterative approach to insert into BST
 
 class TreeNode {
@@ -12066,45 +12552,30 @@ console.log(JSON.stringify(rootInsert));
 // Space Complexity: O(1) for iterative approach
 ```
 
-```python
-def insert_bst_iterative(root, val):
-    new_node = TreeNode(val)
-    if root is None:
-        return new_node
+3. Find Smallest in Binary Search Tree **O(N), O(1)**
 
-    curr = root
-    parent = None
-
-    while curr:
-        parent = curr
-        if val < curr.data:
-            curr = curr.left
-        elif val > curr.data:
-            curr = curr.right
-        else:
-            return root  # Value already exists
-
-    if val < parent.data:
-        parent.left = new_node
-    else:
-        parent.right = new_node
-
-    return root
-
-
-# Time Complexity: O(H)
-# Space Complexity: O(1)
-```
-
-### 3. Find Smallest in Binary Search Tree **O(N), O(1)**
-```
+```text
 Given the root of a BST, find the smallest value in the BST.
 Smallest value is the leftmost node in the BST.
 - Either it will be the leaf node
 - Or it will have a single right child.
 ```
 
-```js
+```python
+def find_smallest_iterative(root):
+    if not root:
+        return None
+    curr = root
+    while curr.left:
+        curr = curr.left
+    return curr.data
+
+
+# Time Complexity: O(H)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Iterative approach to find the smallest value in BST
 
 class TreeNode {
@@ -12146,20 +12617,19 @@ console.log(findSmallestInBST(rootSmallest2)); // 4
 ```
 
 ```python
-def find_smallest_iterative(root):
+def find_smallest_recursive(root):
     if not root:
         return None
-    curr = root
-    while curr.left:
-        curr = curr.left
-    return curr.data
+    if not root.left:
+        return root.data
+    return find_smallest_recursive(root.left)
 
 
 # Time Complexity: O(H)
-# Space Complexity: O(1)
+# Space Complexity: O(H)
 ```
 
-```js
+```javascript
 // Recursive approach to find the smallest value in BST
 
 class TreeNode {
@@ -12203,28 +12673,30 @@ console.log(findSmallestInBSTRecursive(rootSmallest2)); // 4
 // Space Complexity: O(h) due to the recursion stack
 ```
 
-```python
-def find_smallest_recursive(root):
-    if not root:
-        return None
-    if not root.left:
-        return root.data
-    return find_smallest_recursive(root.left)
+4. Find Largest in Binary Search Tree **O(N), O(1)**
 
-
-# Time Complexity: O(H)
-# Space Complexity: O(H)
-```
-
-### 4. Find Largest in Binary Search Tree **O(N), O(1)**
-```
+```text
 Given the root of a BST, find the largest value in the BST.
 Largest value is the rightmost node in the BST.
 - Either it will be the leaf node
 - Or it will have a single left child.
 ```
 
-```js
+```python
+def find_largest_iterative(root):
+    if not root:
+        return None
+    curr = root
+    while curr.right:
+        curr = curr.right
+    return curr.data
+
+
+# Time Complexity: O(H)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Iterative approach to find the largest value in BST
 
 class TreeNode {
@@ -12260,20 +12732,19 @@ console.log(findLargestInBST(rootLargest)); // 7
 ```
 
 ```python
-def find_largest_iterative(root):
+def find_largest_recursive(root):
     if not root:
         return None
-    curr = root
-    while curr.right:
-        curr = curr.right
-    return curr.data
+    if not root.right:
+        return root.data
+    return find_largest_recursive(root.right)
 
 
 # Time Complexity: O(H)
-# Space Complexity: O(1)
+# Space Complexity: O(H)
 ```
 
-```js
+```javascript
 // Recursive approach to find the largest value in BST
 
 class TreeNode {
@@ -12312,21 +12783,9 @@ console.log(findLargestInBSTRecursive(rootLargest)); // 7
 // Space Complexity: O(h) due to the recursion stack
 ```
 
-```python
-def find_largest_recursive(root):
-    if not root:
-        return None
-    if not root.right:
-        return root.data
-    return find_largest_recursive(root.right)
+5. Deletion in Binary Search Tree **O(N), O(1)**
 
-
-# Time Complexity: O(H)
-# Space Complexity: O(H)
-```
-
-### 5. Deletion in Binary Search Tree **O(N), O(1)**
-```
+```text
 Given the root of a BST and a value K, delete the node with value K from the BST and return the root of the modified BST.
 
 Approach 1: (with max value in left subtree)
@@ -12340,7 +12799,42 @@ Approach 2: (with min value in right subtree)
 3. Delete the min value node from the right subtree.
 ```
 
-```js
+```python
+def get_min_node(node):
+    curr = node
+    while curr.left:
+        curr = curr.left
+    return curr
+
+
+def delete_bst_recursive(root, key):
+    if not root:
+        return None
+
+    if key < root.data:
+        root.left = delete_bst_recursive(root.left, key)
+    elif key > root.data:
+        root.right = delete_bst_recursive(root.right, key)
+    else:
+        # Case 1 & 2: Node with only one child or no child
+        if not root.left:
+            return root.right
+        elif not root.right:
+            return root.left
+
+        # Case 3: Node with two children
+        successor = get_min_node(root.right)
+        root.data = successor.data
+        root.right = delete_bst_recursive(root.right, successor.data)
+
+    return root
+
+
+# Time Complexity: O(H)
+# Space Complexity: O(H)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * * This function implements the deletion of a node with value 'k' from a Binary Search Tree (BST).
@@ -12464,41 +12958,53 @@ console.log(JSON.stringify(deleteNode(rootDelete, 2))); // BST with node 2 delet
 ```
 
 ```python
-def get_min_node(node):
-    curr = node
-    while curr.left:
-        curr = curr.left
-    return curr
+def delete_bst_iterative(root, key):
+    curr = root
+    prev = None
 
+    # Search for node and track parent
+    while curr and curr.data != key:
+        prev = curr
+        if key < curr.data:
+            curr = curr.left
+        else:
+            curr = curr.right
 
-def delete_bst_recursive(root, key):
-    if not root:
-        return None
+    if not curr:
+        return root
 
-    if key < root.data:
-        root.left = delete_bst_recursive(root.left, key)
-    elif key > root.data:
-        root.right = delete_bst_recursive(root.right, key)
+    # Node has at most one child
+    if not curr.left or not curr.right:
+        new_curr = curr.left if curr.left else curr.right
+        if not prev:
+            return new_curr
+        if curr == prev.left:
+            prev.left = new_curr
+        else:
+            prev.right = new_curr
     else:
-        # Case 1 & 2: Node with only one child or no child
-        if not root.left:
-            return root.right
-        elif not root.right:
-            return root.left
+        # Node has two children: find inorder successor
+        p = None
+        temp = curr.right
+        while temp.left:
+            p = temp
+            temp = temp.left
 
-        # Case 3: Node with two children
-        successor = get_min_node(root.right)
-        root.data = successor.data
-        root.right = delete_bst_recursive(root.right, successor.data)
+        if p:
+            p.left = temp.right
+        else:
+            curr.right = temp.right
+
+        curr.data = temp.data
 
     return root
 
 
 # Time Complexity: O(H)
-# Space Complexity: O(H)
+# Space Complexity: O(1)
 ```
 
-```js
+```javascript
 /* * ALGORITHM EXPLANATION:
  * * 1. Search Phase:
  * - Start at the root.
@@ -12624,59 +13130,31 @@ console.log("Tree after deleting 4:", JSON.stringify(deleteNode(rootDelete, 4)))
  */
 ```
 
-```python
-def delete_bst_iterative(root, key):
-    curr = root
-    prev = None
+6. Construct a Balanced Binary Search Tree from Sorted Array **O(N), O(1)**
 
-    # Search for node and track parent
-    while curr and curr.data != key:
-        prev = curr
-        if key < curr.data:
-            curr = curr.left
-        else:
-            curr = curr.right
-
-    if not curr:
-        return root
-
-    # Node has at most one child
-    if not curr.left or not curr.right:
-        new_curr = curr.left if curr.left else curr.right
-        if not prev:
-            return new_curr
-        if curr == prev.left:
-            prev.left = new_curr
-        else:
-            prev.right = new_curr
-    else:
-        # Node has two children: find inorder successor
-        p = None
-        temp = curr.right
-        while temp.left:
-            p = temp
-            temp = temp.left
-
-        if p:
-            p.left = temp.right
-        else:
-            curr.right = temp.right
-
-        curr.data = temp.data
-
-    return root
-
-
-# Time Complexity: O(H)
-# Space Complexity: O(1)
-```
-
-### 6. Construct a Balanced Binary Search Tree from Sorted Array **O(N), O(1)**
-```
+```text
 Given a sorted array, construct a balanced binary search tree (BST) from it and return the root of the BST.
 ```
 
-```js
+```python
+def sorted_array_to_bst(nums):
+    def build_bst(left, right):
+        if left > right:
+            return None
+        mid = left + (right - left) // 2
+        root = TreeNode(nums[mid])
+        root.left = build_bst(left, mid - 1)
+        root.right = build_bst(mid + 1, right)
+        return root
+
+    return build_bst(0, len(nums) - 1)
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(log N)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -12766,31 +13244,29 @@ console.log(JSON.stringify(balancedBST)); // Balanced BST constructed from the s
  */
 ```
 
-```python
-def sorted_array_to_bst(nums):
-    def build_bst(left, right):
-        if left > right:
-            return None
-        mid = left + (right - left) // 2
-        root = TreeNode(nums[mid])
-        root.left = build_bst(left, mid - 1)
-        root.right = build_bst(mid + 1, right)
-        return root
+7. Check if a Tree is a Binary Search Tree **O(N), O(1)**
 
-    return build_bst(0, len(nums) - 1)
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(log N)
-```
-
-### 7. Check if a Tree is a Binary Search Tree **O(N), O(1)**
-```
+```text
 Given the root of a binary tree, check if it is a binary search tree (BST).
 Property of a balanced BST: In-order traversal of the BST is always sorted.
 ```
 
-```js
+```python
+def is_valid_bst(root, min_val=-float('inf'), max_val=float('inf')):
+    if not root:
+        return True
+
+    if not (min_val < root.data < max_val):
+        return False
+
+    return is_valid_bst(root.left, min_val, root.data) and is_valid_bst(root.right, root.data, max_val)
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 /*
 ALGORITHM EXPLANATION:
 This code validates whether a binary tree is a valid Binary Search Tree (BST).
@@ -12864,28 +13340,39 @@ SPACE COMPLEXITY: O(h)
 */
 ```
 
-```python
-def is_valid_bst(root, min_val=-float('inf'), max_val=float('inf')):
-    if not root:
-        return True
+8. Sorted Array To Balanced BST **O(N), O(1)**
 
-    if not (min_val < root.data < max_val):
-        return False
-
-    return is_valid_bst(root.left, min_val, root.data) and is_valid_bst(root.right, root.data, max_val)
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 8. Sorted Array To Balanced BST **O(N), O(1)**
-```
+```text
 Given an array where elements are sorted in ascending order, convert it to a height Balanced Binary Search Tree (BBST).
 Balanced tree : a height-balanced binary tree is defined as a binary tree in which the depth of the two subtrees of every node never differ by more than 1.
 ```
 
-```js
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def sorted_array_to_balanced_bst(arr):
+    def helper(left, right):
+        if left > right:
+            return None
+        mid = (left + right) // 2
+        node = TreeNode(arr[mid])
+        node.left = helper(left, mid - 1)
+        node.right = helper(mid + 1, right)
+        return node
+
+    return helper(0, len(arr) - 1)
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(log N) recursion stack
+```
+
+```javascript
 // Definition for a binary tree node.
 class Node {
   constructor(data) {
@@ -12940,49 +13427,30 @@ let bst2 = sortedArrayToBST(arr2);
 // Space Complexity: O(n) for the recursive stack space and the BST nodes
 ```
 
-```python
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+---
 
+<a id="unit-4"></a>
 
-def sorted_array_to_balanced_bst(arr):
-    def helper(left, right):
-        if left > right:
-            return None
-        mid = (left + right) // 2
-        node = TreeNode(arr[mid])
-        node.left = helper(left, mid - 1)
-        node.right = helper(mid + 1, right)
-        return node
+## Unit 4 — DSA 4: Two Pointers, Backtracking & Advanced Structures
 
-    return helper(0, len(arr) - 1)
+Multi-pointer techniques, backtracking explorations, loop detection, Morris traversal, lowest common ancestor, and combinatorics.
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(log N) recursion stack
-```
 
 ---
 
-# DSA 4
+<a id="39-two-pointers"></a>
 
-# 1. Two Pointers
+## 39. Two Pointers
 
-### 1. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
+### Questions
 
-```
+1. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
+
+```text
 Given an integer sorted array A and an integer k, find any pair (i, j) such that A[i] + A[j] = k, i != j.
 ```
 
 #### 1. Using Brute Force T(n^2), S(1)
-```js
-// Using Brute Force:
-// Time Complexity: O(n^2)
-// Space Complexity: O(1)
-```
 
 ```python
 # Using Brute Force:
@@ -13001,12 +13469,13 @@ print(check_pair_sum_brute_force([1, 2, 3, 4, 5], 9))  # True
 print(check_pair_sum_brute_force([1, 2, 3, 4, 5], 10)) # False
 ```
 
-#### 2. Using Binary Search T(n log n), S(1)
-```js
-// Using Binary Search:
-// Time Complexity: O(n log n)
+```javascript
+// Using Brute Force:
+// Time Complexity: O(n^2)
 // Space Complexity: O(1)
 ```
+
+#### 2. Using Binary Search T(n log n), S(1)
 
 ```python
 # Using Binary Search:
@@ -13037,12 +13506,13 @@ print(check_pair_sum_binary_search([1, 2, 3, 4, 5], 9))  # True
 print(check_pair_sum_binary_search([1, 2, 3, 4, 5], 10)) # False
 ```
 
-#### 3. Using Hash Set T(n), S(n)
-```js
-// Using Hash Set:
-// Time Complexity: O(n)
-// Space Complexity: O(n)
+```javascript
+// Using Binary Search:
+// Time Complexity: O(n log n)
+// Space Complexity: O(1)
 ```
+
+#### 3. Using Hash Set T(n), S(n)
 
 ```python
 # Using Hash Set:
@@ -13062,8 +13532,39 @@ print(check_pair_sum_hash_set([1, 2, 3, 4, 5], 9))  # True
 print(check_pair_sum_hash_set([1, 2, 3, 4, 5], 10)) # False
 ```
 
+```javascript
+// Using Hash Set:
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+```
+
 #### 4. Using Two Pointers T(n), S(1)
-```js
+
+```python
+# Using Two Pointers
+# Time Complexity: O(n)
+# Space Complexity: O(1)
+def check_pair_sum_two_pointers(arr, k):
+    left = 0
+    right = len(arr) - 1
+
+    while left < right:
+        curr_sum = arr[left] + arr[right]
+        if curr_sum == k:
+            return True
+        elif curr_sum < k:
+            left += 1
+        else:
+            right -= 1
+
+    return False
+
+
+print(check_pair_sum_two_pointers([1, 2, 3, 4, 5], 9))  # True
+print(check_pair_sum_two_pointers([1, 2, 3, 4, 5], 10)) # False
+```
+
+```javascript
 // Using Two Pointers
 // Time Complexity: O(n)
 // Space Complexity: O(1)
@@ -13147,32 +13648,35 @@ console.log(hasPairWithSum([1, 2, 3, 4, 5], 10)); // false
  */
 ```
 
+2. Count Pairs with Sum K if array is sorted and has distinct elements | Two Pointers **O(N), O(1)**
+
 ```python
-# Using Two Pointers
-# Time Complexity: O(n)
-# Space Complexity: O(1)
-def check_pair_sum_two_pointers(arr, k):
+def count_pairs_with_sum_k_distinct(arr, k):
     left = 0
     right = len(arr) - 1
+    count = 0
 
     while left < right:
         curr_sum = arr[left] + arr[right]
         if curr_sum == k:
-            return True
+            count += 1
+            left += 1
+            right -= 1
         elif curr_sum < k:
             left += 1
         else:
             right -= 1
 
-    return False
+    return count
 
 
-print(check_pair_sum_two_pointers([1, 2, 3, 4, 5], 9))  # True
-print(check_pair_sum_two_pointers([1, 2, 3, 4, 5], 10)) # False
+print(count_pairs_with_sum_k_distinct([1, 2, 3, 4, 5], 5))  # 2 (1+4, 2+3)
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-### 2. Count Pairs with Sum K if array is sorted and has distinct elements | Two Pointers **O(N), O(1)**
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION: Two-Pointer Technique
  * --------------------------------------------
@@ -13247,34 +13751,53 @@ console.log(countPairsWithSum([1, 2, 3, 4, 5], 6)); // 2 (1+5, 2+4)
 // and sum) regardless of the input array size.
 ```
 
+3. Count Pairs with Sum K if array is sorted and has duplicates | Two Pointers **O(N), O(1)**
+
 ```python
-def count_pairs_with_sum_k_distinct(arr, k):
+def count_pairs_with_sum_k_duplicates(arr, k):
     left = 0
     right = len(arr) - 1
     count = 0
 
     while left < right:
         curr_sum = arr[left] + arr[right]
-        if curr_sum == k:
-            count += 1
+
+        if curr_sum < k:
             left += 1
+        elif curr_sum > k:
             right -= 1
-        elif curr_sum < k:
-            left += 1
         else:
-            right -= 1
+            # Case 1: Elements at left and right are identical
+            if arr[left] == arr[right]:
+                n = right - left + 1
+                count += n * (n - 1) // 2
+                break
+            else:
+                # Case 2: Count duplicates on left and right
+                c_left = 1
+                while left + 1 < right and arr[left] == arr[left + 1]:
+                    c_left += 1
+                    left += 1
+
+                c_right = 1
+                while right - 1 > left and arr[right] == arr[right - 1]:
+                    c_right += 1
+                    right -= 1
+
+                count += c_left * c_right
+                left += 1
+                right -= 1
 
     return count
 
 
-print(count_pairs_with_sum_k_distinct([1, 2, 3, 4, 5], 5))  # 2 (1+4, 2+3)
+print(count_pairs_with_sum_k_duplicates([1, 2, 3, 3, 4, 5], 6))  # 3 (1+5, 3+3, 2+4)
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 3. Count Pairs with Sum K if array is sorted and has duplicates | Two Pointers **O(N), O(1)**
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  *
@@ -13396,57 +13919,41 @@ console.log(countPairsWithSumDuplicates([1, 5, 5, 5, 5, 5, 8], 10)); // 10 (5+5,
  */
 ```
 
+4. Check if there exists a pair with difference K in a sorted array | Two Pointers **O(N), O(1)**
+
+```text
+Given a sorted integer array A and an integer k. Find any pair (i, j) such that A[j] - A[i] = k, i != j and k > 0.
+Note: 0-based indexing
+```
+
 ```python
-def count_pairs_with_sum_k_duplicates(arr, k):
+def check_pair_diff_k(arr, k):
     left = 0
-    right = len(arr) - 1
-    count = 0
+    right = 1
+    n = len(arr)
 
-    while left < right:
-        curr_sum = arr[left] + arr[right]
-
-        if curr_sum < k:
-            left += 1
-        elif curr_sum > k:
-            right -= 1
+    while right < n and left < n:
+        diff = arr[right] - arr[left]
+        if diff == k and left != right:
+            return True
+        elif diff < k:
+            right += 1
         else:
-            # Case 1: Elements at left and right are identical
-            if arr[left] == arr[right]:
-                n = right - left + 1
-                count += n * (n - 1) // 2
-                break
-            else:
-                # Case 2: Count duplicates on left and right
-                c_left = 1
-                while left + 1 < right and arr[left] == arr[left + 1]:
-                    c_left += 1
-                    left += 1
+            left += 1
+            if left == right:
+                right += 1
 
-                c_right = 1
-                while right - 1 > left and arr[right] == arr[right - 1]:
-                    c_right += 1
-                    right -= 1
-
-                count += c_left * c_right
-                left += 1
-                right -= 1
-
-    return count
+    return False
 
 
-print(count_pairs_with_sum_k_duplicates([1, 2, 3, 3, 4, 5], 6))  # 3 (1+5, 3+3, 2+4)
+print(check_pair_diff_k([1, 3, 5, 8, 12], 5))  # True (8 - 3 = 5)
+print(check_pair_diff_k([1, 3, 5, 8, 12], 4))  # True (5 - 1 = 4)
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 4. Check if there exists a pair with difference K in a sorted array | Two Pointers **O(N), O(1)**
-```
-Given a sorted integer array A and an integer k. Find any pair (i, j) such that A[j] - A[i] = k, i != j and k > 0.
-Note: 0-based indexing
-```
-
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -13520,16 +14027,21 @@ console.log(hasPairWithDifference([1, 2, 3, 4, 5], 6)); // false
  */
 ```
 
+5. Count Pairs with Difference K in a sorted array if array has distinct elements | Two Pointers **O(N), O(1)**
+
 ```python
-def check_pair_diff_k(arr, k):
+def count_pairs_diff_k_distinct(arr, k):
     left = 0
     right = 1
+    count = 0
     n = len(arr)
 
-    while right < n and left < n:
+    while right < n:
         diff = arr[right] - arr[left]
         if diff == k and left != right:
-            return True
+            count += 1
+            left += 1
+            right += 1
         elif diff < k:
             right += 1
         else:
@@ -13537,18 +14049,16 @@ def check_pair_diff_k(arr, k):
             if left == right:
                 right += 1
 
-    return False
+    return count
 
 
-print(check_pair_diff_k([1, 3, 5, 8, 12], 5))  # True (8 - 3 = 5)
-print(check_pair_diff_k([1, 3, 5, 8, 12], 4))  # True (5 - 1 = 4)
+print(count_pairs_diff_k_distinct([1, 3, 5, 8, 12], 2))  # 2 ([1, 3], [3, 5])
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 5. Count Pairs with Difference K in a sorted array if array has distinct elements | Two Pointers **O(N), O(1)**
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  *
@@ -13618,8 +14128,10 @@ console.log(countPairsWithDifference([-3, 0, 1, 3, 6, 8, 11, 14, 21, 25], 5)); /
  */
 ```
 
+6. Count Pairs with Difference K in a sorted array if array has duplicates | Two Pointers **O(N), O(1)**
+
 ```python
-def count_pairs_diff_k_distinct(arr, k):
+def count_pairs_diff_k_duplicates(arr, k):
     left = 0
     right = 1
     count = 0
@@ -13627,28 +14139,36 @@ def count_pairs_diff_k_distinct(arr, k):
 
     while right < n:
         diff = arr[right] - arr[left]
-        if diff == k and left != right:
-            count += 1
+
+        if diff < k or left == right:
+            right += 1
+        elif diff > k:
             left += 1
-            right += 1
-        elif diff < k:
-            right += 1
         else:
-            left += 1
-            if left == right:
+            c_left = 1
+            while left + 1 < n and arr[left] == arr[left + 1]:
+                c_left += 1
+                left += 1
+
+            c_right = 1
+            while right + 1 < n and arr[right] == arr[right + 1]:
+                c_right += 1
                 right += 1
+
+            count += c_left * c_right
+            left += 1
+            right += 1
 
     return count
 
 
-print(count_pairs_diff_k_distinct([1, 3, 5, 8, 12], 2))  # 2 ([1, 3], [3, 5])
+print(count_pairs_diff_k_duplicates([1, 1, 3, 3, 5, 5], 2))  # 8
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 6. Count Pairs with Difference K in a sorted array if array has duplicates | Two Pointers **O(N), O(1)**
-```js
+```javascript
 /**
  * ==========================================================================================
  * ALGORITHM EXPLANATION
@@ -13802,47 +14322,13 @@ console.log(countPairsWithDifferenceDuplicates([1, 5, 5, 5, 5, 5, 8], 0)); // 10
  */
 ```
 
-```python
-def count_pairs_diff_k_duplicates(arr, k):
-    left = 0
-    right = 1
-    count = 0
-    n = len(arr)
+---
 
-    while right < n:
-        diff = arr[right] - arr[left]
+<a id="40-backtracking"></a>
 
-        if diff < k or left == right:
-            right += 1
-        elif diff > k:
-            left += 1
-        else:
-            c_left = 1
-            while left + 1 < n and arr[left] == arr[left + 1]:
-                c_left += 1
-                left += 1
+## 40. Backtracking
 
-            c_right = 1
-            while right + 1 < n and arr[right] == arr[right + 1]:
-                c_right += 1
-                right += 1
-
-            count += c_left * c_right
-            left += 1
-            right += 1
-
-    return count
-
-
-print(count_pairs_diff_k_duplicates([1, 1, 3, 3, 5, 5], 2))  # 8
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 2. Backtracking
-
-## Theory
+### Theory
 
 ### Backtracking vs. Pure Recursion
 In backtracking, we are concerned with only building the necessary calls that could potentially contribute to a solution, whereas recursion might make unnecessary calls that do not lead to a solution.
@@ -13918,11 +14404,11 @@ Think them like a ring diagram
 2, Middle ring is Subsequence : Order matters, No contiguity : Less restrictive
 3, Innermost ring is Subarray : Order matters, Contiguity matters : Most restrictive
 
-## Questions
+### Questions
 
-### 1. Print Valid Parenthesis | Backtracking **O(N), O(1)**
+1. Print Valid Parenthesis | Backtracking **O(N), O(1)**
 
-```
+```text
 Given an integer A pairs of parentheses, write a function to generate all combinations of well-formed parentheses of length 2 * A.
 
 Valid Parentheses Examples for A = 3. We can make 5 valid combinations:
@@ -13939,7 +14425,34 @@ Invalid Parentheses:
 ```
 
 #### Recursive Proactive Approach
-```js
+
+```python
+def generate_parentheses_proactive(n):
+    result = []
+
+    def backtrack(curr, open_count, close_count):
+        if len(curr) == 2 * n:
+            result.append(curr)
+            return
+
+        if open_count < n:
+            backtrack(curr + "(", open_count + 1, close_count)
+
+        if close_count < open_count:
+            backtrack(curr + ")", open_count, close_count + 1)
+
+    backtrack("", 0, 0)
+    return result
+
+
+print(generate_parentheses_proactive(3))
+# ['((()))', '(()())', '(())()', '()(())', '()()()']
+
+# Time Complexity: O(4^n / sqrt(n)) - Catalan Number
+# Space Complexity: O(n) call stack
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -14012,34 +14525,44 @@ printValidParenthesis(3); // ((())), (()()), (())(), ()(()), ()()()
  */
 ```
 
+#### Recursive Reactive Approach
+
 ```python
-def generate_parentheses_proactive(n):
+def is_valid_parentheses_prefix(s, n):
+    open_c = 0
+    close_c = 0
+    for ch in s:
+        if ch == '(':
+            open_c += 1
+        else:
+            close_c += 1
+        if close_c > open_c or open_c > n:
+            return False
+    return True
+
+
+def generate_parentheses_reactive(n):
     result = []
 
-    def backtrack(curr, open_count, close_count):
+    def backtrack(curr):
+        if not is_valid_parentheses_prefix(curr, n):
+            return
+
         if len(curr) == 2 * n:
             result.append(curr)
             return
 
-        if open_count < n:
-            backtrack(curr + "(", open_count + 1, close_count)
+        backtrack(curr + "(")
+        backtrack(curr + ")")
 
-        if close_count < open_count:
-            backtrack(curr + ")", open_count, close_count + 1)
-
-    backtrack("", 0, 0)
+    backtrack("")
     return result
 
 
-print(generate_parentheses_proactive(3))
-# ['((()))', '(()())', '(())()', '()(())', '()()()']
-
-# Time Complexity: O(4^n / sqrt(n)) - Catalan Number
-# Space Complexity: O(n) call stack
+print(generate_parentheses_reactive(3))
 ```
 
-#### Recursive Reactive Approach
-```js
+```javascript
 /*
 ALGORITHM EXPLANATION:
 ======================
@@ -14137,43 +14660,34 @@ SPACE COMPLEXITY: O(n)
 */
 ```
 
+#### Iterative Approach using Stack
+
 ```python
-def is_valid_parentheses_prefix(s, n):
-    open_c = 0
-    close_c = 0
-    for ch in s:
-        if ch == '(':
-            open_c += 1
-        else:
-            close_c += 1
-        if close_c > open_c or open_c > n:
-            return False
-    return True
-
-
-def generate_parentheses_reactive(n):
+def generate_parentheses_iterative(n):
     result = []
+    # Stack stores tuples: (current_string, open_count, close_count)
+    stack = [("", 0, 0)]
 
-    def backtrack(curr):
-        if not is_valid_parentheses_prefix(curr, n):
-            return
+    while stack:
+        curr, open_c, close_c = stack.pop()
 
         if len(curr) == 2 * n:
             result.append(curr)
-            return
+            continue
 
-        backtrack(curr + "(")
-        backtrack(curr + ")")
+        if close_c < open_c:
+            stack.append((curr + ")", open_c, close_c + 1))
 
-    backtrack("")
+        if open_c < n:
+            stack.append((curr + "(", open_c + 1, close_c))
+
     return result
 
 
-print(generate_parentheses_reactive(3))
+print(generate_parentheses_iterative(3))
 ```
 
-#### Iterative Approach using Stack
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION (Iterative DFS):
  * --------------------------------------
@@ -14257,33 +14771,27 @@ printValidParenthesisIterative(3); // ((())), (()()), (())(), ()(()), ()()()
  */
 ```
 
+#### Dynamic Programming
+
 ```python
-def generate_parentheses_iterative(n):
-    result = []
-    # Stack stores tuples: (current_string, open_count, close_count)
-    stack = [("", 0, 0)]
+def generate_parentheses_dp(n):
+    dp = [[] for _ in range(n + 1)]
+    dp[0] = [""]
 
-    while stack:
-        curr, open_c, close_c = stack.pop()
+    for i in range(1, n + 1):
+        for j in range(i):
+            for left in dp[j]:
+                for right in dp[i - 1 - j]:
+                    dp[i].append(f"({left}){right}")
 
-        if len(curr) == 2 * n:
-            result.append(curr)
-            continue
-
-        if close_c < open_c:
-            stack.append((curr + ")", open_c, close_c + 1))
-
-        if open_c < n:
-            stack.append((curr + "(", open_c + 1, close_c))
-
-    return result
+    return dp[n]
 
 
-print(generate_parentheses_iterative(3))
+print(generate_parentheses_dp(3))
+# ['()()()', '()(())', '(())()', '(()())', '((()))']
 ```
 
-#### Dynamic Programming
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION (Dynamic Programming):
  * --------------------------------------------
@@ -14366,30 +14874,36 @@ printValidParenthesisDP(3); // ()()(), ()(()), (())(), (()()), ((()))
  */
 ```
 
-```python
-def generate_parentheses_dp(n):
-    dp = [[] for _ in range(n + 1)]
-    dp[0] = [""]
+2. Generate All Subsets | Backtracking **O(N), O(1)**
 
-    for i in range(1, n + 1):
-        for j in range(i):
-            for left in dp[j]:
-                for right in dp[i - 1 - j]:
-                    dp[i].append(f"({left}){right}")
-
-    return dp[n]
-
-
-print(generate_parentheses_dp(3))
-# ['()()()', '()(())', '(())()', '(()())', '((()))']
-```
-
-### 2. Generate All Subsets | Backtracking **O(N), O(1)**
-```
+```text
 Given an array of distinct elements, return all possible subsets using recursion.
 ```
 
-```js
+```python
+def generate_subsets(nums):
+    result = []
+
+    def backtrack(index, current):
+        result.append(list(current))
+
+        for i in range(index, len(nums)):
+            current.append(nums[i])
+            backtrack(i + 1, current)
+            current.pop()
+
+    backtrack(0, [])
+    return result
+
+
+print(generate_subsets([1, 2, 3]))
+# [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]
+
+# Time Complexity: O(2^N * N)
+# Space Complexity: O(N) auxiliary recursion stack
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * * 1. Approach: Backtracking / Recursion (Include vs. Exclude pattern).
@@ -14459,29 +14973,29 @@ subsets([1, 2, 3]); // [1, 2, 3], [1, 2], [1, 3], [1], [2, 3], [2], [3], []
 ```
 
 ```python
-def generate_subsets(nums):
+def generate_subsets_reverse(nums):
     result = []
 
     def backtrack(index, current):
-        result.append(list(current))
+        if index == len(nums):
+            result.append(list(current))
+            return
 
-        for i in range(index, len(nums)):
-            current.append(nums[i])
-            backtrack(i + 1, current)
-            current.pop()
+        # Exclude
+        backtrack(index + 1, current)
+        # Include
+        current.append(nums[index])
+        backtrack(index + 1, current)
+        current.pop()
 
     backtrack(0, [])
     return result
 
 
-print(generate_subsets([1, 2, 3]))
-# [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]
-
-# Time Complexity: O(2^N * N)
-# Space Complexity: O(N) auxiliary recursion stack
+print(generate_subsets_reverse([1, 2, 3]))
 ```
 
-```js
+```javascript
 // If we want output in the reverse order of the above, we have to make the "exclude" call before the "include" call.
 function subsetsReverse(arr) {
   function generateSubset(index, currentSubset) {
@@ -14508,31 +15022,9 @@ function subsetsReverse(arr) {
 subsetsReverse([1, 2, 3]); // [], [3], [2], [2, 3], [1], [1, 3], [1, 2], [1, 2, 3]
 ```
 
-```python
-def generate_subsets_reverse(nums):
-    result = []
+3. Fitness Meets Variety / Print all possible permutations | Backtracking + Visited Array (DFS) | Backtracking + Swapping **O(N), O(1)**
 
-    def backtrack(index, current):
-        if index == len(nums):
-            result.append(list(current))
-            return
-
-        # Exclude
-        backtrack(index + 1, current)
-        # Include
-        current.append(nums[index])
-        backtrack(index + 1, current)
-        current.pop()
-
-    backtrack(0, [])
-    return result
-
-
-print(generate_subsets_reverse([1, 2, 3]))
-```
-
-### 3. Fitness Meets Variety / Print all possible permutations | Backtracking + Visited Array (DFS) | Backtracking + Swapping **O(N), O(1)**
-```
+```text
 A popular Fitness app FitBit, is looking to make workouts more exciting for its users.
 The app has noticed that people get bored when the same exercises are shown in the same order every time they work out.
 To mix things up, FitBit wants to show all the different ways the exercises can be arranged so that each workout feels new.
@@ -14540,7 +15032,35 @@ Your challenge is to write a program for FitBit that takes a string A as input, 
 Your program should then find and display all possible arrangements of these exercises.
 ```
 
-```js
+```python
+def fitness_meets_variety(activities):
+    result = []
+    visited = [False] * len(activities)
+
+    def backtrack(current):
+        if len(current) == len(activities):
+            result.append(list(current))
+            return
+
+        for i in range(len(activities)):
+            if not visited[i]:
+                visited[i] = True
+                current.append(activities[i])
+                backtrack(current)
+                current.pop()
+                visited[i] = False
+
+    backtrack([])
+    return result
+
+
+print(fitness_meets_variety(["Run", "Swim", "Gym"]))
+
+# Time Complexity: O(N! * N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Algorithm: Backtracking with Visited Array (DFS approach).
  * ---------------------------------------------------------------------------------------------------
@@ -14621,34 +15141,30 @@ permuteExercises('abc');
 ```
 
 ```python
-def fitness_meets_variety(activities):
+def permutations_set(nums):
     result = []
-    visited = [False] * len(activities)
 
-    def backtrack(current):
-        if len(current) == len(activities):
+    def backtrack(current, seen):
+        if len(current) == len(nums):
             result.append(list(current))
             return
 
-        for i in range(len(activities)):
-            if not visited[i]:
-                visited[i] = True
-                current.append(activities[i])
-                backtrack(current)
+        for num in nums:
+            if num not in seen:
+                seen.add(num)
+                current.append(num)
+                backtrack(current, seen)
                 current.pop()
-                visited[i] = False
+                seen.remove(num)
 
-    backtrack([])
+    backtrack([], set())
     return result
 
 
-print(fitness_meets_variety(["Run", "Swim", "Gym"]))
-
-# Time Complexity: O(N! * N)
-# Space Complexity: O(N)
+print(permutations_set([1, 2, 3]))
 ```
 
-```js
+```javascript
 /**
  * Algorithm: Backtracking with Visited Array (DFS approach).
  * --------------------------------------------------------------------------------------------------
@@ -14740,30 +15256,27 @@ console.log(solution("ABC"));
 ```
 
 ```python
-def permutations_set(nums):
+def permute_swapping(nums):
     result = []
 
-    def backtrack(current, seen):
-        if len(current) == len(nums):
-            result.append(list(current))
+    def backtrack(index):
+        if index == len(nums):
+            result.append(list(nums))
             return
 
-        for num in nums:
-            if num not in seen:
-                seen.add(num)
-                current.append(num)
-                backtrack(current, seen)
-                current.pop()
-                seen.remove(num)
+        for i in range(index, len(nums)):
+            nums[index], nums[i] = nums[i], nums[index]
+            backtrack(index + 1)
+            nums[index], nums[i] = nums[i], nums[index]
 
-    backtrack([], set())
+    backtrack(0)
     return result
 
 
-print(permutations_set([1, 2, 3]))
+print(permute_swapping([1, 2, 3]))
 ```
 
-```js
+```javascript
 /**
  * Swapping Approach for Generating Permutations. Without using a visited array.
  * --------------------------------------------------------------------------------------------------
@@ -14861,29 +15374,9 @@ console.log(solution("ABC"));
  */
 ```
 
-```python
-def permute_swapping(nums):
-    result = []
+4. Permutations | Backtracking **O(N), O(1)**
 
-    def backtrack(index):
-        if index == len(nums):
-            result.append(list(nums))
-            return
-
-        for i in range(index, len(nums)):
-            nums[index], nums[i] = nums[i], nums[index]
-            backtrack(index + 1)
-            nums[index], nums[i] = nums[i], nums[index]
-
-    backtrack(0)
-    return result
-
-
-print(permute_swapping([1, 2, 3]))
-```
-
-### 4. Permutations | Backtracking **O(N), O(1)**
-```
+```text
 Given an integer array A of size N denoting collection of numbers , return all possible permutations.
 NOTE:
 No two entries in the permutation sequence should be the same.
@@ -14894,7 +15387,29 @@ Example : next_permutations in C++ / itertools.permutations in python.
 If you do, we will disqualify your submission retroactively and give you penalty points.
 ```
 
-```js
+```python
+def permute(nums):
+    result = []
+    n = len(nums)
+
+    def backtrack(first=0):
+        if first == n:
+            result.append(nums[:])
+            return
+
+        for i in range(first, n):
+            nums[first], nums[i] = nums[i], nums[first]
+            backtrack(first + 1)
+            nums[first], nums[i] = nums[i], nums[first]
+
+    backtrack()
+    return result
+
+
+print(permute([1, 2, 3]))
+```
+
+```javascript
 /**
  * Generate all permutations of an array of unique integers.
  * @param {number[]} A - Input array of integers.
@@ -14931,34 +15446,34 @@ console.log(permute(input)); // [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3,
 // Space Complexity: O(n), for the recursion stack and result storage.
 ```
 
-```python
-def permute(nums):
-    result = []
-    n = len(nums)
+5. Generate all Parentheses II | Backtracking **O(N), O(1)**
 
-    def backtrack(first=0):
-        if first == n:
-            result.append(nums[:])
-            return
-
-        for i in range(first, n):
-            nums[first], nums[i] = nums[i], nums[first]
-            backtrack(first + 1)
-            nums[first], nums[i] = nums[i], nums[first]
-
-    backtrack()
-    return result
-
-
-print(permute([1, 2, 3]))
-```
-
-### 5. Generate all Parentheses II | Backtracking **O(N), O(1)**
-```
+```text
 Given an integer A pairs of parentheses, write a function to generate all combinations of well-formed parentheses of length 2*A.
 ```
 
-```js
+```python
+def generate_parentheses_ii(A):
+    ans = []
+
+    def solve(curr, open_c, close_c):
+        if len(curr) == 2 * A:
+            ans.append(curr)
+            return
+
+        if open_c < A:
+            solve(curr + "(", open_c + 1, close_c)
+        if close_c < open_c:
+            solve(curr + ")", open_c, close_c + 1)
+
+    solve("", 0, 0)
+    return ans
+
+
+print(generate_parentheses_ii(3))
+```
+
+```javascript
 /**
  * Generate all well-formed parentheses combinations of length 2*A.
  * @param {number} A - Number of pairs of parentheses.
@@ -14995,41 +15510,45 @@ console.log(generateParentheses(3)); // ["((()))", "(()())", "(())()", "()(())",
 // Space Complexity: O(n), for the recursion stack and result storage. ?
 ```
 
-```python
-def generate_parentheses_ii(A):
-    ans = []
+---
 
-    def solve(curr, open_c, close_c):
-        if len(curr) == 2 * A:
-            ans.append(curr)
-            return
+<a id="41-linked-list-sorting-and-fast-slow-pointer"></a>
 
-        if open_c < A:
-            solve(curr + "(", open_c + 1, close_c)
-        if close_c < open_c:
-            solve(curr + ")", open_c, close_c + 1)
+## 41. Linked List, Sorting and Fast + Slow Pointer
 
-    solve("", 0, 0)
-    return ans
+### Theory
 
-
-print(generate_parentheses_ii(3))
-```
-
-# 3. Linked List, Sorting and Fast + Slow Pointer
-
-## Theory
 1. Mid = (Size + 1) / 2
 
-## Questions
+### Questions
 
-### 1. Find the middle element of a linked list | Slow and Fast Pointer Technique **O(N), O(1)**
-```
+1. Find the middle element of a linked list | Slow and Fast Pointer Technique **O(N), O(1)**
+
+```text
 Given a linked list, find the middle element of the linked list.
 If there are two middle elements, return the first middle element.
 ```
 
-```js
+```python
+def find_middle(head):
+    if not head:
+        return None
+
+    slow = head
+    fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    return slow
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * findMiddle(head)
  *
@@ -15089,31 +15608,41 @@ console.log(JSON.stringify(findMiddle(head2)));
 // Space Complexity: O(1)
 ```
 
-```python
-def find_middle(head):
-    if not head:
-        return None
+2. Merge Two Sorted Lists **O(N), O(1)**
 
-    slow = head
-    fast = head
-
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-
-    return slow
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Merge Two Sorted Lists **O(N), O(1)**
-```
+```text
 Given two sorted linked lists, merge them into a single sorted linked list.
 ```
 
-```js
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+
+def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    curr = dummy
+
+    while l1 and l2:
+        if l1.val <= l2.val:
+            curr.next = l1
+            l1 = l1.next
+        else:
+            curr.next = l2
+            l2 = l2.next
+        curr = curr.next
+
+    curr.next = l1 if l1 else l2
+    return dummy.next
+
+
+# Time Complexity: O(N + M)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * mergeTwoLists(l1, l2)
  *
@@ -15184,40 +15713,40 @@ console.log(JSON.stringify(mergeTwoLists(l1, l2)));
 // Space Complexity: O(1) since we are modifying the lists in place
 ```
 
-```python
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+3. Sort a Linked List | Merge Sort **O(N), O(1)**
 
-
-def merge_two_lists(l1, l2):
-    dummy = ListNode(0)
-    curr = dummy
-
-    while l1 and l2:
-        if l1.val <= l2.val:
-            curr.next = l1
-            l1 = l1.next
-        else:
-            curr.next = l2
-            l2 = l2.next
-        curr = curr.next
-
-    curr.next = l1 if l1 else l2
-    return dummy.next
-
-
-# Time Complexity: O(N + M)
-# Space Complexity: O(1)
-```
-
-### 3. Sort a Linked List | Merge Sort **O(N), O(1)**
-```
+```text
 Given a linked list, sort it using merge sort.
 ```
 
-```js
+```python
+def sort_list(head):
+    if not head or not head.next:
+        return head
+
+    # Find middle (tortoise and hare with split before second half)
+    prev = None
+    slow = head
+    fast = head
+
+    while fast and fast.next:
+        prev = slow
+        slow = slow.next
+        fast = fast.next.next
+
+    prev.next = None  # Cut the list into two halves
+
+    left = sort_list(head)
+    right = sort_list(slow)
+
+    return merge_two_lists(left, right)
+
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(log N) call stack
+```
+
+```javascript
 /**
  * mergeSort(head)
  *
@@ -15332,39 +15861,50 @@ console.log(JSON.stringify(mergeSort(head)));
 // Space Complexity: O(log n) due to the recursive stack space
 ```
 
-```python
-def sort_list(head):
-    if not head or not head.next:
-        return head
+4. Check Palindrome Linked List | Singly Linked List **O(N), O(1)**
 
-    # Find middle (tortoise and hare with split before second half)
-    prev = None
-    slow = head
-    fast = head
-
-    while fast and fast.next:
-        prev = slow
-        slow = slow.next
-        fast = fast.next.next
-
-    prev.next = None  # Cut the list into two halves
-
-    left = sort_list(head)
-    right = sort_list(slow)
-
-    return merge_two_lists(left, right)
-
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(log N) call stack
-```
-
-### 4. Check Palindrome Linked List | Singly Linked List **O(N), O(1)**
-```
+```text
 Given a linked list, check if it is a palindrome.
 ```
 
-```js
+```python
+def is_palindrome_list(head):
+    if not head or not head.next:
+        return True
+
+    # Find middle
+    slow = head
+    fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    # Reverse second half
+    prev = None
+    curr = slow
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+
+    # Compare first and second half
+    p1 = head
+    p2 = prev
+    while p2:
+        if p1.val != p2.val:
+            return False
+        p1 = p1.next
+        p2 = p2.next
+
+    return True
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * isPalindrome(head)
  *
@@ -15449,69 +15989,18 @@ console.log(isPalindrome(head3)); // false
 // Space Complexity: O(1) since we are using constant space for pointers
 ```
 
-```python
-def is_palindrome_list(head):
-    if not head or not head.next:
-        return True
+---
 
-    # Find middle
-    slow = head
-    fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
+<a id="42-doubly-linked-list-and-detecting-loop"></a>
 
-    # Reverse second half
-    prev = None
-    curr = slow
-    while curr:
-        nxt = curr.next
-        curr.next = prev
-        prev = curr
-        curr = nxt
+## 42. Doubly Linked List and Detecting Loop
 
-    # Compare first and second half
-    p1 = head
-    p2 = prev
-    while p2:
-        if p1.val != p2.val:
-            return False
-        p1 = p1.next
-        p2 = p2.next
+### Questions
 
-    return True
+1. Doubly Linked List **O(N), O(1)**
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 4. Doubly Linked List and Detecting Loop
-
-### 1. Doubly Linked List **O(N), O(1)**
-```
+```text
 A doubly linked list is a type of linked list where each node contains a reference to both the next node and the previous node. This allows traversal in both directions (forward and backward).
-```
-
-```js
-class Node {
-    constructor(data) {
-        this.data = data;
-        this.next = null; // Pointer to the next node
-        this.prev = null; // Pointer to the previous node
-    }
-}
-
-const head = new Node(1);
-const second = new Node(2);
-const third = new Node(3);
-head.prev = null; // Head node has no previous node
-head.next = second; // Link first node to second
-second.prev = head; // Link second node back to first
-second.next = third; // Link second node to third
-third.prev = second; // Link third node back to second
-third.next = null; // Last node points to null
-console.log(head); // { data: 1, next: { data: 2,  next: { data: 3, next: null, prev: [Circular] }, prev: [Circular] }, prev: null }
 ```
 
 ```python
@@ -15541,13 +16030,54 @@ class DoublyLinkedList:
 # Space Complexity: O(N)
 ```
 
-### 2. Insert node just before tail in a dll | Doubly Linked List **O(N), O(1)**
+```javascript
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.next = null; // Pointer to the next node
+        this.prev = null; // Pointer to the previous node
+    }
+}
+
+const head = new Node(1);
+const second = new Node(2);
+const third = new Node(3);
+head.prev = null; // Head node has no previous node
+head.next = second; // Link first node to second
+second.prev = head; // Link second node back to first
+second.next = third; // Link second node to third
+third.prev = second; // Link third node back to second
+third.next = null; // Last node points to null
+console.log(head); // { data: 1, next: { data: 2,  next: { data: 3, next: null, prev: [Circular] }, prev: [Circular] }, prev: null }
 ```
+
+2. Insert node just before tail in a dll | Doubly Linked List **O(N), O(1)**
+
+```text
 Given head and tail of DLL and reference of a node. Add that node just before the tail of Doubly LinkedList.
 Note: The node whose reference is given is not already present in DLL.
 ```
 
-```js
+```python
+def insert_before_tail(head, tail, val):
+    new_node = DLLNode(val)
+    if not tail or not tail.prev:
+        return head
+
+    prev_node = tail.prev
+    prev_node.next = new_node
+    new_node.prev = prev_node
+    new_node.next = tail
+    tail.prev = new_node
+
+    return head
+
+
+# Time Complexity: O(1)
+# Space Complexity: O(1)
+```
+
+```javascript
 /* * ALGORITHM EXPLANATION:
  * 1. Identify the 'current previous' node: Find the node that is currently immediately before the tail (tail.prev).
  * 2. Link New Node Forward: Set the 'next' pointer of the new node to point to the tail.
@@ -15608,34 +16138,32 @@ console.log("Updated List Head:", updatedHead);
 // Explanation: We only use a single auxiliary variable (prevNode) to store a reference; no new data structures are created relative to input size.
 ```
 
-```python
-def insert_before_tail(head, tail, val):
-    new_node = DLLNode(val)
-    if not tail or not tail.prev:
-        return head
+3. Delete a node from a dll | Doubly Linked List **O(N), O(1)**
 
-    prev_node = tail.prev
-    prev_node.next = new_node
-    new_node.prev = prev_node
-    new_node.next = tail
-    tail.prev = new_node
-
-    return head
-
-
-# Time Complexity: O(1)
-# Space Complexity: O(1)
-```
-
-### 3. Delete a node from a dll | Doubly Linked List **O(N), O(1)**
-```
+```text
 Given head of DLL and reference of a Node, remove this node from DLL.
 Note :
 * Node with given reference is already present in DLL.
 * Given node will definitely not be the first or last node.
 ```
 
-```js
+```python
+def delete_dll_node(node):
+    if not node:
+        return
+    if node.prev:
+        node.prev.next = node.next
+    if node.next:
+        node.next.prev = node.prev
+    node.prev = None
+    node.next = None
+
+
+# Time Complexity: O(1)
+# Space Complexity: O(1)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -15700,24 +16228,9 @@ console.log(head);
 // Space Complexity: O(1) - No extra space is allocated proportional to the input size; only temporary references are used.
 ```
 
-```python
-def delete_dll_node(node):
-    if not node:
-        return
-    if node.prev:
-        node.prev.next = node.next
-    if node.next:
-        node.next.prev = node.prev
-    node.prev = None
-    node.next = None
+4. Implement an LRU Cache | Doubly Linked List & Hash Map **O(N), O(1)**
 
-
-# Time Complexity: O(1)
-# Space Complexity: O(1)
-```
-
-### 4. Implement an LRU Cache | Doubly Linked List & Hash Map **O(N), O(1)**
-```
+```text
 Design and implement a data structure for Least Recently Used (LRU) cache. It should support the following operations: get and set.
 1. get(key) – Get the value (will always be positive) of the key if the key exists in the cache, otherwise return –1.
 2. set(key, value) – Set or insert the value if the key is not already present. When the cache reaches its capacity, it should invalidate the least recently used item before inserting the new item.
@@ -15729,7 +16242,42 @@ Definition of “least recently used”: An access to an item is defined as a ge
 ```
 
 #### 1. Class Based Implementation
-```js
+
+```python
+from collections import OrderedDict
+
+
+# Approach 1: Python Built-in OrderedDict (Idiomatic & O(1))
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        # Move key to end (MRU position)
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def set(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            # Pop first item (LRU position)
+            self.cache.popitem(last=False)
+
+
+lru = LRUCache(2)
+lru.set(1, 10)
+lru.set(2, 20)
+print(lru.get(1))  # 10
+lru.set(3, 30)     # evicts key 2
+print(lru.get(2))  # -1
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * 1. Data Structure:
@@ -15939,42 +16487,62 @@ console.log(cache.get(4)); // Expected 40; cache order -> 4,2,6,5
  */
 ```
 
+#### 2. Functional Implementation
+
 ```python
-from collections import OrderedDict
+class Node:
+    def __init__(self, key=0, val=0):
+        self.key = key
+        self.val = val
+        self.prev = None
+        self.next = None
 
 
-# Approach 1: Python Built-in OrderedDict (Idiomatic & O(1))
-class LRUCache:
+class LRUCacheManual:
     def __init__(self, capacity: int):
         self.capacity = capacity
-        self.cache = OrderedDict()
+        self.cache = {}  # key -> Node
+        self.head = Node()  # dummy head (LRU)
+        self.tail = Node()  # dummy tail (MRU)
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    def _remove(self, node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    def _add(self, node):
+        prev_node = self.tail.prev
+        prev_node.next = node
+        node.prev = prev_node
+        node.next = self.tail
+        self.tail.prev = node
 
     def get(self, key: int) -> int:
         if key not in self.cache:
             return -1
-        # Move key to end (MRU position)
-        self.cache.move_to_end(key)
-        return self.cache[key]
+        node = self.cache[key]
+        self._remove(node)
+        self._add(node)
+        return node.val
 
     def set(self, key: int, value: int) -> None:
         if key in self.cache:
-            self.cache.move_to_end(key)
-        self.cache[key] = value
+            self._remove(self.cache[key])
+        node = Node(key, value)
+        self._add(node)
+        self.cache[key] = node
         if len(self.cache) > self.capacity:
-            # Pop first item (LRU position)
-            self.cache.popitem(last=False)
+            lru = self.head.next
+            self._remove(lru)
+            del self.cache[lru.key]
 
 
-lru = LRUCache(2)
-lru.set(1, 10)
-lru.set(2, 20)
-print(lru.get(1))  # 10
-lru.set(3, 30)     # evicts key 2
-print(lru.get(2))  # -1
+# Time Complexity: O(1) for get and set
+# Space Complexity: O(capacity)
 ```
 
-#### 2. Functional Implementation
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -16178,66 +16746,32 @@ function assertEqual(actual, expected, desc) {
 // 2. The Doubly Linked List stores at most N nodes + 2 dummy nodes.
 ```
 
-```python
-class Node:
-    def __init__(self, key=0, val=0):
-        self.key = key
-        self.val = val
-        self.prev = None
-        self.next = None
+5. Detect Cycle in a Linked List | Floyd's Cycle Detection Algorithm **O(N), O(1)**
 
-
-class LRUCacheManual:
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.cache = {}  # key -> Node
-        self.head = Node()  # dummy head (LRU)
-        self.tail = Node()  # dummy tail (MRU)
-        self.head.next = self.tail
-        self.tail.prev = self.head
-
-    def _remove(self, node):
-        node.prev.next = node.next
-        node.next.prev = node.prev
-
-    def _add(self, node):
-        prev_node = self.tail.prev
-        prev_node.next = node
-        node.prev = prev_node
-        node.next = self.tail
-        self.tail.prev = node
-
-    def get(self, key: int) -> int:
-        if key not in self.cache:
-            return -1
-        node = self.cache[key]
-        self._remove(node)
-        self._add(node)
-        return node.val
-
-    def set(self, key: int, value: int) -> None:
-        if key in self.cache:
-            self._remove(self.cache[key])
-        node = Node(key, value)
-        self._add(node)
-        self.cache[key] = node
-        if len(self.cache) > self.capacity:
-            lru = self.head.next
-            self._remove(lru)
-            del self.cache[lru.key]
-
-
-# Time Complexity: O(1) for get and set
-# Space Complexity: O(capacity)
-```
-
-### 5. Detect Cycle in a Linked List | Floyd's Cycle Detection Algorithm **O(N), O(1)**
-```
+```text
 Given the head of a linked list, determine if it has a cycle in it. A cycle means that some node's next pointer points back to a previous node, creating a loop.
 If there is a cycle, return true; otherwise, return false.
 ```
 
-```js
+```python
+def has_cycle(head):
+    slow = head
+    fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+
+    return False
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 function hasCycle(head) {
     let slow = head;
     let fast = head;
@@ -16263,30 +16797,41 @@ console.log(hasCycle(head)); // Output: true
 // Space Complexity: O(1)
 ```
 
+6. Find the starting point of the cycle | Floyd's Cycle Detection Algorithm **O(N), O(1)**
+
+```text
+Given the head of a linked list, if it has a cycle, find the node where the cycle begins. If there is no cycle, return null.
+```
+
 ```python
-def has_cycle(head):
+def detect_cycle_start(head):
     slow = head
     fast = head
 
+    # Step 1: Detect meeting point
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
         if slow == fast:
-            return True
+            break
+    else:
+        return None  # No cycle
 
-    return False
+    # Step 2: Reset pointer to head and advance both at same speed
+    p1 = head
+    p2 = slow
+    while p1 != p2:
+        p1 = p1.next
+        p2 = p2.next
+
+    return p1
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 6. Find the starting point of the cycle | Floyd's Cycle Detection Algorithm **O(N), O(1)**
-```
-Given the head of a linked list, if it has a cycle, find the node where the cycle begins. If there is no cycle, return null.
-```
-
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  * * This function uses Floyd's Cycle-Finding Algorithm (Tortoise and Hare).
@@ -16365,40 +16910,48 @@ console.log(findCycleStart(head)); // Output: Node with value 2
 // regardless of the input size.
 ```
 
+7. Remove the cycle | Floyd's Cycle Detection Algorithm **O(N), O(1)**
+
+```text
+Given the head of a linked list with a cycle, remove the cycle and return the modified linked list.
+```
+
 ```python
-def detect_cycle_start(head):
+def remove_cycle(head):
     slow = head
     fast = head
 
-    # Step 1: Detect meeting point
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
         if slow == fast:
             break
     else:
-        return None  # No cycle
+        return head  # No cycle
 
-    # Step 2: Reset pointer to head and advance both at same speed
     p1 = head
     p2 = slow
-    while p1 != p2:
+
+    if p1 == p2:
+        # Loop starts at head node
+        while p2.next != p1:
+            p2 = p2.next
+        p2.next = None
+        return head
+
+    while p1.next != p2.next:
         p1 = p1.next
         p2 = p2.next
 
-    return p1
+    p2.next = None  # Break the cycle
+    return head
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(1)
 ```
 
-### 7. Remove the cycle | Floyd's Cycle Detection Algorithm **O(N), O(1)**
-```
-Given the head of a linked list with a cycle, remove the cycle and return the modified linked list.
-```
-
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * This function implements Floyd's Cycle-Finding Algorithm (also known as the "Tortoise and Hare" algorithm)
@@ -16489,54 +17042,50 @@ console.log(modifiedHead); // Output: Linked list without cycle
 // -- Reasoning: We only use a fixed number of pointers (slow, fast, headStart, lastNode) regardless of list size.
 ```
 
-```python
-def remove_cycle(head):
-    slow = head
-    fast = head
+---
 
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            break
-    else:
-        return head  # No cycle
+<a id="43-trees-3-morris-inorder-traversal-lca"></a>
 
-    p1 = head
-    p2 = slow
+## 43. Trees 3: Morris Inorder Traversal & LCA
 
-    if p1 == p2:
-        # Loop starts at head node
-        while p2.next != p1:
-            p2 = p2.next
-        p2.next = None
-        return head
+### Theory
 
-    while p1.next != p2.next:
-        p1 = p1.next
-        p2 = p2.next
-
-    p2.next = None  # Break the cycle
-    return head
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-# 5. Trees 3: Morris Inorder Traversal & LCA
-
-## Theory
 1. Property of Binary Search Tree (BST): The inorder traversal of a BST gives the elements in sorted order.
 
-## Questions
+### Questions
 
-### 1. Finding the kth Smallest Element in a Binary Search Tree **O(N), O(1)**
-```
+1. Finding the kth Smallest Element in a Binary Search Tree **O(N), O(1)**
+
+```text
 Given a binary search tree, and a positive integer k, find the kth smallest element in the BST.
 ```
 
-```js
+```python
+def kth_smallest(root, k):
+    stack = []
+    curr = root
+    count = 0
+
+    while curr or stack:
+        while curr:
+            stack.append(curr)
+            curr = curr.left
+
+        curr = stack.pop()
+        count += 1
+        if count == k:
+            return curr.data
+
+        curr = curr.right
+
+    return -1
+
+
+# Time Complexity: O(H + k)
+# Space Complexity: O(H)
+```
+
+```javascript
 /**
  * ==========================================
  * ALGORITHM EXPLANATION
@@ -16676,38 +17225,12 @@ console.log(kthSmallest(root, k)); // Output: 80
  */
 ```
 
-```python
-def kth_smallest(root, k):
-    stack = []
-    curr = root
-    count = 0
+2. Morris Inorder Traversal | Iterative Inorder Traversal without Stack **O(N), O(1)**
 
-    while curr or stack:
-        while curr:
-            stack.append(curr)
-            curr = curr.left
-
-        curr = stack.pop()
-        count += 1
-        if count == k:
-            return curr.data
-
-        curr = curr.right
-
-    return -1
-
-
-# Time Complexity: O(H + k)
-# Space Complexity: O(H)
-```
-
-### 2. Morris Inorder Traversal | Iterative Inorder Traversal without Stack **O(N), O(1)**
-```
+```text
 Morris Traversal is a clever method used to walk through binary trees without needing extra memory structures like stacks or queues.
 This technique not only saves memory but also provides an interesting way to explore trees.
 ```
-
-![alt text](morris-traversal.png)
 
 **Diagram 1: Tree with temporary threads (dotted = thread from inorder predecessor back to curr)**
 
@@ -16784,7 +17307,39 @@ Step  curr  pred  pred.right  Action
 Result: [40, 20, 70, 50, 80, 10, 30, 90, 60]
 ```
 
-```js
+```python
+def morris_inorder_traversal(root):
+    curr = root
+    result = []
+
+    while curr:
+        if not curr.left:
+            result.append(curr.data)
+            curr = curr.right
+        else:
+            # Find inorder predecessor
+            pre = curr.left
+            while pre.right and pre.right != curr:
+                pre = pre.right
+
+            if not pre.right:
+                # Make thread
+                pre.right = curr
+                curr = curr.left
+            else:
+                # Break thread
+                pre.right = None
+                result.append(curr.data)
+                curr = curr.right
+
+    return result
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -16939,44 +17494,40 @@ console.log(morrisInorderTraversal(root)); // [10, 30, 40, 45, 50, 60, 65, 80, 9
  */
 ```
 
-```python
-def morris_inorder_traversal(root):
-    curr = root
-    result = []
+3. Node to Root Path in a Binary Tree **O(N), O(1)**
 
-    while curr:
-        if not curr.left:
-            result.append(curr.data)
-            curr = curr.right
-        else:
-            # Find inorder predecessor
-            pre = curr.left
-            while pre.right and pre.right != curr:
-                pre = pre.right
-
-            if not pre.right:
-                # Make thread
-                pre.right = curr
-                curr = curr.left
-            else:
-                # Break thread
-                pre.right = None
-                result.append(curr.data)
-                curr = curr.right
-
-    return result
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 3. Node to Root Path in a Binary Tree **O(N), O(1)**
-```
+```text
 Given a binary tree and a node B, find the path from the node B to the root of the tree.
 ```
 
-```js
+```python
+def node_to_root_path(root, target):
+    path = []
+
+    def find_path(node):
+        if not node:
+            return False
+
+        path.append(node.data)
+        if node.data == target:
+            return True
+
+        if find_path(node.left) or find_path(node.right):
+            return True
+
+        path.pop()
+        return False
+
+    if find_path(root):
+        return path[::-1]  # Return target to root
+    return []
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * 1. Purpose: Find the path from a specific target node (B) back to the root of a Binary Tree.
@@ -17079,35 +17630,9 @@ console.log(nodeToRootPath(root, B)); // [40, 45, 30, 50]
 // Space Complexity: O(H) where H is the height of the tree (due to recursion stack)
 ```
 
-```python
-def node_to_root_path(root, target):
-    path = []
+4. Lowest Common Ancestor (LCA) in a Binary Search Tree(BST) **O(N), O(1)**
 
-    def find_path(node):
-        if not node:
-            return False
-
-        path.append(node.data)
-        if node.data == target:
-            return True
-
-        if find_path(node.left) or find_path(node.right):
-            return True
-
-        path.pop()
-        return False
-
-    if find_path(root):
-        return path[::-1]  # Return target to root
-    return []
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 4. Lowest Common Ancestor (LCA) in a Binary Search Tree(BST) **O(N), O(1)**
-```
+```text
 Given a Binary Search Tree (BST) and two nodes B and C, find the Lowest Common Ancestor (LCA) of B and C in the BST.
 
 Approach:
@@ -17117,7 +17642,43 @@ Approach:
 ```
 
 #### 1. Path Tracing
-```js
+
+```python
+def lca_path_tracing(root, p, q):
+    def get_path(node, target):
+        if not node:
+            return []
+        if node.data == target:
+            return [node]
+
+        left_path = get_path(node.left, target)
+        if left_path:
+            return [node] + left_path
+
+        right_path = get_path(node.right, target)
+        if right_path:
+            return [node] + right_path
+
+        return []
+
+    path_p = get_path(root, p)
+    path_q = get_path(root, q)
+
+    lca = None
+    for n1, n2 in zip(path_p, path_q):
+        if n1.data == n2.data:
+            lca = n1
+        else:
+            break
+
+    return lca
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ======================================================================================
  * ALGORITHM EXPLANATION: Lowest Common Ancestor (LCA) via Path Tracing
@@ -17312,43 +17873,27 @@ test(bst, 10, 11, null); // both missing
 // ======================================================================================
 ```
 
+#### 2. Optimized BST LCA
+
 ```python
-def lca_path_tracing(root, p, q):
-    def get_path(node, target):
-        if not node:
-            return []
-        if node.data == target:
-            return [node]
-
-        left_path = get_path(node.left, target)
-        if left_path:
-            return [node] + left_path
-
-        right_path = get_path(node.right, target)
-        if right_path:
-            return [node] + right_path
-
-        return []
-
-    path_p = get_path(root, p)
-    path_q = get_path(root, q)
-
-    lca = None
-    for n1, n2 in zip(path_p, path_q):
-        if n1.data == n2.data:
-            lca = n1
+def lca_bst(root, p, q):
+    curr = root
+    while curr:
+        if p < curr.data and q < curr.data:
+            curr = curr.left
+        elif p > curr.data and q > curr.data:
+            curr = curr.right
         else:
-            break
+            return curr
 
-    return lca
+    return None
 
 
-# Time Complexity: O(N)
-# Space Complexity: O(N)
+# Time Complexity: O(H)
+# Space Complexity: O(1)
 ```
 
-#### 2. Optimized BST LCA
-```js
+```javascript
 /*
  * ======================================================================================
  * ALGORITHM EXPLANATION: Optimized BST Lowest Common Ancestor (Iterative)
@@ -17499,32 +18044,33 @@ test(bst, 10, 11, null); // both missing
 // ======================================================================================
 ```
 
-```python
-def lca_bst(root, p, q):
-    curr = root
-    while curr:
-        if p < curr.data and q < curr.data:
-            curr = curr.left
-        elif p > curr.data and q > curr.data:
-            curr = curr.right
-        else:
-            return curr
+5. We are all connected / Lowest Common Ancestor in a Binary Tree / Earliest Common Ancestor **O(N), O(1)**
 
-    return None
-
-
-# Time Complexity: O(H)
-# Space Complexity: O(1)
-```
-
-### 5. We are all connected / Lowest Common Ancestor in a Binary Tree / Earliest Common Ancestor **O(N), O(1)**
-```
+```text
 It is said that we all humans are related through some common ancestor at some point of time.
 Assume that a person can have 0, 1 or 2 children only.
 Given the Binary tree A representing the family tree, discover the earliest common family member who connects two given people B and C in a family tree.
 ```
 
-```js
+```python
+def lowest_common_ancestor(root, p, q):
+    if not root or root == p or root == q:
+        return root
+
+    left = lowest_common_ancestor(root.left, p, q)
+    right = lowest_common_ancestor(root.right, p, q)
+
+    if left and right:
+        return root
+
+    return left if left else right
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 /**
  * ==========================================
  * ALGORITHM EXPLANATION
@@ -17693,32 +18239,45 @@ testLCA(40, 999, null); // 999 not in tree
  */
 ```
 
+6. Recover Binary Search Tree (BST) by Swapping Two Nodes | Morris Traversal
+
+```text
+In a binary search tree (BST), the in-order traversal of the tree results in a sorted sequence. However, if two nodes in the tree are swapped by mistake, the BST property gets violated. The goal of this problem is to recover the tree by swapping the two misplaced nodes back to their correct positions, while maintaining the structure of the tree.
+
+Given a binary search tree (BST) where exactly two nodes are swapped, you are required to recover the tree without changing its structure, i.e., by restoring the swapped nodes.
+```
+
 ```python
-def lowest_common_ancestor(root, p, q):
-    if not root or root == p or root == q:
-        return root
+def recover_bst(root):
+    first = None
+    second = None
+    prev = None
 
-    left = lowest_common_ancestor(root.left, p, q)
-    right = lowest_common_ancestor(root.right, p, q)
+    def inorder(node):
+        nonlocal first, second, prev
+        if not node:
+            return
 
-    if left and right:
-        return root
+        inorder(node.left)
 
-    return left if left else right
+        if prev and prev.data > node.data:
+            if not first:
+                first = prev
+            second = node
+        prev = node
+
+        inorder(node.right)
+
+    inorder(root)
+    if first and second:
+        first.data, second.data = second.data, first.data
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(H)
 ```
 
-### 6. Recover Binary Search Tree (BST) by Swapping Two Nodes | Morris Traversal
-```
-In a binary search tree (BST), the in-order traversal of the tree results in a sorted sequence. However, if two nodes in the tree are swapped by mistake, the BST property gets violated. The goal of this problem is to recover the tree by swapping the two misplaced nodes back to their correct positions, while maintaining the structure of the tree.
-
-Given a binary search tree (BST) where exactly two nodes are swapped, you are required to recover the tree without changing its structure, i.e., by restoring the swapped nodes.
-```
-
-```js
+```javascript
 /*
  * ==========================================
  * ALGORITHM EXPLANATION: Morris Traversal Recovery
@@ -17917,42 +18476,29 @@ console.log('After :', inorderList(root)); // [1, 2, 3, 4]
  */
 ```
 
+7. Path Sum **O(N), O(1)**
+
+```text
+Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
+```
+
 ```python
-def recover_bst(root):
-    first = None
-    second = None
-    prev = None
+def has_path_sum(root, target_sum):
+    if not root:
+        return False
 
-    def inorder(node):
-        nonlocal first, second, prev
-        if not node:
-            return
+    if not root.left and not root.right:
+        return target_sum == root.data
 
-        inorder(node.left)
-
-        if prev and prev.data > node.data:
-            if not first:
-                first = prev
-            second = node
-        prev = node
-
-        inorder(node.right)
-
-    inorder(root)
-    if first and second:
-        first.data, second.data = second.data, first.data
+    remaining = target_sum - root.data
+    return has_path_sum(root.left, remaining) or has_path_sum(root.right, remaining)
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(H)
 ```
 
-### 7. Path Sum **O(N), O(1)**
-```
-Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
-```
-
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -18109,28 +18655,38 @@ test(tree4, 5, 0); // no path sums to 5
  */
 ```
 
-```python
-def has_path_sum(root, target_sum):
-    if not root:
-        return False
+8. Kth Smallest Element In BST **O(N), O(1)**
 
-    if not root.left and not root.right:
-        return target_sum == root.data
-
-    remaining = target_sum - root.data
-    return has_path_sum(root.left, remaining) or has_path_sum(root.right, remaining)
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 8. Kth Smallest Element In BST **O(N), O(1)**
-```
+```text
 Given a binary search tree represented by root A, write a function to find the Bth smallest element in the tree.
 ```
 
-```js
+```python
+def kth_smallest_bst(root, k):
+    count = 0
+    ans = None
+
+    def inorder(node):
+        nonlocal count, ans
+        if not node or ans is not None:
+            return
+
+        inorder(node.left)
+        count += 1
+        if count == k:
+            ans = node.data
+            return
+        inorder(node.right)
+
+    inorder(root)
+    return ans
+
+
+# Time Complexity: O(H + k)
+# Space Complexity: O(H)
+```
+
+```javascript
 // Definition for a BST node using `data` instead of `val`.
 function TreeNode(data, left = null, right = null) {
   this.data  = data;
@@ -18218,33 +18774,20 @@ test(bst3, 2, null); // out of range
 // Space Complexity: O(H) for the stack space used during traversal
 ```
 
+9. Height of Binary Tree in terms of Edges | Recursion **O(N), O(1)**
+
 ```python
-def kth_smallest_bst(root, k):
-    count = 0
-    ans = None
-
-    def inorder(node):
-        nonlocal count, ans
-        if not node or ans is not None:
-            return
-
-        inorder(node.left)
-        count += 1
-        if count == k:
-            ans = node.data
-            return
-        inorder(node.right)
-
-    inorder(root)
-    return ans
+def height_in_edges(root):
+    if not root or (not root.left and not root.right):
+        return 0
+    return 1 + max(height_in_edges(root.left), height_in_edges(root.right))
 
 
-# Time Complexity: O(H + k)
+# Time Complexity: O(N)
 # Space Complexity: O(H)
 ```
 
-### 9. Height of Binary Tree in terms of Edges | Recursion **O(N), O(1)**
-```js
+```javascript
 const heightOfBinaryTreeInEdges = (() => {
   // cache maps each node → its height in edges
   const cache = new WeakMap();
@@ -18291,19 +18834,20 @@ console.log("Height of Binary Tree in terms of Edges:", height);
 // Space Complexity: O(H) where H is the height of the tree (due to recursion stack).
 ```
 
+10. Height of Binary Tree in terms of Nodes | Recursion **O(N), O(1)**
+
 ```python
-def height_in_edges(root):
-    if not root or (not root.left and not root.right):
+def height_in_nodes(root):
+    if not root:
         return 0
-    return 1 + max(height_in_edges(root.left), height_in_edges(root.right))
+    return 1 + max(height_in_nodes(root.left), height_in_nodes(root.right))
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(H)
 ```
 
-### 10. Height of Binary Tree in terms of Nodes | Recursion **O(N), O(1)**
-```js
+```javascript
 const heightOfBinaryTreeInNodes = (() => {
     // cache maps each node → its height in nodes
     const cache = new WeakMap();
@@ -18349,19 +18893,9 @@ console.log("Height of Binary Tree in terms of Nodes:", height);
 // Space Complexity: O(H) where H is the height of the tree (due to recursion stack).
 ```
 
-```python
-def height_in_nodes(root):
-    if not root:
-        return 0
-    return 1 + max(height_in_nodes(root.left), height_in_nodes(root.right))
+11. Diameter of Binary Tree / Height of Binary Tree in terms of Edges | Height of Binary Tree **O(N), O(1)**
 
-
-# Time Complexity: O(N)
-# Space Complexity: O(H)
-```
-
-### 11. Diameter of Binary Tree / Height of Binary Tree in terms of Edges | Height of Binary Tree **O(N), O(1)**
-```
+```text
 Given a binary tree, find the length of the longest path between any two nodes in the tree.
 This path may or may not pass through the root.
 
@@ -18370,7 +18904,30 @@ along the longest path between any two leaf nodes in the tree. This path may or 
 pass through the root.
 ```
 
-```js
+```python
+def diameter_of_binary_tree(root):
+    max_diameter = 0
+
+    def height(node):
+        nonlocal max_diameter
+        if not node:
+            return 0
+
+        left_h = height(node.left)
+        right_h = height(node.right)
+
+        max_diameter = max(max_diameter, left_h + right_h)
+        return 1 + max(left_h, right_h)
+
+    height(root)
+    return max_diameter
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(H)
+```
+
+```javascript
 /**
  * ==========================================
  * ALGORITHM EXPLANATION
@@ -18554,31 +19111,41 @@ runTest("Diameter not passing through root", tree4, 4);
  */
 ```
 
+12. Level Order Traversal of Binary Tree | Deque **O(N), O(1)**
+
 ```python
-def diameter_of_binary_tree(root):
-    max_diameter = 0
+from collections import deque
 
-    def height(node):
-        nonlocal max_diameter
-        if not node:
-            return 0
 
-        left_h = height(node.left)
-        right_h = height(node.right)
+def level_order(root):
+    if not root:
+        return []
 
-        max_diameter = max(max_diameter, left_h + right_h)
-        return 1 + max(left_h, right_h)
+    queue = deque([root])
+    result = []
 
-    height(root)
-    return max_diameter
+    while queue:
+        level_size = len(queue)
+        current_level = []
+
+        for _ in range(level_size):
+            node = queue.popleft()
+            current_level.append(node.data)
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+        result.append(current_level)
+
+    return result
 
 
 # Time Complexity: O(N)
-# Space Complexity: O(H)
+# Space Complexity: O(N)
 ```
 
-### 12. Level Order Traversal of Binary Tree | Deque **O(N), O(1)**
-```js
+```javascript
 /**
  * Performs a level‐order traversal of a binary tree and
  * returns a nested array of values, one sub-array per level.
@@ -18691,47 +19258,46 @@ console.log(
 // Space Complexity: O(N) in the worst case (queue holds all nodes)
 ```
 
-```python
-from collections import deque
+13. Next Pointer Binary Tree | Level Order Traversal + Deque | Iterative Level-Order Threading **O(N), O(1)**
 
-
-def level_order(root):
-    if not root:
-        return []
-
-    queue = deque([root])
-    result = []
-
-    while queue:
-        level_size = len(queue)
-        current_level = []
-
-        for _ in range(level_size):
-            node = queue.popleft()
-            current_level.append(node.data)
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
-
-        result.append(current_level)
-
-    return result
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-### 13. Next Pointer Binary Tree | Level Order Traversal + Deque | Iterative Level-Order Threading **O(N), O(1)**
-```
+```text
 Given a perfect binary tree initially with all next pointers set to nullptr,
 modify the tree in-place to connect each node’s next pointer to the next node
 in the same level from left to right, following an level-order traversal.
 ```
 
 #### 1. Level Order Traversal + Deque
-```js
+
+```python
+from collections import deque
+
+
+def connect_next_pointers_bfs(root):
+    if not root:
+        return root
+
+    queue = deque([root])
+
+    while queue:
+        level_size = len(queue)
+        for i in range(level_size):
+            node = queue.popleft()
+            if i < level_size - 1:
+                node.next = queue[0]
+
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+    return root
+
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 // Level Order Traversal using Queue to connect `next` pointers
 /**
  * Definition for a perfect‐binary‐tree node with a `next` pointer.
@@ -18874,37 +19440,33 @@ printNextPointers(imperfect);
 // 8->25  25->null
 ```
 
+#### 2. Iterative Level-Order Threading
+
 ```python
-from collections import deque
-
-
-def connect_next_pointers_bfs(root):
+def connect_next_pointers_constant_space(root):
     if not root:
         return root
 
-    queue = deque([root])
+    leftmost = root
 
-    while queue:
-        level_size = len(queue)
-        for i in range(level_size):
-            node = queue.popleft()
-            if i < level_size - 1:
-                node.next = queue[0]
+    while leftmost.left:
+        curr = leftmost
+        while curr:
+            curr.left.next = curr.right
+            if curr.next:
+                curr.right.next = curr.next.left
+            curr = curr.next
 
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
+        leftmost = leftmost.left
 
     return root
 
 
 # Time Complexity: O(N)
-# Space Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-#### 2. Iterative Level-Order Threading
-```js
+```javascript
 /*
  * ======================================================================================
  * ALGORITHM EXPLANATION
@@ -19090,32 +19652,40 @@ printLevels(root);
  */
 ```
 
+14. Vertical Order Traversal of Binary Tree | HashMap & Level Order Traversal **O(N), O(1)**
+
 ```python
-def connect_next_pointers_constant_space(root):
+from collections import defaultdict, deque
+
+
+def vertical_order_traversal(root):
     if not root:
-        return root
+        return []
 
-    leftmost = root
+    col_map = defaultdict(list)
+    queue = deque([(root, 0)])
+    min_col = 0
+    max_col = 0
 
-    while leftmost.left:
-        curr = leftmost
-        while curr:
-            curr.left.next = curr.right
-            if curr.next:
-                curr.right.next = curr.next.left
-            curr = curr.next
+    while queue:
+        node, col = queue.popleft()
+        col_map[col].append(node.data)
+        min_col = min(min_col, col)
+        max_col = max(max_col, col)
 
-        leftmost = leftmost.left
+        if node.left:
+            queue.append((node.left, col - 1))
+        if node.right:
+            queue.append((node.right, col + 1))
 
-    return root
+    return [col_map[c] for c in range(min_col, max_col + 1)]
 
 
 # Time Complexity: O(N)
-# Space Complexity: O(1)
+# Space Complexity: O(N)
 ```
 
-### 14. Vertical Order Traversal of Binary Tree | HashMap & Level Order Traversal **O(N), O(1)**
-```js
+```javascript
 /**
  * Definition for a binary tree node.
  */
@@ -19247,22 +19817,25 @@ console.log("Test 5 – Complex:", verticalOrder1D(complex));
 // → [4, 2, 6, 1, 3, 7, 5]
 ```
 
+15. Top View of Binary Tree | Vertical Order Traversal **O(N), O(1)**
+
 ```python
-from collections import defaultdict, deque
+from collections import deque
 
 
-def vertical_order_traversal(root):
+def top_view(root):
     if not root:
         return []
 
-    col_map = defaultdict(list)
+    col_map = {}
     queue = deque([(root, 0)])
     min_col = 0
     max_col = 0
 
     while queue:
         node, col = queue.popleft()
-        col_map[col].append(node.data)
+        if col not in col_map:
+            col_map[col] = node.data
         min_col = min(min_col, col)
         max_col = max(max_col, col)
 
@@ -19278,8 +19851,7 @@ def vertical_order_traversal(root):
 # Space Complexity: O(N)
 ```
 
-### 15. Top View of Binary Tree | Vertical Order Traversal **O(N), O(1)**
-```js
+```javascript
 /**
  * Definition for a binary tree node.
  */
@@ -19435,11 +20007,13 @@ console.log("Test 7 – Complex:", topView(complex));
 // Columns: -2→4, -1→2, 0→1, +1→3, +2→6
 ```
 
+16. Bottom View of Binary Tree | Vertical Order Traversal **O(N), O(1)**
+
 ```python
 from collections import deque
 
 
-def top_view(root):
+def bottom_view(root):
     if not root:
         return []
 
@@ -19450,8 +20024,7 @@ def top_view(root):
 
     while queue:
         node, col = queue.popleft()
-        if col not in col_map:
-            col_map[col] = node.data
+        col_map[col] = node.data  # Overwrite with later level values
         min_col = min(min_col, col)
         max_col = max(max_col, col)
 
@@ -19467,8 +20040,7 @@ def top_view(root):
 # Space Complexity: O(N)
 ```
 
-### 16. Bottom View of Binary Tree | Vertical Order Traversal **O(N), O(1)**
-```js
+```javascript
 /**
  * Definition for a binary tree node.
  */
@@ -19626,39 +20198,34 @@ console.log("Test 4 – Complex:", bottomView(complex));
 //    2→6
 ```
 
+17. Invert Binary Tree | Level Order Traversal
+
 ```python
 from collections import deque
 
 
-def bottom_view(root):
+def invert_tree(root):
     if not root:
-        return []
+        return None
 
-    col_map = {}
-    queue = deque([(root, 0)])
-    min_col = 0
-    max_col = 0
-
+    queue = deque([root])
     while queue:
-        node, col = queue.popleft()
-        col_map[col] = node.data  # Overwrite with later level values
-        min_col = min(min_col, col)
-        max_col = max(max_col, col)
+        curr = queue.popleft()
+        curr.left, curr.right = curr.right, curr.left
 
-        if node.left:
-            queue.append((node.left, col - 1))
-        if node.right:
-            queue.append((node.right, col + 1))
+        if curr.left:
+            queue.append(curr.left)
+        if curr.right:
+            queue.append(curr.right)
 
-    return [col_map[c] for c in range(min_col, max_col + 1)]
+    return root
 
 
 # Time Complexity: O(N)
 # Space Complexity: O(N)
 ```
 
-### 17. Invert Binary Tree | Level Order Traversal
-```js
+```javascript
 /**
  * Definition for a binary tree node.
  */
@@ -19788,34 +20355,14 @@ console.log("         Mixed after: ", levelOrder(mixed));
 //    after  [[1], [3,2], [4,null]]
 ```
 
-```python
-from collections import deque
+---
 
+<a id="44-hashing-3-internal-implementation-problems"></a>
 
-def invert_tree(root):
-    if not root:
-        return None
+## 44. Hashing 3: Internal Implementation & Problems
 
-    queue = deque([root])
-    while queue:
-        curr = queue.popleft()
-        curr.left, curr.right = curr.right, curr.left
+### Theory
 
-        if curr.left:
-            queue.append(curr.left)
-        if curr.right:
-            queue.append(curr.right)
-
-    return root
-
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-# 6. Hashing 3: Internal Implementation & Problems
-
-## Theory
 To overcome the issues of DAT (specifically space wastage and size limits), we utilize the advantage of DAT but with a fixed-size table. This is **Hashing**.
 
 ### Concept:
@@ -19918,10 +20465,11 @@ When load factor exceeds the threshold, we perform rehashing:
 * Add 3 elements, λ increases.
 * Now λ > Threshold, Rehash -> 8 buckets and 9 elements → λ = 9/8 = 1.125
 
-## Questions
+### Questions
 
-### 1. Check if given element exists in Q queries | DAT (Direct Address Table) **O(N), O(N)**
-```
+1. Check if given element exists in Q queries | DAT (Direct Address Table) **O(N), O(N)**
+
+```text
 Given an array of size N and Q queries. In each query, an element is given. We have to check whether that element exists or not in the given array.
 
 arr: [2, 4, 11, 15, 6, 8, 14, 9]
@@ -19933,7 +20481,20 @@ Queries:
 14 → true
 ```
 
-```js
+```python
+def check_elements_queries(arr, queries):
+    # Using Python built-in set for O(1) lookups
+    elements_set = set(arr)
+    return [q in elements_set for q in queries]
+
+
+print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
+
+# Time Complexity: O(N + Q)
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -20032,20 +20593,8 @@ for (let i = 0; i < queries.length; i++) {
  */
 ```
 
-```python
-def check_elements_queries(arr, queries):
-    # Using Python built-in set for O(1) lookups
-    elements_set = set(arr)
-    return [q in elements_set for q in queries]
+2. Implement hash map | Arrays of Linked lists **O(N), O(N)**
 
-
-print(check_elements_queries([1, 5, 3, 7, 2], [5, 4, 2]))  # [True, False, True]
-
-# Time Complexity: O(N + Q)
-# Space Complexity: O(N)
-```
-
-### 2. Implement hash map | Arrays of Linked lists **O(N), O(N)**
 Implement following methods with best time complexity possible.
 1. put(key, value) → void
 2. get(key) → value
@@ -20055,7 +20604,65 @@ Implement following methods with best time complexity possible.
 6. size() → int
 7. isEmpty() → boolean
 
-```js
+```python
+class HashNode:
+    def __init__(self, key, val):
+        self.key = key
+        self.val = val
+        self.next = None
+
+
+class MyHashMapSeparateChaining:
+    def __init__(self, capacity=10):
+        self.capacity = capacity
+        self.buckets = [None] * capacity
+
+    def _hash(self, key):
+        return hash(key) % self.capacity
+
+    def put(self, key, val):
+        idx = self._hash(key)
+        head = self.buckets[idx]
+        curr = head
+        while curr:
+            if curr.key == key:
+                curr.val = val
+                return
+            curr = curr.next
+
+        new_node = HashNode(key, val)
+        new_node.next = self.buckets[idx]
+        self.buckets[idx] = new_node
+
+    def get(self, key):
+        idx = self._hash(key)
+        curr = self.buckets[idx]
+        while curr:
+            if curr.key == key:
+                return curr.val
+            curr = curr.next
+        return -1
+
+    def remove(self, key):
+        idx = self._hash(key)
+        curr = self.buckets[idx]
+        prev = None
+        while curr:
+            if curr.key == key:
+                if prev:
+                    prev.next = curr.next
+                else:
+                    self.buckets[idx] = curr.next
+                return
+            prev = curr
+            curr = curr.next
+
+
+# Time Complexity: O(1) average
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ======================================================================================
  * ALGORITHM EXPLANATION: HASH MAP IMPLEMENTATION (SEPARATE CHAINING)
@@ -20319,64 +20926,14 @@ map.display(); // Visualizing buckets after more insertions
 ```
 
 ```python
-class HashNode:
-    def __init__(self, key, val):
-        self.key = key
-        self.val = val
-        self.next = None
-
-
-class MyHashMapSeparateChaining:
-    def __init__(self, capacity=10):
-        self.capacity = capacity
-        self.buckets = [None] * capacity
-
-    def _hash(self, key):
-        return hash(key) % self.capacity
-
-    def put(self, key, val):
-        idx = self._hash(key)
-        head = self.buckets[idx]
-        curr = head
-        while curr:
-            if curr.key == key:
-                curr.val = val
-                return
-            curr = curr.next
-
-        new_node = HashNode(key, val)
-        new_node.next = self.buckets[idx]
-        self.buckets[idx] = new_node
-
-    def get(self, key):
-        idx = self._hash(key)
-        curr = self.buckets[idx]
-        while curr:
-            if curr.key == key:
-                return curr.val
-            curr = curr.next
-        return -1
-
-    def remove(self, key):
-        idx = self._hash(key)
-        curr = self.buckets[idx]
-        prev = None
-        while curr:
-            if curr.key == key:
-                if prev:
-                    prev.next = curr.next
-                else:
-                    self.buckets[idx] = curr.next
-                return
-            prev = curr
-            curr = curr.next
-
-
-# Time Complexity: O(1) average
-# Space Complexity: O(N)
+# In Python, standard dict is already an optimized hash map:
+# my_map = {}
+# my_map[key] = val (O(1))
+# val = my_map.get(key, default) (O(1))
+# del my_map[key] (O(1))
 ```
 
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION: HASH MAP (SEPARATE CHAINING)
  * ---------------------------------------------------
@@ -20698,22 +21255,38 @@ for (const [key, val] of map) {
  */
 ```
 
-```python
-# In Python, standard dict is already an optimized hash map:
-# my_map = {}
-# my_map[key] = val (O(1))
-# val = my_map.get(key, default) (O(1))
-# del my_map[key] (O(1))
-```
+3. Longest Subarray Zero Sum | Map + Prefix Sum **O(N), O(N)**
 
-### 3. Longest Subarray Zero Sum | Map + Prefix Sum **O(N), O(N)**
-```
+```text
 Given an array A of N integers.
 Find the length of the longest subarray in the array which sums to zero.
 If there is no subarray which sums to zero then return 0.
 ```
 
-```js
+```python
+def longest_subarray_zero_sum(arr):
+    # Using Python built-in dict to map prefix_sum -> first occurrence index
+    prefix_map = {0: -1}
+    curr_sum = 0
+    max_len = 0
+
+    for i, val in enumerate(arr):
+        curr_sum += val
+        if curr_sum in prefix_map:
+            max_len = max(max_len, i - prefix_map[curr_sum])
+        else:
+            prefix_map[curr_sum] = i
+
+    return max_len
+
+
+print(longest_subarray_zero_sum([15, -2, 2, -8, 1, 7, 10, 23]))  # 5 (-2, 2, -8, 1, 7)
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * The goal is to find the length of the longest subarray where the sum of elements is 0.
@@ -20775,32 +21348,14 @@ console.log(longestSubarrayZeroSum([3, 2, -1])); // 0
 // In the worst case (all prefix sums are unique), the Map will store N entries.
 ```
 
-```python
-def longest_subarray_zero_sum(arr):
-    # Using Python built-in dict to map prefix_sum -> first occurrence index
-    prefix_map = {0: -1}
-    curr_sum = 0
-    max_len = 0
+---
 
-    for i, val in enumerate(arr):
-        curr_sum += val
-        if curr_sum in prefix_map:
-            max_len = max(max_len, i - prefix_map[curr_sum])
-        else:
-            prefix_map[curr_sum] = i
+<a id="45-maths-combinatorics-basics-prime-numbers"></a>
 
-    return max_len
+## 45. Maths: Combinatorics Basics & Prime Numbers
 
+### Theory
 
-print(longest_subarray_zero_sum([15, -2, 2, -8, 1, 7, 10, 23]))  # 5 (-2, 2, -8, 1, 7)
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
-# 7. Maths: Combinatorics Basics & Prime Numbers
-
-## Theory
 1. Additon Rule: Used when you can choose one of several options (OR).
 2. Multiplication Rule: Used when you can choose multiple options in sequence (AND).
 3. Permutation: Arrangement of objects where order matters.
@@ -20814,10 +21369,11 @@ print(longest_subarray_zero_sum([15, -2, 2, -8, 1, 7, 10, 23]))  # 5 (-2, 2, -8,
    4. nCr = nC(n - r)
    5. nCr = n-1Cr + n-1C(r - 1)
 
-## Questions
+### Questions
 
-### 1. Most Varied Meal Combo. Find restaurant with maximum unique meal combinations. | Multiplication Rule (AND) **O(N), O(1)**
-```
+1. Most Varied Meal Combo. Find restaurant with maximum unique meal combinations. | Multiplication Rule (AND) **O(N), O(1)**
+
+```text
 Zomato is offering a special meal combo. We have to find the restaurant with the most varied meal combo. We have given a 2D array where each row represents a restaurant and each column represents a type of dish. The value in the cell indicates the number of dishes available for that type.
 The task is to find the restaurant with the maximum number of unique meal combinations.
 
@@ -20826,28 +21382,6 @@ The task is to find the restaurant with the maximum number of unique meal combin
     [4, 3, 3],
     [1, 1, 1]
 ]]
-```
-
-```js
-function mostVariedMealCombo(restaurants) {
-  let maxCombo = 0;
-  let restaurantIndex = -1;
-
-  for (let i = 0; i < restaurants.length; i++) {
-    const comboCount = restaurants[i][0] * restaurants[i][1] * restaurants[i][2];
-    if (comboCount > maxCombo) {
-      maxCombo = comboCount;
-      restaurantIndex = i;
-    }
-  }
-
-  return restaurantIndex;
-}
-
-console.log(mostVariedMealCombo([[3, 2, 2], [4, 3, 3], [1, 1, 1]])); // 1 // Restaurant 1 has the most varied meal combo with 36 combinations. That is second restaurant.
-
-// Time Complexity: O(n)
-// Space Complexity: O(1)
 ```
 
 ```python
@@ -20869,8 +21403,55 @@ def most_varied_meal_combo(restaurants):
 # Space Complexity: O(1)
 ```
 
-### 2. Check Prime Numbers. Check if a number is prime using factor counting. **O(N), O(1)**
-```js
+```javascript
+function mostVariedMealCombo(restaurants) {
+  let maxCombo = 0;
+  let restaurantIndex = -1;
+
+  for (let i = 0; i < restaurants.length; i++) {
+    const comboCount = restaurants[i][0] * restaurants[i][1] * restaurants[i][2];
+    if (comboCount > maxCombo) {
+      maxCombo = comboCount;
+      restaurantIndex = i;
+    }
+  }
+
+  return restaurantIndex;
+}
+
+console.log(mostVariedMealCombo([[3, 2, 2], [4, 3, 3], [1, 1, 1]])); // 1 // Restaurant 1 has the most varied meal combo with 36 combinations. That is second restaurant.
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+```
+
+2. Check Prime Numbers. Check if a number is prime using factor counting. **O(N), O(1)**
+
+```python
+def count_factors(n):
+    count = 0
+    i = 1
+    while i * i <= n:
+        if n % i == 0:
+            count += 1
+            if i != n // i:
+                count += 1
+        i += 1
+    return count
+
+
+def is_prime(n):
+    return count_factors(n) == 2
+
+
+print(is_prime(5))   # True
+print(is_prime(10))  # False
+
+# Time Complexity: O(sqrt(N))
+# Space Complexity: O(1)
+```
+
+```javascript
 function countFactors(n) {
   let count = 0;
   for (let i = 1; i <= (n / i); i++) { // Loop from 1 to sqrt(n)
@@ -20900,32 +21481,32 @@ console.log(isPrime(2)); // true
 // Space Complexity: O(1)
 ```
 
+3. Primes from 1 to N | Sieve of Eratosthenes **O(N), O(1)**
+
 ```python
-def count_factors(n):
-    count = 0
-    i = 1
-    while i * i <= n:
-        if n % i == 0:
-            count += 1
-            if i != n // i:
-                count += 1
-        i += 1
-    return count
+def sieve_of_eratosthenes(n):
+    is_prime = [True] * (n + 1)
+    is_prime[0] = False
+    is_prime[1] = False
+
+    p = 2
+    while p * p <= n:
+        if is_prime[p]:
+            for i in range(p * p, n + 1, p):
+                is_prime[i] = False
+        p += 1
+
+    return [i for i in range(2, n + 1) if is_prime[i]]
 
 
-def is_prime(n):
-    return count_factors(n) == 2
+print(sieve_of_eratosthenes(30))
+# [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 
-
-print(is_prime(5))   # True
-print(is_prime(10))  # False
-
-# Time Complexity: O(sqrt(N))
-# Space Complexity: O(1)
+# Time Complexity: O(N log log N)
+# Space Complexity: O(N)
 ```
 
-### 3. Primes from 1 to N | Sieve of Eratosthenes **O(N), O(1)**
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION: Sieve of Eratosthenes
  * --------------------------------------------
@@ -21011,35 +21592,34 @@ console.log(sieveOfEratosthenes(2)); // [2]
 // We create an array of size n + 1 to store the boolean values.
 ```
 
+4. Find All Primes | Sieve of Eratosthenes **O(N), O(1)**
+
+```text
+Given an integer A. Find the list of all prime numbers in the range [1, A].
+```
+
 ```python
-def sieve_of_eratosthenes(n):
-    is_prime = [True] * (n + 1)
-    is_prime[0] = False
-    is_prime[1] = False
+def find_all_primes(n):
+    prime = [True] * (n + 1)
+    prime[0] = prime[1] = False
 
     p = 2
     while p * p <= n:
-        if is_prime[p]:
+        if prime[p]:
             for i in range(p * p, n + 1, p):
-                is_prime[i] = False
+                prime[i] = False
         p += 1
 
-    return [i for i in range(2, n + 1) if is_prime[i]]
+    return [i for i in range(n + 1) if prime[i]]
 
 
-print(sieve_of_eratosthenes(30))
-# [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+print(find_all_primes(10))  # [2, 3, 5, 7]
 
 # Time Complexity: O(N log log N)
 # Space Complexity: O(N)
 ```
 
-### 4. Find All Primes | Sieve of Eratosthenes **O(N), O(1)**
-```
-Given an integer A. Find the list of all prime numbers in the range [1, A].
-```
-
-```js
+```javascript
 /**
  * Algorithm: Sieve of Eratosthenes
  * --------------------------------
@@ -21106,31 +21686,31 @@ console.log(findAllPrimes(12)); // [2, 3, 5, 7, 11]
  */
 ```
 
-```python
-def find_all_primes(n):
-    prime = [True] * (n + 1)
-    prime[0] = prime[1] = False
-
-    p = 2
-    while p * p <= n:
-        if prime[p]:
-            for i in range(p * p, n + 1, p):
-                prime[i] = False
-        p += 1
-
-    return [i for i in range(n + 1) if prime[i]]
-
-
-print(find_all_primes(10))  # [2, 3, 5, 7]
-
-# Time Complexity: O(N log log N)
-# Space Complexity: O(N)
-```
-
-### 5. Print Pascal Triangle (nCr % M) | 2D Arrays | nCr formula
+5. Print Pascal Triangle (nCr % M) | 2D Arrays | nCr formula
 
 #### 1. Pascal Triangle using 2D Arrays
-```js
+
+```python
+def generate_pascal_triangle(num_rows):
+    triangle = []
+
+    for i in range(num_rows):
+        row = [1] * (i + 1)
+        for j in range(1, i):
+            row[j] = triangle[i - 1][j - 1] + triangle[i - 1][j]
+        triangle.append(row)
+
+    return triangle
+
+
+print(generate_pascal_triangle(5))
+# [[1], [1, 1], [1, 2, 1], [1, 3, 3, 1], [1, 4, 6, 4, 1]]
+
+# Time Complexity: O(num_rows^2)
+# Space Complexity: O(num_rows^2)
+```
+
+```javascript
 /*
  * ALGORITHM: Pascal's Triangle using 2D Arrays
  *
@@ -21197,28 +21777,25 @@ console.log(printPascalTriangle(5));
  */
 ```
 
+#### 2. Using nCr Formula
+
 ```python
-def generate_pascal_triangle(num_rows):
-    triangle = []
-
-    for i in range(num_rows):
-        row = [1] * (i + 1)
-        for j in range(1, i):
-            row[j] = triangle[i - 1][j - 1] + triangle[i - 1][j]
-        triangle.append(row)
-
-    return triangle
+def pascal_row_ncr(n):
+    row = [1] * (n + 1)
+    val = 1
+    for k in range(1, n + 1):
+        val = val * (n - k + 1) // k
+        row[k] = val
+    return row
 
 
-print(generate_pascal_triangle(5))
-# [[1], [1, 1], [1, 2, 1], [1, 3, 3, 1], [1, 4, 6, 4, 1]]
+print(pascal_row_ncr(4))  # [1, 4, 6, 4, 1]
 
-# Time Complexity: O(num_rows^2)
-# Space Complexity: O(num_rows^2)
+# Time Complexity: O(N)
+# Space Complexity: O(1) excluding output
 ```
 
-#### 2. Using nCr Formula
-```js
+```javascript
 // nCr = n! / (r! * (n - r)!)
 
 /*
@@ -21281,22 +21858,17 @@ printPascalTriangleNCr(5);
 ```
 
 ```python
-def pascal_row_ncr(n):
-    row = [1] * (n + 1)
-    val = 1
-    for k in range(1, n + 1):
-        val = val * (n - k + 1) // k
-        row[k] = val
-    return row
+def get_pascal_triangle_rows(num_rows):
+    res = []
+    for r in range(num_rows):
+        res.append(pascal_row_ncr(r))
+    return res
 
 
-print(pascal_row_ncr(4))  # [1, 4, 6, 4, 1]
-
-# Time Complexity: O(N)
-# Space Complexity: O(1) excluding output
+print(get_pascal_triangle_rows(5))
 ```
 
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -21365,31 +21937,21 @@ printPascalOptimized(5);
  */
 ```
 
-```python
-def get_pascal_triangle_rows(num_rows):
-    res = []
-    for r in range(num_rows):
-        res.append(pascal_row_ncr(r))
-    return res
+---
 
+<a id="46-multiple-approaches"></a>
 
-print(get_pascal_triangle_rows(5))
-```
+## 46. Multiple Approaches
 
-# 8. Multiple Approaches
+### Questions
 
-### 1. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
+1. Check pair with given sum exists in a sorted array having distinct elements | Brute Force | Binary Search | Hash Set | Two Pointers
 
-```
+```text
 Given an integer sorted array A and an integer k, find any pair (i, j) such that A[i] + A[j] = k, i != j.
 ```
 
 #### 1. Using Brute Force T(n^2), S(1)
-```js
-// Using Brute Force:
-// Time Complexity: O(n^2)
-// Space Complexity: O(1)
-```
 
 ```python
 def pair_sum_brute(arr, target):
@@ -21401,12 +21963,13 @@ def pair_sum_brute(arr, target):
     return False
 ```
 
-#### 2. Using Binary Search T(n log n), S(1)
-```js
-// Using Binary Search:
-// Time Complexity: O(n log n)
+```javascript
+// Using Brute Force:
+// Time Complexity: O(n^2)
 // Space Complexity: O(1)
 ```
+
+#### 2. Using Binary Search T(n log n), S(1)
 
 ```python
 def pair_sum_bs(arr, target):
@@ -21425,12 +21988,13 @@ def pair_sum_bs(arr, target):
     return False
 ```
 
-#### 3. Using Hash Set T(n), S(n)
-```js
-// Using Hash Set:
-// Time Complexity: O(n)
-// Space Complexity: O(n)
+```javascript
+// Using Binary Search:
+// Time Complexity: O(n log n)
+// Space Complexity: O(1)
 ```
+
+#### 3. Using Hash Set T(n), S(n)
 
 ```python
 def pair_sum_set(arr, target):
@@ -21442,8 +22006,30 @@ def pair_sum_set(arr, target):
     return False
 ```
 
+```javascript
+// Using Hash Set:
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+```
+
 #### 4. Using Two Pointers T(n), S(1)
-```js
+
+```python
+def pair_sum_two_pointers(arr, target):
+    lo = 0
+    hi = len(arr) - 1
+    while lo < hi:
+        s = arr[lo] + arr[hi]
+        if s == target:
+            return True
+        elif s < target:
+            lo += 1
+        else:
+            hi -= 1
+    return False
+```
+
+```javascript
 // Using Two Pointers
 // Time Complexity: O(n)
 // Space Complexity: O(1)
@@ -21527,23 +22113,9 @@ console.log(hasPairWithSum([1, 2, 3, 4, 5], 10)); // false
  */
 ```
 
-```python
-def pair_sum_two_pointers(arr, target):
-    lo = 0
-    hi = len(arr) - 1
-    while lo < hi:
-        s = arr[lo] + arr[hi]
-        if s == target:
-            return True
-        elif s < target:
-            lo += 1
-        else:
-            hi -= 1
-    return False
-```
+2. Print Valid Parenthesis | Backtracking **O(N), O(1)**
 
-### 2. Print Valid Parenthesis | Backtracking **O(N), O(1)**
-```
+```text
 Given an integer A pairs of parentheses, write a function to generate all combinations of well-formed parentheses of length 2 * A.
 
 Valid Parentheses Examples for A = 3. We can make 5 valid combinations:
@@ -21560,7 +22132,25 @@ Invalid Parentheses:
 ```
 
 #### Recursive Proactive Approach
-```js
+
+```python
+def gen_parens_proactive(n):
+    res = []
+
+    def dfs(s, o, c):
+        if len(s) == 2 * n:
+            res.append(s)
+            return
+        if o < n:
+            dfs(s + "(", o + 1, c)
+        if c < o:
+            dfs(s + ")", o, c + 1)
+
+    dfs("", 0, 0)
+    return res
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -21633,25 +22223,28 @@ printValidParenthesis(3); // ((())), (()()), (())(), ()(()), ()()()
  */
 ```
 
+#### Recursive Reactive Approach
+
 ```python
-def gen_parens_proactive(n):
+def gen_parens_reactive(n):
     res = []
 
-    def dfs(s, o, c):
+    def dfs(s):
+        open_c = s.count("(")
+        close_c = s.count(")")
+        if close_c > open_c or open_c > n:
+            return
         if len(s) == 2 * n:
             res.append(s)
             return
-        if o < n:
-            dfs(s + "(", o + 1, c)
-        if c < o:
-            dfs(s + ")", o, c + 1)
+        dfs(s + "(")
+        dfs(s + ")")
 
-    dfs("", 0, 0)
+    dfs("")
     return res
 ```
 
-#### Recursive Reactive Approach
-```js
+```javascript
 /*
 ALGORITHM EXPLANATION:
 ======================
@@ -21749,27 +22342,25 @@ SPACE COMPLEXITY: O(n)
 */
 ```
 
-```python
-def gen_parens_reactive(n):
-    res = []
+#### Iterative Approach using Stack
 
-    def dfs(s):
-        open_c = s.count("(")
-        close_c = s.count(")")
-        if close_c > open_c or open_c > n:
-            return
+```python
+def gen_parens_stack(n):
+    res = []
+    stack = [("", 0, 0)]
+    while stack:
+        s, o, c = stack.pop()
         if len(s) == 2 * n:
             res.append(s)
-            return
-        dfs(s + "(")
-        dfs(s + ")")
-
-    dfs("")
+            continue
+        if c < o:
+            stack.append((s + ")", o, c + 1))
+        if o < n:
+            stack.append((s + "(", o + 1, c))
     return res
 ```
 
-#### Iterative Approach using Stack
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION (Iterative DFS):
  * --------------------------------------
@@ -21853,24 +22444,21 @@ printValidParenthesisIterative(3); // ((())), (()()), (())(), ()(()), ()()()
  */
 ```
 
+#### Dynamic Programming
+
 ```python
-def gen_parens_stack(n):
-    res = []
-    stack = [("", 0, 0)]
-    while stack:
-        s, o, c = stack.pop()
-        if len(s) == 2 * n:
-            res.append(s)
-            continue
-        if c < o:
-            stack.append((s + ")", o, c + 1))
-        if o < n:
-            stack.append((s + "(", o + 1, c))
-    return res
+def gen_parens_dp(n):
+    dp = [[] for _ in range(n + 1)]
+    dp[0] = [""]
+    for i in range(1, n + 1):
+        for j in range(i):
+            for l in dp[j]:
+                for r in dp[i - 1 - j]:
+                    dp[i].append(f"({l}){r}")
+    return dp[n]
 ```
 
-#### Dynamic Programming
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION (Dynamic Programming):
  * --------------------------------------------
@@ -21953,22 +22541,22 @@ printValidParenthesisDP(3); // ()()(), ()(()), (())(), (()()), ((()))
  */
 ```
 
-```python
-def gen_parens_dp(n):
-    dp = [[] for _ in range(n + 1)]
-    dp[0] = [""]
-    for i in range(1, n + 1):
-        for j in range(i):
-            for l in dp[j]:
-                for r in dp[i - 1 - j]:
-                    dp[i].append(f"({l}){r}")
-    return dp[n]
-```
-
-### 3. Print Pascal Triangle (nCr % M) | 2D Arrays | nCr formula
+3. Print Pascal Triangle (nCr % M) | 2D Arrays | nCr formula
 
 #### 1. Pascal Triangle using 2D Arrays
-```js
+
+```python
+def pascal_triangle_2d(n):
+    triangle = []
+    for i in range(n):
+        row = [1] * (i + 1)
+        for j in range(1, i):
+            row[j] = triangle[i - 1][j - 1] + triangle[i - 1][j]
+        triangle.append(row)
+    return triangle
+```
+
+```javascript
 /*
  * ALGORITHM: Pascal's Triangle using 2D Arrays
  *
@@ -22035,19 +22623,19 @@ console.log(printPascalTriangle(5));
  */
 ```
 
+#### 2. Using nCr Formula
+
 ```python
-def pascal_triangle_2d(n):
-    triangle = []
-    for i in range(n):
-        row = [1] * (i + 1)
-        for j in range(1, i):
-            row[j] = triangle[i - 1][j - 1] + triangle[i - 1][j]
-        triangle.append(row)
-    return triangle
+def pascal_row_ncr_single(n):
+    row = [1] * (n + 1)
+    val = 1
+    for k in range(1, n + 1):
+        val = val * (n - k + 1) // k
+        row[k] = val
+    return row
 ```
 
-#### 2. Using nCr Formula
-```js
+```javascript
 // nCr = n! / (r! * (n - r)!)
 
 /*
@@ -22110,16 +22698,11 @@ printPascalTriangleNCr(5);
 ```
 
 ```python
-def pascal_row_ncr_single(n):
-    row = [1] * (n + 1)
-    val = 1
-    for k in range(1, n + 1):
-        val = val * (n - k + 1) // k
-        row[k] = val
-    return row
+def pascal_triangle_ncr(n):
+    return [pascal_row_ncr_single(i) for i in range(n)]
 ```
 
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * ----------------------
@@ -22188,18 +22771,22 @@ printPascalOptimized(5);
  */
 ```
 
-```python
-def pascal_triangle_ncr(n):
-    return [pascal_row_ncr_single(i) for i in range(n)]
-```
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — DSA 5: Heaps, Dynamic Programming & Graphs
+
+Priority queues, greedy strategies, 1D/2D/knapsack dynamic programming, graph traversals, shortest paths, and topological sort.
+
 
 ---
 
-# DSA 5
+<a id="47-heaps-introduction"></a>
 
-# 1. Heaps Introduction
+## 47. Heaps Introduction
 
-## Theory
+### Theory
 
 ### Heap Data Structure
 ```
@@ -22431,10 +23018,11 @@ In case of even length array, based on requirement, median can be defined as:
 - Average Median: Average of both middle elements
 ```
 
-## Questions
+### Questions
 
-### 1. Insertion in min heap **O(N), O(N)**
-```
+1. Insertion in min heap **O(N), O(N)**
+
+```text
 heap[] = arr: [5, 12, 20, 25, 13, 24, 22, 35, 94]
                0   1   2   3   4   5   6   7   8
 
@@ -22464,7 +23052,8 @@ TC: O(log n) ⇒ Insertion in Heap is O(log n)
 ```
 
 **Before insertion:**
-```
+
+```text
             5(0)
           /     \
       12(1)      20(2)
@@ -22476,7 +23065,8 @@ TC: O(log n) ⇒ Insertion in Heap is O(log n)
 
 **After inserting 10 at end (index 9):**
 Heap order is disturbed at 13(4) and 10(9).
-```
+
+```text
             5(0)
           /     \
       12(1)       20(2)
@@ -22488,7 +23078,8 @@ Heap order is disturbed at 13(4) and 10(9).
 
 **After upheapify swaps:**
 Now heap order is restored.
-```
+
+```text
             5(0)
           /     \
       10(1)      20(2)
@@ -22498,7 +23089,35 @@ Now heap order is restored.
 35(7) 94(8) 13(9)
 ```
 
-```js
+```python
+# Insertion in Min-Heap (Manual / Array based)
+def insert_min_heap(heap, val):
+    heap.append(val)
+    curr = len(heap) - 1
+
+    while curr > 0:
+        parent = (curr - 1) // 2
+        if heap[curr] < heap[parent]:
+            heap[curr], heap[parent] = heap[parent], heap[curr]
+            curr = parent
+        else:
+            break
+
+    return heap
+
+
+# Using Python's built-in heapq module:
+# import heapq
+# heapq.heappush(heap, val)  # O(log N)
+
+h = [1, 5, 3, 7, 9, 8]
+print(insert_min_heap(h, 2))
+
+# Time Complexity: O(log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Insertion in Min-Heap
 /*
  * Algorithm Explanation:
@@ -22581,36 +23200,9 @@ console.log(heap); // Min-heap array after all insertions
  */
 ```
 
-```python
-# Insertion in Min-Heap (Manual / Array based)
-def insert_min_heap(heap, val):
-    heap.append(val)
-    curr = len(heap) - 1
+2. Extraction in min heap **O(N), O(N)**
 
-    while curr > 0:
-        parent = (curr - 1) // 2
-        if heap[curr] < heap[parent]:
-            heap[curr], heap[parent] = heap[parent], heap[curr]
-            curr = parent
-        else:
-            break
-
-    return heap
-
-
-# Using Python's built-in heapq module:
-# import heapq
-# heapq.heappush(heap, val)  # O(log N)
-
-h = [1, 5, 3, 7, 9, 8]
-print(insert_min_heap(h, 2))
-
-# Time Complexity: O(log N)
-# Space Complexity: O(1)
-```
-
-### 2. Extraction in min heap **O(N), O(N)**
-```
+```text
 heap[] = arr: [5, 12, 20, 25, 13, 24, 22, 35, 94]
                0   1   2   3   4   5   6   7   8
 
@@ -22640,7 +23232,8 @@ TC: O(log n) ⇒ Removal in Heap is O(log n)
 ```
 
 **Before removal:**
-```
+
+```text
          2(0)
        /      \
     4(1)       5(2)
@@ -22652,7 +23245,8 @@ TC: O(log n) ⇒ Removal in Heap is O(log n)
 
 **After swap(0, n-1) and removing last:**
 After removing 2, heap order is disturbed.
-```
+
+```text
          20(0)
        /      \
     4(1)       5(2)
@@ -22662,16 +23256,62 @@ After removing 2, heap order is disturbed.
 
 **After downheapify:**
 After downheapify now heap order is restored.
-```
+
+```text
          4(0)
        /      \
     6(1)       5(2)
    /    \     /    \
  11(3) 20(4) 7(5)  8(6)
 ```
+
 Now heap order is restored.
 
-```js
+```python
+# Extraction in Min-Heap
+def extract_min(heap):
+    if not heap:
+        return None
+    if len(heap) == 1:
+        return heap.pop()
+
+    min_val = heap[0]
+    heap[0] = heap.pop()  # Move last element to root
+
+    # Sift Down (Heapify)
+    curr = 0
+    n = len(heap)
+    while True:
+        left = 2 * curr + 1
+        right = 2 * curr + 2
+        smallest = curr
+
+        if left < n and heap[left] < heap[smallest]:
+            smallest = left
+        if right < n and heap[right] < heap[smallest]:
+            smallest = right
+
+        if smallest != curr:
+            heap[curr], heap[smallest] = heap[smallest], heap[curr]
+            curr = smallest
+        else:
+            break
+
+    return min_val
+
+
+# Using Python's built-in heapq module:
+# import heapq
+# min_val = heapq.heappop(heap)  # O(log N)
+
+h = [1, 5, 3, 7, 9, 8]
+print(extract_min(h))  # 1
+
+# Time Complexity: O(log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 // Removal in Min-Heap
 /*
  * ==========================================
@@ -22815,52 +23455,83 @@ console.log("Heap after removal:", heap);
  */
 ```
 
+3. Min-Heap Class Implementation **O(N), O(N)**
+
 ```python
-# Extraction in Min-Heap
-def extract_min(heap):
-    if not heap:
-        return None
-    if len(heap) == 1:
-        return heap.pop()
-
-    min_val = heap[0]
-    heap[0] = heap.pop()  # Move last element to root
-
-    # Sift Down (Heapify)
-    curr = 0
-    n = len(heap)
-    while True:
-        left = 2 * curr + 1
-        right = 2 * curr + 2
-        smallest = curr
-
-        if left < n and heap[left] < heap[smallest]:
-            smallest = left
-        if right < n and heap[right] < heap[smallest]:
-            smallest = right
-
-        if smallest != curr:
-            heap[curr], heap[smallest] = heap[smallest], heap[curr]
-            curr = smallest
-        else:
-            break
-
-    return min_val
+import heapq
 
 
-# Using Python's built-in heapq module:
-# import heapq
-# min_val = heapq.heappop(heap)  # O(log N)
+# Approach 1: Using Python's built-in heapq
+class MinHeapBuiltin:
+    def __init__(self):
+        self.heap = []
 
-h = [1, 5, 3, 7, 9, 8]
-print(extract_min(h))  # 1
+    def push(self, val):
+        heapq.heappush(self.heap, val)
 
-# Time Complexity: O(log N)
-# Space Complexity: O(1)
+    def pop(self):
+        return heapq.heappop(self.heap) if self.heap else None
+
+    def peek(self):
+        return self.heap[0] if self.heap else None
+
+    def size(self):
+        return len(self.heap)
+
+
+# Approach 2: Manual Class Implementation
+class MinHeap:
+    def __init__(self):
+        self.heap = []
+
+    def push(self, val):
+        self.heap.append(val)
+        self._bubble_up(len(self.heap) - 1)
+
+    def pop(self):
+        if not self.heap:
+            return None
+        if len(self.heap) == 1:
+            return self.heap.pop()
+        root = self.heap[0]
+        self.heap[0] = self.heap.pop()
+        self._bubble_down(0)
+        return root
+
+    def peek(self):
+        return self.heap[0] if self.heap else None
+
+    def _bubble_up(self, idx):
+        while idx > 0:
+            parent = (idx - 1) // 2
+            if self.heap[idx] < self.heap[parent]:
+                self.heap[idx], self.heap[parent] = self.heap[parent], self.heap[idx]
+                idx = parent
+            else:
+                break
+
+    def _bubble_down(self, idx):
+        n = len(self.heap)
+        while True:
+            left = 2 * idx + 1
+            right = 2 * idx + 2
+            smallest = idx
+            if left < n and self.heap[left] < self.heap[smallest]:
+                smallest = left
+            if right < n and self.heap[right] < self.heap[smallest]:
+                smallest = right
+            if smallest != idx:
+                self.heap[idx], self.heap[smallest] = self.heap[smallest], self.heap[idx]
+                idx = smallest
+            else:
+                break
+
+
+# Time Complexity: O(log N) for push and pop, O(1) for peek
+# Space Complexity: O(N)
 ```
 
-### 3. Min-Heap Class Implementation **O(N), O(N)**
-```js
+```javascript
 /**
  * ALGORITHM: MIN-HEAP
  * -------------------
@@ -23013,82 +23684,43 @@ console.log(minHeap.heap);         // Output: [10, 15, 20]
  */
 ```
 
+4. Max-Heap Class Implementation **O(N), O(N)**
+
 ```python
 import heapq
 
 
-# Approach 1: Using Python's built-in heapq
-class MinHeapBuiltin:
+# Using Python's built-in heapq (by storing negated values)
+class MaxHeap:
     def __init__(self):
         self.heap = []
 
     def push(self, val):
-        heapq.heappush(self.heap, val)
+        heapq.heappush(self.heap, -val)
 
     def pop(self):
-        return heapq.heappop(self.heap) if self.heap else None
+        if not self.heap:
+            return None
+        return -heapq.heappop(self.heap)
 
     def peek(self):
-        return self.heap[0] if self.heap else None
+        return -self.heap[0] if self.heap else None
 
     def size(self):
         return len(self.heap)
 
 
-# Approach 2: Manual Class Implementation
-class MinHeap:
-    def __init__(self):
-        self.heap = []
+max_h = MaxHeap()
+for v in [5, 3, 8, 1, 2]:
+    max_h.push(v)
+print(max_h.pop())  # 8
+print(max_h.pop())  # 5
 
-    def push(self, val):
-        self.heap.append(val)
-        self._bubble_up(len(self.heap) - 1)
-
-    def pop(self):
-        if not self.heap:
-            return None
-        if len(self.heap) == 1:
-            return self.heap.pop()
-        root = self.heap[0]
-        self.heap[0] = self.heap.pop()
-        self._bubble_down(0)
-        return root
-
-    def peek(self):
-        return self.heap[0] if self.heap else None
-
-    def _bubble_up(self, idx):
-        while idx > 0:
-            parent = (idx - 1) // 2
-            if self.heap[idx] < self.heap[parent]:
-                self.heap[idx], self.heap[parent] = self.heap[parent], self.heap[idx]
-                idx = parent
-            else:
-                break
-
-    def _bubble_down(self, idx):
-        n = len(self.heap)
-        while True:
-            left = 2 * idx + 1
-            right = 2 * idx + 2
-            smallest = idx
-            if left < n and self.heap[left] < self.heap[smallest]:
-                smallest = left
-            if right < n and self.heap[right] < self.heap[smallest]:
-                smallest = right
-            if smallest != idx:
-                self.heap[idx], self.heap[smallest] = self.heap[smallest], self.heap[idx]
-                idx = smallest
-            else:
-                break
-
-
-# Time Complexity: O(log N) for push and pop, O(1) for peek
+# Time Complexity: O(log N) for push/pop, O(1) for peek
 # Space Complexity: O(N)
 ```
 
-### 4. Max-Heap Class Implementation **O(N), O(N)**
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION: MaxHeap
  * * A MaxHeap is a specialized binary tree-based data structure that satisfies the "Heap Property":
@@ -23249,42 +23881,37 @@ console.log(maxHeap.heap);          // Output: [5, 1, 10]
  */
 ```
 
+5. Build a Priority Queue | Min-Heap **O(N), O(N)**
+
 ```python
 import heapq
 
 
-# Using Python's built-in heapq (by storing negated values)
-class MaxHeap:
+class PriorityQueue:
     def __init__(self):
         self.heap = []
 
-    def push(self, val):
-        heapq.heappush(self.heap, -val)
+    def add(self, val):
+        heapq.heappush(self.heap, val)
 
-    def pop(self):
-        if not self.heap:
-            return None
-        return -heapq.heappop(self.heap)
+    def poll(self):
+        return heapq.heappop(self.heap) if self.heap else None
 
     def peek(self):
-        return -self.heap[0] if self.heap else None
+        return self.heap[0] if self.heap else None
 
     def size(self):
         return len(self.heap)
 
+    def is_empty(self):
+        return len(self.heap) == 0
 
-max_h = MaxHeap()
-for v in [5, 3, 8, 1, 2]:
-    max_h.push(v)
-print(max_h.pop())  # 8
-print(max_h.pop())  # 5
 
-# Time Complexity: O(log N) for push/pop, O(1) for peek
+# Time Complexity: O(log N) add/poll, O(1) peek
 # Space Complexity: O(N)
 ```
 
-### 5. Build a Priority Queue | Min-Heap **O(N), O(N)**
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION: MIN-HEAP BASED PRIORITY QUEUE
  * ---------------------------------------------------
@@ -23371,41 +23998,43 @@ console.log(pq.size()); // 1
  */
 ```
 
-```python
-import heapq
+6. Connecting the ropes | Priority Queue **O(N), O(N)**
 
-
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-
-    def add(self, val):
-        heapq.heappush(self.heap, val)
-
-    def poll(self):
-        return heapq.heappop(self.heap) if self.heap else None
-
-    def peek(self):
-        return self.heap[0] if self.heap else None
-
-    def size(self):
-        return len(self.heap)
-
-    def is_empty(self):
-        return len(self.heap) == 0
-
-
-# Time Complexity: O(log N) add/poll, O(1) peek
-# Space Complexity: O(N)
-```
-
-### 6. Connecting the ropes | Priority Queue **O(N), O(N)**
-```
+```text
 We are given an array that represents the size of different ropes. In a single operation, you can connect two ropes. Cost of connecting two ropes is sum of the length of ropes you are connecting. Find the minimum cost of connecting all the ropes.
 ```
 
 #### 1. Insertion Sort
-```js
+
+```python
+def min_cost_connect_ropes_insertion_sort(ropes):
+    if len(ropes) <= 1:
+        return 0
+
+    ropes.sort()
+    total_cost = 0
+
+    while len(ropes) > 1:
+        cost = ropes.pop(0) + ropes.pop(0)
+        total_cost += cost
+
+        # Insert cost maintaining sorted order
+        inserted = False
+        for i in range(len(ropes)):
+            if ropes[i] >= cost:
+                ropes.insert(i, cost)
+                inserted = True
+                break
+        if not inserted:
+            ropes.append(cost)
+
+    return total_cost
+
+
+print(min_cost_connect_ropes_insertion_sort([4, 3, 2, 6]))  # 29
+```
+
+```javascript
 /**
  * ALGORITHM: Minimum Cost to Connect Ropes
  * 1. Start with an initial array of rope lengths.
@@ -23490,36 +24119,39 @@ console.log("Minimum cost for [1, 2, 3, 4, 5]:", minCostToConnectRopes(ropes2));
  */
 ```
 
+#### 2. Priority Queue
+
 ```python
-def min_cost_connect_ropes_insertion_sort(ropes):
-    if len(ropes) <= 1:
+import heapq
+
+
+def min_cost_to_connect_ropes(lengths):
+    if not lengths or len(lengths) <= 1:
         return 0
 
-    ropes.sort()
-    total_cost = 0
+    # Using Python's built-in heapq.heapify - O(N)
+    heapq.heapify(lengths)
+    total = 0
 
-    while len(ropes) > 1:
-        cost = ropes.pop(0) + ropes.pop(0)
-        total_cost += cost
+    while len(lengths) > 1:
+        a = heapq.heappop(lengths)
+        b = heapq.heappop(lengths)
+        cost = a + b
+        total += cost
+        heapq.heappush(lengths, cost)
 
-        # Insert cost maintaining sorted order
-        inserted = False
-        for i in range(len(ropes)):
-            if ropes[i] >= cost:
-                ropes.insert(i, cost)
-                inserted = True
-                break
-        if not inserted:
-            ropes.append(cost)
-
-    return total_cost
+    return total
 
 
-print(min_cost_connect_ropes_insertion_sort([4, 3, 2, 6]))  # 29
+print(min_cost_to_connect_ropes([1, 2, 3]))       # 9
+print(min_cost_to_connect_ropes([4, 3, 2, 6]))    # 29
+print(min_cost_to_connect_ropes([1, 2, 5, 10, 35, 89]))  # 224
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(1) in-place or O(N)
 ```
 
-#### 2. Priority Queue
-```js
+```javascript
 /**
  * -------- Priority Queue (Min-Heap) --------
  * ALGORITHM EXPLANATION:
@@ -23709,43 +24341,48 @@ console.log(minCostToConnectRopes([2, 2, 3, 3])); // 20
  */
 ```
 
-```python
-import heapq
+7. Build a Heap from Array **O(N), O(N)**
 
-
-def min_cost_to_connect_ropes(lengths):
-    if not lengths or len(lengths) <= 1:
-        return 0
-
-    # Using Python's built-in heapq.heapify - O(N)
-    heapq.heapify(lengths)
-    total = 0
-
-    while len(lengths) > 1:
-        a = heapq.heappop(lengths)
-        b = heapq.heappop(lengths)
-        cost = a + b
-        total += cost
-        heapq.heappush(lengths, cost)
-
-    return total
-
-
-print(min_cost_to_connect_ropes([1, 2, 3]))       # 9
-print(min_cost_to_connect_ropes([4, 3, 2, 6]))    # 29
-print(min_cost_to_connect_ropes([1, 2, 5, 10, 35, 89]))  # 224
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(1) in-place or O(N)
-```
-
-### 7. Build a Heap from Array **O(N), O(N)**
-```
+```text
 Given an array A of N integers, convert that array into a min heap and return the array.
 NOTE: A min heap is a binary tree where every node has a value less than or equal to its children.
 ```
 
-```js
+```python
+def heapify(arr, n, i):
+    smallest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+
+    if left < n and arr[left] < arr[smallest]:
+        smallest = left
+    if right < n and arr[right] < arr[smallest]:
+        smallest = right
+
+    if smallest != i:
+        arr[i], arr[smallest] = arr[smallest], arr[i]
+        heapify(arr, n, smallest)
+
+
+def build_min_heap(arr):
+    n = len(arr)
+    # Start from last non-leaf node down to root
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
+    return arr
+
+
+# Alternatively, using Python built-in:
+# import heapq
+# heapq.heapify(arr)  # In-place O(N)
+
+print(build_min_heap([5, 13, -2, 11, 27, 31, 0, 19]))
+
+# Time Complexity: O(N)
+# Space Complexity: O(1) auxiliary
+```
+
+```javascript
 /* * ==========================================
  * ALGORITHM EXPLANATION: BUILD MIN-HEAP
  * ==========================================
@@ -23853,42 +24490,9 @@ console.log(buildMinHeap(A)); // e.g. [-2, 5, 0, 11, 13, 31, 27, 19]
  */
 ```
 
-```python
-def heapify(arr, n, i):
-    smallest = i
-    left = 2 * i + 1
-    right = 2 * i + 2
+8. Heap Queries | Min-Heap **O(N), O(N)**
 
-    if left < n and arr[left] < arr[smallest]:
-        smallest = left
-    if right < n and arr[right] < arr[smallest]:
-        smallest = right
-
-    if smallest != i:
-        arr[i], arr[smallest] = arr[smallest], arr[i]
-        heapify(arr, n, smallest)
-
-
-def build_min_heap(arr):
-    n = len(arr)
-    # Start from last non-leaf node down to root
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(arr, n, i)
-    return arr
-
-
-# Alternatively, using Python built-in:
-# import heapq
-# heapq.heapify(arr)  # In-place O(N)
-
-print(build_min_heap([5, 13, -2, 11, 27, 31, 0, 19]))
-
-# Time Complexity: O(N)
-# Space Complexity: O(1) auxiliary
-```
-
-### 8. Heap Queries | Min-Heap **O(N), O(N)**
-```
+```text
 You have an empty min heap. You are given an array A consisting of N queries. Let P denote A[i][0] and Q denote A[i][1].
 There are two types of queries:
 P = 1, Q = -1 : Pop the minimum element from the heap.
@@ -23897,7 +24501,34 @@ P = 2, 1 <= Q <= 109 : Insert Q into the heap.
 Return an integer array containing the answer for all the extract min operation. If the size of heap is 0, then extract min should return -1.
 ```
 
-```js
+```python
+import heapq
+
+
+def process_heap_queries(queries):
+    heap = []
+    results = []
+
+    for q in queries:
+        op = q[0]
+        if op == 1:
+            # Insert
+            heapq.heappush(heap, q[1])
+        elif op == 2:
+            # Extract min
+            results.append(heapq.heappop(heap) if heap else -1)
+        elif op == 3:
+            # Get min
+            results.append(heap[0] if heap else -1)
+
+    return results
+
+
+# Time Complexity: O(Q log N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  * This code implements a Min-Heap data structure and a query processing system.
@@ -24037,37 +24668,30 @@ console.log(heapQueries([[2, 5], [2, 3], [2, 1], [1, -1], [1, -1]]));   // [1, 3
  */
 ```
 
+---
+
+<a id="48-heap-sort-greedy"></a>
+
+## 48. Heap Sort & Greedy
+
+### Questions
+
+1. Build a min-heap from an array | Down-Heapify-Min **O(N), O(N)**
+
 ```python
 import heapq
 
 
-def process_heap_queries(queries):
-    heap = []
-    results = []
-
-    for q in queries:
-        op = q[0]
-        if op == 1:
-            # Insert
-            heapq.heappush(heap, q[1])
-        elif op == 2:
-            # Extract min
-            results.append(heapq.heappop(heap) if heap else -1)
-        elif op == 3:
-            # Get min
-            results.append(heap[0] if heap else -1)
-
-    return results
+def build_min_heap_array(arr):
+    # Using built-in heapq.heapify
+    heapq.heapify(arr)
+    return arr
 
 
-# Time Complexity: O(Q log N)
-# Space Complexity: O(N)
+print(build_min_heap_array([9, 4, 7, 1, -2, 6, 5]))
 ```
 
-# 2. Heap Sort & Greedy
-
-### 1. Build a min-heap from an array | Down-Heapify-Min **O(N), O(N)**
-```js
+```javascript
 /**
  * ==========================================
  * ALGORITHM EXPLANATION: BUILD MIN-HEAP
@@ -24195,21 +24819,38 @@ console.log("MIN-HEAP (array):", minHeapArr);
  */
 ```
 
+2. Build a max-heap from an array | Down-Heapify-Max **O(N), O(N)**
+
 ```python
-import heapq
+def max_heapify(arr, n, i):
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+
+    if left < n and arr[left] > arr[largest]:
+        largest = left
+    if right < n and arr[right] > arr[largest]:
+        largest = right
+
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        max_heapify(arr, n, largest)
 
 
-def build_min_heap_array(arr):
-    # Using built-in heapq.heapify
-    heapq.heapify(arr)
+def build_max_heap(arr):
+    n = len(arr)
+    for i in range(n // 2 - 1, -1, -1):
+        max_heapify(arr, n, i)
     return arr
 
 
-print(build_min_heap_array([9, 4, 7, 1, -2, 6, 5]))
+print(build_max_heap([1, 3, 5, 4, 6, 13, 10, 9, 8, 15, 17]))
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-### 2. Build a max-heap from an array | Down-Heapify-Max **O(N), O(N)**
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * 1. Build Heap (Bottom-Up Approach):
@@ -24311,37 +24952,31 @@ console.log("MAX-HEAP (array):", maxHeapArr);
  */
 ```
 
+3. Sort an Array | Heap Sort **O(N), O(N)**
+
 ```python
-def max_heapify(arr, n, i):
-    largest = i
-    left = 2 * i + 1
-    right = 2 * i + 2
-
-    if left < n and arr[left] > arr[largest]:
-        largest = left
-    if right < n and arr[right] > arr[largest]:
-        largest = right
-
-    if largest != i:
-        arr[i], arr[largest] = arr[largest], arr[i]
-        max_heapify(arr, n, largest)
-
-
-def build_max_heap(arr):
+def heap_sort(arr):
     n = len(arr)
+
+    # Step 1: Build max heap
     for i in range(n // 2 - 1, -1, -1):
         max_heapify(arr, n, i)
+
+    # Step 2: Extract elements one by one
+    for i in range(n - 1, 0, -1):
+        arr[0], arr[i] = arr[i], arr[0]
+        max_heapify(arr, i, 0)
+
     return arr
 
 
-print(build_max_heap([1, 3, 5, 4, 6, 13, 10, 9, 8, 15, 17]))
+print(heap_sort([12, 11, 13, 5, 6, 7]))  # [5, 6, 7, 11, 12, 13]
 
-# Time Complexity: O(N)
+# Time Complexity: O(N log N)
 # Space Complexity: O(1)
 ```
 
-### 3. Sort an Array | Heap Sort **O(N), O(N)**
-```js
+```javascript
 /**
  * ==========================================
  * ALGORITHM EXPLANATION: HEAPSORT
@@ -24501,42 +25136,63 @@ console.log("Sorted:", arr); // [1, 2, 5, 6, 7, 9, 10, 13, 14]
  */
 ```
 
-```python
-def heap_sort(arr):
-    n = len(arr)
+4. Median of a Stream | Max-Heap & Min-Heap **O(N), O(N)**
 
-    # Step 1: Build max heap
-    for i in range(n // 2 - 1, -1, -1):
-        max_heapify(arr, n, i)
-
-    # Step 2: Extract elements one by one
-    for i in range(n - 1, 0, -1):
-        arr[0], arr[i] = arr[i], arr[0]
-        max_heapify(arr, i, 0)
-
-    return arr
-
-
-print(heap_sort([12, 11, 13, 5, 6, 7]))  # [5, 6, 7, 11, 12, 13]
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(1)
-```
-
-### 4. Median of a Stream | Max-Heap & Min-Heap **O(N), O(N)**
 To efficiently calculate median while numbers stream in:
 - Use **Max-Heap** for lower half means for smaller numbers
 - Use **Min-Heap** for upper half means for larger numbers
 - Balance heap sizes (difference ≤ 1)
 
-```
+```text
 Max-Heap (Lower): [10, 8, 5]
 Min-Heap (Upper): [12, 15, 20]
 
 Median = (10 + 12) / 2 = 11
 ```
 
-```js
+```python
+import heapq
+
+
+class MedianFinder:
+    def __init__(self):
+        # low stores smaller half as max-heap (negated values)
+        self.low = []
+        # high stores larger half as min-heap
+        self.high = []
+
+    def add_num(self, num: int) -> None:
+        if not self.low or num <= -self.low[0]:
+            heapq.heappush(self.low, -num)
+        else:
+            heapq.heappush(self.high, num)
+
+        # Balance heaps: len(low) can be at most 1 greater than len(high)
+        if len(self.low) > len(self.high) + 1:
+            heapq.heappush(self.high, -heapq.heappop(self.low))
+        elif len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
+
+    def find_median(self) -> float:
+        if len(self.low) > len(self.high):
+            return float(-self.low[0])
+        return (-self.low[0] + self.high[0]) / 2.0
+
+
+mf = MedianFinder()
+for x in [5, 15, 1, 3]:
+    mf.add_num(x)
+    print(f"Added {x}, Median: {mf.find_median()}")
+# Added 5, Median: 5.0
+# Added 15, Median: 10.0
+# Added 1, Median: 5.0
+# Added 3, Median: 4.0
+
+# Time Complexity: O(log N) per insertion, O(1) for median
+# Space Complexity: O(N)
+```
+
+```javascript
 /* * ALGORITHM EXPLANATION:
  * ----------------------
  * 1. Data Structure:
@@ -24719,58 +25375,40 @@ let mf = new MedianFinder();
  */
 ```
 
-```python
-import heapq
+5. Activity Selection Problem / Finish Maximum Jobs | Greedy Algorithm **O(N), O(N)**
 
-
-class MedianFinder:
-    def __init__(self):
-        # low stores smaller half as max-heap (negated values)
-        self.low = []
-        # high stores larger half as min-heap
-        self.high = []
-
-    def add_num(self, num: int) -> None:
-        if not self.low or num <= -self.low[0]:
-            heapq.heappush(self.low, -num)
-        else:
-            heapq.heappush(self.high, num)
-
-        # Balance heaps: len(low) can be at most 1 greater than len(high)
-        if len(self.low) > len(self.high) + 1:
-            heapq.heappush(self.high, -heapq.heappop(self.low))
-        elif len(self.high) > len(self.low):
-            heapq.heappush(self.low, -heapq.heappop(self.high))
-
-    def find_median(self) -> float:
-        if len(self.low) > len(self.high):
-            return float(-self.low[0])
-        return (-self.low[0] + self.high[0]) / 2.0
-
-
-mf = MedianFinder()
-for x in [5, 15, 1, 3]:
-    mf.add_num(x)
-    print(f"Added {x}, Median: {mf.find_median()}")
-# Added 5, Median: 5.0
-# Added 15, Median: 10.0
-# Added 1, Median: 5.0
-# Added 3, Median: 4.0
-
-# Time Complexity: O(log N) per insertion, O(1) for median
-# Space Complexity: O(N)
-```
-
-### 5. Activity Selection Problem / Finish Maximum Jobs | Greedy Algorithm **O(N), O(N)**
 - Given start and end times, select max number of non-overlapping activities.
 - **Strategy**: Sort by end times, then pick compatible ones.
 
-```
+```text
 Activities: (1,2), (2,3), (3,6), (6,7), (8,9)
 Selected:   (1,2), (3,6), (6,7), (8,9)
 ```
 
-```js
+```python
+def max_activities(activities):
+    # Sort by finish time ascending
+    activities.sort(key=lambda x: x[1])
+
+    count = 1
+    last_end = activities[0][1]
+
+    for i in range(1, len(activities)):
+        start, end = activities[i]
+        if start >= last_end:
+            count += 1
+            last_end = end
+
+    return count
+
+
+print(max_activities([[1, 4], [3, 5], [0, 6], [5, 7], [3, 9], [5, 9], [6, 10], [8, 11], [8, 12], [2, 14], [12, 16]]))  # 4
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * Activity Selection Problem (a.k.a Finish Maximum Jobs)
  *
@@ -24828,31 +25466,9 @@ console.log("Selected Activities:", activitySelection(activities));
  */
 ```
 
-```python
-def max_activities(activities):
-    # Sort by finish time ascending
-    activities.sort(key=lambda x: x[1])
+6. Job Scheduling | Min Heap **O(N), O(N)**
 
-    count = 1
-    last_end = activities[0][1]
-
-    for i in range(1, len(activities)):
-        start, end = activities[i]
-        if start >= last_end:
-            count += 1
-            last_end = end
-
-    return count
-
-
-print(max_activities([[1, 4], [3, 5], [0, 6], [5, 7], [3, 9], [5, 9], [6, 10], [8, 11], [8, 12], [2, 14], [12, 16]]))  # 4
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(1)
-```
-
-### 6. Job Scheduling | Min Heap **O(N), O(N)**
-```
+```text
 Each item/job has an expiry (deadline) and a profit. Each job takes 1 unit of time. Choose a subset and an order so that each chosen job finishes on or before its deadline and total profit is maximized.
 
 expiry: [1, 3, 3, 3, 5, 5, 6, 8]
@@ -24863,7 +25479,7 @@ profit: [5, 2, 7, 1, 4, 3, 8, 1]
 
 **Idea:** Sort jobs by **deadline ascending**. Iterate; for each job, **add its profit** to a min-heap. If heap size exceeds the **current deadline**, pop the **smallest** profit — effectively keeping the best set that fits so far.
 
-```
+```text
 Sort by deadline:
 (t, profit): (1,5), (3,2), (3,7), (3,1), (5,4), (5,3), (6,8), (8,1)
 
@@ -24882,14 +25498,28 @@ Total profit = sum(heap) = 1+3+2+5+4+8+7 = 30
 ```
 
 #### Timeline Slots
-```
+
+```text
 Time slots: 1  2  3  4  5  6  7  8
 Choose at most t jobs among those with deadline t
 Keep the highest profits using a min-heap; drop the smallest when over capacity.
 ```
 
 #### Solution
-```js
+
+```python
+import heapq
+
+# Python built-in heapq provides direct min-heap support
+heap = []
+for x in [10, 4, 15, 20, 0]:
+    heapq.heappush(heap, x)
+
+print(heapq.heappop(heap))  # 0
+print(heapq.heappop(heap))  # 4
+```
+
+```javascript
 // ------------------------------- Min-Heap (Numbers) -------------------------------
 // A clear, well-documented binary min-heap for numbers (used to keep smallest profit on top).
 class MinHeapOfNumbers {
@@ -25001,21 +25631,14 @@ console.log(maximizeProfitWithinDeadlines(sampleJobs)); // 30
 // Space Complexity: O(n)
 ```
 
-```python
-import heapq
+---
 
-# Python built-in heapq provides direct min-heap support
-heap = []
-for x in [10, 4, 15, 20, 0]:
-    heapq.heappush(heap, x)
+<a id="49-dp-1-one-dimensional"></a>
 
-print(heapq.heappop(heap))  # 0
-print(heapq.heappop(heap))  # 4
-```
+## 49. DP 1: One Dimensional
 
-# 3. DP 1: One Dimensional
+### Theory
 
-## Theory
 Dynamic Programming (DP) is a method for solving complex problems by breaking them down into simpler, overlapping subproblems. The results of these subproblems are stored (memoized or tabulated) to avoid redundant computations. For a problem to be solvable with DP, it must have two key properties:
 1.  **Optimal Substructure**: The optimal solution to the main problem can be constructed from the optimal solutions of its subproblems. This often hints at a recursive solution.
 2.  **Overlapping Subproblems**: The problem involves solving the same subproblems multiple times. DP takes advantage of this by computing each subproblem only once and storing its result. Repeatation of subproblems is what differentiates DP from simple recursion.
@@ -25127,11 +25750,11 @@ def factorial(n):
 print(factorial(5))  # 120
 ```
 
-## Questions
+### Questions
 
-### 1. Fibonacci Numbers | Dynamic Programming (Top-Down & Bottom-Up) **O(N), O(N)**
+1. Fibonacci Numbers | Dynamic Programming (Top-Down & Bottom-Up) **O(N), O(N)**
 
-```
+```text
 Generate the Nth number in the Fibonacci sequence. The sequence starts with 0 and 1, and each subsequent number is the sum of the two preceding ones.
 Sequence: 0, 1, 1, 2, 3, 5, 8, 13, 21, ...
 ```
@@ -25150,7 +25773,8 @@ Dynamic Programming solves this by storing the result of each Fibonacci number a
 A recursive approach without DP leads to a large tree of function calls with many repeated calculations.
 
 **Recursion Tree for `fib(5)`:**
-```
+
+```text
                         fib(5)
                        /      \
                   fib(4)        fib(3)
@@ -25165,7 +25789,8 @@ A recursive approach without DP leads to a large tree of function calls with man
 With memoization, once `fib(3)` is computed, its value is stored. The next time `fib(3)` is needed, the stored value is returned instantly, pruning the recursion tree.
 
 **Pruned Tree with Memoization:**
-```
+
+```text
                         fib(5)
                        /      \
                   fib(4)        fib(3)  <-- Computed and stored
@@ -25178,7 +25803,30 @@ With memoization, once `fib(3)` is computed, its value is stored. The next time 
 ```
 
 #### 1. Top-Down (Memoization)
-```js
+
+```python
+def fibonacci_memoized(n):
+    memo = {}
+
+    def solve(num):
+        if num <= 1:
+            return num
+        if num in memo:
+            return memo[num]
+
+        memo[num] = solve(num - 1) + solve(num - 2)
+        return memo[num]
+
+    return solve(n)
+
+
+print(fibonacci_memoized(10))  # 55
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Calculates the nth Fibonacci number using a top-down recursive approach with memoization.
  * Time:  O(n) - Each Fibonacci number from 0 to n is computed only once.
@@ -25222,30 +25870,29 @@ function fibonacciMemoized(n) {
 console.log(fibonacciMemoized(8)); // expected output: 21
 ```
 
+#### 2. Bottom-Up (Tabulation)
+
 ```python
-def fibonacci_memoized(n):
-    memo = {}
+def fibonacci_tabulation(n):
+    if n <= 1:
+        return n
 
-    def solve(num):
-        if num <= 1:
-            return num
-        if num in memo:
-            return memo[num]
+    dp = [0] * (n + 1)
+    dp[1] = 1
 
-        memo[num] = solve(num - 1) + solve(num - 2)
-        return memo[num]
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]
 
-    return solve(n)
+    return dp[n]
 
 
-print(fibonacci_memoized(10))  # 55
+print(fibonacci_tabulation(10))  # 55
 
 # Time Complexity: O(N)
 # Space Complexity: O(N)
 ```
 
-#### 2. Bottom-Up (Tabulation)
-```js
+```javascript
 /**
  * Calculates the nth Fibonacci number using a bottom-up iterative approach (tabulation).
  * Time:  O(n) - A single loop runs from 2 to n.
@@ -25281,42 +25928,43 @@ function fibonacciTabulated(n) {
 console.log(fibonacciTabulated(8)); // expected output: 21
 ```
 
-```python
-def fibonacci_tabulation(n):
-    if n <= 1:
-        return n
-
-    dp = [0] * (n + 1)
-    dp[1] = 1
-
-    for i in range(2, n + 1):
-        dp[i] = dp[i - 1] + dp[i - 2]
-
-    return dp[n]
-
-
-print(fibonacci_tabulation(10))  # 55
-
-# Time Complexity: O(N)
-# Space Complexity: O(N)
-```
-
 #### Dry Run
 
 **Tabulation for `n=5`**
 
-| i   | `dpTable[i-1]` | `dpTable[i-2]` | `dpTable[i]`  | `dpTable` Array      |
-| --- | -------------- | -------------- | ------------- | -------------------- |
-| 0   | -              | -              | 0 (base case) | `[0, _, _, _, _, _]` |
-| 1   | -              | -              | 1 (base case) | `[0, 1, _, _, _, _]` |
-| 2   | 1              | 0              | 1             | `[0, 1, 1, _, _, _]` |
-| 3   | 1              | 1              | 2             | `[0, 1, 1, 2, _, _]` |
-| 4   | 2              | 1              | 3             | `[0, 1, 1, 2, 3, _]` |
-| 5   | 3              | 2              | 5             | `[0, 1, 1, 2, 3, 5]` |
+Fibonacci DP State Progression:
+1. `i = 0`: Base case `0`, state: `[0, _, _, _, _, _]`
+2. `i = 1`: Base case `1`, state: `[0, 1, _, _, _, _]`
+3. `i = 2`: `dpTable[1] + dpTable[0] = 1 + 0 = 1`, state: `[0, 1, 1, _, _, _]`
+4. `i = 3`: `dpTable[2] + dpTable[1] = 1 + 1 = 2`, state: `[0, 1, 1, 2, _, _]`
+5. `i = 4`: `dpTable[3] + dpTable[2] = 2 + 1 = 3`, state: `[0, 1, 1, 2, 3, _]`
+6. `i = 5`: `dpTable[4] + dpTable[3] = 3 + 2 = 5`, state: `[0, 1, 1, 2, 3, 5]`
 
 #### 3. Space-Optimized Bottom-Up
 
-```js
+```python
+def fibonacci_space_optimized(n):
+    if n <= 1:
+        return n
+
+    prev2 = 0
+    prev1 = 1
+
+    for _ in range(2, n + 1):
+        curr = prev1 + prev2
+        prev2 = prev1
+        prev1 = curr
+
+    return prev1
+
+
+print(fibonacci_space_optimized(10))  # 55
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /**
  * Calculates the nth Fibonacci number using a space-optimized iterative approach.
  * Time:  O(n) - A single loop runs n-1 times.
@@ -25356,38 +26004,16 @@ function fibonacciOptimized(n) {
 console.log(fibonacciOptimized(8)); // expected output: 21
 ```
 
-```python
-def fibonacci_space_optimized(n):
-    if n <= 1:
-        return n
+2. Count Ways to Climb Stairs | Dynamic Programming (Paths) **O(N), O(N)**
 
-    prev2 = 0
-    prev1 = 1
-
-    for _ in range(2, n + 1):
-        curr = prev1 + prev2
-        prev2 = prev1
-        prev1 = curr
-
-    return prev1
-
-
-print(fibonacci_space_optimized(10))  # 55
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Count Ways to Climb Stairs | Dynamic Programming (Paths) **O(N), O(N)**
-
-```
+```text
 You are climbing a staircase. It takes n steps to reach the top.
 Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
 ```
 
 #### Input/Output
 
-```
+```text
 Input: n = 2
 Output: 2
 Explanation: There are two ways to climb to the top.
@@ -25424,7 +26050,7 @@ So, the problem is a variation of Fibonacci, starting from `ways(1)=1`, `ways(2)
 
 The problem can be visualized as finding all paths from a source (stair 0) to a destination (stair N).
 
-```
+```text
       (Stair 4)  <-- Destination
         /   \
        /     \
@@ -25444,7 +26070,30 @@ To find total paths to stair 4, we add:
 
 Since this problem is a variation of Fibonacci, the most efficient solution is the space-optimized one.
 
-```js
+```python
+def climb_stairs(n):
+    if n <= 2:
+        return n
+
+    prev2 = 1
+    prev1 = 2
+
+    for _ in range(3, n + 1):
+        curr = prev1 + prev2
+        prev2 = prev1
+        prev1 = curr
+
+    return prev1
+
+
+print(climb_stairs(4))  # 5
+print(climb_stairs(5))  # 8
+
+# Time Complexity: O(N)
+# Space Complexity: O(1)
+```
+
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  * This function solves the "Climbing Stairs" problem using a Dynamic Programming approach,
@@ -25527,32 +26176,9 @@ console.log(climbStairs(4)); // output: 5
  */
 ```
 
-```python
-def climb_stairs(n):
-    if n <= 2:
-        return n
+3. Minimum Perfect Squares to Sum to n | DP (Unbounded) **O(N), O(N)**
 
-    prev2 = 1
-    prev1 = 2
-
-    for _ in range(3, n + 1):
-        curr = prev1 + prev2
-        prev2 = prev1
-        prev1 = curr
-
-    return prev1
-
-
-print(climb_stairs(4))  # 5
-print(climb_stairs(5))  # 8
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 3. Minimum Perfect Squares to Sum to n | DP (Unbounded) **O(N), O(N)**
-
-```
+```text
 Given an integer N, find the minimum number of perfect squares required to sum up to N.
 Duplicate squares are allowed.
 A perfect square is an integer that is the square of an integer (e.g., 1, 4, 9, 16, ...).
@@ -25560,7 +26186,7 @@ A perfect square is an integer that is the square of an integer (e.g., 1, 4, 9, 
 
 #### Input/Output
 
-```
+```text
 Input: N = 12
 Output: 3
 Explanation: 12 = 4 + 4 + 4 (2^2 + 2^2 + 2^2)
@@ -25589,7 +26215,7 @@ We do this for all possible `j` and take the minimum.
 
 This shows how the main problem `n=12` is broken down. We can see overlapping subproblems like `n=8` and `n=3`.
 
-```
+```text
                             n=12
                     /         |         \
                 (1^2)       (2^2)       (3^2)
@@ -25606,7 +26232,36 @@ This shows how the main problem `n=12` is broken down. We can see overlapping su
 
 This solution directly translates the recursive relation into code with a cache to store results of subproblems.
 
-```js
+```python
+def num_squares_memo(n):
+    memo = {}
+
+    def solve(num):
+        if num == 0:
+            return 0
+        if num in memo:
+            return memo[num]
+
+        min_sq = float('inf')
+        i = 1
+        while i * i <= num:
+            min_sq = min(min_sq, 1 + solve(num - i * i))
+            i += 1
+
+        memo[num] = min_sq
+        return min_sq
+
+    return solve(n)
+
+
+print(num_squares_memo(12))  # 3 (4 + 4 + 4)
+print(num_squares_memo(13))  # 2 (4 + 9)
+
+# Time Complexity: O(N * sqrt(N))
+# Space Complexity: O(N)
+```
+
+```javascript
 /*
  * Algorithm Explanation:
  * The problem is to find the minimum number of perfect squares (1, 4, 9, 16, ...) that sum up to a given number 'n'.
@@ -25694,40 +26349,32 @@ console.log(minSquaresMemoized(27)); // output: 3 , since 27 = 9 + 9 + 9, 3^2 + 
  */
 ```
 
+#### 2. Bottom-Up (Tabulation)
+
+This solution builds the `dp` table from the bottom up, starting from the smallest subproblem.
+
 ```python
-def num_squares_memo(n):
-    memo = {}
+def num_squares_tab(n):
+    dp = [float('inf')] * (n + 1)
+    dp[0] = 0
 
-    def solve(num):
-        if num == 0:
-            return 0
-        if num in memo:
-            return memo[num]
+    for i in range(1, n + 1):
+        j = 1
+        while j * j <= i:
+            dp[i] = min(dp[i], 1 + dp[i - j * j])
+            j += 1
 
-        min_sq = float('inf')
-        i = 1
-        while i * i <= num:
-            min_sq = min(min_sq, 1 + solve(num - i * i))
-            i += 1
-
-        memo[num] = min_sq
-        return min_sq
-
-    return solve(n)
+    return dp[n]
 
 
-print(num_squares_memo(12))  # 3 (4 + 4 + 4)
-print(num_squares_memo(13))  # 2 (4 + 9)
+print(num_squares_tab(12))  # 3
+print(num_squares_tab(13))  # 2
 
 # Time Complexity: O(N * sqrt(N))
 # Space Complexity: O(N)
 ```
 
-#### 2. Bottom-Up (Tabulation)
-
-This solution builds the `dp` table from the bottom up, starting from the smallest subproblem.
-
-```js
+```javascript
 /*
  * ALGORITHM EXPLANATION:
  *
@@ -25812,32 +26459,17 @@ console.log(minSquaresTabulated(13)); // output: 2
  */
 ```
 
-```python
-def num_squares_tab(n):
-    dp = [float('inf')] * (n + 1)
-    dp[0] = 0
+---
 
-    for i in range(1, n + 1):
-        j = 1
-        while j * j <= i:
-            dp[i] = min(dp[i], 1 + dp[i - j * j])
-            j += 1
+<a id="50-dp-2-two-dimensional"></a>
 
-    return dp[n]
+## 50. DP 2: Two Dimensional
 
+### Questions
 
-print(num_squares_tab(12))  # 3
-print(num_squares_tab(13))  # 2
+1. House Robber | 1D DP (Tabulation) | 1D DP (Space Optimized) **O(N), O(N)**
 
-# Time Complexity: O(N * sqrt(N))
-# Space Complexity: O(N)
-```
-
-# 4. DP 2: Two Dimensional
-
-### 1. House Robber | 1D DP (Tabulation) | 1D DP (Space Optimized) **O(N), O(N)**
-
-```
+```text
 Given an integer array `nums` representing the amount of money in a row of houses, determine the maximum amount of money you can rob in one night. The only constraint is that you cannot rob two adjacent houses, as this will trigger an alarm.
 ```
 
@@ -25861,14 +26493,14 @@ The optimal solution for `dp[i]` is the maximum of these two choices.
 
 #### Input/Output
 
-```
+```text
 Input: nums = [2, 7, 9, 3, 1]
 Output: 12
 Explanation: Rob house 0 (money = 2), house 2 (money = 9) and house 4 (money = 1).
 Total amount you can rob = 2 + 9 + 1 = 12.
 ```
 
-```
+```text
 Input: nums = [10, 9, 7, 100]
 Output: 110
 Explanation: Rob house 0 (money = 10) and house 3 (money = 100).
@@ -25889,14 +26521,40 @@ Let's trace the example `nums = [2, 7, 9, 3, 1]`.
   * **dp[3]:** `max(dp[2], nums[3] + dp[1])` = `max(11, 3 + 7)` = `max(11, 10)` = `11`.
   * **dp[4]:** `max(dp[3], nums[4] + dp[2])` = `max(11, 1 + 11)` = `max(11, 12)` = `12`.
 
-| Index (i) |   0   |   1   |   2   |   3   |   4   |
-| :-------- | :---: | :---: | :---: | :---: | :---: |
-| `nums[i]` |   2   |   7   |   9   |   3   |   1   |
-| `dp[i]`   |   2   |   7   |  11   |  11   |  12   |
+House Robber DP Value Table:
+1. Index `0`: `nums[0] = 2` --> `dp[0] = 2`
+2. Index `1`: `nums[1] = 7` --> `dp[1] = max(nums[0], nums[1]) = 7`
+3. Index `2`: `nums[2] = 9` --> `dp[2] = max(dp[1], dp[0] + nums[2]) = max(7, 2 + 9) = 11`
+4. Index `3`: `nums[3] = 3` --> `dp[3] = max(dp[2], dp[1] + nums[3]) = max(11, 7 + 3) = 11`
+5. Index `4`: `nums[4] = 1` --> `dp[4] = max(dp[3], dp[2] + nums[4]) = max(11, 11 + 1) = 12`
 
 #### 1. Tabulation (DP with Array)
 
-```js
+```python
+def rob_tabulation(nums):
+    if not nums:
+        return 0
+    if len(nums) == 1:
+        return nums[0]
+
+    dp = [0] * len(nums)
+    dp[0] = nums[0]
+    dp[1] = max(nums[0], nums[1])
+
+    for i in range(2, len(nums)):
+        dp[i] = max(dp[i - 1], dp[i - 2] + nums[i])
+
+    return dp[-1]
+
+
+print(rob_tabulation([1, 2, 3, 1]))  # 4
+print(rob_tabulation([2, 7, 9, 3, 1]))  # 12
+
+# Time Complexity: O(N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Calculates the maximum amount of money that can be robbed from a row of houses
  * without robbing two adjacent ones, using a DP array.
@@ -25952,35 +26610,36 @@ console.log(houseRobberTabulation(houses2)); // Expected output: 110
 // Space Complexity: O(N) for the DP array.
 ```
 
+#### 2. Space Optimized DP
+
+Since the calculation for `dp[i]` only depends on the previous two values (`dp[i-1]` and `dp[i-2]`), we don't need to store the entire DP array. We can optimize the space by only keeping track of the last two results.
+
 ```python
-def rob_tabulation(nums):
+def rob(nums):
     if not nums:
         return 0
     if len(nums) == 1:
         return nums[0]
 
-    dp = [0] * len(nums)
-    dp[0] = nums[0]
-    dp[1] = max(nums[0], nums[1])
+    prev2 = nums[0]
+    prev1 = max(nums[0], nums[1])
 
     for i in range(2, len(nums)):
-        dp[i] = max(dp[i - 1], dp[i - 2] + nums[i])
+        curr = max(prev1, prev2 + nums[i])
+        prev2 = prev1
+        prev1 = curr
 
-    return dp[-1]
+    return prev1
 
 
-print(rob_tabulation([1, 2, 3, 1]))  # 4
-print(rob_tabulation([2, 7, 9, 3, 1]))  # 12
+print(rob([1, 2, 3, 1]))     # 4
+print(rob([2, 7, 9, 3, 1]))  # 12
 
 # Time Complexity: O(N)
-# Space Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-#### 2. Space Optimized DP
-
-Since the calculation for `dp[i]` only depends on the previous two values (`dp[i-1]` and `dp[i-2]`), we don't need to store the entire DP array. We can optimize the space by only keeping track of the last two results.
-
-```js
+```javascript
 /**
  * Calculates the maximum amount of money that can be robbed, using space-optimized DP.
  * @param {number[]} houseMoney - An array representing the money in each house.
@@ -26034,34 +26693,9 @@ console.log(houseRobberSpaceOptimized(houses4)); // Expected output: 110
 // Space Complexity: O(1) because we only use a few variables to store state.
 ```
 
-```python
-def rob(nums):
-    if not nums:
-        return 0
-    if len(nums) == 1:
-        return nums[0]
+2. Unique Paths in a Grid | Memoization | 2D DP (Tabulation) **O(N), O(N)**
 
-    prev2 = nums[0]
-    prev1 = max(nums[0], nums[1])
-
-    for i in range(2, len(nums)):
-        curr = max(prev1, prev2 + nums[i])
-        prev2 = prev1
-        prev1 = curr
-
-    return prev1
-
-
-print(rob([1, 2, 3, 1]))     # 4
-print(rob([2, 7, 9, 3, 1]))  # 12
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 2. Unique Paths in a Grid | Memoization | 2D DP (Tabulation) **O(N), O(N)**
-
-```
+```text
 Given an `n x m` matrix, find the total number of unique paths from the top-left corner (0, 0) to the bottom-right corner (n-1, m-1). You can only move one step down or one step right at a time.
 ```
 
@@ -26082,7 +26716,7 @@ To reach any cell `(i, j)`, you must have come from either the cell above it, `(
 
 A visual representation of a 3x3 grid. 'S' is the source (0,0) and 'D' is the destination (2,2). The paths show different ways to get from S to D by only moving right or down.
 
-```
+```text
   0   1   2
 +---+---+---+
 | S |   |   |  0
@@ -26104,7 +26738,7 @@ Example Path 3: Down, Down, Right, Right
 
 #### Input/Output
 
-```
+```text
 Input: n = 3, m = 3
 Output: 6
 ```
@@ -26113,11 +26747,10 @@ Output: 6
 
 Let's trace a 3x3 grid using a DP table.
 
-|       |   0   |   1   |   2   |
-| :---: | :---: | :---: | :---: |
-| **0** |   1   |   1   |   1   |
-| **1** |   1   |   2   |   3   |
-| **2** |   1   |   3   |   6   |
+Unique Paths DP Grid:
+1. Row 0: `[1, 1, 1]` (only 1 way to reach top boundary cells)
+2. Row 1: `[1, 2, 3]` (cell (1,1) = 1+1=2, cell (1,2) = 2+1=3)
+3. Row 2: `[1, 3, 6]` (cell (2,1) = 1+2=3, cell (2,2) = 3+3=6 ways)
 
   * `dp[0][0] = 1` (Start)
   * First row and column are all 1s.
@@ -26128,7 +26761,22 @@ Let's trace a 3x3 grid using a DP table.
 
 #### 1. Recursion (Brute-force)
 
-```js
+```python
+def unique_paths_recursive(m, n):
+    def count_paths(i, j):
+        if i == m - 1 and j == n - 1:
+            return 1
+        if i >= m or j >= n:
+            return 0
+        return count_paths(i + 1, j) + count_paths(i, j + 1)
+
+    return count_paths(0, 0)
+
+
+print(unique_paths_recursive(3, 7))  # 28
+```
+
+```javascript
 /**
  * Calculates the number of unique paths using a brute-force recursive approach.
  * @param {number} n - The number of rows in the grid.
@@ -26160,24 +26808,33 @@ console.log(uniquePathsRecursive(3, 3)); // Expected output: 6
 // Space Complexity: O(n+m) - For the recursion stack depth.
 ```
 
+#### 2. Memoization (Top-down DP)
+
 ```python
-def unique_paths_recursive(m, n):
+def unique_paths_memo(m, n):
+    memo = {}
+
     def count_paths(i, j):
         if i == m - 1 and j == n - 1:
             return 1
         if i >= m or j >= n:
             return 0
-        return count_paths(i + 1, j) + count_paths(i, j + 1)
+        if (i, j) in memo:
+            return memo[(i, j)]
+
+        memo[(i, j)] = count_paths(i + 1, j) + count_paths(i, j + 1)
+        return memo[(i, j)]
 
     return count_paths(0, 0)
 
 
-print(unique_paths_recursive(3, 7))  # 28
+print(unique_paths_memo(3, 7))  # 28
+
+# Time Complexity: O(M * N)
+# Space Complexity: O(M * N)
 ```
 
-#### 2. Memoization (Top-down DP)
-
-```js
+```javascript
 /**
  * Calculates the number of unique paths using memoization to avoid re-computation.
  * @param {number} n - The number of rows in the grid.
@@ -26219,33 +26876,27 @@ console.log(uniquePathsMemoization(3, 7)); // Expected output: 28
 // Space Complexity: O(n * m) - For the memoization table and recursion stack.
 ```
 
+#### 3. Tabulation (Bottom-up DP)
+
 ```python
-def unique_paths_memo(m, n):
-    memo = {}
+def unique_paths(m, n):
+    dp = [[1] * n for _ in range(m)]
 
-    def count_paths(i, j):
-        if i == m - 1 and j == n - 1:
-            return 1
-        if i >= m or j >= n:
-            return 0
-        if (i, j) in memo:
-            return memo[(i, j)]
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
 
-        memo[(i, j)] = count_paths(i + 1, j) + count_paths(i, j + 1)
-        return memo[(i, j)]
-
-    return count_paths(0, 0)
+    return dp[m - 1][n - 1]
 
 
-print(unique_paths_memo(3, 7))  # 28
+print(unique_paths(3, 7))  # 28
+print(unique_paths(3, 2))  # 3
 
 # Time Complexity: O(M * N)
 # Space Complexity: O(M * N)
 ```
 
-#### 3. Tabulation (Bottom-up DP)
-
-```js
+```javascript
 /**
  * Calculates the number of unique paths using tabulation (a 2D DP array).
  * @param {number} n - The number of rows in the grid.
@@ -26283,25 +26934,7 @@ console.log(uniquePathsTabulation(3, 3)); // Expected output: 6
 // Space Complexity: O(n * m) - For the 2D DP array.
 ```
 
-```python
-def unique_paths(m, n):
-    dp = [[1] * n for _ in range(m)]
-
-    for i in range(1, m):
-        for j in range(1, n):
-            dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
-
-    return dp[m - 1][n - 1]
-
-
-print(unique_paths(3, 7))  # 28
-print(unique_paths(3, 2))  # 3
-
-# Time Complexity: O(M * N)
-# Space Complexity: O(M * N)
-```
-
-### 3. Count A-Digit Numbers with Digit Sum B | Recursion with Memoization (Top-Down 2D DP) | Iterative 1D DP with Space Optimization (Bottom-Up) **O(N), O(N)**
+3. Count A-Digit Numbers with Digit Sum B | Recursion with Memoization (Top-Down 2D DP) | Iterative 1D DP with Space Optimization (Bottom-Up) **O(N), O(N)**
 
 ```text
 Find the count of all A-digit positive numbers whose sum of digits equals B. The first digit cannot be zero. Since the answer can be large, return it modulo 10^9 + 7.
@@ -26336,7 +26969,38 @@ This approach solves the problem by breaking it down into smaller subproblems. T
 2. **Handling Leading Zeros:** The first digit of the number cannot be 0. We handle this outside the main recursive helper function by iterating the first digit from 1 to 9. The subsequent digits can be 0 to 9.
 3. **Memoization:** We use a 2D array to store results of `(digits_left, current_sum)` to avoid recalculating the same states.
 
-```js
+```python
+def count_digit_sum_memo(A, B):
+    MOD = 1000000007
+    memo = {}
+
+    def solve(digits_left, sum_left):
+        if digits_left == 0:
+            return 1 if sum_left == 0 else 0
+        if sum_left < 0:
+            return 0
+        if (digits_left, sum_left) in memo:
+            return memo[(digits_left, sum_left)]
+
+        ways = 0
+        start_digit = 1 if digits_left == A else 0
+        for d in range(start_digit, 10):
+            if sum_left - d >= 0:
+                ways = (ways + solve(digits_left - 1, sum_left - d)) % MOD
+
+        memo[(digits_left, sum_left)] = ways
+        return ways
+
+    return solve(A, B)
+
+
+print(count_digit_sum_memo(2, 4))  # 4 (13, 22, 31, 40)
+
+# Time Complexity: O(A * B * 10)
+# Space Complexity: O(A * B)
+```
+
+```javascript
 /**
  * Approach: Top-Down Dynamic Programming (Recursion + Memoization)
  * * Time:  O(A * B) - We fill a table of size A*B, each state takes constant time (loop 0-9).
@@ -26406,37 +27070,6 @@ console.log(solution(2, 4)); // Expected Output: 4
 // Space Complexity: O(A * B)
 ```
 
-```python
-def count_digit_sum_memo(A, B):
-    MOD = 1000000007
-    memo = {}
-
-    def solve(digits_left, sum_left):
-        if digits_left == 0:
-            return 1 if sum_left == 0 else 0
-        if sum_left < 0:
-            return 0
-        if (digits_left, sum_left) in memo:
-            return memo[(digits_left, sum_left)]
-
-        ways = 0
-        start_digit = 1 if digits_left == A else 0
-        for d in range(start_digit, 10):
-            if sum_left - d >= 0:
-                ways = (ways + solve(digits_left - 1, sum_left - d)) % MOD
-
-        memo[(digits_left, sum_left)] = ways
-        return ways
-
-    return solve(A, B)
-
-
-print(count_digit_sum_memo(2, 4))  # 4 (13, 22, 31, 40)
-
-# Time Complexity: O(A * B * 10)
-# Space Complexity: O(A * B)
-```
-
 #### 2. Iterative DP with Space Optimization (Bottom-Up)
 
 This approach builds the solution iteratively. Instead of full recursion, we calculate the DP table row by row.
@@ -26453,7 +27086,31 @@ To calculate the values for `i` digits (`curr` row), we only need the values for
 5. After computing `curr`, update `prev = curr`.
 6. The result is `prev[B]`.
 
-```js
+```python
+def count_digit_sum_iterative(A, B):
+    MOD = 1000000007
+    dp = [0] * (B + 1)
+
+    # First digit (1 to 9)
+    for d in range(1, min(10, B + 1)):
+        dp[d] = 1
+
+    for _ in range(2, A + 1):
+        next_dp = [0] * (B + 1)
+        for s in range(B + 1):
+            if dp[s] > 0:
+                for d in range(10):
+                    if s + d <= B:
+                        next_dp[s + d] = (next_dp[s + d] + dp[s]) % MOD
+        dp = next_dp
+
+    return dp[B]
+
+
+print(count_digit_sum_iterative(2, 4))  # 4
+```
+
+```javascript
 /**
  * Approach: Bottom-Up Dynamic Programming with Space Optimization
  * * Time:  O(A * B) - Nested loops: A iterations * B sums * 10 digits.
@@ -26501,31 +27158,7 @@ console.log(solution(2, 4)); // Expected Output: 4
 // Space Complexity: O(B)
 ```
 
-```python
-def count_digit_sum_iterative(A, B):
-    MOD = 1000000007
-    dp = [0] * (B + 1)
-
-    # First digit (1 to 9)
-    for d in range(1, min(10, B + 1)):
-        dp[d] = 1
-
-    for _ in range(2, A + 1):
-        next_dp = [0] * (B + 1)
-        for s in range(B + 1):
-            if dp[s] > 0:
-                for d in range(10):
-                    if s + d <= B:
-                        next_dp[s + d] = (next_dp[s + d] + dp[s]) % MOD
-        dp = next_dp
-
-    return dp[B]
-
-
-print(count_digit_sum_iterative(2, 4))  # 4
-```
-
-### 4. Catalan Numbers | 1D DP / Combinatorics **O(N), O(N)**
+4. Catalan Numbers | 1D DP / Combinatorics **O(N), O(N)**
 
 #### Theory
 
@@ -26550,7 +27183,27 @@ which can be written as:
 
 #### 1. Calculating Nth Catalan Number
 
-```js
+```python
+def catalan_number(n):
+    dp = [0] * (n + 1)
+    dp[0] = 1
+    dp[1] = 1
+
+    for i in range(2, n + 1):
+        for j in range(i):
+            dp[i] += dp[j] * dp[i - 1 - j]
+
+    return dp[n]
+
+
+print(catalan_number(4))  # 14
+print(catalan_number(5))  # 42
+
+# Time Complexity: O(N^2)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Calculates the Nth Catalan number using dynamic programming.
  * @param {number} n - The index of the Catalan number to find.
@@ -26588,26 +27241,22 @@ console.log(`C_5: ${calculateCatalan(5)}`); // Expected output: 42
 ```
 
 ```python
-def catalan_number(n):
-    dp = [0] * (n + 1)
-    dp[0] = 1
-    dp[1] = 1
-
-    for i in range(2, n + 1):
-        for j in range(i):
-            dp[i] += dp[j] * dp[i - 1 - j]
-
-    return dp[n]
+def catalan_formula(n):
+    # C(n) = (2n)! / ((n + 1)! * n!)
+    c = 1
+    for i in range(1, n + 1):
+        c = c * (4 * i - 2) // (i + 1)
+    return c
 
 
-print(catalan_number(4))  # 14
-print(catalan_number(5))  # 42
+print(catalan_formula(4))  # 14
+print(catalan_formula(5))  # 42
 
-# Time Complexity: O(N^2)
-# Space Complexity: O(N)
+# Time Complexity: O(N)
+# Space Complexity: O(1)
 ```
 
-```js
+```javascript
 /**
  * ALGORITHM EXPLANATION:
  * The Catalan numbers follow a recursive relationship defined by the formula:
@@ -26681,25 +27330,9 @@ console.log(getCatalanNumber(8)); // 1430
 */
 ```
 
-```python
-def catalan_formula(n):
-    # C(n) = (2n)! / ((n + 1)! * n!)
-    c = 1
-    for i in range(1, n + 1):
-        c = c * (4 * i - 2) // (i + 1)
-    return c
+5. Count of Unique BSTs | 1D DP (Catalan Numbers) **O(N), O(N)**
 
-
-print(catalan_formula(4))  # 14
-print(catalan_formula(5))  # 42
-
-# Time Complexity: O(N)
-# Space Complexity: O(1)
-```
-
-### 5. Count of Unique BSTs | 1D DP (Catalan Numbers) **O(N), O(N)**
-
-```
+```text
 Given a number N, count the total number of unique Binary Search Trees (BSTs) that can be formed using N distinct numbers (e.g., from 1 to N).
 ```
 
@@ -26730,7 +27363,7 @@ This is exactly the recurrence relation for the Catalan numbers, where `Count(N)
 
 #### Input/Output
 
-```
+```text
 Input: N = 3
 Output: 5
 ```
@@ -26752,7 +27385,27 @@ Total ways = 2 + 1 + 2 = 5. This is `C_3`.
 
 The solution is to calculate the Nth Catalan number. We can reuse the function from the previous section.
 
-```js
+```python
+def num_trees(n):
+    dp = [0] * (n + 1)
+    dp[0] = 1
+    dp[1] = 1
+
+    for i in range(2, n + 1):
+        for j in range(1, i + 1):
+            dp[i] += dp[j - 1] * dp[i - j]
+
+    return dp[n]
+
+
+print(num_trees(3))  # 5
+print(num_trees(4))  # 14
+
+# Time Complexity: O(N^2)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Counts the number of unique Binary Search Trees with N nodes.
  * This is equivalent to finding the Nth Catalan number.
@@ -26801,42 +27454,22 @@ console.log(countUniqueBsts(4)); // Expected output: 14
 // Space Complexity: O(N)
 ```
 
-```python
-def num_trees(n):
-    dp = [0] * (n + 1)
-    dp[0] = 1
-    dp[1] = 1
+6. Unique Binary Search Trees II | Dynamic Programming (Catalan Numbers) **O(N), O(N)**
 
-    for i in range(2, n + 1):
-        for j in range(1, i + 1):
-            dp[i] += dp[j - 1] * dp[i - j]
-
-    return dp[n]
-
-
-print(num_trees(3))  # 5
-print(num_trees(4))  # 14
-
-# Time Complexity: O(N^2)
-# Space Complexity: O(N)
-```
-
-### 6. Unique Binary Search Trees II | Dynamic Programming (Catalan Numbers) **O(N), O(N)**
-
-```
+```text
 Given an integer A, return how many structurally unique Binary Search Trees (BSTs) can be formed
 that store the values 1...A (each value used exactly once). The answer equals the A-th Catalan number.
 ```
 
 #### Constraints
 
-```
+```text
 1 <= A <= 18
 ```
 
 #### Input/Output Format
 
-```
+```text
 Input Format:
 - A single integer A.
 
@@ -26846,7 +27479,7 @@ Output Format:
 
 #### Input/Output Examples
 
-```
+```text
 Example Input:
 1
 Example Output:
@@ -26864,7 +27497,12 @@ Two BSTs: root=1 with right child=2, and root=2 with left child=1.
 
 #### Solution
 
-```js
+```python
+def count_unique_bsts(n):
+    return num_trees(n)
+```
+
+```javascript
 /**
  * Count the number of structurally unique BSTs that can be formed with keys 1..n.
  * This count is the nth Catalan number:
@@ -26920,14 +27558,9 @@ console.log(countUniqueBSTs(3)); // expected output: 5
 // Space Complexity: O(n)
 ```
 
-```python
-def count_unique_bsts(n):
-    return num_trees(n)
-```
+7. Max Sum Without Adjacent Elements | Dynamic Programming (House Robber on Column Max) **O(N), O(N)**
 
-### 7. Max Sum Without Adjacent Elements | Dynamic Programming (House Robber on Column Max) **O(N), O(N)**
-
-```
+```text
 You are given a 2 × N grid of positive integers A.
 You must pick a subset of cells to maximize the total sum subject to adjacency rules:
 - You cannot pick two cells that are adjacent horizontally, vertically, or diagonally.
@@ -26939,14 +27572,14 @@ and you also cannot pick the other cell in the same column i.
 
 #### Constraints
 
-```
+```text
 1 <= N <= 20000
 1 <= A[i][j] <= 2000
 ```
 
 #### Input/Output Format
 
-```
+```text
 Input Format:
 - A single 2D array A with exactly 2 rows and N columns.
 
@@ -26956,7 +27589,7 @@ Output Format:
 
 #### Input/Output Examples
 
-```
+```text
 Example Input:
 A = [
   [1],
@@ -26981,7 +27614,33 @@ Now choose non-adjacent elements to maximize sum → 3 + 5 = 8.
 
 #### Solution
 
-```js
+```python
+def max_sum_adjacent(matrix):
+    # Select max of each column, then adjacent columns cannot both be chosen (House Robber)
+    n = len(matrix[0])
+    if n == 0:
+        return 0
+
+    col_max = [max(matrix[0][i], matrix[1][i]) for i in range(n)]
+
+    if n == 1:
+        return col_max[0]
+
+    prev2 = col_max[0]
+    prev1 = max(col_max[0], col_max[1])
+
+    for i in range(2, n):
+        curr = max(prev1, prev2 + col_max[i])
+        prev2 = prev1
+        prev1 = curr
+
+    return prev1
+
+
+print(max_sum_adjacent([[1, 2, 3, 4], [2, 3, 4, 5]]))  # 8 (3 + 5)
+```
+
+```javascript
 /**
  * Compute the maximum sum of selected numbers from a 2 × N grid such that
  * no two chosen cells are adjacent horizontally, vertically, or diagonally.
@@ -27089,35 +27748,9 @@ console.log(maxSumWithoutAdjacentIn2xNGrid(grid2)); // expected output: 8
 // Space Complexity: O(1)
 ```
 
-```python
-def max_sum_adjacent(matrix):
-    # Select max of each column, then adjacent columns cannot both be chosen (House Robber)
-    n = len(matrix[0])
-    if n == 0:
-        return 0
+8. N digit numbers | Dynamic Programming with Prefix Sums (Digit DP) **O(N), O(N)**
 
-    col_max = [max(matrix[0][i], matrix[1][i]) for i in range(n)]
-
-    if n == 1:
-        return col_max[0]
-
-    prev2 = col_max[0]
-    prev1 = max(col_max[0], col_max[1])
-
-    for i in range(2, n):
-        curr = max(prev1, prev2 + col_max[i])
-        prev2 = prev1
-        prev1 = curr
-
-    return prev1
-
-
-print(max_sum_adjacent([[1, 2, 3, 4], [2, 3, 4, 5]]))  # 8 (3 + 5)
-```
-
-### 8. N digit numbers | Dynamic Programming with Prefix Sums (Digit DP) **O(N), O(N)**
-
-```
+```text
 Find the count of A-digit positive numbers whose digits sum to B.
 - A valid A-digit number cannot have a leading zero (first digit must be 1..9).
 - Return the count modulo 1,000,000,007.
@@ -27125,14 +27758,14 @@ Find the count of A-digit positive numbers whose digits sum to B.
 
 #### Constraints
 
-```
+```text
 1 <= A <= 1000
 1 <= B <= 10000
 ```
 
 #### Input/Output Format
 
-```
+```text
 Input Format:
 - First argument: integer A (number of digits)
 - Second argument: integer B (target sum of digits)
@@ -27143,7 +27776,7 @@ Output Format:
 
 #### Input/Output Examples
 
-```
+```text
 Example Input:
 A = 2
 B = 4
@@ -27163,7 +27796,12 @@ Only valid number is 3.
 
 #### Solution
 
-```js
+```python
+def count_numbers_with_sum(A, B):
+    return count_digit_sum_iterative(A, B)
+```
+
+```javascript
 /**
  * Count A-digit numbers with digit sum exactly B (no leading zeros).
  * Uses Digit DP with prefix-sum optimization to achieve O(A * B) time.
@@ -27265,14 +27903,13 @@ console.log(countNDigitNumbersWithSum(1, 3)); // expected output: 1 (3)
 // Space Complexity: O(B)
 ```
 
-```python
-def count_numbers_with_sum(A, B):
-    return count_digit_sum_iterative(A, B)
-```
+---
 
-# 5. DP 3: Knapsack
+<a id="51-dp-3-knapsack"></a>
 
-## Theory
+## 51. DP 3: Knapsack
+
+### Theory
 
 Given a set of items, each with a weight and a value, the goal is to determine the number of each item to include in a collection (the "knapsack") so that the total weight is less than or equal to a given limit and the total value is as large as possible.
 
@@ -27281,16 +27918,34 @@ There are several variations of this problem:
   - **0-1 Knapsack**: Items are indivisible; you either take an item or you don't. The greedy approach does not work, and it's typically solved using dynamic programming.
   - **Unbounded Knapsack (0-N Knapsack)**: Items are indivisible, but you have an infinite supply of each item. This is also solved using dynamic programming, with a slight variation in the state transition formula compared to the 0-1 version.
 
-## Questions
+### Questions
 
-### 1. Target Sum / Subset Sum Problem | Recursion (Brute Force) | 2D DP (Tabulation) | 1D DP (Space Optimization) **O(N), O(N)**
-```
+1. Target Sum / Subset Sum Problem | Recursion (Brute Force) | 2D DP (Tabulation) | 1D DP (Space Optimization) **O(N), O(N)**
+
+```text
 You are given a set of non-negative integers and a target sum. The task is to determine whether there exists a subset of the given set whose sum is equal to the target sum.
 ```
 
 #### 1. Recursive (Brute-force)
 
-```js
+```python
+def subset_sum_recursive(arr, target):
+    def solve(idx, curr_sum):
+        if curr_sum == target:
+            return True
+        if idx == len(arr) or curr_sum > target:
+            return False
+
+        # Include or exclude
+        return solve(idx + 1, curr_sum + arr[idx]) or solve(idx + 1, curr_sum)
+
+    return solve(0, 0)
+
+
+print(subset_sum_recursive([3, 34, 4, 12, 5, 2], 9))  # True
+```
+
+```javascript
 /**
  * Determines if a subset with the given sum exists using recursion.
  * Time:  O(2^n) - For each element, we have two choices, leading to an exponential number of calls.
@@ -27382,26 +28037,30 @@ const targetSum = 41;
 console.log("Memoized Recursive:", targetSumMemoized(arr, targetSum)); // true
 ```
 
-```python
-def subset_sum_recursive(arr, target):
-    def solve(idx, curr_sum):
-        if curr_sum == target:
-            return True
-        if idx == len(arr) or curr_sum > target:
-            return False
-
-        # Include or exclude
-        return solve(idx + 1, curr_sum + arr[idx]) or solve(idx + 1, curr_sum)
-
-    return solve(0, 0)
-
-
-print(subset_sum_recursive([3, 34, 4, 12, 5, 2], 9))  # True
-```
-
 #### 2. Dynamic Programming (Tabulation)
 
-```js
+```python
+def subset_sum_tabulation(arr, target):
+    n = len(arr)
+    dp = [[False] * (target + 1) for _ in range(n + 1)]
+
+    for i in range(n + 1):
+        dp[i][0] = True
+
+    for i in range(1, n + 1):
+        for j in range(1, target + 1):
+            if arr[i - 1] <= j:
+                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - arr[i - 1]]
+            else:
+                dp[i][j] = dp[i - 1][j]
+
+    return dp[n][target]
+
+
+print(subset_sum_tabulation([3, 34, 4, 12, 5, 2], 9))  # True
+```
+
+```javascript
 /**
  * Determines if a subset with the given sum exists using dynamic programming.
  * Time:  O(n * target) - We iterate through a 2D array of size n * target.
@@ -27450,30 +28109,27 @@ const target5 = 30;
 console.log(`Can sum to ${target5}?`, targetSumTabulation(arr4, target5)); // false
 ```
 
-```python
-def subset_sum_tabulation(arr, target):
-    n = len(arr)
-    dp = [[False] * (target + 1) for _ in range(n + 1)]
-
-    for i in range(n + 1):
-        dp[i][0] = True
-
-    for i in range(1, n + 1):
-        for j in range(1, target + 1):
-            if arr[i - 1] <= j:
-                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - arr[i - 1]]
-            else:
-                dp[i][j] = dp[i - 1][j]
-
-    return dp[n][target]
-
-
-print(subset_sum_tabulation([3, 34, 4, 12, 5, 2], 9))  # True
-```
-
 #### 3. Space-Optimized Dynamic Programming
 
-```js
+```python
+def subset_sum_space_optimized(arr, target):
+    dp = [False] * (target + 1)
+    dp[0] = True
+
+    for num in arr:
+        for j in range(target, num - 1, -1):
+            dp[j] = dp[j] or dp[j - num]
+
+    return dp[target]
+
+
+print(subset_sum_space_optimized([3, 34, 4, 12, 5, 2], 9))  # True
+
+# Time Complexity: O(N * target)
+# Space Complexity: O(target)
+```
+
+```javascript
 /**
  * Space-optimized version of the target sum problem using only one row for DP.
  * Time:  O(n * target) - We still iterate through each element and each target sum.
@@ -27512,33 +28168,15 @@ const target7 = 30;
 console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); // false
 ```
 
-```python
-def subset_sum_space_optimized(arr, target):
-    dp = [False] * (target + 1)
-    dp[0] = True
+2. Customized Shopping Recommendations | 0-1 Knapsack | Recursion (Brute Force) | 2D DP (Memoization) | 2D DP (Tabulation) **O(N), O(N)**
 
-    for num in arr:
-        for j in range(target, num - 1, -1):
-            dp[j] = dp[j] or dp[j - num]
-
-    return dp[target]
-
-
-print(subset_sum_space_optimized([3, 34, 4, 12, 5, 2], 9))  # True
-
-# Time Complexity: O(N * target)
-# Space Complexity: O(target)
-```
-
-### 2. Customized Shopping Recommendations | 0-1 Knapsack | Recursion (Brute Force) | 2D DP (Memoization) | 2D DP (Tabulation) **O(N), O(N)**
-
-```
+```text
 Problem Statement: Given the Budget of the user and cost and happiness value of N items of the desired product. Compute the maximum happiness value you can get if you buy some products optimally, staying within the budget.
 ```
 
 #### Input/Output
 
-```
+```text
 Input:
 Budget = 200
 Items:
@@ -27571,7 +28209,7 @@ The optimal solution is the maximum of these two choices. We will implement the 
 
 **DP State Transition**
 
-```
+```text
               +----------------------------------+
               | dp[i][j]                         |
               | (Max happiness using first `i`   |
@@ -27594,7 +28232,29 @@ The optimal solution is the maximum of these two choices. We will implement the 
 ```
 
 #### 1. Recursion (Brute Force)
-```js
+
+```python
+def knapsack_01_recursive(values, weights, capacity):
+    def solve(idx, rem_cap):
+        if idx == len(values) or rem_cap == 0:
+            return 0
+
+        # Exclude
+        max_val = solve(idx + 1, rem_cap)
+
+        # Include
+        if weights[idx] <= rem_cap:
+            max_val = max(max_val, values[idx] + solve(idx + 1, rem_cap - weights[idx]))
+
+        return max_val
+
+    return solve(0, capacity)
+
+
+print(knapsack_01_recursive([60, 100, 120], [10, 20, 30], 50))  # 220
+```
+
+```javascript
 /**
  * Finds the maximum happiness using a brute-force recursive approach.
  * Time:  O(2^n) - Exponential, as it explores every possible combination.
@@ -27637,30 +28297,36 @@ const budget1 = 200;
 console.log("Max Happiness (Recursive):", maxHappinessRecursive(costs1, happiness1, budget1)); // 57
 ```
 
+#### 2. Memoization (Top-down DP)
+
 ```python
-def knapsack_01_recursive(values, weights, capacity):
+def knapsack_01_memo(values, weights, capacity):
+    memo = {}
+
     def solve(idx, rem_cap):
         if idx == len(values) or rem_cap == 0:
             return 0
+        if (idx, rem_cap) in memo:
+            return memo[(idx, rem_cap)]
 
-        # Exclude
         max_val = solve(idx + 1, rem_cap)
 
-        # Include
         if weights[idx] <= rem_cap:
             max_val = max(max_val, values[idx] + solve(idx + 1, rem_cap - weights[idx]))
 
+        memo[(idx, rem_cap)] = max_val
         return max_val
 
     return solve(0, capacity)
 
 
-print(knapsack_01_recursive([60, 100, 120], [10, 20, 30], 50))  # 220
+print(knapsack_01_memo([60, 100, 120], [10, 20, 30], 50))  # 220
+
+# Time Complexity: O(N * W)
+# Space Complexity: O(N * W)
 ```
 
-#### 2. Memoization (Top-down DP)
-
-```js
+```javascript
 /**
  * Solves the 0-1 knapsack problem using memoization to avoid recomputing subproblems.
  * Time:  O(n * budget) - Each state (index, currentBudget) is computed only once.
@@ -27706,36 +28372,30 @@ const budget2 = 200;
 console.log("Max Happiness (Memoized):", maxHappinessMemoized(costs2, happiness2, budget2)); // 57
 ```
 
+#### 3. Tabulation (Bottom-up DP)
+
 ```python
-def knapsack_01_memo(values, weights, capacity):
-    memo = {}
+def knapsack_01_tabulation(values, weights, capacity):
+    n = len(values)
+    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
 
-    def solve(idx, rem_cap):
-        if idx == len(values) or rem_cap == 0:
-            return 0
-        if (idx, rem_cap) in memo:
-            return memo[(idx, rem_cap)]
+    for i in range(1, n + 1):
+        for w in range(1, capacity + 1):
+            if weights[i - 1] <= w:
+                dp[i][w] = max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]])
+            else:
+                dp[i][w] = dp[i - 1][w]
 
-        max_val = solve(idx + 1, rem_cap)
-
-        if weights[idx] <= rem_cap:
-            max_val = max(max_val, values[idx] + solve(idx + 1, rem_cap - weights[idx]))
-
-        memo[(idx, rem_cap)] = max_val
-        return max_val
-
-    return solve(0, capacity)
+    return dp[n][capacity]
 
 
-print(knapsack_01_memo([60, 100, 120], [10, 20, 30], 50))  # 220
+print(knapsack_01_tabulation([60, 100, 120], [10, 20, 30], 50))  # 220
 
 # Time Complexity: O(N * W)
 # Space Complexity: O(N * W)
 ```
 
-#### 3. Tabulation (Bottom-up DP)
-
-```js
+```javascript
 /**
  * Solves the 0-1 knapsack problem using tabulation.
  * Time:  O(n * budget) - We iterate through a 2D array of size n * budget.
@@ -27780,36 +28440,15 @@ const budget3 = 200;
 console.log("Max Happiness (Tabulation):", maxHappinessTabulation(costs3, happiness3, budget3)); // 57
 ```
 
-```python
-def knapsack_01_tabulation(values, weights, capacity):
-    n = len(values)
-    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+3. Fractional Knapsack | Greedy Algorithm **O(N), O(N)**
 
-    for i in range(1, n + 1):
-        for w in range(1, capacity + 1):
-            if weights[i - 1] <= w:
-                dp[i][w] = max(dp[i - 1][w], values[i - 1] + dp[i - 1][w - weights[i - 1]])
-            else:
-                dp[i][w] = dp[i - 1][w]
-
-    return dp[n][capacity]
-
-
-print(knapsack_01_tabulation([60, 100, 120], [10, 20, 30], 50))  # 220
-
-# Time Complexity: O(N * W)
-# Space Complexity: O(N * W)
-```
-
-### 3. Fractional Knapsack | Greedy Algorithm **O(N), O(N)**
-
-```
+```text
 Given N cakes with their happiness and weight. Find maximum total happiness that can be kept in a bag with capacity = W. Cakes can be divided.
 ```
 
 #### Input/Output
 
-```
+```text
 Input:
 Capacity = 70
 Items (weight, protein/value):
@@ -27842,7 +28481,36 @@ This greedy approach works for the fractional version because we can always top 
 
 #### Greedy Approach
 
-```js
+```python
+def fractional_knapsack(values, weights, capacity):
+    items = []
+    for i in range(len(values)):
+        items.append((values[i] / weights[i], values[i], weights[i]))
+
+    # Sort by value/weight ratio descending
+    items.sort(key=lambda x: x[0], reverse=True)
+
+    total_value = 0.0
+    curr_cap = capacity
+
+    for ratio, val, wt in items:
+        if curr_cap >= wt:
+            curr_cap -= wt
+            total_value += val
+        else:
+            total_value += ratio * curr_cap
+            break
+
+    return total_value
+
+
+print(fractional_knapsack([60, 100, 120], [10, 20, 30], 50))  # 240.0
+
+# Time Complexity: O(N log N)
+# Space Complexity: O(N)
+```
+
+```javascript
 /**
  * Solves the Fractional Knapsack problem using a greedy approach.
  * Time:  O(n log n) - Dominated by the sorting step.
@@ -27913,44 +28581,15 @@ The calculation in the PDF seems to arrive at the same result.
 console.log("Max Value (Fractional Knapsack):", fractionalKnapsack(weights, values, capacity)); // 826
 ```
 
-```python
-def fractional_knapsack(values, weights, capacity):
-    items = []
-    for i in range(len(values)):
-        items.append((values[i] / weights[i], values[i], weights[i]))
+4. Unbounded Knapsack / 0-N Knapsack | Recursion (Brute Force) | 2D DP (Memoization) | 2D DP (Tabulation) **O(N), O(N)**
 
-    # Sort by value/weight ratio descending
-    items.sort(key=lambda x: x[0], reverse=True)
-
-    total_value = 0.0
-    curr_cap = capacity
-
-    for ratio, val, wt in items:
-        if curr_cap >= wt:
-            curr_cap -= wt
-            total_value += val
-        else:
-            total_value += ratio * curr_cap
-            break
-
-    return total_value
-
-
-print(fractional_knapsack([60, 100, 120], [10, 20, 30], 50))  # 240.0
-
-# Time Complexity: O(N log N)
-# Space Complexity: O(N)
-```
-
-### 4. Unbounded Knapsack / 0-N Knapsack | Recursion (Brute Force) | 2D DP (Memoization) | 2D DP (Tabulation) **O(N), O(N)**
-
-```
+```text
 Given N toys with their happiness and weight. Find maximum total happiness that can be kept in a bag with capacity W. Division of toys are not allowed and infinite toys of each type are available.
 ```
 
 #### Input/Output
 
-```
+```text
 Input:
 Capacity = 8 kg
 Items (weight, value):
@@ -27986,7 +28625,35 @@ The DP state transition for tabulation becomes:
 `dp[i][j] = max(dp[i-1][j], values[i] + dp[i][j - weights[i]])`
 
 #### 1. 2D DP (Memoization)
-```js
+
+```python
+def unbounded_knapsack_memo(values, weights, capacity):
+    memo = {}
+
+    def solve(rem_cap):
+        if rem_cap == 0:
+            return 0
+        if rem_cap in memo:
+            return memo[rem_cap]
+
+        max_val = 0
+        for i in range(len(values)):
+            if weights[i] <= rem_cap:
+                max_val = max(max_val, values[i] + solve(rem_cap - weights[i]))
+
+        memo[rem_cap] = max_val
+        return max_val
+
+    return solve(capacity)
+
+
+print(unbounded_knapsack_memo([10, 40, 50, 70], [1, 3, 4, 5], 8))  # 110
+
+# Time Complexity: O(N * W)
+# Space Complexity: O(W)
+```
+
+```javascript
 /**
  * Solves the Unbounded Knapsack problem using memoization.
  * Time:  O(n * capacity) - Each state is computed once.
@@ -28038,35 +28705,27 @@ const capacity2 = 8;
 console.log("Max Value (Unbounded Memoized):", unboundedKnapsackMemoized(weights2, values2, capacity2)); // 10 (4+4)
 ```
 
+#### 2. 2D DP (Tabulation)
+
 ```python
-def unbounded_knapsack_memo(values, weights, capacity):
-    memo = {}
+def unbounded_knapsack_tabulation(values, weights, capacity):
+    dp = [0] * (capacity + 1)
 
-    def solve(rem_cap):
-        if rem_cap == 0:
-            return 0
-        if rem_cap in memo:
-            return memo[rem_cap]
-
-        max_val = 0
+    for w in range(1, capacity + 1):
         for i in range(len(values)):
-            if weights[i] <= rem_cap:
-                max_val = max(max_val, values[i] + solve(rem_cap - weights[i]))
+            if weights[i] <= w:
+                dp[w] = max(dp[w], values[i] + dp[w - weights[i]])
 
-        memo[rem_cap] = max_val
-        return max_val
-
-    return solve(capacity)
+    return dp[capacity]
 
 
-print(unbounded_knapsack_memo([10, 40, 50, 70], [1, 3, 4, 5], 8))  # 110
+print(unbounded_knapsack_tabulation([10, 40, 50, 70], [1, 3, 4, 5], 8))  # 110
 
 # Time Complexity: O(N * W)
 # Space Complexity: O(W)
 ```
 
-#### 2. 2D DP (Tabulation)
-```js
+```javascript
 /**
  * Solves the Unbounded Knapsack problem using tabulation.
  * Time:  O(n * capacity) - Iterating through the DP table.
@@ -28112,27 +28771,13 @@ const capacity4 = 8;
 console.log("Max Value (Unbounded Tabulation):", unboundedKnapsackTabulation(weights4, values4, capacity4)); // 10
 ```
 
-```python
-def unbounded_knapsack_tabulation(values, weights, capacity):
-    dp = [0] * (capacity + 1)
+---
 
-    for w in range(1, capacity + 1):
-        for i in range(len(values)):
-            if weights[i] <= w:
-                dp[w] = max(dp[w], values[i] + dp[w - weights[i]])
+<a id="52-graphs-1-introduction-dfs-cycle-detection"></a>
 
-    return dp[capacity]
+## 52. Graphs 1: Introduction, DFS & Cycle Detection
 
-
-print(unbounded_knapsack_tabulation([10, 40, 50, 70], [1, 3, 4, 5], 8))  # 110
-
-# Time Complexity: O(N * W)
-# Space Complexity: O(W)
-```
-
-# 6. Graphs 1: Introduction, DFS & Cycle Detection
-
-## Theory
+### Theory
 
 A graph is a non-linear data structure consisting of a collection of **Vertices** (or nodes) and **Edges** that connect pairs of vertices.
 
@@ -28316,9 +28961,10 @@ A simple graph with 7 vertices and some edges.
        (C)----------(D)
 ```
 
-## Questions
+### Questions
 
-### 1. Storing a Graph | Adjacency Matrix **O(N), O(N)**
+1. Storing a Graph | Adjacency Matrix **O(N), O(N)**
+
 In any question they will never give us a graph directly, we have to create a graph ad then solve the question.
 
 An adjacency matrix is a 2D array `graph[V][V]`, where `V` is the number of vertices.
@@ -28327,7 +28973,8 @@ An adjacency matrix is a 2D array `graph[V][V]`, where `V` is the number of vert
   * For weighted graphs, `graph[u][v] = weight` instead of 1.
 
 **Graph to be represented:**
-```
+
+```text
        (1)---(3)---(4)---(6)
         | \   |   /
         |  \  |  /
@@ -28335,19 +28982,35 @@ An adjacency matrix is a 2D array `graph[V][V]`, where `V` is the number of vert
 ```
 
 **Adjacency Matrix for the graph above (n=6):**
-|       | 0   | 1   | 2   | 3   | 4   | 5   | 6   |
-| ----- | --- | --- | --- | --- | --- | --- | --- |
-| **0** | 0   | 0   | 0   | 0   | 0   | 0   | 0   |
-| **1** | 0   | 0   | 1   | 1   | 0   | 1   | 0   |
-| **2** | 0   | 1   | 0   | 0   | 0   | 1   | 0   |
-| **3** | 0   | 1   | 0   | 0   | 1   | 1   | 0   |
-| **4** | 0   | 0   | 0   | 1   | 0   | 1   | 1   |
-| **5** | 0   | 1   | 1   | 1   | 1   | 0   | 0   |
-| **6** | 0   | 0   | 0   | 0   | 1   | 0   | 0   |
+Graph Adjacency Matrix (Edges):
+1. Node 0: No outgoing edges (all 0)
+2. Node 1: Connected to nodes 2, 3, 5
+3. Node 2: Connected to nodes 1, 5
+4. Node 3: Connected to nodes 1, 4, 5
+5. Node 4: Connected to nodes 3, 5, 6
+6. Node 5: Connected to nodes 1, 2, 3, 4
+7. Node 6: Connected to node 4
 
 #### 1. Adjacency Matrix Implementation
 
-```js
+```python
+def create_adj_matrix(n, edges, directed=False):
+    # Using 1-based indexing
+    matrix = [[0] * (n + 1) for _ in range(n + 1)]
+
+    for u, v in edges:
+        matrix[u][v] = 1
+        if not directed:
+            matrix[v][u] = 1
+
+    return matrix
+
+
+# Time Complexity: O(N^2)
+# Space Complexity: O(N^2)
+```
+
+```javascript
 /**
  * Creates a graph representation using an adjacency matrix.
  * @param {number[][]} edges - A list of edges, where each edge is [u, v].
@@ -28383,23 +29046,6 @@ console.log(createGraphAdjacencyMatrix(edges, n));
 // Space Complexity: O(V^2) where V is the number of vertices.
 ```
 
-```python
-def create_adj_matrix(n, edges, directed=False):
-    # Using 1-based indexing
-    matrix = [[0] * (n + 1) for _ in range(n + 1)]
-
-    for u, v in edges:
-        matrix[u][v] = 1
-        if not directed:
-            matrix[v][u] = 1
-
-    return matrix
-
-
-# Time Complexity: O(N^2)
-# Space Complexity: O(N^2)
-```
-
 **Advantages:**
 1.  Easy to implement.
 2.  Checking if an edge exists between two vertices `(u, v)` is very fast, O(1).
@@ -28408,7 +29054,8 @@ def create_adj_matrix(n, edges, directed=False):
 **Disadvantages:**
 1.  Consumes a lot of space, O(V^2), which is inefficient for sparse graphs (graphs with few edges).
 
-### 2. Storing a Graph | Adjacency List **O(N), O(N)**
+2. Storing a Graph | Adjacency List **O(N), O(N)**
+
 An adjacency list represents a graph as an array of lists. The size of the array is equal to the number of vertices.
   * `graph[i]` stores a list of vertices adjacent to vertex `i`.
   * For weighted graphs, the list stores pairs of `{neighbor, weight}`.
@@ -28416,7 +29063,8 @@ An adjacency list represents a graph as an array of lists. The size of the array
 #### Diagrams
 
 **Unweighted Graph Representation**
-```
+
+```text
       (1)----(2)
       / \    /
      /   \  /
@@ -28432,7 +29080,8 @@ Adjacency List:
   * 6 -> [4]
 
 **Weighted Graph Representation**
-```
+
+```text
     1 --(5)-- 2
     | \
    (7) (wt)
@@ -28448,7 +29097,33 @@ Adjacency List (stores pairs of `{neighbor, weight}`):
 
 #### 1. Adjacency List Implementation
 
-```js
+```python
+from collections import defaultdict
+
+
+def create_adj_list(edges, directed=False):
+    adj = defaultdict(list)
+
+    for edge in edges:
+        if len(edge) == 3:
+            u, v, wt = edge
+            adj[u].append((v, wt))
+            if not directed:
+                adj[v].append((u, wt))
+        else:
+            u, v = edge
+            adj[u].append(v)
+            if not directed:
+                adj[v].append(u)
+
+    return adj
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Represents a pair for weighted graphs.
  * @param {number} neighbor - The adjacent vertex.
@@ -28497,33 +29172,8 @@ console.log(JSON.stringify(adjList));
 // Space Complexity: O(V + 2E) for undirected graphs, which simplifies to O(V + E).
 ```
 
-```python
-from collections import defaultdict
+3. Traversal in UD Graph | Depth First Search (Undirected Graph) **O(N), O(N)**
 
-
-def create_adj_list(edges, directed=False):
-    adj = defaultdict(list)
-
-    for edge in edges:
-        if len(edge) == 3:
-            u, v, wt = edge
-            adj[u].append((v, wt))
-            if not directed:
-                adj[v].append((u, wt))
-        else:
-            u, v = edge
-            adj[u].append(v)
-            if not directed:
-                adj[v].append(u)
-
-    return adj
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V + E)
-```
-
-### 3. Traversal in UD Graph | Depth First Search (Undirected Graph) **O(N), O(N)**
 DFS is a traversal algorithm that explores as far as possible along each branch before backtracking. It often uses a stack (implicitly via recursion). To avoid infinite loops in graphs with cycles, we must keep track of visited vertices.
 
 #### Theory / Observations
@@ -28538,7 +29188,8 @@ DFS is a traversal algorithm that explores as far as possible along each branch 
 #### Diagrams
 
 **Graph for DFS Traversal**
-```
+
+```text
       (0)-----(1)-----(2)
        |       |
        |       |
@@ -28566,7 +29217,27 @@ DFS is a traversal algorithm that explores as far as possible along each branch 
 
 #### 1. DFS Traversal
 
-```js
+```python
+def dfs_traversal(adj, start_node, num_nodes):
+    visited = [False] * (num_nodes + 1)
+    traversal = []
+
+    def dfs(node):
+        visited[node] = True
+        traversal.append(node)
+        for neighbor in adj[node]:
+            if not visited[neighbor]:
+                dfs(neighbor)
+
+    dfs(start_node)
+    return traversal
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Helper function for DFS traversal
  * @param {number} source - The current vertex to visit.
@@ -28635,32 +29306,38 @@ traverseGraph(dfsGraph, dfsNumVertices);
 // Space Complexity: O(V) for the visited array and the recursion stack depth in the worst case (for a skewed graph).
 ```
 
-```python
-def dfs_traversal(adj, start_node, num_nodes):
-    visited = [False] * (num_nodes + 1)
-    traversal = []
+4. Detect Cycle in a directed graph **O(N), O(N)**
 
-    def dfs(node):
+#### 1. Brute-force Backtracking
+This approach, suggested in the notes, involves running a full cycle check from every single node and using a single `visited` array which is reset for different paths by backtracking. This leads to a very high time complexity as many paths are re-explored.
+
+```python
+def has_cycle_undirected(adj, num_nodes):
+    visited = [False] * (num_nodes + 1)
+
+    def dfs(node, parent):
         visited[node] = True
-        traversal.append(node)
         for neighbor in adj[node]:
             if not visited[neighbor]:
-                dfs(neighbor)
+                if dfs(neighbor, node):
+                    return True
+            elif neighbor != parent:
+                return True
+        return False
 
-    dfs(start_node)
-    return traversal
+    for i in range(1, num_nodes + 1):
+        if not visited[i]:
+            if dfs(i, -1):
+                return True
+
+    return False
 
 
 # Time Complexity: O(V + E)
 # Space Complexity: O(V)
 ```
 
-### 4. Detect Cycle in a directed graph **O(N), O(N)**
-
-#### 1. Brute-force Backtracking
-This approach, suggested in the notes, involves running a full cycle check from every single node and using a single `visited` array which is reset for different paths by backtracking. This leads to a very high time complexity as many paths are re-explored.
-
-```js
+```javascript
 /**
  * Checks for a cycle starting from a specific source node using backtracking.
  * This is the inefficient approach described in the notes.
@@ -28722,23 +29399,28 @@ function hasCycleInefficient(numVertices, graph) {
 // Space Complexity: O(V) for the visited array and recursion stack.
 ```
 
-```python
-def has_cycle_undirected(adj, num_nodes):
-    visited = [False] * (num_nodes + 1)
+#### 2. Optimized DFS with 2 Visited Arrays (3 states)
+This is the standard and efficient approach. We use a global `visited` array to avoid re-processing nodes that are part of a path that has already been confirmed to be acyclic. The `recursionStack` array tracks the current path.
 
-    def dfs(node, parent):
-        visited[node] = True
+```python
+def has_cycle_directed_colors(adj, num_nodes):
+    # 0 = unvisited, 1 = visiting (in recursion stack), 2 = visited
+    state = [0] * (num_nodes + 1)
+
+    def dfs(node):
+        state[node] = 1  # visiting
         for neighbor in adj[node]:
-            if not visited[neighbor]:
-                if dfs(neighbor, node):
+            if state[neighbor] == 1:
+                return True  # Back edge found
+            if state[neighbor] == 0:
+                if dfs(neighbor):
                     return True
-            elif neighbor != parent:
-                return True
+        state[node] = 2  # visited
         return False
 
     for i in range(1, num_nodes + 1):
-        if not visited[i]:
-            if dfs(i, -1):
+        if state[i] == 0:
+            if dfs(i):
                 return True
 
     return False
@@ -28748,10 +29430,7 @@ def has_cycle_undirected(adj, num_nodes):
 # Space Complexity: O(V)
 ```
 
-#### 2. Optimized DFS with 2 Visited Arrays (3 states)
-This is the standard and efficient approach. We use a global `visited` array to avoid re-processing nodes that are part of a path that has already been confirmed to be acyclic. The `recursionStack` array tracks the current path.
-
-```js
+```javascript
 /**
  * Efficiently checks for a cycle using a global visited array and a path-specific recursion stack array.
  * @param {number} src - The current source node.
@@ -28832,35 +29511,7 @@ console.log("Graph 2 has cycle:", hasCycle(5, acyclicEdges)); // Expected: false
 // Space Complexity: O(V) - For the visited arrays and recursion stack.
 ```
 
-```python
-def has_cycle_directed_colors(adj, num_nodes):
-    # 0 = unvisited, 1 = visiting (in recursion stack), 2 = visited
-    state = [0] * (num_nodes + 1)
-
-    def dfs(node):
-        state[node] = 1  # visiting
-        for neighbor in adj[node]:
-            if state[neighbor] == 1:
-                return True  # Back edge found
-            if state[neighbor] == 0:
-                if dfs(neighbor):
-                    return True
-        state[node] = 2  # visited
-        return False
-
-    for i in range(1, num_nodes + 1):
-        if state[i] == 0:
-            if dfs(i):
-                return True
-
-    return False
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
-### 5. Cycle in Directed Graph | BFS | DFS Kahn's Algorithm **O(N), O(N)**
+5. Cycle in Directed Graph | BFS | DFS Kahn's Algorithm **O(N), O(N)**
 
 #### 1. Using Depth First Search (DFS)
 
@@ -28886,7 +29537,38 @@ We use two boolean arrays to keep track of the state of each node:
 
 This approach correctly handles disconnected graphs by initiating a DFS for each unvisited node.
 
-```js
+```python
+def detect_cycle_dfs(adj, num_nodes):
+    visited = [False] * (num_nodes + 1)
+    rec_stack = [False] * (num_nodes + 1)
+
+    def dfs(node):
+        visited[node] = True
+        rec_stack[node] = True
+
+        for neighbor in adj[node]:
+            if not visited[neighbor]:
+                if dfs(neighbor):
+                    return True
+            elif rec_stack[neighbor]:
+                return True
+
+        rec_stack[node] = False
+        return False
+
+    for i in range(1, num_nodes + 1):
+        if not visited[i]:
+            if dfs(i):
+                return True
+
+    return False
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Detects a cycle in a directed graph using Depth First Search.
  * @param {number} A The number of nodes in the graph.
@@ -28972,37 +29654,6 @@ console.log(`Cycle detected in graph 2: ${hasCycleDFS(A2, B2)}`); // Expected ou
 // and the recursion stack depth.
 ```
 
-```python
-def detect_cycle_dfs(adj, num_nodes):
-    visited = [False] * (num_nodes + 1)
-    rec_stack = [False] * (num_nodes + 1)
-
-    def dfs(node):
-        visited[node] = True
-        rec_stack[node] = True
-
-        for neighbor in adj[node]:
-            if not visited[neighbor]:
-                if dfs(neighbor):
-                    return True
-            elif rec_stack[neighbor]:
-                return True
-
-        rec_stack[node] = False
-        return False
-
-    for i in range(1, num_nodes + 1):
-        if not visited[i]:
-            if dfs(i):
-                return True
-
-    return False
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
 #### 2. Using BFS (Kahn's Topological Sort Algorithm)
 
 A cycle in a directed graph can also be detected using a modification of Breadth-First Search (BFS), specifically Kahn's algorithm for topological sorting.
@@ -29023,7 +29674,36 @@ A topological sort is a linear ordering of vertices such that for every directed
 
 <!-- end list -->
 
-```js
+```python
+from collections import deque
+
+
+def detect_cycle_kahns(adj, num_nodes):
+    in_degree = [0] * (num_nodes + 1)
+    for u in adj:
+        for v in adj[u]:
+            in_degree[v] += 1
+
+    queue = deque([i for i in range(1, num_nodes + 1) if in_degree[i] == 0])
+    count = 0
+
+    while queue:
+        node = queue.popleft()
+        count += 1
+        for neighbor in adj[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    # If count != num_nodes, there is a cycle
+    return count != num_nodes
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Detects a cycle in a directed graph using Kahn's Algorithm (Topological Sort).
  * @param {number} A The number of nodes in the graph.
@@ -29095,40 +29775,11 @@ console.log(`Cycle detected in graph 2: ${hasCycleBFS(A4, B4)}`); // Expected ou
 // Space Complexity: O(A + M). O(A + M) for the adjacency list and O(A) for the in-degree array and the queue.
 ```
 
-```python
-from collections import deque
-
-
-def detect_cycle_kahns(adj, num_nodes):
-    in_degree = [0] * (num_nodes + 1)
-    for u in adj:
-        for v in adj[u]:
-            in_degree[v] += 1
-
-    queue = deque([i for i in range(1, num_nodes + 1) if in_degree[i] == 0])
-    count = 0
-
-    while queue:
-        node = queue.popleft()
-        count += 1
-        for neighbor in adj[node]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
-
-    # If count != num_nodes, there is a cycle
-    return count != num_nodes
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
 A path can be found using any standard graph traversal algorithm, like **Breadth-First Search (BFS)** or **Depth-First Search (DFS)**. Both methods start at the source node (`1`) and explore its neighbors, and then their neighbors, and so on, until the destination node (`A`) is found or all reachable nodes have been visited.
 
 To avoid infinite loops in graphs with cycles and to prevent redundant computations, we use a `visited` array to keep track of the nodes we have already explored.
 
-### 6. Path in Directed Graph | BFS | DFS **O(N), O(N)**
+6. Path in Directed Graph | BFS | DFS **O(N), O(N)**
 
 #### 1. Using Breadth-First Search (BFS)
 
@@ -29148,7 +29799,32 @@ BFS is a great choice for finding if a path exists. It explores the graph layer 
 
 <!-- end list -->
 
-```js
+```python
+from collections import deque
+
+
+def has_path_bfs(adj, source, dest, num_nodes):
+    visited = [False] * (num_nodes + 1)
+    queue = deque([source])
+    visited[source] = True
+
+    while queue:
+        curr = queue.popleft()
+        if curr == dest:
+            return True
+        for neighbor in adj[curr]:
+            if not visited[neighbor]:
+                visited[neighbor] = True
+                queue.append(neighbor)
+
+    return False
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Checks for a path from node 1 to node A using BFS.
  * @param {number} A The total number of nodes (and the destination node).
@@ -29215,31 +29891,6 @@ console.log(findPathBFS(5, [ [1, 2], [2, 3], [3, 4], [4, 5] ])); // 1
 // queue and visited array.
 ```
 
-```python
-from collections import deque
-
-
-def has_path_bfs(adj, source, dest, num_nodes):
-    visited = [False] * (num_nodes + 1)
-    queue = deque([source])
-    visited[source] = True
-
-    while queue:
-        curr = queue.popleft()
-        if curr == dest:
-            return True
-        for neighbor in adj[curr]:
-            if not visited[neighbor]:
-                visited[neighbor] = True
-                queue.append(neighbor)
-
-    return False
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
 #### 2. Using Depth-First Search (DFS)
 
 DFS explores as far as possible along each branch before backtracking. We can implement this recursively. A `visited` array is essential here as well to avoid getting trapped in cycles.
@@ -29258,7 +29909,28 @@ DFS explores as far as possible along each branch before backtracking. We can im
 
 <!-- end list -->
 
-```js
+```python
+def has_path_dfs(adj, source, dest, num_nodes):
+    visited = [False] * (num_nodes + 1)
+
+    def dfs(node):
+        if node == dest:
+            return True
+        visited[node] = True
+        for neighbor in adj[node]:
+            if not visited[neighbor]:
+                if dfs(neighbor):
+                    return True
+        return False
+
+    return dfs(source)
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Checks for a path from node 1 to node A using DFS.
  * @param {number} A The total number of nodes (and the destination node).
@@ -29318,32 +29990,17 @@ console.log(findPathDFS(5, [ [1, 2], [2, 3], [3, 4], [4, 5] ])); // 1
 // and O(A) for the recursion stack in the worst-case (a long chain).
 ```
 
-```python
-def has_path_dfs(adj, source, dest, num_nodes):
-    visited = [False] * (num_nodes + 1)
+---
 
-    def dfs(node):
-        if node == dest:
-            return True
-        visited[node] = True
-        for neighbor in adj[node]:
-            if not visited[neighbor]:
-                if dfs(neighbor):
-                    return True
-        return False
+<a id="53-graphs-2-bfs-mst"></a>
 
-    return dfs(source)
+## 53. Graphs 2: BFS & MST
 
+### Questions
 
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
+1. Breadth First Search (BFS) Traversal | Queue **O(N), O(N)**
 
-# 7. Graphs 2: BFS & MST
-
-### 1. Breadth First Search (BFS) Traversal | Queue **O(N), O(N)**
-
-```
+```text
 Given a graph and a starting source vertex, traverse the graph using Breadth First Search.
 ```
 
@@ -29365,7 +30022,7 @@ BFS explores the graph layer by layer, moving radially outwards from the source 
 
 A sample graph with 8 vertices (0 to 7).
 
-```
+```text
       0 -------- 4
      /          / |
     /          /  |
@@ -29381,17 +30038,16 @@ Let's trace BFS on the graph above.
 
 **Scenario 1: Source = 3**
 
-| Action                   | Queue       | Visited             | Output | Distance from 3 |
-| :----------------------- | :---------- | :------------------ | :----- | :-------------- |
-| Initial                  | `[3]`       | `[F,F,F,T,F,F,F,F]` |        | 3 -\> 0         |
-| Remove 3, Add 1, 4, 5, 2 | `[1,4,5,2]` | `[F,T,T,T,T,T,F,F]` | 3      | 1,4,5,2 -\> 1   |
-| Remove 1, Add 0          | `[4,5,2,0]` | `[T,T,T,T,T,T,F,F]` | 1      | 0 -\> 2         |
-| Remove 4                 | `[5,2,0]`   | `[T,T,T,T,T,T,F,F]` | 4      |                 |
-| Remove 5, Add 6, 7       | `[2,0,6,7]` | `[T,T,T,T,T,T,T,T]` | 5      | 6, 7 -\> 2      |
-| Remove 2                 | `[0,6,7]`   | `[T,T,T,T,T,T,T,T]` | 2      |                 |
-| Remove 0                 | `[6,7]`     | `[T,T,T,T,T,T,T,T]` | 0      |                 |
-| Remove 6                 | `[7]`       | `[T,T,T,T,T,T,T,T]` | 6      |                 |
-| Remove 7                 | `[]`        | `[T,T,T,T,T,T,T,T]` | 7      |                 |
+BFS Traversal State Trace:
+1. Initial: Queue `[3]`, Visited `[F,F,F,T,F,F,F,F]`, Distance: `3 -> 0`
+2. Remove 3, Add 1, 4, 5, 2: Queue `[1,4,5,2]`, Output: `3`, Distance: `1,4,5,2 -> 1`
+3. Remove 1, Add 0: Queue `[4,5,2,0]`, Output: `1`, Distance: `0 -> 2`
+4. Remove 4: Queue `[5,2,0]`, Output: `4`
+5. Remove 5, Add 6, 7: Queue `[2,0,6,7]`, Output: `5`, Distance: `6,7 -> 2`
+6. Remove 2: Queue `[0,6,7]`, Output: `2`
+7. Remove 0: Queue `[6,7]`, Output: `0`
+8. Remove 6: Queue `[7]`, Output: `6`
+9. Remove 7: Queue `[]`, Output: `7`
 
 **Final Traversal Order:** 3, 1, 4, 5, 2, 0, 6, 7
 
@@ -29399,7 +30055,33 @@ Let's trace BFS on the graph above.
 
 This solution implements the standard BFS algorithm to traverse a graph and calculate the shortest distance from a source node to all other nodes in terms of edge count.
 
-```js
+```python
+from collections import deque
+
+
+def bfs_traversal(adj, start, num_nodes):
+    visited = [False] * (num_nodes + 1)
+    queue = deque([(start, 0)])  # (node, distance)
+    visited[start] = True
+    traversal = []
+
+    while queue:
+        node, dist = queue.popleft()
+        traversal.append((node, dist))
+
+        for neighbor in adj[node]:
+            if not visited[neighbor]:
+                visited[neighbor] = True
+                queue.append((neighbor, dist + 1))
+
+    return traversal
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Represents a pair of vertex and its distance from the source.
  */
@@ -29480,35 +30162,9 @@ breadthFirstSearch(adjList, 3);
 // Space Complexity: O(V)
 ```
 
-```python
-from collections import deque
+2. Multisource BFS **O(N), O(N)**
 
-
-def bfs_traversal(adj, start, num_nodes):
-    visited = [False] * (num_nodes + 1)
-    queue = deque([(start, 0)])  # (node, distance)
-    visited[start] = True
-    traversal = []
-
-    while queue:
-        node, dist = queue.popleft()
-        traversal.append((node, dist))
-
-        for neighbor in adj[node]:
-            if not visited[neighbor]:
-                visited[neighbor] = True
-                queue.append((neighbor, dist + 1))
-
-    return traversal
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
-### 2. Multisource BFS **O(N), O(N)**
-
-```
+```text
 There are N number of nodes and multiple source nodes (S1, S2, S3, ...). We need to find the length of the shortest path from a given destination node to *any one* of the source nodes.
 ```
 
@@ -29526,7 +30182,7 @@ Instead of running BFS multiple times, we can run it just once. The idea is to t
 
 #### Diagrams
 
-```
+```text
       12 -- 10(S1) -- 11
             |
             8 -- 1(S2) -- 2 -- 9(dst)
@@ -29536,7 +30192,38 @@ Instead of running BFS multiple times, we can run it just once. The idea is to t
 
 #### 1. Optimized Multisource BFS
 
-```js
+```python
+from collections import deque
+
+
+def multisource_bfs(grid, sources):
+    rows = len(grid)
+    cols = len(grid[0])
+    dist = [[-1] * cols for _ in range(rows)]
+    queue = deque()
+
+    for r, c in sources:
+        queue.append((r, c))
+        dist[r][c] = 0
+
+    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while queue:
+        r, c = queue.popleft()
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and dist[nr][nc] == -1:
+                dist[nr][nc] = dist[r][c] + 1
+                queue.append((nr, nc))
+
+    return dist
+
+
+# Time Complexity: O(R * C)
+# Space Complexity: O(R * C)
+```
+
+```javascript
 /**
  * Represents a pair of vertex and its distance from the source.
  */
@@ -29634,40 +30321,9 @@ console.log(`Shortest distance to destination ${destination + 1} is: ${shortestD
 // Space Complexity: O(V)
 ```
 
-```python
-from collections import deque
+3. Rotten Oranges / Minimum Time Required to Rot All Oranges | Multisource BFS **O(N), O(N)**
 
-
-def multisource_bfs(grid, sources):
-    rows = len(grid)
-    cols = len(grid[0])
-    dist = [[-1] * cols for _ in range(rows)]
-    queue = deque()
-
-    for r, c in sources:
-        queue.append((r, c))
-        dist[r][c] = 0
-
-    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-    while queue:
-        r, c = queue.popleft()
-        for dr, dc in dirs:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and dist[nr][nc] == -1:
-                dist[nr][nc] = dist[r][c] + 1
-                queue.append((nr, nc))
-
-    return dist
-
-
-# Time Complexity: O(R * C)
-# Space Complexity: O(R * C)
-```
-
-### 3. Rotten Oranges / Minimum Time Required to Rot All Oranges | Multisource BFS **O(N), O(N)**
-
-```
+```text
 Given an m x n grid where each cell can have one of three values:
 - 0 representing an empty cell,
 - 1 representing a fresh orange,
@@ -29690,7 +30346,47 @@ This problem is a perfect application of Multisource BFS. The initially "rotten 
 
 #### 1. Multisource BFS
 
-```js
+```python
+from collections import deque
+
+
+def oranges_rotting(grid):
+    rows = len(grid)
+    cols = len(grid[0])
+    queue = deque()
+    fresh_count = 0
+
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:
+                queue.append((r, c, 0))
+            elif grid[r][c] == 1:
+                fresh_count += 1
+
+    minutes = 0
+    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while queue:
+        r, c, m = queue.popleft()
+        minutes = m
+
+        for dr, dc in dirs:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                grid[nr][nc] = 2
+                fresh_count -= 1
+                queue.append((nr, nc, m + 1))
+
+    return minutes if fresh_count == 0 else -1
+
+
+print(oranges_rotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]))  # 4
+
+# Time Complexity: O(R * C)
+# Space Complexity: O(R * C)
+```
+
+```javascript
 /**
  * Represents the state of an orange in the grid.
  */
@@ -29773,49 +30469,9 @@ console.log(`Time to rot all oranges: ${orangesRotting(grid1)}`); // Expected ou
 // Space Complexity: O(m * n)
 ```
 
-```python
-from collections import deque
+4. Cost of Construction of Bridges / Flipkart's Logistics Challenge | Minimum Spanning Tree (MST) | Kruskal's Algorithm **O(N), O(N)**
 
-
-def oranges_rotting(grid):
-    rows = len(grid)
-    cols = len(grid[0])
-    queue = deque()
-    fresh_count = 0
-
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 2:
-                queue.append((r, c, 0))
-            elif grid[r][c] == 1:
-                fresh_count += 1
-
-    minutes = 0
-    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-    while queue:
-        r, c, m = queue.popleft()
-        minutes = m
-
-        for dr, dc in dirs:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
-                grid[nr][nc] = 2
-                fresh_count -= 1
-                queue.append((nr, nc, m + 1))
-
-    return minutes if fresh_count == 0 else -1
-
-
-print(oranges_rotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]))  # 4
-
-# Time Complexity: O(R * C)
-# Space Complexity: O(R * C)
-```
-
-### 4. Cost of Construction of Bridges / Flipkart's Logistics Challenge | Minimum Spanning Tree (MST) | Kruskal's Algorithm **O(N), O(N)**
-
-```
+```text
 Scenario: A company (like Flipkart) has N local distribution centers across a city. You are given the possible connections (bridges/roads) that can be built between these centers and the cost associated with each one.
 
 Goal: Find the minimum cost to construct roads such that all centers are connected, meaning it's possible to travel from any center to any other center.
@@ -29834,15 +30490,14 @@ This problem is a classic example of finding a **Minimum Spanning Tree (MST)**. 
 
 Let's trace Prim's Algorithm on the example graph starting from `src = 1` (index 0). The graph has 6 vertices.
 
-| Action              | Priority Queue (v, wt)                | Visited         | Min Cost | MST Edges     |
-| :------------------ | :------------------------------------ | :-------------- | :------- | :------------ |
-| Initial (src=1)     | `[(2,7), (4,8)]`                      | `[T,F,F,F,F,F]` | 0        | {}            |
-| Remove (2,7)        | `[(4,3), (4,8), (3,6)]`               | `[T,T,F,F,F,F]` | 7        | {(1,2)}       |
-| Remove (4,3) from 2 | `[(5,3), (3,4), (3,6), (4,8)]`        | `[T,T,F,T,F,F]` | 7+3=10   | {(1,2),(2,4)} |
-| Remove (5,3) from 4 | `[(3,2), (3,4), (3,6), (6,5), (4,8)]` | `[T,T,F,T,T,F]` | 10+3=13  | {..,(4,5)}    |
-| Remove (3,2) from 5 | `[(3,4), (6,5), (3,6), (4,8)]`        | `[T,T,T,T,T,F]` | 13+2=15  | {..,(5,3)}    |
-| Remove (3,4) from 4 | Ignore (3 is visited)                 | `[T,T,T,T,T,F]` | 15       | {..,(5,3)}    |
-| Remove (6,5) from 3 | `[(3,6), (4,8)]`                      | `[T,T,T,T,T,T]` | 15+5=20  | {..,(3,6)}    |
+Prim's Algorithm MST State Trace:
+1. Initial (src=1): Priority Queue `[(2,7), (4,8)]`, Visited `[T,F,F,F,F,F]`, Min Cost: 0, MST: {}
+2. Remove (2,7): PQ `[(4,3), (4,8), (3,6)]`, Visited `[T,T,F,F,F,F]`, Min Cost: 7, MST: `{(1,2)}`
+3. Remove (4,3) from 2: PQ `[(5,3), (3,4), (3,6), (4,8)]`, Visited `[T,T,F,T,F,F]`, Min Cost: 10, MST: `{(1,2), (2,4)}`
+4. Remove (5,3) from 4: PQ `[(3,2), (3,4), (3,6), (6,5), (4,8)]`, Visited `[T,T,F,T,T,F]`, Min Cost: 13, MST: `{(1,2), (2,4), (4,5)}`
+5. Remove (3,2) from 5: PQ `[(3,4), (6,5), (3,6), (4,8)]`, Visited `[T,T,T,T,T,F]`, Min Cost: 15, MST: `{(1,2), (2,4), (4,5), (5,3)}`
+6. Remove (3,4) from 4: Ignored (node 3 already visited)
+7. Remove (6,5) from 3: PQ `[(3,6), (4,8)]`, Visited `[T,T,T,T,T,T]`, Min Cost: 20, MST: `{(1,2), (2,4), (4,5), (5,3), (3,6)}`
 
 **Final Minimum Cost = 20**
 
@@ -29850,7 +30505,44 @@ Let's trace Prim's Algorithm on the example graph starting from `src = 1` (index
 
 This solution finds the minimum cost to connect all of the centers by implementing Prim's algorithm.
 
-```js
+```python
+import heapq
+from collections import defaultdict
+
+
+def prim_mst(num_nodes, edges):
+    adj = defaultdict(list)
+    for u, v, wt in edges:
+        adj[u].append((wt, v))
+        adj[v].append((wt, u))
+
+    visited = [False] * (num_nodes + 1)
+    min_heap = [(0, 1)]  # (weight, node)
+    mst_cost = 0
+    edges_count = 0
+
+    while min_heap and edges_count < num_nodes:
+        wt, u = heapq.heappop(min_heap)
+
+        if visited[u]:
+            continue
+
+        visited[u] = True
+        mst_cost += wt
+        edges_count += 1
+
+        for weight, neighbor in adj[u]:
+            if not visited[neighbor]:
+                heapq.heappush(min_heap, (weight, neighbor))
+
+    return mst_cost
+
+
+# Time Complexity: O(E log V)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Represents an edge (a potential road/bridge) in the graph.
  */
@@ -29962,45 +30654,9 @@ console.log(`Minimum cost to construct the bridges: ${minCost}`); // 20
 // The DSU data structure requires O(N) space for its parent and size arrays.
 ```
 
-```python
-import heapq
-from collections import defaultdict
+5. Commutable Islands | Kruskal's Algorithm | Prims's Algorithm **O(N), O(N)**
 
-
-def prim_mst(num_nodes, edges):
-    adj = defaultdict(list)
-    for u, v, wt in edges:
-        adj[u].append((wt, v))
-        adj[v].append((wt, u))
-
-    visited = [False] * (num_nodes + 1)
-    min_heap = [(0, 1)]  # (weight, node)
-    mst_cost = 0
-    edges_count = 0
-
-    while min_heap and edges_count < num_nodes:
-        wt, u = heapq.heappop(min_heap)
-
-        if visited[u]:
-            continue
-
-        visited[u] = True
-        mst_cost += wt
-        edges_count += 1
-
-        for weight, neighbor in adj[u]:
-            if not visited[neighbor]:
-                heapq.heappush(min_heap, (weight, neighbor))
-
-    return mst_cost
-
-
-# Time Complexity: O(E log V)
-# Space Complexity: O(V + E)
-```
-
-### 5. Commutable Islands | Kruskal's Algorithm | Prims's Algorithm **O(N), O(N)**
-```
+```text
 There are A islands and there are M bridges connecting them. Each bridge has some cost attached to it.
 We need to find bridges with minimal cost such that all islands are connected.
 It is guaranteed that input data will contain at least one possible scenario in which all islands are connected with each other.
@@ -30008,7 +30664,7 @@ It is guaranteed that input data will contain at least one possible scenario in 
 
 #### 1. Kruskal's Algorithm
 
-```
+```text
 The problem of connecting all islands with minimum cost is a classic application of finding a Minimum Spanning Tree (MST) in a graph. Here, islands are vertices and bridges are weighted edges.
 
 Kruskal's algorithm provides a straightforward way to find the MST. It follows a greedy approach:
@@ -30023,7 +30679,58 @@ Kruskal's algorithm provides a straightforward way to find the MST. It follows a
 This approach ensures that we always pick the cheapest available bridge that doesn't form a cycle, which guarantees a Minimum Spanning Tree.
 ```
 
-```js
+```python
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n + 1))
+        self.rank = [0] * (n + 1)
+
+    def find(self, i):
+        if self.parent[i] == i:
+            return i
+        self.parent[i] = self.find(self.parent[i])  # Path compression
+        return self.parent[i]
+
+    def union(self, i, j):
+        root_i = self.find(i)
+        root_j = self.find(j)
+        if root_i == root_j:
+            return False
+
+        # Union by rank
+        if self.rank[root_i] < self.rank[root_j]:
+            self.parent[root_i] = root_j
+        elif self.rank[root_i] > self.rank[root_j]:
+            self.parent[root_j] = root_i
+        else:
+            self.parent[root_j] = root_i
+            self.rank[root_i] += 1
+
+        return True
+
+
+def kruskal_mst(num_nodes, edges):
+    # Sort edges by weight ascending
+    edges.sort(key=lambda x: x[2])
+    dsu = DSU(num_nodes)
+    mst_cost = 0
+    edges_taken = 0
+
+    for u, v, wt in edges:
+        if dsu.union(u, v):
+            mst_cost += wt
+            edges_taken += 1
+            if edges_taken == num_nodes - 1:
+                break
+
+    return mst_cost
+
+
+# Time Complexity: O(E log E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * A Disjoint Set Union (DSU) data structure with path compression and union by rank.
  * This is used to efficiently track the connected components of the graph.
@@ -30148,60 +30855,9 @@ console.log(`Minimal cost for Example 2: ${solveCommutableIslandsKruskal(A2, B2)
 // The DSU data structure requires two arrays of size A+1 to store the parent and rank for each island.
 ```
 
-```python
-class DSU:
-    def __init__(self, n):
-        self.parent = list(range(n + 1))
-        self.rank = [0] * (n + 1)
-
-    def find(self, i):
-        if self.parent[i] == i:
-            return i
-        self.parent[i] = self.find(self.parent[i])  # Path compression
-        return self.parent[i]
-
-    def union(self, i, j):
-        root_i = self.find(i)
-        root_j = self.find(j)
-        if root_i == root_j:
-            return False
-
-        # Union by rank
-        if self.rank[root_i] < self.rank[root_j]:
-            self.parent[root_i] = root_j
-        elif self.rank[root_i] > self.rank[root_j]:
-            self.parent[root_j] = root_i
-        else:
-            self.parent[root_j] = root_i
-            self.rank[root_i] += 1
-
-        return True
-
-
-def kruskal_mst(num_nodes, edges):
-    # Sort edges by weight ascending
-    edges.sort(key=lambda x: x[2])
-    dsu = DSU(num_nodes)
-    mst_cost = 0
-    edges_taken = 0
-
-    for u, v, wt in edges:
-        if dsu.union(u, v):
-            mst_cost += wt
-            edges_taken += 1
-            if edges_taken == num_nodes - 1:
-                break
-
-    return mst_cost
-
-
-# Time Complexity: O(E log E)
-# Space Complexity: O(V)
-```
-
 #### 2. Prim's Algorithm
 
-```
+```text
 Prim's algorithm is another greedy algorithm for finding an MST. It works by growing the MST from an arbitrary starting vertex.
 
 The algorithm proceeds as follows:
@@ -30220,7 +30876,13 @@ The algorithm proceeds as follows:
 This implementation uses a Min-Heap for the priority queue to achieve an efficient time complexity.
 ```
 
-```js
+```python
+def commutable_islands(A, B):
+    # A = num islands, B = edges [[u, v, wt]]
+    return prim_mst(A, B)
+```
+
+```javascript
 /**
  * A simple Min-Priority Queue implementation using a binary heap.
  * It stores items in the format [priority, value].
@@ -30402,16 +31064,17 @@ console.log(`Minimal cost for Example 2 (Prim's): ${solveCommutableIslandsPrim(A
 // The priority queue can, in the worst case, store an edge for every vertex not in the MST, taking O(M) space.
 ```
 
-```python
-def commutable_islands(A, B):
-    # A = num islands, B = edges [[u, v, wt]]
-    return prim_mst(A, B)
-```
+---
 
-# 8. Graphs 3: Dijkstra Algo & Topological Sort
+<a id="54-graphs-3-dijkstra-algo-topological-sort"></a>
 
-### 1. Another BFS **O(N), O(N)**
-```
+## 54. Graphs 3: Dijkstra Algo & Topological Sort
+
+### Questions
+
+1. Another BFS **O(N), O(N)**
+
+```text
 Find the minimum weight to travel to vertex v from vertex u in a given connected simple graph, such that the weight of any edge is either 1 or 2.
 ```
 
@@ -30434,7 +31097,7 @@ After applying this transformation to all edges with weight 2, the entire graph 
 
 **Original Graph (Example)**
 
-```
+```text
       (1) --1-- (2) --1-- (3)
        | \       |       |
        1  2      1       1
@@ -30448,7 +31111,7 @@ After applying this transformation to all edges with weight 2, the entire graph 
 
 *Simplified representation from image:*
 
-```
+```text
       1
      / \
     /   \
@@ -30473,7 +31136,7 @@ Let's transform the edges with weight 2.
 
 The new graph would look like this (with new dummy nodes 6, 7, 8):
 
-```
+```text
             (1) --1-- (2) --1-- (3)
             / |         |      / |
            /  1         1     /  1
@@ -30490,7 +31153,33 @@ Now, all edges have weight 1, and we can run BFS.
 #### Graph Transformation + BFS
 This solution modifies the graph structure first and then applies a standard BFS.
 
-```js
+```python
+from collections import deque
+
+
+def shortest_path_unweighted(adj, source, dest, num_nodes):
+    dist = [-1] * (num_nodes + 1)
+    queue = deque([source])
+    dist[source] = 0
+
+    while queue:
+        curr = queue.popleft()
+        if curr == dest:
+            return dist[curr]
+
+        for neighbor in adj[curr]:
+            if dist[neighbor] == -1:
+                dist[neighbor] = dist[curr] + 1
+                queue.append(neighbor)
+
+    return -1
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V)
+```
+
+```javascript
 /**
  * Represents a pair of vertex and its distance from the source.
  * @class
@@ -30607,35 +31296,9 @@ console.log(`Shortest path from ${source} to ${destination}:`, findShortestPathW
 // Space Complexity: O(N + E)
 ```
 
-```python
-from collections import deque
+2. Dijkstra's Algorithm **O(N), O(N)**
 
-
-def shortest_path_unweighted(adj, source, dest, num_nodes):
-    dist = [-1] * (num_nodes + 1)
-    queue = deque([source])
-    dist[source] = 0
-
-    while queue:
-        curr = queue.popleft()
-        if curr == dest:
-            return dist[curr]
-
-        for neighbor in adj[curr]:
-            if dist[neighbor] == -1:
-                dist[neighbor] = dist[curr] + 1
-                queue.append(neighbor)
-
-    return -1
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V)
-```
-
-### 2. Dijkstra's Algorithm **O(N), O(N)**
-
-```
+```text
 There are N cities in a country, you are living in city-1. Find the minimum distance to reach every other city from city-1. We need to return the answer in the form of an array where the i-th element is the shortest distance from city-1 to city-i.
 ```
 
@@ -30664,13 +31327,12 @@ The difference between Dijkstra's and Prim's algorithm for Minimum Spanning Tree
 
 **Example Graph:**
 
-```
+```text
       City 0 --40-- City 3 --2-- City 4
         |             |            | \
        10             10           3  8
         |             |            |   \
       City 1 --10-- City 2         City 5 --3-- City 6
-
 ```
 
 #### Dry Run
@@ -30679,17 +31341,16 @@ Let source = City 0.
 `dist = [0, inf, inf, inf, inf, inf, inf]`
 `pq = [{v: 0, dist: 0}]`
 
-| Step  | Remove from PQ  | Visited        | dist Array                        | PQ Contents                                     |
-| :---: | :-------------- | :------------- | :-------------------------------- | :---------------------------------------------- |
-|   1   | `{v: 0, d: 0}`  | `{0}`          | `[0, 10, inf, 40, inf, inf, inf]` | `[{v: 1, d: 10}, {v: 3, d: 40}]`                |
-|   2   | `{v: 1, d: 10}` | `{0, 1}`       | `[0, 10, 20, 40, inf, inf, inf]`  | `[{v: 2, d: 20}, {v: 3, d: 40}]`                |
-|   3   | `{v: 2, d: 20}` | `{0, 1, 2}`    | `[0, 10, 20, 30, inf, inf, inf]`  | `[{v: 3, d: 30}, {v: 3, d: 40}]` \*             |
-|   4   | `{v: 3, d: 30}` | `{0, 1, 2, 3}` | `[0, 10, 20, 30, 32, inf, inf]`   | `[{v: 4, d: 32}, {v: 3, d: 40}]`                |
-|   5   | `{v: 4, d: 32}` | `{0,1,2,3,4}`  | `[0, 10, 20, 30, 32, 35, 40]`     | `[{v: 5, d: 35}, {v: 3, d: 40}, {v: 6, d: 40}]` |
-|   6   | `{v: 5, d: 35}` | `{0,..,5}`     | `[0, 10, 20, 30, 32, 35, 38]`     | `[{v: 6, d: 38}, {v: 3, d: 40}, {v: 6, d: 40}]` |
-|   7   | `{v: 6, d: 38}` | `{0,..,6}`     | `[0, 10, 20, 30, 32, 35, 38]`     | `[{v: 3, d: 40}, {v: 6, d: 40}]`                |
-|   8   | `{v: 3, d: 40}` | -              | (skip, 3 is visited)              | `[{v: 6, d: 40}]`                               |
-|   9   | `{v: 6, d: 40}` | -              | (skip, 6 is visited)              | `[]`                                            |
+Dijkstra Algorithm State Trace:
+1. Step 1: Remove `{v: 0, d: 0}`, Visited `{0}`, dist `[0, 10, inf, 40, inf, inf, inf]`, PQ: `[{v: 1, d: 10}, {v: 3, d: 40}]`
+2. Step 2: Remove `{v: 1, d: 10}`, Visited `{0, 1}`, dist `[0, 10, 20, 40, inf, inf, inf]`, PQ: `[{v: 2, d: 20}, {v: 3, d: 40}]`
+3. Step 3: Remove `{v: 2, d: 20}`, Visited `{0, 1, 2}`, dist `[0, 10, 20, 30, inf, inf, inf]`, PQ: `[{v: 3, d: 30}, {v: 3, d: 40}]`
+4. Step 4: Remove `{v: 3, d: 30}`, Visited `{0, 1, 2, 3}`, dist `[0, 10, 20, 30, 32, inf, inf]`, PQ: `[{v: 4, d: 32}, {v: 3, d: 40}]`
+5. Step 5: Remove `{v: 4, d: 32}`, Visited `{0, 1, 2, 3, 4}`, dist `[0, 10, 20, 30, 32, 35, 40]`, PQ: `[{v: 5, d: 35}, {v: 3, d: 40}, {v: 6, d: 40}]`
+6. Step 6: Remove `{v: 5, d: 35}`, Visited `{0..5}`, dist `[0, 10, 20, 30, 32, 35, 38]`, PQ: `[{v: 6, d: 38}, {v: 3, d: 40}, {v: 6, d: 40}]`
+7. Step 7: Remove `{v: 6, d: 38}`, Visited `{0..6}`, dist `[0, 10, 20, 30, 32, 35, 38]`, PQ: `[{v: 3, d: 40}, {v: 6, d: 40}]`
+8. Step 8: Remove `{v: 3, d: 40}`, Skipped (node 3 already visited)
+9. Step 9: Remove `{v: 6, d: 40}`, Skipped (node 6 already visited), PQ empty
 
 *Note: In step 3, `dist[3]` is updated from 40 to 30 (path `0->1->2->3`). A new entry `{v: 3, d: 30}` is added to the PQ. The old entry `{v: 3, d: 40}` remains but will be ignored later since 3 will be marked visited when we process the entry with distance 30.*
 
@@ -30697,7 +31358,41 @@ Let source = City 0.
 
 #### Dijkstra's Algorithm with Min-Priority Queue
 
-```js
+```python
+import heapq
+from collections import defaultdict
+
+
+def dijkstra(num_nodes, edges, source):
+    adj = defaultdict(list)
+    for u, v, wt in edges:
+        adj[u].append((v, wt))
+        adj[v].append((u, wt))
+
+    dist = [float('inf')] * (num_nodes + 1)
+    dist[source] = 0
+    # min-heap storing (distance, node)
+    min_heap = [(0, source)]
+
+    while min_heap:
+        d, u = heapq.heappop(min_heap)
+
+        if d > dist[u]:
+            continue
+
+        for neighbor, weight in adj[u]:
+            if dist[u] + weight < dist[neighbor]:
+                dist[neighbor] = dist[u] + weight
+                heapq.heappush(min_heap, (dist[neighbor], neighbor))
+
+    return dist
+
+
+# Time Complexity: O((V + E) log V)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * A simple Min-Priority Queue implementation for Dijkstra's algorithm.
  * In a real-world scenario, a more efficient heap-based implementation would be used.
@@ -30803,42 +31498,9 @@ console.log("Shortest distances from city 0:", shortestDistances);
 // Space Complexity: O(V + E)
 ```
 
-```python
-import heapq
-from collections import defaultdict
+3. Topological Sort / Possible to finish all courses **O(N), O(N)**
 
-
-def dijkstra(num_nodes, edges, source):
-    adj = defaultdict(list)
-    for u, v, wt in edges:
-        adj[u].append((v, wt))
-        adj[v].append((u, wt))
-
-    dist = [float('inf')] * (num_nodes + 1)
-    dist[source] = 0
-    # min-heap storing (distance, node)
-    min_heap = [(0, source)]
-
-    while min_heap:
-        d, u = heapq.heappop(min_heap)
-
-        if d > dist[u]:
-            continue
-
-        for neighbor, weight in adj[u]:
-            if dist[u] + weight < dist[neighbor]:
-                dist[neighbor] = dist[u] + weight
-                heapq.heappush(min_heap, (dist[neighbor], neighbor))
-
-    return dist
-
-
-# Time Complexity: O((V + E) log V)
-# Space Complexity: O(V + E)
-```
-
-### 3. Topological Sort / Possible to finish all courses **O(N), O(N)**
-```
+```text
 Given N courses and a list of prerequisites, we have to check if it is possible to finish all the courses. For example, to take course 2, you must first take course 1. This is a prerequisite.
 ```
 
@@ -30877,7 +31539,7 @@ There are two main algorithms for finding a topological sort:
 `1 -> 2`, `1 -> 3`, `2 -> 3`, `2 -> 5`, `3 -> 4`, `4 -> 2`
 The cycle is `2 -> 3 -> 4 -> 2`.
 
-```
+```text
       (1) -----> (3) -----> (4)
        |          ^          |
        |         /           |
@@ -30889,7 +31551,7 @@ The cycle is `2 -> 3 -> 4 -> 2`.
 **Acyclic Graph (DAG - Possible to finish)**
 `1 -> 2`, `1 -> 3`, `2 -> 4`, `2 -> 5`, `3 -> 4`
 
-```
+```text
       (1) -----> (2) -----> (5)
        \         /
         \       /
@@ -30901,13 +31563,13 @@ Possible topological sorts: `[1, 2, 3, 5, 4]`, `[1, 3, 2, 4, 5]`, etc.
 
 #### Scenario-based Question
 
-```
+```text
 Which of the following is a correct topological order for this graph?
 ```
 
 **Diagram:**
 
-```
+```text
       (TD) ----> (TA) ----> (TC)
        |          |          ^
        |          |         /
@@ -30919,7 +31581,6 @@ TD -> TA
 TA -> TB
 TA -> TC
 TC -> TB
-
 ```
 
 **Analysis:**
@@ -30932,7 +31593,41 @@ TC -> TB
 
 #### 1. Kahn's Algorithm (BFS-based)
 
-```js
+```python
+from collections import deque, defaultdict
+
+
+def topological_sort_kahns(num_nodes, edges):
+    adj = defaultdict(list)
+    in_degree = [0] * (num_nodes + 1)
+
+    for u, v in edges:
+        adj[u].append(v)
+        in_degree[v] += 1
+
+    queue = deque([i for i in range(1, num_nodes + 1) if in_degree[i] == 0])
+    topo_order = []
+
+    while queue:
+        node = queue.popleft()
+        topo_order.append(node)
+
+        for neighbor in adj[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    if len(topo_order) != num_nodes:
+        return []  # Graph has a cycle
+
+    return topo_order
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Performs a topological sort on a directed graph using Kahn's algorithm.
  * @param {number} n - The number of vertices (courses).
@@ -31006,40 +31701,6 @@ console.log("Topological Order (with cycle):", topologicalSort(numCourses_cycle,
 // Space Complexity: O(V + E)
 ```
 
-```python
-from collections import deque, defaultdict
-
-
-def topological_sort_kahns(num_nodes, edges):
-    adj = defaultdict(list)
-    in_degree = [0] * (num_nodes + 1)
-
-    for u, v in edges:
-        adj[u].append(v)
-        in_degree[v] += 1
-
-    queue = deque([i for i in range(1, num_nodes + 1) if in_degree[i] == 0])
-    topo_order = []
-
-    while queue:
-        node = queue.popleft()
-        topo_order.append(node)
-
-        for neighbor in adj[node]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                queue.append(neighbor)
-
-    if len(topo_order) != num_nodes:
-        return []  # Graph has a cycle
-
-    return topo_order
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V + E)
-```
-
 #### 2. DFS-based Algorithm
 
 The DFS approach works by visiting each node and only adding it to the final topological order *after* all of its descendants have been visited and added. This is typically achieved by using a stack or recursion.
@@ -31060,7 +31721,47 @@ The DFS approach works by visiting each node and only adding it to the final top
     e.  Return `true`.
 6.  After iterating through all vertices, if no cycle was detected, the `stack` (when popped) contains the topological sort.
 
-```js
+```python
+from collections import defaultdict
+
+
+def topological_sort_dfs(num_nodes, edges):
+    adj = defaultdict(list)
+    for u, v in edges:
+        adj[u].append(v)
+
+    visited = [False] * (num_nodes + 1)
+    rec_stack = [False] * (num_nodes + 1)
+    stack = []
+
+    def dfs(node):
+        visited[node] = True
+        rec_stack[node] = True
+
+        for neighbor in adj[node]:
+            if not visited[neighbor]:
+                if dfs(neighbor):
+                    return True
+            elif rec_stack[neighbor]:
+                return True  # Cycle detected
+
+        rec_stack[node] = False
+        stack.append(node)
+        return False
+
+    for i in range(1, num_nodes + 1):
+        if not visited[i]:
+            if dfs(i):
+                return []  # Cycle exists
+
+    return stack[::-1]
+
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Performs a topological sort using a DFS-based approach.
  * @param {number} n - The number of vertices.
@@ -31134,48 +31835,9 @@ console.log("Topological Order (DFS with cycle):", topologicalSortDFS(numCourses
 // Space Complexity: O(V + E)
 ```
 
-```python
-from collections import defaultdict
+4. Possibility of Finishing | BFS (Khan's Algorithm) | DFS (Cycle Detection) **O(N), O(N)**
 
-
-def topological_sort_dfs(num_nodes, edges):
-    adj = defaultdict(list)
-    for u, v in edges:
-        adj[u].append(v)
-
-    visited = [False] * (num_nodes + 1)
-    rec_stack = [False] * (num_nodes + 1)
-    stack = []
-
-    def dfs(node):
-        visited[node] = True
-        rec_stack[node] = True
-
-        for neighbor in adj[node]:
-            if not visited[neighbor]:
-                if dfs(neighbor):
-                    return True
-            elif rec_stack[neighbor]:
-                return True  # Cycle detected
-
-        rec_stack[node] = False
-        stack.append(node)
-        return False
-
-    for i in range(1, num_nodes + 1):
-        if not visited[i]:
-            if dfs(i):
-                return []  # Cycle exists
-
-    return stack[::-1]
-
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V + E)
-```
-
-### 4. Possibility of Finishing | BFS (Khan's Algorithm) | DFS (Cycle Detection) **O(N), O(N)**
-```
+```text
 There are a total of A courses you have to take, labeled from 1 to A.
 Some courses may have prerequisites, for example to take course 2 you have to first take course 1, which is expressed as a pair: [1,2].
 So you are given two integer array B and C of same size where for each i (B[i], C[i]) denotes a pair.
@@ -31185,7 +31847,7 @@ Return 1 if it is possible to finish all the courses, or 0 if it is not possible
 
 #### 1. BFS (Kahn's Algorithm for Topological Sort)
 
-```
+```text
 This problem can be modeled as finding a cycle in a directed graph. Each course is a node, and a prerequisite pair (u, v) represents a directed edge from u to v. Finishing all courses is possible if and only if the graph is a Directed Acyclic Graph (DAG), i.e., it contains no cycles.
 
 Kahn's algorithm is a popular method to find a topological sort of a DAG. If a topological sort can be generated that includes all the vertices, the graph is acyclic. If the algorithm terminates before visiting all vertices, the graph must contain a cycle.
@@ -31200,7 +31862,40 @@ The approach is as follows:
 4.  **Conclusion**: After the queue is empty, if the count of completed courses equals the total number of courses, it means all courses could be finished in some order. Otherwise, a cycle exists, making it impossible.
 ```
 
-```js
+```python
+from collections import deque, defaultdict
+
+
+def can_finish_courses_bfs(num_courses, prerequisites):
+    adj = defaultdict(list)
+    in_degree = [0] * num_courses
+
+    for dest, src in prerequisites:
+        adj[src].append(dest)
+        in_degree[dest] += 1
+
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    finished = 0
+
+    while queue:
+        curr = queue.popleft()
+        finished += 1
+        for nxt in adj[curr]:
+            in_degree[nxt] -= 1
+            if in_degree[nxt] == 0:
+                queue.append(nxt)
+
+    return finished == num_courses
+
+
+print(can_finish_courses_bfs(2, [[1, 0]]))          # True
+print(can_finish_courses_bfs(2, [[1, 0], [0, 1]]))  # False
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Checks if all courses can be finished using Kahn's algorithm (BFS).
  * @param {number} A - The total number of courses.
@@ -31287,42 +31982,9 @@ console.log(`Can finish courses for Example 2? ${canFinishCoursesBFS(A2, B2, C2)
 // We use an adjacency list (O(E)), an in-degree array (O(A)), and a queue (O(A) in the worst case).
 ```
 
-```python
-from collections import deque, defaultdict
-
-
-def can_finish_courses_bfs(num_courses, prerequisites):
-    adj = defaultdict(list)
-    in_degree = [0] * num_courses
-
-    for dest, src in prerequisites:
-        adj[src].append(dest)
-        in_degree[dest] += 1
-
-    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
-    finished = 0
-
-    while queue:
-        curr = queue.popleft()
-        finished += 1
-        for nxt in adj[curr]:
-            in_degree[nxt] -= 1
-            if in_degree[nxt] == 0:
-                queue.append(nxt)
-
-    return finished == num_courses
-
-
-print(can_finish_courses_bfs(2, [[1, 0]]))          # True
-print(can_finish_courses_bfs(2, [[1, 0], [0, 1]]))  # False
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V + E)
-```
-
 #### 2. DFS (Depth-First Search) Cycle Detection
 
-```
+```text
 Another way to solve this is to use Depth-First Search (DFS) to detect a cycle in the directed graph. If a cycle is detected, it's impossible to finish all the courses.
 
 The core idea is to maintain two sets (or boolean arrays) for tracking the state of each node during the DFS traversal:
@@ -31342,7 +32004,42 @@ The approach is as follows:
 4.  **Conclusion**: If any DFS traversal finds a cycle, we immediately know it's impossible. If we traverse the entire graph without finding any cycles, it's possible.
 ```
 
-```js
+```python
+from collections import defaultdict
+
+
+def can_finish_courses_dfs(num_courses, prerequisites):
+    adj = defaultdict(list)
+    for dest, src in prerequisites:
+        adj[src].append(dest)
+
+    visited = [0] * num_courses  # 0: unvisited, 1: visiting, 2: visited
+
+    def has_cycle(course):
+        visited[course] = 1
+        for nxt in adj[course]:
+            if visited[nxt] == 1:
+                return True
+            if visited[nxt] == 0 and has_cycle(nxt):
+                return True
+        visited[course] = 2
+        return False
+
+    for c in range(num_courses):
+        if visited[c] == 0:
+            if has_cycle(c):
+                return False
+
+    return True
+
+
+print(can_finish_courses_dfs(2, [[1, 0]]))  # True
+
+# Time Complexity: O(V + E)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * Checks if all courses can be finished using DFS cycle detection.
  * @param {number} A - The total number of courses.
@@ -31430,43 +32127,9 @@ console.log(`Can finish courses for Example 2? ${canFinishCoursesDFS(A2_dfs, B2_
 // We use an adjacency list (O(E)), visited and recursionStack arrays (O(A)), and the system's recursion stack (O(A) in the worst case for a long chain).
 ```
 
-```python
-from collections import defaultdict
+5. Topological Sort | Kahn's Algorithm with Min-Heap **O(N), O(N)**
 
-
-def can_finish_courses_dfs(num_courses, prerequisites):
-    adj = defaultdict(list)
-    for dest, src in prerequisites:
-        adj[src].append(dest)
-
-    visited = [0] * num_courses  # 0: unvisited, 1: visiting, 2: visited
-
-    def has_cycle(course):
-        visited[course] = 1
-        for nxt in adj[course]:
-            if visited[nxt] == 1:
-                return True
-            if visited[nxt] == 0 and has_cycle(nxt):
-                return True
-        visited[course] = 2
-        return False
-
-    for c in range(num_courses):
-        if visited[c] == 0:
-            if has_cycle(c):
-                return False
-
-    return True
-
-
-print(can_finish_courses_dfs(2, [[1, 0]]))  # True
-
-# Time Complexity: O(V + E)
-# Space Complexity: O(V + E)
-```
-
-### 5. Topological Sort | Kahn's Algorithm with Min-Heap **O(N), O(N)**
-```
+```text
 Given an directed acyclic graph having A nodes. A matrix B of size M x 2 is given which represents the M edges such that there is a edge directed from node B[i][0] to node B[i][1].
 Topological sorting for Directed Acyclic Graph (DAG) is a linear ordering of vertices such that for every directed edge uv, vertex u comes before v in the ordering. Topological Sorting for a graph is not possible if the graph is not a DAG.
 Return the topological ordering of the graph and if it doesn't exist then return an empty array.
@@ -31482,7 +32145,7 @@ Your solution will run on multiple test cases. If you are using global variables
 
 #### 1. Kahn's Algorithm with a Min-Heap
 
-```
+```text
 The problem requires a topological sort, but with the specific condition of finding the lexicographically smallest ordering. This suggests that whenever we have a choice of which node to visit next, we must always pick the smallest one.
 
 Kahn's algorithm, a BFS-based approach, is perfect for this. The standard algorithm uses a regular queue, but to get the lexicographically smallest result, we can replace the queue with a Min-Priority Queue (Min-Heap).
@@ -31495,7 +32158,44 @@ The algorithm proceeds as follows:
 5.  **Cycle Detection**: If, after the loop, the number of nodes in our result list is less than the total number of nodes (A), it implies the graph has a cycle, and a valid topological sort is impossible. In this case, we return an empty array. Otherwise, we return the sorted result.
 ```
 
-```js
+```python
+import heapq
+from collections import defaultdict
+
+
+def topological_sort_lexicographical(num_nodes, edges):
+    adj = defaultdict(list)
+    in_degree = [0] * (num_nodes + 1)
+
+    for u, v in edges:
+        adj[u].append(v)
+        in_degree[v] += 1
+
+    # Min-Heap ensures smallest available node is processed first
+    min_heap = [i for i in range(1, num_nodes + 1) if in_degree[i] == 0]
+    heapq.heapify(min_heap)
+    result = []
+
+    while min_heap:
+        node = heapq.heappop(min_heap)
+        result.append(node)
+
+        for neighbor in adj[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                heapq.heappush(min_heap, neighbor)
+
+    if len(result) != num_nodes:
+        return []
+
+    return result
+
+
+# Time Complexity: O(V log V + E log V)
+# Space Complexity: O(V + E)
+```
+
+```javascript
 /**
  * A Min-Priority Queue class to efficiently manage nodes with an in-degree of 0,
  * always providing the smallest node first.
@@ -31657,52 +32357,44 @@ console.log(solution(A2, B2)); // expected output: []
 // The adjacency list requires O(A + M) space. The in-degree array and result array require O(A) space. The min-heap can store up to O(A) nodes.
 ```
 
-```python
-import heapq
-from collections import defaultdict
+---
 
+<a id="55-multiple-approaches"></a>
 
-def topological_sort_lexicographical(num_nodes, edges):
-    adj = defaultdict(list)
-    in_degree = [0] * (num_nodes + 1)
+## 55. Multiple Approaches
 
-    for u, v in edges:
-        adj[u].append(v)
-        in_degree[v] += 1
+### Questions
 
-    # Min-Heap ensures smallest available node is processed first
-    min_heap = [i for i in range(1, num_nodes + 1) if in_degree[i] == 0]
-    heapq.heapify(min_heap)
-    result = []
+1. Connecting the ropes | Priority Queue **O(N), O(N)**
 
-    while min_heap:
-        node = heapq.heappop(min_heap)
-        result.append(node)
-
-        for neighbor in adj[node]:
-            in_degree[neighbor] -= 1
-            if in_degree[neighbor] == 0:
-                heapq.heappush(min_heap, neighbor)
-
-    if len(result) != num_nodes:
-        return []
-
-    return result
-
-
-# Time Complexity: O(V log V + E log V)
-# Space Complexity: O(V + E)
-```
-
-# 9. Multiple Approaches
-
-### 1. Connecting the ropes | Priority Queue **O(N), O(N)**
-```
+```text
 We are given an array that represents the size of different ropes. In a single operation, you can connect two ropes. Cost of connecting two ropes is sum of the length of ropes you are connecting. Find the minimum cost of connecting all the ropes.
 ```
 
 #### 1. Insertion Sort
-```js
+
+```python
+def min_cost_ropes_insertion(ropes):
+    if len(ropes) <= 1:
+        return 0
+    ropes.sort()
+    cost = 0
+    while len(ropes) > 1:
+        c = ropes.pop(0) + ropes.pop(0)
+        cost += c
+        # Insert c into sorted position
+        inserted = False
+        for i, r in enumerate(ropes):
+            if r >= c:
+                ropes.insert(i, c)
+                inserted = True
+                break
+        if not inserted:
+            ropes.append(c)
+    return cost
+```
+
+```javascript
 /**
  * ALGORITHM: Minimum Cost to Connect Ropes
  * 1. Start with an initial array of rope lengths.
@@ -31787,29 +32479,25 @@ console.log("Minimum cost for [1, 2, 3, 4, 5]:", minCostToConnectRopes(ropes2));
  */
 ```
 
+#### 2. Priority Queue
+
 ```python
-def min_cost_ropes_insertion(ropes):
-    if len(ropes) <= 1:
+import heapq
+
+
+def min_cost_ropes_pq(lengths):
+    if not lengths or len(lengths) <= 1:
         return 0
-    ropes.sort()
-    cost = 0
-    while len(ropes) > 1:
-        c = ropes.pop(0) + ropes.pop(0)
-        cost += c
-        # Insert c into sorted position
-        inserted = False
-        for i, r in enumerate(ropes):
-            if r >= c:
-                ropes.insert(i, c)
-                inserted = True
-                break
-        if not inserted:
-            ropes.append(c)
-    return cost
+    heapq.heapify(lengths)
+    total = 0
+    while len(lengths) > 1:
+        c = heapq.heappop(lengths) + heapq.heappop(lengths)
+        total += c
+        heapq.heappush(lengths, c)
+    return total
 ```
 
-#### 2. Priority Queue
-```js
+```javascript
 /**
  * -------- Priority Queue (Min-Heap) --------
  * ALGORITHM EXPLANATION:
@@ -31999,30 +32687,27 @@ console.log(minCostToConnectRopes([2, 2, 3, 3])); // 20
  */
 ```
 
-```python
-import heapq
+2. Target Sum / Subset Sum Problem | Recursion (Brute Force) | 2D DP (Tabulation) | 1D DP (Space Optimization) **O(N), O(N)**
 
-
-def min_cost_ropes_pq(lengths):
-    if not lengths or len(lengths) <= 1:
-        return 0
-    heapq.heapify(lengths)
-    total = 0
-    while len(lengths) > 1:
-        c = heapq.heappop(lengths) + heapq.heappop(lengths)
-        total += c
-        heapq.heappush(lengths, c)
-    return total
-```
-
-### 2. Target Sum / Subset Sum Problem | Recursion (Brute Force) | 2D DP (Tabulation) | 1D DP (Space Optimization) **O(N), O(N)**
-```
+```text
 You are given a set of non-negative integers and a target sum. The task is to determine whether there exists a subset of the given set whose sum is equal to the target sum.
 ```
 
 #### 1. Recursive (Brute-force)
 
-```js
+```python
+def target_sum_rec(arr, target):
+    def dfs(i, s):
+        if s == target:
+            return True
+        if i >= len(arr) or s > target:
+            return False
+        return dfs(i + 1, s + arr[i]) or dfs(i + 1, s)
+
+    return dfs(0, 0)
+```
+
+```javascript
 /**
  * Determines if a subset with the given sum exists using recursion.
  * Time:  O(2^n) - For each element, we have two choices, leading to an exponential number of calls.
@@ -32114,21 +32799,24 @@ const targetSum = 41;
 console.log("Memoized Recursive:", targetSumMemoized(arr, targetSum)); // true
 ```
 
-```python
-def target_sum_rec(arr, target):
-    def dfs(i, s):
-        if s == target:
-            return True
-        if i >= len(arr) or s > target:
-            return False
-        return dfs(i + 1, s + arr[i]) or dfs(i + 1, s)
-
-    return dfs(0, 0)
-```
-
 #### 2. Dynamic Programming (Tabulation)
 
-```js
+```python
+def target_sum_tab(arr, target):
+    n = len(arr)
+    dp = [[False] * (target + 1) for _ in range(n + 1)]
+    for i in range(n + 1):
+        dp[i][0] = True
+    for i in range(1, n + 1):
+        for j in range(1, target + 1):
+            if arr[i - 1] <= j:
+                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - arr[i - 1]]
+            else:
+                dp[i][j] = dp[i - 1][j]
+    return dp[n][target]
+```
+
+```javascript
 /**
  * Determines if a subset with the given sum exists using dynamic programming.
  * Time:  O(n * target) - We iterate through a 2D array of size n * target.
@@ -32177,24 +32865,19 @@ const target5 = 30;
 console.log(`Can sum to ${target5}?`, targetSumTabulation(arr4, target5)); // false
 ```
 
-```python
-def target_sum_tab(arr, target):
-    n = len(arr)
-    dp = [[False] * (target + 1) for _ in range(n + 1)]
-    for i in range(n + 1):
-        dp[i][0] = True
-    for i in range(1, n + 1):
-        for j in range(1, target + 1):
-            if arr[i - 1] <= j:
-                dp[i][j] = dp[i - 1][j] or dp[i - 1][j - arr[i - 1]]
-            else:
-                dp[i][j] = dp[i - 1][j]
-    return dp[n][target]
-```
-
 #### 3. Space-Optimized Dynamic Programming
 
-```js
+```python
+def target_sum_space_opt(arr, target):
+    dp = [False] * (target + 1)
+    dp[0] = True
+    for x in arr:
+        for j in range(target, x - 1, -1):
+            dp[j] = dp[j] or dp[j - x]
+    return dp[target]
+```
+
+```javascript
 /**
  * Space-optimized version of the target sum problem using only one row for DP.
  * Time:  O(n * target) - We still iterate through each element and each target sum.
@@ -32233,56 +32916,55 @@ const target7 = 30;
 console.log(`Can sum to ${target7}?`, targetSumSpaceOptimized(arr6, target7)); // false
 ```
 
-```python
-def target_sum_space_opt(arr, target):
-    dp = [False] * (target + 1)
-    dp[0] = True
-    for x in arr:
-        for j in range(target, x - 1, -1):
-            dp[j] = dp[j] or dp[j - x]
-    return dp[target]
-```
+---
 
-# 10. Interview Problems
+<a id="56-interview-problems"></a>
 
-### 1. Minimum Meeting Rooms (Max Overlap of Meetings) | Two Pointers + Sorting **O(N), O(N)**
+## 56. Interview Problems
 
-### 2. Sort a K-Sorted (Nearly Sorted) Array | Min-Heap (Priority Queue) **O(N), O(N)**
+### Questions
 
-### 3. Minimum Distance Between Equal Elements | Hash Map (Last-Seen Index) **O(N), O(N)**
+1. Minimum Meeting Rooms (Max Overlap of Meetings) | Two Pointers + Sorting **O(N), O(N)**
 
-### 4. Minimum Window Substring | Sliding Window + Frequency Maps **O(N), O(N)**
+2. Sort a K-Sorted (Nearly Sorted) Array | Min-Heap (Priority Queue) **O(N), O(N)**
 
-### 5. Shaggy and distances | Hash Map (last-seen index) + Single Pass **O(N), O(N)**
+3. Minimum Distance Between Equal Elements | Hash Map (Last-Seen Index) **O(N), O(N)**
 
-### 6. K Places Apart | Min-Heap of size (B+1) **O(N), O(N)**
+4. Minimum Window Substring | Sliding Window + Frequency Maps **O(N), O(N)**
 
-### 7. Meeting Rooms II | Two-Pointer Sweep over Sorted Start/End Times **O(N), O(N)**
+5. Shaggy and distances | Hash Map (last-seen index) + Single Pass **O(N), O(N)**
 
-### 8. Minimum Window Substring | Sliding Window + Frequency Counts **O(N), O(N)**
+6. K Places Apart | Min-Heap of size (B+1) **O(N), O(N)**
 
-### 9. Number of Islands | DFS | BFS **O(N), O(N)**
+7. Meeting Rooms II | Two-Pointer Sweep over Sorted Start/End Times **O(N), O(N)**
 
-### 10. Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph) **O(N), O(N)**
+8. Minimum Window Substring | Sliding Window + Frequency Counts **O(N), O(N)**
 
-### 11. Minimum Jumps to Reach End | Dynamic Programming | Greedy (Optimized) **O(N), O(N)**
+9. Number of Islands | DFS | BFS **O(N), O(N)**
 
-### 12. Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass **O(N), O(N)**
+10. Shortest Distance in a Maze | BFS (Dijkstra's on unweighted graph) **O(N), O(N)**
 
-### 13. Stock Buy Sell-I (One Transaction) **O(N), O(N)**
+11. Minimum Jumps to Reach End | Dynamic Programming | Greedy (Optimized) **O(N), O(N)**
 
-### 14. Stock Buy Sell-II (Multiple Transactions) **O(N), O(N)**
+12. Maximum Profit from Stock Prices | Peak Valley Approach | Single One Pass **O(N), O(N)**
 
-### 15. Stock Buy Sell-III (At Most Two Transactions) **O(N), O(N)**
+13. Stock Buy Sell-I (One Transaction) **O(N), O(N)**
 
-### 16. Stock Buy Sell-IV (At Most K Transactions) **O(N), O(N)**
+14. Stock Buy Sell-II (Multiple Transactions) **O(N), O(N)**
 
-### 17. Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming **O(N), O(N)**
+15. Stock Buy Sell-III (At Most Two Transactions) **O(N), O(N)**
 
-### 18. Shortest Distance in a Maze | Dijkstra's Algorithm **O(N), O(N)**
+16. Stock Buy Sell-IV (At Most K Transactions) **O(N), O(N)**
 
-### 19. Number of Islands | DFS | BFS **O(N), O(N)**
+17. Best Time to Buy and Sell Stock | Greedy Approach (Peak Valley) | Dynamic Programming **O(N), O(N)**
 
-### 20. Jump Game 2 | Dynamic Programming | Greedy Approach **O(N), O(N)**
+18. Shortest Distance in a Maze | Dijkstra's Algorithm **O(N), O(N)**
 
-### 21. Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid **O(N), O(N)**
+19. Number of Islands | DFS | BFS **O(N), O(N)**
+
+20. Jump Game 2 | Dynamic Programming | Greedy Approach **O(N), O(N)**
+
+21. Valid Path | BFS with On-the-Fly Check | BFS with Pre-computed Obstacle Grid **O(N), O(N)**
+
+---
+
