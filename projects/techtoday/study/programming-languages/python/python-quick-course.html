@@ -1,0 +1,2693 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>Python Quick Course | TechToday</title>
+    <meta name="description"
+        content="High-frequency Python essentials for everyday engineering — variables, strings, data structures, comprehensions, functions, OOP, dataclasses, generators, decorators, and gotchas." />
+    <link rel="icon" href="../../../logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="python-study.css" />
+    <link rel="stylesheet" href="../../../site-header.css" />
+</head>
+
+<body class="is-quick">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../../index.html">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="../programming-languages.html" class="nav-back-link">&larr; Programming Languages</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents table-of-contents-numbered">
+                    <li><a href="#1-variables-types-and-truthiness">Variables, Types &amp; Truthiness</a></li>
+                    <li><a href="#2-strings-and-string-formatting">Strings &amp; String Formatting</a></li>
+                    <li><a href="#3-numbers-and-math-operations">Numbers &amp; Math Operations</a></li>
+                    <li><a href="#4-conditionals-and-pattern-matching">Conditionals &amp; Pattern Matching</a></li>
+                    <li><a href="#5-lists-and-slicing">Lists &amp; Slicing</a></li>
+                    <li><a href="#6-dictionaries-and-mapping-essentials">Dictionaries &amp; Mapping Essentials</a></li>
+                    <li><a href="#7-tuples-and-sets">Tuples &amp; Sets</a></li>
+                    <li><a href="#8-comprehensions-list-dict-set">Comprehensions (List, Dict, Set)</a></li>
+                    <li><a href="#9-loops-and-iteration-helpers">Loops &amp; Iteration Helpers</a></li>
+                    <li><a href="#10-functions-parameters-and-scopes">Functions, Parameters &amp; Scopes</a></li>
+                    <li><a href="#11-lambdas-and-sorting-with-custom-keys">Lambdas &amp; Sorting with Custom Keys</a></li>
+                    <li><a href="#12-error-and-exception-handling">Error &amp; Exception Handling</a></li>
+                    <li><a href="#13-classes-and-object-oriented-basics">Classes &amp; Object-Oriented Basics</a></li>
+                    <li><a href="#14-dataclasses-and-modern-structs">Dataclasses &amp; Modern Structs</a></li>
+                    <li><a href="#15-iterators-and-generators">Iterators &amp; Generators</a></li>
+                    <li><a href="#16-decorators-and-function-wrappers">Decorators &amp; Function Wrappers</a></li>
+                    <li><a href="#17-file-io-and-pathlib">File I/O &amp; Pathlib</a></li>
+                    <li><a href="#18-json-parsing-and-serialization">JSON Parsing &amp; Serialization</a></li>
+                    <li><a href="#19-standard-library-power-tools">Standard Library Power Tools</a></li>
+                    <li><a href="#20-high-frequency-pitfalls-and-gotchas">High-Frequency Pitfalls &amp; Gotchas</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="python-quick-course">Python Quick Course<a class="headerlink" href="#python-quick-course"
+                    title="Permanent link">#</a></h1>
+            <p class="lede">The high-velocity Python quick reference: core syntax, everyday standard library tools, idiomatic patterns, and high-frequency problem solutions with Python implementations, test cases, and complexity analysis.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>20 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>Core Patterns, Worked Solutions &amp; Mental Models</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <!-- ============================================================ Unit 1 -->
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Core Syntax &amp; Data Foundations<a class="headerlink" href="#unit-1" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The foundational mechanics of Python: variable names as object references, fundamental types, truthiness evaluation, string manipulation, numerical arithmetic, and branching logic.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 1 -->
+            <section class="topic-section is-collapsed" id="sec-1-variables-types-and-truthiness" data-topic="1-variables-types-and-truthiness">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-1-variables-types-and-truthiness">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="1-variables-types-and-truthiness" class="topic-title">Variables, Types &amp; Truthiness<a class="headerlink" href="#1-variables-types-and-truthiness" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-1-variables-types-and-truthiness">
+                    <div class="part-section is-collapsed" id="1-variables-types-and-truthiness-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-1-variables-types-and-truthiness-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#1-variables-types-and-truthiness-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-variables-types-and-truthiness-theory">
+                            <ul class="meta-strip">
+                                <li><b>Memory Model</b> <code class="big-o o-great">Reference-based</code></li>
+                                <li><b>Type System</b> <code class="big-o o-great">Dynamic &amp; Strong</code></li>
+                                <li><b>Empty Truthiness</b> <code class="big-o o-good">False</code></li>
+                            </ul>
+                            <p>Python does not declare variables as memory containers; instead, variables are lightweight names (sticky tags) bound to objects residing in heap memory. Python is dynamically typed because types belong to values rather than variable names, and strongly typed because implicit conversions between incompatible types (like string plus integer) raise a <code>TypeError</code> rather than coercing silently.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Luggage Tags on Suitcases</b>
+                                    <p>In C or Java, a variable is a custom-sized rigid box that only holds one specific shape. In Python, an object is a suitcase sitting on an airport carousel, and the variable <code>x</code> is simply an adhesive luggage tag attached by a string. Executing <code>y = x</code> does not clone the suitcase; it merely attaches a second luggage tag <code>y</code> to the exact same physical piece of luggage.</p>
+                                </div>
+                            </div>
+                            <p>Every Python object has an intrinsic truth value when evaluated in a boolean context (<code>if</code>, <code>while</code>, <code>bool()</code>). Falsy values include <code>None</code>, <code>False</code>, zero numbers (<code>0</code>, <code>0.0</code>), empty sequences (<code>""</code>, <code>()</code>, <code>[]</code>), and empty mappings (<code>{}</code>, <code>set()</code>). All other objects evaluate to truthy.</p>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Variable names bind to objects
+a = [1, 2, 3]
+b = a          # Both names point to the same list object
+b.append(4)
+print(a)       # [1, 2, 3, 4] - mutated through b!
+
+# Type inspection and conversion
+val = "104"
+num = int(val) # Explicit conversion
+print(type(num), isinstance(num, int)) # &lt;class 'int'&gt; True
+
+# Truthiness patterns in real code
+items = []
+if not items:
+    print("List is empty - Pythonic check without len(items) == 0")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean Falsy Checks:</b> Writing <code>if not sequence:</code> checks emptiness idiomatically across lists, strings, and dictionaries without calling <code>len()</code>.</li>
+                                <li class="is-bad"><b>Weakness — Accidental Aliasing:</b> Assigning a mutable object to another name shares the underlying instance, causing unintended mutations across your codebase.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Always compare singletons like <code>None</code> using the <code>is</code> operator (<code>if val is None:</code>), never <code>== None</code>. For checking truthiness, use direct evaluation (<code>if val:</code>).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="1-variables-types-and-truthiness-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-1-variables-types-and-truthiness-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#1-variables-types-and-truthiness-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-variables-types-and-truthiness-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">How does Python's <code>is</code> operator differ from <code>==</code>, and why can checking <code>if x == True:</code> introduce bugs?</p>
+                                <p>The <code>==</code> operator invokes <code>__eq__()</code> to check value equality (whether two objects hold equivalent contents), whereas <code>is</code> checks reference identity (whether both variables point to the exact same memory address <code>id(a) == id(b)</code>). In Python, <code>bool</code> is a subclass of <code>int</code>, meaning <code>True == 1</code> and <code>False == 0</code>. Checking <code>if x == True:</code> will mistakenly match <code>1</code>, whereas <code>if x is True:</code> checks strictly for the boolean singleton <code>True</code>. The standard Pythonic check for truthiness is simply <code>if x:</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Identity vs Equality and Truthiness Verification">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">x = [1, 2]
+y = [1, 2]
+
+print(x == y)      # True (same values)
+print(x is y)      # False (distinct heap objects)
+
+flag = 1
+print(flag == True)  # True (because 1 == True)
+print(flag is True)  # False (1 is an int, not the True singleton)
+
+# Idiomatic check
+if x:
+    print("x has items and is truthy")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 2 -->
+            <section class="topic-section is-collapsed" id="sec-2-strings-and-string-formatting" data-topic="2-strings-and-string-formatting">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-2-strings-and-string-formatting">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="2-strings-and-string-formatting" class="topic-title">Strings &amp; String Formatting<a class="headerlink" href="#2-strings-and-string-formatting" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-2-strings-and-string-formatting">
+                    <div class="part-section is-collapsed" id="2-strings-and-string-formatting-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-2-strings-and-string-formatting-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#2-strings-and-string-formatting-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-2-strings-and-string-formatting-theory">
+                            <ul class="meta-strip">
+                                <li><b>Immutability</b> <code class="big-o o-great">Guaranteed</code></li>
+                                <li><b>Formatting Standard</b> <code class="big-o o-great">f-strings (PEP 498)</code></li>
+                                <li><b>Index &amp; Slice</b> <code class="big-o o-good">O(1) / O(K)</code></li>
+                            </ul>
+                            <p>Strings in Python are immutable sequences of Unicode code points. Any operation that modifies a string (concatenation, replacing, casing) returns a brand-new string object rather than modifying the original in-place. Formatted string literals (f-strings) provide concise, readable string interpolation with full expression evaluation at runtime.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Carved Stone Tablets</b>
+                                    <p>Once carved into granite, a sentence cannot be erased or amended. If you want to change one letter in a ten-word sentence, the mason must carve an entire new tablet containing the replacement. Similarly, repeated string concatenation with <code>+=</code> inside a loop carves tablet after tablet; using <code>''.join(parts)</code> acts as an industrial printing press that formats everything into one single tablet in linear time.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Modern f-string capabilities
+user = "dev_alex"
+score = 98.4271
+rank = 4
+
+print(f"User: {user.upper()} | Score: {score:.2f} | Rank: {rank:03d}")
+# User: DEV_ALEX | Score: 98.43 | Rank: 004
+
+# Self-documenting debug specifier (Python 3.8+)
+delta = 0.042
+print(f"{delta=}")  # delta=0.042
+
+# String splitting and joining
+raw_tags = "python, backend , fast-api , microservice"
+clean_tags = [tag.strip() for tag in raw_tags.split(",")]
+formatted = " | ".join(clean_tags)
+print(formatted)    # python | backend | fast-api | microservice
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Native Unicode &amp; F-Strings:</b> String literals handle international characters out of the box, and f-strings execute arbitrary Python expressions inline.</li>
+                                <li class="is-bad"><b>Weakness — O(N^2) Concatenation Loops:</b> Using <code>s += char</code> repeatedly creates new strings on every step, degrading performance from linear O(N) to quadratic O(N^2).</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> When tokenizing by whitespace, always use <code>s.split()</code> with no arguments. Passing <code>s.split(" ")</code> will retain empty string tokens when multiple consecutive spaces appear.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="2-strings-and-string-formatting-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-2-strings-and-string-formatting-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#2-strings-and-string-formatting-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-2-strings-and-string-formatting-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given a sentence string, reverse the order of the words while trimming extraneous whitespace between words without using external libraries.</p>
+                                <p>Split the sentence by whitespace using <code>s.split()</code> (which automatically collapses multiple adjacent spaces and ignores leading/trailing whitespace), reverse the resulting list of words using slicing <code>[::-1]</code>, and join them using a single space separator <code>" ".join(...)</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Reverse Words in String">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def reverse_words(s: str) -> str:
+    # s.split() without arguments splits on consecutive whitespace
+    words = s.split()
+    return " ".join(words[::-1])
+
+# Test cases
+assert reverse_words("  the sky   is blue  ") == "blue is sky the"
+assert reverse_words("hello world") == "world hello"
+assert reverse_words("    ") == ""
+print("All test cases passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 3 -->
+            <section class="topic-section is-collapsed" id="sec-3-numbers-and-math-operations" data-topic="3-numbers-and-math-operations">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-3-numbers-and-math-operations">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="3-numbers-and-math-operations" class="topic-title">Numbers &amp; Math Operations<a class="headerlink" href="#3-numbers-and-math-operations" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-3-numbers-and-math-operations">
+                    <div class="part-section is-collapsed" id="3-numbers-and-math-operations-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-3-numbers-and-math-operations-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#3-numbers-and-math-operations-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-numbers-and-math-operations-theory">
+                            <ul class="meta-strip">
+                                <li><b>Integer Precision</b> <code class="big-o o-great">Arbitrary (no overflow)</code></li>
+                                <li><b>Float Standard</b> <code class="big-o o-ok">IEEE 754 (64-bit)</code></li>
+                                <li><b>Division Default</b> <code class="big-o o-good">/ always returns float</code></li>
+                            </ul>
+                            <p>Python features arbitrary-precision integers: unlike languages where 32-bit or 64-bit integers overflow into negative values at 2^31-1 or 2^63-1, Python integers grow dynamically to consume available RAM. Floating-point numbers are 64-bit IEEE 754 double-precision floats, subject to standard binary floating-point representation limits.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Elastic Ruler vs Fixed Pocket Caliper</b>
+                                    <p>A fixed caliper (standard C long long) has a hard metal stop; push past it and the dial snaps or wraps around to negative numbers. Python integers are an elastic measuring tape that stretches indefinitely as numbers grow. Floats, however, are like measuring rounded ripples in water: tiny decimal fractions like 0.1 cannot be represented cleanly in binary powers of two, leading to slight rounding deviations.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import math
+
+# Arbitrary precision integers
+huge = 2 ** 100
+print(f"2^100 has {len(str(huge))} digits")  # 31 digits, zero overflow
+
+# Integer floor division vs regular division
+print(7 / 2)    # 3.5 (float)
+print(7 // 2)   # 3 (int floor)
+print(-7 // 2)  # -4 (floored toward negative infinity!)
+
+# The classic floating point trap
+sum_val = 0.1 + 0.2
+print(sum_val)                  # 0.30000000000000004
+print(sum_val == 0.3)           # False!
+print(math.isclose(sum_val, 0.3)) # True (safe comparison)
+
+# Single-step quotient and remainder
+quotient, remainder = divmod(29, 6)
+print(f"29 / 6 = {quotient} with remainder {remainder}")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Built-in BigInts:</b> Cryptography and combinatorics calculations can calculate massive factorial and modular exponentiation values natively without third-party BigInt libraries.</li>
+                                <li class="is-bad"><b>Weakness — Binary Float Equality:</b> Comparing floating point values with <code>==</code> causes unpredictable bugs due to base-2 fraction rounding.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> In Python, <code>//</code> truncates downward toward negative infinity, not toward zero. For truncating toward zero across negative numbers, use <code>int(a / b)</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="3-numbers-and-math-operations-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-3-numbers-and-math-operations-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#3-numbers-and-math-operations-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-numbers-and-math-operations-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">How do you compute the sum of digits of a non-negative integer without converting it to a string?</p>
+                                <p>Use a loop running integer floor division and modulo: extract the least significant digit with <code>n % 10</code>, accumulate it into a running total, and strip that digit using <code>n //= 10</code> until the number reaches zero.</p>
+                                <div class="code-tabs" data-label="Answer — Sum of Digits">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def sum_of_digits(n: int) -> int:
+    total = 0
+    while n > 0:
+        n, digit = divmod(n, 10)
+        total += digit
+    return total
+
+# Test cases
+assert sum_of_digits(12345) == 15
+assert sum_of_digits(0) == 0
+assert sum_of_digits(999) == 27
+print("Sum of digits passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 4 -->
+            <section class="topic-section is-collapsed" id="sec-4-conditionals-and-pattern-matching" data-topic="4-conditionals-and-pattern-matching">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-4-conditionals-and-pattern-matching">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="4-conditionals-and-pattern-matching" class="topic-title">Conditionals &amp; Pattern Matching<a class="headerlink" href="#4-conditionals-and-pattern-matching" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-4-conditionals-and-pattern-matching">
+                    <div class="part-section is-collapsed" id="4-conditionals-and-pattern-matching-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-4-conditionals-and-pattern-matching-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#4-conditionals-and-pattern-matching-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-4-conditionals-and-pattern-matching-theory">
+                            <ul class="meta-strip">
+                                <li><b>Evaluation</b> <code class="big-o o-great">Short-circuiting (and, or)</code></li>
+                                <li><b>Ternary Syntax</b> <code class="big-o o-good">val if cond else alt</code></li>
+                                <li><b>Pattern Matching</b> <code class="big-o o-great">match / case (Python 3.10+)</code></li>
+                            </ul>
+                            <p>Python uses standard <code>if / elif / else</code> branching blocks with strict indentation. The logical operators <code>and</code> and <code>or</code> employ short-circuit evaluation: <code>a and b</code> evaluates <code>b</code> only if <code>a</code> is truthy, while <code>a or b</code> evaluates <code>b</code> only if <code>a</code> is falsy. Modern Python (3.10+) introduces structural pattern matching via <code>match / case</code>, allowing structural destructuring of sequences, dictionaries, and classes.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Railroad Switching Yard</b>
+                                    <p>Standard <code>if/elif</code> evaluates train signals one by one down a single track. Structural <code>match/case</code> is an automated yard scanner that checks both the train's cargo format (is it a 2-car passenger train, a freight car with a weight attribute, or an emergency locomotive?) and routes it immediately based on shape and contents.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Chained comparison & ternary expression
+age = 22
+category = "Adult" if age >= 18 else "Minor"
+if 18 <= age <= 65:
+    print(f"{category}: Working age")
+
+# Short-circuit value return
+config_port = None
+port = config_port or 8080  # Returns 8080 because config_port is falsy
+print(f"Running on port: {port}")
+
+# Structural pattern matching (Python 3.10+)
+def parse_command(command):
+    match command.split():
+        case ["quit"]:
+            return "Exiting system"
+        case ["load", filename]:
+            return f"Loading file: {filename}"
+        case ["move", ("left" | "right" | "up" | "down") as direction, steps]:
+            return f"Moving {steps} steps {direction}"
+        case _:
+            return "Unknown command"
+
+print(parse_command("move left 5"))  # Moving 5 steps left
+print(parse_command("quit"))         # Exiting system
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Expressive Destructuring:</b> <code>match/case</code> validates types, shapes, and values simultaneously in API handlers and event routers without nested <code>isinstance()</code> spaghetti.</li>
+                                <li class="is-bad"><b>Weakness — Falsy Zero Overwrite:</b> Using <code>value or default</code> mistakenly overrides valid zeros or empty strings (<code>0 or 10</code> returns <code>10</code>).</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> If a variable can legitimately be <code>0</code>, <code>False</code>, or <code>""</code>, avoid <code>val = input_val or default</code>. Use <code>val = input_val if input_val is not None else default</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="4-conditionals-and-pattern-matching-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-4-conditionals-and-pattern-matching-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#4-conditionals-and-pattern-matching-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-4-conditionals-and-pattern-matching-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a function that parses a nested JSON-like dictionary representing an API response and returns a normalized status string using structural pattern matching.</p>
+                                <p>Use <code>match response:</code> with mapping patterns <code>{"status": 200, "data": data}</code> and guard clauses to extract information cleanly without defensive <code>response.get("status")</code> checks.</p>
+                                <div class="code-tabs" data-label="Answer — Pattern Matching on Dictionaries">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def handle_response(response: dict) -> str:
+    match response:
+        case {"status": 200, "data": list(records)} if len(records) > 0:
+            return f"Success with {len(records)} records"
+        case {"status": 200, "data": []}:
+            return "Success: empty dataset"
+        case {"status": 404, "error": msg}:
+            return f"Resource not found: {msg}"
+        case {"status": int(code), "error": msg} if code >= 500:
+            return f"Server failure ({code}): {msg}"
+        case _:
+            return "Unrecognized response payload"
+
+# Test cases
+assert handle_response({"status": 200, "data": [1, 2, 3]}) == "Success with 3 records"
+assert handle_response({"status": 404, "error": "User missing"}) == "Resource not found: User missing"
+assert handle_response({"status": 503, "error": "Gateway timeout"}) == "Server failure (503): Gateway timeout"
+print("Pattern matching passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Unit 2 -->
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Collections &amp; Data Structures<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Python's everyday data structures: dynamic arrays (lists), hash-map lookups (dictionaries), immutable records (tuples), mathematical unique collections (sets), and declarative comprehensions.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 5 -->
+            <section class="topic-section is-collapsed" id="sec-5-lists-and-slicing" data-topic="5-lists-and-slicing">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-5-lists-and-slicing">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="5-lists-and-slicing" class="topic-title">Lists &amp; Slicing<a class="headerlink" href="#5-lists-and-slicing" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-5-lists-and-slicing">
+                    <div class="part-section is-collapsed" id="5-lists-and-slicing-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-5-lists-and-slicing-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#5-lists-and-slicing-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-5-lists-and-slicing-theory">
+                            <ul class="meta-strip">
+                                <li><b>Index Lookup</b> <code class="big-o o-great">O(1)</code></li>
+                                <li><b>Append (Right)</b> <code class="big-o o-great">O(1) amortized</code></li>
+                                <li><b>Insert / Pop (Left)</b> <code class="big-o o-bad">O(N)</code></li>
+                            </ul>
+                            <p>A Python <code>list</code> is a dynamically resizable array of pointers to objects stored contiguously in memory. Because elements are contiguous references, looking up any element by its integer index is an immediate O(1) memory offset calculation. Appending to the end is O(1) amortized because Python pre-allocates spare capacity; however, inserting or removing elements from the beginning or middle is O(N) because all subsequent pointers must slide in memory.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Row of Reserved Parking Spots</b>
+                                    <p>A list is a numbered row of parking bays. Driving straight to bay #4 is instant (O(1)). Parking a new car at the open end bay is instant (O(1)). But if a driver decides to squeeze their car into spot #0 at the very front of the row, every single parked car behind it must back up by one slot (O(N) displacement).</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">nums = [10, 20, 30, 40, 50, 60]
+
+# High-frequency slicing
+print(nums[1:4])     # [20, 30, 40]
+print(nums[:3])      # [10, 20, 30] (first 3 items)
+print(nums[-2:])     # [50, 60] (last 2 items)
+print(nums[::2])     # [10, 30, 50] (every 2nd item)
+print(nums[::-1])    # [60, 50, 40, 30, 20, 10] (reversed copy)
+
+# Mutating operations
+nums.append(70)      # O(1) amortized
+nums.extend([80, 90])# Appends multiple items
+last_val = nums.pop()# O(1) removes and returns 90
+
+# Slicing creates shallow copies
+clone = nums[:]
+clone[0] = 999
+print(nums[0])       # Still 10 (nums unchanged!)
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Versatile Resizing:</b> Automatic memory over-allocation makes <code>list</code> the default general-purpose sequence for dynamic collections.</li>
+                                <li class="is-bad"><b>Weakness — O(N) Shifts on Head Operations:</b> Using <code>nums.pop(0)</code> or <code>nums.insert(0, val)</code> turns loops into O(N^2) slowdowns; use <code>collections.deque</code> for FIFO queues.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Slicing a list produces a new copy of that sub-array. Mutating elements inside the slice modifies only the copy unless you use slice assignment <code>nums[start:stop] = replacement</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="5-lists-and-slicing-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-5-lists-and-slicing-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#5-lists-and-slicing-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-5-lists-and-slicing-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given an array of integers, rotate the array to the right by k steps in place with O(1) extra memory.</p>
+                                <p>To rotate in-place without extra space: normalize <code>k = k % len(nums)</code>. First reverse the entire array; next, reverse the first k elements; finally, reverse the remaining n - k elements.</p>
+                                <div class="code-tabs" data-label="Answer — Rotate Array in Place">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def rotate_array(nums: list[int], k: int) -> None:
+    n = len(nums)
+    if n &lt;= 1:
+        return
+    k = k % n
+
+    def reverse_range(left: int, right: int) -> None:
+        while left &lt; right:
+            nums[left], nums[right] = nums[right], nums[left]
+            left += 1
+            right -= 1
+
+    reverse_range(0, n - 1)      # Step 1: reverse entire array
+    reverse_range(0, k - 1)      # Step 2: reverse first k items
+    reverse_range(k, n - 1)      # Step 3: reverse rest
+
+# Test cases
+test_arr = [1, 2, 3, 4, 5, 6, 7]
+rotate_array(test_arr, 3)
+assert test_arr == [5, 6, 7, 1, 2, 3, 4]
+print("Rotate array passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 6 -->
+            <section class="topic-section is-collapsed" id="sec-6-dictionaries-and-mapping-essentials" data-topic="6-dictionaries-and-mapping-essentials">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-6-dictionaries-and-mapping-essentials">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="6-dictionaries-and-mapping-essentials" class="topic-title">Dictionaries &amp; Mapping Essentials<a class="headerlink" href="#6-dictionaries-and-mapping-essentials" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-6-dictionaries-and-mapping-essentials">
+                    <div class="part-section is-collapsed" id="6-dictionaries-and-mapping-essentials-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-6-dictionaries-and-mapping-essentials-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#6-dictionaries-and-mapping-essentials-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-6-dictionaries-and-mapping-essentials-theory">
+                            <ul class="meta-strip">
+                                <li><b>Lookup &amp; Insertion</b> <code class="big-o o-great">O(1) average</code></li>
+                                <li><b>Ordering</b> <code class="big-o o-great">Insertion order preserved</code></li>
+                                <li><b>Key Requirement</b> <code class="big-o o-good">Hashable (__hash__)</code></li>
+                            </ul>
+                            <p>A Python <code>dict</code> is an open-addressing hash table that maps unique keys to values. Since Python 3.6/3.7, dictionaries maintain the exact insertion order of their keys while consuming 20–25% less memory through a split-table architecture. Looking up, adding, or deleting a key runs in O(1) amortized average time.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Digital Coat Check Room</b>
+                                    <p>When you hand your jacket to a coat check attendant, you receive a claim number. When you return, the attendant doesn't search through thousands of jackets one by one (O(N)); they walk directly to the numbered hook corresponding to your ticket (O(1)). In Python, your key is passed to <code>hash(key)</code>, producing the exact slot index in nanoseconds.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Modern dictionary creation &amp; merging
+base_config = {"env": "production", "debug": False, "timeout": 30}
+override = {"debug": True, "host": "0.0.0.0"}
+
+# Python 3.9+ dictionary union operator
+active_config = base_config | override
+print(active_config["debug"])  # True (overridden)
+
+# Safe lookups with .get()
+retries = active_config.get("retries", 3)
+print(f"Retries: {retries}")   # 3 (fallback used)
+
+# High-frequency grouping pattern with setdefault
+groups = {}
+users = [("admin", "Alice"), ("guest", "Bob"), ("admin", "Charlie")]
+for role, name in users:
+    groups.setdefault(role, []).append(name)
+print(groups)  # {'admin': ['Alice', 'Charlie'], 'guest': ['Bob']}
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Blazing O(1) Key Lookups:</b> Dictionaries turn slow linear scans into instantaneous hash lookups, serving as Python's primary data backbone.</li>
+                                <li class="is-bad"><b>Weakness — Memory Footprint:</b> Hash tables require spare bucket capacity to avoid collision storms, using more RAM than packed arrays or tuples.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> A dictionary key must be hashable and implement consistent <code>__hash__()</code> and <code>__eq__()</code>. Lists, sets, and un-frozen dicts are mutable and cannot be dictionary keys; use <code>tuple</code> or <code>frozenset</code> instead.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="6-dictionaries-and-mapping-essentials-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-6-dictionaries-and-mapping-essentials-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#6-dictionaries-and-mapping-essentials-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-6-dictionaries-and-mapping-essentials-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target in O(N) time.</p>
+                                <p>Maintain a hash map storing <code>{number_value: index}</code>. As you iterate through the list with <code>enumerate()</code>, compute the needed complement <code>target - num</code>. If the complement already exists in the dictionary, return the complement's index and current index. Otherwise, record the current number in the dictionary.</p>
+                                <div class="code-tabs" data-label="Answer — Two Sum with Hash Map">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def two_sum(nums: list[int], target: int) -> list[int]:
+    seen = {}
+    for idx, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], idx]
+        seen[num] = idx
+    return []
+
+# Test cases
+assert two_sum([2, 7, 11, 15], 9) == [0, 1]
+assert two_sum([3, 2, 4], 6) == [1, 2]
+assert two_sum([3, 3], 6) == [0, 1]
+print("Two Sum passed in O(N) time!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 7 -->
+            <section class="topic-section is-collapsed" id="sec-7-tuples-and-sets" data-topic="7-tuples-and-sets">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-7-tuples-and-sets">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="7-tuples-and-sets" class="topic-title">Tuples &amp; Sets<a class="headerlink" href="#7-tuples-and-sets" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-7-tuples-and-sets">
+                    <div class="part-section is-collapsed" id="7-tuples-and-sets-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-7-tuples-and-sets-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#7-tuples-and-sets-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-tuples-and-sets-theory">
+                            <ul class="meta-strip">
+                                <li><b>Tuple Immutability</b> <code class="big-o o-great">Fixed size</code></li>
+                                <li><b>Set Membership</b> <code class="big-o o-great">O(1) average</code></li>
+                                <li><b>Set Uniqueness</b> <code class="big-o o-good">Duplicates purged</code></li>
+                            </ul>
+                            <p>A <code>tuple</code> is an ordered, immutable sequence of elements. Because tuples cannot change size or contents after creation, Python optimizes their memory layout and reuses small tuple allocations internally. A <code>set</code> is an unordered collection of distinct hashable items implemented as a hash table with keys but no values, providing O(1) deduplication and mathematical set operations.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Sealed Birth Certificate vs VIP Guest List</b>
+                                    <p>A tuple is a sealed birth certificate: once issued, the name, date, and town are permanently bound together in that exact sequence; nobody can append extra stamps or reorder the dates. A set is a security guard's VIP checklist: you cannot be on the list twice, the order people arrive doesn't matter, and checking if your name is on the clipboard takes a split-second glance.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Tuple packing and extended unpacking
+record = ("ENG-402", "API Gateway", "critical", 500, "down")
+code, title, *meta, status = record
+print(code, title, meta, status)
+# ENG-402 API Gateway ['critical', 500] down
+
+# Fast variable swapping via tuple packing
+a, b = 10, 20
+a, b = b, a  # Swapped cleanly without temporary variable
+print(a, b)  # 20 10
+
+# Set operations in practice
+team_backend = {"Alice", "Bob", "Charlie", "David"}
+team_cloud = {"Charlie", "David", "Eve", "Frank"}
+
+print(team_backend &amp; team_cloud) # {'Charlie', 'David'} (in both)
+print(team_backend - team_cloud) # {'Alice', 'Bob'} (backend only)
+print(team_backend ^ team_cloud) # {'Alice', 'Bob', 'Eve', 'Frank'}
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — O(1) Membership Testing:</b> Checking <code>if item in my_set:</code> takes O(1) time, whereas checking <code>if item in my_list:</code> scans all elements in O(N) time.</li>
+                                <li class="is-bad"><b>Weakness — Tuple with Mutable Items Trap:</b> A tuple cannot be rebound, but if it contains a list <code>t = (1, [2, 3])</code>, mutating <code>t[1].append(4)</code> succeeds, violating intuitive immutability.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Writing <code>s = {}</code> creates an empty dictionary, NOT a set! To instantiate an empty set, you must write <code>s = set()</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="7-tuples-and-sets-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-7-tuples-and-sets-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#7-tuples-and-sets-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-tuples-and-sets-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given two integer arrays nums1 and nums2, return an array of their intersection where each element is unique, in any order.</p>
+                                <p>Convert one array to a <code>set</code> to allow O(1) membership checks, then iterate through the other array or perform a native set intersection <code>set(nums1) &amp; set(nums2)</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Intersection of Two Arrays">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def intersection(nums1: list[int], nums2: list[int]) -> list[int]:
+    # Set intersection runs in O(len(nums1) + len(nums2))
+    return list(set(nums1) &amp; set(nums2))
+
+# Test cases
+assert set(intersection([1, 2, 2, 1], [2, 2])) == {2}
+assert set(intersection([4, 9, 5], [9, 4, 9, 8, 4])) == {4, 9}
+print("Intersection test passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 8 -->
+            <section class="topic-section is-collapsed" id="sec-8-comprehensions-list-dict-set" data-topic="8-comprehensions-list-dict-set">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-8-comprehensions-list-dict-set">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="8-comprehensions-list-dict-set" class="topic-title">Comprehensions (List, Dict, Set)<a class="headerlink" href="#8-comprehensions-list-dict-set" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-8-comprehensions-list-dict-set">
+                    <div class="part-section is-collapsed" id="8-comprehensions-list-dict-set-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-8-comprehensions-list-dict-set-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#8-comprehensions-list-dict-set-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-8-comprehensions-list-dict-set-theory">
+                            <ul class="meta-strip">
+                                <li><b>Execution Speed</b> <code class="big-o o-great">LIST_APPEND in C</code></li>
+                                <li><b>Readability</b> <code class="big-o o-great">Declarative mapping</code></li>
+                                <li><b>Syntax Forms</b> <code class="big-o o-good">List [], Dict {}, Set {}</code></li>
+                            </ul>
+                            <p>Comprehensions provide a concise, declarative syntax to construct a new collection by transforming and filtering an iterable. Under the hood, Python compiles comprehensions into specialized bytecode that avoids the overhead of repeated attribute lookups like <code>list.append()</code>, executing at compiled C speeds.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — An Automated Sorter Conveyor</b>
+                                    <p>Building a list via a manual <code>for</code> loop with <code>res.append()</code> is like an operator picking up parts one by one, examining them, and manually walking them to a storage shelf. A comprehension is a factory sorting machine: raw materials stream past optical filters, get stamped and transformed in one swift motion, and drop straight into the packing box.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># List comprehension with filtering &amp; transformation
+prices = [12.50, 4.99, 99.00, 3.20, 45.00]
+discounted = [round(p * 0.9, 2) for p in prices if p > 10.0]
+print(discounted)  # [11.25, 89.1, 40.5]
+
+# Dictionary comprehension
+users = [("u1", "active"), ("u2", "inactive"), ("u3", "active")]
+active_lookup = {uid: status for uid, status in users if status == "active"}
+print(active_lookup)  # {'u1': 'active', 'u3': 'active'}
+
+# Set comprehension (clean deduplication &amp; casing)
+raw_emails = ["Alex@work.com", "ALEX@work.com", "Dev@Work.com"]
+unique_domains = {email.split("@")[1].lower() for email in raw_emails}
+print(unique_domains)  # {'work.com'}
+
+# Flattening a 2D matrix
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+flattened = [val for row in matrix for val in row]
+print(flattened)  # [1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Expressive and Fast:</b> Comprehensions replace verbose multi-line loop setups with clean single-expression transformations that run faster than manual <code>.append()</code> loops.</li>
+                                <li class="is-bad"><b>Weakness — Over-nesting Trap:</b> Nesting more than two <code>for</code> clauses or multiple nested conditions in a comprehension turns readable code into unmaintainable cognitive friction.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> In nested list comprehensions like <code>[val for row in matrix for val in row]</code>, read the <code>for</code> clauses in the exact order you would write nested <code>for</code> loops: outer loop first (<code>for row in matrix</code>), inner loop second (<code>for val in row</code>).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="8-comprehensions-list-dict-set-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-8-comprehensions-list-dict-set-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#8-comprehensions-list-dict-set-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-8-comprehensions-list-dict-set-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given a list of words, group words of identical lengths into a dictionary where the key is the word length and the value is a list of words.</p>
+                                <p>Use a dictionary comprehension with <code>setdefault</code> or <code>collections.defaultdict(list)</code>: iterate through words and group them cleanly.</p>
+                                <div class="code-tabs" data-label="Answer — Group Words by Length">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from collections import defaultdict
+
+def group_by_length(words: list[str]) -> dict[int, list[str]]:
+    grouped = defaultdict(list)
+    for word in words:
+        grouped[len(word)].append(word)
+    return dict(grouped)
+
+# Test cases
+words_input = ["cat", "dog", "apple", "bear", "banana"]
+result = group_by_length(words_input)
+assert result[3] == ["cat", "dog"]
+assert result[5] == ["apple"]
+assert result[6] == ["banana"]
+print("Group by length passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Unit 3 -->
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Functions &amp; Control Patterns<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Mastering execution flow: idiomatic iteration with enumerate and zip, flexible function parameters (*args, **kwargs), multi-level variable scope (LEGB), custom sorting with lambdas, and resilient exception handling.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 9 -->
+            <section class="topic-section is-collapsed" id="sec-9-loops-and-iteration-helpers" data-topic="9-loops-and-iteration-helpers">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-9-loops-and-iteration-helpers">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="9-loops-and-iteration-helpers" class="topic-title">Loops &amp; Iteration Helpers<a class="headerlink" href="#9-loops-and-iteration-helpers" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-9-loops-and-iteration-helpers">
+                    <div class="part-section is-collapsed" id="9-loops-and-iteration-helpers-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-9-loops-and-iteration-helpers-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#9-loops-and-iteration-helpers-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-9-loops-and-iteration-helpers-theory">
+                            <ul class="meta-strip">
+                                <li><b>Index Traversal</b> <code class="big-o o-great">enumerate(seq, start=0)</code></li>
+                                <li><b>Parallel Iteration</b> <code class="big-o o-great">zip(seq1, seq2, strict=True)</code></li>
+                                <li><b>Loop Else Clause</b> <code class="big-o o-good">Executes if no break</code></li>
+                            </ul>
+                            <p>Iterating in Python is built on iterables rather than manual C-style index counters. Instead of writing <code>for i in range(len(items)):</code>, idiomatic Python iterates directly over items. When indices are needed, <code>enumerate()</code> yields <code>(index, item)</code> pairs with zero manual bookkeeping. When coordinating multiple sequences, <code>zip()</code> pairs corresponding items concurrently.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Cash Register Tape &amp; A Zipper</b>
+                                    <p><code>enumerate()</code> is like a cash register printing transaction receipt numbers: every time an item passes the scanner, the register stamps a sequential counter beside it automatically. <code>zip()</code> is an actual jacket zipper: teeth from the left flap interlock with teeth from the right flap one pair at a time, moving upward in unison.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">names = ["Alice", "Bob", "Charlie"]
+scores = [95, 88, 92]
+
+# Idiomatic index traversal
+for rank, name in enumerate(names, start=1):
+    print(f"Rank {rank}: {name}")
+
+# Parallel pairing with strict validation
+for name, score in zip(names, scores, strict=True):
+    print(f"{name} scored {score}")
+
+# The loop else clause: search pattern
+target = "Bob"
+for name in names:
+    if name == target:
+        print(f"Found {target}!")
+        break
+else:
+    print(f"{target} was not in the roster.")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Eliminates Off-by-One Errors:</b> Native iterator loops completely eradicate boundary condition mistakes common in index-manipulated while loops.</li>
+                                <li class="is-bad"><b>Weakness — Modifying Collection While Iterating Trap:</b> Appending or deleting elements from a <code>list</code> while actively iterating over it results in skipped items or infinite loops.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> If you must modify a list during a loop, iterate over a shallow copy of it (<code>for item in items[:]:</code>) or construct a filtered list via comprehension.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="9-loops-and-iteration-helpers-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-9-loops-and-iteration-helpers-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#9-loops-and-iteration-helpers-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-9-loops-and-iteration-helpers-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given two lists of strings, determine if one list is a strict permutation of the other without using external libraries.</p>
+                                <p>If lengths differ, return <code>False</code>. Count character frequencies into a dictionary and verify matching counts in O(N) time.</p>
+                                <div class="code-tabs" data-label="Answer — Check Permutation">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def is_permutation(list_a: list[str], list_b: list[str]) -> bool:
+    if len(list_a) != len(list_b):
+        return False
+    counts = {}
+    for item in list_a:
+        counts[item] = counts.get(item, 0) + 1
+    for item in list_b:
+        if item not in counts:
+            return False
+        counts[item] -= 1
+        if counts[item] == 0:
+            del counts[item]
+    return len(counts) == 0
+
+# Test cases
+assert is_permutation(["a", "b", "c"], ["c", "a", "b"]) is True
+assert is_permutation(["a", "b"], ["a", "b", "c"]) is False
+assert is_permutation(["x", "x", "y"], ["x", "y", "y"]) is False
+print("Permutation check passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 10 -->
+            <section class="topic-section is-collapsed" id="sec-10-functions-parameters-and-scopes" data-topic="10-functions-parameters-and-scopes">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-10-functions-parameters-and-scopes">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="10-functions-parameters-and-scopes" class="topic-title">Functions, Parameters &amp; Scopes<a class="headerlink" href="#10-functions-parameters-and-scopes" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-10-functions-parameters-and-scopes">
+                    <div class="part-section is-collapsed" id="10-functions-parameters-and-scopes-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-functions-parameters-and-scopes-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-functions-parameters-and-scopes-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-functions-parameters-and-scopes-theory">
+                            <ul class="meta-strip">
+                                <li><b>Argument Types</b> <code class="big-o o-great">Positional, Keyword, *args, **kwargs</code></li>
+                                <li><b>Scope Lookup</b> <code class="big-o o-great">LEGB (Local, Enclosing, Global, Built-in)</code></li>
+                                <li><b>Keyword Guard</b> <code class="big-o o-good">def f(*, key_only):</code></li>
+                            </ul>
+                            <p>Functions are first-class citizens in Python: they can be passed as arguments, returned from other functions, assigned to variables, and stored in collections. Python provides parameter definitions ranging from positional arguments to arbitrary positional collectors (<code>*args</code>) and arbitrary keyword collectors (<code>**kwargs</code>). Variable lookup follows the strict LEGB rule: Local &rarr; Enclosing &rarr; Global &rarr; Built-in.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Search Party Expanding Outward</b>
+                                    <p>When Python looks up a variable name, imagine searching for your keys: first check your own room (Local scope). If not found, check the living room of your flat (Enclosing closure). If still missing, check the building lobby (Global module). Finally, check the municipal lost-and-found (Python Built-ins like <code>len</code>, <code>int</code>, <code>print</code>). Python looks outward; it never searches into someone else's closed room.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Flexible function signature with keyword-only arguments
+def configure_client(host: str, port: int = 443, *tags, timeout: int = 10, **headers) -> dict:
+    return {
+        "endpoint": f"{host}:{port}",
+        "tags": tags,
+        "timeout": timeout,
+        "headers": headers,
+    }
+
+client = configure_client(
+    "api.techtoday.io", 8443, "prod", "v2",
+    timeout=5, Authorization="Bearer token123"
+)
+print(client["endpoint"]) # api.techtoday.io:8443
+print(client["tags"])     # ('prod', 'v2')
+print(client["headers"])  # {'Authorization': 'Bearer token123'}
+
+# Enclosing scope and nonlocal in closures
+def make_counter(start: int = 0):
+    count = start
+    def step() -> int:
+        nonlocal count
+        count += 1
+        return count
+    return step
+
+counter = make_counter(10)
+print(counter())  # 11
+print(counter())  # 12
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean API Contracts:</b> Using <code>*</code> to enforce keyword-only arguments prevents silent bugs where callers pass numbers in the wrong positional order.</li>
+                                <li class="is-bad"><b>Weakness — Mutable Default Argument Trap:</b> Defining <code>def fn(items=[])</code> reuses the same list instance across every call; always use <code>items=None</code> and initialize inside the function.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Default parameter expressions are evaluated once when the function is defined (at import/compile time), not each time the function is called!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="10-functions-parameters-and-scopes-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-functions-parameters-and-scopes-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#10-functions-parameters-and-scopes-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-functions-parameters-and-scopes-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a function wrapper that accepts any callable with arbitrary arguments and logs its execution time and return value.</p>
+                                <p>Accept <code>func</code>, <code>*args</code>, and <code>**kwargs</code>. Capture timestamps before and after calling <code>result = func(*args, **kwargs)</code>, calculate elapsed time, and return <code>result, elapsed</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Dynamic Function Dispatch Wrapper">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">import time
+from typing import Callable, Any
+
+def execute_with_metrics(func: Callable, *args: Any, **kwargs: Any) -> tuple[Any, float]:
+    start = time.perf_counter()
+    result = func(*args, **kwargs)
+    elapsed = time.perf_counter() - start
+    return result, elapsed
+
+# Test cases
+def sample_work(n: int, factor: int = 2) -> int:
+    return sum(i * factor for i in range(n))
+
+res, duration = execute_with_metrics(sample_work, 100_000, factor=3)
+assert res == sum(i * 3 for i in range(100_000))
+assert duration >= 0.0
+print("Metrics wrapper passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 11 -->
+            <section class="topic-section is-collapsed" id="sec-11-lambdas-and-sorting-with-custom-keys" data-topic="11-lambdas-and-sorting-with-custom-keys">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-11-lambdas-and-sorting-with-custom-keys">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="11-lambdas-and-sorting-with-custom-keys" class="topic-title">Lambdas &amp; Sorting with Custom Keys<a class="headerlink" href="#11-lambdas-and-sorting-with-custom-keys" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-lambdas-and-sorting-with-custom-keys">
+                    <div class="part-section is-collapsed" id="11-lambdas-and-sorting-with-custom-keys-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-lambdas-and-sorting-with-custom-keys-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-lambdas-and-sorting-with-custom-keys-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-lambdas-and-sorting-with-custom-keys-theory">
+                            <ul class="meta-strip">
+                                <li><b>Syntax</b> <code class="big-o o-great">lambda args: expr</code></li>
+                                <li><b>Sorting Engine</b> <code class="big-o o-great">Timsort (Adaptive O(N log N))</code></li>
+                                <li><b>Multi-Criteria</b> <code class="big-o o-good">key=lambda x: (a, -b)</code></li>
+                            </ul>
+                            <p>A <code>lambda</code> is an anonymous, single-expression inline function. Lambdas cannot contain statements; they evaluate an expression and return its result implicitly. In modern Python, lambdas are most commonly used as key extractors for <code>sorted()</code>, <code>list.sort()</code>, <code>min()</code>, and <code>max()</code>. Python uses Timsort—a stable, adaptive sorting algorithm running in O(N log N) worst-case and O(N) best-case.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Sorting Mail by Zip Code and Weight</b>
+                                    <p>Imagine sorting postal packages. Instead of physically rearranging packages each time you compare them, you hand each package to an assistant who slaps a sticky label on it reading <code>(ZipCode, -Weight)</code>. You then sort the packages strictly by reading those lightweight sticky labels. That extraction function is the <code>key=</code> callable.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">students = [
+    {"name": "Alice", "grade": 92, "age": 20},
+    {"name": "Bob", "grade": 85, "age": 22},
+    {"name": "Charlie", "grade": 92, "age": 19},
+    {"name": "David", "grade": 85, "age": 20},
+]
+
+# Sort by highest grade first (-grade), then youngest age (age)
+ranked = sorted(students, key=lambda s: (-s["grade"], s["age"]))
+for student in ranked:
+    print(f"{student['name']}: Grade {student['grade']}, Age {student['age']}")
+# Charlie: Grade 92, Age 19
+# Alice: Grade 92, Age 20
+# David: Grade 85, Age 20
+# Bob: Grade 85, Age 22
+
+oldest = max(students, key=lambda s: s["age"])
+print(f"Oldest student: {oldest['name']}")  # Bob
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Guaranteed Stability:</b> Python sorting preserves the original relative order of elements that have equal comparison keys.</li>
+                                <li class="is-bad"><b>Weakness — Heavy Lambdas:</b> When a key function requires multiple conditions or logic branches, define a named <code>def sort_key(item):</code> function instead of writing an unreadable lambda.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> The <code>key=</code> function is called exactly once per item during sorting (not on every pair comparison), making key-based sorting in Python remarkably fast.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="11-lambdas-and-sorting-with-custom-keys-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-lambdas-and-sorting-with-custom-keys-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#11-lambdas-and-sorting-with-custom-keys-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-lambdas-and-sorting-with-custom-keys-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given a list of words, sort them such that words are ordered by length ascending, and words of equal length are sorted alphabetically in reverse order.</p>
+                                <p>Take advantage of Timsort's stability: first sort alphabetically descending (<code>words.sort(reverse=True)</code>), then sort by length ascending (<code>words.sort(key=len)</code>).</p>
+                                <div class="code-tabs" data-label="Answer — Two-Pass Stable Sort">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def sort_words_by_len_and_reverse_alpha(words: list[str]) -> list[str]:
+    # Pass 1: sort alphabetically in reverse
+    # Pass 2: stable sort by length preserves reverse-alpha for equal lengths
+    res = sorted(words, reverse=True)
+    res.sort(key=len)
+    return res
+
+# Test cases
+words = ["cat", "apple", "bat", "zoo", "banana", "ant"]
+sorted_words = sort_words_by_len_and_reverse_alpha(words)
+assert sorted_words == ["zoo", "cat", "bat", "ant", "apple", "banana"]
+print("Stable custom sort passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 12 -->
+            <section class="topic-section is-collapsed" id="sec-12-error-and-exception-handling" data-topic="12-error-and-exception-handling">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-12-error-and-exception-handling">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">12</span>
+                        <h2 id="12-error-and-exception-handling" class="topic-title">Error &amp; Exception Handling<a class="headerlink" href="#12-error-and-exception-handling" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-12-error-and-exception-handling">
+                    <div class="part-section is-collapsed" id="12-error-and-exception-handling-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-error-and-exception-handling-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-error-and-exception-handling-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-error-and-exception-handling-theory">
+                            <ul class="meta-strip">
+                                <li><b>Philosophy</b> <code class="big-o o-great">EAFP (Ask forgiveness)</code></li>
+                                <li><b>Chaining</b> <code class="big-o o-great">raise NewError from err</code></li>
+                                <li><b>Cleanup Guarantee</b> <code class="big-o o-good">finally always executes</code></li>
+                            </ul>
+                            <p>Python emphasizes the EAFP paradigm ("Easier to Ask for Forgiveness than Permission"): assume an operation will succeed and handle any exception if it fails, rather than running extensive defensive pre-checks. The <code>try / except / else / finally</code> block provides structured error management: <code>else</code> runs only if no exception occurred, and <code>finally</code> is guaranteed to execute unconditionally.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Automatic Circuit Breakers</b>
+                                    <p>In an electrical grid, a fuse or circuit breaker doesn't inspect every electron before letting it enter your house. It allows power to flow directly; if a sudden surge or short occurs, the breaker trips cleanly (<code>except</code>), preventing a house fire. When the incident resolves, the diagnostic logs are recorded and backup generators safely spin down (<code>finally</code>).</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">class InsufficientFundsError(Exception):
+    """Raised when an account transaction exceeds current balance."""
+    def __init__(self, balance: float, amount: float):
+        super().__init__(f"Cannot withdraw ${amount:.2f}; balance is only ${balance:.2f}")
+        self.balance = balance
+        self.amount = amount
+
+def process_withdrawal(balance: float, amount: float) -> float:
+    if amount <= 0:
+        raise ValueError("Withdrawal amount must be positive.")
+    if amount > balance:
+        raise InsufficientFundsError(balance, amount)
+    return balance - amount
+
+try:
+    current_balance = process_withdrawal(100.0, 150.0)
+except InsufficientFundsError as err:
+    print(f"Transaction declined: {err}")
+    print(f"Deficit: ${err.amount - err.balance:.2f}")
+except ValueError as err:
+    print(f"Input validation error: {err}")
+else:
+    print("Withdrawal approved!")
+finally:
+    print("Transaction session closed.")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Rich Exception Context:</b> <code>raise CustomError from err</code> preserves the full original traceback (<code>__cause__</code>), simplifying root-cause debugging across service boundaries.</li>
+                                <li class="is-bad"><b>Weakness — Bare except: Anti-pattern:</b> Catching <code>except:</code> or <code>except Exception:</code> blindly silences <code>KeyboardInterrupt</code>, memory errors, and typos, masking critical bugs.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Never write a bare <code>except: pass</code> or <code>except Exception: pass</code>. Always catch the specific exception class you expect and know how to handle.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="12-error-and-exception-handling-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-error-and-exception-handling-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#12-error-and-exception-handling-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-error-and-exception-handling-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a function that safely parses a string into an integer, returning a specified default value if conversion fails, without crashing on invalid inputs.</p>
+                                <p>Wrap <code>int(value)</code> inside a <code>try/except</code> block catching <code>(ValueError, TypeError)</code> so passing <code>None</code> or invalid objects returns the fallback default value cleanly.</p>
+                                <div class="code-tabs" data-label="Answer — Safe Integer Parser">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def safe_int(value: any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
+
+# Test cases
+assert safe_int("42") == 42
+assert safe_int("-10") == -10
+assert safe_int("abc", default=-1) == -1
+assert safe_int(None, default=0) == 0
+assert safe_int([1, 2, 3], default=100) == 100
+print("Safe integer parser passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Unit 4 -->
+            <div class="unit-divider" id="unit-4">
+                <div class="unit-divider-badge">Unit 4</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Pythonic Data Modeling &amp; OOP<a class="headerlink" href="#unit-4" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Structured object design: class mechanics and property descriptors, modern @dataclass state modeling, memory-efficient lazy streams via generators, and behavior extension with decorators.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 13 -->
+            <section class="topic-section is-collapsed" id="sec-13-classes-and-object-oriented-basics" data-topic="13-classes-and-object-oriented-basics">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-13-classes-and-object-oriented-basics">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">13</span>
+                        <h2 id="13-classes-and-object-oriented-basics" class="topic-title">Classes &amp; Object-Oriented Basics<a class="headerlink" href="#13-classes-and-object-oriented-basics" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-13-classes-and-object-oriented-basics">
+                    <div class="part-section is-collapsed" id="13-classes-and-object-oriented-basics-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-classes-and-object-oriented-basics-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-classes-and-object-oriented-basics-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-classes-and-object-oriented-basics-theory">
+                            <ul class="meta-strip">
+                                <li><b>Method Dispatch</b> <code class="big-o o-great">Explicit self parameter</code></li>
+                                <li><b>Variable Types</b> <code class="big-o o-great">Class vs Instance</code></li>
+                                <li><b>Encapsulation</b> <code class="big-o o-good">@property getters / setters</code></li>
+                            </ul>
+                            <p>In Python, everything is an object, and classes are instances of <code>type</code>. When an instance method is called (<code>obj.method(arg)</code>), Python automatically transforms the invocation into <code>Class.method(obj, arg)</code>, passing the instance explicitly as the first argument, conventionally named <code>self</code>. Python supports encapsulation via <code>@property</code> descriptors and alternative constructors via <code>@classmethod</code>.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Architectural Blueprint vs Constructed Homes</b>
+                                    <p>A class is an architectural blueprint. An instance is an actual physical house built from that blueprint. A class variable (like <code>neighborhood_name = "Sunset Ridge"</code>) is a signpost planted at the subdivision entrance—every homeowner shares the exact same sign. An instance variable (like <code>self.wall_color = "blue"</code>) is painted exclusively inside that specific home.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">class BankAccount:
+    interest_rate: float = 0.05  # Class variable shared across all accounts
+
+    def __init__(self, owner: str, initial_balance: float = 0.0):
+        self.owner = owner
+        self._balance = max(0.0, initial_balance)  # Protected instance variable
+
+    @property
+    def balance(self) -> float:
+        """Transparent getter for account balance."""
+        return self._balance
+
+    @balance.setter
+    def balance(self, value: float) -> None:
+        if value &lt; 0:
+            raise ValueError("Balance cannot be negative.")
+        self._balance = value
+
+    @classmethod
+    def from_csv_line(cls, csv_text: str):
+        """Alternative constructor parsing a CSV record."""
+        owner, balance_str = csv_text.strip().split(",")
+        return cls(owner.strip(), float(balance_str.strip()))
+
+    @staticmethod
+    def is_valid_account_number(acc_no: str) -> bool:
+        return len(acc_no) == 10 and acc_no.isdigit()
+
+# Testing class mechanics
+acc = BankAccount.from_csv_line("Alice Smith, 1250.75")
+print(f"Owner: {acc.owner} | Balance: ${acc.balance:.2f}")  # Uses @property getter
+acc.balance = 1500.0  # Uses @balance.setter
+print(f"Account check: {BankAccount.is_valid_account_number('1234567890')}")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean Alternative Constructors:</b> <code>@classmethod</code> enables readable factory methods without bloating <code>__init__</code> with branching type checks.</li>
+                                <li class="is-bad"><b>Weakness — Accidental Class Variable Mutation:</b> Reassigning <code>self.class_var = new_val</code> creates a shadow instance variable rather than updating the shared class variable.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Prefixing an attribute with a single underscore <code>_attr</code> signals internal use by convention. A double underscore <code>__attr</code> invokes name mangling to prevent subclass collisions, not for private security.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="13-classes-and-object-oriented-basics-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-classes-and-object-oriented-basics-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-classes-and-object-oriented-basics-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-classes-and-object-oriented-basics-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Design a class representing an LRU Cache with get(key) and put(key, value) running in O(1) average time using Python's standard library.</p>
+                                <p>Use <code>collections.OrderedDict</code>. In <code>get()</code>: if present, call <code>self.move_to_end(key)</code>. In <code>put()</code>: if key exists, update and move to end; if capacity exceeded, call <code>self.popitem(last=False)</code>.</p>
+                                <div class="code-tabs" data-label="Answer — LRU Cache via OrderedDict">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)  # FIFO eviction of oldest
+
+# Test cases
+lru = LRUCache(2)
+lru.put(1, 1)
+lru.put(2, 2)
+assert lru.get(1) == 1      # Cache state: [2, 1]
+lru.put(3, 3)               # Evicts key 2! Cache state: [1, 3]
+assert lru.get(2) == -1     # 2 was evicted
+assert lru.get(3) == 3
+print("LRU Cache passed in O(1)!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 14 -->
+            <section class="topic-section is-collapsed" id="sec-14-dataclasses-and-modern-structs" data-topic="14-dataclasses-and-modern-structs">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-14-dataclasses-and-modern-structs">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">14</span>
+                        <h2 id="14-dataclasses-and-modern-structs" class="topic-title">Dataclasses &amp; Modern Structs<a class="headerlink" href="#14-dataclasses-and-modern-structs" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-14-dataclasses-and-modern-structs">
+                    <div class="part-section is-collapsed" id="14-dataclasses-and-modern-structs-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-dataclasses-and-modern-structs-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#14-dataclasses-and-modern-structs-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-14-dataclasses-and-modern-structs-theory">
+                            <ul class="meta-strip">
+                                <li><b>Standard Module</b> <code class="big-o o-great">dataclasses (PEP 557)</code></li>
+                                <li><b>Boilerplate</b> <code class="big-o o-great">Auto __init__, __repr__, __eq__</code></li>
+                                <li><b>Immutability</b> <code class="big-o o-good">frozen=True</code></li>
+                            </ul>
+                            <p>Python 3.7 introduced <code>@dataclass</code>, eliminating verbose boilerplate when writing classes whose primary responsibility is storing data attributes. By annotating fields with type hints, Python automatically generates <code>__init__()</code>, readable <code>__repr__()</code>, and structural equality <code>__eq__()</code>. Setting <code>frozen=True</code> creates immutable data classes that automatically implement <code>__hash__()</code>.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Printed ID Badge Form</b>
+                                    <p>Writing a standard Python class for data is like hand-drawing an ID badge from scratch: drawing borders, cutting paper, and rewriting the wearer's name five times. <code>@dataclass</code> is a pre-printed corporate ID template: you list the fields (<code>name: str</code>, <code>badge_id: int</code>), and the press automatically generates the laminated card, photo frame, and magnetic strip.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">from dataclasses import dataclass, field, asdict
+from typing import Optional
+
+@dataclass(frozen=True)
+class APIEndpoint:
+    path: str
+    method: str = "GET"
+    requires_auth: bool = True
+    rate_limit: int = 100
+
+@dataclass
+class ServiceHealth:
+    service_name: str
+    status: str
+    latency_ms: float
+    tags: list[str] = field(default_factory=list)
+    incident_id: Optional[str] = None
+
+    def __post_init__(self):
+        if self.latency_ms &lt; 0:
+            raise ValueError("Latency cannot be negative.")
+
+# Immutable endpoint can be used as a set element or dictionary key
+ep1 = APIEndpoint("/api/v1/users")
+ep2 = APIEndpoint("/api/v1/users")
+endpoint_set = {ep1, ep2}
+print(f"Set size: {len(endpoint_set)}")  # 1 (deduplicated via automatic __hash__ and __eq__!)
+
+# Service health with dynamic default factory
+health = ServiceHealth("AuthService", "healthy", 14.2, tags=["core", "prod"])
+health_dict = asdict(health)
+print(health_dict["tags"])  # ['core', 'prod']
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Eliminates Duplication:</b> Replaces 30+ lines of repetitive boilerplate with 5 clean, typed field declarations.</li>
+                                <li class="is-bad"><b>Weakness — Default Mutable Trap:</b> Writing <code>tags: list = []</code> raises a <code>ValueError</code> at class creation; you must use <code>field(default_factory=list)</code>.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Prefer dataclasses over tuples or dictionaries for structured domain objects; they offer auto-complete, strict typing, and readable representations with zero extra runtime cost.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="14-dataclasses-and-modern-structs-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-dataclasses-and-modern-structs-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#14-dataclasses-and-modern-structs-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-14-dataclasses-and-modern-structs-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Design an immutable, hashable GeoCoordinate dataclass representing a latitude/longitude pair that validates coordinate bounds in __post_init__.</p>
+                                <p>Use <code>@dataclass(frozen=True)</code> and validate ranges in <code>__post_init__()</code>. Frozen dataclasses guarantee that instances can be hashed and stored in sets or used as dictionary keys.</p>
+                                <div class="code-tabs" data-label="Answer — Validated Immutable GeoCoordinate">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class GeoCoordinate:
+    latitude: float
+    longitude: float
+
+    def __post_init__(self):
+        if not (-90.0 &lt;= self.latitude &lt;= 90.0):
+            raise ValueError(f"Invalid latitude: {self.latitude}. Must be between -90 and 90.")
+        if not (-180.0 &lt;= self.longitude &lt;= 180.0):
+            raise ValueError(f"Invalid longitude: {self.longitude}. Must be between -180 and 180.")
+
+# Test cases
+point = GeoCoordinate(37.7749, -122.4194)
+assert point.latitude == 37.7749
+
+places = {point: "San Francisco"}
+assert places[GeoCoordinate(37.7749, -122.4194)] == "San Francisco"
+
+try:
+    GeoCoordinate(120.0, 50.0)
+    assert False, "Should have raised ValueError"
+except ValueError:
+    pass
+print("GeoCoordinate dataclass passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 15 -->
+            <section class="topic-section is-collapsed" id="sec-15-iterators-and-generators" data-topic="15-iterators-and-generators">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-15-iterators-and-generators">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">15</span>
+                        <h2 id="15-iterators-and-generators" class="topic-title">Iterators &amp; Generators<a class="headerlink" href="#15-iterators-and-generators" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-15-iterators-and-generators">
+                    <div class="part-section is-collapsed" id="15-iterators-and-generators-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-iterators-and-generators-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#15-iterators-and-generators-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-15-iterators-and-generators-theory">
+                            <ul class="meta-strip">
+                                <li><b>Memory Usage</b> <code class="big-o o-great">O(1) lazy streaming</code></li>
+                                <li><b>Protocol</b> <code class="big-o o-great">__iter__ and __next__</code></li>
+                                <li><b>Syntax</b> <code class="big-o o-good">yield or (x for x in ...)</code></li>
+                            </ul>
+                            <p>An iterable is any object that can return an iterator (implements <code>__iter__()</code>). An iterator is a stateful stream producer implementing <code>__next__()</code>, yielding values sequentially until it raises <code>StopIteration</code>. A generator is a special function that uses the <code>yield</code> keyword to pause execution, saving its stack frame and local variables, and resuming immediately when <code>next()</code> is called again.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Water Reservoir vs A Flowing Tap</b>
+                                    <p>A list is a massive water reservoir: to inspect 10 million integers, you must fill an Olympic swimming pool of RAM all at once before touching a single byte. A generator is a kitchen water tap: turn the handle (<code>next()</code>), and a single glass of water flows out. When you stop, zero water sits wasted in holding tanks.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Streaming large sequences with O(1) memory
+def fibonacci_sequence(limit: int):
+    """Yields Fibonacci numbers up to limit without creating a list."""
+    a, b = 0, 1
+    while a &lt;= limit:
+        yield a
+        a, b = b, a + b
+
+fib_stream = fibonacci_sequence(100)
+first_three = [next(fib_stream) for _ in range(3)]
+print(first_three)  # [0, 1, 1]
+
+# Generator expressions vs List comprehensions
+import sys
+list_mem = sys.getsizeof([x * 2 for x in range(100_000)])
+gen_mem = sys.getsizeof((x * 2 for x in range(100_000)))
+print(f"List: {list_mem} bytes | Generator: {gen_mem} bytes")
+# List: ~800,000+ bytes | Generator: ~100-200 bytes!
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Constant O(1) Memory:</b> Stream gigabytes of log files or continuous event queues without exceeding server memory limits.</li>
+                                <li class="is-bad"><b>Weakness — Single-Pass Exhaustion:</b> Generators are one-way streams: once exhausted, they cannot be rewound, sliced by index, or iterated a second time.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> If you only need to iterate over a collection once (such as passing items to <code>sum()</code>, <code>any()</code>, <code>all()</code>, or <code>min()</code>), always use a generator expression without square brackets: <code>sum(x for x in data)</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="15-iterators-and-generators-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-iterators-and-generators-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#15-iterators-and-generators-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-15-iterators-and-generators-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Implement a generator function chunked(iterable, n) that takes any iterable and yields successive tuples of length n with constant extra memory.</p>
+                                <p>Iterate through the incoming iterable using an internal chunk accumulator list. Each time the list reaches size n, yield <code>tuple(chunk)</code> and reset the accumulator.</p>
+                                <div class="code-tabs" data-label="Answer — Chunked Iterator">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from typing import Iterable, Generator, Any
+
+def chunked(iterable: Iterable[Any], n: int) -> Generator[tuple, None, None]:
+    if n &lt;= 0:
+        raise ValueError("Chunk size must be positive.")
+    chunk = []
+    for item in iterable:
+        chunk.append(item)
+        if len(chunk) == n:
+            yield tuple(chunk)
+            chunk = []
+    if chunk:
+        yield tuple(chunk)
+
+# Test cases
+items = range(10)
+chunks = list(chunked(items, 3))
+assert chunks == [(0, 1, 2), (3, 4, 5), (6, 7, 8), (9,)]
+assert list(chunked([], 3)) == []
+print("Chunked generator passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 16 -->
+            <section class="topic-section is-collapsed" id="sec-16-decorators-and-function-wrappers" data-topic="16-decorators-and-function-wrappers">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-16-decorators-and-function-wrappers">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">16</span>
+                        <h2 id="16-decorators-and-function-wrappers" class="topic-title">Decorators &amp; Function Wrappers<a class="headerlink" href="#16-decorators-and-function-wrappers" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-16-decorators-and-function-wrappers">
+                    <div class="part-section is-collapsed" id="16-decorators-and-function-wrappers-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-16-decorators-and-function-wrappers-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#16-decorators-and-function-wrappers-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-16-decorators-and-function-wrappers-theory">
+                            <ul class="meta-strip">
+                                <li><b>Mechanism</b> <code class="big-o o-great">Higher-order wrapper</code></li>
+                                <li><b>Metadata</b> <code class="big-o o-great">@functools.wraps(func)</code></li>
+                                <li><b>Memoization</b> <code class="big-o o-good">@functools.lru_cache</code></li>
+                            </ul>
+                            <p>A decorator is a callable that accepts another function as an argument, extends or modifies its behavior, and returns a replacement callable. Writing <code>@my_decorator</code> above a function definition is syntactic sugar for <code>func = my_decorator(func)</code>. Decorators are universally used in production for authentication checks, input validation, execution timing, and memoization.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Security Checkpoint at an Office Building</b>
+                                    <p>Imagine a conference room where an executive holds meetings (<code>my_function</code>). Rather than rebuilding the executive's brain to check badges and log timestamps, a security checkpoint (<code>decorator</code>) is placed right outside the doorway. The guard checks incoming visitors (<code>args</code>, <code>kwargs</code>), stamps the sign-in book (<code>logs</code>), lets them enter the room, and records departure times (<code>metrics</code>).</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import functools
+import time
+
+def timing_decorator(func):
+    """Measures and logs function execution time."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        duration = time.perf_counter() - start_time
+        print(f"[TIMING] {func.__name__} completed in {duration:.6f}s")
+        return result
+    return wrapper
+
+@timing_decorator
+def compute_heavy_task(n: int) -> int:
+    """Calculates sum of squares."""
+    return sum(i * i for i in range(n))
+
+print(compute_heavy_task(100_000))
+print(f"Function name is preserved: {compute_heavy_task.__name__}") # compute_heavy_task
+
+# Built-in memoization with lru_cache
+@functools.lru_cache(maxsize=128)
+def fib_memoized(n: int) -> int:
+    if n &lt; 2:
+        return n
+    return fib_memoized(n - 1) + fib_memoized(n - 2)
+
+print(f"Fib(50) = {fib_memoized(50)}")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean Cross-Cutting Concerns:</b> Eliminates copy-pasted logging, authentication, and retry logic from core business algorithms.</li>
+                                <li class="is-bad"><b>Weakness — Forgetting @wraps:</b> Omitting <code>@functools.wraps(func)</code> overrides the decorated function's name to 'wrapper', breaking documentation tools.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> If a decorator takes arguments (e.g. <code>@retry(max_attempts=3)</code>), you are calling a decorator factory that returns the actual decorator function, requiring 3 levels of nested functions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="16-decorators-and-function-wrappers-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-16-decorators-and-function-wrappers-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#16-decorators-and-function-wrappers-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-16-decorators-and-function-wrappers-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a decorator @retry(max_attempts=3, delay=0.05) that retries a failed function if an exception is raised, sleeping for delay seconds between attempts.</p>
+                                <p>Construct a decorator factory accepting <code>max_attempts</code> and <code>delay</code>. Return a decorator that wraps the target function with a loop catching exceptions and retrying until attempts are exhausted.</p>
+                                <div class="code-tabs" data-label="Answer — Configurable Retry Decorator">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">import functools
+import time
+
+def retry(max_attempts: int = 3, delay: float = 0.05):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            last_err = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as err:
+                    last_err = err
+                    if attempt &lt; max_attempts:
+                        time.sleep(delay)
+            raise last_err
+        return wrapper
+    return decorator
+
+# Test cases
+call_count = 0
+
+@retry(max_attempts=3, delay=0.01)
+def unstable_network_call():
+    global call_count
+    call_count += 1
+    if call_count &lt; 3:
+        raise ConnectionError("Network timeout")
+    return "Connected!"
+
+assert unstable_network_call() == "Connected!"
+assert call_count == 3
+print("Retry decorator passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Unit 5 -->
+            <div class="unit-divider" id="unit-5">
+                <div class="unit-divider-badge">Unit 5</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Practical Everyday Utilities &amp; Gotchas<a class="headerlink" href="#unit-5" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Production utilities: robust file operations and pathlib, JSON serialization, indispensable standard library modules (collections, datetime, re), and the top gotchas every Python developer must recognize and avoid.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 17 -->
+            <section class="topic-section is-collapsed" id="sec-17-file-io-and-pathlib" data-topic="17-file-io-and-pathlib">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-17-file-io-and-pathlib">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">17</span>
+                        <h2 id="17-file-io-and-pathlib" class="topic-title">File I/O &amp; Pathlib<a class="headerlink" href="#17-file-io-and-pathlib" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-17-file-io-and-pathlib">
+                    <div class="part-section is-collapsed" id="17-file-io-and-pathlib-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-17-file-io-and-pathlib-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#17-file-io-and-pathlib-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-17-file-io-and-pathlib-theory">
+                            <ul class="meta-strip">
+                                <li><b>Resource Manager</b> <code class="big-o o-great">with open(...)</code></li>
+                                <li><b>Cross-Platform</b> <code class="big-o o-great">pathlib.Path</code></li>
+                                <li><b>Encoding</b> <code class="big-o o-good">Explicit utf-8 required</code></li>
+                            </ul>
+                            <p>Handling files in Python should always use the <code>with</code> statement (context manager). When execution exits the <code>with</code> block, Python guarantees that the file descriptor is closed and OS buffers are flushed, even if an unhandled exception or early <code>return</code> interrupts execution. Modern Python replaces older string-based <code>os.path</code> operations with the object-oriented <code>pathlib.Path</code> library.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Revolving Bank Vault Door</b>
+                                    <p>Using raw <code>f = open()</code> without <code>with</code> is like walking into a bank vault and hoping you remember to lock the steel door on your way out. If you get distracted or slip (<code>exception</code>), the vault stays wide open, leaking file descriptors. A <code>with open()</code> block is a timed revolving airlock: stepping into the room unlocks the vault; the instant you leave the doorway for any reason, magnetic locks snap shut automatically.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">from pathlib import Path
+import tempfile
+
+# Working with pathlib.Path
+temp_dir = Path(tempfile.gettempdir())
+test_file = temp_dir / "quick_sample.txt"
+
+# Modern atomic write and read
+test_file.write_text("Hello TechToday\nSecond line of text\n", encoding="utf-8")
+print(f"File exists: {test_file.exists()}")
+print(f"File size: {test_file.stat().st_size} bytes")
+
+# Line-by-line streaming through context manager
+with test_file.open("r", encoding="utf-8") as f:
+    for line_num, line in enumerate(f, start=1):
+        print(f"L{line_num}: {line.strip()}")
+
+# Cleanup
+test_file.unlink()
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean Cross-Platform Paths:</b> <code>pathlib.Path</code> seamlessly abstracts slash directions between Windows (\) and POSIX (/), eliminating brittle string concatenation bugs.</li>
+                                <li class="is-bad"><b>Weakness — Implicit OS Encoding:</b> Omitting <code>encoding="utf-8"</code> defaults to platform defaults, causing random <code>UnicodeDecodeError</code> crashes in production.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Always specify <code>encoding="utf-8"</code> explicitly when opening text files in Python. Never rely on the operating system's default encoding.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="17-file-io-and-pathlib-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-17-file-io-and-pathlib-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#17-file-io-and-pathlib-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-17-file-io-and-pathlib-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a function that counts the total number of words across all .log files in a given directory and its subdirectories using pathlib.</p>
+                                <p>Use <code>Path(dir_path).rglob("*.log")</code> to recursively find all matching files. Open each file with <code>encoding="utf-8"</code>, iterate through each line, and sum words with <code>len(line.split())</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Recursive Word Count via Pathlib">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from pathlib import Path
+
+def count_words_in_logs(directory_path: str) -> int:
+    target_dir = Path(directory_path)
+    if not target_dir.is_dir():
+        return 0
+
+    total_words = 0
+    for log_file in target_dir.rglob("*.log"):
+        if log_file.is_file():
+            with log_file.open("r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    total_words += len(line.split())
+    return total_words
+
+# Test using a temporary directory
+import tempfile
+with tempfile.TemporaryDirectory() as tmp_dir:
+    d = Path(tmp_dir)
+    (d / "a.log").write_text("one two three", encoding="utf-8")
+    sub = d / "nested"
+    sub.mkdir()
+    (sub / "b.log").write_text("four five", encoding="utf-8")
+    (d / "ignore.txt").write_text("should not count", encoding="utf-8")
+
+    assert count_words_in_logs(tmp_dir) == 5
+print("Recursive log word count passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 18 -->
+            <section class="topic-section is-collapsed" id="sec-18-json-parsing-and-serialization" data-topic="18-json-parsing-and-serialization">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-18-json-parsing-and-serialization">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">18</span>
+                        <h2 id="18-json-parsing-and-serialization" class="topic-title">JSON Parsing &amp; Serialization<a class="headerlink" href="#18-json-parsing-and-serialization" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-18-json-parsing-and-serialization">
+                    <div class="part-section is-collapsed" id="18-json-parsing-and-serialization-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-18-json-parsing-and-serialization-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#18-json-parsing-and-serialization-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-18-json-parsing-and-serialization-theory">
+                            <ul class="meta-strip">
+                                <li><b>String I/O</b> <code class="big-o o-great">loads() / dumps()</code></li>
+                                <li><b>Stream I/O</b> <code class="big-o o-great">load() / dump()</code></li>
+                                <li><b>Custom Serializer</b> <code class="big-o o-good">default=callback</code></li>
+                            </ul>
+                            <p>Python's built-in <code>json</code> module provides standard serialization and deserialization between Python data structures and JSON text format. Methods with an <strong>s</strong> suffix (<code>loads</code>, <code>dumps</code>) operate on in-memory strings, whereas methods without the suffix (<code>load</code>, <code>dump</code>) stream directly to and from file-like descriptor objects.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — Flat-Pack Furniture Export</b>
+                                    <p>A living Python object in memory is an assembled bookshelf with dynamic references and methods. Calling <code>json.dumps()</code> is taking the bookshelf apart into flat-pack planks and screws labeled with universal instructions (standard JSON text) that any foreign program (browser, Java microservice, Go daemon) can unpack into their own internal furniture.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import json
+from datetime import datetime
+
+payload = {
+    "service": "billing-api",
+    "version": 2.1,
+    "active": True,
+    "endpoints": ["/charges", "/refunds"],
+    "created_at": datetime(2026, 10, 5, 12, 0, 0),
+    "metadata": None
+}
+
+# Custom serializer for types like datetime
+def custom_json_serializer(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+json_text = json.dumps(payload, default=custom_json_serializer, indent=2)
+print(json_text)
+
+# Parsing back to Python dictionary
+parsed = json.loads(json_text)
+print(f"Service: {parsed['service']} | Endpoints: {len(parsed['endpoints'])}")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Ubiquitous Interchange:</b> Integrated directly into Python's core with high-performance C-accelerated parsers.</li>
+                                <li class="is-bad"><b>Weakness — Lossy Type Conversions:</b> In JSON, tuple keys and sets are not supported; dictionary keys must be strings, and tuples deserialize into standard lists.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Remember the naming rule: <code>load</code> / <code>dump</code> accept file pointers; <code>loads</code> / <code>dumps</code> accept and return strings (the <strong>s</strong> stands for <strong>s</strong>tring).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="18-json-parsing-and-serialization-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-18-json-parsing-and-serialization-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#18-json-parsing-and-serialization-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-18-json-parsing-and-serialization-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a function that flattens a nested dictionary into a single-level dictionary where keys are concatenated using dot notation.</p>
+                                <p>Use a recursive helper taking the current nested mapping and a parent key prefix. Iterate through items: if the value is a dictionary, recurse with the new prefix; otherwise, record the flattened entry.</p>
+                                <div class="code-tabs" data-label="Answer — Flatten Nested Dictionary">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
+    items = []
+    for k, v in d.items():
+        new_key = f"{parent_key}{sep}{k}" if parent_key else str(k)
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+# Test cases
+nested = {
+    "service": "auth",
+    "db": {
+        "host": "localhost",
+        "port": 5432
+    },
+    "flags": {
+        "cache": {"enabled": True}
+    }
+}
+flat = flatten_dict(nested)
+assert flat["service"] == "auth"
+assert flat["db.host"] == "localhost"
+assert flat["db.port"] == 5432
+assert flat["flags.cache.enabled"] is True
+print("Dictionary flattening passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 19 -->
+            <section class="topic-section is-collapsed" id="sec-19-standard-library-power-tools" data-topic="19-standard-library-power-tools">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-19-standard-library-power-tools">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">19</span>
+                        <h2 id="19-standard-library-power-tools" class="topic-title">Standard Library Power Tools<a class="headerlink" href="#19-standard-library-power-tools" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-19-standard-library-power-tools">
+                    <div class="part-section is-collapsed" id="19-standard-library-power-tools-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-19-standard-library-power-tools-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#19-standard-library-power-tools-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-19-standard-library-power-tools-theory">
+                            <ul class="meta-strip">
+                                <li><b>collections</b> <code class="big-o o-great">Counter, deque, defaultdict</code></li>
+                                <li><b>itertools</b> <code class="big-o o-great">chain, islice, cycle</code></li>
+                                <li><b>datetime &amp; re</b> <code class="big-o o-good">ISO formatting &amp; regex</code></li>
+                            </ul>
+                            <p>Python's philosophy of "batteries included" means the standard library contains battle-tested, C-accelerated modules for everyday engineering problems. Relying on these tools prevents reinventing data structures from scratch and ensures optimal runtime performance.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Swiss Army Engineering Toolkit</b>
+                                    <p>Writing custom frequency-counting loops or manually managing queue indices is like carving a screwdriver out of raw wood every time you need to turn a screw. Modules like <code>collections</code> and <code>itertools</code> are pre-sharpened titanium tools in your belt: reaching for <code>Counter</code> or <code>deque</code> completes the task in one clean, tested motion.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python">from collections import Counter, deque, defaultdict
+import itertools
+from datetime import datetime, timedelta
+import re
+
+# 1. Counter for frequency analysis
+words = ["python", "go", "python", "rust", "go", "python"]
+counts = Counter(words)
+print(counts.most_common(2))  # [('python', 3), ('go', 2)]
+
+# 2. Deque for sliding window and queues
+dq = deque(maxlen=3)
+for i in range(5):
+    dq.append(i)
+print(list(dq))  # [2, 3, 4] (oldest evicted automatically!)
+
+# 3. Defaultdict for grouping
+dept_staff = defaultdict(list)
+dept_staff["Engineering"].append("Sarah")
+dept_staff["Engineering"].append("Mark")
+print(dict(dept_staff))
+
+# 4. Date arithmetic
+now = datetime(2026, 10, 5, 12, 0)
+deadline = now + timedelta(days=7, hours=4)
+print(f"Deadline: {deadline.strftime('%Y-%m-%d %H:%M')}")
+
+# 5. Regular expressions
+log_line = "2026-10-05 [ERROR] 503 Service Unavailable in 142ms"
+match = re.search(r"\[(\w+)\]\s+(\d+)", log_line)
+if match:
+    level, code = match.groups()
+    print(f"Log Level: {level}, Status: {code}")
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Zero Dependencies:</b> Standard library modules ship with Python everywhere, require no <code>pip install</code>, and carry zero supply-chain security risks.</li>
+                                <li class="is-bad"><b>Weakness — Regex Re-compilation:</b> In tight loops, calling <code>re.search()</code> repeatedly wastes CPU cycles; compile once using <code>re.compile()</code>.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> When implementing BFS algorithms or fixed-size sliding history buffers, always use <code>collections.deque</code> instead of <code>list</code>. Popping from index 0 on a <code>list</code> is O(N); on a <code>deque</code>, it is O(1).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="19-standard-library-power-tools-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-19-standard-library-power-tools-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#19-standard-library-power-tools-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-19-standard-library-power-tools-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given a non-empty list of integers, return the k most frequent elements in linear time.</p>
+                                <p>Count frequencies using <code>collections.Counter(nums)</code>, and call <code>counts.most_common(k)</code> which extracts top k elements via a heap in O(N log k) time.</p>
+                                <div class="code-tabs" data-label="Answer — Top K Frequent Elements">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">from collections import Counter
+
+def top_k_frequent(nums: list[int], k: int) -> list[int]:
+    counts = Counter(nums)
+    return [item for item, freq in counts.most_common(k)]
+
+# Test cases
+assert top_k_frequent([1, 1, 1, 2, 2, 3], 2) == [1, 2]
+assert top_k_frequent([1], 1) == [1]
+assert top_k_frequent([4, 4, 4, 6, 6, 9, 9, 9, 9], 2) == [9, 4]
+print("Top K frequent passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 20 -->
+            <section class="topic-section is-collapsed" id="sec-20-high-frequency-pitfalls-and-gotchas" data-topic="20-high-frequency-pitfalls-and-gotchas">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-20-high-frequency-pitfalls-and-gotchas">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">20</span>
+                        <h2 id="20-high-frequency-pitfalls-and-gotchas" class="topic-title">High-Frequency Pitfalls &amp; Gotchas<a class="headerlink" href="#20-high-frequency-pitfalls-and-gotchas" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-20-high-frequency-pitfalls-and-gotchas">
+                    <div class="part-section is-collapsed" id="20-high-frequency-pitfalls-and-gotchas-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-20-high-frequency-pitfalls-and-gotchas-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#20-high-frequency-pitfalls-and-gotchas-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-20-high-frequency-pitfalls-and-gotchas-theory">
+                            <ul class="meta-strip">
+                                <li><b>Mutable Defaults</b> <code class="big-o o-bad">def fn(x=[]): bug</code></li>
+                                <li><b>Identity vs Value</b> <code class="big-o o-great">is vs ==</code></li>
+                                <li><b>Closures</b> <code class="big-o o-ok">Late binding in loops</code></li>
+                            </ul>
+                            <p>Every Python developer eventually encounters a specific set of language behaviors that produce subtle, difficult-to-trace bugs. Understanding how Python manages references, default parameters, closures, and collection mutability allows you to diagnose and prevent these issues before they reach production.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Communal Restaurant Order Pad</b>
+                                    <p>Creating a mutable default parameter <code>def take_order(order=[])</code> is like a restaurant waiter keeping one single slip of paper for all tables in the restaurant. When Table 1 orders soup, it's written down. When Table 2 arrives and says "I'll take the default order", the waiter hands them the old slip that already has Table 1's soup written on it.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Gotcha 1: The Mutable Default Argument Bug
+def bad_append(val, target=[]):
+    target.append(val)
+    return target
+
+print(bad_append(1))  # [1]
+print(bad_append(2))  # [1, 2] - Reused old list!
+
+# The Idiomatic Fix:
+def good_append(val, target=None):
+    if target is None:
+        target = []
+    target.append(val)
+    return target
+
+print(good_append(1))  # [1]
+print(good_append(2))  # [2] - Clean, independent list!
+
+# Gotcha 2: Late Binding in Closures
+funcs = [lambda: i for i in range(3)]
+print([f() for f in funcs])  # [2, 2, 2] - All evaluate final i=2!
+
+# The Fix:
+fixed_funcs = [lambda i=i: i for i in range(3)]
+print([f() for f in fixed_funcs])  # [0, 1, 2]!
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Transparent References:</b> Once you master Python's object model and reference semantics, unexpected mutations vanish.</li>
+                                <li class="is-bad"><b>Weakness — Implicit Sharing Bugs:</b> Shared mutable state between functions or default parameters creates intermittent bugs that pass unit tests but fail under load.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Never use a mutable object (<code>[]</code>, <code>{}</code>, <code>set()</code>) as a default parameter value. Always use <code>None</code> and initialize inside the function body.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="20-high-frequency-pitfalls-and-gotchas-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-20-high-frequency-pitfalls-and-gotchas-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#20-high-frequency-pitfalls-and-gotchas-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-20-high-frequency-pitfalls-and-gotchas-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Explain why [lambda: i for i in range(3)] evaluates to [2, 2, 2], and demonstrate how to fix it.</p>
+                                <p>Python closures bind variables by reference (name lookup), not by value. When the loop finishes, i is 2. When called later, they all read i as 2. Fix it by capturing <code>i</code> into a default parameter at definition time: <code>lambda i=i: i</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Fixing Late-Binding Closures">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python"># Approach 1: Default argument binding
+handlers = [lambda x=i: x for i in range(3)]
+assert [h() for h in handlers] == [0, 1, 2]
+
+# Approach 2: Helper factory function creating fresh scope
+def make_handler(val):
+    return lambda: val
+
+factory_handlers = [make_handler(i) for i in range(3)]
+assert [h() for h in factory_handlers] == [0, 1, 2]
+print("Closure fixes verified!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <blockquote>
+                <p>🐍 <strong>Next steps:</strong> Continue to the <a href="python-crash-course.html">Python Crash Course</a> for more exercises, or the deep-dive <a href="python-detailed-course.html">Python Detailed Course</a> for CPython internals, async runtimes, and metaprogramming. Browse all languages in the <a href="../programming-languages.html">Language Courses catalog</a>.</p>
+            </blockquote>
+
+        </article>
+    </main>
+    <footer class="study-footer">TechToday Python Study Library</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+    <script src="python-study.js"></script>
+</body>
+
+</html>

@@ -1516,7 +1516,7 @@ from math import sqrt
 sqrt(9)                              # 3.0
 ```
 
-> 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Detailed Course](python-detailed-course.html) or browse all languages in the [Language Courses catalog](../programming-languages.html).
+> 🐍 **Next steps:** Looking for high-frequency daily patterns and interview cheat sheets? Check out the [Python Quick Course](python-quick-course.html). For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Detailed Course](python-detailed-course.html) or browse all languages in the [Language Courses catalog](../programming-languages.html).
 
 ---
 

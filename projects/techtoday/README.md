@@ -145,9 +145,9 @@ projects/techtoday/
     ├── git/                     ← git-courses.html catalog + crash course + detailed course
     ├── networking/              ← networking-courses.html catalog + crash course + detailed course
     ├── os/                      ← os-courses.html catalog + crash course + detailed course
-    └── programming-languages/   ← programming-languages.html catalog (4 cards)
+    └── programming-languages/   ← programming-languages.html catalog (5 cards)
         ├── javascript/          ← crash course + detailed course
-        └── python/              ← crash course + full course
+        └── python/              ← quick course + crash course + detailed course
 ```
 
 ---

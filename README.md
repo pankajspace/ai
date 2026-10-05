@@ -46,8 +46,9 @@
 2. [Networking Detailed Course](projects/techtoday/study/networking/networking-detailed-course.html)
 
 ## Python
-1. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
-2. [Python Detailed Course](projects/techtoday/study/programming-languages/python/python-detailed-course.html)
+1. [Python Quick Course](projects/techtoday/study/programming-languages/python/python-quick-course.html)
+2. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
+3. [Python Detailed Course](projects/techtoday/study/programming-languages/python/python-detailed-course.html)
 
 ## JavaScript
 1. [JavaScript Crash Course](projects/techtoday/study/programming-languages/javascript/javascript-crash-course.html)
