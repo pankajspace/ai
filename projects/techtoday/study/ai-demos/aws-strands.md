@@ -14,7 +14,7 @@ Future with Shivank · AI Agents on AWS
 
 # From LLM to a *working agent*
 
-A hands-on masterclass for anyone who already knows LLMs and agents at a basic level. Every concept in plain language, every diagram, and a runnable command after each idea — plus AWS setup from scratch and a capstone project.
+This hands-on guide is for you if you already know the basics of LLMs and agents. It uses plain language, diagrams, and runnable commands after each idea. It also includes AWS setup from scratch and a capstone project.
 
 Level · **Beginner-friendly** · Framework · **AWS Strands SDK** · Model host · **Amazon Bedrock** · Region · **us-east-1**
 
@@ -38,7 +38,7 @@ Level · **Beginner-friendly** · Framework · **AWS Strands SDK** · Model host
 12. [Your first tool-enabled agent — the tip calculator](#s11)
 13. [When one tool isn't enough](#s12)
 14. [Pre-built community tools](#s13)
-15. [AWS integration with `use_aws`](#s14)
+15. [AWS integration with use_aws](#s14)
 16. [Building custom tools](#s15)
 17. [When simple tools aren't enough](#s16)
 18. [Project — build a Travel Assistant Agent](#s17)
@@ -55,20 +55,20 @@ Level · **Beginner-friendly** · Framework · **AWS Strands SDK** · Model host
 
 Section 0 · Setup
 
-Everything in both modules runs on your own laptop and calls AI models hosted on AWS. So there are exactly two things to arrange: **credentials** (so your laptop can talk to AWS) and **model access** (so AWS lets you use the models). Nothing else.
+Both modules run on your laptop and call AI models hosted on AWS. You need two things: **credentials**, which let your laptop talk to AWS, and **model access**, which lets your AWS account use the models. That is all.
 
-> 💡 **What this costs.** Running code locally is free. You only pay per model call, priced per token — the examples in this entire masterclass cost a fraction of a cent in total. Nothing keeps running in the background, so there is nothing to switch off afterwards.
+> 💡 **What this costs.** Running code locally is free. You pay only for model calls. AWS prices those calls per token, which means per small piece of text. The examples in this guide cost a fraction of a cent in total. Nothing keeps running in the background, so there is nothing to switch off later.
 
-Signed in to the AWS console as an admin:
+Sign in to the AWS console as an admin. Then do this:
 
-1. Top search bar → type IAM → open it.
-2. Left menu → Users → click your username.
-3. Open the Security credentials tab.
-4. Scroll to Access keys → Create access key.
-5. Use case → Command Line Interface (CLI) → tick the box → Next → Create access key.
-6. Copy the Access key ID and Secret access key now — the secret is shown only once.
+1. Use the top search bar. Type **IAM** and open it.
+2. In the left menu, open **Users**. Then click your username.
+3. Open the **Security credentials** tab.
+4. Scroll to **Access keys**. Click **Create access key**.
+5. For use case, choose **Command Line Interface (CLI)**. Tick the box. Click **Next**, then **Create access key**.
+6. Copy the **Access key ID** and **Secret access key** now. AWS shows the secret only once.
 
-> ⚠️ **Treat the secret like a password.** Never paste it into chat, screenshots, or a Git repo. `aws configure` stores it locally in `~/.aws/credentials`, which is where it belongs.
+> ⚠️ **Treat the secret like a password.** Never paste it into chat, screenshots, or a Git repo. `aws configure` stores it on your machine in `~/.aws/credentials`. That is the right place for it.
 
 <a id="s0-0-2-connect-your-laptop"></a>
 
@@ -84,7 +84,7 @@ aws configure
 # Default output format → (press Enter, leave blank)
 ```
 
-Check it worked:
+Check that it worked:
 
 **terminal**
 
@@ -92,25 +92,25 @@ Check it worked:
 aws sts get-caller-identity
 ```
 
-Success prints your `Account`, `UserId`, and `Arn`. If you get `InvalidClientTokenId`, the key is wrong or deactivated — create a fresh one and run `aws configure` again.
+A successful command prints your `Account`, `UserId`, and `Arn`. If you get `InvalidClientTokenId`, the key is wrong or turned off. Create a new key and run `aws configure` again.
 
 <a id="s0-0-3-enable-the-models-in-bedrock"></a>
 
 ### 0.3 · Enable the models in Bedrock
 
-Models are switched off by default. In the console:
+Models are off by default. In the console, do this:
 
-1. Top-right region selector → US East (N. Virginia) · us-east-1.
-2. Search Bedrock → open it → left menu → Model access.
-3. Modify model access → tick the models below → submit.
+1. In the top-right region selector, choose **US East (N. Virginia) · us-east-1**.
+2. Search for **Bedrock** and open it. In the left menu, open **Model access**.
+3. Click **Modify model access**. Tick the models below, then submit.
 
 | Model | Used for |
 | --- | --- |
 | Amazon Nova Lite | Module 1 Hello World (cheap, fast) |
 | Claude Haiku 4.5 | Module 1 LangGraph example, Module 2 tools |
-| Claude Sonnet 4.5 | Heavier reasoning; useful later |
+| Claude Sonnet 4.5 | Stronger reasoning. Useful later. |
 
-Verify from the terminal which Anthropic models are live in your account:
+Use the terminal to check which Anthropic models are active in your account:
 
 **terminal**
 
@@ -120,16 +120,15 @@ aws bedrock list-foundation-models --region us-east-1 \
   --output table
 ```
 
-> ⚠️ **The single most common error you will hit.** The repo pins older model IDs that AWS has since retired. You will see `ResourceNotFoundException … model version has reached the end of its life` or `… marked by provider as Legacy`. **The fix is always the same:** list the live models with the command above, pick one, prefix it with `us.`, and swap it into the code. Treat this as a skill worth learning, not as a bug.
+> ⚠️ **The most common error.** The repo pins older model IDs that AWS has retired. You may see `ResourceNotFoundException … model version has reached the end of its life` or `… marked by provider as Legacy`. **The fix is always the same:** list the active models with the command above, pick one, add the `us.` prefix, and put it in the code. This is a useful skill, not a bug.
 
 <a id="s0-0-4-the-project-folder"></a>
 
 ### 0.4 · The project folder
 
-All the code for both modules ships with this guide, already fixed and ready to run. Unzip it anywhere and open the folder in VS Code — **you can rename the folder to whatever you like**, nothing depends on its name.
+This guide includes all code for both modules. It is already fixed and ready to run. Unzip it anywhere and open the folder in VS Code. **You can rename the folder to whatever you like**; nothing depends on the folder name.
 
-**what's
-              inside**
+**what's inside**
 
 ```text
 .
@@ -149,8 +148,7 @@ All the code for both modules ships with this guide, already fixed and ready to 
 
 ### 0.5 · Install the packages
 
-**terminal · from the
-              project folder**
+**terminal · from the project folder**
 
 ```text
 # macOS / Linux
@@ -160,10 +158,9 @@ All the code for both modules ships with this guide, already fixed and ready to 
 setup.bat
 ```
 
-Or do it manually if you prefer:
+You can also install the packages manually:
 
-**terminal · manual
-              install**
+**terminal · manual install**
 
 ```text
 python3 --version          # must be 3.10 or higher
@@ -173,13 +170,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-> 💡 **If you're in conda (your prompt shows (base) ).** The venv keeps this project isolated from your conda environment. After activating you should see `(.venv)` at the front of your prompt. In VS Code, also pick the interpreter: `⌘``⇧``P` → *Python: Select Interpreter* → choose the `.venv` one.
+> 💡 **If you are in conda and your prompt shows (base).** The venv keeps this project separate from your conda environment. After activation, you should see `(.venv)` at the start of your prompt. In VS Code, also choose the interpreter: `⌘``⇧``P` → *Python: Select Interpreter* → choose the `.venv` interpreter.
 
 <a id="s0-0-6-run-the-readiness-check"></a>
 
 ### 0.6 · Run the readiness check
 
-This is the single most useful command in the whole project. It verifies Python, packages, credentials, region, Bedrock access, **and makes a real model call** — so if it passes, every example will run.
+This is the most useful command in the project. It checks Python, packages, credentials, region, and Bedrock access. It also makes a real model call. If it passes, every example should run.
 
 **Run it**
 
@@ -189,9 +186,9 @@ export AWS_DEFAULT_REGION=us-east-1
 python 00_check_setup.py
 ```
 
-> 🔑 **What success looks like.** Six `[ OK ]` lines ending with *"All checks passed."* If anything fails it prints the exact fix — enable model access, paste fresh credentials, or swap a retired model. Run this before you touch anything else. If it passes, every example in this guide will work.
+> 🔑 **What success looks like.** You should see six `[ OK ]` lines ending with *"All checks passed."* If something fails, the script prints the fix. It may ask you to enable model access, paste fresh credentials, or replace a retired model. Run this before anything else. If it passes, every example in this guide should work.
 
-> 🔑 **Do this before anything else.** Give Section 0 a proper 15 minutes before you write any agent code. Setup failures are the number-one reason people abandon hands-on AI work. Do not move past this section until `get-caller-identity` returns your account details.
+> 🔑 **Do this before anything else.** Spend 15 minutes on Section 0 before you write agent code. Setup failures are the main reason people stop hands-on AI work. Do not continue until `get-caller-identity` returns your account details.
 
 <a id="s1"></a>
 
@@ -203,19 +200,19 @@ python 00_check_setup.py
 
 Section 1 · Module 1 · one
 
-Start here, because it frames everything else. A standard LLM has two hard limits:
+Start here because it frames the rest of the guide. A standard LLM has two hard limits:
 
-- Knowledge cutoff — it only knows what it was trained on. Ask about yesterday's news and it cannot help.
-- No access to your world — it cannot read your company database, check today's weather, or send an email.
+- Knowledge cutoff: it knows only what it learned during training. Ask about yesterday's news and it cannot help.
+- No access to your world: it cannot read your company database, check today's weather, or send an email.
 
-There are two ways to fix this without retraining the model:
+You can fix this in two ways without retraining the model:
 
 | Approach | What it adds | The model becomes… |
 | --- | --- | --- |
 | **RAG** | Relevant context fetched from your data | A better-informed *knowledge retriever* |
 | **Agents** | The ability to reason and *use tools* | An *actor* that gets things done |
 
-Here is the framing that matters: many teams build a RAG system, then find users want the AI to **actually do the work** — book the meeting, update the record, run the workflow. Moving from passive retriever to active agent is exactly where people get stuck. That is what these two modules fix.
+Here is the key point. Many teams build a RAG system. Then users ask the AI to do the work: book the meeting, update the record, or run the workflow. Teams often get stuck when they move from a passive retriever to an active agent. These two modules help you make that move.
 
 <a id="s2"></a>
 
@@ -227,11 +224,11 @@ Here is the framing that matters: many teams build a RAG system, then find users
 
 Section 2
 
-RAG combines an LLM with a search system in three steps:
+RAG combines an LLM with a search system. It has three steps:
 
-1. Retrieve — search an external knowledge base for information relevant to the question.
-2. Augment — glue that retrieved context onto the original question to form a richer prompt.
-3. Generate — the LLM answers using the supplied context.
+1. Retrieve: search an external knowledge base for information that matches the question.
+2. Augment: attach the retrieved context to the original question to make a richer prompt.
+3. Generate: the LLM writes the answer using the supplied context.
 
 ```mermaid
 flowchart LR
@@ -245,12 +242,11 @@ flowchart LR
   A --> G
   G --> O
 ```
-
 Diagram 1 — How Retrieval Augmented Generation works
 
-For example: *"Who won the 2024 Nobel Prize in Physics?"* The system queries a real-time news database, finds the fact, adds it to the prompt, and the LLM produces an accurate answer — despite that fact being past its training cutoff.
+Example: *"Who won the 2024 Nobel Prize in Physics?"* The system queries a real-time news database, finds the fact, adds it to the prompt, and the LLM gives an accurate answer. It can do this even though the fact is after the model's training cutoff.
 
-The next diagram expands this into the seven stages of building a real RAG system.
+The next diagram shows the seven stages you use to build a real RAG system.
 
 ```mermaid
 flowchart LR
@@ -274,24 +270,21 @@ flowchart LR
   F --> G
   G --> U
 ```
-
 Diagram 2 — The RAG pipeline, from raw documents to a final answer
 
 <a id="s2-the-stages-in-plain-language"></a>
 
 ### The stages, in plain language
 
-- Load — bring in the documents you want to query.
-- Chunk — split them into small pieces. Two reasons: models have a limited context window, and it avoids the lost-in-the-middle effect where details buried in a long passage get overlooked.
-- Embed — convert each chunk into a vector, a numerical representation of its meaning (using an embedding model such as Amazon Titan).
-- Store — keep chunks plus vectors in a vector database that supports similarity search. Common examples: Amazon OpenSearch Service, Pinecone, FAISS, Chroma, PostgreSQL with pgvector.
-- Retrieve — turn the user's question into a vector too, and pull the top-k most similar chunks (k = 3, 5, 10…).
-- Filter & rerank — optionally re-sort for quality. Improves results but adds cost and complexity.
-- Generate — hand the retrieved chunks plus the original question to the LLM, which writes the final answer.
+- Load: bring in the documents you want to query.
+- Chunk: split the documents into small pieces. This matters for two reasons. Models have a limited context window, and small chunks reduce the lost-in-the-middle effect, where details buried in a long passage get missed.
+- Embed: convert each chunk into a vector. A vector is a list of numbers that represents meaning. You can use an embedding model such as Amazon Titan.
+- Store: keep chunks and vectors in a vector database that supports similarity search. Common examples are Amazon OpenSearch Service, Pinecone, FAISS, Chroma, and PostgreSQL with pgvector.
+- Retrieve: turn the user's question into a vector too. Then pull the top-k most similar chunks, such as k = 3, 5, or 10.
+- Filter & rerank: optionally re-sort results for quality. This can improve answers, but it adds cost and complexity.
+- Generate: give the retrieved chunks and the original question to the LLM. The LLM writes the final answer.
 
-> **Analogy** 📖 — ****Analogy that lands****
->
-> RAG is an **open-book exam**. The model hasn't memorised the textbook, but you let it flip to the three most relevant pages before answering. Chunking is deciding how big each page is; embedding is the index at the back that tells you which pages to flip to.
+RAG is an **open-book exam**. The model has not memorised the textbook. You let it open the three most relevant pages before it answers. Chunking decides how big each page is. Embedding is the index at the back that tells you which pages to open.
 
 <a id="s3"></a>
 
@@ -303,9 +296,9 @@ Diagram 2 — The RAG pipeline, from raw documents to a final answer
 
 Section 3
 
-The word *agent* just means something that performs a task on your behalf. A working definition: **AI agents are autonomous software systems that use AI to reason, plan, and carry out tasks** for humans or other systems. They make decisions, adapt to new information, and act without needing explicit instructions for every step.
+The word *agent* means something that performs a task for you. A working definition is: **AI agents are autonomous software systems that use AI to reason, plan, and carry out tasks** for humans or other systems. Autonomous means they can keep working without step-by-step instructions. They make decisions, adapt to new information, and act.
 
-What makes them powerful is **iterative thinking** — they evaluate results, adjust, and keep working toward a goal. And they often use RAG *as one part* of that workflow.
+Their strength is **iterative thinking**. They check results, adjust, and keep working toward a goal. They often use RAG as one part of that workflow.
 
 ```mermaid
 flowchart LR
@@ -325,19 +318,18 @@ flowchart LR
   P --> S
   S --> O
 ```
-
 Diagram 3 — An AI agent as a travel planner, using agentic RAG
 
-Follow this example closely. The agent takes *"What should I pack for New York summer?"* and it does **not** just look one thing up. It:
+Follow this example closely. The agent receives *"What should I pack for New York summer?"*. It does not just look up one fact. It:
 
-1. Uses RAG to retrieve historical weather data
-2. Checks a real-time forecast via an API
-3. Analyses user preferences (pack light, but avoid being cold)
-4. Synthesises all of it into a personalised recommendation
+1. Uses RAG to retrieve historical weather data.
+2. Checks a real-time forecast through an API.
+3. Analyses user preferences, such as packing light but avoiding cold weather.
+4. Combines everything into a personalised recommendation.
 
-That final synthesis — combining three different sources into a judgement — is the decision-making that separates an agent from simple retrieval.
+That final synthesis combines three sources into one judgement. This decision-making separates an agent from simple retrieval.
 
-> 🔑 **The one-line distinction to drill.** **RAG answers questions. Agents accomplish goals.** RAG gives the model better information; an agent gives it the ability to act, check the result, and try again.
+> 🔑 **The key distinction.** **RAG answers questions. Agents accomplish goals.** RAG gives the model better information. An agent gives it the ability to act, check the result, and try again.
 
 <a id="s4"></a>
 
@@ -349,7 +341,7 @@ That final synthesis — combining three different sources into a judgement — 
 
 Section 4
 
-Think of this as a progression. Each step adds one capability. This is the fastest way to orient yourself if you "sort of know" agents already.
+Think of this as a progression. Each step adds one capability. Use it to orient yourself if you already know agents a little.
 
 ```mermaid
 flowchart TD
@@ -363,10 +355,9 @@ flowchart TD
   R --> A
   A --> M
 ```
-
 Diagram 4 — Progression from basic LLM capabilities to multi-agent systems
 
-The one line to hold on to: **each level adds exactly one thing.** Memory, then grounding, then action, then teamwork. If you can name what each level adds, you understand the shape of the entire field.
+Remember this line: each level adds exactly one thing. First memory, then grounding, then action, then teamwork. If you can name what each level adds, you understand the shape of the field.
 
 <a id="s5"></a>
 
@@ -378,9 +369,9 @@ The one line to hold on to: **each level adds exactly one thing.** Memory, then 
 
 Section 5
 
-Once agents need to reach the outside world and each other, you need standard ways to connect. Two protocols matter, and they are constantly confused with each other, so compare them side by side.
+When agents need to reach the outside world or other agents, you need standard connection methods. Two protocols matter. People often confuse them, so compare them side by side.
 
-MCP connects an agent to **tools and data**. A server exposes capabilities; a client (your agent) discovers and calls them. Think of it as **USB for AI tools** — plug in a new server, gain new abilities, without changing your agent's code.
+MCP connects an agent to **tools and data**. A server exposes capabilities. A client, which is your agent, discovers and calls them. Think of it as **USB for AI tools**: plug in a new server and the agent gains new abilities without changing its code.
 
 ```mermaid
 flowchart LR
@@ -391,14 +382,13 @@ flowchart LR
   A -->|1 · what can you do?| S
   S -->|2 · list of tools / resources / prompts| A
 ```
-
 Diagram 5 — MCP workflow: the client discovers a server's capabilities, then calls them
 
 <a id="s5-a2a-agent-to-agent"></a>
 
 ### A2A — Agent to Agent
 
-A2A connects an agent to **other agents**. Each agent publishes an *agent card* (a small profile: name, skills, how to talk to it), and other agents read that card and send it messages.
+A2A connects an agent to **other agents**. Each agent publishes an *agent card*. This is a small profile with its name, skills, and contact method. Other agents read the card and send it messages.
 
 ```mermaid
 flowchart TD
@@ -408,17 +398,18 @@ flowchart TD
   O --> W
   O --> F
 ```
-
 Diagram 6 — How A2A works: an orchestrator discovers and messages independent agents
 
 |  | MCP | A2A |
 | --- | --- | --- |
 | Connects an agent to… | Tools, data, prompts | Other agents |
-| The other side is… | A server exposing capabilities | A peer agent with its own brain |
-| Discovery via | Listing tools/resources/prompts | The agent card |
-| Analogy | USB port for abilities | Colleagues phoning each other |
+| The other side is… | A server that exposes capabilities | A peer agent with its own reasoning |
+| Discovery via | A list of tools, resources, and prompts | The agent card |
+| Analogy | USB port for abilities | Colleagues calling each other |
 
-Diagram 7 — MCP vs A2A, side by side> 💡 **Scope note.** Module 1 only *introduces* these protocols — building MCP servers and A2A agents is a much larger topic on its own. Learn the vocabulary here so it is familiar later, then move on. Resist the urge to go and build an MCP server today; finish the agent fundamentals first.
+Diagram 7 — MCP vs A2A, side by side
+
+> 💡 **Scope note.** Module 1 only introduces these protocols. Building MCP servers and A2A agents is a larger topic. Learn the vocabulary now so it is familiar later. Then move on. Do not build an MCP server today; finish the agent fundamentals first.
 
 <a id="s6"></a>
 
@@ -430,7 +421,7 @@ Diagram 7 — MCP vs A2A, side by side> 💡 **Scope note.** Module 1 only *intr
 
 Section 6
 
-AWS offers three layers for building agents. Always know which layer you are standing on.
+AWS offers three layers for building agents. Know which layer you are using.
 
 ```mermaid
 flowchart TD
@@ -440,10 +431,9 @@ flowchart TD
   F --> R
   R --> M
 ```
-
 Diagram 8 — The AWS agentic stack and where Strands sits within it
 
-**Amazon Bedrock** is the key one for today: it is a managed service that hosts foundation models (Claude, Nova, and more) behind a single API. You enabled model access in Section 0 — that is what makes these models callable from your code.
+**Amazon Bedrock** is the key service for this guide. It is a managed service, which means AWS runs it for you. It hosts foundation models such as Claude, Nova, and others behind one API. You enabled model access in Section 0. That is what lets your code call these models.
 
 <a id="s7"></a>
 
@@ -455,7 +445,7 @@ Diagram 8 — The AWS agentic stack and where Strands sits within it
 
 Section 7
 
-Put simply: **Strands has three core components — model, tools, and prompt** — plus an agentic feedback loop.
+Strands has three core components: **model**, **tools**, and **prompt**. It also has an agentic feedback loop.
 
 ```mermaid
 flowchart TD
@@ -473,12 +463,11 @@ flowchart TD
   A --> L
   L --> F
 ```
-
 Diagram 9 — The Strands agentic loop: agent asks model, model reasons and selects tools, agent executes, results feed back
 
-The loop in plain terms: the agent asks the model; the model reasons, responds, and selects tools; the agent executes those tools; results feed back into the agent, which may re-invoke the model. **This continues until the agent determines the prompt has been fully addressed** — then it compiles everything and returns the result.
+Here is the loop in plain terms. The agent asks the model. The model reasons, responds, and chooses tools. The agent runs those tools. Results go back into the agent, which may call the model again. This continues until the agent decides the prompt is fully handled. Then it combines the work and returns the result.
 
-> 🔑 **The sentence that makes agents click.** "A chatbot answers once. An agent keeps going until the job is done." The loop *is* the difference. Everything else is detail.
+> 🔑 **The key sentence.** "A chatbot answers once. An agent keeps going until the job is done." The loop is the difference. Everything else is detail.
 
 <a id="s8"></a>
 
@@ -490,7 +479,7 @@ The loop in plain terms: the agent asks the model; the model reasons, responds, 
 
 Section 8 · Hands-on
 
-> 💡 **How to run every example in this guide.** Run everything **from the project root** (the folder containing `config.py`) — not from inside `one/`. The scripts import shared settings from `config.py`, so running from a subfolder gives `ModuleNotFoundError: No module named 'config'`.
+> 💡 **How to run every example in this guide.** Run everything from the project root, which is the folder that contains `config.py`. Do not run from inside `one/`. The scripts import shared settings from `config.py`. If you run from a subfolder, you get `ModuleNotFoundError: No module named 'config'`.
 
 **one/01_hello_world_agent.py**
 
@@ -517,13 +506,13 @@ print(response)
 python one/01_hello_world_agent.py
 ```
 
-**Four lines is a whole agent.** Read each one: choose a model, wrap it in an `Agent`, call the agent like a function, print the answer. There are no tools here yet, so the loop runs exactly once — this is the "before" picture for Module 2.
+Four lines make a whole agent. Read each line: choose a model, wrap it in an `Agent`, call the agent like a function, and print the answer. There are no tools yet, so the loop runs exactly once. This is the "before" picture for Module 2.
 
 <a id="s8-8-2-same-idea-in-langgraph-with-a-tool"></a>
 
 ### 8.2 · Same idea in LangGraph, with a tool
 
-Strands is not the only framework. This version uses LangGraph and adds a small tool, so you can watch the loop actually loop.
+Strands is not the only framework. This version uses LangGraph and adds a small tool. You can see the loop run more than once.
 
 **one/02_hello_world_langgraph.py**
 
@@ -566,9 +555,9 @@ for message in response["messages"]:
 python one/02_hello_world_langgraph.py
 ```
 
-> 🔑 **Expected output — and the moment it clicks.** You will see five lines: `human:` the request · `ai:` (empty) · `tool:` Hello, Alice! · `tool:` Hello, Bob! · `ai:` a summary. **Stop and unpack this.** The empty `ai:` line is the model *choosing to use a tool instead of answering*. That is the agentic loop from Diagram 9, visible in your terminal.
+> 🔑 **Expected output.** You will see five lines: `human:` the request · `ai:` (empty) · `tool:` Hello, Alice! · `tool:` Hello, Bob! · `ai:` a summary. The empty `ai:` line means the model chose to use a tool instead of answering. That is the agentic loop from Diagram 9, visible in your terminal.
 
-> 💡 **Note on models — already handled for you.** Older tutorials pin `anthropic.claude-3-5-haiku-20241022-v1:0`, which AWS has since retired. **These files already use the current model** via `config.py`, so there is nothing to patch. If a model is retired in future, run `python 01_list_models.py`, pick a live one, and change the single line in `config.py` — every example picks it up.
+> 💡 **Model note.** Older tutorials pin `anthropic.claude-3-5-haiku-20241022-v1:0`, which AWS has retired. These files already use the current model through `config.py`, so you do not need to patch anything. If AWS retires a model later, run `python 01_list_models.py`, pick an active model, and change the single line in `config.py`. Every example uses that setting.
 
 <a id="s9"></a>
 
@@ -580,11 +569,11 @@ python one/02_hello_world_langgraph.py
 
 Section 9 · Module 2 · two
 
-The division of labour — the cleanest mental model here:
+Use this simple division of labour:
 
-- The LLM is the brain — it understands requests, reasons about what needs doing, and decides which tools to use.
-- Tools are the hands and senses — they perform actions and gather information from the outside world.
-- The agent is the coordinator — it manages the conversation between the LLM and the tools.
+- The LLM is the brain. It understands requests, reasons about what needs to happen, and decides which tools to use.
+- Tools are the hands and senses. They perform actions and gather information from the outside world.
+- The agent is the coordinator. It manages the conversation between the LLM and the tools.
 
 ```mermaid
 flowchart LR
@@ -598,7 +587,6 @@ flowchart LR
   T --> A
   A --> N
 ```
-
 Diagram 10 — LLM, Agent, and Tools
 
 ```mermaid
@@ -610,7 +598,6 @@ flowchart TD
   P[Pre-built · community<br>import and use — strands_tools]
   U[Custom · yours<br>any Python function + @tool]
 ```
-
 Diagram 11 — Types of tools an agent can use
 
 <a id="s10"></a>
@@ -623,10 +610,9 @@ Diagram 11 — Types of tools an agent can use
 
 Section 10 · Hands-on
 
-This is the most important idea in this module. Start with an ordinary Python function that checks whether a server is up:
+This is the most important idea in this module. Start with a normal Python function that checks whether a server is up:
 
-**plain python — the
-              agent cannot use this**
+**plain python — the agent cannot use this**
 
 ```python
 import requests
@@ -648,15 +634,15 @@ print(status)
 # "Server is up. Status code: 200"
 ```
 
-Ask the agent *"Is the staging server running?"* and it replies that it has no ability to check server status. **The agent cannot magically discover your function.** That is the gap.
+If you ask the agent *"Is the staging server running?"*, it says it cannot check server status. The agent cannot discover your function by itself. That is the gap.
 
-The bridge is **function calling** (also called tool use). Add three things:
+The bridge is **function calling**, also called tool use. Add three things:
 
 | Add this | Why |
 | --- | --- |
-| `@tool` decorator | Tells Strands to make this function available to agents |
-| Type hints | Tell the agent what data types to expect |
-| A proper docstring | Describes what it does, so the agent knows *when* to use it |
+| `@tool` decorator | Tells Strands to make this function available to agents. |
+| Type hints | Tell the agent what data types to expect. |
+| A proper docstring | Describes what the function does, so the agent knows when to use it. |
 
 **two/01_function_to_tool.py**
 
@@ -683,8 +669,7 @@ def check_server_status(server_url: str) -> str:      # 2. type hints
         return "Server is down or unreachable"
 ```
 
-**give it to the
-              agent**
+**give it to the agent**
 
 ```text
 agent = Agent(tools=[check_server_status])
@@ -697,9 +682,9 @@ response = agent("Is the staging server running? Check https://httpbin.org/get")
 python two/01_function_to_tool.py
 ```
 
-> 🔑 **The one thing to take away from this section.** **The docstring is not a comment — it is the user manual the model reads.** The model decides whether to call your tool based on that description alone. Vague docstring, unreliable agent. Deliberately break one: change the docstring to `"Does a thing."` and watch the agent stop calling it. That single experiment will teach you more than any amount of reading.
+> 🔑 **The main point.** The docstring is not just a comment. It is the user manual the model reads. The model decides whether to call your tool based on that description. A vague docstring makes the agent unreliable. Try breaking one on purpose: change the docstring to `"Does a thing."` and watch the agent stop calling it. That experiment teaches more than reading alone.
 
-In short: *this pattern works for any function. Add `@tool`, give it to your Agent, and the agent can now execute it.*
+This pattern works for any function. Add `@tool`, give it to your `Agent`, and the agent can execute it.
 
 <a id="s11"></a>
 
@@ -711,7 +696,7 @@ In short: *this pattern works for any function. Add `@tool`, give it to your Age
 
 Section 11 · Hands-on
 
-A practical, self-contained example from Module 2. Nothing external to configure.
+This is a practical, self-contained example from Module 2. You do not need to configure anything external.
 
 **two/01_function_to_tool.py**
 
@@ -749,7 +734,7 @@ response = agent("The bill is $85. What's a 20% tip, and how much does each pers
 print(response.message['content'][0]['text'])
 ```
 
-Then show that the agent understands *intent*, not keywords — all three of these work without any extra code:
+Then show that the agent understands *intent*, not just keywords. All three requests work without extra code:
 
 **two/02_tip_calculator.py**
 
@@ -765,7 +750,7 @@ agent("Calculate tip for $67.50 at 20%")
 python two/02_tip_calculator.py
 ```
 
-> 🔑 **Contrast worth drawing.** In traditional chatbot development you'd write regex patterns and intent classifiers to handle those three phrasings, and separately extract the numbers. Here you wrote one function with a clear description and the model did the intent recognition *and* the parameter extraction. That is the leap.
+> 🔑 **Important contrast.** In traditional chatbot development, you would write regex patterns and intent classifiers for those three phrasings. You would also extract the numbers separately. Here you wrote one function with a clear description. The model handled intent recognition and parameter extraction.
 
 <a id="s12"></a>
 
@@ -777,7 +762,7 @@ python two/02_tip_calculator.py
 
 Section 12
 
-The scenario: you ask a sales assistant to *"pull last quarter's sales data and email a summary to the team."* That is not one task — it is three: query the database, analyse the numbers, send an email.
+Scenario: you ask a sales assistant to *"pull last quarter's sales data and email a summary to the team."* That is not one task. It is three tasks: query the database, analyse the numbers, and send an email.
 
 **two/03_multi_tool_sales.py**
 
@@ -822,10 +807,9 @@ flowchart TD
   A --> N
   A --> E
 ```
-
 Diagram 12 — One request, three tools: the agent works out which to call and in what order
 
-You never told the agent the sequence. It recognised it needed data first, then analysis, then delivery — and chained them. That is planning.
+You never told the agent the sequence. It recognised that it needed data first, then analysis, then delivery. It chained the tools. That is planning.
 
 **Run it**
 
@@ -833,7 +817,7 @@ You never told the agent the sequence. It recognised it needed data first, then 
 python two/03_multi_tool_sales.py
 ```
 
-> 💡 **Rule of thumb.** Build focused, single-purpose tools. Avoid the temptation to create one mega-tool that does everything: it becomes harder to maintain, harder for the agent to reason about, and impossible to reuse elsewhere. Small tools recombine — the same `analyze_sales` works with data from any source.
+> 💡 **Rule of thumb.** Build focused, single-purpose tools. Do not create one mega-tool that does everything. It becomes harder to maintain, harder for the agent to reason about, and impossible to reuse elsewhere. Small tools combine well. The same `analyze_sales` tool works with data from any source.
 
 <a id="s13"></a>
 
@@ -845,7 +829,7 @@ python two/03_multi_tool_sales.py
 
 Section 13 · Hands-on
 
-You don't have to write everything. `strands_tools` ships ready-made tools — import and go.
+You do not have to write every tool yourself. `strands_tools` includes ready-made tools. Import them and use them.
 
 **two/05_prebuilt_tools.py**
 
@@ -865,7 +849,7 @@ agent("Solve the equation x^2 + 5x + 6 = 0")
 agent("What's the derivative of sin(x) * cos(x)?")
 ```
 
-Note this also introduces the **system prompt** — standing instructions that shape the agent's behaviour across every request.
+This also introduces the **system prompt**. A system prompt is a standing instruction that shapes the agent's behaviour across every request.
 
 **Run it**
 
@@ -877,7 +861,7 @@ python two/05_prebuilt_tools.py
 
 ### 13.2 · Combining several pre-built tools
 
-Fetch data from the web, do maths on it, and write a file — one request, three tools.
+This example fetches data from the web, does maths on it, and writes a file. One request uses three tools.
 
 **two/06_multi_prebuilt_tools.py**
 
@@ -910,7 +894,7 @@ and save the results to stock_summary.txt
 python two/06_multi_prebuilt_tools.py
 ```
 
-> ⚠️ **Explain BYPASS_TOOL_CONSENT before running it.** Some tools are sensitive — they write files or touch cloud resources — so Strands **pauses and asks permission** before running them. Setting `BYPASS_TOOL_CONSENT="true"` turns that prompt off so the cell runs unattended. Teach it as a real safety feature: in production you often *want* a human approving actions. If a cell seems to hang with `[*]`, it is waiting for your `y` at a hidden prompt.
+> ⚠️ **Explain BYPASS_TOOL_CONSENT before running it.** Some tools are sensitive because they write files or touch cloud resources. Strands pauses and asks for permission before it runs them. Setting `BYPASS_TOOL_CONSENT="true"` turns that prompt off so the cell runs unattended. Treat this as a real safety feature. In production, you often want a human to approve actions. If a cell seems stuck at `[*]`, it is waiting for your `y` at a hidden prompt.
 
 <a id="s14"></a>
 
@@ -922,7 +906,7 @@ python two/06_multi_prebuilt_tools.py
 
 Section 14 · Hands-on
 
-One tool, many services. `use_aws` translates plain English into AWS API calls.
+One tool can work with many services. `use_aws` translates plain English into AWS API calls.
 
 **two/07_use_aws.py**
 
@@ -940,10 +924,9 @@ agent = Agent(
 agent("List all S3 buckets in my account")
 ```
 
-The same single tool handles completely different services — Other examples:
+The same single tool can handle very different services. Other examples:
 
-**one tool, three
-              services**
+**one tool, three services**
 
 ```text
 # DynamoDB
@@ -953,9 +936,9 @@ agent("Look up customer ID 12345 in the DynamoDB customers table and update thei
 agent("Invoke the Lambda function 'order-processor' with order ID 67890")
 ```
 
-> 💡 **Before you run this.** These examples assume the AWS resources already exist in your account. The S3 bucket, DynamoDB table, and Lambda function referenced must exist for the snippets to work. While you are learning, **stick to the S3 listing example** — it works on any account, even an empty one (an empty list is a valid result, not an error).
+> 💡 **Before you run this.** These examples assume the AWS resources already exist in your account. The S3 bucket, DynamoDB table, and Lambda function in the snippets must exist. While you learn, stick to the S3 listing example. It works on any account, even an empty one. An empty list is a valid result, not an error.
 
-Notice what just happened: you described what you wanted in plain English, and the agent figured out the AWS API calls. **You didn't write boto3 code, didn't handle AWS responses, and didn't even specify which operation to use.**
+Notice what happened. You described what you wanted in plain English. The agent worked out the AWS API calls. You did not write boto3 code, handle AWS responses, or name the exact operation.
 
 **Run it**
 
@@ -963,7 +946,7 @@ Notice what just happened: you described what you wanted in plain English, and t
 python two/07_use_aws.py
 ```
 
-> ⚠️ **Handle with care.** `use_aws` can *modify* real resources. Stick to read-only requests ("list", "describe") while you learn, and always work in a sandbox account, never production. This is exactly why the consent prompt exists — read it before you type `y`.
+> ⚠️ **Handle with care.** `use_aws` can modify real resources. While you learn, stick to read-only requests such as "list" and "describe". Always use a sandbox account, never production. This is why the consent prompt exists. Read it before you type `y`.
 
 <a id="s15"></a>
 
@@ -975,7 +958,7 @@ python two/07_use_aws.py
 
 Section 15 · Hands-on
 
-When community tools don't fit — an internal API, a proprietary database, something new — you write your own. For example: an online store checking inventory.
+When community tools do not fit your need, write your own. This applies to an internal API, a private database, or a new action. Example: an online store checking inventory.
 
 **two/04_custom_tool_inventory.py**
 
@@ -1016,7 +999,7 @@ agent("Check inventory for PROD-789")
 agent("Can I order PROD-123 right now?")
 ```
 
-Note the mock dictionary: in production you'd replace it with real database queries or an API call. The *agent-facing* part — decorator, type hints, docstring — stays identical either way.
+Notice the mock dictionary. In production, you would replace it with real database queries or an API call. The part the agent sees stays the same: decorator, type hints, and docstring.
 
 **Run it**
 
@@ -1024,7 +1007,7 @@ Note the mock dictionary: in production you'd replace it with real database quer
 python two/04_custom_tool_inventory.py
 ```
 
-> 🔑 **Exercise — pick one of these.** Build a tool for a problem you actually care about. Ideas: check the weather in your city (call a weather API) · validate email format · calculate age from birthdate · calculate BMI · calculate shipping costs from weight and distance. *Don't worry if the logic is simple — what matters is seeing how a custom tool fits into the agent workflow.*
+> 🔑 **Exercise: pick one.** Build a tool for a problem you care about. Ideas: check the weather in your city by calling a weather API; validate email format; calculate age from birthdate; calculate BMI; calculate shipping costs from weight and distance. The logic can be simple. The goal is to see how a custom tool fits into the agent workflow.
 
 <a id="s16"></a>
 
@@ -1036,9 +1019,9 @@ python two/04_custom_tool_inventory.py
 
 Section 16 · Advanced
 
-This module closes with three scenarios where the plain `@tool` approach strains. Learn these as *"recognise it when it happens"*, not as something to memorise.
+This module ends with three cases where the plain `@tool` approach starts to strain. Learn them so you can recognise the pattern when it appears. You do not need to memorise them.
 
-The story: your agent has five tools, each opening its own database connection. Your DBA messages: *"Why is your agent opening 50 database connections per minute?"* Each tool call opens and closes a connection; multiply by concurrent users and the database drowns.
+Story: your agent has five tools. Each tool opens its own database connection. Your DBA asks, *"Why is your agent opening 50 database connections per minute?"* Each tool call opens and closes a connection. With many users at the same time, the database gets overloaded.
 
 **The fix:** group related tools in a class so they share one connection.
 
@@ -1107,7 +1090,7 @@ python two/08_class_based_tools.py
 
 ### 16.2 · Slow sequential calls → async tools
 
-If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make the tool `async` and they run in parallel.
+If three warehouse lookups take 2 seconds each, running them one after another takes 6 seconds. Make the tool `async` and they run in parallel.
 
 **two/09_async_tools.py**
 
@@ -1167,7 +1150,7 @@ await main()
 python two/09_async_tools.py
 ```
 
-> 🔑 **Great demo moment.** The printed timing is the lesson: roughly 2 seconds instead of 6. Run it yourself — you *see* concurrency instead of just reading about it. (The bare `await main()` works in a Jupyter cell; in a plain script use `asyncio.run(main())`.)
+> 🔑 **What to notice.** The printed timing is the lesson: roughly 2 seconds instead of 6. Run it yourself so you see concurrency, not just read about it. The bare `await main()` works in a Jupyter cell. In a plain script, use `asyncio.run(main())`.
 
 <a id="s17"></a>
 
@@ -1179,15 +1162,15 @@ python two/09_async_tools.py
 
 Section 17 · Capstone
 
-This project deliberately mirrors Diagram 3 (the travel planner), so you finish where Module 1 began — except this time you build it yourself. It exercises every skill from both modules: custom tools, multiple tools, a pre-built tool, a system prompt, and the agentic loop.
+This project mirrors Diagram 3, the travel planner. You finish where Module 1 began, but now you build it yourself. It uses every skill from both modules: custom tools, multiple tools, a pre-built tool, a system prompt, and the agentic loop.
 
-Build an agent that answers: *"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should I pack and what will it cost?"* — and actually reasons across weather, packing, and budget to answer it.
+Build an agent that answers: *"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should I pack and what will it cost?"* The agent should reason across weather, packing, and budget before it answers.
 
 | Tool | Job | Skill practised |
 | --- | --- | --- |
 | `get_weather_forecast` | Return conditions for a city and date range | Custom tool, mock data |
-| `suggest_packing_list` | Turn weather + trip length into a packing list | Tool that consumes another tool's output |
-| `estimate_trip_cost` | Rough cost from city, days, travellers | Numeric logic + dict return |
+| `suggest_packing_list` | Turn weather and trip length into a packing list | Tool that consumes another tool's output |
+| `estimate_trip_cost` | Estimate rough cost from city, days, and travellers | Numeric logic and a dict return |
 | `calculator` | Budget maths | Pre-built community tool |
 
 <a id="s17-starter-code"></a>
@@ -1325,19 +1308,19 @@ python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 
 ### What to observe together
 
-Notice that the agent calls `get_weather_forecast` **first**, then feeds those numbers into `suggest_packing_list`, then prices the trip and compares against the budget. Nobody wrote that sequence — the agentic loop worked it out. That is Diagram 9, running in your own terminal.
+Notice that the agent calls `get_weather_forecast` first. Then it feeds those numbers into `suggest_packing_list`. Then it prices the trip and compares it with the budget. Nobody wrote that sequence. The agentic loop worked it out. That is Diagram 9 running in your terminal.
 
 <a id="s17-extension-challenges"></a>
 
 ### Extension challenges
 
-- Easy — add a get_visa_requirements(country) tool and ask about an international trip.
-- Medium — replace the mock weather with a real API call using requests (this is exactly the pattern from Section 10).
-- Medium — regroup the three tools into a TravelTools class with shared state, per Section 16.1.
-- Harder — make the weather and cost lookups async so a multi-city comparison runs in parallel (Section 16.2).
-- Harder — add file_write from strands_tools and have the agent save an itinerary to disk.
+- Easy: add a `get_visa_requirements(country)` tool and ask about an international trip.
+- Medium: replace the mock weather with a real API call using `requests`. This uses the same pattern from Section 10.
+- Medium: regroup the three tools into a `TravelTools` class with shared state, as in Section 16.1.
+- Harder: make the weather and cost lookups `async` so a multi-city comparison runs in parallel. See Section 16.2.
+- Harder: add `file_write` from `strands_tools` and have the agent save an itinerary to disk.
 
-> 🔑 **How to know you have really got it.** You have genuinely understood these two modules if you can: (1) explain why the docstring matters, (2) add a fourth tool without help, (3) predict which tools the agent will call for a given question, and (4) debug a retired-model error on your own.
+> 🔑 **How to know you understand it.** You understand these two modules if you can do four things: (1) explain why the docstring matters, (2) add a fourth tool without help, (3) predict which tools the agent will call for a question, and (4) debug a retired-model error on your own.
 
 <a id="s17b"></a>
 
@@ -1349,7 +1332,7 @@ Notice that the agent calls `get_weather_forecast` **first**, then feeds those n
 
 Section 17b
 
-Copy-paste reference. Run all of these from the project root — the folder containing `config.py`.
+Use this as a copy-paste reference. Run every command from the project root, which is the folder that contains `config.py`.
 
 **Run it**
 
@@ -1409,24 +1392,24 @@ env | grep AWS               # what credentials are actually set?
 
 Section 18
 
-| Symptom | Cause & fix |
+| Symptom | Cause and fix |
 | --- | --- |
-| `ResourceNotFoundException … end of its life` / `marked by provider as Legacy` | Retired model. Run `python 01_list_models.py`, pick a live one, change `MODEL_ID` in `config.py`. |
-| `AccessDeniedException` | Model not enabled in Bedrock → Model access, or wrong region. Check both. |
-| `InvalidClientTokenId` | Credentials stale or deleted. Create a new access key and re-run `aws configure`. |
-| `ModuleNotFoundError: No module named 'strands'` | Wrong Python. Activate the venv; in Jupyter, switch the kernel. |
+| `ResourceNotFoundException … end of its life` /<br>`marked by provider as Legacy`<br> | Retired model. Run `python 01_list_models.py`, pick an active model, and change `MODEL_ID` in `config.py`. |
+| `AccessDeniedException` | The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both. |
+| `InvalidClientTokenId` | Credentials are stale or deleted. Create a new access key and rerun `aws configure`. |
+| `ModuleNotFoundError: No module named 'strands'` | Wrong Python. Activate the venv. In Jupyter, switch the kernel. |
 | Notebook cell stuck on `[*]` | A tool is waiting for consent. Type `y` at the hidden prompt, or set `BYPASS_TOOL_CONSENT="true"` in an earlier cell. |
-| Terminal shows `quote>` or `:` and seems frozen | `quote>` = unclosed quote, press Ctrl+C. `:` = the AWS CLI pager, press `q`. Set `export AWS_PAGER=""` to stop it. |
-| Agent ignores your tool | Weak docstring or missing type hints. Rewrite the description to say plainly when it should be used. |
+| Terminal shows `quote>` or `:` and seems frozen | `quote>` means an unclosed quote. Press Ctrl+C. `:` is the AWS CLI pager. Press `q`. Set `export AWS_PAGER=""` to stop it. |
+| Agent ignores your tool | The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used. |
 | `ModuleNotFoundError: No module named 'config'` | You ran from inside a subfolder. Run from the project root: `python one/01_hello_world_agent.py`. |
-| Worked yesterday, fails today | Almost always expired SSO credentials. Paste a fresh block, then `python 00_check_setup.py`. |
+| Worked yesterday but fails today | Usually expired SSO credentials. Paste a fresh block, then run `python 00_check_setup.py`. |
 
 <a id="s18-the-five-sentences-to-remember"></a>
 
 ### The five sentences to remember
 
-1. RAG gives a model better information; tools give it the ability to act.
+1. RAG gives a model better information. Tools give it the ability to act.
 2. An agent is a loop: reason → call a tool → read the result → repeat until done.
-3. A tool is just a Python function plus a decorator, type hints, and a good docstring.
-4. The docstring is the model's user manual — write it for the model, not for yourself.
-5. Build small, single-purpose tools; the agent handles the sequencing.
+3. A tool is a Python function plus a decorator, type hints, and a good docstring.
+4. The docstring is the model's user manual. Write it for the model, not for yourself.
+5. Build small, single-purpose tools. The agent handles the sequence.

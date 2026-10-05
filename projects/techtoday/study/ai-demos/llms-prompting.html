@@ -7,13 +7,13 @@
   <meta name="theme-color" content="#0b0d10" />
   <title>LLMs &amp; Prompting | TechToday</title>
   <meta name="description"
-    content="AI Engineering fundamentals: how LLMs work, tokens, temperature, self-supervision, your first API call, and two shipped mini-projects — an AI Website Summarizer and a mini LLM Arena." />
+    content="AI Engineering basics: how LLMs work, tokens, temperature, self-supervision, your first API call, and two mini-projects you can ship — an AI Website Summarizer and a mini LLM Arena." />
   <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../dsa/dsa-study.css" />
   <link rel="stylesheet" href="../../site-header.css" />
   <style>
     body.is-ai .study>h1:first-child::before {
-      content: "Beginner friendly · Build & ship today";
+      content: "Beginner friendly · Build and ship today";
     }
 
     .study>h1 em,
@@ -27,27 +27,12 @@
       color: var(--muted);
       font-size: 12px;
       font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .viz-label:first-child {
       margin-top: 0;
-    }
-
-    .viz-input {
-      width: 100%;
-      padding: 10px 12px;
-      color: var(--text);
-      background: var(--code);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      font: inherit;
-      font-size: 14px;
-      resize: vertical;
-    }
-
-    .viz-input:focus {
-      outline: none;
-      border-color: var(--accent);
     }
 
     .viz-stage.is-text {
@@ -56,7 +41,8 @@
       line-height: 1.6;
     }
 
-    .viz-stage.is-text ul {
+    .viz-stage.is-text ul,
+    .viz-stage.is-text ol {
       margin: 6px 0;
       padding-left: 20px;
     }
@@ -66,18 +52,6 @@
       color: var(--muted);
       font-size: 12.5px;
       font-style: italic;
-    }
-
-    .viz-btn.is-right {
-      color: var(--page);
-      background: var(--green);
-      border-color: var(--green);
-    }
-
-    .viz-btn.is-wrong {
-      color: var(--page);
-      background: var(--red);
-      border-color: var(--red);
     }
 
     .tok {
@@ -117,7 +91,6 @@
       height: 100%;
       min-width: 2px;
       background: var(--accent);
-      transition: width 0.3s ease;
     }
 
     .prob-pct {
@@ -197,54 +170,34 @@
       text-transform: uppercase;
     }
 
-    .msg.thought {
-      border-left-color: var(--blue);
+    .msg.thought { border-left-color: var(--blue); }
+    .msg.action { border-left-color: var(--accent); }
+    .msg.obs { border-left-color: var(--cyan); }
+    .msg.answer { border-left-color: var(--green); }
+
+    .static-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13.5px;
     }
 
-    .msg.action {
-      border-left-color: var(--accent);
+    .static-table th,
+    .static-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      vertical-align: top;
     }
 
-    .msg.obs {
-      border-left-color: var(--cyan);
-    }
-
-    .msg.answer {
-      border-left-color: var(--green);
-    }
-
-    .card-grid li.is-act {
-      border-color: var(--accent);
-    }
-
-    .card-grid li.is-done {
-      border-left: 3px solid var(--green);
-    }
-
-    .card-grid li.is-done b::after {
-      content: " ✅";
-    }
-
-    .typing::after {
-      content: "▋";
+    .static-table th {
       color: var(--accent);
-      animation: blink 1s steps(2) infinite;
-    }
-
-    @keyframes blink {
-      50% {
-        opacity: 0;
-      }
+      background: var(--surface-raised);
+      text-align: left;
     }
 
     @media (max-width: 640px) {
-      .duo {
-        grid-template-columns: 1fr;
-      }
-
-      .prob-word {
-        width: 84px;
-      }
+      .duo { grid-template-columns: 1fr; }
+      .prob-word { width: 84px; }
     }
   </style>
 </head>
@@ -268,7 +221,7 @@
           <li><a href="#why">Why Now: The AI Inflection</a></li>
           <li><a href="#llm">How LLMs Really Work</a></li>
           <li><a href="#magic">The Fill-in-the-Blank Trick</a></li>
-          <li><a href="#build">What You'll Build</a></li>
+          <li><a href="#build">What You Will Build</a></li>
           <li><a href="#aie">The AI Engineer Role</a></li>
           <li><a href="#connect">Connect to Models in Code</a></li>
           <li><a href="#project">Build &amp; Ship Your Apps</a></li>
@@ -278,36 +231,32 @@
     </nav>
     <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
     <article class="study">
-      <h1 id="llms-and-prompting">By the end of <em>today</em>, you'll have shipped <em>two</em> AI apps.<a
+      <h1 id="llms-and-prompting">By the end, you will have shipped <em>two</em> AI apps.<a
           class="headerlink" href="#llms-and-prompting" title="Permanent link">#</a></h1>
 
-      <p class="lede">No PhD. No math. No machine learning background. In one sitting you'll understand how AI
-        <em>actually</em> works — and you'll build <strong>two</strong> real, shareable apps: an <strong>AI
-          Website Summarizer</strong> and a mini <strong>LLM Arena</strong>. Let's go.
+      <p class="lede">You do not need a PhD, advanced math or a machine learning background. In one sitting, you will learn how AI <em>actually</em> works. You will also build <strong>two</strong> real apps you can share: an <strong>AI Website Summarizer</strong> and a mini <strong>LLM Arena</strong>.
       </p>
 
       <ul class="meta-strip">
-        <li>🧠 How LLMs really work</li>
-        <li>🪄 The "fill-in-the-blank" trick</li>
-        <li>🛠️ Your first 6 lines of code</li>
-        <li>🎛️ Two real AI apps</li>
+        <li>🧠 How LLMs work</li>
+        <li>🪄 The fill-in-the-blank trick</li>
+        <li>🛠️ Your first six lines of code</li>
+        <li>🎛️ Two AI apps</li>
         <li>🥊 Summarizer + LLM Arena</li>
       </ul>
 
       <div class="callout callout-key">
-        <p><strong>The promise.</strong> You walk in curious. You walk out having <strong>built and
-            shared two working AI apps</strong> — ahead of 99% of people who only <em>talk</em> about AI.
+        <p><strong>The promise.</strong> You start with curiosity. You finish with <strong>two working AI apps</strong> that you can share. That puts you ahead of 99% of people who only <em>talk</em> about AI.
         </p>
       </div>
 
-      <p><strong>Scaler Academy</strong> — everything below is interactive. <strong>Click the simulators</strong>
-        as we go.</p>
+      <p><strong>Scaler Academy</strong> — each topic includes worked examples with real inputs and outputs.</p>
 
       <div class="course-toolbar">
         <div class="course-toolbar-info">
           <span>8 Topics</span>
           <span class="dot">&bull;</span>
-          <span>Concepts, Live Simulators &amp; Two Mini-Projects</span>
+          <span>Concepts, Worked Examples &amp; Two Mini-Projects</span>
         </div>
       </div>
       <div class="course-toolbar-actions">
@@ -332,7 +281,7 @@
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-why">
           <div class="topic-header-main">
             <span class="topic-badge">1</span>
-            <h2 id="why" class="topic-title">Why Is AI Suddenly <em>Everywhere</em>?<a class="headerlink" href="#why"
+            <h2 id="why" class="topic-title">Why AI Is <em>Everywhere</em> Now<a class="headerlink" href="#why"
                 title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -347,7 +296,7 @@
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-why-history">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">70 Years of AI, Compressed<a class="headerlink" href="#why-history"
+                <h3 class="part-heading">70 Years of AI in Short<a class="headerlink" href="#why-history"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -360,28 +309,19 @@
               <ul class="meta-strip">
                 <li><b>Block 1</b> ~15 min · the hook</li>
               </ul>
-              <p>AI is not new — it's <strong>70 years old</strong>. So why did it explode in
-                <em>your</em> feed only recently? Two things changed, and they changed everything about
-                what <em>you</em> can build.
+              <p>AI is not new. It is <strong>70 years old</strong>. So why did it show up in <em>your</em> feed only recently? Two things changed. They changed what <em>you</em> can build.
               </p>
               <ol>
                 <li><strong>1950s–2000s — AI is a research lab thing.</strong> Decades of slow
                   progress. You needed a PhD, a university, and years to do anything useful.</li>
-                <li><strong>2017 — The "Transformer" is invented.</strong> A new model design that
-                  learns language astonishingly well. This is the engine inside GPT, Claude, Gemini.
+                <li><strong>2017 — The “Transformer” is invented.</strong> A new model design learns language very well. This is the engine inside GPT, Claude, Gemini.
                 </li>
                 <li><strong>Nov 2022 — ChatGPT launches.</strong> The fastest-adopted product in
                   history. Suddenly everyone can <em>talk</em> to AI.</li>
-                <li><strong>Now → you — Anyone can build on top of it.</strong> The hardest part is
-                  done by giant labs. You just <em>call</em> their AI with a few lines of code. That's
-                  what you'll learn here.</li>
+                <li><strong>Now → you — anyone can build on top of it.</strong> Giant labs do the hardest part. You <em>call</em> their AI with a few lines of code. That is what you will learn here.</li>
               </ol>
               <div class="callout callout-key">
-                <p><strong>🤯 The wow that defines our era.</strong> Something that used to need
-                  <strong>a team + 6 months + a data warehouse</strong> can now be built by
-                  <strong>one person in an afternoon</strong> with an internet connection. That
-                  collapse in cost is why "AI Engineer" is one of the fastest-growing jobs on the
-                  planet — and why you're in the right room.
+                <p><strong>Why this matters now.</strong> Something that used to need <strong>a team + 6 months + a data warehouse</strong> can now be built by <strong>one person in an afternoon</strong> with an internet connection. This cost drop is why “AI Engineer” is one of the fastest-growing jobs on the planet.
                 </p>
               </div>
             </div>
@@ -405,7 +345,7 @@
                 <span class="analogy-icon">🌐</span>
                 <div class="analogy-body">
                   <b>1. The model is general-purpose</b>
-                  <p>Old AI did <em>one</em> task (spam-or-not). Today's AI does <em>thousands</em> —
+                  <p>Old AI did <em>one</em> task, such as spam-or-not. Today's AI does <em>thousands</em> —
                     write, summarise, translate, code, answer — all from the same model. One brain,
                     endless uses.</p>
                 </div>
@@ -413,16 +353,14 @@
               <div class="analogy">
                 <span class="analogy-icon">🚪</span>
                 <div class="analogy-body">
-                  <b>2. The barrier to entry collapsed</b>
-                  <p>You don't build the AI. You <em>use</em> it through a simple API — like ordering
-                    food through an app instead of running a kitchen. If you can call a function,
-                    you can build with AI.</p>
+                  <b>2. The barrier to entry is much lower</b>
+                  <p>You do not build the AI. You <em>use</em> it through a simple API. It is like ordering food through an app instead of running a kitchen. If you can call a function, you can build with AI.</p>
                 </div>
               </div>
               <div class="callout callout-tip">
-                <p><strong>🎙️ Speaker note.</strong> Make this personal: ask the room "what took you
+                <p><strong>Teaching note.</strong> Make this personal: ask the room "what took you
                   forever last week that an AI could've drafted in 30 seconds?" Everyone has an
-                  answer. <em>That</em> gap is the opportunity we're learning to fill.</p>
+                  answer. <em>That</em> gap is the opportunity we are learning to fill.</p>
               </div>
             </div>
           </div>
@@ -434,7 +372,7 @@
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-llm">
           <div class="topic-header-main">
             <span class="topic-badge">2</span>
-            <h2 id="llm" class="topic-title">What Is an LLM, <em>Really?</em><a class="headerlink" href="#llm"
+            <h2 id="llm" class="topic-title">What an LLM <em>Is</em><a class="headerlink" href="#llm"
                 title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -450,7 +388,7 @@
               aria-controls="body-llm-autocomplete">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">Super-Autocomplete<a class="headerlink" href="#llm-autocomplete"
+                <h3 class="part-heading">Super-autocomplete<a class="headerlink" href="#llm-autocomplete"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -463,16 +401,13 @@
               <ul class="meta-strip">
                 <li><b>Block 2</b> ~25 min</li>
               </ul>
-              <p>LLM = <strong>Large Language Model</strong>. Strip the hype and it does exactly one
-                thing, unbelievably well: <strong>it predicts the next chunk of text.</strong>
-                Everything — chat, code, summaries — is built on that single trick.</p>
+              <p>LLM = <strong>Large Language Model</strong>. In simple terms, it does one thing very well: <strong>it predicts the next chunk of text.</strong>
+                Chat, code and summaries all build on that one trick.</p>
               <div class="analogy">
                 <span class="analogy-icon">⌨️</span>
                 <div class="analogy-body">
                   <b>The "super-autocomplete" mental model</b>
-                  <p>Your phone suggests the next word as you type. An LLM is that idea scaled up
-                    <em>a billion times</em> and trained on much of the internet — so its guesses
-                    are good enough to write essays, code and answers.
+                  <p>Your phone suggests the next word as you type. An LLM is that idea scaled up <em>a billion times</em> and trained on much of the internet. Its guesses are good enough to write essays, code and answers.
                   </p>
                 </div>
               </div>
@@ -493,60 +428,55 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-llm-tokens">
-              <p>A model doesn't read letters or words — it reads <strong>tokens</strong> (pieces
-                roughly ¾ of a word). It thinks in tokens and you pay per token, so let's <em>see</em>
-                them. Type anything:</p>
+              <p>A model does not read letters or full words. It reads <strong>tokens</strong>, which are pieces roughly ¾ of a word. It thinks in tokens and you pay per token. Here is a worked example.</p>
 
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · Tokenizer playground</span><span
-                    class="viz-step">type → watch it split into tokens</span></div>
-                <label class="viz-label" for="tokInput">Your text</label>
-                <textarea class="viz-input" id="tokInput"
-                  rows="2">AI Engineering is surprisingly approachable!</textarea>
-                <div class="viz-stage is-text" id="tokOut" style="margin-top:12px;line-height:2.2"></div>
-                <ul class="meta-strip" style="margin:12px 0 0">
-                  <li><b id="tokCount">0</b> tokens</li>
-                  <li><b id="charCount">0</b> characters</li>
-                  <li><b id="costEst">$0</b> cost @ $5/1M tok</li>
-                </ul>
-                <div class="viz-note">Notice: common words = 1 token; rare/long words get chopped into
-                  pieces. <strong>Rough rule: 1 token ≈ ¾ of a word ≈ 4 characters.</strong></div>
+                <div class="viz-head"><span class="viz-title">Example · Tokenizer playground</span><span
+                    class="viz-step">worked output from the tokenizer script</span></div>
+                <div class="viz-stage is-text" style="line-height:2.2">
+                  <span class="viz-label">Input</span>
+                  <p><code>AI Engineering is surprisingly approachable!</code></p>
+                  <span class="viz-label">Tokens</span>
+                  <p><span class="tok" style="background:rgba(224,175,104,.16);color:#f2c98a">AI</span> <span class="tok" style="background:rgba(78,201,176,.16);color:#4ec9b0">Engi</span><span class="tok" style="background:rgba(140,200,255,.16);color:#8cc8ff">neer</span><span class="tok" style="background:rgba(115,201,145,.16);color:#73c991">ing</span> <span class="tok" style="background:rgba(197,134,192,.16);color:#c586c0">is</span> <span class="tok" style="background:rgba(224,175,104,.16);color:#f2c98a">surp</span><span class="tok" style="background:rgba(78,201,176,.16);color:#4ec9b0">risi</span><span class="tok" style="background:rgba(140,200,255,.16);color:#8cc8ff">ngly</span> <span class="tok" style="background:rgba(115,201,145,.16);color:#73c991">appr</span><span class="tok" style="background:rgba(197,134,192,.16);color:#c586c0">oach</span><span class="tok" style="background:rgba(224,175,104,.16);color:#f2c98a">able</span><span class="tok" style="background:rgba(78,201,176,.16);color:#4ec9b0">!</span></p>
+                  <ul class="meta-strip" style="margin:12px 0 0">
+                    <li><b>12</b> tokens</li>
+                    <li><b>44</b> characters</li>
+                    <li><b>$0.000060</b> cost @ $5/1M tok</li>
+                  </ul>
+                  <span class="viz-label">Rare-word example</span>
+                  <p><code>unbelievableness</code> becomes <span class="tok" style="background:rgba(224,175,104,.16);color:#f2c98a">unbe</span><span class="tok" style="background:rgba(78,201,176,.16);color:#4ec9b0">liev</span><span class="tok" style="background:rgba(140,200,255,.16);color:#8cc8ff">able</span><span class="tok" style="background:rgba(115,201,145,.16);color:#73c991">ness</span>.</p>
+                  <ul class="meta-strip" style="margin:12px 0 0">
+                    <li><b>4</b> tokens</li>
+                    <li><b>16</b> characters</li>
+                    <li><b>$0.000020</b> cost @ $5/1M tok</li>
+                  </ul>
+                </div>
+                <div class="viz-note">Common words often stay as one token. Rare or long words are cut into pieces. <strong>Rough rule: 1 token ≈ ¾ of a word ≈ 4 characters.</strong></div>
               </div>
 
               <h4>But why tokens — why not just whole words, or single letters?</h4>
-              <p>This is a clever engineering trade-off. The model needs a fixed list of "things it
-                knows" (its <strong>vocabulary</strong>). Words and letters both fail at the extremes —
-                tokens sit in the sweet spot:</p>
+              <p>This is an engineering trade-off. The model needs a fixed list of "things it
+                knows" (its <strong>vocabulary</strong>). Whole words and single letters both cause problems. Tokens sit in the useful middle:</p>
               <ul class="card-grid">
-                <li class="is-bad"><b>❌ One token per word</b>There are <em>millions</em> of words
-                  across all languages, plus names, typos, slang &amp; new words daily. The vocabulary
-                  would be impossibly huge — and it would freeze the first time it met a word it had
-                  never seen.</li>
-                <li class="is-bad"><b>❌ One token per letter</b>Only ~100 symbols — tiny vocabulary —
-                  but now every sentence is hundreds of tokens long. Slow, expensive, and the model
-                  has to relearn spelling from scratch every time.</li>
-                <li class="is-good"><b>✅ Tokens (sub-words)</b>A vocabulary of ~100k common chunks.
-                  Frequent words stay whole; anything rare is built from pieces. Best of both: compact
-                  <em>and</em> it can spell out <em>any</em> word it's never seen.
+                <li class="is-bad"><b>❌ One token per word</b>There are <em>millions</em> of words across all languages, plus names, typos, slang and new words every day. The vocabulary would be too large, and it would fail on a word it had never seen.</li>
+                <li class="is-bad"><b>❌ One token per letter</b>There are only ~100 symbols, so the vocabulary is small. But every sentence becomes hundreds of tokens. That is slow and expensive, and the model has to learn spelling from scratch.</li>
+                <li class="is-good"><b>✅ Tokens (sub-words)</b>A vocabulary of ~100k common chunks. Frequent words stay whole. Rare words are built from pieces. This is compact, and it can spell <em>any</em> new word.
                 </li>
               </ul>
-              <p>Concrete example — a word the model probably never saw in training still works fine,
-                because it's assembled from familiar pieces:</p>
+              <p>Here is a concrete example. A rare word still works because it is assembled from familiar pieces:</p>
               <blockquote>
                 <p><strong>How a rare word gets built:</strong> <code>"unbelievableness"</code> →
                   <code>un</code> <code>believ</code> <code>able</code> <code>ness</code>
                 </p>
-                <p>Four known tokens, zero panic. Meanwhile <code>"the"</code>, <code>"cat"</code>,
-                  <code>"is"</code> are each a single token. That's why <strong>tokens were
-                    chosen</strong>: they let one fixed vocabulary handle every word in every
-                  language — even ones invented tomorrow.
+                <p>Four known tokens are enough. Meanwhile <code>"the"</code>, <code>"cat"</code>,
+                  <code>"is"</code> are each a single token. That is why <strong>tokens were chosen</strong>. One fixed vocabulary can handle every word in every language, even words invented tomorrow.
                 </p>
               </blockquote>
               <div class="callout callout-tip">
-                <p><strong>Why you'll feel this as an engineer.</strong> English is "cheap" (≈¾ word
+                <p><strong>Why this matters when you build.</strong> English is "cheap" (≈¾ word
                   per token). Code, emojis, and many non-English scripts use <em>more</em> tokens per
                   character — so the same sentence in Hindi or Tamil can cost noticeably more tokens
-                  than in English. Worth knowing when you price an app.</p>
+                  than in English. Keep this in mind when you price an app.</p>
               </div>
             </div>
           </div>
@@ -556,7 +486,7 @@
               aria-controls="body-llm-next-token">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">Then: It Predicts the Next Token — Over and Over<a class="headerlink"
+                <h3 class="part-heading">Then It Predicts the Next Token Again and Again<a class="headerlink"
                     href="#llm-next-token" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -566,42 +496,52 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-llm-next-token">
-              <p>Given the tokens so far, the model scores <strong>every possible next token</strong>
-                with a probability, picks one, adds it, and repeats. That loop <em>is</em> "generating
-                text".</p>
+              <p>Given the tokens so far, the model gives <strong>every possible next token</strong> a probability. It picks one, adds it, and repeats. That loop <em>is</em> “generating text”.</p>
               <div class="analogy">
                 <span class="analogy-icon">🎲</span>
                 <div class="analogy-body">
                   <b>Temperature = the creativity dial</b>
-                  <p><strong>Low</strong> → always pick the most likely word → focused &amp;
-                    repeatable. <strong>High</strong> → sometimes pick surprising words → creative
-                    &amp; varied. Drag the slider and watch the probabilities reshape:</p>
+                  <p><strong>Low</strong> means the model usually picks the most likely word. The output is focused and repeatable. <strong>High</strong> gives surprising words more chance. The output is more creative and varied. The table shows the probabilities.</p>
                 </div>
               </div>
 
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · Next-token &amp;
+                <div class="viz-head"><span class="viz-title">Example · Next-token &amp;
                     temperature</span><span class="viz-step">prompt: "I love building things in
                     ___"</span></div>
-                <div class="viz-controls" style="margin-top:0">
-                  <span class="viz-label" style="margin:0">Temperature</span>
-                  <code id="tempVal">0.7</code>
-                  <span class="viz-step" id="tempLabel">balanced</span>
-                  <input type="range" min="0" max="150" value="70" class="viz-scrub" id="tempSlider"
-                    aria-label="Temperature">
-                </div>
-                <div class="viz-stage is-text" id="probBars" style="margin-top:12px"></div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="sampleBtn">🎲 Sample a
-                    token</button>
-                  <span id="sampleOut"></span>
+                <div class="viz-stage is-text">
+                  <p>In this example, the model gives six possible next tokens these raw scores (logits): <code>Python=3.2</code>, <code>JavaScript=2.4</code>, <code>Rust=1.6</code>, <code>public=0.9</code>, <code>spreadsheets=0.3</code>, <code>bananas=-1.2</code>.</p>
+                  <table class="static-table">
+                    <thead><tr><th>Temperature</th><th>What the label means</th><th>Probability of each token</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>0.20</code></td><td>❄️ focused</td><td><div class="prob-row"><div class="prob-word">Python</div><div class="prob-track"><div class="prob-fill" style="width:98.2%"></div></div><div class="prob-pct">98.2%</div></div>
+<div class="prob-row"><div class="prob-word">JavaScript</div><div class="prob-track"><div class="prob-fill" style="width:1.8%"></div></div><div class="prob-pct">1.8%</div></div>
+<div class="prob-row"><div class="prob-word">Rust</div><div class="prob-track"><div class="prob-fill" style="width:0.0%"></div></div><div class="prob-pct">0.0%</div></div>
+<div class="prob-row"><div class="prob-word">public</div><div class="prob-track"><div class="prob-fill" style="width:0.0%"></div></div><div class="prob-pct">0.0%</div></div>
+<div class="prob-row"><div class="prob-word">spreadsheets</div><div class="prob-track"><div class="prob-fill" style="width:0.0%"></div></div><div class="prob-pct">0.0%</div></div>
+<div class="prob-row"><div class="prob-word">bananas</div><div class="prob-track"><div class="prob-fill" style="width:0.0%"></div></div><div class="prob-pct">0.0%</div></div></td></tr>
+                      <tr><td><code>0.70</code></td><td>⚖️ balanced</td><td><div class="prob-row"><div class="prob-word">Python</div><div class="prob-track"><div class="prob-fill" style="width:67.8%"></div></div><div class="prob-pct">67.8%</div></div>
+<div class="prob-row"><div class="prob-word">JavaScript</div><div class="prob-track"><div class="prob-fill" style="width:21.6%"></div></div><div class="prob-pct">21.6%</div></div>
+<div class="prob-row"><div class="prob-word">Rust</div><div class="prob-track"><div class="prob-fill" style="width:6.9%"></div></div><div class="prob-pct">6.9%</div></div>
+<div class="prob-row"><div class="prob-word">public</div><div class="prob-track"><div class="prob-fill" style="width:2.5%"></div></div><div class="prob-pct">2.5%</div></div>
+<div class="prob-row"><div class="prob-word">spreadsheets</div><div class="prob-track"><div class="prob-fill" style="width:1.1%"></div></div><div class="prob-pct">1.1%</div></div>
+<div class="prob-row"><div class="prob-word">bananas</div><div class="prob-track"><div class="prob-fill" style="width:0.1%"></div></div><div class="prob-pct">0.1%</div></div></td></tr>
+                      <tr><td><code>1.50</code></td><td>🔥 creative</td><td><div class="prob-row"><div class="prob-word">Python</div><div class="prob-track"><div class="prob-fill" style="width:42.7%"></div></div><div class="prob-pct">42.7%</div></div>
+<div class="prob-row"><div class="prob-word">JavaScript</div><div class="prob-track"><div class="prob-fill" style="width:25.0%"></div></div><div class="prob-pct">25.0%</div></div>
+<div class="prob-row"><div class="prob-word">Rust</div><div class="prob-track"><div class="prob-fill" style="width:14.7%"></div></div><div class="prob-pct">14.7%</div></div>
+<div class="prob-row"><div class="prob-word">public</div><div class="prob-track"><div class="prob-fill" style="width:9.2%"></div></div><div class="prob-pct">9.2%</div></div>
+<div class="prob-row"><div class="prob-word">spreadsheets</div><div class="prob-track"><div class="prob-fill" style="width:6.2%"></div></div><div class="prob-pct">6.2%</div></div>
+<div class="prob-row"><div class="prob-word">bananas</div><div class="prob-track"><div class="prob-fill" style="width:2.3%"></div></div><div class="prob-pct">2.3%</div></div></td></tr>
+                    </tbody>
+                  </table>
+                  <p>Sampling chooses one token using these probabilities. At low temperature, <code>Python</code> almost always wins. At high temperature, lower-ranked words get a real chance.</p>
                 </div>
               </div>
 
               <div class="callout callout-tip">
                 <p><strong>This is a real engineering choice.</strong> A support bot wants
                   <em>temperature ≈ 0.2</em> (consistent). A brainstorming tool wants <em>≈ 1.0</em>
-                  (varied). You'll set this on day one of any real project — including today's.
+                  (varied). You set this early in any real project, including this one.
                 </p>
               </div>
             </div>
@@ -611,7 +551,7 @@
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-llm-memory">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">One More Truth: The Model Has No Memory<a class="headerlink" href="#llm-memory"
+                <h3 class="part-heading">One More Fact: The Model Has No Memory<a class="headerlink" href="#llm-memory"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -621,12 +561,11 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-llm-memory">
-              <p>Between calls, an LLM forgets everything. Anything it should "know" in a conversation
+              <p>Between API calls, an LLM forgets everything. Anything it should "know" in a conversation
                 must be <strong>re-sent every time</strong>, inside a limited <strong>context
-                  window</strong> (measured in tokens). This one fact quietly explains a huge amount
-                of AI engineering.</p>
+                  window</strong> (measured in tokens). This fact explains a large part of AI engineering.</p>
               <ul class="card-grid">
-                <li><b>🔤 Tokens, not words</b>It reads, thinks &amp; bills in tokens.</li>
+                <li><b>🔤 Tokens, not words</b>It reads, reasons and bills in tokens.</li>
                 <li><b>🎯 Predicts next token</b>All abilities emerge from this loop.</li>
                 <li><b>🌡️ Temperature</b>Low = focused, high = creative.</li>
                 <li><b>🪟 No memory</b>You resend context each time.</li>
@@ -641,7 +580,7 @@
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-magic">
           <div class="topic-header-main">
             <span class="topic-badge">3</span>
-            <h2 id="magic" class="topic-title">The Trick That Made All of This <em>Possible</em><a class="headerlink"
+            <h2 id="magic" class="topic-title">The Fill-in-the-Blank Trick<a class="headerlink"
                 href="#magic" title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -668,54 +607,54 @@
             </div>
             <div class="part-body" id="body-magic-self-supervision">
               <ul class="meta-strip">
-                <li><b>Block 3</b> ~15 min · the "aha"</li>
+                <li><b>Block 3</b> ~15 min · the core idea</li>
               </ul>
-              <p>Here's the part that makes people go "ohhh". How do you teach a machine language
-                without an army of humans labelling billions of examples? You let it <strong>play
-                  fill-in-the-blank with the entire internet.</strong></p>
+              <p>Here is the core idea. How do you teach a machine language without humans labelling billions of examples? You let it <strong>play fill-in-the-blank with the entire internet.</strong></p>
               <div class="analogy">
                 <span class="analogy-icon">📚</span>
                 <div class="analogy-body">
                   <b>The old way (slow &amp; expensive)</b>
                   <p>Humans hand-label data: "this email = spam", "this review = positive". Accurate,
-                    but you need millions of labelled examples. Painfully slow.</p>
+                    but you need millions of labelled examples. Very slow.</p>
                 </div>
               </div>
               <div class="analogy">
                 <span class="analogy-icon">🪄</span>
                 <div class="analogy-body">
-                  <b>The clever shortcut: self-supervision</b>
+                  <b>The shortcut: self-supervision</b>
                   <p>Take any sentence from the web, <em>hide a word</em>, and ask the model to guess
-                    it. The answer is <strong>already in the text</strong> — so the internet becomes
-                    its own teacher. No humans needed. Trillions of free practice questions.</p>
+                    it. The answer is <strong>already in the text</strong>, so the internet becomes its own teacher. No humans are needed. The model gets trillions of practice questions.</p>
                 </div>
               </div>
 
-              <p>Try being the model for a second — guess the hidden word:</p>
+              <p>Here is the hidden-word example:</p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · Guess the hidden
+                <div class="viz-head"><span class="viz-title">Example · Guess the hidden
                     word</span></div>
                 <div class="viz-stage is-text">
-                  <div class="mask-sent">The barista handed me a hot cup of <span class="mask-blank"
-                      id="maskBlank">______</span>.</div>
-                  <div class="viz-controls" id="maskGuesses" style="justify-content:center"></div>
+                  <div class="mask-sent">The barista handed me a hot cup of <span class="mask-blank">coffee</span>.</div>
+                  <table class="static-table">
+                    <thead><tr><th>Guess</th><th>Result</th><th>Feedback from the original example</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>coffee</code></td><td><strong>Correct</strong></td><td>Exactly. To know this, the model learned context, grammar and facts about the world. That is self-supervision.</td></tr>
+                      <tr><td><code>tea</code></td><td><strong>Close</strong></td><td>Reasonable. “Tea” also works, so the model learns that several answers can be good, with different probabilities.</td></tr>
+                      <tr><td><code>bicycle</code></td><td>Wrong</td><td>Not quite. Wrong guesses are part of how the model learns.</td></tr>
+                      <tr><td><code>sadness</code></td><td>Wrong</td><td>Not quite. After billions of these practice questions, the model gets very good at choosing likely words.</td></tr>
+                    </tbody>
+                  </table>
                 </div>
-                <div class="viz-note" id="maskMsg">Pick the word you think fills the blank.</div>
+                <div class="viz-note">The model is trained on this kind of hidden-word task at huge scale.</div>
               </div>
 
               <div class="callout callout-key">
-                <p><strong>🤯 Why this changes everything.</strong> You just did what the model does
-                  <strong>billions of times</strong>. To guess "coffee", it had to quietly learn
-                  grammar, context, what baristas do, what's hot, what fits in a cup…
-                  <em>Understanding emerges as a side-effect of getting really good at
-                    fill-in-the-blank.</em> That's the whole secret behind ChatGPT.
+                <p><strong>Why this changes everything.</strong> The model does this <strong>billions of times</strong>. To guess “coffee”, it has to learn grammar, context, what baristas do, what is hot and what fits in a cup. <em>Understanding emerges as a side effect of getting very good at fill-in-the-blank.</em> That is the main idea behind ChatGPT.
                 </p>
               </div>
               <div class="callout callout-warn">
-                <p><strong>Keep it honest (mention this).</strong> Because it learned by predicting
+                <p><strong>Keep it honest.</strong> Because it learned by predicting
                   plausible text, an LLM can sometimes produce confident-sounding <em>wrong</em>
                   answers — called <strong>hallucinations</strong>. A big part of our job as AI
-                  engineers is designing around that (e.g. feeding it real documents — we'll see that
+                  engineers is designing around that (e.g. feeding it real documents — we will see that
                   later). Trust, but verify.</p>
               </div>
             </div>
@@ -728,7 +667,7 @@
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-build">
           <div class="topic-header-main">
             <span class="topic-badge">4</span>
-            <h2 id="build" class="topic-title">So… What Can You Actually <em>Build?</em><a class="headerlink"
+            <h2 id="build" class="topic-title">What You Can <em>Build</em> With AI<a class="headerlink"
                 href="#build" title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -757,9 +696,7 @@
               <ul class="meta-strip">
                 <li><b>Block 4</b> ~15 min</li>
               </ul>
-              <p>First, a quick upgrade to your mental model. Modern AI isn't just about text anymore —
-                it can also see, hear and speak. We call these <strong>foundation models</strong>: one
-                giant general-purpose brain you adapt to many jobs.</p>
+              <p>First, update your mental model. Modern AI is not just text. It can also see, hear and speak. We call these <strong>foundation models</strong>: one giant general-purpose model that you adapt to many jobs.</p>
               <figure class="figure mermaid-fig">
                 <pre class="mermaid">
 flowchart LR
@@ -793,11 +730,10 @@ flowchart LR
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-build-use-cases">
-              <p>Almost every AI product you've seen falls into one of these buckets. Find
-                <em>your</em> idea here:
+              <p>Almost every AI product you have seen fits one of these groups. Find <em>your</em> idea here:
               </p>
               <ul class="card-grid">
-                <li><b>💻 Coding</b>Write, explain &amp; fix code. The #1 use case today.
+                <li><b>💻 Coding</b>Write, explain &amp; fix code. The number 1 use case today.
                   <code>Copilot · Cursor</code>
                 </li>
                 <li><b>✍️ Writing</b>Emails, blogs, marketing copy, rewriting. <code>Jasper · Notion
@@ -805,13 +741,12 @@ flowchart LR
                 <li><b>🎨 Image &amp; Video</b>Generate art, edit photos, make clips.
                   <code>Midjourney</code>
                 </li>
-                <li><b>🎓 Education</b>Personal tutors that explain anything, your pace.
+                <li><b>🎓 Education</b>Personal tutors that explain anything at your pace.
                   <code>Khanmigo</code>
                 </li>
                 <li><b>💬 Chatbots</b>Support, sales &amp; assistants that converse. <code>Intercom
                                         Fin</code></li>
-                <li class="is-good"><b>📥 Info Aggregation</b>Summarise &amp; search across mountains of
-                  text. <code>★ today's project</code></li>
+                <li class="is-good"><b>📥 Info Aggregation</b>Summarise and search across large amounts of text. <code>★ this project</code></li>
                 <li><b>🗂️ Data Organization</b>Tag, sort &amp; structure messy information.
                   <code>classification</code>
                 </li>
@@ -819,11 +754,9 @@ flowchart LR
                                         frontier</code></li>
               </ul>
               <div class="callout callout-interview">
-                <p><strong>Industry spotlight · same skill, different product — the pattern is always
-                    the same.</strong> A coding tool, a legal-doc reader, a Swiggy-order chatbot —
-                  under the hood they all do one thing: <em>connect to a model, give it the right
-                    context, get a useful answer, wrap it in a UI.</em> Learn that once (today) and
-                  every one of these 8 becomes buildable.</p>
+                <p><strong>Industry spotlight · same skill, different product.</strong> A coding tool, a legal-doc reader, a Swiggy-order chatbot —
+                  under the hood they follow the same pattern: <em>connect to a model, give it the right
+                    context, get a useful answer, wrap it in a UI.</em> Learn that once and each of these 8 becomes buildable.</p>
                 <ul class="meta-strip" style="margin:10px 0 0">
                   <li>GitHub Copilot</li>
                   <li>Harvey · legal</li>
@@ -832,8 +765,8 @@ flowchart LR
                   <li>Perplexity · search</li>
                 </ul>
               </div>
-              <p><strong>Today we build a 📥 Info-Aggregation tool</strong> — an AI Website Summarizer.
-                Simple, genuinely useful, and very shareable.</p>
+              <p><strong>Here we build a 📥 Info-Aggregation tool</strong> — an AI Website Summarizer.
+                It is simple, useful and easy to share.</p>
             </div>
           </div>
         </div>
@@ -844,7 +777,7 @@ flowchart LR
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-aie">
           <div class="topic-header-main">
             <span class="topic-badge">5</span>
-            <h2 id="aie" class="topic-title">So Where Do <em>You</em> Fit In?<a class="headerlink" href="#aie"
+            <h2 id="aie" class="topic-title">Where <em>You</em> Fit In<a class="headerlink" href="#aie"
                 title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -860,7 +793,7 @@ flowchart LR
               aria-controls="body-aie-definition">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">What Is AI Engineering?<a class="headerlink" href="#aie-definition"
+                <h3 class="part-heading">What AI Engineering Means<a class="headerlink" href="#aie-definition"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -879,7 +812,7 @@ flowchart LR
                 <p><strong>The car analogy.</strong> A Machine Learning engineer <strong>builds the
                     engine</strong>. An AI Engineer <strong>builds the car around an engine someone
                     else already built</strong> — wiring it to your data, your users, your problem,
-                  so it actually ships. <em>You don't forge the engine. You drive.</em></p>
+                  so it actually ships. <em>You do not forge the engine. You drive.</em></p>
               </blockquote>
             </div>
           </div>
@@ -888,7 +821,7 @@ flowchart LR
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-aie-roles">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">Three Roles, Cleanly Separated<a class="headerlink" href="#aie-roles"
+                <h3 class="part-heading">Three Roles, Separated Clearly<a class="headerlink" href="#aie-roles"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -910,7 +843,7 @@ flowchart LR
               <div class="analogy">
                 <span class="analogy-icon">🚗</span>
                 <div class="analogy-body">
-                  <b>AI Engineer — builds the car ← you, today</b>
+                  <b>AI Engineer — builds the car ← you, in this lesson</b>
                   <p>Takes a powerful existing model and makes it a product. Cares about prompts,
                     APIs, cost, reliability. "How do I <em>use</em> GPT to summarise 10,000 articles
                     a day?"</p>
@@ -925,10 +858,7 @@ flowchart LR
                 </div>
               </div>
               <div class="callout callout-key">
-                <p><strong>✨ The good news.</strong> The hardest, most expensive part — training the
-                  model — is <strong>already done for you</strong> by giant labs. You get to start at
-                  the fun part: turning that intelligence into something people use. <strong>Python +
-                    an API key is genuinely enough to begin.</strong></p>
+                <p><strong>Why this is accessible.</strong> Giant labs have <strong>already done</strong> the hardest and most expensive part: training the model. You can focus on the product: turning that model into something people use. <strong>Python + an API key is enough to begin.</strong></p>
               </div>
             </div>
           </div>
@@ -940,7 +870,7 @@ flowchart LR
         <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-connect">
           <div class="topic-header-main">
             <span class="topic-badge">6</span>
-            <h2 id="connect" class="topic-title">Your First 6 Lines That Talk to an AI<a class="headerlink"
+            <h2 id="connect" class="topic-title">Your First Six Lines That Talk to an AI<a class="headerlink"
                 href="#connect" title="Permanent link">#</a></h2>
           </div>
           <div class="topic-header-meta">
@@ -956,7 +886,7 @@ flowchart LR
               aria-controls="body-connect-setup">
               <div class="part-header-left">
                 <span class="part-indicator ind-assignments"></span>
-                <h3 class="part-heading">Step 0 — Get Set Up (once, ~10 min)<a class="headerlink" href="#connect-setup"
+                <h3 class="part-heading">Step 0 — Set Up Once (~10 min)<a class="headerlink" href="#connect-setup"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -969,7 +899,7 @@ flowchart LR
               <ul class="meta-strip">
                 <li><b>Block 6</b> ~20 min</li>
               </ul>
-              <p>Before any code runs, three quick bits of plumbing. Don't worry — it's a one-time
+              <p>Before any code runs, three quick bits of plumbing. Do not worry — it is a one-time
                 setup.</p>
 
               <h4>① Install a code editor — Cursor or VS Code</h4>
@@ -989,7 +919,7 @@ flowchart LR
               <ol type="a">
                 <li><strong>Download &amp; install.</strong> <strong>Cursor:</strong> go to
                   <code>cursor.com</code> → Download. <strong>VS Code:</strong> go to
-                  <code>code.visualstudio.com</code> → Download. Install like any normal app (Windows /
+                  <code>code.visualstudio.com</code> → Download. Install it like any normal app (Windows /
                   Mac / Linux).
                 </li>
                 <li><strong>Add the Python &amp; Jupyter extensions.</strong> Open your editor → click
@@ -1002,23 +932,21 @@ flowchart LR
 
               <h4>② Get your OpenAI API key</h4>
               <p>An API key is a secret password that lets your code use OpenAI's models (you pay only for
-                what you use — cents for everything here). Here's the flow, simulated — click through it:</p>
+                what you use — cents for everything here). Here are the setup steps:</p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">🔑 OpenAI Platform</span><span
+                <div class="viz-head"><span class="viz-title">Example · OpenAI Platform key setup</span><span
                     class="viz-step">platform.openai.com/api-keys</span></div>
-                <p style="margin:0 0 10px;font-size:14px">Sign in, add a little credit under
-                  <em>Billing</em>, then create a key:
-                </p>
-                <div class="viz-controls" style="margin-top:0">
-                  <button type="button" class="viz-btn is-primary" id="keyBtn">+ Create new secret
-                    key</button>
-                  <code id="keyOut">your key will appear here…</code>
+                <div class="viz-stage is-text">
+                  <ol>
+                    <li>Sign in to the OpenAI Platform.</li>
+                    <li>Add a small amount of credit under <em>Billing</em>.</li>
+                    <li>Create a new secret key.</li>
+                    <li>Copy the key immediately. OpenAI shows a secret key only once.</li>
+                  </ol>
+                  <p><strong>Sample key shape:</strong> <code>sk-proj-A7mQ9rT2vX5nB8cD1eF4gH6jK0pL3sZy</code></p>
+                  <p>The original generator used the prefix <code>sk-proj-</code> plus 32 random letters or numbers from <code>A-Z</code>, <code>a-z</code> and <code>0-9</code>.</p>
                 </div>
-                <div class="viz-note" id="keyWarn" style="display:none">⚠️ Copy it now — OpenAI shows a
-                  secret key only once. And never share it or commit it to GitHub.</div>
-                <p class="viz-hint" style="margin:10px 0 0">🔁 Prefer free? You can skip this entirely
-                  and use <strong>Ollama</strong> (runs on your laptop, no key, same code) — we'll
-                  cover it later.</p>
+                <div class="viz-note">Never share an API key or commit it to GitHub. If you prefer a free local option, you can skip this and use <strong>Ollama</strong> later.</div>
               </div>
 
               <h4>③ Put the key in a <code>.env</code> file (never in your code)</h4>
@@ -1040,9 +968,8 @@ load_dotenv()                 # loads everything from .env
 # now OpenAI() finds the key automatically — no key in your code 🎉
 </code></pre>
               <div class="callout callout-warn">
-                <p><strong>🔐 The one habit that saves careers.</strong> Add <code>.env</code> to your
-                  <code>.gitignore</code> so it's never uploaded to GitHub. Leaked keys get found by
-                  bots in minutes and can run up real bills. Secrets live in <code>.env</code>, never
+                <p><strong>🔐 The habit that prevents expensive mistakes.</strong> Add <code>.env</code> to your
+                  <code>.gitignore</code> so it is never uploaded to GitHub. Bots can find leaked keys in minutes and create real bills. Secrets live in <code>.env</code>, never
                   in code.
                 </p>
               </div>
@@ -1054,7 +981,7 @@ load_dotenv()                 # loads everything from .env
               aria-controls="body-connect-first-call">
               <div class="part-header-left">
                 <span class="part-indicator ind-assignments"></span>
-                <h3 class="part-heading">The 6 Lines That Actually Talk to the AI<a class="headerlink"
+                <h3 class="part-heading">The Six Lines That Talk to the AI<a class="headerlink"
                     href="#connect-first-call" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1064,8 +991,7 @@ load_dotenv()                 # loads everything from .env
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-connect-first-call">
-              <p>With setup done, calling an LLM is just an <strong>API call</strong> — like fetching the
-                weather, except the reply is intelligence. Here's the whole thing:</p>
+              <p>After setup, calling an LLM is an <strong>API call</strong>. It is like fetching the weather, but the reply is generated by a model. Here is the full example:</p>
               <span class="code-tab-label">first_call.py</span>
               <pre><code data-lang="python">
 # pip install python-dotenv
@@ -1100,7 +1026,7 @@ print(response.choices[0].message.content)
               aria-controls="body-connect-roles">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">The 3 "Roles" — the Entire Grammar of Chat Models<a class="headerlink"
+                <h3 class="part-heading">The Three Roles in Chat Models<a class="headerlink"
                     href="#connect-roles" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1111,7 +1037,7 @@ print(response.choices[0].message.content)
             </div>
             <div class="part-body" id="body-connect-roles">
               <ul>
-                <li><code>system</code> — sets the personality &amp; rules — "You are a careful tutor.
+                <li><code>system</code> — sets the personality and rules — "You are a careful tutor.
                   Never give the full answer." Written once, applies throughout.</li>
                 <li><code>user</code> — what the human asks. The actual request.</li>
                 <li><code>assistant</code> — the model's reply. To continue a chat, append it back and
@@ -1119,43 +1045,29 @@ print(response.choices[0].message.content)
               </ul>
 
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · Anatomy of one API
-                    round-trip</span><span class="viz-step">press send → watch it travel</span>
+                <div class="viz-head"><span class="viz-title">Example · Anatomy of one API
+                    round-trip</span><span class="viz-step">one request, one model reply</span>
                 </div>
                 <div class="viz-stage is-text">
-                  <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
-                    <div class="duo-side">
-                      <div style="font-size:24px">🧑‍💻</div>
-                      <span class="duo-who">Your app</span>
-                      <code id="apiReq" style="min-height:24px"></code>
-                    </div>
-                    <div id="apiArrow" style="font-size:22px;color:var(--accent);transition:.3s">➜
-                    </div>
-                    <div class="duo-side">
-                      <div style="font-size:24px" id="apiBrain">🧠</div>
-                      <span class="duo-who">LLM model</span>
-                      <code id="apiResp" style="min-height:24px"></code>
-                    </div>
-                  </div>
+                  <ol>
+                    <li><strong>Your app sends the request.</strong> The request body is <code>{ "Bangalore?" }</code>.</li>
+                    <li><strong>The model receives it.</strong> The model changes from idle to thinking.</li>
+                    <li><strong>The service returns a status.</strong> The status is <code>200 OK</code>.</li>
+                    <li><strong>Your app reads the assistant message.</strong> Sample response: “Sip filter coffee on an MTR rooftop and watch the city wake up — Bangalore's best 10-minute holiday. ☕”</li>
+                  </ol>
                 </div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="apiBtn">📤 Send the
-                    request</button>
-                </div>
-                <div class="viz-note" id="apiResult" style="display:none"></div>
+                <div class="viz-note"><b>Response:</b> “Sip filter coffee on an MTR rooftop and watch the city wake up — Bangalore's best 10-minute holiday. ☕”</div>
               </div>
 
               <div class="callout callout-warn">
-                <p><strong>🔐 Golden rule.</strong> Never paste your API key into shared/public code —
-                  it's a password to your wallet. Keep it in a <code>.env</code> file or environment
+                <p><strong>🔐 Security rule.</strong> Never paste your API key into shared or public code. It is a password to your wallet. Keep it in a <code>.env</code> file or environment
                   variable, on the server side only.</p>
               </div>
               <div class="callout callout-interview">
-                <p><strong>Industry spotlight · the model is swappable — same code, different
-                    brains.</strong> Change one string — <code>"gpt-4o-mini"</code> → a Claude or
+                <p><strong>Industry spotlight · the model is swappable.</strong> Change one string: <code>"gpt-4o-mini"</code> → a Claude or
                   open-source model — and your whole product runs on a different engine. There's even
                   a <strong>free, runs-on-your-laptop</strong> option (Ollama) that uses this exact
-                  same code, just pointed at a local address. We'll meet it soon.</p>
+                  same code, just pointed at a local address. You will use it soon.</p>
                 <ul class="meta-strip" style="margin:10px 0 0">
                   <li>OpenAI · GPT</li>
                   <li>Anthropic · Claude</li>
@@ -1171,7 +1083,7 @@ print(response.choices[0].message.content)
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-connect-groq">
               <div class="part-header-left">
                 <span class="part-indicator ind-assignments"></span>
-                <h3 class="part-heading">Bonus: the Same Code on a Free, Fast Model (Groq + Llama)<a class="headerlink"
+                <h3 class="part-heading">Bonus: Use the Same Code on Groq + Llama<a class="headerlink"
                     href="#connect-groq" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1181,8 +1093,8 @@ print(response.choices[0].message.content)
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-connect-groq">
-              <p>Don't want to add billing yet? <strong>Groq</strong> gives you a free API key and runs
-                open models like Meta's <strong>Llama</strong> incredibly fast. Because Groq speaks the
+              <p>If you do not want to add billing yet, <strong>Groq</strong> gives you a free API key and runs
+                open models like Meta's <strong>Llama</strong> very fast. Because Groq speaks the
                 same "language" as OpenAI, you change just <em>two things</em> — the key and one line —
                 and everything else stays identical:</p>
               <span class="code-tab-label">groq_call.py</span>
@@ -1214,9 +1126,8 @@ print(response.choices[0].message.content)
               <blockquote>
                 <p><strong>Where to get the key.</strong> Sign up free at <code>console.groq.com</code>
                   → <em>API Keys</em> → Create key, then add it to your <code>.env</code> as
-                  <code>GROQ_API_KEY=gsk_...</code>. <strong>Notice how little changed</strong> —
-                  just the key, the <code>base_url</code>, and the model name. The whole point of AI
-                  Engineering: the brain is swappable.
+                  <code>GROQ_API_KEY=gsk_...</code>. <strong>Notice that little changed</strong> —
+                  just the key, the <code>base_url</code>, and the model name. This is a key idea in AI Engineering: the model is swappable.
                 </p>
               </blockquote>
             </div>
@@ -1258,9 +1169,9 @@ print(response.choices[0].message.content)
               <ul class="meta-strip">
                 <li><b>Block 7</b> ~30 min · 🏁 THE BUILD</li>
               </ul>
-              <p>Time to build. Our app: <strong>give it any web page URL → it reads the page and hands
-                  you a clean summary.</strong> The Reader's Digest of the internet. It's simple,
-                genuinely useful, and exactly the kind of thing that makes a great first project to share.
+              <p>Now build the app. Our app: <strong>give it any web page URL → it reads the page and hands
+                  you a clean summary.</strong> Think of it as a short digest for the internet. It is simple,
+                genuinely useful, and a good first project to share.
               </p>
               <figure class="figure mermaid-fig">
                 <pre class="mermaid">
@@ -1270,7 +1181,7 @@ flowchart LR
   P --> L[🧠 LLM&lt;br&gt;summarise]:::hl
   L --> O[📄 Summary&lt;br&gt;shown to the user]:::good
                                 </pre>
-                <figcaption>Five boxes. That's a real AI product. Let's write each piece.</figcaption>
+                <figcaption>Five boxes. That is a real AI product. Now write each piece.</figcaption>
               </figure>
             </div>
           </div>
@@ -1294,8 +1205,7 @@ flowchart LR
                 <p><strong>📦 Treat this one as a black box.</strong> You do <strong>not</strong> need
                   to understand a single line below. This is plain web-scraping (not AI), and there's
                   a library for it. All it does: <em>take a URL → return the page's readable text as
-                    a string.</em> That's it. Copy it, trust it, move on — the AI magic is in Step
-                  2.</p>
+                    a string.</em> That is it. Copy it, trust it, move on — the AI part is in Step 2.</p>
               </div>
               <span class="code-tab-label">scraper.py</span>
               <pre><code data-lang="python">
@@ -1387,8 +1297,7 @@ def summarize(url):
                 <p><strong>🪄 The "wow" lever — change the personality.</strong> Edit one line of the
                   <code>system_prompt</code> — "give a <em>snarky, humorous</em> summary" or "explain
                   it to a 10-year-old" or "respond in Hindi" — and the whole app behaves differently.
-                  <strong>That's prompt engineering, and you just learned it.</strong> Try the
-                  personality buttons in the live demo below 👇
+                  <strong>That is prompt engineering, and you just learned it.</strong> The example below shows those personalities.
                 </p>
               </div>
             </div>
@@ -1398,7 +1307,7 @@ def summarize(url):
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-project-run">
               <div class="part-header-left">
                 <span class="part-indicator ind-assignments"></span>
-                <h3 class="part-heading">Step 3 &amp; 4 — Run It on Your Machine<a class="headerlink"
+                <h3 class="part-heading">Steps 3 and 4 — Run It on Your Machine<a class="headerlink"
                     href="#project-run" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1420,7 +1329,7 @@ url = input("Website URL: ")
 print(summarize(url))
 </code></pre>
 
-              <h4>Step 4 — Run it on your machine 👇</h4>
+              <h4>Step 4 — Run it on your machine</h4>
               <p>Save the three files (<code>scraper.py</code>, <code>summarizer.py</code>,
                 <code>main.py</code>) and your <code>.env</code> in one folder. Then open the terminal
                 in Cursor (<em>Terminal → New Terminal</em>) and run:
@@ -1437,13 +1346,12 @@ $ python main.py
 Website URL: https://example.com
 </code></pre>
               <ol>
-                <li><strong>Paste a URL and press Enter.</strong> Try a blog or news site. In a second or
-                  two, the summary prints in your terminal. 🎉 You just used your own AI app.</li>
+                <li><strong>Paste a URL and press Enter.</strong> Try a blog or news site. In a second or two, the summary prints in your terminal. You just used your own AI app.</li>
                 <li><strong>Stop it anytime.</strong> Press <code>Ctrl + C</code> in the terminal to
                   shut the app down; run <code>python main.py</code> again for another page.</li>
               </ol>
               <div class="callout callout-tip">
-                <p>🐞 If you hit an error, 90% of the time it's a missing <code>pip install</code> or a
+                <p>If you hit an error, 90% of the time it is a missing <code>pip install</code> or a
                   key not loaded from <code>.env</code> — check those two first.</p>
               </div>
             </div>
@@ -1453,7 +1361,7 @@ Website URL: https://example.com
             <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-project-demo">
               <div class="part-header-left">
                 <span class="part-indicator ind-questions"></span>
-                <h3 class="part-heading">Try the Working Version Right Here<a class="headerlink" href="#project-demo"
+                <h3 class="part-heading">Example Run of the Working Version<a class="headerlink" href="#project-demo"
                     title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1463,34 +1371,50 @@ Website URL: https://example.com
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-project-demo">
-              <p>Below is a <strong>live, in-browser version</strong> of exactly that app. Pick a sample
-                site (or paste your own text), choose a personality, and hit summarize:</p>
+              <p>Below is a sample run of that app. It shows the sample sites, the personalities and the outputs.</p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">🔎 AI Website Summarizer</span><span class="viz-step">live
-                    demo</span></div>
-                <span class="viz-label">Pick a sample "website"</span>
-                <div class="viz-controls" id="siteExamples" style="margin-top:0"></div>
-                <label class="viz-label" for="sumIn">…or paste any article text</label>
-                <textarea class="viz-input" id="sumIn" rows="5"
-                  placeholder="Paste a paragraph or article here and hit Summarize…"></textarea>
-                <span class="viz-label">Personality (the system prompt)</span>
-                <div class="viz-controls" id="toneBtns" style="margin-top:0"></div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="sumBtn">✨ Summarize</button>
+                <div class="viz-head"><span class="viz-title">Example · AI Website Summarizer</span><span class="viz-step">sample sites and outputs</span></div>
+                <div class="viz-stage is-text">
+                  <span class="viz-label">Preset “website” inputs</span>
+                  <table class="static-table">
+                    <thead><tr><th>Preset</th><th>Full sample text</th></tr></thead>
+                    <tbody>
+                      <tr><td>🚀 Startup site</td><td>NimbusPay — Payments that just work. NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees. Accept UPI, cards, and wallets with a single integration that takes ten minutes to set up. Our flat 1% fee means no surprises at the end of the month. NimbusPay also gives you a real-time dashboard so you can see every transaction as it happens. Over 12,000 shops already use NimbusPay to get paid faster. We just launched instant settlements, so your money reaches your bank account the same day instead of waiting three days. Sign up today and your first month is completely free.</td></tr>
+                      <tr><td>📰 News article</td><td>Governments race to regulate AI as adoption surges. Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms. Supporters say clear regulation will build public trust and prevent harm. Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance. A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated. It also demands that high-risk systems, such as those used in hiring or medicine, be tested for bias before launch. Industry groups have asked for more time to adapt. The debate is expected to continue for years as the technology keeps evolving.</td></tr>
+                      <tr><td>✍️ Personal blog</td><td>My journey from teacher to AI engineer. Three years ago I had never written a line of Python. I was a high-school teacher who felt stuck and curious about the AI everyone kept talking about. I started small: one tiny project every weekend, even when they barely worked. The first thing I built was a tool that summarized news articles for my students. It was ugly, but it worked, and that little win changed everything. I kept shipping projects and sharing them online, and slowly people started noticing. Last month I started my first job as an AI engineer at a startup. The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them.</td></tr>
+                    </tbody>
+                  </table>
+                  <span class="viz-label">System-prompt personalities</span>
+                  <table class="static-table">
+                    <thead><tr><th>Tone</th><th>Intro line</th><th>TL;DR label</th></tr></thead>
+                    <tbody>
+                      <tr><td>🙂 Friendly</td><td>Here's the gist, in plain English:</td><td>In short:</td></tr>
+                      <tr><td>😏 Snarky</td><td>Fine, I read it so you do not have to:</td><td>The honest TL;DR:</td></tr>
+                      <tr><td>🧒 Explain like I'm 5</td><td>Okay, imagine I'm explaining this to a 10-year-old:</td><td>So basically:</td></tr>
+                      <tr><td>💼 Professional</td><td>Executive summary:</td><td>Bottom line:</td></tr>
+                    </tbody>
+                  </table>
+                  <span class="viz-label">Friendly-tone outputs from the browser algorithm</span>
+                  <table class="static-table">
+                    <thead><tr><th>Preset</th><th>Top sentences</th><th>TL;DR sentence</th></tr></thead>
+                    <tbody>
+                      <tr><td>🚀 Startup site</td><td><ul><li>NimbusPay — Payments that just work.</li><li>NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees.</li><li>Over 12,000 shops already use NimbusPay to get paid faster.</li></ul></td><td>NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees.</td></tr>
+                      <tr><td>📰 News article</td><td><ul><li>Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms.</li><li>Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance.</li><li>A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated.</li></ul></td><td>Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance.</td></tr>
+                      <tr><td>✍️ Personal blog</td><td><ul><li>I started small: one tiny project every weekend, even when they barely worked.</li><li>I kept shipping projects and sharing them online, and slowly people started noticing.</li><li>The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them.</li></ul></td><td>I started small: one tiny project every weekend, even when they barely worked.</td></tr>
+                    </tbody>
+                  </table>
+                  <p>The sample outputs come from a simple extractive summarizer, not a model. It normalizes whitespace, keeps sentences with at least four words, ignores common stop words, scores each sentence by word frequency divided by the square root of sentence length, returns up to three top sentences in original order, and uses the highest-scoring sentence as the TL;DR. If no text is supplied, it says “Paste some text or pick a sample first.” If the text is too short, it says “Hmm, that text was too short to summarize.”</p>
                 </div>
-                <span class="viz-label">Summary</span>
-                <div class="viz-stage is-text" id="sumOut"><span class="placeholder">Your summary will
-                    appear here…</span></div>
+                <div class="viz-note">In the real app, GPT writes a richer summary in full sentences. The flow and personality switch are the same idea.</div>
               </div>
               <p class="viz-hint">⚙️ This demo summarizes <em>in your browser</em> (a simple method) so
                 it runs with no API key. Your real <code>summarizer.py</code> sends the text to GPT for
                 a smarter summary — but the shape, the flow, and the personality switch are exactly
                 what you see here.</p>
               <div class="callout callout-interview">
-                <p><strong>Industry spotlight · you just built a real product category —
-                    summarization quietly runs the business world.</strong> Summarizing news,
+                <p><strong>Industry spotlight · summarization is a real product category.</strong> Summarizing news,
                   earnings calls, support threads, legal contracts, research papers, meeting
-                  transcripts — it's one of the most-used AI features in companies today. Swap
+                  transcripts — it is one of the most-used AI features in companies today. Swap
                   "website" for "PDF", "email thread", or "YouTube transcript" and you've got a dozen
                   more apps from the same code.</p>
                 <ul class="meta-strip" style="margin:10px 0 0">
@@ -1509,8 +1433,7 @@ Website URL: https://example.com
               aria-controls="body-project-arena">
               <div class="part-header-left">
                 <span class="part-indicator ind-assignments"></span>
-                <h3 class="part-heading">🥊 Bonus Build: an LLM Arena (One Prompt, Two Models, You
-                  Judge)<a class="headerlink" href="#project-arena" title="Permanent link">#</a></h3>
+                <h3 class="part-heading">🥊 Bonus Build: an LLM Arena (One Prompt, Two Models, You Judge)<a class="headerlink" href="#project-arena" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
                     width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
@@ -1519,9 +1442,9 @@ Website URL: https://example.com
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-project-arena">
-              <p>Here's a second mini-project that's even more fun to post. Inspired by
+              <p>Here is a second mini-project. Inspired by
                 <strong>arena.ai</strong>, where people send one prompt to two AIs and <em>vote</em> on
-                the better answer — that's literally how the world ranks AI models. You can build a tiny
+                the better answer — that is how many people rank AI models. You can build a tiny
                 version with what you already know: <strong>send the same prompt to two models, show
                   both answers side by side.</strong>
               </p>
@@ -1542,7 +1465,7 @@ def battle(prompt):
 # …now we turn this into a tiny terminal app with 👍/👎 voting 👇
 </code></pre>
 
-              <h4>The full app (with 👍 / 👎 voting, like arena)</h4>
+              <h4>The full app with A/B voting</h4>
               <span class="code-tab-label">arena_app.py</span>
               <pre><code data-lang="python">
 # pip install openai python-dotenv
@@ -1587,7 +1510,7 @@ choice = input("\nWhich answer was better? (A/B): ").strip().upper()
 print(vote(f"👍 Model {choice}"))
 </code></pre>
 
-              <h4>Run it (same as before)</h4>
+              <h4>Run it the same way</h4>
               <span class="code-tab-label">bash — your project folder</span>
               <pre><code data-lang="text">
 # install once, then launch
@@ -1603,65 +1526,40 @@ Ask both models the same thing: Explain recursion in 2 sentences.
                 <li><strong>Read both answers, then vote 👍 / 👎.</strong> Type <code>A</code> or
                   <code>B</code> for the answer you liked better — just like on arena.ai.
                 </li>
-                <li><strong>Screen-record &amp; share.</strong> A short clip of the battle is perfect
+                <li><strong>Record or share it.</strong> A short clip of the battle is perfect
                   for sharing. Stop anytime with <code>Ctrl + C</code>.</li>
               </ol>
               <div class="callout callout-tip">
-                <p><strong>Why this is a brilliant first project.</strong> It uses <em>both</em> keys
-                  you set up (OpenAI + Groq), proves the "brain is swappable" idea live, and the
-                  side-by-side 👍/👎 format is genuinely eye-catching to share. Try the working
-                  version below 👇</p>
+                <p><strong>Why this is a strong first project.</strong> It uses <em>both</em> keys
+                  you set up (OpenAI + Groq), proves the "brain is swappable" idea in practice, and the
+                  side-by-side A/B format is easy to understand. The example below shows the same idea.</p>
               </div>
 
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">🥊 Mini LLM Arena</span><span class="viz-step">live
-                    demo</span></div>
-                <label class="viz-label" for="arenaIn">Ask both models the same thing</label>
-                <textarea class="viz-input" id="arenaIn" rows="2"
-                  placeholder="Type a prompt…">Explain recursion to a total beginner, in 2 sentences.</textarea>
-                <span class="viz-label">Or try:</span>
-                <div class="viz-controls" id="arenaExamples" style="margin-top:0"></div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="arenaBtn">⚔️ Battle!</button>
+                <div class="viz-head"><span class="viz-title">Example · Mini LLM Arena</span><span class="viz-step">one prompt, two model answers, one vote</span></div>
+                <div class="viz-stage is-text">
+                  <p>The demo compares <strong>GPT-4o-mini</strong> from <strong>OpenAI</strong> with <strong>Llama-3.3-70b</strong> from <strong>Groq</strong>. The arena randomly puts GPT on the left or right and hides the names until you vote. It then adds <code>+1</code> for a good vote or <code>-1</code> for a bad vote. Both scores start at <code>0</code>.</p>
+                  <table class="static-table">
+                    <thead><tr><th>Prompt</th><th>GPT-4o-mini answer</th><th>Llama-3.3-70b answer</th></tr></thead>
+                    <tbody>
+                      <tr><td>Explain recursion to a total beginner, in 2 sentences.</td><td>Recursion is when a function solves a problem by calling itself on a smaller piece of the same problem, until it hits a simple “base case” it can answer directly. Like a dictionary entry that points to another word — you follow the chain until you reach one you already know.</td><td>Sure! 😊 Picture standing between two mirrors — you see a smaller copy of yourself, then a smaller one inside that, on and on. Recursion is just a function that keeps calling itself on a tinier version of the task until it is small enough to answer in one go.</td></tr>
+                      <tr><td>Write a catchy tagline for a coffee shop.</td><td>“Brewed for the moments that matter.” Clean, premium, and it reads well on a cup or a storefront sign.</td><td>Ooh fun one! Try: “Life's short. The coffee shouldn't be.” ☕ Punchy, a little cheeky, and very shareable.</td></tr>
+                      <tr><td>Is a hotdog a sandwich? Give a definitive answer.</td><td>Definitive answer: No. A sandwich needs a filling between two separate pieces of bread; a hot dog uses a single, hinged bun — so it forms its own category.</td><td>Haha, the eternal debate! My verdict: NOT a sandwich. 🌭 The bun is one connected piece, not two slices — so the hot dog stands proudly in a class of its own. 😄</td></tr>
+                      <tr><td>Give me a fun fact about space.</td><td>A day on Venus is longer than its year: it rotates so slowly that one Venusian day takes ~243 Earth days, while a full orbit of the Sun takes only ~225.</td><td>Here's a wild one 🚀 — Venus spins so slowly that a single day there lasts LONGER than its whole year! Your birthday could come round before the sun sets. Space is wonderfully weird. ✨</td></tr>
+                    </tbody>
+                  </table>
+                  <p>For other prompts, the sample answers describe each style: GPT-4o-mini is “tight and well-structured”; Llama-3.3 on Groq is “warmer, chattier, and lightning fast.” After a vote, the arena shows: “In a real arena, votes like yours pile up across thousands of people to build a public leaderboard.”</p>
                 </div>
-                <div class="duo" id="arenaGrid" style="display:none;margin-top:12px">
-                  <div class="duo-side is-left">
-                    <div class="duo-who" id="whoA">Model A</div>
-                    <div class="duo-resp" id="respA"></div>
-                    <div class="viz-controls" style="margin-top:0">
-                      <button type="button" class="viz-btn av" data-side="A" data-v="up">👍
-                        Good</button>
-                      <button type="button" class="viz-btn av" data-side="A" data-v="down">👎
-                        Bad</button>
-                    </div>
-                  </div>
-                  <div class="duo-side is-left">
-                    <div class="duo-who" id="whoB">Model B</div>
-                    <div class="duo-resp" id="respB"></div>
-                    <div class="viz-controls" style="margin-top:0">
-                      <button type="button" class="viz-btn av" data-side="B" data-v="up">👍
-                        Good</button>
-                      <button type="button" class="viz-btn av" data-side="B" data-v="down">👎
-                        Bad</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="viz-note" id="arenaResult" style="display:none"></div>
-                <ul class="meta-strip" id="arenaTally" style="display:none;margin:10px 0 0">
-                  <li><b id="tallyA">0</b> GPT-4o-mini score</li>
-                  <li><b id="tallyB">0</b> Llama-3.3 score</li>
-                </ul>
+                <div class="viz-note">This is the same blind A/B idea used by public model leaderboards and internal company evaluations.</div>
               </div>
-              <p class="viz-hint">⚙️ Responses here are simulated in your browser so it runs key-free.
+              <p class="viz-hint">⚙️ The sample answers on this page are written examples.
                 In your real <code>arena_app.py</code>, the two answers come from the actual models —
                 and the voting is exactly how arena.ai builds its public leaderboard.</p>
               <div class="callout callout-interview">
-                <p><strong>Industry spotlight · this is how models get ranked — voting is serious
-                    science.</strong> Side-by-side "blind taste tests" like this — millions of human
+                <p><strong>Industry spotlight · voting helps rank models.</strong> Side-by-side "blind taste tests" like this — millions of human
                   votes on anonymous model pairs — are how the AI world decides which model is
                   actually best, beyond marketing claims. Companies use the same technique internally
-                  to choose which model to ship. Your toy arena is a real evaluation method in
-                  miniature.</p>
+                  to choose which model to ship. This small arena is a real evaluation method in miniature.</p>
                 <ul class="meta-strip" style="margin:10px 0 0">
                   <li>Blind A/B votes</li>
                   <li>Public leaderboards</li>
@@ -1677,7 +1575,7 @@ Ask both models the same thing: Explain recursion in 2 sentences.
               aria-controls="body-project-flavours">
               <div class="part-header-left">
                 <span class="part-indicator ind-theory"></span>
-                <h3 class="part-heading">Want a Different Flavour? Make It Yours<a class="headerlink"
+                <h3 class="part-heading">Make the Project Your Own<a class="headerlink"
                     href="#project-flavours" title="Permanent link">#</a></h3>
               </div>
               <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
@@ -1768,7 +1666,7 @@ chain.invoke({"content": website_text})   # reuse it for any page!
                   <b>The one to remember: RAG</b>
                   <p>"Chat with your own PDFs." You <em>retrieve</em> the relevant snippets from your
                     documents and paste them into the prompt — so the AI answers from <em>your</em>
-                    data, not just its memory. It's the most common real-world pattern, and it tames
+                    data, not just its memory. It is the most common real-world pattern, and it tames
                     hallucinations.</p>
                 </div>
               </div>
@@ -1793,16 +1691,17 @@ chain.invoke({"content": website_text})   # reuse it for any page!
                 search, your database) and a <strong>loop</strong>: it thinks, acts, looks at the
                 result, and repeats until done. Step through one:</p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · ReAct agent ·
-                    step-through</span><span class="viz-step">"Should I carry an umbrella in
-                    Bangalore today?"</span></div>
-                <div class="viz-stage is-text" id="reactStage"></div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="reactNext">▶ Next
-                    step</button>
-                  <button type="button" class="viz-btn" id="reactReset">↺ Reset</button>
-                  <span class="viz-step" id="reactStatus"></span>
+                <div class="viz-head"><span class="viz-title">Example · ReAct agent ·
+                    step-through</span><span class="viz-step">question: “Should I carry an umbrella
+                    in Bangalore today?”</span></div>
+                <div class="viz-stage is-text">
+                  <div class="msg thought"><b>💭 Thought</b>To answer, I need today's weather in Bangalore. I do not have it, so I should use a tool.</div>
+                  <div class="msg action"><b>🛠️ Action</b>Calling tool: <code>get_weather(city="Bangalore")</code></div>
+                  <div class="msg obs"><b>👀 Observation</b>Tool returned: <code>{ rain_chance: 78%, temp: "24°C" }</code></div>
+                  <div class="msg thought"><b>💭 Thought</b>78% is high. The user should take an umbrella. I have enough to answer.</div>
+                  <div class="msg answer"><b>✅ Final Answer</b>Yes — carry an umbrella. There is a 78% chance of rain in Bangalore today, with 24°C and clouds. ☔</div>
                 </div>
+                <div class="viz-note">The status moved through five steps and then ended with “Task complete.”</div>
               </div>
               <div class="callout callout-tip">
                 <p><strong>The leap.</strong> Nobody hard-coded "check the weather" — the agent
@@ -1828,34 +1727,38 @@ chain.invoke({"content": website_text})   # reuse it for any page!
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-next-multi-agent">
-              <p>For bigger jobs, we do what companies do: split work across specialists that hand off to
-                each other. Press run and watch a content team write a short blog post:</p>
+              <p>For bigger jobs, companies split work across specialists that hand off to each other. This example shows a content team writing a short blog post:</p>
               <div class="viz">
-                <div class="viz-head"><span class="viz-title">Live sim · Multi-agent content
+                <div class="viz-head"><span class="viz-title">Example · Multi-agent content
                     team</span><span class="viz-step">goal: "Write a short blog post on AI
                     agents"</span></div>
-                <ul class="card-grid" id="agentsGrid" style="margin:0 0 12px"></ul>
-                <div class="viz-stage is-text" id="maLog"
-                  style="font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px">
+                <div class="viz-stage is-text">
+                  <table class="static-table">
+                    <thead><tr><th>Agent</th><th>Role</th><th>Message from the original run</th></tr></thead>
+                    <tbody>
+                      <tr><td>🧭 Manager</td><td>Plans &amp; delegates</td><td>Breaking goal into research → write → review.</td></tr>
+                      <tr><td>🔬 Researcher</td><td>Finds the facts</td><td>Found: agents = LLM + tools + loop; used by Cursor, support bots.</td></tr>
+                      <tr><td>✍️ Writer</td><td>Drafts the post</td><td>Drafted a hook + insight + CTA.</td></tr>
+                      <tr><td>🔍 Editor</td><td>Polishes &amp; checks</td><td>Tightened wording, approved. ✓</td></tr>
+                    </tbody>
+                  </table>
+                  <span class="viz-label">Final blog post assembled by the team</span>
+                  <blockquote>
+                    <p>🤖 AI “agents” aren't sci-fi — they're just an LLM given tools and a loop.</p>
+                    <p>That is how Cursor fixes code and support bots resolve tickets end-to-end.</p>
+                    <p>The shift from chatbots → agents is the biggest change in software this year.</p>
+                    <p>What will you let an agent do for you? 👇</p>
+                  </blockquote>
                 </div>
-                <div class="viz-controls">
-                  <button type="button" class="viz-btn is-primary" id="maRun">▶ Run the team</button>
-                  <button type="button" class="viz-btn" id="maReset">↺ Reset</button>
-                </div>
-                <div class="viz-note" id="maFinal" style="display:none"></div>
               </div>
               <div class="callout callout-key">
-                <p><strong>🚀 Where this course ends.</strong> By the end of the journey, you'll build a
-                  solution where <strong>several agents collaborate</strong> to solve a real business
-                  problem — the kind of thing companies are hiring for right now. But it all rests on
-                  what you did today: <em>connect to a model, give it context, get something useful,
-                    ship it.</em></p>
+                <p><strong>🚀 Where this path ends.</strong> By the end of the journey, you will build a solution where <strong>several agents collaborate</strong> to solve a real business problem. Companies hire for this work. It rests on the basics here: <em>connect to a model, give it context, get something useful, ship it.</em></p>
               </div>
               <ul class="card-grid">
                 <li><b>🧠 LLMs</b>Predict next token; tokens, temperature, context.</li>
                 <li><b>🪄 Self-supervision</b>Learned the internet via fill-in-the-blank.</li>
                 <li><b>🔌 API call</b>system / user / assistant.</li>
-                <li><b>🎛️ You shipped</b>Two real AI apps. 🎉</li>
+                <li><b>🎛️ You shipped</b>Two real AI apps.</li>
               </ul>
             </div>
           </div>
@@ -1935,246 +1838,6 @@ chain.invoke({"content": website_text})   # reuse it for any page!
 
       if (window.location.hash) setTimeout(() => openAndScrollTo(window.location.hash), 150);
       window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
-    })();
-  </script>
-  <script>
-    /* ===== Tokenizer ===== */
-    (function () {
-      const inp = document.getElementById('tokInput'), out = document.getElementById('tokOut');
-      const bg = ['rgba(224,175,104,.16)', 'rgba(78,201,176,.16)', 'rgba(140,200,255,.16)', 'rgba(115,201,145,.16)', 'rgba(197,134,192,.16)'];
-      const fg = ['#f2c98a', '#4ec9b0', '#8cc8ff', '#73c991', '#c586c0'];
-      function tok(t) { const raw = t.match(/\s+|[^\s]+/g) || []; const o = []; raw.forEach(c => { if (/^\s+$/.test(c)) { o.push(c); return; } (c.match(/[A-Za-z]+|[0-9]+|[^\sA-Za-z0-9]/g) || [c]).forEach(p => { if (p.length <= 5) o.push(p); else for (let i = 0; i < p.length; i += 4) o.push(p.slice(i, i + 4)); }); }); return o; }
-      function render() {
-        const ts = tok(inp.value); out.innerHTML = ''; let c = 0;
-        ts.forEach(t => { if (/^\s+$/.test(t)) { out.appendChild(document.createTextNode(' ')); return; } const s = document.createElement('span'); s.className = 'tok'; s.style.background = bg[c % 5]; s.style.color = fg[c % 5]; s.textContent = t; out.appendChild(s); c++; });
-        document.getElementById('tokCount').textContent = c;
-        document.getElementById('charCount').textContent = inp.value.length;
-        document.getElementById('costEst').textContent = '$' + (c / 1e6 * 5).toFixed(6);
-      }
-      inp.addEventListener('input', render); render();
-    })();
-
-    /* ===== Temperature ===== */
-    (function () {
-      const base = [{ w: 'Python', l: 3.2 }, { w: 'JavaScript', l: 2.4 }, { w: 'Rust', l: 1.6 }, { w: 'public', l: 0.9 }, { w: 'spreadsheets', l: 0.3 }, { w: 'bananas', l: -1.2 }];
-      const sl = document.getElementById('tempSlider'), bars = document.getElementById('probBars'), tv = document.getElementById('tempVal'), tl = document.getElementById('tempLabel');
-      function soft(a, T) { T = Math.max(0.01, T); const z = a.map(x => x.l / T), m = Math.max(...z), e = z.map(v => Math.exp(v - m)), s = e.reduce((p, c) => p + c, 0); return a.map((x, i) => ({ w: x.w, p: e[i] / s })); }
-      function render() {
-        const T = sl.value / 100; tv.textContent = T.toFixed(2);
-        tl.textContent = T < 0.3 ? '❄️ focused' : T < 0.9 ? '⚖️ balanced' : '🔥 creative';
-        const p = soft(base, T).sort((a, b) => b.p - a.p);
-        bars.innerHTML = p.map(x => `<div class="prob-row"><div class="prob-word">${x.w}</div><div class="prob-track"><div class="prob-fill" style="width:${(x.p * 100).toFixed(1)}%"></div></div><div class="prob-pct">${(x.p * 100).toFixed(1)}%</div></div>`).join('');
-      }
-      sl.addEventListener('input', render); render();
-      document.getElementById('sampleBtn').addEventListener('click', () => {
-        const p = soft(base, sl.value / 100); const r = Math.random(); let a = 0, pick = p[0].w;
-        for (const x of p) { a += x.p; if (r <= a) { pick = x.w; break; } }
-        document.getElementById('sampleOut').innerHTML = `→ picked: <code>"${pick}"</code>`;
-      });
-    })();
-
-    /* ===== API round-trip ===== */
-    (function () {
-      const btn = document.getElementById('apiBtn'), ar = document.getElementById('apiArrow'), rq = document.getElementById('apiReq'), rs = document.getElementById('apiResp'), br = document.getElementById('apiBrain'), res = document.getElementById('apiResult');
-      btn.addEventListener('click', () => {
-        btn.disabled = true; rs.textContent = ''; res.style.display = 'none'; rq.textContent = '{ "Bangalore?" }'; ar.style.transform = 'translateX(6px)';
-        setTimeout(() => { ar.style.transform = ''; br.textContent = '🤔'; rs.textContent = 'thinking…'; }, 600);
-        setTimeout(() => { br.textContent = '🧠'; rs.textContent = '200 OK'; res.style.display = 'block'; res.innerHTML = '<b>Response:</b> "Sip filter coffee on an MTR rooftop and watch the city wake up — Bangalore\'s best 10-minute holiday. ☕"'; btn.disabled = false; }, 1500);
-      });
-    })();
-
-    /* ===== OpenAI key generator ===== */
-    (function () {
-      const btn = document.getElementById('keyBtn'), out = document.getElementById('keyOut'), warn = document.getElementById('keyWarn');
-      btn.addEventListener('click', () => {
-        out.textContent = 'generating…';
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let k = 'sk-proj-'; for (let i = 0; i < 32; i++) k += chars[Math.floor(Math.random() * chars.length)];
-        setTimeout(() => { out.textContent = k; warn.style.display = 'block'; btn.textContent = '+ Create another key'; }, 500);
-      });
-    })();
-
-    /* ===== Fill-in-the-blank ===== */
-    (function () {
-      const blank = document.getElementById('maskBlank'), box = document.getElementById('maskGuesses'), msg = document.getElementById('maskMsg');
-      const opts = [{ w: 'coffee', ok: true }, { w: 'bicycle', ok: false }, { w: 'tea', ok: 'close' }, { w: 'sadness', ok: false }];
-      opts.forEach(o => {
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'viz-btn'; b.textContent = o.w;
-        b.onclick = () => {
-          box.querySelectorAll('.viz-btn').forEach(x => x.classList.remove('is-right', 'is-wrong'));
-          if (o.ok === true) { b.classList.add('is-right'); blank.textContent = o.w; blank.style.color = 'var(--green)'; blank.style.borderColor = 'var(--green)'; msg.innerHTML = '✅ Exactly! And to "know" that, the model quietly learned context, grammar &amp; the world. <b>That\'s self-supervision.</b>'; }
-          else if (o.ok === 'close') { b.classList.add('is-right'); blank.textContent = o.w; msg.innerHTML = '☕ Reasonable! "tea" works too — the model learns there are <em>several</em> good answers, with different probabilities (remember temperature?).'; }
-          else { b.classList.add('is-wrong'); msg.innerHTML = '😅 Not quite — but every wrong guess is how the model <em>learns</em>. Billions of these and it gets scarily good.'; }
-        };
-        box.appendChild(b);
-      });
-    })();
-
-    /* ===== Website summarizer (in-browser) ===== */
-    (function () {
-      const samples = [
-        { label: '🚀 Startup site', text: "NimbusPay — Payments that just work. NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees. Accept UPI, cards, and wallets with a single integration that takes ten minutes to set up. Our flat 1% fee means no surprises at the end of the month. NimbusPay also gives you a real-time dashboard so you can see every transaction as it happens. Over 12,000 shops already use NimbusPay to get paid faster. We just launched instant settlements, so your money reaches your bank account the same day instead of waiting three days. Sign up today and your first month is completely free." },
-        { label: '📰 News article', text: "Governments race to regulate AI as adoption surges. Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms. Supporters say clear regulation will build public trust and prevent harm. Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance. A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated. It also demands that high-risk systems, such as those used in hiring or medicine, be tested for bias before launch. Industry groups have asked for more time to adapt. The debate is expected to continue for years as the technology keeps evolving." },
-        { label: '✍️ Personal blog', text: "My journey from teacher to AI engineer. Three years ago I had never written a line of Python. I was a high-school teacher who felt stuck and curious about the AI everyone kept talking about. I started small: one tiny project every weekend, even when they barely worked. The first thing I built was a tool that summarized news articles for my students. It was ugly, but it worked, and that little win changed everything. I kept shipping projects and sharing them online, and slowly people started noticing. Last month I started my first job as an AI engineer at a startup. The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them." }
-      ];
-      const tones = [
-        { id: 'friend', label: '🙂 Friendly', intro: "Here's the gist, in plain English:", tldr: "In short:" },
-        { id: 'snark', label: '😏 Snarky', intro: "Fine, I read it so you don't have to:", tldr: "The honest TL;DR:" },
-        { id: 'eli5', label: '🧒 Explain like I\'m 5', intro: "Okay, imagine I'm explaining this to a 10-year-old:", tldr: "So basically:" },
-        { id: 'pro', label: '💼 Professional', intro: "Executive summary:", tldr: "Bottom line:" }
-      ];
-      let tone = tones[0];
-      const exBox = document.getElementById('siteExamples'), tBox = document.getElementById('toneBtns'), inp = document.getElementById('sumIn'), out = document.getElementById('sumOut');
-      samples.forEach(s => { const b = document.createElement('button'); b.type = 'button'; b.className = 'viz-btn'; b.textContent = s.label; b.onclick = () => { inp.value = s.text; run(); }; exBox.appendChild(b); });
-      function paintTones() { tBox.innerHTML = ''; tones.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.className = 'viz-btn' + (t.id === tone.id ? ' is-primary' : ''); b.textContent = t.label; b.onclick = () => { tone = t; paintTones(); if (inp.value.trim()) run(); }; tBox.appendChild(b); }); }
-      paintTones();
-      const stop = new Set("a an the and or but if then so of to in on at for with from by is are was were be been being this that these those it its as we you they he she i our your their my his her have has had do does did not no will would can could should may might about into over under more most very just also".split(' '));
-      function summarize(text) {
-        text = text.replace(/\s+/g, ' ').trim();
-        let sents = text.match(/[^.!?]+[.!?]+/g) || [text];
-        sents = sents.map(s => s.trim()).filter(s => s.split(' ').length >= 4);
-        if (sents.length === 0) return null;
-        const freq = {}; (text.toLowerCase().match(/[a-z']+/g) || []).forEach(w => { if (!stop.has(w) && w.length > 2) freq[w] = (freq[w] || 0) + 1; });
-        const scored = sents.map((s, i) => { const ws = s.toLowerCase().match(/[a-z']+/g) || []; let sc = 0; ws.forEach(w => { if (freq[w]) sc += freq[w]; }); return { s, i, sc: sc / Math.sqrt(ws.length || 1) }; });
-        const top = [...scored].sort((a, b) => b.sc - a.sc).slice(0, Math.min(3, sents.length)).sort((a, b) => a.i - b.i);
-        const tldr = [...scored].sort((a, b) => b.sc - a.sc)[0].s;
-        return { points: top.map(t => t.s.replace(/\s+/g, ' ').trim()), tldr: tldr.replace(/\s+/g, ' ').trim() };
-      }
-      function run() {
-        const text = inp.value.trim();
-        if (!text) { out.innerHTML = '<span class="placeholder">Paste some text or pick a sample first.</span>'; return; }
-        out.innerHTML = '<span class="placeholder">🧠 Reading &amp; summarizing…</span>';
-        setTimeout(() => {
-          const r = summarize(text);
-          if (!r) { out.innerHTML = '<span class="placeholder">Hmm, that text was too short to summarize.</span>'; return; }
-          out.innerHTML = `<p style="margin:0"><strong>${esc(tone.intro)}</strong></p><ul>${r.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul><p style="margin:10px 0 0"><b>${esc(tone.tldr)}</b> ${esc(r.tldr)}</p><p class="viz-hint" style="margin:10px 0 0">↳ in your real app, GPT writes this — richer &amp; in full sentences</p>`;
-        }, 650);
-      }
-      document.getElementById('sumBtn').addEventListener('click', run);
-    })();
-
-    /* ===== LLM arena ===== */
-    (function () {
-      const inp = document.getElementById('arenaIn'), exBox = document.getElementById('arenaExamples'), btn = document.getElementById('arenaBtn');
-      const grid = document.getElementById('arenaGrid'), respA = document.getElementById('respA'), respB = document.getElementById('respB');
-      const whoA = document.getElementById('whoA'), whoB = document.getElementById('whoB');
-      const result = document.getElementById('arenaResult'), tally = document.getElementById('arenaTally'), tA = document.getElementById('tallyA'), tB = document.getElementById('tallyB');
-      const GPT = { name: 'GPT-4o-mini', tag: 'OpenAI' }, LLA = { name: 'Llama-3.3-70b', tag: 'Groq' };
-      const score = { gpt: 0, lla: 0 };
-      let leftIsGPT = true, revealed = false, rated = { A: false, B: false };
-      const pairs = {
-        "recursion": {
-          g: "Recursion is when a function solves a problem by calling itself on a smaller piece of the same problem, until it hits a simple \"base case\" it can answer directly. Like a dictionary entry that points to another word — you follow the chain until you reach one you already know.",
-          l: "Sure! 😊 Picture standing between two mirrors — you see a smaller copy of yourself, then a smaller one inside that, on and on. Recursion is just a function that keeps calling itself on a tinier version of the task until it's small enough to answer in one go."
-        },
-        "tagline": {
-          g: "\"Brewed for the moments that matter.\" Clean, premium, and it reads well on a cup or a storefront sign.",
-          l: "Ooh fun one! Try: \"Life's short. The coffee shouldn't be.\" ☕ Punchy, a little cheeky, and very shareable."
-        },
-        "hotdog": {
-          g: "Definitive answer: No. A sandwich needs a filling between two separate pieces of bread; a hot dog uses a single, hinged bun — so it forms its own category.",
-          l: "Haha, the eternal debate! My verdict: NOT a sandwich. 🌭 The bun is one connected piece, not two slices — so the hot dog stands proudly in a class of its own. 😄"
-        },
-        "space": {
-          g: "A day on Venus is longer than its year: it rotates so slowly that one Venusian day takes ~243 Earth days, while a full orbit of the Sun takes only ~225.",
-          l: "Here's a wild one 🚀 — Venus spins so slowly that a single day there lasts LONGER than its whole year! Your birthday could come round before the sun sets. Space is wonderfully weird. ✨"
-        }
-      };
-      const samples = ["Explain recursion to a total beginner, in 2 sentences.", "Write a catchy tagline for a coffee shop.", "Is a hotdog a sandwich? Give a definitive answer.", "Give me a fun fact about space."];
-      samples.forEach(s => { const b = document.createElement('button'); b.type = 'button'; b.className = 'viz-btn'; b.textContent = s.length > 34 ? s.slice(0, 32) + '…' : s; b.title = s; b.onclick = () => { inp.value = s; run(); }; exBox.appendChild(b); });
-      function pick(prompt) {
-        const p = prompt.toLowerCase();
-        for (const k in pairs) { if (p.includes(k)) return pairs[k]; }
-        return {
-          g: "Good prompt. In a real battle, GPT-4o-mini would answer this directly here — usually tight and well-structured. (This arena is simulated, so I'm keeping it brief.)",
-          l: "Love this question! 😊 In a real battle, Llama-3.3 on Groq would reply right here — typically warmer, chattier, and lightning fast. (Simulated for the demo!)"
-        };
-      }
-      function type(el, text) { el.innerHTML = '<span class="typing"></span>'; let i = 0; const span = el.firstChild; const id = setInterval(() => { i += 3; span.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(id); el.textContent = text; } }, 12); }
-      function run() {
-        const prompt = inp.value.trim(); if (!prompt) return;
-        revealed = false; rated = { A: false, B: false }; result.style.display = 'none'; grid.style.display = 'grid';
-        whoA.textContent = 'Model A'; whoB.textContent = 'Model B';
-        document.querySelectorAll('.av').forEach(b => b.disabled = false);
-        const ans = pick(prompt); leftIsGPT = Math.random() < 0.5;
-        type(respA, leftIsGPT ? ans.g : ans.l); type(respB, leftIsGPT ? ans.l : ans.g);
-      }
-      function doReveal() {
-        if (revealed) return; revealed = true;
-        const a = leftIsGPT ? GPT : LLA, b = leftIsGPT ? LLA : GPT;
-        whoA.textContent = `${a.name} · ${a.tag}`;
-        whoB.textContent = `${b.name} · ${b.tag}`;
-      }
-      function vote(side, v) {
-        if (rated[side]) return; rated[side] = true;
-        doReveal();
-        const sideIsGPT = (side === 'A') ? leftIsGPT : !leftIsGPT;
-        const delta = (v === 'up') ? 1 : -1;
-        if (sideIsGPT) score.gpt += delta; else score.lla += delta;
-        tA.textContent = score.gpt; tB.textContent = score.lla; tally.style.display = 'flex';
-        document.querySelectorAll(`.av[data-side="${side}"]`).forEach(b => b.disabled = true);
-        const model = sideIsGPT ? GPT.name : LLA.name;
-        result.style.display = 'block';
-        result.innerHTML = `${v === 'up' ? '👍' : '👎'} You rated <b>Model ${side}</b> (${model}) ${v === 'up' ? 'good' : 'bad'}. ${(rated.A && rated.B) ? 'Both rated — ' : ''}<button type="button" class="viz-btn" id="arenaAgain" style="margin-left:6px">↻ New battle</button><div style="margin-top:6px;font-size:12.5px;color:var(--muted)">In a real arena, votes like yours pile up across thousands of people to build a public leaderboard.</div>`;
-        document.getElementById('arenaAgain').onclick = run;
-      }
-      btn.addEventListener('click', run);
-      document.querySelectorAll('.av').forEach(b => b.addEventListener('click', () => vote(b.dataset.side, b.dataset.v)));
-    })();
-
-    /* ===== ReAct agent ===== */
-    (function () {
-      const steps = [
-        { r: 'thought', role: '💭 Thought', h: 'To answer, I need today\'s weather in Bangalore. I don\'t have it — I should use a tool.' },
-        { r: 'action', role: '🛠️ Action', h: 'Calling tool: <code>get_weather(city="Bangalore")</code>' },
-        { r: 'obs', role: '👀 Observation', h: 'Tool returned: <code>{ rain_chance: 78%, temp: "24°C" }</code>' },
-        { r: 'thought', role: '💭 Thought', h: '78% is high. The user should take an umbrella. I have enough to answer.' },
-        { r: 'answer', role: '✅ Final Answer', h: 'Yes — carry an umbrella! 78% chance of rain in Bangalore today, 24°C and cloudy. ☔' }
-      ];
-      const stage = document.getElementById('reactStage'), st = document.getElementById('reactStatus'); let i = 0;
-      function next() {
-        if (i >= steps.length) { st.textContent = '✓ Task complete.'; return; }
-        const s = steps[i]; const d = document.createElement('div'); d.className = 'msg ' + s.r; d.innerHTML = `<b>${s.role}</b>${s.h}`; stage.appendChild(d); i++;
-        st.textContent = i < steps.length ? `Loop iteration ${Math.ceil(i / 3)} · step ${i}/${steps.length}` : '✓ Task complete.';
-      }
-      document.getElementById('reactNext').addEventListener('click', next);
-      document.getElementById('reactReset').addEventListener('click', () => { stage.innerHTML = ''; i = 0; st.textContent = ''; });
-    })();
-
-    /* ===== Multi-agent ===== */
-    (function () {
-      const agents = [
-        { id: 'mgr', av: '🧭', nm: 'Manager', ro: 'Plans & delegates', msg: 'Breaking goal into research → write → review.' },
-        { id: 'res', av: '🔬', nm: 'Researcher', ro: 'Finds the facts', msg: 'Found: agents = LLM + tools + loop; used by Cursor, support bots.' },
-        { id: 'wri', av: '✍️', nm: 'Writer', ro: 'Drafts the post', msg: 'Drafted a hook + insight + CTA.' },
-        { id: 'edi', av: '🔍', nm: 'Editor', ro: 'Polishes & checks', msg: 'Tightened wording, approved. ✓' }
-      ];
-      const fin = '🤖 AI "agents" aren\'t sci-fi — they\'re just an LLM given tools and a loop.\n\nThat\'s how Cursor fixes code and support bots resolve tickets end-to-end.\n\nThe shift from chatbots → agents is the biggest change in software this year.\n\nWhat will you let an agent do for you? 👇';
-      const grid = document.getElementById('agentsGrid'), log = document.getElementById('maLog'), fb = document.getElementById('maFinal');
-      let timers = [];
-      function build() { grid.innerHTML = agents.map(a => `<li id="ag-${a.id}"><b>${a.av} ${a.nm}</b>${esc(a.ro)}<br><em id="out-${a.id}"></em></li>`).join(''); }
-      function reset() { timers.forEach(clearTimeout); timers = []; build(); log.innerHTML = ''; fb.style.display = 'none'; }
-      build();
-      document.getElementById('maRun').addEventListener('click', () => {
-        reset();
-        agents.forEach((a, idx) => {
-          timers.push(setTimeout(() => {
-            grid.querySelectorAll('li').forEach(c => c.classList.remove('is-act'));
-            const c = document.getElementById('ag-' + a.id); c.classList.add('is-act');
-            log.innerHTML += `<div><span style="color:var(--accent)">[${a.nm}]</span> ${a.msg}</div>`;
-            document.getElementById('out-' + a.id).textContent = '✓ done';
-            timers.push(setTimeout(() => c.classList.add('is-done'), 700));
-            if (idx === agents.length - 1) {
-              timers.push(setTimeout(() => {
-                grid.querySelectorAll('li').forEach(c => c.classList.remove('is-act'));
-                fb.style.display = 'block';
-                fb.innerHTML = '<b>📋 Final blog post (assembled by the team):</b><div style="white-space:pre-line;margin-top:8px">' + fin + '</div>';
-              }, 800));
-            }
-          }, 900 * (idx + 1)));
-        });
-      });
-      document.getElementById('maReset').addEventListener('click', reset);
     })();
   </script>
 </body>

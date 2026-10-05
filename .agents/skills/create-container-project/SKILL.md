@@ -1,5 +1,5 @@
 ---
-description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design (removing Gradio, agenda, LinkedIn content and class numbers) and regenerating its .md"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design in plain, simple language (removing Gradio, agenda, LinkedIn content, class numbers and interactive sims, which become static examples) and regenerating its .md"
 name: "create-container-project"
 argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-demos/*.html class-notes page to simplify"
 ---
@@ -8,7 +8,7 @@ This skill covers a container project and its two kinds of companion teaching pa
 
 1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**.
 2. **Add ⓘ explainer pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
-3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-demos/*.html` into the DSA-course design and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
+3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-demos/*.html` into the DSA-course design, rewrite it in plain language, replace its interactive examples with static information, and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
 
 When a new public project needs its catalog ⓘ link (Workflow step 11), build the target page with task 2 or 3.
 

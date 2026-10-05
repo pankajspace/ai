@@ -1,7 +1,7 @@
 <!--
 Source: ai-demos.html
 Title: TechToday - AI Demos
-Description: TechToday is a home for hands-on AI and software experiments — small, focused projects exploring what's possible with modern tools.
+Description: TechToday is a set of small, hands-on AI and software projects. Each one shows what you can build with modern tools.
 Stylesheets: ../../style.css
 -->
 
@@ -9,13 +9,13 @@ Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
 # AI Demos
 
-Building small things with big ideas
+Small projects that show big AI ideas
 
 [ⓘ](llms-prompting.html)
 
 ### AI Playground
 
-Joke generator, travel suggestions, website summarizer, and LLM Arena — powered by Groq (GPT OSS 120B) and OpenAI (GPT-4o mini), served through a Flask UI.
+A joke generator, travel suggestions, a website summarizer and an LLM Arena. Uses Groq (GPT OSS 120B) and OpenAI (GPT-4o mini), with a Flask web page.
 
 [Open project →](https://app.techtoday.click/basic/)
 
@@ -23,7 +23,7 @@ Joke generator, travel suggestions, website summarizer, and LLM Arena — powere
 
 ### LangChain Lab
 
-Chains, memory, and agents — a website summarizer, memory chat, and shop agent built with LangChain and OpenAI (GPT-4o mini), served through a Flask UI.
+Chains, memory and agents: a website summarizer, a chat that remembers, and a shop agent. Built with LangChain and OpenAI (GPT-4o mini), with a Flask web page.
 
 [Open project →](https://app.techtoday.click/langchain/)
 
@@ -31,7 +31,7 @@ Chains, memory, and agents — a website summarizer, memory chat, and shop agent
 
 ### RAG Lab
 
-Embeddings, chunking, vector search, reranking, and PDF chat — the full RAG pipeline with LangChain, Chroma, and GPT-4o mini, served through a Flask UI.
+The full RAG pipeline: embeddings, chunking, vector search, reranking and chat with a PDF. Built with LangChain, Chroma and GPT-4o mini, with a Flask web page.
 
 [Open project →](https://app.techtoday.click/rag/)
 
@@ -39,7 +39,7 @@ Embeddings, chunking, vector search, reranking, and PDF chat — the full RAG pi
 
 ### Docker Demo Lab
 
-Interactive demos of three Docker projects — from a single ML container to a multi-service agentic system, built with Flask and Docker Compose.
+Live demos of three Docker projects, from one ML container to an agent system that runs many services. Built with Flask and Docker Compose.
 
 [Open project →](https://app.techtoday.click/docker/)
 
@@ -47,7 +47,7 @@ Interactive demos of three Docker projects — from a single ML container to a m
 
 ### AWS Strands Lab
 
-Agents, tools, and multi-step reasoning — built with the AWS Strands Agents SDK on Amazon Bedrock (Converse API), served through a Flask UI.
+Agents that use tools and reason in several steps. Built with the AWS Strands Agents SDK on Amazon Bedrock (Converse API), with a Flask web page.
 
 [Open project →](https://app.techtoday.click/aws-strands/)
 
@@ -55,7 +55,7 @@ Agents, tools, and multi-step reasoning — built with the AWS Strands Agents SD
 
 ### InterviewIQ
 
-AI mock-interview coach with a ReAct tool-calling agent — real-time STAR, relevance, and filler analysis with session memory and mid-session coaching, powered by OpenAI.
+An AI coach for mock interviews. A ReAct agent calls tools to check each answer for STAR structure, relevance and filler words as you go. It remembers the session and gives tips during it. Uses OpenAI.
 
 [Open project →](https://app.techtoday.click/interviewiq/)
 
@@ -63,6 +63,22 @@ AI mock-interview coach with a ReAct tool-calling agent — real-time STAR, rele
 
 ### Shipment Exception Desk
 
-Shipment exception triage with compensation policy, escalation routing, generated communication drafts, and live daily ledger plus KPI aggregation.
+Sorts shipment problems by urgency. It applies a compensation policy, decides who to escalate to, drafts messages, and keeps a live daily ledger with KPI totals.
 
 [Open project →](https://app.techtoday.click/shipment-exception-desk/)
+
+[ⓘ](ai-systems.html)
+
+### AI Systems Lab
+
+Trade-offs between prompting styles, and how models give in to pressure (sycophancy). Also The Refund Bench: a 4-stage agent pipeline that settles disputes, where 3 judges vote.
+
+[Open project →](https://app.techtoday.click/ai-systems/)
+
+[ⓘ](../../info/ai-reliability.html)
+
+### AI Reliability Lab
+
+Measures what makes AI output reliable: forcing a schema, chain-of-thought, routing by tool schema, and whether a model admits a failed tool call or makes up data.
+
+[Open project →](https://app.techtoday.click/ai-reliability/)

@@ -14,15 +14,15 @@ FUTURE WITH SHIVANK · STUDENT REVISION GUIDE
 
 # Dockerize Everything: ML → LLM → Agents
 
-Everything from the masterclass, rebuilt for revision. Three real projects, every command decoded word by
+This revision guide covers the full Docker lesson. Three real projects, every command decoded word by
 
-            word, and one tiffin-delivery analogy you'll never forget. 🍱 Read it, run it, then test yourself at the
+            word, and one tiffin-delivery analogy to remember. 🍱 Read it, run it, then test yourself at the
 
             bottom.
 
-🔰 No prior Docker needed · 💻 macOS (Apple Silicon ready) · 🐳 Docker Desktop + Compose · ✅ Battle-tested code · 🧪 30 self-test questions
+🔰 No prior Docker needed · 💻 macOS (Apple Silicon ready) · 🐳 Docker Desktop + Compose · ✅ Tested code · 🧪 30 self-test questions
 
-6 Topics • Three Docker Projects, Cheatsheet & 30 Flashcards
+6 Topics • Three Docker Projects, Cheatsheet & 30 Questions
 
 <a id="table-of-contents"></a>
 
@@ -33,7 +33,7 @@ Everything from the masterclass, rebuilt for revision. Three real projects, ever
 3. [Dockerize an LLM Project — "ScalerGPT" RAG bot 📚](#port2)
 4. [Dockerize an Agentic Project — "DeskBuddy" 🤖](#port3)
 5. [Cheatsheet, Golden Rules & Debugging](#port4)
-6. [Self-test — 30 flashcards](#revise)
+6. [Self-test — 30 questions](#revise)
 
 <a id="port0"></a>
 
@@ -46,16 +46,16 @@ Everything from the masterclass, rebuilt for revision. Three real projects, ever
 This is a revision document, not a video transcript. It works best if you go through it three times, with your terminal open beside it.
 
 - **Pass 1 — Read** Skim top to bottom without typing anything. Goal: recognise the vocabulary. Image, container, volume, compose, service name.
-- **Pass 2 — Build** Rebuild all three projects from scratch, copying commands from here. Tick the self-check boxes as you go.
-- **Pass 3 — Recall** Close this page. Try the flashcards and interview questions at the bottom from memory. Whatever you miss, that's your revision list.
+- **Pass 2 — Build** Rebuild all three projects from scratch, copying commands from here. Use the self-check lists as you go.
+- **Pass 3 — Recall** Close this page. Review the questions and answers and interview questions at the bottom from memory. Whatever you miss, that's your revision list.
 
-Every command block has a **Copy** button. Every command block is followed by a decoder that explains each flag — don't skip those, they're where the marks are.
+Every command block has a **Copy** button. Every command block is followed by a decoder that explains each flag — don't skip those, they're where the details are.
 
 <a id="port0-why-docker-exists-at-all"></a>
 
 ### Why Docker exists at all
 
-**What you'll get:** a rock-solid mental model of Docker before you write a single command, plus a working setup on your Mac. By the end of Port 0 you should have run `hello-world`  and be able to explain what actually happened.
+**What you'll get:** a clear mental model of Docker before you write a single command, plus a working setup on your Mac. By the end of Port 0 you should have run `hello-world`  and be able to explain what happened.
 
 > **🔑 Why Docker exists at all.**
 >
@@ -160,17 +160,19 @@ When `hello-world`  prints *"Hello from Docker!"* — you have just pulled an im
 
 ### ✅ Self-check — Port 0
 
-**✅ Self-check — Port 0**
+**Example · Self-check — Port 0**
 
-[ ] Docker Desktop is running (whale 🐳 steady in my menu bar)
+Use this list to check your work.
 
-[ ] `docker run hello-world`  succeeded on my machine
+- Docker Desktop is running (whale 🐳 steady in my menu bar)
 
-[ ] I can recite 3 mappings from the tiffin analogy without looking
+- `docker run hello-world`  succeeded on my machine
 
-[ ] I can explain "an image is a photograph, not a mirror" to someone else
+- I can recite 3 mappings from the tiffin analogy without looking
 
-[ ] I can say the difference between a VM and a container in one sentence
+- I can explain "an image is a photograph, not a mirror" to someone else
+
+- I can say the difference between a VM and a container in one sentence
 
 <a id="port1"></a>
 
@@ -186,7 +188,7 @@ When `hello-world`  prints *"Hello from Docker!"* — you have just pulled an im
 >
 > Imagine you're an ML engineer at a Zomato-style startup. You've built a model that predicts *how many minutes until an order arrives* — distance, restaurant prep time, rider availability, rain as inputs; ETA as output.
 >
-> The model runs beautifully on your laptop. Then DevOps says: *"Ship it to the server."* The server has Python 3.9; you have 3.12. Different sklearn version. Don't even ask about NumPy. Welcome to dependency hell 🔥 — and Docker is the air conditioning.
+> The model runs beautifully on your laptop. Then DevOps says: *"Ship it to the server."* The server has Python 3.9; you have 3.12. Different sklearn version. NumPy may differ too. This is dependency hell. Docker is the air conditioning because it gives the app a controlled environment.
 
 <a id="port1-project-structure"></a>
 
@@ -448,7 +450,7 @@ def predict(order: Order):
 >
 > Picture a stack of layers (like a stack of parathas 🫓). Docker turns each instruction into a **layer** and caches it. When you rebuild, Docker checks each layer top-down: "did anything this layer depends on change?" If not, it reuses the cached layer instantly. But the moment one layer changes, **every layer below it must rebuild too**.
 >
-> Now the logic clicks: if you did `COPY . .`  first and installed dependencies after, then *every tiny code edit* would invalidate the copy layer — and force the slow 2-minute pip install to re-run below it. By copying only `requirements.txt`  first, the pip layer only rebuilds when the shopping list itself changes.
+> Now the logic is clear: if you did `COPY . .`  first and installed dependencies after, then *every tiny code edit* would invalidate the copy layer — and force the slow 2-minute pip install to re-run below it. By copying only `requirements.txt`  first, the pip layer only rebuilds when the shopping list itself changes.
 >
 > **The rule to remember:** if the shopping list hasn't changed, why go back to the store? Code changes daily; dependencies change monthly. *Rarely-changing things at the top, frequently-changing things at the bottom.* This one trick makes builds 10x faster.
 
@@ -541,7 +543,7 @@ data/raw/
 >
 > - **-d '{...}'** — The data itself — one order, as JSON. The backslash `\`  at line ends just means "command continues on the next line."
 >
-> The response comes back as `{"eta_minutes": 41.2, ...}`  . Now open **http://localhost:8000/docs** in your browser: FastAPI auto-generates a clickable "Swagger" page where you can test the API with buttons instead of curl. Flip `is_raining`  to 1 and watch the ETA climb. 🌧️
+> The response comes back as `{"eta_minutes": 41.2, ...}`  . Now open **http://localhost:8000/docs** in your browser: FastAPI auto-generates a Swagger page. It lists the API and lets you send the same request in the browser. Set `is_raining` to 1; the ETA becomes higher. 🌧️
 >
 > **Notice what you did NOT do on your Mac:** no Python environment, no pip install, no version checking. Everything lives inside the box. And this exact box will run on AWS, on a Windows laptop, anywhere — *identically*.
 
@@ -567,7 +569,7 @@ Command decoder
 - **docker exec -it ... bash** — "Execute a command inside a running container." The command here is `bash`  — a shell — so you get a terminal INSIDE the box. `-it`  = interactive + terminal, i.e. "let me type." Try `ls`  and `cat app.py`  inside, then `exit`  to come back out.
 - **docker stop / rm** — stop = pause the delivery (container still exists, restartable). rm = remove the stopped container entirely. The image is untouched — you can always run a fresh one.
 
-`docker exec`  is the moment it clicks: you are standing inside a tiny, separate Linux world living inside your Mac.
+`docker exec`  makes the idea concrete: you are standing inside a tiny, separate Linux world living inside your Mac.
 
 <a id="port1-the-photograph-rule-in-action-try-this-deliberately"></a>
 
@@ -585,25 +587,27 @@ Command decoder
 > docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1
 > ```
 >
-> Rebuild → remove old container (`rm -f`  = force-remove even if running) → run fresh. Losing ten minutes to a stale image is a rite of passage. Do it once here on purpose and you'll never lose those ten minutes again.
+> Rebuild → remove old container (`rm -f`  = force-remove even if running) → run fresh. Losing ten minutes to a stale image is a common beginner mistake. Do it once here on purpose so you remember the fix.
 
 <a id="port1-self-check-port-1"></a>
 
 ### ✅ Self-check — Port 1
 
-**✅ Self-check — Port 1**
+**Example · Self-check — Port 1**
 
-[ ] Image built: quickbite-eta shows up in `docker images`
+Use this list to check your work.
 
-[ ] `/predict`  works for me via both curl and Swagger
+- Image built: quickbite-eta shows up in `docker images`
 
-[ ] I can explain layer caching in one sentence
+- `/predict`  works for me via both curl and Swagger
 
-[ ] I stepped inside with `docker exec`  and came back out
+- I can explain layer caching in one sentence
 
-[ ] I can answer: "I edited my code, why doesn't the container see it?"
+- I stepped inside with `docker exec`  and came back out
 
-[ ] I can explain why `--host 0.0.0.0`  is required in the CMD
+- I can answer: "I edited my code, why doesn't the container see it?"
+
+- I can explain why `--host 0.0.0.0`  is required in the CMD
 
 <a id="port2"></a>
 
@@ -613,7 +617,7 @@ Command decoder
 
 ### What changes at level 2
 
-**What you'll build:** a RAG chatbot (FastAPI + OpenAI API + ChromaDB). New concepts: **secrets/env vars, docker compose, volumes, multi-container networking, startup readiness**. This code is battle-tested — it includes fixes for two real bugs that show up every time.
+**What you'll build:** a RAG chatbot (FastAPI + OpenAI API + ChromaDB). New concepts: **secrets/env vars, docker compose, volumes, multi-container networking, startup readiness**. This code is tested — it includes fixes for two real bugs that show up every time.
 
 > **🔑 What changes at level 2.**
 >
@@ -829,7 +833,7 @@ def ask(q: Question):
 >
 > — try to connect, and if refused, wait 2 seconds and knock again, up
 > to
-> 30 times, printing progress so you can watch it in the logs. Then
+> 30 times, printing progress so the logs show each attempt. Then
 >
 > /ask
 >
@@ -978,7 +982,7 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 >
 > - **docker compose ps -a** — List this project's containers **including dead ones**. Expect both "Up". If app says "Exited", read its logs.
 >
-> - **docker compose logs app** — The app's diary. You want to see: *[ScalerGPT] Connected to chroma at chroma:8000* — you may first see a few "Waiting for chroma (1/30)" lines. That's the retry loop doing its job!
+> - **docker compose logs app** — The app's diary. You want to see: *[ScalerGPT] Connected to chroma at chroma:8000* — you may first see a few "Waiting for chroma (1/30)" lines. That shows the retry loop is working.
 >
 > - **docker compose exec app python ingest.py** — "Inside the already-running **app** container, execute `python ingest.py`  ." This is how you run one-off jobs (migrations, imports) in production — you don't start a new container, you step into the live one.
 >
@@ -986,9 +990,9 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 
 <a id="port2-milestone-2-5-the-volume-magic-trick"></a>
 
-### Milestone #2.5 — The volume magic trick
+### Milestone #2.5 — The volume persistence test
 
-> **🔑 Milestone #2.5 — The volume magic trick.**
+> **🔑 Milestone #2.5 — The volume persistence test.**
 >
 > **Destroy everything. Data survives.**
 >
@@ -1014,19 +1018,21 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 
 ### ✅ Self-check — Port 2
 
-**✅ Self-check — Port 2**
+**Example · Self-check — Port 2**
 
-[ ] Both services show "Up" in `docker compose ps -a`
+Use this list to check your work.
 
-[ ] I ingested docs and got a grounded answer from `/ask`
+- Both services show "Up" in `docker compose ps -a`
 
-[ ] I proved the volume works: `down`  → `up`  → data still there
+- I ingested docs and got a grounded answer from `/ask`
 
-[ ] I can explain why my API key must never go in the Dockerfile
+- I proved the volume works: `down`  → `up`  → data still there
 
-[ ] I can explain the difference between the published port and the internal port
+- I can explain why my API key must never go in the Dockerfile
 
-[ ] I can explain why `depends_on`  alone didn't save me
+- I can explain the difference between the published port and the internal port
+
+- I can explain why `depends_on`  alone didn't save me
 
 <a id="port3"></a>
 
@@ -1051,7 +1057,7 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 ### What is Redis, in 30 seconds?
 
 > **Analogy** 🧠 — **What is Redis, in 30 seconds?**
-> Redis is a super-fast "sticky-note board" database: you store values under names (*key → value*) and read them back in microseconds. Here it remembers each conversation: key = the session ID, value = the message history. Why not a Python variable? Because containers die and restart — a variable dies with them. Redis in its own container (with a volume) means the agent can crash, restart, and still remember you. Someone already packed the Redis tiffin: you just write `image: redis:7-alpine`  .
+> Redis is a very fast "sticky-note board" database: you store values under names (*key → value*) and read them back in microseconds. Here it remembers each conversation: key = the session ID, value = the message history. Why not a Python variable? Because containers die and restart — a variable dies with them. Redis in its own container (with a volume) means the agent can crash, restart, and still remember you. Someone already packed the Redis tiffin: you just write `image: redis:7-alpine`  .
 
 <a id="port3-structure-the-tools-service"></a>
 
@@ -1168,7 +1174,7 @@ def chat(req: Chat):
 >
 > In plain words.
 >
-> the loop is the whole magic of "agents", and it's just 10 lines.
+> the loop is the main idea behind "agents", and it is 10 lines.
 > Each
 > cycle: (1) show the LLM the full conversation plus a menu of available tools (
 >
@@ -1248,7 +1254,7 @@ def chat(req: Chat):
 
 > **🔑 Milestone #3 — The agent in action + memory proof.**
 >
-> Split your terminal in two. Left: `docker compose logs -f`  . Right: the curls. You'll watch requests ripple across three containers live.
+> Split your terminal in two. Left: `docker compose logs -f`  . Right: the curls. The logs show requests ripple across three containers live.
 >
 > **Terminal**
 >
@@ -1276,23 +1282,25 @@ def chat(req: Chat):
 >
 > - **docker compose logs -f** — All three services' diaries interleaved, colour-coded by name. This is how you debug multi-service systems.
 >
-> **The point:** three services, one command, real memory, proper isolation. And this exact compose file works unchanged on an EC2 instance — *same commands, same result*. That bridge from laptop to production is Docker's superpower.
+> **The point:** three services, one command, real memory, proper isolation. And this exact compose file works unchanged on an EC2 instance — *same commands, same result*. That bridge from laptop to production is Docker's main value.
 
 <a id="port3-self-check-port-3"></a>
 
 ### ✅ Self-check — Port 3
 
-**✅ Self-check — Port 3**
+**Example · Self-check — Port 3**
 
-[ ] 3 containers running (`docker compose ps -a`  )
+Use this list to check your work.
 
-[ ] The agent answered using a tool call
+- 3 containers running (`docker compose ps -a`  )
 
-[ ] The memory demo worked — my follow-up used prior context
+- The agent answered using a tool call
 
-[ ] I can explain why `curl localhost:7000`  fails on purpose
+- The memory demo worked — my follow-up used prior context
 
-[ ] I can draw the 3-service architecture from memory on paper
+- I can explain why `curl localhost:7000`  fails on purpose
+
+- I can draw the 3-service architecture from memory on paper
 
 <a id="port4"></a>
 
@@ -1300,13 +1308,13 @@ def chat(req: Chat):
 
 <a id="port4-the-cheatsheet-search-it"></a>
 
-### 📋 The cheatsheet — search it
+### 📋 The cheatsheet — full command list
 
-This is the section to keep open on a second screen while you work. Search the cheatsheet, follow the debug tree when something breaks, and re-read the golden rules before any interview.
+This is the section to keep open on a second screen while you work. Use the full cheatsheet, follow the debug tree when something breaks, and re-read the golden rules before any interview.
 
-**Docker command filter**
+**Example · Docker command list**
 
-*Control:* Search the command, explanation, or tiffin translation
+The table lists each command, its meaning, and its tiffin translation.
 
 | Command | What it does | Tiffin translation |
 | --- | --- | --- |
@@ -1385,7 +1393,7 @@ Something is broken.
 └─ Is my code change showing up?
    ├─ NO → you rebuilt? docker compose up -d --build
    │       edited .env? docker compose up -d --force-recreate
-   └─ YES → it's a logic bug now. Congratulations, that's your job. 🙂
+   └─ YES → it's a logic bug now. Now debug the app logic.
 ```
 
 <a id="port4-top-mac-errors-and-their-fixes"></a>
@@ -1415,20 +1423,20 @@ Something is broken.
 1. **Warm-up** — Push the QuickBite ETA image to Docker Hub (`docker tag`  + `docker push`  ).
 2. **Medium** — Replace ScalerGPT's retry loop with a compose `healthcheck`  on chroma + `depends_on: condition: service_healthy`  . Write two lines on which approach you'd pick and why.
 3. **Hard** — Add a *weather* tool to DeskBuddy by updating ONLY the tools service — no agent rebuild. This proves you understood microservices.
-4. **Boss level** — Multi-stage builds on all three projects; cut image sizes by 40%. Record before/after from `docker images`  .
-5. **Bonus** — Break something on purpose (wrong port, missing .env, edit without rebuild), then fix it using only the debug tree above. This is the fastest way to make the knowledge stick.
+4. **Advanced** — Multi-stage builds on all three projects; cut image sizes by 40%. Record before/after from `docker images`  .
+5. **Bonus** — Break something on purpose (wrong port, missing .env, edit without rebuild), then fix it using only the debug tree above. This is a fast way to remember the steps.
 
 <a id="revise"></a>
 
-## 6. Self-test — 30 flashcards
+## 6. Self-test — 30 questions
 
 <a id="revise-30-flashcards"></a>
 
-### 30 Flashcards
+### 30 questions and answers
 
-**30 Docker flashcards**
+**Example · 30 Docker questions and answers**
 
-*Control:* Click a card to reveal its answer
+Read each question, then check the answer below.
 
 - **Q:** What is the difference between an image and a container?
 
@@ -1536,7 +1544,7 @@ Something is broken.
 
 - **Q:** What does `docker exec -it name bash`  give you, and when do you use it?
 
-  **A:** A shell inside a running container. Use it to inspect files, check env vars, or confirm what actually got copied in — the fastest way to answer "is my file even in there?"
+  **A:** A shell inside a running container. Use it to inspect files, check env vars, or confirm what actually got copied in — the quickest way to answer "is my file even in there?"
 
 - **Q:** Your Mac says "port is already allocated". Two ways out?
 
@@ -1554,7 +1562,7 @@ Something is broken.
 
 ### Interview questions you can now answer
 
-Click a card to reveal the answer. Try to say your answer out loud *before* you click — recall is what builds memory, re-reading isn't. Anything you get wrong, go back to that Port.
+Read each question. Say your answer out loud before reading the notes. Recall builds memory better than re-reading. Anything you get wrong, go back to that Port.
 
 > **🎯 Interview questions you can now answer.**
 >
@@ -1606,4 +1614,4 @@ Click a card to reveal the answer. Try to say your answer out loud *before* you 
 
 "Writing code is half the job. Making it run anywhere in the world — that's engineering. Docker is the box that carries your work to the world."
 
-**Where to go next:** Kubernetes — for when you have 10,000 boxes to manage instead of three. Everything you learned here (images, ports, volumes, service names, readiness) maps directly onto it. You've already done the hard part. 🐳
+**Where to go next:** Kubernetes — for when you have 10,000 boxes to manage instead of three. Everything you learned here (images, ports, volumes, service names, readiness) maps directly onto it. You already understand the core ideas. 🐳

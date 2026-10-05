@@ -14,13 +14,13 @@ RAG · Talk to your own documents
 
 # Stop letting your AI *guess*. Give it a library.
 
-With LangChain agents, your agent could *act* — but it still didn't know **your** data. Now you fix that. You'll build a system that reads your PDFs, finds the right passage for any question, and answers from **real text** — not vibes. It's called **RAG**, and it's how every "chat with your docs" app on the planet actually works. 👉
+LangChain agents can *act*, but they still do not know **your** data. RAG fixes that. You will build a system that reads your PDFs, finds the right passage for a question, and answers from **real text**. **RAG** is the pattern behind most "chat with your docs" apps.
 
-📚 Embeddings, intuition first · ✂️ Chunking, demystified · 🗂️ Vector databases · 🎯 Reranking + hybrid search · 📄 Chat-with-your-PDF, shipped
+📚 Embeddings, intuition first · ✂️ Chunking, explained simply · 🗂️ Vector databases · 🎯 Reranking + hybrid search · 📄 Chat-with-your-PDF, shipped
 
-**Scaler Academy** — every diagram below is interactive. Drag, click, type along.
+**Scaler Academy** — every example below is shown with data, tables and worked steps.
 
-10 Topics · Concepts, Live Simulators & a Chat-with-your-PDF Project
+10 Topics · Concepts, Worked Examples & a Chat-with-your-PDF Project
 
 <a id="table-of-contents"></a>
 
@@ -53,7 +53,7 @@ With LangChain agents, your agent could *act* — but it still didn't know **you
 >
 > **1) It doesn't know *your* stuff** — your company's docs, your PDFs, last week's release notes. **2) When it doesn't know, it makes things up** (hallucinates) confidently. What follows is the single biggest fix in AI engineering. Same agent loop — but now it can look things up in a library *you* built.
 
-> 💡 **🎙️ Speaker note · landing the bridge.** If the shop-assistant agent felt fuzzy, this is the cleanup. Say it plainly: "With agents, the model *chose* a tool. Now the tool is its own library — and the magic moves from *which tool* to *how do we find the right page?*." That's RAG, in one sentence.
+> 💡 **🎙️ Speaker note · landing the bridge.** If the shop-assistant agent felt unclear, this is the cleanup. Say it plainly: "With agents, the model *chose* a tool. Now the tool is its own library — and the main idea moves from *which tool* to *how do we find the right page?*." That's RAG, in one sentence.
 
 <a id="why"></a>
 
@@ -65,14 +65,24 @@ With LangChain agents, your agent could *act* — but it still didn't know **you
 
 **Block 14** ~10 min · the hook
 
-An LLM is a brilliant intern who finished training a year ago and was never allowed inside your office. RAG fixes both — fresh data, *and* your private data — by handing the intern a relevant page **at question-time**.
+An LLM is a smart intern who finished training a year ago and was never allowed inside your office. RAG fixes both — fresh data, *and* your private data — by handing the intern a relevant page **at question-time**.
 
-- **🗓️ Knowledge cutoff** — The model's training ended months ago. It doesn't know yesterday's RBI rate cut or last week's Budget numbers. `✓ RAG: fetch today's article`
-- **🔒 Private / internal data** — It has never seen your HR policy, your contracts, your product wiki, or your customer tickets — and you can't paste them all into one prompt. `✓ RAG: search your docs`
-- **🌀 Hallucinations** — When unsure, the model invents confident-sounding answers. Bad in customer support, dangerous in legal, fatal in healthcare. `✓ RAG: ground in real text`
-- **🔗 No citations** — Ask "where did you get that?" and a raw LLM has nothing. Real products need *"see source: page 14"*. `✓ RAG: return the source chunk`
+- 🗓️ Knowledge cutoff
+   The model's training ended months ago. It doesn't know yesterday's RBI rate cut or last week's Budget numbers.
+   ✓ RAG: fetch today's article
+- 🔒 Private / internal data
+   It has never seen your HR policy, your contracts, your product wiki, or your customer tickets — and you can't paste them all into one prompt.
+   ✓ RAG: search your docs
+- 🌀 Hallucinations
+   When unsure, the model invents confident-sounding answers. Bad in customer support, dangerous in legal, fatal in healthcare.
+   ✓ RAG: ground in real text
+- 🔗 No citations
+   Ask "where did you get that?" and a raw LLM has nothing. Real products need
+   "see source: page 14"
+   .
+   ✓ RAG: return the source chunk
 
-> 🔑 **🤯 The 1-line definition.** **RAG = Retrieval-Augmented Generation.** Before the model answers, *you* retrieve the most relevant snippets from your own data and stuff them into the prompt. The model then answers *from* those snippets. No retraining. No fine-tuning. Just open-book exam instead of closed-book.
+> 🔑 **💡 The 1-line definition.** **RAG = Retrieval-Augmented Generation.** Before the model answers, *you* retrieve the most relevant snippets from your own data and stuff them into the prompt. The model then answers *from* those snippets. No retraining. No fine-tuning. Just open-book exam instead of closed-book.
 
 > 🎯 **Industry spotlight · where you've seen this already — almost every "AI feature" you've used is RAG underneath.** Notion AI answering from your workspace, Glean searching your company's apps, Perplexity citing sources, Intercom's Fin support bot, ChatGPT's "search the web", Cursor finding code in your repo, even the new "ask about this PDF" button in your browser — same pattern, every time. Master this, and you can clone any of them.
 >
@@ -106,9 +116,10 @@ flowchart LR
   S --> F[📋 Stuff<br>add chunks to prompt]:::hl
   F --> L[🧠 LLM<br>answer using them]
   L --> A[💬 Answer<br>+ source citation]:::good
+                
 ```
 
-Boxes 1, 4, 5 you already know from calling an LLM directly. Boxes 2 + 3 are the entire job of everything below.
+*Boxes 1, 4, 5 you already know from calling an LLM directly. Boxes 2 + 3 are the entire job of everything below.*
 
 > **Two phases · don't confuse them.**
 >
@@ -116,7 +127,7 @@ Boxes 1, 4, 5 you already know from calling an LLM directly. Boxes 2 + 3 are the
 >
 > **Phase 2 — Querying (online, every question):** turn the question into numbers → find nearest chunks in the database → paste them into the prompt → LLM answers. Milliseconds per query.
 
-> 🔑 **✨ The unlock that surprises everyone.** You are *not* retraining the model. The model stays exactly the same `gpt-4o-mini` you called through the raw OpenAI API. We're only changing **what goes into the prompt**. RAG is, at its core, very fancy *prompt engineering* — automated.
+> 🔑 **💡 The important idea.** You are *not* retraining the model. The model stays exactly the same `gpt-4o-mini` you called through the raw OpenAI API. We're only changing **what goes into the prompt**. RAG is, at its core, very fancy *prompt engineering* — automated.
 
 <a id="emb"></a>
 
@@ -126,15 +137,30 @@ Boxes 1, 4, 5 you already know from calling an LLM directly. Boxes 2 + 3 are the
 
 ### What Is an Embedding?
 
-**Block 16** ~25 min · the "aha" of the whole topic
+**Block 16** ~25 min · the key idea of this topic
 
-Before we can "search by meaning", we need a way to **turn meaning into numbers**. That's an *embedding*. And once you see what it does, every confusing thing about RAG suddenly makes sense.
+Before we can "search by meaning", we need a way to **turn meaning into numbers**. That's an *embedding*. And once you see what it does, every confusing thing about RAG becomes easier to understand.
 
 > **Definition · keep this in your head.** An **embedding** is a list of numbers (a *vector*) that captures the meaning of a piece of text. Similar meanings ⟶ similar numbers ⟶ nearby points in space. Different meanings ⟶ far apart.
 
-**🧭 Vector space, live** — demo
+**Example · Vector space** — 2-D map
 
-similar meaning ⟶ nearby points · that's the entire trick
+| Word | x | y | Colour group |
+| --- | --- | --- | --- |
+| banana | 80 | 90 | #4ec9b0 |
+| mango | 60 | 115 | #4ec9b0 |
+| grape | 100 | 75 | #4ec9b0 |
+| cat | 280 | 80 | #e0af68 |
+| dog | 300 | 105 | #e0af68 |
+| tiger | 265 | 60 | #e0af68 |
+| king | 180 | 175 | #f48771 |
+| queen | 215 | 155 | #f48771 |
+| man | 120 | 215 | #8cc8ff |
+| woman | 160 | 200 | #8cc8ff |
+| laptop | 60 | 240 | #c586c0 |
+| computer | 90 | 255 | #c586c0 |
+
+**Takeaway.** similar meaning ⟶ nearby points. Fruits cluster together. Animals cluster together. Royalty terms sit near each other. That is the main idea.
 
 <a id="emb-2d-world"></a>
 
@@ -148,43 +174,38 @@ Forget AI for a second. If I plot people by *height vs weight*, people of simila
 
 <a id="emb-arithmetic"></a>
 
-### The *Aha*: Embedding Math Actually Works
+### Embedding Math Works
 
-This is the demo that turned a generation of engineers into believers. Trained on enough text, vectors carry real relationships you can do arithmetic on. Pick a side and watch:
+This example shows why engineers trust embeddings. After training on enough text, vectors carry relationships that you can use in arithmetic. Here are four examples:
 
-**Live sim · Vector arithmetic** — click an equation
+**Example · Vector arithmetic** — four known relationships
 
-king − man + woman ≈ queen
+| Vector equation | Nearest answer |
+| --- | --- |
+| king − man + woman | queen |
+| paris − france + india | delhi |
+| tokyo − japan + germany | berlin |
+| walking − walk + run | running |
 
-*Control:* king − man + woman
+**Takeaway.** Each equation is a real result from GloVe / Word2Vec embeddings. The model did not receive a rule such as "queen is the female king". The pattern comes from the geometry of meaning.
 
-*Control:* paris − france + india
-
-*Control:* tokyo − japan + germany
-
-*Control:* walking − walk + run
-
-Click a different equation. Each is a *real result* from GloVe / Word2Vec embeddings — no tricks. The model never saw any rule like "queen is the female king" — that pattern just *emerges* from the geometry of meaning.
-
-> 🔑 **🤯 Why this is the foundation of everything here.** If *woman* and *queen* can be found by simple arithmetic, then "find the chunk most similar to my question" is also just arithmetic — fast, scalable, and runs on commodity hardware. Every RAG system uses exactly this idea. **Search by meaning = nearest point in vector space.**
+> 🔑 **💡 Why this is the foundation of everything here.** If *woman* and *queen* can be found by simple arithmetic, then "find the chunk most similar to my question" is also just arithmetic — fast, scalable, and runs on commodity hardware. Every RAG system uses exactly this idea. **Search by meaning = nearest point in vector space.**
 
 <a id="emb-mini-map"></a>
 
-### See It in 2D — Same Idea, Drawable
+### See It in 2D — Same Idea in a Drawing
 
-A real-world plot of word vectors squished from 768 dimensions down to 2 for visualization. Click pairs and notice the *direction* connecting them is the same:
+This is a real word-vector plot reduced from 768 dimensions to 2 so we can draw it. The examples show that the *direction* between related words stays similar:
 
-**Live sim · Vector space mini-map** — click the pairs · watch the arrows align
+**Example · Vector space mini-map** — points and directions
 
-*Control:* 👑 king ↔ queen / man ↔ woman
+| Relationship | Pair A | Pair B | What to notice |
+| --- | --- | --- | --- |
+| Royalty | king → queen | man → woman | Both arrows point in a similar direction. |
+| Capital-of | france → paris | india → delhi | The country-to-capital relationship is a direction. |
+| Food vs aeroplane | banana and grape | aeroplane | banana and grape are close. aeroplane is far away, with cos ≈ 0.05. |
 
-*Control:* 🏛️ paris ↔ france / delhi ↔ india
-
-*Control:* 🍎 banana ↔ grape (close) vs aeroplane (far)
-
-*Control:* ↺ clear
-
-*"capital-of"* is encoded as the **direction** from country → capital. Same arrow length, same angle, anywhere on the map. That direction *is* the relationship.
+**Takeaway.** *capital-of* is encoded as the direction from country → capital. The direction is the relationship.
 
 <a id="emb-cosine"></a>
 
@@ -198,21 +219,56 @@ Two vectors close together = the *angle* between them is small. The cosine of th
 
 <a id="emb-meter"></a>
 
-### Try It — the Similarity Meter
+### Example Scores from the Similarity Meter
 
-Type any two sentences. The meter shows the cosine similarity our system would compute (this in-browser simulation uses a small built-in semantic table, so results feel realistic for common topics).
+This example compares pairs of sentences with cosine similarity. It shows the scores for preset pairs and the scoring rules. The scores come from a small built-in table of topics, so common topics look realistic.
 
-**Live sim · Cosine similarity meter** — try opposites, synonyms, totally unrelated pairs
+**Example · Cosine similarity meter** — preset scores and scoring rules
 
-Sentence A: A cat is sleeping on the couch.
+**Default example.** Sentence A: `A cat is sleeping on the couch.` Sentence B: `A kitten is napping on the sofa.` Score: **0.89**.
 
-Sentence B: A kitten is napping on the sofa.
+| Preset label | Sentence A | Sentence B | Score |
+| --- | --- | --- | --- |
+| synonyms | A cat is sleeping on the couch. | A kitten is napping on the sofa. | 0.89 |
+| paraphrase | I love programming. | I enjoy coding. | 0.86 |
+| same city, different names | Flight to Mumbai | Plane to Bombay | 0.92 |
+| related concepts | I am hungry | I want food | 0.83 |
+| unrelated | I love programming | I hate vegetables | 0.08 |
+| totally unrelated | The stock market crashed | A cat is sleeping | 0.04 |
 
-*Control:* synonyms · paraphrase · same city, different names · related concepts · unrelated · totally unrelated
+| Baked token pair A | Baked token pair B | Score |
+| --- | --- | --- |
+| cat sleeping couch | kitten napping sofa | 0.89 |
+| cat sleeping couch | dog running park | 0.32 |
+| cat sleeping couch | stock market crash | 0.04 |
+| love programming | enjoy coding | 0.86 |
+| love programming | hate vegetables | 0.08 |
+| love programming | i write software | 0.71 |
+| flight to mumbai | plane to bombay | 0.92 |
+| i am hungry | i want food | 0.83 |
+| how to fix bug | debugging tips | 0.79 |
 
-**0.00** cosine similarity
+| Score band | Verdict text |
+| --- | --- |
+| 0.85 to 1.00 | 🟢 Near-synonyms — same meaning, different words. |
+| 0.65 to 0.84 | 🟢 Strongly related — same topic. |
+| 0.40 to 0.64 | 🟡 Loosely related — shares some concepts. |
+| 0.20 to 0.39 | 🟠 Distantly related — barely overlapping. |
+| Below 0.20 | 🔴 Unrelated — totally different vector neighbourhoods. |
 
-Type or click a preset to score.
+**Fallback formula for other text.** For text outside the presets, the example scorer lowercases the text, removes punctuation, keeps words longer than 2 characters, counts exact token overlap, checks shared topic buckets, then returns `min(0.97, max(0.02, jaccard * 0.55 + bucketScore + 0.05))`. `bucketScore` is `min(0.75, matchingBuckets * 0.4)`.
+
+| Bucket | Words in this bucket |
+| --- | --- |
+| food | eat, food, hungry, breakfast, lunch, dinner, meal, restaurant, recipe, cook, tasty, sweet, spicy, rice, dal, curry, biryani |
+| animal | cat, dog, kitten, puppy, tiger, lion, animal, pet, bird, fish |
+| tech | code, coding, program, programming, software, bug, debug, python, java, laptop, computer, API, LLM, AI |
+| travel | flight, plane, travel, journey, trip, vacation, airport, train, bombay, mumbai, delhi, bangalore |
+| work | office, meeting, job, work, career, salary, manager, team |
+| sleep | sleep, sleeping, nap, napping, rest, tired, bed, couch, sofa |
+| money | money, price, cost, stock, market, rupees, dollar, income, wealth |
+
+**Takeaway.** Cosine similarity ranges from −1 to +1. In practice, above 0.7 is very similar. Below 0.3 is barely related.
 
 <a id="emb-code"></a>
 
@@ -220,7 +276,7 @@ Type or click a preset to score.
 
 You don't have to train anything — somebody else already did. Open-source models from Hugging Face (`sentence-transformers`) or APIs from OpenAI / Cohere give you embeddings in one line:
 
-embeddings.py
+*embeddings.py*
 
 ```python
 # pip install sentence-transformers
@@ -244,15 +300,28 @@ print(similarity)       # → 0.87 (very similar 🎉)
 
 #### 🔍 Decoder
 
-- **①** **all-MiniLM-L6-v2** is a tiny but excellent open-source embedding model — runs on your laptop, no API key needed. For production, look at `BAAI/bge-large-en-v1.5` (best English) or OpenAI's `text-embedding-3-small` (paid, very good multilingual).
-- **②** `.encode("text")` returns the vector. That's the whole API surface — one call, 384 numbers back. Now your text is searchable by meaning.
+- ①
+   all-MiniLM-L6-v2
+   is a tiny but excellent open-source embedding model — runs on your laptop, no API key needed. For production, look at
+   BAAI/bge-large-en-v1.5
+   (best English) or OpenAI's
+   text-embedding-3-small
+   (paid, very good multilingual).
+- ②
+   .encode("text")
+   returns the vector. That's the whole API surface — one call, 384 numbers back. Now your text is searchable by meaning.
 
 > 💡 **🎙️ Speaker note · how to pitch this section.** This is the "physics" of RAG. Don't rush. Spend a full 5 minutes letting them play with the meter and the king-queen equation. Once they internalize *"similar meaning = nearby vector"*, everything else here is bookkeeping.
 
-- **📍 Vectors = coordinates** — Every chunk of text gets a point in space.
-- **📐 Cosine similarity** — Score from −1 to +1. Bigger = closer.
-- **🪄 Math you can do** — king − man + woman ≈ queen. Really.
-- **⚡ One function call** — `.encode(text)` — that's it.
+- 📍 Vectors = coordinates
+   Every chunk of text gets a point in space.
+- 📐 Cosine similarity
+   Score from −1 to +1. Bigger = closer.
+- 🪄 Math you can do
+   king − man + woman ≈ queen. Really.
+- ⚡ One function call
+   .encode(text)
+   — that's it.
 
 <a id="chunk"></a>
 
@@ -274,32 +343,48 @@ Before we embed anything, we have to cut it up. You can't embed a 200-page PDF a
 
 ### The 4 Chunking Strategies Worth Knowing
 
-- **📏 Fixed size** — Every N characters or tokens — done. Brain-dead simple, fast, your default. *Downside:* chops mid-sentence, mid-table, mid-thought. `Best for: prototypes, blog posts`
-- **🔁 Recursive** — Try to split on paragraphs first; if too big, split on sentences; if still too big, on words. Smart fallback ladder. The default in LangChain. `Best for: most real apps`
-- **🧠 Semantic** — Embed every sentence; group consecutive sentences that "talk about the same thing". Chunks follow meaning, not size. `Best for: long flowing prose`
-- **📑 Structure-aware** — Use the document's own structure — markdown headings, code blocks, HTML sections. Each section becomes a chunk. `Best for: docs, code, wikis`
+- 📏 Fixed size
+   Every N characters or tokens — done. Very simple, fast, your default.
+   Downside:
+   chops mid-sentence, mid-table, mid-thought.
+   Best for: prototypes, blog posts
+- 🔁 Recursive
+   Try to split on paragraphs first; if too big, split on sentences; if still too big, on words. A clear fallback ladder. The default in LangChain.
+   Best for: most real apps
+- 🧠 Semantic
+   Embed every sentence; group consecutive sentences that "talk about the same thing". Chunks follow meaning, not size.
+   Best for: long flowing prose
+- 📑 Structure-aware
+   Use the document's own structure — markdown headings, code blocks, HTML sections. Each section becomes a chunk.
+   Best for: docs, code, wikis
 
 <a id="chunk-sim"></a>
 
-### Watch All 4 Strategies — Same Text, Four Different Cuts
+### Compare All 4 Strategies — Same Text, Four Different Cuts
 
-Same source passage, four ways to chop it. Switch tabs and watch **where the cuts land** and **how chunks change shape**. The differences *are* the lesson — pure text won't make this click; the picture will.
+The same source passage is cut in four ways. The table shows **where the cuts land** and **how chunk shape changes**. The differences are the lesson.
 
-**Live sim · 4 chunking strategies · same source** — click tabs · compare cuts side by side
+**Example · 4 chunking strategies · same source** — same source, four results
 
 📄 Source · a tiny markdown doc with 3 topics
 
-*Control:* 📏 Fixed · blind char-count
+# Bengaluru Overview ## Tech Industry Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS. ## Climate The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees. ## Food Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.
 
-*Control:* 🔁 Recursive · respect boundaries
+| Strategy | Setting | Output chunks | Stats | What to notice |
+| --- | --- | --- | --- | --- |
+| Fixed size | 80 characters for the worked example. The old range was 40–240 characters, default 120. | **Chunk 1 (80 chars; mid-word cut)**<br># Bengaluru Overview<br><br>## Tech Industry<br>Bengaluru is known as India's Silicon Val<br><br>**Chunk 2 (80 chars; mid-word cut)**<br>ley. Tech parks like Electronic City and Whitefield host thousands of tech compa<br><br>**Chunk 3 (80 chars; mid-word cut)**<br>nies. Major firms include Infosys, Wipro, and TCS.<br><br>## Climate<br>The city sits at <br><br>**Chunk 4 (80 chars; mid-word cut)**<br>920 meters altitude. This gives it pleasantly cool weather year-round. Average t<br><br>**Chunk 5 (80 chars; mid-word cut)**<br>emperatures rarely exceed 30 degrees.<br><br>## Food<br>Bengaluru's food scene is legenda<br><br>**Chunk 6 (80 chars; mid-word cut)**<br>ry. South Indian classics like masala dosa and idli thrive here. Filter coffee s<br><br>**Chunk 7 (29 chars; mid-word cut)**<br>hops dot every street corner. | 7 chunks; 73 average chars; 7 mid-word cuts | Cuts land at character N. They do not respect words, sentences, or paragraphs. This is cheap to write, but poor for retrieval. |
+| Recursive | 80 characters, with paragraph → sentence → word fallback. | **Chunk 1 (20 chars)**<br># Bengaluru Overview<br><br>**Chunk 2 (62 chars)**<br>## Tech Industry<br>Bengaluru is known as India's Silicon Valley.<br><br>**Chunk 3 (80 chars)**<br>Tech parks like Electronic City and Whitefield host thousands of tech companies.<br><br>**Chunk 4 (44 chars)**<br>Major firms include Infosys, Wipro, and TCS.<br><br>**Chunk 5 (48 chars)**<br>## Climate<br>The city sits at 920 meters altitude.<br><br>**Chunk 6 (49 chars)**<br>This gives it pleasantly cool weather year-round.<br><br>**Chunk 7 (46 chars)**<br>Average temperatures rarely exceed 30 degrees.<br><br>**Chunk 8 (44 chars)**<br>## Food<br>Bengaluru's food scene is legendary.<br><br>**Chunk 9 (60 chars)**<br>South Indian classics like masala dosa and idli thrive here.<br><br>**Chunk 10 (44 chars)**<br>Filter coffee shops dot every street corner. | 10 chunks; 50 average chars; 0 mid-word cuts | Same character budget, cleaner cuts. LangChain uses RecursiveCharacterTextSplitter as the safe default for about 90% of RAG apps. |
+| Semantic | No size knob. Sentences are tagged by topic and adjacent same-topic sentences are merged. | **tech (171 chars)**<br>Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br>**climate (134 chars)**<br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br>**food (142 chars)**<br>Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner. | 3 chunks; 3 topics detected; size range 134-171 | Chunks are shaped by meaning, not size. Tech sentences join together. Climate sentences join together. Food sentences join together. |
+| Structure-aware | No size knob. Markdown headers set the boundaries. | **Section 1 (20 chars)**<br># Bengaluru Overview<br><br>**Section 2 (188 chars)**<br>## Tech Industry<br>Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br>**Section 3 (145 chars)**<br>## Climate<br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br>**Section 4 (150 chars)**<br>## Food<br>Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner. | 4 chunks; 4 sections; 126 average chars | Each ## section becomes one chunk with its header attached. This is best for docs, wikis, source code, Markdown, and HTML. |
 
-*Control:* 🧠 Semantic · group by topic
+| Default setting | Computed stats |
+| --- | --- |
+| Fixed size 120 | 5 chunks; 102 average chars; 2 mid-word cuts |
+| Recursive size 120 | 8 chunks; 62 average chars; 0 mid-word cuts |
 
-*Control:* 📑 Structure · follow headers
+**Takeaway.** **Recall vs precision.** Big chunks raise recall because the answer is probably inside. They lower precision because there is more extra text. Small chunks raise precision but can split the answer across chunks.
 
-*Control:* Chunk size slider (40–240 characters)
-
-**Try this sequence:** start on *Fixed* at size 80 → count the 🪓 mid-word cuts → flip to *Recursive* at the same size → they're all gone → flip to *Semantic* → notice three chunks emerge that align perfectly with the three topics → flip to *Structure* → see how the markdown `##` headers do the work for free.
+**Read this sequence:** Fixed at size 80 creates mid-word cuts. Recursive at the same size removes those cuts. Semantic creates three chunks that match the three topics. Structure uses the markdown `##` headers as ready-made boundaries.
 
 > **The recall vs precision tradeoff · keep this in mind.** **Big chunks** → high recall (the answer is probably *in* there), but low precision (lots of fluff around it). **Small chunks** → high precision (the chunk is exactly the answer), but low recall (the relevant bit might be split across two chunks and you only pulled one). Most teams sweep chunk size as their first RAG tuning knob.
 
@@ -307,7 +392,7 @@ Same source passage, four ways to chop it. Switch tabs and watch **where the cut
 
 ### One Line of Real Code
 
-chunk.py
+*chunk.py*
 
 ```python
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -346,9 +431,19 @@ You have thousands of embeddings. For every question, you need the top-k nearest
 
 ### The Three Names You'll Hear All the Time
 
-- **🟢 Chroma ★ today** — Open-source, runs in-process (no server!), one `pip install`. Perfect for prototypes & up to ~10M vectors. **What we'll use today.**
-- **🔵 Pinecone** — Fully managed SaaS. Zero ops, scales to billions, but paid. The boring-and-reliable choice for production.
-- **🟣 Qdrant** — Open-source *and* production-grade. Self-host or use their cloud. Great middle ground when you outgrow Chroma.
+- 🟢 Chroma ★ today
+   Open-source, runs in-process (no server!), one
+   pip install
+   . Perfect for prototypes
+   &
+   up to ~10M vectors.
+   What we'll use today.
+- 🔵 Pinecone
+   Fully managed SaaS. Zero ops, scales to billions, but paid. The boring-and-reliable choice for production.
+- 🟣 Qdrant
+   Open-source
+   and
+   production-grade. Self-host or use their cloud. Great middle ground when you outgrow Chroma.
 
 > 💡 **🎯 Picking one (don't overthink).** Prototyping or under 1M chunks? **Chroma**. Want zero ops & have a budget? **Pinecone**. Need to self-host at scale? **Qdrant** or **Weaviate**. The good news: LangChain wraps all of them with the same interface, so swapping later is a one-line change.
 
@@ -358,9 +453,12 @@ You have thousands of embeddings. For every question, you need the top-k nearest
 
 A vector DB is just these three calls:
 
-1. **`db.add(documents, embeddings)`** — store chunks and their vectors. (Indexing.)
-2. **`db.query(query_vector, k=3)`** — return the 3 chunks whose vectors are closest. (Retrieval.)
-3. **`db.delete(ids)`** — remove chunks when a doc is deleted. That's it. Three calls.
+1. db.add(documents, embeddings)
+   — store chunks and their vectors. (Indexing.)
+2. db.query(query_vector, k=3)
+   — return the 3 chunks whose vectors are closest. (Retrieval.)
+3. db.delete(ids)
+   — remove chunks when a doc is deleted. That's it. Three calls.
 
 > 🎯 **Industry spotlight · how it stays fast — HNSW, the trick behind every vector DB.** Searching billions of vectors naively means computing billions of distances per query. **HNSW** (Hierarchical Navigable Small World — a 2018 algorithm) builds a "ladder" graph so each query takes only ~log(N) hops. Result: sub-10ms lookups on 100M vectors. You'll never write this yourself — every vector DB ships it built-in.
 >
@@ -378,7 +476,7 @@ A vector DB is just these three calls:
 
 We've talked about every piece. Now we wire them up. This is the whole pattern — every RAG system you'll see in production is just a fancier version of *this*.
 
-index.py
+*index.py*
 
 ```python
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -410,7 +508,7 @@ print(f"Indexed {len(chunks)} chunks 🎉")
 
 ### Step 2 — Ask a Question (Every Time)
 
-rag.py
+*rag.py*
 
 ```python
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -448,26 +546,66 @@ print(rag_answer("How long do I have to return something?"))
 
 #### 🔍 Decoder — the 8 numbered steps
 
-- **①** Your data. In real life this is PDFs, web pages, Notion exports — anything you can turn into text.
-- **②** Chunk it. Block 17 in action. `chunk_size=500` is a sane default.
-- **③** Pick an embedder. We're using a free local one — swap to `OpenAIEmbeddings()` for a paid, slightly better version.
-- **④** `Chroma.from_documents` embeds every chunk and stores both the text and the vector. Done once per dataset.
-- **⑤** Reopen the same database. The embeddings are already on disk — no re-encoding.
-- **⑥** The magic prompt template. Notice `"ONLY the context below"` — this single line is the most important hallucination-fighter in RAG.
-- **⑦** `similarity_search` = embed the question, find the 3 nearest chunks, return them. The librarian.
-- **⑧** Same LangChain pipe (`prompt | model`) you used for LangChain chains. **RAG didn't replace your previous knowledge — it slotted right in.**
+- ①
+   Your data. In real life this is PDFs, web pages, Notion exports — anything you can turn into text.
+- ②
+   Chunk it. Block 17 in action.
+   chunk_size=500
+   is a sane default.
+- ③
+   Pick an embedder. We're using a free local one — swap to
+   OpenAIEmbeddings()
+   for a paid, slightly better version.
+- ④
+   Chroma.from_documents
+   embeds every chunk and stores both the text and the vector. Done once per dataset.
+- ⑤
+   Reopen the same database. The embeddings are already on disk — no re-encoding.
+- ⑥
+   The important prompt template. Notice
+   "ONLY the context below"
+   — this single line is the most important hallucination reducer in RAG.
+- ⑦
+   similarity_search
+   = embed the question, find the 3 nearest chunks, return them. The librarian.
+- ⑧
+   Same LangChain pipe (
+   prompt | model
+   ) you used for LangChain chains.
+   RAG didn't replace your previous knowledge — it slotted right in.
 
 <a id="build-sim"></a>
 
-### Watch It Run — Step-by-Step Pipeline
+### Follow the Pipeline Step by Step
 
-Press *Next* to see exactly what happens inside `rag_answer("How long do I have to return something?")`. Each step is a card; this is the whole RAG flow on one screen:
+Here is what happens inside `rag_answer("How long do I have to return something?")`. Each item is one step in the RAG flow:
 
-**Live sim · RAG, step by step** — press ▶ five times
+**Example · RAG, step by step** — one question through the pipeline
 
-*Control:* ▶ Next step
+1. 1 · User question.
+   "How long do I have to return something?"
+2. 2 · Embed the question.
+   Turn the question into a 384-number vector with
+   model.encode(question)
+   . Think of it as the question's coordinates.
+3. 3 · Search the vector DB.
+   db.similarity_search(query, k=3)
+   finds the 3 nearest chunks:
+   refunds within 30 days...
+   shipping is free above ₹999
+   corporate orders contact sales@
+4. 4 · Put the chunks into the prompt.
+   The retrieved chunks become
+   {context}
+   . The question becomes
+   {question}
+   . One string goes to the LLM.
+5. 5 · LLM answers from context.
+   GPT-4o-mini replies:
+   "You can return items within 30 days of purchase."
+   ✅ The answer came from the chunk, not from memory.
 
-*Control:* ↺ Reset
+**Takeaway.** RAG complete. The same loop runs for every question.
 
 > 🔑 **🎯 Take a moment — this *is* the canonical pattern.** That's it. Every RAG system in the world — from a hobby project to Perplexity — is a variant of these 8 lines. From here we're just making it *better*: smarter retrieval, smarter prompts, multiple passes. The core never changes.
 
@@ -489,24 +627,47 @@ Embedding similarity is fast, but it sometimes ranks shallow word-matches above 
 >
 > You can't interview 1,000 people (it would take a year). You also can't pick someone by gut feel from a stack of resumes (you'd hire badly). So you do **two passes**: a fast *resume scan* to shortlist 25, then a real *30-minute interview* with each of those 25. **Bi-encoder and cross-encoder are exactly these two passes.**
 
-- **📋 Bi-encoder · like a resume scan** — Reads the query and the document **separately**, turns each into a vector, then compares the two vectors with cosine similarity. The encoder *never sees them together* — it judges each "card" alone.
-  - ⚡ **Fast** — sub-10ms over millions of docs
-  - 💾 **Pre-computable** — encode all your docs once, store forever, only encode the query at runtime
-  - 📉 **Shallow** — misses subtle relevance because the model never compares them side-by-side
-  - `→ use it to grab top 50–100 candidates`
-- **🎙️ Cross-encoder · like a 30-min interview** — Feeds the query **and** the document into one transformer *together*, lets the model attend to both at once, then outputs a single relevance score. The model can compare them token by token, weigh trade-offs, spot nuance.
-  - 🎯 **Way more accurate** — sees query↔doc word interactions directly
-  - 🐢 **Slow** — full transformer run per (query, doc) pair
-  - ❌ **Not pre-computable** — each score is pair-specific, you can't cache anything
-  - `→ use it to rerank those 50 → top 3`
+- 📋 Bi-encoder · like a resume scan
+   Reads the query and the document
+   separately
+   , turns each into a vector, then compares the two vectors with cosine similarity. The encoder
+   never sees them together
+   — it judges each "card" alone.
+   ⚡
+   Fast
+   — sub-10ms over millions of docs
+   💾
+   Pre-computable
+   — encode all your docs once, store forever, only encode the query at runtime
+   📉
+   Shallow
+   — misses subtle relevance because the model never compares them side-by-side
+   → use it to grab top 50–100 candidates
+- 🎙️ Cross-encoder · like a 30-min interview
+   Feeds the query
+   and
+   the document into one transformer
+   together
+   , lets the model attend to both at once, then outputs a single relevance score. The model can compare them token by token, weigh trade-offs, spot nuance.
+   🎯
+   Way more accurate
+   — sees query↔doc word interactions directly
+   🐢
+   Slow
+   — full transformer run per (query, doc) pair
+   ❌
+   Not pre-computable
+   — each score is pair-specific, you can't cache anything
+   → use it to rerank those 50 → top 3
 
 ```mermaid
 flowchart LR
   A[1,000,000<br>all your chunks] -->|📋 bi-encoder · ~10 ms| B[50<br>candidates]:::hl
   B -->|🎙️ cross-encoder · ~200 ms| C[3<br>to the LLM]:::good
+                
 ```
 
-Funnel total: ~210ms — fast enough for live chat, accurate enough to beat raw vector search by miles.
+*Funnel total: ~210ms — fast enough for live chat, accurate enough to beat raw vector search by miles.*
 
 > **Remember this — the two-stage pattern is universal.**
 >
@@ -516,23 +677,63 @@ Funnel total: ~210ms — fast enough for live chat, accurate enough to beat raw 
 
 <a id="rerank-sim"></a>
 
-### See Reranking Flip the Order
+### Reranking Flips the Order
 
-Same query, same candidates. *Left*: what cosine similarity returned. *Right*: what a cross-encoder reranker returns. Press the button and watch the real answer rise:
+Same query, same candidates. *Left*: what cosine similarity returned. *Right*: what a cross-encoder reranker returned. The relevant answer rises to the top:
 
-**Live sim · Reranker · before vs after** — query: "how do I return a defective product?"
+**Example · Reranker · before vs after** — query: "how do I return a defective product?"
 
-stage 1 · vector search (top 5) ➜ stage 2 · cross-encoder rerank
+stage 1 · vector search (top 5)
 
-*Control:* ▶ Run reranker
+1. Our shipping is fast and reliable for all returns.
 
-*Control:* ↺ Reset
+0.78
 
-Notice doc #4 — it never says the word "return" but it's clearly the most relevant. Pure vector search ranks it #4; cross-encoder lifts it to #1. *That* is why we rerank.
+2. Refund policy: items can be returned within 30 days.
 
-The code to add reranking is laughably short:
+0.74
 
-rerank.py
+3. Return shipping labels are emailed after request.
+
+0.71
+
+4. For damaged or defective items, replacements are sent free of cost.
+
+0.69
+
+5. Our return desk is at the warehouse in Pune.
+
+0.66
+
+➜
+
+stage 2 · cross-encoder rerank
+
+1. For damaged or defective items, replacements are sent free of cost.
+
+0.94
+
+2. Refund policy: items can be returned within 30 days.
+
+0.88
+
+3. Return shipping labels are emailed after request.
+
+0.81
+
+4. Our return desk is at the warehouse in Pune.
+
+0.62
+
+5. Our shipping is fast and reliable for all returns.
+
+0.45
+
+**Takeaway.** Doc #4 does not use the word "return", but it is the best answer for a defective product. Vector search put it at #4. The cross-encoder moved it to #1.
+
+The code to add reranking is short:
+
+*rerank.py*
 
 ```python
 from sentence_transformers import CrossEncoder
@@ -557,20 +758,56 @@ def retrieve_with_rerank(question, top_k=3):
 
 Pure semantic search ignores keywords. Ask "what's the price of **SKU-4429**?" and the embedding doesn't care about that specific code — it just sees "price" and "product". For codes, names, IDs, dates — **keyword search beats semantic** hands down. The fix isn't to pick one or the other. It's to use *both*, with very different strengths.
 
-> **Analogy** 📚 — **Two librarians, very different superpowers**
+> **Analogy** 📚 — **Two librarians, very different strengths**
 >
-> Remember our librarian from Block 15? She has **two assistants** who search the stacks completely differently. One is a literalist who lives for exact words. The other is a philosopher who lives for meaning. Send your query to the right one and you get great results. **Send your query to *both* — and let them merge their rankings — and you get magic.** That's hybrid search.
+> Remember our librarian from Block 15? She has **two assistants** who search the stacks completely differently. One is a literalist who lives for exact words. The other is a philosopher who lives for meaning. Send your query to the right one and you get great results. **Send your query to *both* — and let them merge their rankings — and you get strong results.** That's hybrid search.
 
-- **🔤 Librarian A · BM25 · the literalist** — Obsessed with **exact words**. Type *"SKU-4429"* or *"Article 21"* and she'll find every single doc containing those exact characters. But ask for *"running shoes"* and she'll skip the doc titled *"marathon footwear"* — different words, even though same meaning.
-  - ✅ **Brilliant at** product codes, SKUs, model numbers, version strings
-  - ✅ **Brilliant at** proper nouns, dates, legal references, technical jargon
-  - ❌ **Blind to** synonyms, paraphrase, intent — words are just characters to her
-  - `→ catches what vector misses`
-- **🧠 Librarian B · Vector · the philosopher** — Obsessed with **meaning**. Ask for *"running shoes"* and she surfaces *"marathon footwear"*, *"jogging trainers"*, even *"sneakers for athletes"*. But ask for *"SKU-4429"* and she shrugs — random letters and numbers are just noise to her.
-  - ✅ **Brilliant at** natural-language questions, "what's this about?"
-  - ✅ **Brilliant at** fuzzy queries, paraphrase, multilingual matching
-  - ❌ **Blind to** exact codes, IDs, technical strings — drowns them in averages
-  - `→ catches what BM25 misses`
+- 🔤 Librarian A · BM25 · the literalist
+   Obsessed with
+   exact words
+   . Type
+   "SKU-4429"
+   or
+   "Article 21"
+   and she'll find every single doc containing those exact characters. But ask for
+   "running shoes"
+   and she'll skip the doc titled
+   "marathon footwear"
+   — different words, even though same meaning.
+   ✅
+   Brilliant at
+   product codes, SKUs, model numbers, version strings
+   ✅
+   Brilliant at
+   proper nouns, dates, legal references, technical jargon
+   ❌
+   Blind to
+   synonyms, paraphrase, intent — words are just characters to her
+   → catches what vector misses
+- 🧠 Librarian B · Vector · the philosopher
+   Obsessed with
+   meaning
+   . Ask for
+   "running shoes"
+   and she surfaces
+   "marathon footwear"
+   ,
+   "jogging trainers"
+   , even
+   "sneakers for athletes"
+   . But ask for
+   "SKU-4429"
+   and she shrugs — random letters and numbers are just noise to her.
+   ✅
+   Brilliant at
+   natural-language questions, "what's this about?"
+   ✅
+   Brilliant at
+   unclear queries, paraphrase, multilingual matching
+   ❌
+   Blind to
+   exact codes, IDs, technical strings — drowns them in averages
+   → catches what BM25 misses
 
 <a id="rerank-hybrid"></a>
 
@@ -578,7 +815,7 @@ Pure semantic search ignores keywords. Ask "what's the price of **SKU-4429**?" a
 
 Send the same query to *both* librarians at the same time. Each ranks the docs by their own logic. You then **merge their two ranked lists into one** using a tiny formula called **Reciprocal Rank Fusion (RRF)**:
 
-> 🔑 **⚡ Reciprocal Rank Fusion in one line.** For each doc, final score = `1 / (60 + rank in BM25) + 1 / (60 + rank in Vector)`. Docs that *both* librarians ranked highly bubble to the top. Docs only one of them liked still get a fair shot. No tuning, no thresholds, no magic numbers (well, 60 — but it almost never matters). *That's it.* Used by almost every production RAG system in the wild.
+> 🔑 **⚡ Reciprocal Rank Fusion in one line.** For each doc, final score = `1 / (60 + rank in BM25) + 1 / (60 + rank in Vector)`. Docs that *both* librarians ranked highly bubble to the top. Docs only one of them liked still get a fair shot. No tuning, no thresholds, no main idea numbers (well, 60 — but it almost never matters). *That's it.* Used by almost every production RAG system in the wild.
 
 > **Analogy** 🤝 — **Why this works so well in practice**
 >
@@ -586,17 +823,77 @@ Send the same query to *both* librarians at the same time. Each ranks the docs b
 
 <a id="rerank-hybrid-sim"></a>
 
-### See It on a Real Query — *"I Want Running Shoes"*
+### Compare Search Methods on *"I Want Running Shoes"*
 
-Same query, three rankings. Watch how Librarian A and Librarian B return different top picks — and how Hybrid merges them. Press the button to see who wins:
+Same query, three rankings. Librarian A and Librarian B return different top picks. Hybrid merges the rankings:
 
-**Live sim · BM25 vs Vector vs Hybrid** — same query, three rankings
+**Example · BM25 vs Vector vs Hybrid** — query: "I want running shoes"
 
-- **🔤 BM25** `keyword` — Counts word overlap. Loves "shoes" appearing literally.
-- **🧠 Vector** `semantic` — Understands "running" means jogging — even if the word "shoes" isn't there.
-- **⚡ Hybrid** `blended` — Reciprocal rank fusion — gives the best of both. Default for production.
+🔤 BM25
 
-*Control:* ▶ Compare all three
+keyword
+
+1. Adidas Ultraboost sneakers · Marathon running shoes
+
+score: 8.40
+
+2. Reebok CrossFit gym shoes
+
+score: 3.10
+
+3. Bata kids school shoes
+
+score: 2.40
+
+4. Nike Air Zoom Pegasus trainers
+
+score: 1.20
+
+Counts word overlap. It likes documents that include "shoes".
+
+🧠 Vector
+
+semantic
+
+1. Nike Air Zoom Pegasus trainers
+
+score: 0.83
+
+2. Asics Gel-Kayano stability trainers
+
+score: 0.78
+
+3. Adidas Ultraboost sneakers · Marathon running shoes
+
+score: 0.71
+
+4. Reebok CrossFit gym shoes
+
+score: 0.55
+
+Understands that "running" relates to jogging and trainers.
+
+⚡ Hybrid
+
+blended
+
+1. Adidas Ultraboost sneakers · Marathon running shoes
+
+fused: 0.0328
+
+2. Nike Air Zoom Pegasus trainers
+
+fused: 0.0325
+
+3. Reebok CrossFit gym shoes
+
+fused: 0.0323
+
+4. Asics Gel-Kayano stability trainers
+
+fused: 0.0318
+
+Reciprocal rank fusion combines both ranked lists. It is a common production default.
 
 > 🎯 **Industry spotlight · this is what the leaderboard chases — every "+10% retrieval quality" paper is one of these tricks.** Reranking + hybrid search are the two single biggest quality wins in RAG. Add them and you go from "demo works" to "production works". Almost every benchmark in the MTEB leaderboard uses some combination. You now know the playbook.
 >
@@ -620,15 +917,16 @@ flowchart LR
   C --> E[📍 Embed + store<br>Chroma]:::hl
   E --> R[🔎 Retrieve<br>top-3 chunks]:::hl
   R --> T[💬 Chat<br>terminal loop]:::good
+                
 ```
 
-Load → chunk → embed → retrieve → answer. Let's write each piece.
+*Load → chunk → embed → retrieve → answer. Let's write each piece.*
 
 <a id="project-index"></a>
 
 ### Step 1 — Load the PDF & Index It Once
 
-pdf_chat.py · part 1
+*pdf_chat.py · part 1*
 
 ```python
 # pip install langchain langchain-openai langchain-chroma langchain-huggingface \
@@ -652,7 +950,7 @@ def build_index(pdf_path):
 
 ### Step 2 — Answer with Retrieval + Citations
 
-pdf_chat.py · part 2
+*pdf_chat.py · part 2*
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -693,7 +991,7 @@ def ask(db, question):
 
 A tiny `main.py` indexes the PDF once, then answers questions in a loop:
 
-main.py
+*main.py*
 
 ```python
 from pdf_chat import build_index, ask
@@ -711,9 +1009,20 @@ while True:
 
 #### 🔍 Decoder · the 3 small choices that matter
 
-- **①** `build_index` runs once, before the loop, and the result is kept in `db`. Without that, every question would re-index the PDF from scratch (slow!).
-- **②** Indexing only once means each question is instant. This is the same indexing/querying split from Block 15.
-- **③** We pass `page` from the chunk metadata into the prompt (in `ask`) — that's how the model knows which page to cite. **Metadata is RAG's superpower.**
+- ①
+   build_index
+   runs once, before the loop, and the result is kept in
+   db
+   . Without that, every question would re-index the PDF from scratch (slow!).
+- ②
+   Indexing only once means each question is instant. This is the same indexing/querying split from Block 15.
+- ③
+   We pass
+   page
+   from the chunk metadata into the prompt (in
+   ask
+   ) — that's how the model knows which page to cite.
+   Metadata is RAG's strength.
 
 <a id="project-run"></a>
 
@@ -721,7 +1030,7 @@ while True:
 
 Save `pdf_chat.py` (parts 1 + 2), `main.py` and your `.env` in one folder, then run:
 
-bash — your project folder
+*bash — your project folder*
 
 ```text
 $ python main.py
@@ -732,27 +1041,40 @@ Path to your PDF: annual_report.pdf
 You: What was the revenue this year?
 ```
 
-1. **Point it at *any* PDF.** Your resume, the Indian Constitution, your company's HR policy, last quarter's earnings call transcript. Anything text-based.
-2. **Ask 3 questions.** One factual ("when was X founded?"), one summary ("what's the main argument?"), one tricky ("compare X and Y"). Notice the citations.
-3. **Try a question that's NOT in the doc.** The answer should be *"I couldn't find that in the document."* — that's RAG **refusing to hallucinate**. Watch for this moment. It's the whole point.
+1. Point it at
+   any
+   PDF.
+   Your resume, the Indian Constitution, your company's HR policy, last quarter's earnings call transcript. Anything text-based.
+2. Ask 3 questions.
+   One factual ("when was X founded?"), one summary ("what's the main argument?"), one tricky ("compare X and Y"). Notice the citations.
+3. Try a question that's NOT in the doc.
+   The answer should be
+   "I couldn't find that in the document."
+   — that's RAG
+   refusing to hallucinate
+   . Watch for this moment. It's the main point.
 
 <a id="project-demo"></a>
 
-### Try the Working Version 👇
+### Walkthrough of the PDF Chat
 
-A live in-browser version with three pre-indexed sample documents — click a PDF, ask a question, see RAG retrieve the right chunk before answering:
+This walkthrough uses three sample documents that are already indexed. The table shows the documents, example questions, retrieved answers, and the refusal message for questions not in the document:
 
-**📄 Chat with your PDF** — live demo
+**Example · Chat with your PDF** — three indexed sample documents
 
-Pick a sample document
+**Index message from the old demo.** `Indexed "📋 HR Policy" — 1 page, ~8 chunks. Ask me anything!` The same pattern applied to each sample document.
 
-*Control:* 📋 HR Policy · 💰 TCS Q3 Earnings · 📜 Indian Constitution (Part III)
+| Sample document | Indexed text | Answer keys and answers | Example questions |
+| --- | --- | --- | --- |
+| 📋 HR Policy | Annual leave: 22 days/year for full-time employees, accrued monthly.<br>Sick leave: 12 days/year, no carry-forward.<br>Work from home: up to 2 days per week with manager approval.<br>Maternity leave: 26 weeks paid as per Indian law.<br>Paternity leave: 10 working days.<br>Reimbursements: internet ₹1500/month, mobile ₹800/month.<br>Notice period: 60 days for senior roles, 30 days for others.<br>Probation: 6 months. Probation extension requires HR approval. | **leave**: Full-time employees get 22 days of annual leave (accrued monthly) plus 12 days of sick leave per year. Sources: page 1.<br>**wfh**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.<br>**work from home**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.<br>**maternity**: 26 weeks of paid maternity leave, in line with Indian law. Sources: page 1.<br>**paternity**: 10 working days of paternity leave. Sources: page 1.<br>**notice**: Notice period is 60 days for senior roles, 30 days for others. Sources: page 1.<br>**reimbursement**: Internet: ₹1500/month. Mobile: ₹800/month. Sources: page 1.<br>**internet**: Internet reimbursement is ₹1500/month. Sources: page 1.<br>**probation**: Probation period is 6 months. Extensions require HR approval. Sources: page 1. | `How many leaves do I get?`, `Can I work from home?`, `What is the notice period?`, `What is the maternity policy?` |
+| 💰 TCS Q3 Earnings | Revenue: ₹62,613 cr, up 4.0% YoY in constant currency.<br>Operating margin: 24.6%, up 50 bps QoQ.<br>Net profit: ₹12,380 cr.<br>TCV (Total Contract Value): $13.2 bn, highest in 7 quarters.<br>Headcount: 612,724 employees, net addition of 5,370 this quarter.<br>Attrition: 13.0% (LTM), down from 13.3%.<br>Cash and equivalents: ₹58,200 cr.<br>Dividend: ₹76/share interim declared.<br>BFSI segment grew 3.8%, retail 2.1%, manufacturing 5.9%. | **revenue**: Revenue was ₹62,613 cr, up 4.0% YoY in constant currency. Sources: page 1.<br>**margin**: Operating margin was 24.6%, up 50 basis points quarter-on-quarter. Sources: page 1.<br>**profit**: Net profit was ₹12,380 cr. Sources: page 1.<br>**tcv**: TCV (Total Contract Value) hit $13.2 bn — the highest in 7 quarters. Sources: page 1.<br>**headcount**: 612,724 employees, with a net addition of 5,370 this quarter. Sources: page 1.<br>**attrition**: Attrition (LTM) was 13.0%, down from 13.3%. Sources: page 1.<br>**dividend**: Interim dividend of ₹76 per share was declared. Sources: page 1.<br>**bfsi**: BFSI segment grew 3.8% this quarter. Sources: page 1. | `What was the revenue?`, `How was the operating margin?`, `What is the attrition rate?`, `How big is the latest TCV?` |
+| 📜 Indian Constitution (Part III) | Article 14: Equality before law — the State shall not deny equality to any person.<br>Article 15: Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth.<br>Article 19: Six fundamental freedoms — speech, assembly, association, movement, residence, profession.<br>Article 21: Right to life and personal liberty — no person shall be deprived except by procedure established by law.<br>Article 21A: Right to education for children aged 6-14.<br>Article 25: Freedom of conscience and free profession of religion.<br>Article 32: Right to constitutional remedies — Supreme Court can be approached for enforcement. | **article 14**: Article 14 guarantees equality before law — the State shall not deny equality to any person. Sources: page 1.<br>**article 15**: Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. Sources: page 1.<br>**article 19**: Article 19 grants six fundamental freedoms: speech, assembly, association, movement, residence, and profession. Sources: page 1.<br>**article 21**: Article 21 protects the right to life and personal liberty — no person shall be deprived except by procedure established by law. Sources: page 1.<br>**article 32**: Article 32 is the right to constitutional remedies — citizens can approach the Supreme Court for enforcement of Fundamental Rights. Sources: page 1.<br>**right to education**: Article 21A guarantees the right to education for children aged 6 to 14. Sources: page 1.<br>**religion**: Article 25 guarantees freedom of conscience and free profession of religion. Article 15 prohibits discrimination on grounds of religion. Sources: page 1.<br>**freedom of speech**: Article 19 grants freedom of speech as one of six fundamental freedoms. Sources: page 1. | `What does Article 21 say?`, `Tell me about Article 19`, `What is the right to education?`, `Which article covers religion?` |
 
-*Control:* Ask
+**Unknown question response.** `I couldn't find that in the document. 🤷` This is RAG refusing to hallucinate.
 
-⚙️ Simulated in-browser with a tiny semantic-matching layer so it runs key-free. Your real `pdf_chat.py` uses actual embeddings + GPT — same flow, same feel, larger brain.
+**Takeaway.** These sample answers come from a tiny semantic-matching layer, not a model. The real `pdf_chat.py` uses actual embeddings + GPT with the same flow.
 
-> 🎯 **Industry spotlight · this *is* the canonical AI product — you just built the most-shipped AI app of 2024–26.** "Chat with [your docs / your PDF / your codebase / your Notion]" is the single most common AI feature on the market today — and almost all of them are this exact pattern with a fancier UI. ChatGPT's "Browse my files", Claude Projects, Cursor's `@codebase`, Glean, Notion AI — every one of them. You now own the recipe.
+> 🎯 **Industry spotlight · this *is* the canonical AI product — you just built the most-shipped AI app of 2024–26.** "Chat with [your docs / your PDF / your codebase / your Notion]" is the single most common AI feature on the market today — and almost all of them are this exact pattern with a more polished UI. ChatGPT's "Browse my files", Claude Projects, Cursor's `@codebase`, Glean, Notion AI — every one of them. You now own the recipe.
 >
 > Notion AI · Glean · Claude Projects · Cursor @docs · Perplexity Spaces
 
@@ -762,10 +1084,18 @@ Pick a sample document
 
 The recipe is the same; the data makes it interesting. Try one of these on your own:
 
-- **📜 Chat with the Constitution** — Index the Indian Constitution PDF. Ask "what are the Fundamental Rights?" with citations. `data: indiacode.nic.in`
-- **📊 Chat with an earnings call** — Index TCS or Infosys' last quarterly transcript. Ask about margins, guidance, hiring. `data: investor relations sites`
-- **📚 Chat with your textbook** — Index a chapter. Ask exam-style questions. Suddenly: a personalised tutor. `data: your bookshelf`
-- **🧾 Chat with company HR policy** — Genuinely useful at your workplace. "How many leaves do I have left?" "What's the WFH policy?" `data: your HR portal`
+- 📜 Chat with the Constitution
+   Index the Indian Constitution PDF. Ask "what are the Fundamental Rights?" with citations.
+   data: indiacode.nic.in
+- 📊 Chat with an earnings call
+   Index TCS or Infosys' last quarterly transcript. Ask about margins, guidance, hiring.
+   data: investor relations sites
+- 📚 Chat with your textbook
+   Index a chapter. Ask exam-style questions. Suddenly: a personalised tutor.
+   data: your bookshelf
+- 🧾 Chat with company HR policy
+   Genuinely useful at your workplace. "How many leaves do I have left?" "What's the WFH policy?"
+   data: your HR portal
 
 <a id="next"></a>
 
@@ -789,14 +1119,34 @@ The RAG you just built always retrieves. But sometimes you don't need to (small 
 
 ### 📈 Advanced RAG — the Tricks the Senior Engineers Use
 
-- **✍️ HyDE** — Hypothetical Document Embeddings: have the LLM *imagine* what the answer would look like, then search for chunks that match the imagined answer. Counter-intuitive, works surprisingly well.
-- **🪜 Step-back prompting** — Before searching, ask the LLM to generalize the question. "What's the formula for compound interest in this case?" → "What is compound interest?" → broader, better retrieval.
-- **🕸️ Graph RAG** — Build a knowledge graph from your docs (entities + relationships). Now you can answer "who reports to X" by walking the graph, not just searching.
-- **📊 RAG evaluation** — How do you measure if your RAG is good? Three metrics: *relevance*, *faithfulness*, *correctness*. We'll wire up a real eval pipeline.
+- ✍️ HyDE
+   Hypothetical Document Embeddings: have the LLM
+   imagine
+   what the answer would look like, then search for chunks that match the imagined answer. Counter-intuitive, works surprisingly well.
+- 🪜 Step-back prompting
+   Before searching, ask the LLM to generalize the question. "What's the formula for compound interest in this case?" → "What is compound interest?" → broader, better retrieval.
+- 🕸️ Graph RAG
+   Build a knowledge graph from your docs (entities + relationships). Now you can answer "who reports to X" by walking the graph, not just searching.
+- 📊 RAG evaluation
+   How do you measure if your RAG is good? Three metrics:
+   relevance
+   ,
+   faithfulness
+   ,
+   correctness
+   . We'll wire up a real eval pipeline.
 
 > 🔑 **🚀 Where you are right now.** By now you've built a chatbot, an agent, and a RAG system. You understand the four pieces of every AI product — *model · prompt · tool · retrieval*. Almost everything ahead is recombining these four in cleverer ways. You're past the steep part of the curve.
 
-- **📍 Embeddings** — Text → vectors. Similar meaning = nearby.
-- **✂️ Chunking** — The unglamorous knob that decides quality.
-- **🗂️ Vector DB** — Three calls: add, query, delete.
-- **🎯 You shipped** — A real "Chat with your PDF". 🎉
+- 📍 Embeddings
+   Text → vectors. Similar meaning = nearby.
+- ✂️ Chunking
+   The unglamorous knob that decides quality.
+- 🗂️ Vector DB
+   Three calls: add, query, delete.
+- 🎯 You shipped
+   A real "Chat with your PDF". 🎉
+
+---
+
+TechToday Study Library — AI Demos
