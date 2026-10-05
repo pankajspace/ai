@@ -8,7 +8,7 @@ Rewrite one class-notes HTML page into the same simple design as the DSA courses
 
 **Reference implementation:** `projects/techtoday/study/ai-demos/llms-prompting.html` (and its `.md`). It is the finished result of this workflow. Copy its `<head>` styles, topic/part markup, accordion script and static-example patterns (`.viz` panels that hold tables, token chips and worked examples) instead of inventing new ones.
 
-**Design source:** `projects/techtoday/study/dsa/dsa-study.css` and `dsa-study.js`. The page links both directly; do not copy them.
+**Design source:** `projects/techtoday/study/dsa/dsa-study.css`, `projects/techtoday/study/ai-demos/ai-demos.css`, and `dsa-study.js`. The page links them directly; do not copy them.
 
 ## 1. Prepare
 
@@ -49,7 +49,7 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 
 ## 3. Rebuild the page structure
 
-1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css` and `../../site-header.css`. Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Delete styles that only served removed interactive widgets.
+1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, accessible data tables, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Delete styles that only served removed interactive widgets.
 2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
    - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../../index.html` and `<a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`
@@ -111,7 +111,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 
 1. Create `<name>.new.html` with the full rewritten page, then `mv` it over the original. Use the terminal only for the move.
 2. Regenerate the companion `<name>.md` the same way (`.new.md` → `mv`). Mirror the new HTML exactly:
-   - header comment with Source, Title, Theme-color, `Stylesheets: ../dsa/dsa-study.css, ../../site-header.css` and `Scripts: ../dsa/dsa-study.js`
+   - header comment with Source, Title, Theme-color, `Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-demos.css` and `Scripts: ../dsa/dsa-study.js`
    - navigation line `Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)`, eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
