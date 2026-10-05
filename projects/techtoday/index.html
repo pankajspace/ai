@@ -1110,8 +1110,44 @@
             const STORAGE_KEY = 'tt_expanded_tiles';
             try { localStorage.removeItem('tt_collapsed_tiles'); } catch (e) { }
 
-            const tiles = document.querySelectorAll('.hub-tile');
+            const grid = document.querySelector('.hub-grid');
+            const tiles = Array.from(document.querySelectorAll('.hub-tile'));
             const toggleAllBtn = document.getElementById('toggle-all-tiles');
+
+            function getColumnCount() {
+                if (window.matchMedia('(max-width: 640px)').matches) return 1;
+                if (window.matchMedia('(max-width: 1100px)').matches) return 2;
+                return 3;
+            }
+
+            let currentCols = 0;
+            function updateColumns() {
+                if (!grid) return;
+                const cols = getColumnCount();
+                if (cols === currentCols) return;
+                currentCols = cols;
+
+                const colContainers = Array.from({ length: cols }, () => {
+                    const col = document.createElement('div');
+                    col.className = 'hub-column';
+                    return col;
+                });
+
+                tiles.forEach((tile, index) => {
+                    colContainers[index % cols].appendChild(tile);
+                });
+
+                grid.replaceChildren(...colContainers);
+                grid.classList.add('is-masonry');
+            }
+
+            updateColumns();
+
+            const mqlMobile = window.matchMedia('(max-width: 640px)');
+            const mqlTablet = window.matchMedia('(max-width: 1100px)');
+            mqlMobile.addEventListener('change', updateColumns);
+            mqlTablet.addEventListener('change', updateColumns);
+            window.addEventListener('resize', updateColumns);
 
             function getExpandedSet() {
                 try {
