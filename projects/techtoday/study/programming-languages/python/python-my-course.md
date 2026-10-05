@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, and error handling.
+Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, and object-oriented programming (OOP).
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -10,7 +10,7 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 
 # Python My Course
 
-The high-yield Python course reference: common everyday syntax, core collections, functions, and practical problem solutions.
+The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, and practical OOP solutions.
 
 <a id="table-of-contents"></a>
 
@@ -26,6 +26,7 @@ The high-yield Python course reference: common everyday syntax, core collections
 8. [List Comprehensions](#8-list-comprehensions)
 9. [Functions & Arguments](#9-functions-and-arguments)
 10. [Everyday Error Handling](#10-everyday-error-handling)
+11. [Object-Oriented Programming (OOP)](#11-object-oriented-programming)
 
 ---
 
@@ -661,42 +662,72 @@ Writing clean reusable functions, handling arguments, and catching runtime error
 
 ## 9. Functions & Arguments
 
-- **Definition** `def function_name(param1, param2=default):` <!-- great -->
-- **Return Values** `return result` <!-- great -->
-- **Default Arguments** `Clean fallbacks for optional params` <!-- good -->
+- **Definition & Defaults** `def fn(param=default):` <!-- great -->
+- **Variable Positional** `*args (packed as tuple)` <!-- great -->
+- **Variable Keyword** `**kwargs (packed as dict)` <!-- great -->
+- **Unpacking Calls** `fn(*items, **options)` <!-- good -->
 
-Functions let you package code into reusable blocks. Functions take arguments, execute logic, and return values using the `return` statement. If a function doesn't include an explicit `return`, it returns `None` automatically.
+Functions let you package code into reusable, modular blocks. Functions accept arguments, execute logic, and return values using the `return` statement (or `None` if omitted).
+
+Beyond fixed positional and default arguments, Python provides `*args` and `**kwargs` for handling arbitrary numbers of inputs:
+- `*args` collects any extra positional arguments into a `tuple`.
+- `**kwargs` collects any extra keyword arguments into a `dict`.
+- The `*` and `**` operators also work in reverse: when calling a function, `*iterable` unpacks sequence items into positional arguments, while `**dictionary` unpacks key-value pairs into named keyword arguments.
 
 > **Analogy** 🎬
 >
-> **Picture it — A Kitchen Blender**
+> **Picture it — A Blender with an Open Hopper and Labeled Spice Rack**
 >
-> A function is like a blender with predefined settings. You drop ingredients into the top (arguments), press the blend button (execute function), and pour out the resulting smoothie (return value).
+> Standard parameters are the fixed measuring cup slots on top of a blender. `*args` is an open hopper where you can drop in as many loose fruit pieces as you want (they all land inside a basket together as a tuple). `**kwargs` is a spice rack where every ingredient arrives labeled with its own name tag (stored neatly inside a dictionary).
 
-Key patterns:
+Key everyday patterns:
 1. Positional arguments: `def add(a, b): return a + b`
 2. Default arguments: `def greet(name, greeting="Hello"): return f"{greeting}, {name}"`
-3. Multiple return values: `return width, height` (returns a tuple that can be unpacked)
-4. Calling with keyword arguments: `greet(name="Alex", greeting="Hi")`
+3. Collecting variable positional arguments with `*args`: Packed into a `tuple` inside the function (e.g. `def total(*numbers): return sum(numbers)`).
+4. Collecting variable keyword arguments with `**kwargs`: Packed into a `dict` inside the function (e.g. `def configure(**settings): ...`).
+5. Standard parameter ordering: Positional first, then `*args`, then keyword defaults, then `**kwargs` (`def fn(x, y=10, *args, flag=True, **kwargs):`).
+6. Unpacking arguments at call time: `fn(*my_list)` expands items as positional arguments, while `fn(**my_dict)` expands keys and values as keyword arguments.
+7. Forwarding arguments in wrappers: `def wrapper(*args, **kwargs): return original_func(*args, **kwargs)` passes all arguments through unchanged.
+8. Multiple return values: `return width, height` (returns a tuple that can be unpacked).
 
 ```python
-# Function with default parameters
+# 1. Default parameters and multiple return values
 def calculate_total(subtotal: float, tax_rate: float = 0.08) -> float:
     return round(subtotal * (1 + tax_rate), 2)
 
-print(calculate_total(100.0))         # 108.0 (uses default 8% tax)
+print(calculate_total(100.0))         # 108.0 (default 8% tax)
 print(calculate_total(100.0, 0.05))   # 105.0 (overrides tax rate)
 
-# Returning multiple values
-def get_min_and_max(numbers: list[int]):
-    return min(numbers), max(numbers)
+# 2. Variable positional arguments (*args -> tuple)
+def calculate_average(*numbers: float) -> float:
+    if not numbers:
+        return 0.0
+    return sum(numbers) / len(numbers)
 
-lowest, highest = get_min_and_max([12, 45, 2, 89, 23])
-print(f"Min: {lowest}, Max: {highest}")  # Min: 2, Max: 89
+print(calculate_average(10, 20, 30))  # 20.0
+scores = [85, 90, 95]
+print(calculate_average(*scores))     # 90.0 (unpacking list with *)
+
+# 3. Variable keyword arguments (**kwargs -> dict)
+def build_profile(username: str, **attributes) -> dict:
+    profile = {"username": username}
+    profile.update(attributes)
+    return profile
+
+user = build_profile("alex_dev", role="admin", active=True, theme="dark")
+print(user)
+# {'username': 'alex_dev', 'role': 'admin', 'active': True, 'theme': 'dark'}
+
+# 4. Unpacking dictionary and forwarding arguments
+extra_opts = {"retries": 3, "timeout": 15}
+def connect(host: str, **opts):
+    return f"Connecting to {host} with {opts}"
+
+print(connect("db.internal", **extra_opts))
 ```
 
-- **Strength — Reusability & Modularity** Breaking code into focused, well-named functions makes testing and debugging straightforward.
-- **Weakness — Mutable Default Argument Trap** Never use a mutable list or dictionary as a default argument (like `def fn(items=[])`); use `items=None` and initialize inside the function.
+- **Strength — Maximum API Flexibility** `*args` and `**kwargs` let you create wrappers, middleware, and flexible helper utilities that pass arguments forward without needing to redefine every parameter.
+- **Weakness — Reduced Self-Documentation When Overused** If a function signature only declares `def process(*args, **kwargs):`, callers lose IDE autocomplete, type checking, and clear documentation on what parameters are actually expected.
 
 **Interview question**
 
@@ -719,9 +750,34 @@ assert calculate_tip(0.0) == 0.0
 print("Calculate tip passed!")
 ```
 
+**Interview question**
+
+*Write a URL builder function `build_query_url(base_url, *paths, **params)` that accepts a base URL, any number of path segments via `*paths`, and query parameters via `**params`, returning a cleanly formatted URL.*
+
+Strip trailing slashes from `base_url`, join any non-empty `paths` with forward slashes, and format sorted `params` into a query string joined by `&` following a `?`.
+
+**Answer — Build Query URL with *args and **kwargs**
+
+```python
+def build_query_url(base_url: str, *paths: str, **params: str) -> str:
+    url = base_url.rstrip("/")
+    if paths:
+        url += "/" + "/".join(p.strip("/") for p in paths)
+    if params:
+        query = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+        url += "?" + query
+    return url
+
+# Test cases
+assert build_query_url("https://api.example.com", "v1", "users", page="1", sort="desc") == "https://api.example.com/v1/users?page=1&sort=desc"
+assert build_query_url("https://api.example.com", status="active") == "https://api.example.com?status=active"
+assert build_query_url("https://api.example.com/", "health") == "https://api.example.com/health"
+print("Build query URL passed!")
+```
+
 > **Key idea**
 >
-> To use an optional list parameter in a function, write `def my_func(items=None): if items is None: items = []`.
+> Remember the parameter order: regular positional arguments first, then `*args`, then keyword defaults, and finally `**kwargs` (`def func(pos, *args, kw_default='val', **kwargs):`). When forwarding arguments to another function, use `func(*args, **kwargs)`.
 
 ---
 
@@ -800,6 +856,148 @@ print("Safe divide passed!")
 
 ---
 
+<a id="unit-4"></a>
+
+## Unit 4 — Object-Oriented Programming
+
+Modeling real-world entities, encapsulating state, and writing clean maintainable classes with methods and inheritance.
+
+<a id="11-object-oriented-programming"></a>
+
+## 11. Object-Oriented Programming (OOP)
+
+- **Class & Instance** `class BankAccount: / acc = BankAccount()` <!-- great -->
+- **Initializer** `def __init__(self, ...):` <!-- great -->
+- **Special Methods** `__str__, __repr__` <!-- good -->
+- **Inheritance** `class Savings(BankAccount): super()` <!-- good -->
+
+In Python, Object-Oriented Programming (OOP) is a programming paradigm that organizes code around objects rather than just isolated functions. A **class** is a blueprint defining attributes (data) and methods (behavior). An **object** (or instance) is a concrete realization of that blueprint with its own state.
+
+Python passes the instance itself explicitly as the first parameter to methods, conventionally named `self`. The `__init__` constructor sets up initial instance state when an object is instantiated. Classes also support inheritance, allowing child classes to reuse, extend, or override parent methods using `super()`.
+
+> **Analogy** 🎬
+>
+> **Picture it — An Architectural Blueprint vs Built Houses**
+>
+> A class is the architectural blueprint for a house: it specifies that every house has bedrooms, bathrooms, and a front door, and defines how the doorbell works. An object (instance) is an actual physical house built on a specific lot with its own address, wall color, and occupants. You can build dozens of unique houses (`house1`, `house2`) from the exact same blueprint.
+
+Key everyday OOP concepts:
+1. `class Name:`: Defines a class template. Class names conventionally use CapWords / PascalCase.
+2. `def __init__(self, ...):`: The initializer method that runs automatically when creating a new object.
+3. `self`: A reference to the current instance, used to read or modify its attributes (`self.balance = 0.0`).
+4. Instance attributes vs Class attributes: Attributes assigned to `self` belong to that specific instance; attributes defined at the class level are shared across all instances.
+5. Special dunder methods: `__str__` returns a friendly string for end users (used by `print()`), while `__repr__` returns an unambiguous representation for developers and debugging.
+6. Inheritance and `super()`: `class Child(Parent):` inherits behavior from a parent class, and `super().__init__(...)` delegates initialization to the parent class.
+
+```python
+# 1. Defining a class with __init__ and methods
+class BankAccount:
+    bank_name = "TechBank"  # Class attribute (shared)
+
+    def __init__(self, owner: str, balance: float = 0.0):
+        self.owner = owner          # Instance attribute
+        self.balance = balance      # Instance attribute
+
+    def deposit(self, amount: float) -> float:
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive.")
+        self.balance += amount
+        return self.balance
+
+    def withdraw(self, amount: float) -> float:
+        if amount > self.balance:
+            raise ValueError("Insufficient funds.")
+        self.balance -= amount
+        return self.balance
+
+    def __str__(self) -> str:
+        return f"BankAccount(owner='{self.owner}', balance=${self.balance:.2f})"
+
+# 2. Creating instances and invoking methods
+acc = BankAccount("Alice", 100.0)
+acc.deposit(50.0)
+print(acc)  # BankAccount(owner='Alice', balance=$150.00)
+
+# 3. Inheritance and super()
+class SavingsAccount(BankAccount):
+    def __init__(self, owner: str, balance: float = 0.0, interest_rate: float = 0.03):
+        super().__init__(owner, balance)
+        self.interest_rate = interest_rate
+
+    def apply_interest(self) -> float:
+        earned = self.balance * self.interest_rate
+        self.balance += earned
+        return self.balance
+
+savings = SavingsAccount("Bob", 1000.0)
+savings.apply_interest()
+print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
+```
+
+- **Strength — Encapsulation & Cohesion** Bundling state and behavior together keeps related logic organized, avoids scattered helper functions, and protects data integrity.
+- **Weakness — Avoid Over-Engineering** Don't create complex 5-level inheritance hierarchies or write classes for simple tasks where a plain dictionary, namedtuple, or pure function is simpler and faster.
+
+**Interview question**
+
+*Design an InventoryItem class that tracks product name, stock quantity, and price. Add methods to restock items, record sales (raising a ValueError if stock is insufficient), and calculate the total inventory valuation.*
+
+Define an `InventoryItem` class initialized with `name: str`, `quantity: int = 0`, and `unit_price: float = 0.0`. Validate that quantity and price are non-negative. Provide `.restock(amount)` to increase quantity, `.sell(amount)` to decrease quantity (raising `ValueError` when `amount > self.quantity`), and `.total_value()` returning `round(quantity * unit_price, 2)`. Add `__repr__` for clear debugging.
+
+**Answer — Inventory Item Class**
+
+```python
+class InventoryItem:
+    def __init__(self, name: str, quantity: int = 0, unit_price: float = 0.0):
+        if quantity < 0 or unit_price < 0:
+            raise ValueError("Quantity and price must be non-negative.")
+        self.name = name
+        self.quantity = quantity
+        self.unit_price = unit_price
+
+    def restock(self, amount: int) -> int:
+        if amount <= 0:
+            raise ValueError("Restock amount must be positive.")
+        self.quantity += amount
+        return self.quantity
+
+    def sell(self, amount: int) -> int:
+        if amount <= 0:
+            raise ValueError("Sale amount must be positive.")
+        if amount > self.quantity:
+            raise ValueError(f"Cannot sell {amount}; only {self.quantity} in stock.")
+        self.quantity -= amount
+        return self.quantity
+
+    def total_value(self) -> float:
+        return round(self.quantity * self.unit_price, 2)
+
+    def __repr__(self) -> str:
+        return f"InventoryItem(name='{self.name}', qty={self.quantity}, price={self.unit_price})"
+
+# Test cases
+item = InventoryItem("Mechanical Keyboard", quantity=10, unit_price=79.99)
+assert item.total_value() == 799.90
+item.restock(5)
+assert item.quantity == 15
+item.sell(3)
+assert item.quantity == 12
+assert item.total_value() == 959.88
+
+try:
+    item.sell(20)
+    assert False, "Should have raised ValueError"
+except ValueError:
+    pass
+
+print("Inventory item passed!")
+```
+
+> **Key idea**
+>
+> In Python, prefer composition over deep inheritance ("has-a" over "is-a"). Only inherit when a child genuinely is a specialized version of the parent, and always call `super().__init__(...)` so base classes are initialized properly.
+
+---
+
 ## Daily Python Cheat Sheet
 
 A quick checklist of the most common daily syntax:
@@ -810,10 +1008,12 @@ A quick checklist of the most common daily syntax:
 4. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`.
 5. **Sets:** Use `set(items)` to instantly remove duplicates. Check membership with `item in my_set` in $O(1)$ time.
 6. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
-7. **Functions:** Define with `def fn(a, b=default):`. Return early to keep logic simple.
+7. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
 8. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
+9. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
 
 ---
 
 © 2026 TechToday. Python Study Library.
+
 
