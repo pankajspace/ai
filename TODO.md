@@ -4,7 +4,7 @@
 2. Networking // done
 3. Programming // done
 4. DSA // done
-5. Design Patterns
+5. Design Patterns // done
 6. LLD
 7. HLD
 8. Git // done
