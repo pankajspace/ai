@@ -49,7 +49,7 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 
 ## 3. Rebuild the page structure
 
-1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, accessible data tables, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Delete styles that only served removed interactive widgets.
+1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, responsive data cards, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Delete styles that only served removed interactive widgets.
 2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
    - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../../index.html` and `<a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`
@@ -72,7 +72,9 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 5. Industry spotlights → `.callout.callout-interview`, with the company chips as a nested `ul.meta-strip`.
 6. Definition boxes → `blockquote`.
 7. Timelines, flow steps, run steps, agendas → `ol`/`ul` with a bold lead-in.
-8. Card grids (use cases, takeaways, good/bad comparisons) → `ul.card-grid` with `<li><b>title</b>text</li>`, adding `is-good`/`is-bad` where it applies.
+8. Card grids and responsive data cards (avoid `<table>` elements to ensure mobile responsiveness):
+   - Use `ul.card-grid` with `<li><b>title</b> text</li>` (adding `is-good`/`is-bad` where applicable) for use cases, takeaways, and 2-column key-value comparisons.
+   - Use `.data-cards` with `.data-card`, `.data-card-header`, `.data-card-body`, and `.data-field` (`.data-label` + `.data-val`) for multi-column structured datasets and traces.
 9. Box-and-arrow diagrams → `figure.figure.mermaid-fig > pre.mermaid` (`flowchart LR`), plus a `figcaption`. Write line breaks inside labels as `&lt;br&gt;`; a literal `<br>` is parsed as HTML and lost.
 10. Code blocks:
     - Use `<span class="code-tab-label">filename</span>` + `<pre><code data-lang="python">` holding raw, HTML-escaped code at column 0 (`&lt;`, `&gt;`, `&amp;`).
@@ -88,12 +90,12 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 1. Keep the panel as a static `.viz` box: `.viz-head` (`.viz-title` + `.viz-step`), then `.viz-stage` for the content and `.viz-note` for the takeaway. Rename the title from "Live sim · X" to "Example · X". Drop `.viz-controls`, `.viz-btn`, `.viz-input`, `.viz-scrub` and every `<button>`, `<input>`, `<select>` and `<textarea>`.
 2. Choose the static form that fits the widget:
    - **Playground / type-and-see** (tokenizer, chunker, template filler) → one or two worked examples: the input, then the output the code produced for it (e.g. token chips plus the token, character and cost counts).
-   - **Slider / setting comparison** (temperature, top-k, chunk size) → a table with one row or column per setting. Compute the values with the widget's own formula and data, so the numbers match what it showed.
+   - **Slider / setting comparison** (temperature, top-k, chunk size) → a structured card grid (`.data-cards`) with one card per setting. Compute the values with the widget's own formula and data, so the numbers match what it showed.
    - **Step-through / play animation** (RAG pipeline, agent loop, API round trip) → a numbered `ol` with one item per step, stating what happens and what data moves.
-   - **Before/after or A/B toggle** (reranker, BM25 vs vector vs hybrid) → a side-by-side table or a `ul.card-grid` with `is-good`/`is-bad`.
+   - **Before/after or A/B toggle** (reranker, BM25 vs vector vs hybrid) → a `ul.card-grid` with `is-good`/`is-bad` or `.data-cards` rather than a table.
    - **Game or quiz** (guess the word, tool-or-no-tool, flashcards) → a question-and-answer list: each question, the correct answer in bold, and the reason the widget gave.
    - **Checklist with tick boxes** → a plain `ul`/`ol` with the same items.
-   - **Search/filter box over a list** → the full list or table, grouped if it is long.
+   - **Search/filter box over a list** → the full list or card grid (`ul.card-grid` / `.data-cards`), grouped if it is long.
    - **Fake generators** (e.g. "create an API key") → a short description plus one sample output, labelled as a sample.
    - **Print button** → delete it.
 3. Carry over all the information the widget held: preset data, every possible outcome or answer, hints, notes and feedback text. Data that lived only in the script (arrays, answers, explanations) must appear in the static version.
@@ -104,7 +106,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    3. the inline `topic-menu-panel` opener in the sidebar, if the reference has it
 
    Do not redeclare `dsa-study.js` globals (`progress`, `esc`, `copyText`, `VIZ`, …).
-6. Reword the text around the widget. "Type anything", "drag the slider", "click Play" and "try it" become "Here is an example" or "The table shows".
+6. Reword the text around the widget. "Type anything", "drag the slider", "click Play" and "try it" become "Here is an example" or "The cards show".
 7. Add `<footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>` and the `.back-to-top` button.
 
 ## 6. Write the files
@@ -116,7 +118,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
    - fenced code with language tags; diagrams as ```` ```mermaid ```` blocks
-   - static examples as a bold `**Example · X**` title line, then the same table, list or worked example as Markdown
+   - static examples as a bold `**Example · X**` title line, then the same card/dataset or worked example as numbered bullet points lists (avoiding markdown tables per workspace rules)
 
 ## 7. Validate
 
@@ -130,9 +132,10 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    - `document.documentElement.scrollWidth <= innerWidth`
    - inside `article.study` there are no `button`, `input`, `select` or `textarea` elements other than the Expand/Collapse buttons and the Copy buttons `dsa-study.js` adds
 3. `grep -ciE 'live sim|viz-btn|viz-input|viz-scrub|viz-controls|type="checkbox"|drag the|click (play|step|the button)'` on the HTML returns 0, and the page has no `<script>` besides those listed in §5.5.
-4. Check the content inventory from step 1: every non-removed item is present, including the facts each removed widget taught.
-5. Read the rewritten prose against §2a: short sentences, plain words, no hype or filler, and no fact, number or example lost.
-6. `grep -c 'base.href' <file>` returns 0, and the page's card in `ai-demos.html` has a corner ⓘ `data-tooltip="Theory"` link that resolves to it (add one, mirrored in `ai-demos.md`, if the card lacks it).
+4. `grep -c '<table' <file>` returns 0 (tables are converted to `.data-cards` or `ul.card-grid` components for responsive layout on all devices).
+5. Check the content inventory from step 1: every non-removed item is present, including the facts each removed widget taught.
+6. Read the rewritten prose against §2a: short sentences, plain words, no hype or filler, and no fact, number or example lost.
+7. `grep -c 'base.href' <file>` returns 0, and the page's card in `ai-demos.html` has a corner ⓘ `data-tooltip="Theory"` link that resolves to it (add one, mirrored in `ai-demos.md`, if the card lacks it).
 
 ## 8. Report
 

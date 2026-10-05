@@ -104,12 +104,9 @@ Models are off by default. In the console, do this:
 2. Search for **Bedrock** and open it. In the left menu, open **Model access**.
 3. Click **Modify model access**. Tick the models below, then submit.
 
-| Model | Used for |
-| --- | --- |
-| Amazon Nova Lite | Module 1 Hello World (cheap, fast) |
-| Claude Haiku 4.5 | Module 1 LangGraph example, Module 2 tools |
-| Claude Sonnet 4.5 | Stronger reasoning. Useful later. |
-
+1. **Amazon Nova Lite**: Module 1 Hello World (cheap, fast)
+2. **Claude Haiku 4.5**: Module 1 LangGraph example, Module 2 tools
+3. **Claude Sonnet 4.5**: Stronger reasoning. Useful later.
 Use the terminal to check which Anthropic models are active in your account:
 
 **terminal**
@@ -207,11 +204,12 @@ Start here because it frames the rest of the guide. A standard LLM has two hard 
 
 You can fix this in two ways without retraining the model:
 
-| Approach | What it adds | The model becomes… |
-| --- | --- | --- |
-| **RAG** | Relevant context fetched from your data | A better-informed *knowledge retriever* |
-| **Agents** | The ability to reason and *use tools* | An *actor* that gets things done |
-
+1. **RAG**
+   - **What it adds**: Relevant context fetched from your data
+   - **The model becomes…**: A better-informed *knowledge retriever*
+2. **Agents**
+   - **What it adds**: The ability to reason and *use tools*
+   - **The model becomes…**: An *actor* that gets things done
 Here is the key point. Many teams build a RAG system. Then users ask the AI to do the work: book the meeting, update the record, or run the workflow. Teams often get stuck when they move from a passive retriever to an active agent. These two modules help you make that move.
 
 <a id="s2"></a>
@@ -398,13 +396,18 @@ flowchart TD
 ```
 Diagram 6 — How A2A works: an orchestrator discovers and messages independent agents
 
-|  | MCP | A2A |
-| --- | --- | --- |
-| Connects an agent to… | Tools, data, prompts | Other agents |
-| The other side is… | A server that exposes capabilities | A peer agent with its own reasoning |
-| Discovery via | A list of tools, resources, and prompts | The agent card |
-| Analogy | USB port for abilities | Colleagues calling each other |
-
+1. **Connects an agent to…**
+   - **MCP**: Tools, data, prompts
+   - **A2A**: Other agents
+2. **The other side is…**
+   - **MCP**: A server that exposes capabilities
+   - **A2A**: A peer agent with its own reasoning
+3. **Discovery via**
+   - **MCP**: A list of tools, resources, and prompts
+   - **A2A**: The agent card
+4. **Analogy**
+   - **MCP**: USB port for abilities
+   - **A2A**: Colleagues calling each other
 Diagram 7 — MCP vs A2A, side by side
 
 > 💡 **Scope note.** Module 1 only introduces these protocols. Building MCP servers and A2A agents is a larger topic. Learn the vocabulary now so it is familiar later. Then move on. Do not build an MCP server today; finish the agent fundamentals first.
@@ -636,12 +639,9 @@ If you ask the agent *"Is the staging server running?"*, it says it cannot check
 
 The bridge is **function calling**, also called tool use. Add three things:
 
-| Add this | Why |
-| --- | --- |
-| `@tool` decorator | Tells Strands to make this function available to agents. |
-| Type hints | Tell the agent what data types to expect. |
-| A proper docstring | Describes what the function does, so the agent knows when to use it. |
-
+1. **`@tool` decorator**: Tells Strands to make this function available to agents.
+2. **Type hints**: Tell the agent what data types to expect.
+3. **A proper docstring**: Describes what the function does, so the agent knows when to use it.
 **two/01_function_to_tool.py**
 
 ```python
@@ -1164,13 +1164,18 @@ This project mirrors Diagram 3, the travel planner. You finish where Module 1 be
 
 Build an agent that answers: *"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should I pack and what will it cost?"* The agent should reason across weather, packing, and budget before it answers.
 
-| Tool | Job | Skill practised |
-| --- | --- | --- |
-| `get_weather_forecast` | Return conditions for a city and date range | Custom tool, mock data |
-| `suggest_packing_list` | Turn weather and trip length into a packing list | Tool that consumes another tool's output |
-| `estimate_trip_cost` | Estimate rough cost from city, days, and travellers | Numeric logic and a dict return |
-| `calculator` | Budget maths | Pre-built community tool |
-
+1. **`get_weather_forecast`**
+   - **Job**: Return conditions for a city and date range
+   - **Skill practised**: Custom tool, mock data
+2. **`suggest_packing_list`**
+   - **Job**: Turn weather and trip length into a packing list
+   - **Skill practised**: Tool that consumes another tool's output
+3. **`estimate_trip_cost`**
+   - **Job**: Estimate rough cost from city, days, and travellers
+   - **Skill practised**: Numeric logic and a dict return
+4. **`calculator`**
+   - **Job**: Budget maths
+   - **Skill practised**: Pre-built community tool
 <a id="s17-starter-code"></a>
 
 ### Starter code
@@ -1390,18 +1395,15 @@ env | grep AWS               # what credentials are actually set?
 
 Section 18
 
-| Symptom | Cause and fix |
-| --- | --- |
-| `ResourceNotFoundException … end of its life` /<br>`marked by provider as Legacy`<br> | Retired model. Run `python 01_list_models.py`, pick an active model, and change `MODEL_ID` in `config.py`. |
-| `AccessDeniedException` | The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both. |
-| `InvalidClientTokenId` | Credentials are stale or deleted. Create a new access key and rerun `aws configure`. |
-| `ModuleNotFoundError: No module named 'strands'` | Wrong Python. Activate the venv. In Jupyter, switch the kernel. |
-| Notebook cell stuck on `[*]` | A tool is waiting for consent. Type `y` at the hidden prompt, or set `BYPASS_TOOL_CONSENT="true"` in an earlier cell. |
-| Terminal shows `quote>` or `:` and seems frozen | `quote>` means an unclosed quote. Press Ctrl+C. `:` is the AWS CLI pager. Press `q`. Set `export AWS_PAGER=""` to stop it. |
-| Agent ignores your tool | The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used. |
-| `ModuleNotFoundError: No module named 'config'` | You ran from inside a subfolder. Run from the project root: `python one/01_hello_world_agent.py`. |
-| Worked yesterday but fails today | Usually expired SSO credentials. Paste a fresh block, then run `python 00_check_setup.py`. |
-
+1. **`ResourceNotFoundException … end of its life` /<br>`marked by provider as Legacy`<br>**: Retired model. Run `python 01_list_models.py`, pick an active model, and change `MODEL_ID` in `config.py`.
+2. **`AccessDeniedException`**: The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both.
+3. **`InvalidClientTokenId`**: Credentials are stale or deleted. Create a new access key and rerun `aws configure`.
+4. **`ModuleNotFoundError: No module named 'strands'`**: Wrong Python. Activate the venv. In Jupyter, switch the kernel.
+5. **Notebook cell stuck on `[*]`**: A tool is waiting for consent. Type `y` at the hidden prompt, or set `BYPASS_TOOL_CONSENT="true"` in an earlier cell.
+6. **Terminal shows `quote>` or `:` and seems frozen**: `quote>` means an unclosed quote. Press Ctrl+C. `:` is the AWS CLI pager. Press `q`. Set `export AWS_PAGER=""` to stop it.
+7. **Agent ignores your tool**: The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used.
+8. **`ModuleNotFoundError: No module named 'config'`**: You ran from inside a subfolder. Run from the project root: `python one/01_hello_world_agent.py`.
+9. **Worked yesterday but fails today**: Usually expired SSO credentials. Paste a fresh block, then run `python 00_check_setup.py`.
 <a id="s18-the-five-sentences-to-remember"></a>
 
 ### The five sentences to remember

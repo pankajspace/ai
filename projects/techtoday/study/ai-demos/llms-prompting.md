@@ -136,12 +136,15 @@ Given the tokens so far, the model gives **every possible next token** a probabi
 
 In this example, the model gives six possible next tokens these raw scores (logits): `Python=3.2`, `JavaScript=2.4`, `Rust=1.6`, `public=0.9`, `spreadsheets=0.3`, `bananas=-1.2`.
 
-| Temperature | What the label means | Probability of each token |
-| --- | --- | --- |
-| `0.20` | ❄️ focused | Python 98.2%; JavaScript 1.8%; Rust 0.0%; public 0.0%; spreadsheets 0.0%; bananas 0.0% |
-| `0.70` | ⚖️ balanced | Python 67.8%; JavaScript 21.6%; Rust 6.9%; public 2.5%; spreadsheets 1.1%; bananas 0.1% |
-| `1.50` | 🔥 creative | Python 42.7%; JavaScript 25.0%; Rust 14.7%; public 9.2%; spreadsheets 6.2%; bananas 2.3% |
-
+1. **`0.20`**
+   - **What the label means**: ❄️ focused
+   - **Probability of each token**: Python 98.2%; JavaScript 1.8%; Rust 0.0%; public 0.0%; spreadsheets 0.0%; bananas 0.0%
+2. **`0.70`**
+   - **What the label means**: ⚖️ balanced
+   - **Probability of each token**: Python 67.8%; JavaScript 21.6%; Rust 6.9%; public 2.5%; spreadsheets 1.1%; bananas 0.1%
+3. **`1.50`**
+   - **What the label means**: 🔥 creative
+   - **Probability of each token**: Python 42.7%; JavaScript 25.0%; Rust 14.7%; public 9.2%; spreadsheets 6.2%; bananas 2.3%
 Sampling chooses one token using these probabilities. At low temperature, `Python` almost always wins. At high temperature, lower-ranked words get a real chance.
 
 > 💡 **This is a real engineering choice.** A support bot wants *temperature ≈ 0.2* (consistent). A brainstorming tool wants *≈ 1.0* (varied). You set this early in any real project, including this one.
@@ -181,13 +184,18 @@ Here is the hidden-word example:
 
 **Example · Guess the hidden word**
 
-| Guess | Result | Feedback from the original example |
-| --- | --- | --- |
-| `coffee` | **Correct** | Exactly. To know this, the model learned context, grammar and facts about the world. That is self-supervision. |
-| `tea` | **Close** | Reasonable. “Tea” also works, so the model learns that several answers can be good, with different probabilities. |
-| `bicycle` | Wrong | Not quite. Wrong guesses are part of how the model learns. |
-| `sadness` | Wrong | Not quite. After billions of these practice questions, the model gets very good at choosing likely words. |
-
+1. **`coffee`**
+   - **Result**: **Correct**
+   - **Feedback from the original example**: Exactly. To know this, the model learned context, grammar and facts about the world. That is self-supervision.
+2. **`tea`**
+   - **Result**: **Close**
+   - **Feedback from the original example**: Reasonable. “Tea” also works, so the model learns that several answers can be good, with different probabilities.
+3. **`bicycle`**
+   - **Result**: Wrong
+   - **Feedback from the original example**: Not quite. Wrong guesses are part of how the model learns.
+4. **`sadness`**
+   - **Result**: Wrong
+   - **Feedback from the original example**: Not quite. After billions of these practice questions, the model gets very good at choosing likely words.
 > 💡 The model is trained on this kind of hidden-word task at huge scale.
 
 > 🔑 **Why this changes everything.** The model does this **billions of times**. To guess “coffee”, it has to learn grammar, context, what baristas do, what is hot and what fits in a cup. *Understanding emerges as a side effect of getting very good at fill-in-the-blank.* That is the main idea behind ChatGPT.
@@ -587,25 +595,18 @@ Below is a sample run of that app. It shows the sample sites, the personalities 
 
 **Example · AI Website Summarizer** — sample sites and outputs
 
-| Preset | Full sample text |
-| --- | --- |
-| 🚀 Startup site | NimbusPay — Payments that just work. NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees. Accept UPI, cards, and wallets with a single integration that takes ten minutes to set up. Our flat 1% fee means no surprises at the end of the month. NimbusPay also gives you a real-time dashboard so you can see every transaction as it happens. Over 12,000 shops already use NimbusPay to get paid faster. We just launched instant settlements, so your money reaches your bank account the same day instead of waiting three days. Sign up today and your first month is completely free. |
-| 📰 News article | Governments race to regulate AI as adoption surges. Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms. Supporters say clear regulation will build public trust and prevent harm. Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance. A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated. It also demands that high-risk systems, such as those used in hiring or medicine, be tested for bias before launch. Industry groups have asked for more time to adapt. The debate is expected to continue for years as the technology keeps evolving. |
-| ✍️ Personal blog | My journey from teacher to AI engineer. Three years ago I had never written a line of Python. I was a high-school teacher who felt stuck and curious about the AI everyone kept talking about. I started small: one tiny project every weekend, even when they barely worked. The first thing I built was a tool that summarized news articles for my students. It was ugly, but it worked, and that little win changed everything. I kept shipping projects and sharing them online, and slowly people started noticing. Last month I started my first job as an AI engineer at a startup. The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them. |
-
-| Tone | Intro line | TL;DR label |
-| --- | --- | --- |
-| 🙂 Friendly | Here's the gist, in plain English: | In short: |
-| 😏 Snarky | Fine, I read it so you do not have to: | The honest TL;DR: |
-| 🧒 Explain like I'm 5 | Okay, imagine I'm explaining this to a 10-year-old: | So basically: |
-| 💼 Professional | Executive summary: | Bottom line: |
-
-| Preset | Top sentences | TL;DR sentence |
-| --- | --- | --- |
-| 🚀 Startup site | NimbusPay — Payments that just work.<br>NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees.<br>Over 12,000 shops already use NimbusPay to get paid faster. | NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees. |
-| 📰 News article | Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms.<br>Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance.<br>A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated. | Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance. |
-| ✍️ Personal blog | I started small: one tiny project every weekend, even when they barely worked.<br>I kept shipping projects and sharing them online, and slowly people started noticing.<br>The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them. | I started small: one tiny project every weekend, even when they barely worked. |
-
+1. **🚀 Startup site**: NimbusPay — Payments that just work. NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees. Accept UPI, cards, and wallets with a single integration that takes ten minutes to set up. Our flat 1% fee means no surprises at the end of the month. NimbusPay also gives you a real-time dashboard so you can see every transaction as it happens. Over 12,000 shops already use NimbusPay to get paid faster. We just launched instant settlements, so your money reaches your bank account the same day instead of waiting three days. Sign up today and your first month is completely free.
+2. **📰 News article**: Governments race to regulate AI as adoption surges. Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms. Supporters say clear regulation will build public trust and prevent harm. Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance. A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated. It also demands that high-risk systems, such as those used in hiring or medicine, be tested for bias before launch. Industry groups have asked for more time to adapt. The debate is expected to continue for years as the technology keeps evolving.
+3. **✍️ Personal blog**: My journey from teacher to AI engineer. Three years ago I had never written a line of Python. I was a high-school teacher who felt stuck and curious about the AI everyone kept talking about. I started small: one tiny project every weekend, even when they barely worked. The first thing I built was a tool that summarized news articles for my students. It was ugly, but it worked, and that little win changed everything. I kept shipping projects and sharing them online, and slowly people started noticing. Last month I started my first job as an AI engineer at a startup. The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them.
+4. **Tone**: Intro line
+5. **🙂 Friendly**: Here's the gist, in plain English:
+6. **😏 Snarky**: Fine, I read it so you do not have to:
+7. **🧒 Explain like I'm 5**: Okay, imagine I'm explaining this to a 10-year-old:
+8. **💼 Professional**: Executive summary:
+9. **Preset**: Top sentences
+10. **🚀 Startup site**: NimbusPay — Payments that just work.<br>NimbusPay is a payments platform built for small Indian businesses who are tired of clunky tools and hidden fees.<br>Over 12,000 shops already use NimbusPay to get paid faster.
+11. **📰 News article**: Lawmakers around the world are scrambling to write rules for artificial intelligence as the technology spreads into hospitals, banks, and classrooms.<br>Critics worry that heavy rules could slow innovation and hand an advantage to larger companies who can afford compliance.<br>A new draft framework focuses on transparency, requiring companies to disclose when content is AI-generated.
+12. **✍️ Personal blog**: I started small: one tiny project every weekend, even when they barely worked.<br>I kept shipping projects and sharing them online, and slowly people started noticing.<br>The lesson I keep repeating to anyone who will listen: you do not need permission or a perfect plan, you just need to build small things often and share them.
 The sample outputs come from a simple extractive summarizer, not a model. It normalizes whitespace, keeps sentences with at least four words, ignores common stop words, scores each sentence by word frequency divided by the square root of sentence length, returns up to three top sentences in original order, and uses the highest-scoring sentence as the TL;DR. If no text is supplied, it says “Paste some text or pick a sample first.” If the text is too short, it says “Hmm, that text was too short to summarize.”
 
 > 💡 In the real app, GPT writes a richer summary in full sentences. The flow and personality switch are the same idea.
@@ -709,13 +710,18 @@ Ask both models the same thing: Explain recursion in 2 sentences.
 
 The demo compares **GPT-4o-mini** from **OpenAI** with **Llama-3.3-70b** from **Groq**. The arena randomly puts GPT on the left or right and hides the names until you vote. It then adds `+1` for a good vote or `-1` for a bad vote. Both scores start at `0`.
 
-| Prompt | GPT-4o-mini answer | Llama-3.3-70b answer |
-| --- | --- | --- |
-| Explain recursion to a total beginner, in 2 sentences. | Recursion is when a function solves a problem by calling itself on a smaller piece of the same problem, until it hits a simple “base case” it can answer directly. Like a dictionary entry that points to another word — you follow the chain until you reach one you already know. | Sure! 😊 Picture standing between two mirrors — you see a smaller copy of yourself, then a smaller one inside that, on and on. Recursion is just a function that keeps calling itself on a tinier version of the task until it is small enough to answer in one go. |
-| Write a catchy tagline for a coffee shop. | “Brewed for the moments that matter.” Clean, premium, and it reads well on a cup or a storefront sign. | Ooh fun one! Try: “Life's short. The coffee shouldn't be.” ☕ Punchy, a little cheeky, and very shareable. |
-| Is a hotdog a sandwich? Give a definitive answer. | Definitive answer: No. A sandwich needs a filling between two separate pieces of bread; a hot dog uses a single, hinged bun — so it forms its own category. | Haha, the eternal debate! My verdict: NOT a sandwich. 🌭 The bun is one connected piece, not two slices — so the hot dog stands proudly in a class of its own. 😄 |
-| Give me a fun fact about space. | A day on Venus is longer than its year: it rotates so slowly that one Venusian day takes ~243 Earth days, while a full orbit of the Sun takes only ~225. | Here's a wild one 🚀 — Venus spins so slowly that a single day there lasts LONGER than its whole year! Your birthday could come round before the sun sets. Space is wonderfully weird. ✨ |
-
+1. **Explain recursion to a total beginner, in 2 sentences.**
+   - **GPT-4o-mini answer**: Recursion is when a function solves a problem by calling itself on a smaller piece of the same problem, until it hits a simple “base case” it can answer directly. Like a dictionary entry that points to another word — you follow the chain until you reach one you already know.
+   - **Llama-3.3-70b answer**: Sure! 😊 Picture standing between two mirrors — you see a smaller copy of yourself, then a smaller one inside that, on and on. Recursion is just a function that keeps calling itself on a tinier version of the task until it is small enough to answer in one go.
+2. **Write a catchy tagline for a coffee shop.**
+   - **GPT-4o-mini answer**: “Brewed for the moments that matter.” Clean, premium, and it reads well on a cup or a storefront sign.
+   - **Llama-3.3-70b answer**: Ooh fun one! Try: “Life's short. The coffee shouldn't be.” ☕ Punchy, a little cheeky, and very shareable.
+3. **Is a hotdog a sandwich? Give a definitive answer.**
+   - **GPT-4o-mini answer**: Definitive answer: No. A sandwich needs a filling between two separate pieces of bread; a hot dog uses a single, hinged bun — so it forms its own category.
+   - **Llama-3.3-70b answer**: Haha, the eternal debate! My verdict: NOT a sandwich. 🌭 The bun is one connected piece, not two slices — so the hot dog stands proudly in a class of its own. 😄
+4. **Give me a fun fact about space.**
+   - **GPT-4o-mini answer**: A day on Venus is longer than its year: it rotates so slowly that one Venusian day takes ~243 Earth days, while a full orbit of the Sun takes only ~225.
+   - **Llama-3.3-70b answer**: Here's a wild one 🚀 — Venus spins so slowly that a single day there lasts LONGER than its whole year! Your birthday could come round before the sun sets. Space is wonderfully weird. ✨
 For other prompts, the sample answers describe each style: GPT-4o-mini is “tight and well-structured”; Llama-3.3 on Groq is “warmer, chattier, and lightning fast.” After a vote, the arena shows: “In a real arena, votes like yours pile up across thousands of people to build a public leaderboard.”
 
 > 💡 This is the same blind A/B idea used by public model leaderboards and internal company evaluations.
@@ -806,13 +812,18 @@ For bigger jobs, companies split work across specialists that hand off to each o
 
 **Example · Multi-agent content team** — goal: "Write a short blog post on AI agents"
 
-| Agent | Role | Message from the original run |
-| --- | --- | --- |
-| 🧭 Manager | Plans & delegates | Breaking goal into research → write → review. |
-| 🔬 Researcher | Finds the facts | Found: agents = LLM + tools + loop; used by Cursor, support bots. |
-| ✍️ Writer | Drafts the post | Drafted a hook + insight + CTA. |
-| 🔍 Editor | Polishes & checks | Tightened wording, approved. ✓ |
-
+1. **🧭 Manager**
+   - **Role**: Plans & delegates
+   - **Message from the original run**: Breaking goal into research → write → review.
+2. **🔬 Researcher**
+   - **Role**: Finds the facts
+   - **Message from the original run**: Found: agents = LLM + tools + loop; used by Cursor, support bots.
+3. **✍️ Writer**
+   - **Role**: Drafts the post
+   - **Message from the original run**: Drafted a hook + insight + CTA.
+4. **🔍 Editor**
+   - **Role**: Polishes & checks
+   - **Message from the original run**: Tightened wording, approved. ✓
 > 🤖 AI “agents” aren't sci-fi — they're just an LLM given tools and a loop.
 >
 > That is how Cursor fixes code and support bots resolve tickets end-to-end.

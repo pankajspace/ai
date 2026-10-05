@@ -72,24 +72,27 @@ Every command block has a **Copy** button. Every command block is followed by a 
 > **Analogy** 🧠 — **The Master Analogy — The Tiffin System 🍱**
 > Come back to this table every time a new term confuses you. If you memorise one thing from the whole session, memorise this:
 >
-> | Docker Concept | Tiffin World | One-line meaning |
->
-> | --- | --- | --- |
->
-> | **Dockerfile** | Recipe card 📝 | Step-by-step written instructions for how to prepare the meal. |
->
-> | **Image** | Master tiffin (sealed, ready) 🍱 | The packed box produced from the recipe — frozen in time, ready to ship. |
->
-> | **Container** | One delivered tiffin 🚚 | A running copy of the image. One image can produce a hundred tiffins. |
->
-> | **Docker Hub** | Central kitchen / warehouse 🏭 | Where ready-made boxes for every recipe live — Python's, Ubuntu's, Redis's. |
->
-> | **Port mapping** | The building's gate number 🚪 | The box lives in flat 8000 inside the building, but deliveries come through gate 8000 — `-p 8000:8000`  . |
->
-> | **Volume** | The steel box that comes back ♻️ | Delete the container, the data survives — like the reusable steel dabba. |
->
-> | **docker compose** | Ordering a full thali 🍽️ | One order gets you dal, rice, sabzi, roti — all containers together. |
->
+> 1. **Dockerfile**
+>    - **Tiffin World**: Recipe card 📝
+>    - **One-line meaning**: Step-by-step written instructions for how to prepare the meal.
+> 2. **Image**
+>    - **Tiffin World**: Master tiffin (sealed, ready) 🍱
+>    - **One-line meaning**: The packed box produced from the recipe — frozen in time, ready to ship.
+> 3. **Container**
+>    - **Tiffin World**: One delivered tiffin 🚚
+>    - **One-line meaning**: A running copy of the image. One image can produce a hundred tiffins.
+> 4. **Docker Hub**
+>    - **Tiffin World**: Central kitchen / warehouse 🏭
+>    - **One-line meaning**: Where ready-made boxes for every recipe live — Python's, Ubuntu's, Redis's.
+> 5. **Port mapping**
+>    - **Tiffin World**: The building's gate number 🚪
+>    - **One-line meaning**: The box lives in flat 8000 inside the building, but deliveries come through gate 8000 — `-p 8000:8000`  .
+> 6. **Volume**
+>    - **Tiffin World**: The steel box that comes back ♻️
+>    - **One-line meaning**: Delete the container, the data survives — like the reusable steel dabba.
+> 7. **docker compose**
+>    - **Tiffin World**: Ordering a full thali 🍽️
+>    - **One-line meaning**: One order gets you dal, rice, sabzi, roti — all containers together.
 > #### ⭐ The most important rule in this entire guide
 >
 > **"An image is a photograph, not a mirror."** When you build an image, Docker takes a *photo* of your code at that moment. If you edit your code afterwards, the photo does NOT update by itself — you must take a new photo (rebuild). Forgetting this causes 90% of beginner confusion, so it's repeated throughout.
@@ -1316,29 +1319,66 @@ This is the section to keep open on a second screen while you work. Use the full
 
 The table lists each command, its meaning, and its tiffin translation.
 
-| Command | What it does | Tiffin translation |
-| --- | --- | --- |
-| `docker build -t name:tag .` | Build an image from the Dockerfile here | Pack the master box from the recipe |
-| `docker run -d -p 8000:8000 img` | Start a container, background, map ports | Deliver the tiffin, set the gate |
-| `docker ps`  / `docker ps -a` | Running containers / ALL incl. dead ones | Today's deliveries / the full register |
-| `docker logs -f name` | Stream a container's output live | The box's diary |
-| `docker exec -it name bash` | Open a shell inside a running container | Step inside the box |
-| `docker images` | List all images on your machine | The shelf of master tiffins |
-| `docker rm -f name` | Force-remove a container, even if running | Recall the delivery immediately |
-| `docker compose up -d --build` | Rebuild if needed + start all services | Serve the thali (fresh) |
-| `docker compose ps -a` | This project's containers, incl. exited | Which dishes made it, which didn't |
-| `docker compose exec app CMD` | Run a one-off command in a live service | Ask the chef mid-service |
-| `docker compose down` | Stop + delete containers (volumes safe) | Clear the thali, keep the steel boxes |
-| `docker compose down -v` | …and delete volumes too ⚠️ data gone | Scrap the steel boxes |
-| `docker compose logs -f` | All services' logs together | CCTV over the whole kitchen |
-| `docker compose up -d --force-recreate` | Recreate containers (e.g. after .env edits) | Fresh boxes, same recipe |
-| `docker volume ls` | List volumes on your machine | Count the steel dabbas in stock |
-| `docker system df` | How much disk Docker is eating | Check the pantry weight |
-| `docker system prune -a` | Delete unused images/containers (careful!) | Diwali deep-clean 🧹 |
-| `docker run --platform linux/amd64` | The Mac ARM fix | Dubbing for another audience |
-| `docker history image` | Show every layer + the command that made it | Read the recipe backwards (and find leaked secrets) |
-| `lsof -i :8000` | Find which process is holding a port | Who's blocking the gate? |
-
+1. **`docker build -t name:tag .`**
+   - **What it does**: Build an image from the Dockerfile here
+   - **Tiffin translation**: Pack the master box from the recipe
+2. **`docker run -d -p 8000:8000 img`**
+   - **What it does**: Start a container, background, map ports
+   - **Tiffin translation**: Deliver the tiffin, set the gate
+3. **`docker ps`  / `docker ps -a`**
+   - **What it does**: Running containers / ALL incl. dead ones
+   - **Tiffin translation**: Today's deliveries / the full register
+4. **`docker logs -f name`**
+   - **What it does**: Stream a container's output live
+   - **Tiffin translation**: The box's diary
+5. **`docker exec -it name bash`**
+   - **What it does**: Open a shell inside a running container
+   - **Tiffin translation**: Step inside the box
+6. **`docker images`**
+   - **What it does**: List all images on your machine
+   - **Tiffin translation**: The shelf of master tiffins
+7. **`docker rm -f name`**
+   - **What it does**: Force-remove a container, even if running
+   - **Tiffin translation**: Recall the delivery immediately
+8. **`docker compose up -d --build`**
+   - **What it does**: Rebuild if needed + start all services
+   - **Tiffin translation**: Serve the thali (fresh)
+9. **`docker compose ps -a`**
+   - **What it does**: This project's containers, incl. exited
+   - **Tiffin translation**: Which dishes made it, which didn't
+10. **`docker compose exec app CMD`**
+   - **What it does**: Run a one-off command in a live service
+   - **Tiffin translation**: Ask the chef mid-service
+11. **`docker compose down`**
+   - **What it does**: Stop + delete containers (volumes safe)
+   - **Tiffin translation**: Clear the thali, keep the steel boxes
+12. **`docker compose down -v`**
+   - **What it does**: …and delete volumes too ⚠️ data gone
+   - **Tiffin translation**: Scrap the steel boxes
+13. **`docker compose logs -f`**
+   - **What it does**: All services' logs together
+   - **Tiffin translation**: CCTV over the whole kitchen
+14. **`docker compose up -d --force-recreate`**
+   - **What it does**: Recreate containers (e.g. after .env edits)
+   - **Tiffin translation**: Fresh boxes, same recipe
+15. **`docker volume ls`**
+   - **What it does**: List volumes on your machine
+   - **Tiffin translation**: Count the steel dabbas in stock
+16. **`docker system df`**
+   - **What it does**: How much disk Docker is eating
+   - **Tiffin translation**: Check the pantry weight
+17. **`docker system prune -a`**
+   - **What it does**: Delete unused images/containers (careful!)
+   - **Tiffin translation**: Diwali deep-clean 🧹
+18. **`docker run --platform linux/amd64`**
+   - **What it does**: The Mac ARM fix
+   - **Tiffin translation**: Dubbing for another audience
+19. **`docker history image`**
+   - **What it does**: Show every layer + the command that made it
+   - **Tiffin translation**: Read the recipe backwards (and find leaked secrets)
+20. **`lsof -i :8000`**
+   - **What it does**: Find which process is holding a port
+   - **Tiffin translation**: Who's blocking the gate?
 <a id="port4-the-golden-rules-read-these-before-any-interview"></a>
 
 ### The golden rules — read these before any interview

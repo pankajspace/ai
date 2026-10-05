@@ -157,22 +157,16 @@ A template is text with blanks. You fill the blanks with a dict. The dict you pa
 
 Template: Write a {tone} {length} post about {topic}.
 
-| Blank | Values from the playground |
-| --- | --- |
-| `tone` | `witty`, `professional`, `inspiring` |
-| `length` | `short`, `medium`, `detailed` |
-| `topic` | `AI agents`, `LangChain`, `your first job` |
-
+1. **`tone`**: `witty`, `professional`, `inspiring`
+2. **`length`**: `short`, `medium`, `detailed`
+3. **`topic`**: `AI agents`, `LangChain`, `your first job`
 Default call:
 chain.invoke({"tone": "witty", "length": "short", "topic": "AI agents"})
 → Write a witty short post about AI agents.
 
-| Example input | Final prompt sent to the model |
-| --- | --- |
-| `tone="witty"`, `length="short"`, `topic="AI agents"` | Write a **witty** **short** post about **AI agents**. |
-| `tone="professional"`, `length="medium"`, `topic="LangChain"` | Write a **professional** **medium** post about **LangChain**. |
-| `tone="inspiring"`, `length="detailed"`, `topic="your first job"` | Write an **inspiring** **detailed** post about **your first job**. |
-
+1. **`tone="witty"`, `length="short"`, `topic="AI agents"`**: Write a **witty** **short** post about **AI agents**.
+2. **`tone="professional"`, `length="medium"`, `topic="LangChain"`**: Write a **professional** **medium** post about **LangChain**.
+3. **`tone="inspiring"`, `length="detailed"`, `topic="your first job"`**: Write an **inspiring** **detailed** post about **your first job**.
 The keys in the dict match the blank names: `tone`, `length`, and `topic`.
 
 <a id="langchain-parser"></a>
@@ -217,12 +211,9 @@ A chain is three pieces joined by `|`, the pipe. Read the pipe as **"then"**: pr
 
 🧹 Parser
 
-| Piece | Why it goes there |
-| --- | --- |
-| 📝 Prompt | The prompt comes first. It shapes the request. |
-| 🤖 Model | The model goes in the middle. It does the thinking. |
-| 🧹 Parser | The parser comes last. It cleans the output into plain text. |
-
+1. **📝 Prompt**: The prompt comes first. It shapes the request.
+2. **🤖 Model**: The model goes in the middle. It does the thinking.
+3. **🧹 Parser**: The parser comes last. It cleans the output into plain text.
 The challenge tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a later piece too early, the feedback explained which piece was expected next.
 
 📝 prompt fills the blank → "Summarize this website: anthropic.com…"🤖 model thinks… generates the summary🧹 parser returns clean text → "Anthropic builds safe AI systems, including Claude…" ✅
@@ -582,15 +573,26 @@ This trace shows a sample chat with the agent. Watch when the 🔧 tool line app
 
 **Starting message:** Hi! I'm your shop assistant. Ask me the price of anything 🙂
 
-| User message | Trace | Assistant answer |
-| --- | --- | --- |
-| How much are the shoes? | `get_price("shoes") → ₹799` | The shoes are **₹799**. Anything else? 🙂 |
-| Is the hat cheaper than the bag? | `get_price("hat") → ₹399`<br>`get_price("bag") → ₹1420` | hat: **₹399** · bag: **₹1420**<br>So the **hat** is the cheaper one! |
-| Do you sell laptops? | — no tool needed, answering directly — | I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️ |
-| Hi! What can you do? | — no tool needed, answering directly — | I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️ |
-| What's your return policy? | — no tool needed, answering directly — | I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️ |
-| How much is the laptop? | `get_price(...) → unknown` | Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants! |
-
+1. **How much are the shoes?**
+   - **Trace**: `get_price("shoes") → ₹799`
+   - **Assistant answer**: The shoes are **₹799**. Anything else? 🙂
+2. **Is the hat cheaper than the bag?**
+   - **Trace**: `get_price("hat") → ₹399`
+     `get_price("bag") → ₹1420`
+   - **Assistant answer**: hat: **₹399** · bag: **₹1420**
+     So the **hat** is the cheaper one!
+3. **Do you sell laptops?**
+   - **Trace**: — no tool needed, answering directly —
+   - **Assistant answer**: I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️
+4. **Hi! What can you do?**
+   - **Trace**: — no tool needed, answering directly —
+   - **Assistant answer**: I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️
+5. **What's your return policy?**
+   - **Trace**: — no tool needed, answering directly —
+   - **Assistant answer**: I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️
+6. **How much is the laptop?**
+   - **Trace**: `get_price(...) → unknown`
+   - **Assistant answer**: Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants!
 **Shop data:** shoes ₹799, hat ₹399, bag ₹1420, shorts ₹1299, pants ₹1699.
 
 **How this sample trace was made:** keyword rules stand in for the model. They look for item names, including simple singular forms. They treat `price`, `cost`, `how much`, `cheap`, `expensive`, `afford`, and `₹` as price-related words. Each item found adds one tool call. A price question about an unknown item adds one "unknown" tool call. Anything else is a direct answer.

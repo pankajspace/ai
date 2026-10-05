@@ -349,23 +349,19 @@ $ pip install langchain langchain-openai
                 <div class="viz-head"><span class="viz-title">Example · Template playground</span><span class="viz-step">worked prompt fills</span></div>
                 <div class="viz-stage is-text">
                   <p class="tpl-line">Template: Write a <span class="tpl-slot">{tone}</span> <span class="tpl-slot">{length}</span> post about <span class="tpl-slot">{topic}</span>.</p>
-                  <table class="static-table"><thead>
-<tr><th>Blank</th><th>Values from the playground</th></tr>
-</thead><tbody>
-<tr><td data-label="Blank"><code>tone</code></td><td data-label="Values from the playground"><code>witty</code>, <code>professional</code>, <code>inspiring</code></td></tr>
-<tr><td data-label="Blank"><code>length</code></td><td data-label="Values from the playground"><code>short</code>, <code>medium</code>, <code>detailed</code></td></tr>
-<tr><td data-label="Blank"><code>topic</code></td><td data-label="Values from the playground"><code>AI agents</code>, <code>LangChain</code>, <code>your first job</code></td></tr>
-</tbody></table>
+                  <ul class="card-grid">
+  <li><b><code>tone</code></b> <code>witty</code>, <code>professional</code>, <code>inspiring</code></li>
+  <li><b><code>length</code></b> <code>short</code>, <code>medium</code>, <code>detailed</code></li>
+  <li><b><code>topic</code></b> <code>AI agents</code>, <code>LangChain</code>, <code>your first job</code></li>
+</ul>
                   <div class="tpl-out"><span class="tpl-muted">Default call:</span>
 chain.invoke({"tone": "witty", "length": "short", "topic": "AI agents"})
 → Write a <span class="tpl-fill">witty</span> <span class="tpl-fill">short</span> post about <span class="tpl-fill">AI agents</span>.</div>
-                  <table class="static-table"><thead>
-<tr><th>Example input</th><th>Final prompt sent to the model</th></tr>
-</thead><tbody>
-<tr><td data-label="Example input"><code>tone="witty"</code>, <code>length="short"</code>, <code>topic="AI agents"</code></td><td data-label="Final prompt sent to the model">Write a <strong>witty</strong> <strong>short</strong> post about <strong>AI agents</strong>.</td></tr>
-<tr><td data-label="Example input"><code>tone="professional"</code>, <code>length="medium"</code>, <code>topic="LangChain"</code></td><td data-label="Final prompt sent to the model">Write a <strong>professional</strong> <strong>medium</strong> post about <strong>LangChain</strong>.</td></tr>
-<tr><td data-label="Example input"><code>tone="inspiring"</code>, <code>length="detailed"</code>, <code>topic="your first job"</code></td><td data-label="Final prompt sent to the model">Write an <strong>inspiring</strong> <strong>detailed</strong> post about <strong>your first job</strong>.</td></tr>
-</tbody></table>
+                  <ul class="card-grid">
+  <li><b><code>tone="witty"</code>, <code>length="short"</code>, <code>topic="AI agents"</code></b> Write a <strong>witty</strong> <strong>short</strong> post about <strong>AI agents</strong>.</li>
+  <li><b><code>tone="professional"</code>, <code>length="medium"</code>, <code>topic="LangChain"</code></b> Write a <strong>professional</strong> <strong>medium</strong> post about <strong>LangChain</strong>.</li>
+  <li><b><code>tone="inspiring"</code>, <code>length="detailed"</code>, <code>topic="your first job"</code></b> Write an <strong>inspiring</strong> <strong>detailed</strong> post about <strong>your first job</strong>.</li>
+</ul>
                 </div>
                 <div class="viz-note">The keys in the dict match the blank names: <code>tone</code>, <code>length</code>, and <code>topic</code>.</div>
               </div>
@@ -420,13 +416,11 @@ chain.invoke({"tone": "witty", "length": "short", "topic": "AI agents"})
                 <div class="viz-head"><span class="viz-title">Example · Chain builder</span><span class="viz-step">pieces, order, and output</span></div>
                 <div class="viz-stage is-text">
                   <div class="chain-slots" id="cbSlots"><span class="chain-piece prompt">📝 Prompt</span><span class="chain-pipe">|</span><span class="chain-piece model">🤖 Model</span><span class="chain-pipe">|</span><span class="chain-piece parser">🧹 Parser</span></div>
-                  <table class="static-table"><thead>
-<tr><th>Piece</th><th>Why it goes there</th></tr>
-</thead><tbody>
-<tr><td data-label="Piece">📝 Prompt</td><td data-label="Why it goes there">The prompt comes first. It shapes the request.</td></tr>
-<tr><td data-label="Piece">🤖 Model</td><td data-label="Why it goes there">The model goes in the middle. It does the thinking.</td></tr>
-<tr><td data-label="Piece">🧹 Parser</td><td data-label="Why it goes there">The parser comes last. It cleans the output into plain text.</td></tr>
-</tbody></table>
+                  <ul class="card-grid">
+  <li><b>📝 Prompt</b> The prompt comes first. It shapes the request.</li>
+  <li><b>🤖 Model</b> The model goes in the middle. It does the thinking.</li>
+  <li><b>🧹 Parser</b> The parser comes last. It cleans the output into plain text.</li>
+</ul>
                   <p>The challenge tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a later piece too early, the feedback explained which piece was expected next.</p>
                   <div class="mono chain-out" id="cbOut" style="margin-top:12px"><div class="d1">📝 prompt fills the blank → "Summarize this website: anthropic.com…"</div><div class="d2">🤖 model thinks… generates the summary</div><div class="d3">🧹 parser returns clean text → "Anthropic builds safe AI systems, including Claude…" ✅</div></div>
                 </div>
@@ -888,16 +882,50 @@ Shop: The pants are ₹1699.
               <p>This trace shows a sample chat with the agent. Watch when the 🔧 tool line appears and when the assistant answers directly.</p>
               <div class="viz"><div class="viz-head"><span class="viz-title">Example · Smart Shop Assistant</span><span class="viz-step">preset traces</span></div><div class="viz-stage is-text" id="shopLog">
                 <p><strong>Starting message:</strong> Hi! I'm your shop assistant. Ask me the price of anything 🙂</p>
-                <table class="static-table"><thead>
-<tr><th>User message</th><th>Trace</th><th>Assistant answer</th></tr>
-</thead><tbody>
-<tr><td data-label="User message">How much are the shoes?</td><td data-label="Trace"><code>get_price("shoes") → ₹799</code></td><td data-label="Assistant answer">The shoes are <strong>₹799</strong>. Anything else? 🙂</td></tr>
-<tr><td data-label="User message">Is the hat cheaper than the bag?</td><td data-label="Trace"><code>get_price("hat") → ₹399</code><br><code>get_price("bag") → ₹1420</code></td><td data-label="Assistant answer">hat: <strong>₹399</strong> · bag: <strong>₹1420</strong><br>So the <strong>hat</strong> is the cheaper one!</td></tr>
-<tr><td data-label="User message">Do you sell laptops?</td><td data-label="Trace">— no tool needed, answering directly —</td><td data-label="Assistant answer">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</td></tr>
-<tr><td data-label="User message">Hi! What can you do?</td><td data-label="Trace">— no tool needed, answering directly —</td><td data-label="Assistant answer">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</td></tr>
-<tr><td data-label="User message">What's your return policy?</td><td data-label="Trace">— no tool needed, answering directly —</td><td data-label="Assistant answer">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</td></tr>
-<tr><td data-label="User message">How much is the laptop?</td><td data-label="Trace"><code>get_price(...) → unknown</code></td><td data-label="Assistant answer">Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants!</td></tr>
-</tbody></table>
+                <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">How much are the shoes?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price("shoes") → ₹799</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">The shoes are <strong>₹799</strong>. Anything else? 🙂</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Is the hat cheaper than the bag?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price("hat") → ₹399</code><br><code>get_price("bag") → ₹1420</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">hat: <strong>₹399</strong> · bag: <strong>₹1420</strong><br>So the <strong>hat</strong> is the cheaper one!</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Do you sell laptops?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Hi! What can you do?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">What's your return policy?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">How much is the laptop?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price(...) → unknown</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants!</span></div>
+    </div>
+  </div>
+</div>
                 <p><strong>Shop data:</strong> shoes ₹799, hat ₹399, bag ₹1420, shorts ₹1299, pants ₹1699.</p>
                 <p><strong>How this sample trace was made:</strong> keyword rules stand in for the model. They look for item names, including simple singular forms. They treat <code>price</code>, <code>cost</code>, <code>how much</code>, <code>cheap</code>, <code>expensive</code>, <code>afford</code>, and <code>₹</code> as price-related words. Each item found adds one tool call. A price question about an unknown item adds one "unknown" tool call. Anything else is a direct answer.</p>
               </div><div class="viz-note">In this sample, keyword matching stands in for the model. In your real <code>agent.py</code>, GPT makes the decision more flexibly, but the loop and trace stay the same.</div></div>

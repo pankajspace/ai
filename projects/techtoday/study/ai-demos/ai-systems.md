@@ -128,11 +128,8 @@ Use this working definition in the prompt: **a grievance is a statement about so
 
 “Two of *the four* were missing” cannot be judged on its own. Four of what? The extraction prompt requires every grievance to be **self-contained**, with references matched to the order:
 
-| As the customer wrote it | As extracted |
-| --- | --- |
-| “Two of the four were missing completely.” | “2 of the 4 Hyderabadi Biryani units ordered were not delivered.” |
-| “The delivery guy was rude when I asked *him* about *it*.” | “The delivery partner behaved rudely when asked about the missing items.” |
-
+1. **“Two of the four were missing completely.”**: “2 of the 4 Hyderabadi Biryani units ordered were not delivered.”
+2. **“The delivery guy was rude when I asked *him* about *it*.”**: “The delivery partner behaved rudely when asked about the missing items.”
 > ⚠️ **Production reality.**
 >
 > A rule that says “do not use pronouns” tells the model what *not* to do but not what to do instead. Name the operation. This is **co-reference resolution**, a task the model already knows by name. Give it the order's line items to resolve against. A ban creates refusals. A procedure gets useful work.
@@ -154,13 +151,18 @@ Each grievance goes to the bench **three times, independently**, with no shared 
 - **g3** The raita container leaked inside the delivery bag. *(evidence · none — no field records packaging condition)* — votes U,E,E → **escalate** · confidence 0.35 · ₹60?
 - **g4** The delivery partner behaved rudely when asked about the missing items. *(evidence · customer rated this partner 5★ at handover, 21:41)* — votes R,R,R → **rejected** · confidence 0.88 · ₹0
 
-| Outcome | Grievances | Amount |
-| --- | --- | --- |
-| upheld | g1 late delivery, g2 missing items | ₹689 |
-| escalate | g3 leaked raita | ₹60 held |
-| rejected | g4 rude partner | ₹0 |
-| Auto-approved now | under the ₹2,000 cap, so no human needed | ₹689 |
-
+1. **upheld**
+   - **Grievances**: g1 late delivery, g2 missing items
+   - **Amount**: ₹689
+2. **escalate**
+   - **Grievances**: g3 leaked raita
+   - **Amount**: ₹60 held
+3. **rejected**
+   - **Grievances**: g4 rude partner
+   - **Amount**: ₹0
+4. **Auto-approved now**
+   - **Grievances**: under the ₹2,000 cap, so no human needed
+   - **Amount**: ₹689
 **g4 shows why the system matters.** The accusation sounds plausible and sympathetic. The evidence contradicts it: the same customer gave this partner five stars at the door, one minute after handover. A tired support agent at 10pm might approve it. The bench does not.
 
 **g3 shows why you sample three times.** One judge was ready to approve ₹60 on a claim nothing can prove. Two judges said there was not enough evidence. Majority rules, confidence drops to 0.35, and it goes to a human. With one call, you would have a coin-flip chance of paying an unprovable claim every time, at 200 disputes a minute.
@@ -373,12 +375,18 @@ Each block is one LLM call. Both rows use the same clock. The four-line version 
 
 ### Why not use more lines?
 
-| Lines | Calls per line | Time | Verdict |
-| --- | --- | --- | --- |
-| 1 | 12 | 12–24 s | customer already gone |
-| **4** | **3** | **3–6 s** | the design's choice |
-| 12 | 1 | 1–2 s | useful for one dispute |
-
+1. **1**
+   - **Calls per line**: 12
+   - **Time**: 12–24 s
+   - **Verdict**: customer already gone
+2. **4**
+   - **Calls per line**: **3**
+   - **Time**: **3–6 s**
+   - **Verdict**: the design's choice
+3. **12**
+   - **Calls per line**: 1
+   - **Time**: 1–2 s
+   - **Verdict**: useful for one dispute
 Twelve lines per dispute looks free until you include concurrency. At peak there are roughly **25 disputes in flight at once**. Four lines each is 100 simultaneous requests; twelve lines each is 300. **Your total rate limit divided by your concurrency sets how much parallelism each dispute can use**, not by what one dispute would prefer.
 
 <a id="s5-calls-7-seconds-of-work-15-seconds-of-promise"></a>
@@ -499,13 +507,18 @@ People often forget this table. You made 12 judging calls and you keep **every r
 
 That decision is a **retention policy**, and the four tables need different rules:
 
-| Table | Share | Keep it how long, and why |
-| --- | --- | --- |
-| `judge_rulings` | 69% | **90 days hot, then cold storage.** You need it while the dispute can still be escalated. After that it is audit material, not working data. |
-| `grievances` | 17% | **7 years.** This is the financial record that explains why money moved. Keep it for the statutory period. |
-| `evidence_snapshots` | 9% | **7 years.** The ruling is useless without this. The ruling means nothing if you cannot show what it was ruled against. |
-| `disputes` | 3% | **7 years.** It is tiny, and it indexes everything else. |
-
+1. **`judge_rulings`**
+   - **Share**: 69%
+   - **Keep it how long, and why**: **90 days hot, then cold storage.** You need it while the dispute can still be escalated. After that it is audit material, not working data.
+2. **`grievances`**
+   - **Share**: 17%
+   - **Keep it how long, and why**: **7 years.** This is the financial record that explains why money moved. Keep it for the statutory period.
+3. **`evidence_snapshots`**
+   - **Share**: 9%
+   - **Keep it how long, and why**: **7 years.** The ruling is useless without this. The ruling means nothing if you cannot show what it was ruled against.
+4. **`disputes`**
+   - **Share**: 3%
+   - **Keep it how long, and why**: **7 years.** It is tiny, and it indexes everything else.
 Move the 69% to cold storage after 90 days and your hot footprint drops from 380 GB to about 150 GB a year. That can fit on a cluster you already run.
 
 > 🎯 **Ask the room.**
@@ -541,17 +554,14 @@ flowchart LR
 
 The counter clerk, the REST API, takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.
 
-| In the diagram | In the dry cleaner |
-| --- | --- |
-| **APP** | You, standing at the counter |
-| **REST API** | The clerk. Writes the ticket, never cleans anything |
-| `dispute_id` | Ticket #47 |
-| **KAFKA / SQS** | The pile of bags waiting to be worked |
-| **WORKER NODE** | The back-office person handling one ticket |
-| **LLM PROVIDERS** | The specialist shops they send each item out to; 14 errands per ticket |
-| **LEDGER** | The book recording which ticket is at what stage |
-| **GET status** (dashed) | You phoning to ask “is #47 ready?” |
-
+1. **APP**: You, standing at the counter
+2. **REST API**: The clerk. Writes the ticket, never cleans anything
+3. **`dispute_id`**: Ticket #47
+4. **KAFKA / SQS**: The pile of bags waiting to be worked
+5. **WORKER NODE**: The back-office person handling one ticket
+6. **LLM PROVIDERS**: The specialist shops they send each item out to; 14 errands per ticket
+7. **LEDGER**: The book recording which ticket is at what stage
+8. ****GET status** (dashed)**: You phoning to ask “is #47 ready?”
 **Teams often skip the pile, but it does real work.** Two hundred disputes land in a minute and you can process forty at a time. Without a pile, you would have to reject 160 of them. With a pile, everyone gets a ticket, nothing is dropped, and later tickets wait longer.
 
 <a id="s7-arch-the-429-and-why-jitter-matters"></a>
@@ -643,13 +653,10 @@ ledger.save(dispute_id, message, status=SETTLED)
 
 ### Plan for failures on purpose
 
-| Failure | Response |
-| --- | --- |
-| **Worker dies mid-dispute** | Checkpoint state at each stage. Make judging idempotent per grievance. Then the job resumes where it stopped instead of judging again from the start. |
-| **Provider returns 429** | Exponential backoff with jitter. At 2,800 calls a minute, this is a daily event, not an incident. |
-| **Some grievances never resolve** | Default to escalate, never to rejected. If ≥ 60% resolved and the settled amount is under the cap, pay that part now and send the remainder to an agent. A partial refund plus an honest note is better than an error screen. |
-| **The total exceeds ₹2,000** | Stop. A human approves. No confidence score, unanimous bench, or model certainty overrides this. It is a hard ceiling in code, checked before the payments call. |
-
+1. **Worker dies mid-dispute**: Checkpoint state at each stage. Make judging idempotent per grievance. Then the job resumes where it stopped instead of judging again from the start.
+2. **Provider returns 429**: Exponential backoff with jitter. At 2,800 calls a minute, this is a daily event, not an incident.
+3. **Some grievances never resolve**: Default to escalate, never to rejected. If ≥ 60% resolved and the settled amount is under the cap, pay that part now and send the remainder to an agent. A partial refund plus an honest note is better than an error screen.
+4. **The total exceeds ₹2,000**: Stop. A human approves. No confidence score, unanimous bench, or model certainty overrides this. It is a hard ceiling in code, checked before the payments call.
 > 🎯 **Ask the room.**
 >
 > **“The bench is unanimous, confidence 0.99, and the refund comes to ₹4,500. Ship it?”**
@@ -780,13 +787,18 @@ Notice what the message does *not* do: it doesn't mention g4 at all. Leaving out
 
 - Section 10 · Design choices
 
-| Decision | Tempting answer | What it should be |
-| --- | --- | --- |
-| **How to batch** | Put all 4 grievances in one prompt, ask for 4 rulings. | No. Lost-in-the-middle is real. A dropped grievance is a refund you silently did not pay. Use the provider's *batch API*: separate prompts in one request, one output each. This avoids skipped grievances. |
-| **Batch API vs threads** | Batch endpoints are cheaper, so use them. | Check the SLA first. OpenAI and Azure batch endpoints carry a **24-hour completion window**. For a customer watching a spinner, that is unusable. Use parallel calls across threads and pay list price. Use batch APIs for overnight re-scoring jobs. |
-| **Caching rulings** | “Order was late” appears in thousands of disputes — cache the ruling. | **Never.** This is the clearest lesson in the system. Caching needs two properties: a homogeneous corpus *and* context-free claims. “ISRO is in Bengaluru” is context-free. It is true regardless of the article. “Order was late” is *not*. It is true for this order and false for the next one. Homogeneity alone is not enough. |
-| **Reasoning models** | Money is involved, so use the thinking model. | That is too much. The grievances are *atomic* by design and the evidence is already fetched. “was 21:40 more than 45 minutes after 20:15” does not need a long reasoning chain. Atomic claims plus evidence do the work that longer reasoning would have done, with lower cost and latency. |
-
+1. **How to batch**
+   - **Tempting answer**: Put all 4 grievances in one prompt, ask for 4 rulings.
+   - **What it should be**: No. Lost-in-the-middle is real. A dropped grievance is a refund you silently did not pay. Use the provider's *batch API*: separate prompts in one request, one output each. This avoids skipped grievances.
+2. **Batch API vs threads**
+   - **Tempting answer**: Batch endpoints are cheaper, so use them.
+   - **What it should be**: Check the SLA first. OpenAI and Azure batch endpoints carry a **24-hour completion window**. For a customer watching a spinner, that is unusable. Use parallel calls across threads and pay list price. Use batch APIs for overnight re-scoring jobs.
+3. **Caching rulings**
+   - **Tempting answer**: “Order was late” appears in thousands of disputes — cache the ruling.
+   - **What it should be**: **Never.** This is the clearest lesson in the system. Caching needs two properties: a homogeneous corpus *and* context-free claims. “ISRO is in Bengaluru” is context-free. It is true regardless of the article. “Order was late” is *not*. It is true for this order and false for the next one. Homogeneity alone is not enough.
+4. **Reasoning models**
+   - **Tempting answer**: Money is involved, so use the thinking model.
+   - **What it should be**: That is too much. The grievances are *atomic* by design and the evidence is already fetched. “was 21:40 more than 45 minutes after 20:15” does not need a long reasoning chain. Atomic claims plus evidence do the work that longer reasoning would have done, with lower cost and latency.
 > 🎯 **Ask the room.**
 >
 > **“The fact-checking case study said caching depends on whether the corpus is homogeneous. Here the corpus is homogeneous and the answer is still no. Was the fact-checker wrong?”**
@@ -831,15 +843,12 @@ The architecture stays the same. The fan-out, bench, checkpointing, cap, and 60%
 
 Dispute resolution is one example of a general pattern: *when being wrong costs more than asking again, ask again and count.*
 
-| Use case | What the bench protects you from |
-| --- | --- |
-| **Insurance claim triage** | The same pattern, with a bigger cap and more time. Split benches send the case to a human assessor. |
-| **Loan document verification** | It prevents one model from misreading one figure on one payslip and approving credit from it. |
-| **Content moderation appeals** | Inconsistency: the same post restored on Monday and removed on Tuesday. |
-| **Invoice / PO matching** | A line item skipped silently in a 40-row invoice, which reconciliation finds three months later. |
-| **Code review risk scoring** | A P0 change marked cosmetic because one sample skimmed the diff. |
-| **Financial data extraction** | Tokenisation can fail on numbers. “₹20,000.00” read as “₹2,000,000” because a decimal fell on a token boundary. Three judges can catch it; one may not. |
-
+1. **Insurance claim triage**: The same pattern, with a bigger cap and more time. Split benches send the case to a human assessor.
+2. **Loan document verification**: It prevents one model from misreading one figure on one payslip and approving credit from it.
+3. **Content moderation appeals**: Inconsistency: the same post restored on Monday and removed on Tuesday.
+4. **Invoice / PO matching**: A line item skipped silently in a 40-row invoice, which reconciliation finds three months later.
+5. **Code review risk scoring**: A P0 change marked cosmetic because one sample skimmed the diff.
+6. **Financial data extraction**: Tokenisation can fail on numbers. “₹20,000.00” read as “₹2,000,000” because a decimal fell on a token boundary. Three judges can catch it; one may not.
 > 🎯 **Close the session.**
 >
 > **“You now have two systems: a fact checker and a refund adjudicator. They use different domains, numbers, and latency budgets. What stays the same?”**

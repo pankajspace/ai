@@ -145,21 +145,54 @@ Before we can "search by meaning", we need a way to **turn meaning into numbers*
 
 **Example · Vector space** — 2-D map
 
-| Word | x | y | Colour group |
-| --- | --- | --- | --- |
-| banana | 80 | 90 | #4ec9b0 |
-| mango | 60 | 115 | #4ec9b0 |
-| grape | 100 | 75 | #4ec9b0 |
-| cat | 280 | 80 | #e0af68 |
-| dog | 300 | 105 | #e0af68 |
-| tiger | 265 | 60 | #e0af68 |
-| king | 180 | 175 | #f48771 |
-| queen | 215 | 155 | #f48771 |
-| man | 120 | 215 | #8cc8ff |
-| woman | 160 | 200 | #8cc8ff |
-| laptop | 60 | 240 | #c586c0 |
-| computer | 90 | 255 | #c586c0 |
-
+1. **banana**
+   - **x**: 80
+   - **y**: 90
+   - **Colour group**: #4ec9b0
+2. **mango**
+   - **x**: 60
+   - **y**: 115
+   - **Colour group**: #4ec9b0
+3. **grape**
+   - **x**: 100
+   - **y**: 75
+   - **Colour group**: #4ec9b0
+4. **cat**
+   - **x**: 280
+   - **y**: 80
+   - **Colour group**: #e0af68
+5. **dog**
+   - **x**: 300
+   - **y**: 105
+   - **Colour group**: #e0af68
+6. **tiger**
+   - **x**: 265
+   - **y**: 60
+   - **Colour group**: #e0af68
+7. **king**
+   - **x**: 180
+   - **y**: 175
+   - **Colour group**: #f48771
+8. **queen**
+   - **x**: 215
+   - **y**: 155
+   - **Colour group**: #f48771
+9. **man**
+   - **x**: 120
+   - **y**: 215
+   - **Colour group**: #8cc8ff
+10. **woman**
+   - **x**: 160
+   - **y**: 200
+   - **Colour group**: #8cc8ff
+11. **laptop**
+   - **x**: 60
+   - **y**: 240
+   - **Colour group**: #c586c0
+12. **computer**
+   - **x**: 90
+   - **y**: 255
+   - **Colour group**: #c586c0
 **Takeaway.** similar meaning ⟶ nearby points. Fruits cluster together. Animals cluster together. Royalty terms sit near each other. That is the main idea.
 
 <a id="emb-2d-world"></a>
@@ -180,13 +213,10 @@ This example shows why engineers trust embeddings. After training on enough text
 
 **Example · Vector arithmetic** — four known relationships
 
-| Vector equation | Nearest answer |
-| --- | --- |
-| king − man + woman | queen |
-| paris − france + india | delhi |
-| tokyo − japan + germany | berlin |
-| walking − walk + run | running |
-
+1. **king − man + woman**: queen
+2. **paris − france + india**: delhi
+3. **tokyo − japan + germany**: berlin
+4. **walking − walk + run**: running
 **Takeaway.** Each equation is a real result from GloVe / Word2Vec embeddings. The model did not receive a rule such as "queen is the female king". The pattern comes from the geometry of meaning.
 
 > 🔑 **💡 Why this is the foundation of everything here.** If *woman* and *queen* can be found by simple arithmetic, then "find the chunk most similar to my question" is also just arithmetic — fast, scalable, and runs on commodity hardware. Every RAG system uses exactly this idea. **Search by meaning = nearest point in vector space.**
@@ -199,12 +229,18 @@ This is a real word-vector plot reduced from 768 dimensions to 2 so we can draw 
 
 **Example · Vector space mini-map** — points and directions
 
-| Relationship | Pair A | Pair B | What to notice |
-| --- | --- | --- | --- |
-| Royalty | king → queen | man → woman | Both arrows point in a similar direction. |
-| Capital-of | france → paris | india → delhi | The country-to-capital relationship is a direction. |
-| Food vs aeroplane | banana and grape | aeroplane | banana and grape are close. aeroplane is far away, with cos ≈ 0.05. |
-
+1. **Royalty**
+   - **Pair A**: king → queen
+   - **Pair B**: man → woman
+   - **What to notice**: Both arrows point in a similar direction.
+2. **Capital-of**
+   - **Pair A**: france → paris
+   - **Pair B**: india → delhi
+   - **What to notice**: The country-to-capital relationship is a direction.
+3. **Food vs aeroplane**
+   - **Pair A**: banana and grape
+   - **Pair B**: aeroplane
+   - **What to notice**: banana and grape are close. aeroplane is far away, with cos ≈ 0.05.
 **Takeaway.** *capital-of* is encoded as the direction from country → capital. The direction is the relationship.
 
 <a id="emb-cosine"></a>
@@ -227,47 +263,81 @@ This example compares pairs of sentences with cosine similarity. It shows the sc
 
 **Default example.** Sentence A: `A cat is sleeping on the couch.` Sentence B: `A kitten is napping on the sofa.` Score: **0.89**.
 
-| Preset label | Sentence A | Sentence B | Score |
-| --- | --- | --- | --- |
-| synonyms | A cat is sleeping on the couch. | A kitten is napping on the sofa. | 0.89 |
-| paraphrase | I love programming. | I enjoy coding. | 0.86 |
-| same city, different names | Flight to Mumbai | Plane to Bombay | 0.92 |
-| related concepts | I am hungry | I want food | 0.83 |
-| unrelated | I love programming | I hate vegetables | 0.08 |
-| totally unrelated | The stock market crashed | A cat is sleeping | 0.04 |
-
-| Baked token pair A | Baked token pair B | Score |
-| --- | --- | --- |
-| cat sleeping couch | kitten napping sofa | 0.89 |
-| cat sleeping couch | dog running park | 0.32 |
-| cat sleeping couch | stock market crash | 0.04 |
-| love programming | enjoy coding | 0.86 |
-| love programming | hate vegetables | 0.08 |
-| love programming | i write software | 0.71 |
-| flight to mumbai | plane to bombay | 0.92 |
-| i am hungry | i want food | 0.83 |
-| how to fix bug | debugging tips | 0.79 |
-
-| Score band | Verdict text |
-| --- | --- |
-| 0.85 to 1.00 | 🟢 Near-synonyms — same meaning, different words. |
-| 0.65 to 0.84 | 🟢 Strongly related — same topic. |
-| 0.40 to 0.64 | 🟡 Loosely related — shares some concepts. |
-| 0.20 to 0.39 | 🟠 Distantly related — barely overlapping. |
-| Below 0.20 | 🔴 Unrelated — totally different vector neighbourhoods. |
-
+1. **synonyms**
+   - **Sentence A**: A cat is sleeping on the couch.
+   - **Sentence B**: A kitten is napping on the sofa.
+   - **Score**: 0.89
+2. **paraphrase**
+   - **Sentence A**: I love programming.
+   - **Sentence B**: I enjoy coding.
+   - **Score**: 0.86
+3. **same city, different names**
+   - **Sentence A**: Flight to Mumbai
+   - **Sentence B**: Plane to Bombay
+   - **Score**: 0.92
+4. **related concepts**
+   - **Sentence A**: I am hungry
+   - **Sentence B**: I want food
+   - **Score**: 0.83
+5. **unrelated**
+   - **Sentence A**: I love programming
+   - **Sentence B**: I hate vegetables
+   - **Score**: 0.08
+6. **totally unrelated**
+   - **Sentence A**: The stock market crashed
+   - **Sentence B**: A cat is sleeping
+   - **Score**: 0.04
+7. **Baked token pair A**
+   - **Sentence A**: Baked token pair B
+   - **Sentence B**: Score
+8. **cat sleeping couch**
+   - **Sentence A**: kitten napping sofa
+   - **Sentence B**: 0.89
+9. **cat sleeping couch**
+   - **Sentence A**: dog running park
+   - **Sentence B**: 0.32
+10. **cat sleeping couch**
+   - **Sentence A**: stock market crash
+   - **Sentence B**: 0.04
+11. **love programming**
+   - **Sentence A**: enjoy coding
+   - **Sentence B**: 0.86
+12. **love programming**
+   - **Sentence A**: hate vegetables
+   - **Sentence B**: 0.08
+13. **love programming**
+   - **Sentence A**: i write software
+   - **Sentence B**: 0.71
+14. **flight to mumbai**
+   - **Sentence A**: plane to bombay
+   - **Sentence B**: 0.92
+15. **i am hungry**
+   - **Sentence A**: i want food
+   - **Sentence B**: 0.83
+16. **how to fix bug**
+   - **Sentence A**: debugging tips
+   - **Sentence B**: 0.79
+17. **Score band**
+   - **Sentence A**: Verdict text
+18. **0.85 to 1.00**
+   - **Sentence A**: 🟢 Near-synonyms — same meaning, different words.
+19. **0.65 to 0.84**
+   - **Sentence A**: 🟢 Strongly related — same topic.
+20. **0.40 to 0.64**
+   - **Sentence A**: 🟡 Loosely related — shares some concepts.
+21. **0.20 to 0.39**
+   - **Sentence A**: 🟠 Distantly related — barely overlapping.
+22. **Below 0.20**
+   - **Sentence A**: 🔴 Unrelated — totally different vector neighbourhoods.
 **Fallback formula for other text.** For text outside the presets, the example scorer lowercases the text, removes punctuation, keeps words longer than 2 characters, counts exact token overlap, checks shared topic buckets, then returns `min(0.97, max(0.02, jaccard * 0.55 + bucketScore + 0.05))`. `bucketScore` is `min(0.75, matchingBuckets * 0.4)`.
 
-| Bucket | Words in this bucket |
-| --- | --- |
-| food | eat, food, hungry, breakfast, lunch, dinner, meal, restaurant, recipe, cook, tasty, sweet, spicy, rice, dal, curry, biryani |
-| animal | cat, dog, kitten, puppy, tiger, lion, animal, pet, bird, fish |
-| tech | code, coding, program, programming, software, bug, debug, python, java, laptop, computer, API, LLM, AI |
-| travel | flight, plane, travel, journey, trip, vacation, airport, train, bombay, mumbai, delhi, bangalore |
-| work | office, meeting, job, work, career, salary, manager, team |
-| sleep | sleep, sleeping, nap, napping, rest, tired, bed, couch, sofa |
-| money | money, price, cost, stock, market, rupees, dollar, income, wealth |
-
+1. **food**: eat, food, hungry, breakfast, lunch, dinner, meal, restaurant, recipe, cook, tasty, sweet, spicy, rice, dal, curry, biryani
+2. **animal**: cat, dog, kitten, puppy, tiger, lion, animal, pet, bird, fish
+3. **tech**: code, coding, program, programming, software, bug, debug, python, java, laptop, computer, API, LLM, AI
+4. **travel**: flight, plane, travel, journey, trip, vacation, airport, train, bombay, mumbai, delhi, bangalore
+5. **work**: office, meeting, job, work, career, salary, manager, team
+6. **sleep**: sleep, sleeping, nap, napping, rest, tired, bed, couch, sofa
+7. **money**: money, price, cost, stock, market, rupees, dollar, income, wealth
 **Takeaway.** Cosine similarity ranges from −1 to +1. In practice, above 0.7 is very similar. Below 0.3 is barely related.
 
 <a id="emb-code"></a>
@@ -370,18 +440,111 @@ The same source passage is cut in four ways. The table shows **where the cuts la
 
 # Bengaluru Overview ## Tech Industry Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS. ## Climate The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees. ## Food Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.
 
-| Strategy | Setting | Output chunks | Stats | What to notice |
-| --- | --- | --- | --- | --- |
-| Fixed size | 80 characters for the worked example. The old range was 40–240 characters, default 120. | **Chunk 1 (80 chars; mid-word cut)**<br># Bengaluru Overview<br><br>## Tech Industry<br>Bengaluru is known as India's Silicon Val<br><br>**Chunk 2 (80 chars; mid-word cut)**<br>ley. Tech parks like Electronic City and Whitefield host thousands of tech compa<br><br>**Chunk 3 (80 chars; mid-word cut)**<br>nies. Major firms include Infosys, Wipro, and TCS.<br><br>## Climate<br>The city sits at <br><br>**Chunk 4 (80 chars; mid-word cut)**<br>920 meters altitude. This gives it pleasantly cool weather year-round. Average t<br><br>**Chunk 5 (80 chars; mid-word cut)**<br>emperatures rarely exceed 30 degrees.<br><br>## Food<br>Bengaluru's food scene is legenda<br><br>**Chunk 6 (80 chars; mid-word cut)**<br>ry. South Indian classics like masala dosa and idli thrive here. Filter coffee s<br><br>**Chunk 7 (29 chars; mid-word cut)**<br>hops dot every street corner. | 7 chunks; 73 average chars; 7 mid-word cuts | Cuts land at character N. They do not respect words, sentences, or paragraphs. This is cheap to write, but poor for retrieval. |
-| Recursive | 80 characters, with paragraph → sentence → word fallback. | **Chunk 1 (20 chars)**<br># Bengaluru Overview<br><br>**Chunk 2 (62 chars)**<br>## Tech Industry<br>Bengaluru is known as India's Silicon Valley.<br><br>**Chunk 3 (80 chars)**<br>Tech parks like Electronic City and Whitefield host thousands of tech companies.<br><br>**Chunk 4 (44 chars)**<br>Major firms include Infosys, Wipro, and TCS.<br><br>**Chunk 5 (48 chars)**<br>## Climate<br>The city sits at 920 meters altitude.<br><br>**Chunk 6 (49 chars)**<br>This gives it pleasantly cool weather year-round.<br><br>**Chunk 7 (46 chars)**<br>Average temperatures rarely exceed 30 degrees.<br><br>**Chunk 8 (44 chars)**<br>## Food<br>Bengaluru's food scene is legendary.<br><br>**Chunk 9 (60 chars)**<br>South Indian classics like masala dosa and idli thrive here.<br><br>**Chunk 10 (44 chars)**<br>Filter coffee shops dot every street corner. | 10 chunks; 50 average chars; 0 mid-word cuts | Same character budget, cleaner cuts. LangChain uses RecursiveCharacterTextSplitter as the safe default for about 90% of RAG apps. |
-| Semantic | No size knob. Sentences are tagged by topic and adjacent same-topic sentences are merged. | **tech (171 chars)**<br>Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br>**climate (134 chars)**<br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br>**food (142 chars)**<br>Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner. | 3 chunks; 3 topics detected; size range 134-171 | Chunks are shaped by meaning, not size. Tech sentences join together. Climate sentences join together. Food sentences join together. |
-| Structure-aware | No size knob. Markdown headers set the boundaries. | **Section 1 (20 chars)**<br># Bengaluru Overview<br><br>**Section 2 (188 chars)**<br>## Tech Industry<br>Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br>**Section 3 (145 chars)**<br>## Climate<br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br>**Section 4 (150 chars)**<br>## Food<br>Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner. | 4 chunks; 4 sections; 126 average chars | Each ## section becomes one chunk with its header attached. This is best for docs, wikis, source code, Markdown, and HTML. |
-
-| Default setting | Computed stats |
-| --- | --- |
-| Fixed size 120 | 5 chunks; 102 average chars; 2 mid-word cuts |
-| Recursive size 120 | 8 chunks; 62 average chars; 0 mid-word cuts |
-
+1. **Fixed size**
+   - **Setting**: 80 characters for the worked example. The old range was 40–240 characters, default 120.
+   - **Output chunks**: **Chunk 1 (80 chars; mid-word cut)**
+     # Bengaluru Overview
+     
+     ## Tech Industry
+     Bengaluru is known as India's Silicon Val
+     
+     **Chunk 2 (80 chars; mid-word cut)**
+     ley. Tech parks like Electronic City and Whitefield host thousands of tech compa
+     
+     **Chunk 3 (80 chars; mid-word cut)**
+     nies. Major firms include Infosys, Wipro, and TCS.
+     
+     ## Climate
+     The city sits at 
+     
+     **Chunk 4 (80 chars; mid-word cut)**
+     920 meters altitude. This gives it pleasantly cool weather year-round. Average t
+     
+     **Chunk 5 (80 chars; mid-word cut)**
+     emperatures rarely exceed 30 degrees.
+     
+     ## Food
+     Bengaluru's food scene is legenda
+     
+     **Chunk 6 (80 chars; mid-word cut)**
+     ry. South Indian classics like masala dosa and idli thrive here. Filter coffee s
+     
+     **Chunk 7 (29 chars; mid-word cut)**
+     hops dot every street corner.
+   - **Stats**: 7 chunks; 73 average chars; 7 mid-word cuts
+   - **What to notice**: Cuts land at character N. They do not respect words, sentences, or paragraphs. This is cheap to write, but poor for retrieval.
+2. **Recursive**
+   - **Setting**: 80 characters, with paragraph → sentence → word fallback.
+   - **Output chunks**: **Chunk 1 (20 chars)**
+     # Bengaluru Overview
+     
+     **Chunk 2 (62 chars)**
+     ## Tech Industry
+     Bengaluru is known as India's Silicon Valley.
+     
+     **Chunk 3 (80 chars)**
+     Tech parks like Electronic City and Whitefield host thousands of tech companies.
+     
+     **Chunk 4 (44 chars)**
+     Major firms include Infosys, Wipro, and TCS.
+     
+     **Chunk 5 (48 chars)**
+     ## Climate
+     The city sits at 920 meters altitude.
+     
+     **Chunk 6 (49 chars)**
+     This gives it pleasantly cool weather year-round.
+     
+     **Chunk 7 (46 chars)**
+     Average temperatures rarely exceed 30 degrees.
+     
+     **Chunk 8 (44 chars)**
+     ## Food
+     Bengaluru's food scene is legendary.
+     
+     **Chunk 9 (60 chars)**
+     South Indian classics like masala dosa and idli thrive here.
+     
+     **Chunk 10 (44 chars)**
+     Filter coffee shops dot every street corner.
+   - **Stats**: 10 chunks; 50 average chars; 0 mid-word cuts
+   - **What to notice**: Same character budget, cleaner cuts. LangChain uses RecursiveCharacterTextSplitter as the safe default for about 90% of RAG apps.
+3. **Semantic**
+   - **Setting**: No size knob. Sentences are tagged by topic and adjacent same-topic sentences are merged.
+   - **Output chunks**: **tech (171 chars)**
+     Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.
+     
+     **climate (134 chars)**
+     The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.
+     
+     **food (142 chars)**
+     Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.
+   - **Stats**: 3 chunks; 3 topics detected; size range 134-171
+   - **What to notice**: Chunks are shaped by meaning, not size. Tech sentences join together. Climate sentences join together. Food sentences join together.
+4. **Structure-aware**
+   - **Setting**: No size knob. Markdown headers set the boundaries.
+   - **Output chunks**: **Section 1 (20 chars)**
+     # Bengaluru Overview
+     
+     **Section 2 (188 chars)**
+     ## Tech Industry
+     Bengaluru is known as India's Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.
+     
+     **Section 3 (145 chars)**
+     ## Climate
+     The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.
+     
+     **Section 4 (150 chars)**
+     ## Food
+     Bengaluru's food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.
+   - **Stats**: 4 chunks; 4 sections; 126 average chars
+   - **What to notice**: Each ## section becomes one chunk with its header attached. This is best for docs, wikis, source code, Markdown, and HTML.
+5. **Default setting**
+   - **Setting**: Computed stats
+6. **Fixed size 120**
+   - **Setting**: 5 chunks; 102 average chars; 2 mid-word cuts
+7. **Recursive size 120**
+   - **Setting**: 8 chunks; 62 average chars; 0 mid-word cuts
 **Takeaway.** **Recall vs precision.** Big chunks raise recall because the answer is probably inside. They lower precision because there is more extra text. Small chunks raise precision but can split the answer across chunks.
 
 **Read this sequence:** Fixed at size 80 creates mid-word cuts. Recursive at the same size removes those cuts. Semantic creates three chunks that match the three topics. Structure uses the markdown `##` headers as ready-made boundaries.
@@ -1064,12 +1227,61 @@ This walkthrough uses three sample documents that are already indexed. The table
 
 **Index message from the old demo.** `Indexed "📋 HR Policy" — 1 page, ~8 chunks. Ask me anything!` The same pattern applied to each sample document.
 
-| Sample document | Indexed text | Answer keys and answers | Example questions |
-| --- | --- | --- | --- |
-| 📋 HR Policy | Annual leave: 22 days/year for full-time employees, accrued monthly.<br>Sick leave: 12 days/year, no carry-forward.<br>Work from home: up to 2 days per week with manager approval.<br>Maternity leave: 26 weeks paid as per Indian law.<br>Paternity leave: 10 working days.<br>Reimbursements: internet ₹1500/month, mobile ₹800/month.<br>Notice period: 60 days for senior roles, 30 days for others.<br>Probation: 6 months. Probation extension requires HR approval. | **leave**: Full-time employees get 22 days of annual leave (accrued monthly) plus 12 days of sick leave per year. Sources: page 1.<br>**wfh**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.<br>**work from home**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.<br>**maternity**: 26 weeks of paid maternity leave, in line with Indian law. Sources: page 1.<br>**paternity**: 10 working days of paternity leave. Sources: page 1.<br>**notice**: Notice period is 60 days for senior roles, 30 days for others. Sources: page 1.<br>**reimbursement**: Internet: ₹1500/month. Mobile: ₹800/month. Sources: page 1.<br>**internet**: Internet reimbursement is ₹1500/month. Sources: page 1.<br>**probation**: Probation period is 6 months. Extensions require HR approval. Sources: page 1. | `How many leaves do I get?`, `Can I work from home?`, `What is the notice period?`, `What is the maternity policy?` |
-| 💰 TCS Q3 Earnings | Revenue: ₹62,613 cr, up 4.0% YoY in constant currency.<br>Operating margin: 24.6%, up 50 bps QoQ.<br>Net profit: ₹12,380 cr.<br>TCV (Total Contract Value): $13.2 bn, highest in 7 quarters.<br>Headcount: 612,724 employees, net addition of 5,370 this quarter.<br>Attrition: 13.0% (LTM), down from 13.3%.<br>Cash and equivalents: ₹58,200 cr.<br>Dividend: ₹76/share interim declared.<br>BFSI segment grew 3.8%, retail 2.1%, manufacturing 5.9%. | **revenue**: Revenue was ₹62,613 cr, up 4.0% YoY in constant currency. Sources: page 1.<br>**margin**: Operating margin was 24.6%, up 50 basis points quarter-on-quarter. Sources: page 1.<br>**profit**: Net profit was ₹12,380 cr. Sources: page 1.<br>**tcv**: TCV (Total Contract Value) hit $13.2 bn — the highest in 7 quarters. Sources: page 1.<br>**headcount**: 612,724 employees, with a net addition of 5,370 this quarter. Sources: page 1.<br>**attrition**: Attrition (LTM) was 13.0%, down from 13.3%. Sources: page 1.<br>**dividend**: Interim dividend of ₹76 per share was declared. Sources: page 1.<br>**bfsi**: BFSI segment grew 3.8% this quarter. Sources: page 1. | `What was the revenue?`, `How was the operating margin?`, `What is the attrition rate?`, `How big is the latest TCV?` |
-| 📜 Indian Constitution (Part III) | Article 14: Equality before law — the State shall not deny equality to any person.<br>Article 15: Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth.<br>Article 19: Six fundamental freedoms — speech, assembly, association, movement, residence, profession.<br>Article 21: Right to life and personal liberty — no person shall be deprived except by procedure established by law.<br>Article 21A: Right to education for children aged 6-14.<br>Article 25: Freedom of conscience and free profession of religion.<br>Article 32: Right to constitutional remedies — Supreme Court can be approached for enforcement. | **article 14**: Article 14 guarantees equality before law — the State shall not deny equality to any person. Sources: page 1.<br>**article 15**: Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. Sources: page 1.<br>**article 19**: Article 19 grants six fundamental freedoms: speech, assembly, association, movement, residence, and profession. Sources: page 1.<br>**article 21**: Article 21 protects the right to life and personal liberty — no person shall be deprived except by procedure established by law. Sources: page 1.<br>**article 32**: Article 32 is the right to constitutional remedies — citizens can approach the Supreme Court for enforcement of Fundamental Rights. Sources: page 1.<br>**right to education**: Article 21A guarantees the right to education for children aged 6 to 14. Sources: page 1.<br>**religion**: Article 25 guarantees freedom of conscience and free profession of religion. Article 15 prohibits discrimination on grounds of religion. Sources: page 1.<br>**freedom of speech**: Article 19 grants freedom of speech as one of six fundamental freedoms. Sources: page 1. | `What does Article 21 say?`, `Tell me about Article 19`, `What is the right to education?`, `Which article covers religion?` |
-
+1. **📋 HR Policy**
+   - **Indexed text**: Annual leave: 22 days/year for full-time employees, accrued monthly.
+     Sick leave: 12 days/year, no carry-forward.
+     Work from home: up to 2 days per week with manager approval.
+     Maternity leave: 26 weeks paid as per Indian law.
+     Paternity leave: 10 working days.
+     Reimbursements: internet ₹1500/month, mobile ₹800/month.
+     Notice period: 60 days for senior roles, 30 days for others.
+     Probation: 6 months. Probation extension requires HR approval.
+   - **Answer keys and answers**: **leave**: Full-time employees get 22 days of annual leave (accrued monthly) plus 12 days of sick leave per year. Sources: page 1.
+     **wfh**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.
+     **work from home**: Yes — up to 2 days per week with your manager's approval. Sources: page 1.
+     **maternity**: 26 weeks of paid maternity leave, in line with Indian law. Sources: page 1.
+     **paternity**: 10 working days of paternity leave. Sources: page 1.
+     **notice**: Notice period is 60 days for senior roles, 30 days for others. Sources: page 1.
+     **reimbursement**: Internet: ₹1500/month. Mobile: ₹800/month. Sources: page 1.
+     **internet**: Internet reimbursement is ₹1500/month. Sources: page 1.
+     **probation**: Probation period is 6 months. Extensions require HR approval. Sources: page 1.
+   - **Example questions**: `How many leaves do I get?`, `Can I work from home?`, `What is the notice period?`, `What is the maternity policy?`
+2. **💰 TCS Q3 Earnings**
+   - **Indexed text**: Revenue: ₹62,613 cr, up 4.0% YoY in constant currency.
+     Operating margin: 24.6%, up 50 bps QoQ.
+     Net profit: ₹12,380 cr.
+     TCV (Total Contract Value): $13.2 bn, highest in 7 quarters.
+     Headcount: 612,724 employees, net addition of 5,370 this quarter.
+     Attrition: 13.0% (LTM), down from 13.3%.
+     Cash and equivalents: ₹58,200 cr.
+     Dividend: ₹76/share interim declared.
+     BFSI segment grew 3.8%, retail 2.1%, manufacturing 5.9%.
+   - **Answer keys and answers**: **revenue**: Revenue was ₹62,613 cr, up 4.0% YoY in constant currency. Sources: page 1.
+     **margin**: Operating margin was 24.6%, up 50 basis points quarter-on-quarter. Sources: page 1.
+     **profit**: Net profit was ₹12,380 cr. Sources: page 1.
+     **tcv**: TCV (Total Contract Value) hit $13.2 bn — the highest in 7 quarters. Sources: page 1.
+     **headcount**: 612,724 employees, with a net addition of 5,370 this quarter. Sources: page 1.
+     **attrition**: Attrition (LTM) was 13.0%, down from 13.3%. Sources: page 1.
+     **dividend**: Interim dividend of ₹76 per share was declared. Sources: page 1.
+     **bfsi**: BFSI segment grew 3.8% this quarter. Sources: page 1.
+   - **Example questions**: `What was the revenue?`, `How was the operating margin?`, `What is the attrition rate?`, `How big is the latest TCV?`
+3. **📜 Indian Constitution (Part III)**
+   - **Indexed text**: Article 14: Equality before law — the State shall not deny equality to any person.
+     Article 15: Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth.
+     Article 19: Six fundamental freedoms — speech, assembly, association, movement, residence, profession.
+     Article 21: Right to life and personal liberty — no person shall be deprived except by procedure established by law.
+     Article 21A: Right to education for children aged 6-14.
+     Article 25: Freedom of conscience and free profession of religion.
+     Article 32: Right to constitutional remedies — Supreme Court can be approached for enforcement.
+   - **Answer keys and answers**: **article 14**: Article 14 guarantees equality before law — the State shall not deny equality to any person. Sources: page 1.
+     **article 15**: Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. Sources: page 1.
+     **article 19**: Article 19 grants six fundamental freedoms: speech, assembly, association, movement, residence, and profession. Sources: page 1.
+     **article 21**: Article 21 protects the right to life and personal liberty — no person shall be deprived except by procedure established by law. Sources: page 1.
+     **article 32**: Article 32 is the right to constitutional remedies — citizens can approach the Supreme Court for enforcement of Fundamental Rights. Sources: page 1.
+     **right to education**: Article 21A guarantees the right to education for children aged 6 to 14. Sources: page 1.
+     **religion**: Article 25 guarantees freedom of conscience and free profession of religion. Article 15 prohibits discrimination on grounds of religion. Sources: page 1.
+     **freedom of speech**: Article 19 grants freedom of speech as one of six fundamental freedoms. Sources: page 1.
+   - **Example questions**: `What does Article 21 say?`, `Tell me about Article 19`, `What is the right to education?`, `Which article covers religion?`
 **Unknown question response.** `I couldn't find that in the document. 🤷` This is RAG refusing to hallucinate.
 
 **Takeaway.** These sample answers come from a tiny semantic-matching layer, not a model. The real `pdf_chat.py` uses actual embeddings + GPT with the same flow.
