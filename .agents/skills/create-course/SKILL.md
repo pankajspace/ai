@@ -131,10 +131,11 @@ Markdown ⇄ HTML mapping:
 4. `**Term**` + value bullets ⇤ `ul.meta-strip`, where a trailing `<!-- great | good | ok | bad -->` picks the `.big-o` colour; `**Strength — …**` bullets ⇤ `ul.card-grid`.
 5. `**Interview question**` + italic question + prose ⇄ `.worked` with `.worked-q`.
 6. Consecutive fenced blocks under a bold label ⇄ `.code-tabs[data-label]`, one `.tab-pane` per language.
-7. `> **Interactive animation:** \`name\`` ⇤ `<div class="viz" data-viz="name"></div>` — the widget work list for §6. Pin a variant with `` `name` (variant `opt`) `` ⇤ `data-option="opt"`.
-8. Fenced `text` ⇤ `div.ascii`; italic caption ⇤ `figcaption.viz-caption`; table ⇤ `<table>`; a raw `<figure class="figure">` block passes through unchanged.
-9. `## Unit n — Title` + its description paragraph ⇤ `.unit-divider` (§5).
-10. Everything in a section except `.worked` blocks ⇤ the **Theory** part; every `.worked` block ⇤ the **Questions** part (§5). So end a worked question at a heading, a blockquote or the next question, never mid-theory.
+7. Standalone fenced block with language tag (e.g. ```` ```python ````) in Theory ⇄ `<pre><code data-lang="python">…</code></pre>`. Always declare the language tag on every fenced code block so Markdown viewers and the HTML converter recognize the syntax.
+8. `> **Interactive animation:** \`name\`` ⇤ `<div class="viz" data-viz="name"></div>` — the widget work list for §6. Pin a variant with `` `name` (variant `opt`) `` ⇤ `data-option="opt"`.
+9. Fenced `text` ⇤ `div.ascii`; italic caption ⇤ `figcaption.viz-caption`; table ⇤ `<table>`; a raw `<figure class="figure">` block passes through unchanged.
+10. `## Unit n — Title` + its description paragraph ⇤ `.unit-divider` (§5).
+11. Everything in a section except `.worked` blocks ⇤ the **Theory** part; every `.worked` block ⇤ the **Questions** part (§5). So end a worked question at a heading, a blockquote or the next question, never mid-theory.
 
 The Markdown must read as a complete course before HTML starts. Because the mapping is mechanical, a throwaway converter script (kept in `/tmp`, never committed) is the recommended way to produce the HTML; have it fail loudly when the TOC and section IDs disagree or a `data-viz` has no `VIZ` key.
 
@@ -152,7 +153,7 @@ Copy from Design Patterns, not DSA: DSA's own `dsa-study.css`/`.js` lack the acc
 
 1. **CSS** — update the header comment and both eyebrows: `.study>h1:first-child::before { content: "<Topic>"; }` and `body.is-crash .study>h1:first-child::before { content: "<Topic> crash course"; }`. Strip any eyebrow rules for other body classes (`is-quick`, `is-advanced`) you don't use.
 2. **JS** — update the header comment and `const LANG_KEY = "tt-<slug>-lang";`. Delete the copied topic widgets (every `VIZ[...]` between the `Design pattern widgets` banner and the `viz player` marker, including the whole `Detailed-course widgets` section) but keep everything above the banner (the engine helpers, including `bandHTML`/`pathHTML`, and the `Extra render helpers`), the shared helpers just under it (`linkHTML`, `classHTML`, `scene`, `chipHTML`/`rowHTML`/`stackHTML`), the player, the collapsible-questions block and the accordion block at the end. Rename the banner to `<Topic> widgets`. Run `node --check <slug>-study.js`.
-3. **Other languages** — extend the built-in highlighter (keyword/builtin `Set`, a `LANG_SPEC` entry, a `buildTokenizer` branch, a `LANG_LABEL` entry). No highlighting library. Typed languages can reuse a parent's sets (TypeScript = JavaScript sets plus `interface implements private readonly …`).
+3. **Syntax highlighter** — ensure `<slug>-study.js` retains the client-side syntax highlighter (`esc`, keyword/builtin sets, `LANG_SPEC`, `buildTokenizer`, `highlight`, `dedent`, and the `document.querySelectorAll("pre > code")` loop). If the course introduces other languages (e.g. Go, Rust, C, SQL), extend `LANG_SPEC`, `buildTokenizer`, and `LANG_LABEL`. Never strip or omit the syntax highlighter. Typed languages can reuse a parent's sets (TypeScript = JavaScript sets plus `interface implements private readonly …`).
 
 ---
 
@@ -257,6 +258,13 @@ Styled by the copied CSS; never ad-hoc inline styles:
 
 <div class="ascii">plain-text diagram, preserved whitespace</div>
 
+<!-- Standalone code block (e.g. in Theory or explanation) -->
+<pre><code data-lang="python">
+def calculate_metrics(values):
+    return sum(values) / len(values)
+</code></pre>
+
+<!-- Tabbed multi-language worked question (in Questions) -->
 <div class="worked">
     <b>Interview question</b>
     <p class="worked-q">The question.</p>
@@ -272,10 +280,14 @@ Styled by the copied CSS; never ad-hoc inline styles:
 </div>
 ```
 
-- `.big-o` colours: `o-great`, `o-good`, `o-ok`, `o-bad`.
-- Escape `<` `>` `&` inside `<code>`. Start code on the line after `<code …>` (`dedent` strips edge blank lines).
-- `data-lang` must be a `LANG_LABEL` key (`python`, `javascript`, `text`, plus any you add); tabs are generated from panes and the choice persists via `LANG_KEY`.
-- Tables need no wrapper (JS adds `.table-wrap`).
+Rules for code blocks and syntax highlighting:
+
+1. **Always specify `data-lang`**: Every `<pre><code>` block MUST define `data-lang="<lang>"` (e.g. `<code data-lang="python">`, `<code data-lang="javascript">`, `<code data-lang="bash">`). Never output bare `<pre><code>` without `data-lang`; the client-side syntax highlighter in `<slug>-study.js` requires `data-lang` to tokenize and apply `.tok-*` styles.
+2. **Tabbed panes**: Inside `.code-tabs`, every `.tab-pane` and its child `<code data-lang="…">` must specify matching `data-lang` values. The language must be registered in `LANG_LABEL` in `<slug>-study.js` so tabs render appropriate labels and persist selection via `LANG_KEY`.
+3. **Escape HTML entities**: Always encode `<` as `&lt;`, `>` as `&gt;`, and `&` as `&amp;` inside HTML `<code>` blocks (e.g. `->` becomes `-&gt;`, `items: list[int]` becomes `items: list[int]`, `x < y` becomes `x &lt; y`).
+4. **Clean indentation**: Start code on a new line immediately after `<code data-lang="…">` and close on its own line after the last statement. The script's `dedent()` utility strips common leading indentation automatically.
+5. **Supported languages**: Verify that any language specified in `data-lang` exists in `LANG_SPEC` in `<slug>-study.js`. If introducing new languages, add their keywords and built-ins to `LANG_SPEC` and `buildTokenizer`.
+6. **Other components**: `.big-o` colours: `o-great`, `o-good`, `o-ok`, `o-bad`. Tables need no wrapper (JS adds `.table-wrap`).
 
 ---
 
@@ -395,7 +407,7 @@ Add or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`.
 - [ ] Sidebar renders and scroll-spy highlights (TOC IDs resolve); at 390 px it collapses into the "Topics" drawer.
 - [ ] Every `data-viz` has a `VIZ` key: `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`.
 - [ ] Widgets play, scrub and reverse; the final frame states the conclusion; state classes come from §6; the headless widget check passes for every variant.
-- [ ] Language tabs switch and persist after reload; copy buttons work; no unescaped `<` `>` in code.
+- [ ] Code blocks render syntax highlighting: every `<code>` specifies `data-lang="<lang>"` registered in `LANG_SPEC`, HTML entities (`< > &`) are escaped, copy buttons copy clean source, and language tabs switch and persist.
 - [ ] Crash ↔ detailed ↔ catalog ↔ homepage links resolve, including `../../index.html`.
 - [ ] No external network requests (CDN scripts, fonts, images).
 - [ ] Both READMEs updated (tile counts match `grep -c 'class="hub-tile is-collapsed"' projects/techtoday/index.html`), and `TODO.md` marked done.

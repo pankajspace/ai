@@ -87,6 +87,133 @@ const copyText = async (text) => {
     }
 };
 
+/* ------------------------------------------------------------ highlighting */
+
+const esc = (s) =>
+    String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+const PY_KW = new Set(
+    ("False None True and as assert async await break class continue def del elif else except " +
+        "finally for from global if import in is lambda nonlocal not or pass raise return try " +
+        "while with yield match case self cls").split(" ")
+);
+const PY_BUILTIN = new Set(
+    ("abs all any bin bool chr dict divmod enumerate filter float format frozenset getattr hash " +
+        "hex id input int isinstance issubclass iter len list map max min next object ord pow print " +
+        "range repr reversed round set setattr slice sorted str sum super tuple type zip " +
+        "deque defaultdict Counter heappush heappop heapify").split(" ")
+);
+const JS_KW = new Set(
+    ("await break case catch class const continue debugger default delete do else export extends " +
+        "finally for function if import in instanceof let new of return static super switch this " +
+        "throw try typeof var void while yield async get set null undefined true false").split(" ")
+);
+const JS_BUILTIN = new Set(
+    ("Array Object Map Set WeakMap WeakSet WeakRef Math JSON Number String Boolean Symbol Promise " +
+        "Infinity NaN globalThis console parseInt parseFloat isNaN isFinite BigInt Proxy Reflect Date " +
+        "RegExp Error TypeError RangeError SyntaxError ReferenceError AggregateError Int32Array " +
+        "Uint8Array ArrayBuffer structuredClone queueMicrotask require module exports process Buffer " +
+        "setTimeout setInterval clearTimeout clearInterval setImmediate fetch AbortController URL " +
+        "URLSearchParams Headers Response Request document window Intl localStorage").split(" ")
+);
+const SH_KW = new Set(
+    ("case do done elif else esac fi for function if in select then time until while export local " +
+        "readonly return set unset source sudo").split(" ")
+);
+const SH_BUILTIN = new Set(
+    ("echo cat grep awk sed cut sort uniq head tail wc curl node npm npx pnpm yarn deno bun nvm " +
+        "tsc eslint prettier vite webpack esbuild rollup jest vitest git mkdir cd ls rm cp mv chmod " +
+        "export watch xargs jq time python python3 pip pip3 pytest virtualenv venv poetry conda uv").split(" ")
+);
+const LANG_SPEC = {
+    python: [PY_KW, PY_BUILTIN],
+    py: [PY_KW, PY_BUILTIN],
+    javascript: [JS_KW, JS_BUILTIN],
+    js: [JS_KW, JS_BUILTIN],
+    bash: [SH_KW, SH_BUILTIN],
+    sh: [SH_KW, SH_BUILTIN],
+    shell: [SH_KW, SH_BUILTIN],
+};
+
+const buildTokenizer = (lang) => {
+    const hashComment = lang === "python" || lang === "py" || lang === "bash" || lang === "sh" || lang === "shell";
+    const comment = hashComment ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
+    const strings =
+        lang === "python" || lang === "py"
+            ? "[rbfuRBFU]{0,2}\"\"\"[\\s\\S]*?\"\"\"|[rbfuRBFU]{0,2}'''[\\s\\S]*?'''|[rbfuRBFU]{0,2}\"(?:\\\\.|[^\"\\\\])*\"|[rbfuRBFU]{0,2}'(?:\\\\.|[^'\\\\])*'"
+            : "`(?:\\\\.|[^`\\\\])*`|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'";
+    return new RegExp(
+        `(${comment})|(${strings})` +
+        "|(\\b0[xXbBoO][0-9a-fA-F_]+\\b|\\b\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b)" +
+        "|(@?[A-Za-z_$][\\w$]*)" +
+        "|([{}()\\[\\],;])" +
+        "|([+\\-*/%=<>!&|^~?:.]+)",
+        "g"
+    );
+};
+
+const highlight = (code, lang) => {
+    const [kw, builtin] = LANG_SPEC[lang] || LANG_SPEC.python;
+    const re = buildTokenizer(lang);
+    let out = "";
+    let last = 0;
+    let previous = "";
+    let match;
+
+    while ((match = re.exec(code)) !== null) {
+        out += esc(code.slice(last, match.index));
+        last = match.index + match[0].length;
+        const [, com, str, num, word, pun, op] = match;
+
+        if (com !== undefined) {
+            out += `<span class="tok-com">${esc(com)}</span>`;
+        } else if (str !== undefined) {
+            out += `<span class="tok-str">${esc(str)}</span>`;
+        } else if (num !== undefined) {
+            out += `<span class="tok-num">${esc(num)}</span>`;
+        } else if (word !== undefined) {
+            const after = code.slice(last).match(/^\s*\(/);
+            let cls = "";
+            if (word.startsWith("@")) cls = "tok-fn";
+            else if (kw.has(word)) cls = "tok-kw";
+            else if (previous === "def" || previous === "function") cls = "tok-fn";
+            else if (previous === "class") cls = "tok-typ";
+            else if (builtin.has(word)) cls = "tok-bui";
+            else if (after) cls = "tok-fn";
+            else if (/^[A-Z][A-Za-z0-9_]*$/.test(word)) cls = "tok-typ";
+            out += cls ? `<span class="${cls}">${esc(word)}</span>` : esc(word);
+            previous = word;
+            continue;
+        } else if (pun !== undefined) {
+            out += `<span class="tok-pun">${esc(pun)}</span>`;
+        } else if (op !== undefined) {
+            out += `<span class="tok-op">${esc(op)}</span>`;
+        }
+        previous = "";
+    }
+    out += esc(code.slice(last));
+    return out;
+};
+
+const dedent = (text) => {
+    const lines = text.replace(/\t/g, "    ").replace(/^\n/, "").replace(/\s+$/, "").split("\n");
+    const indents = lines.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length);
+    const pad = indents.length ? Math.min(...indents) : 0;
+    return lines.map((l) => l.slice(pad)).join("\n");
+};
+
+document.querySelectorAll("pre > code").forEach((block) => {
+    if (block.dataset.highlighted) return;
+    if (block.children.length > 0 && !block.dataset.lang) return;
+    const lang = block.dataset.lang;
+    if (!lang && block.closest(".highlight")) return;
+    const effectiveLang = lang || "python";
+    const source = dedent(block.textContent);
+    block.dataset.source = source;
+    block.dataset.highlighted = "true";
+    block.innerHTML = LANG_SPEC[effectiveLang] ? highlight(source, effectiveLang) : esc(source);
+});
+
 document.querySelectorAll("pre").forEach((block) => {
     const button = document.createElement("button");
     button.className = "copy-code";
@@ -95,7 +222,8 @@ document.querySelectorAll("pre").forEach((block) => {
     button.setAttribute("aria-label", "Copy code");
     button.addEventListener("click", async () => {
         try {
-            await copyText(block.querySelector("code").textContent);
+            const code = block.querySelector("code");
+            await copyText(code?.dataset?.source ?? code?.textContent ?? block.textContent);
             button.textContent = "Copied";
         } catch {
             button.textContent = "Copy failed";
