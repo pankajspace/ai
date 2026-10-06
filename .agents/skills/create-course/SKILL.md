@@ -154,6 +154,7 @@ Copy from Design Patterns, not DSA: DSA's own `dsa-study.css`/`.js` lack the acc
 1. **CSS** — update the header comment and both eyebrows: `.study>h1:first-child::before { content: "<Topic>"; }` and `body.is-crash .study>h1:first-child::before { content: "<Topic> crash course"; }`. Strip any eyebrow rules for other body classes (`is-quick`, `is-advanced`) you don't use.
 2. **JS** — update the header comment and `const LANG_KEY = "tt-<slug>-lang";`. Delete the copied topic widgets (every `VIZ[...]` between the `Design pattern widgets` banner and the `viz player` marker, including the whole `Detailed-course widgets` section) but keep everything above the banner (the engine helpers, including `bandHTML`/`pathHTML`, and the `Extra render helpers`), the shared helpers just under it (`linkHTML`, `classHTML`, `scene`, `chipHTML`/`rowHTML`/`stackHTML`), the player, the collapsible-questions block and the accordion block at the end. Rename the banner to `<Topic> widgets`. Run `node --check <slug>-study.js`.
 3. **Syntax highlighter** — ensure `<slug>-study.js` retains the client-side syntax highlighter (`esc`, keyword/builtin sets, `LANG_SPEC`, `buildTokenizer`, `highlight`, `dedent`, and the `document.querySelectorAll("pre > code")` loop). If the course introduces other languages (e.g. Go, Rust, C, SQL), extend `LANG_SPEC`, `buildTokenizer`, and `LANG_LABEL`. Never strip or omit the syntax highlighter. Typed languages can reuse a parent's sets (TypeScript = JavaScript sets plus `interface implements private readonly …`).
+4. **Collapsible questions (+/- buttons)** — ensure `<slug>-study.js` retains the entire collapsible questions block (`/* ---------------- collapsible questions */`). This script attaches the `+`/`-` button (`.worked-arrow`) in the top-right corner of each `.worked` card, wraps answers in `.worked-body` (`hidden="until-found"`), handles keyboard and click toggles, and hooks into `expand-all` and `collapse-all` toolbar actions. Never strip or omit this block.
 
 ---
 
@@ -233,7 +234,7 @@ Each section is a topic card with a Theory part and, when it has worked question
 
 - The badge number is the section number; the `h2` text has no number. IDs follow the pattern exactly (`sec-`, `content-`, `-theory`, `body-…`), because the script and deep links rely on them.
 - `part-counter` equals the number of `.worked` blocks in that part. Omit the Questions part when a section has none (summaries, cheat sheets, roadmaps).
-- The copied JS supplies all behaviour; don't add inline scripts: header click/Enter/Space toggles a card (headerlink clicks don't); TOC and `#hash` links open the target's topic and part, then scroll to it; Expand All/Collapse All drive every topic, part and answer; each `.worked` becomes a collapsible question whose answer is `hidden="until-found"`, so browser find-in-page still reaches it; code-tab labels move above the code box.
+- The copied JS supplies all behaviour; don't add inline scripts: header click/Enter/Space toggles a card (headerlink clicks don't); TOC and `#hash` links open the target's topic and part, then scroll to it; Expand All/Collapse All drive every topic, part and answer; each `.worked` card receives a `+`/`-` toggle button (`.worked-arrow`) in its top-right corner and its answer is wrapped in `.worked-body` (`hidden="until-found"`), toggled by clicking the question header, the label, or the `+`/`-` button; code-tab labels move above the code box.
 
 ### Components
 
@@ -405,7 +406,7 @@ Add or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`.
 - [ ] Each `.html` has a matching `.md` with the same sections, prose and code.
 - [ ] Sections are grouped into units; dividers render between topic cards, and section numbers run 1…N across units.
 - [ ] Every topic and part loads collapsed; header click and Enter/Space toggle; Expand All/Collapse All work; a `#section-id` URL and every sidebar link open and scroll to the right topic.
-- [ ] Every section has a Theory part; every section with `.worked` blocks has a Questions part whose counter matches; answers start hidden and open on click.
+- [ ] Every section has a Theory part; every section with `.worked` blocks has a Questions part whose counter matches; each question card displays the `+`/`-` expand/collapse button (`.worked-arrow`) in the top-right corner; answers start hidden and toggle on click or keyboard Enter/Space; Expand All / Collapse All in the toolbar toggles all questions.
 - [ ] Sidebar renders and scroll-spy highlights (TOC IDs resolve); at 390 px it collapses into the "Topics" drawer.
 - [ ] Every `data-viz` has a `VIZ` key: `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`.
 - [ ] Widgets play, scrub and reverse; the final frame states the conclusion; state classes come from §6; the headless widget check passes for every variant.
