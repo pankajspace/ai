@@ -9,7 +9,9 @@ name: Deploy langchain
 
 on:
   push:
-    branches: [main, staging]
+    # Every branch deploys on push, so any branch can be tested live. All
+    # branches target the same EC2 host: the most recent deploy is what's live.
+    branches: ['**']
     # Only run when this project's own files change, so unrelated commits
     # don't trigger an unnecessary redeploy.
     paths:
@@ -26,6 +28,12 @@ env:
   # Unique EC2 host port for this project (500x range). The container always
   # listens on 5000 internally; Nginx forwards /langchain/ to this port.
   HOST_PORT: 5001
+
+# Run one deploy of this project at a time, so pushes from different branches
+# queue up instead of racing on the shared EC2 host.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -93,6 +101,7 @@ jobs:
       - name: Record build tag in job summary
         run: |
           echo "### Deployed image tags" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: \`$GITHUB_REF_NAME\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
 

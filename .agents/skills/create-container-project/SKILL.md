@@ -24,7 +24,7 @@ Read before editing:
 
 1. [projects/ADD_PROJECT.md](../../../projects/ADD_PROJECT.md) — `Pick Project Values` and the final documentation steps.
 2. [projects/ARCHITECTURE.md](../../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
-3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the `staging` → `main` branch flow the README must describe.
+3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the branch flow the README must describe (any branch deploys on push for testing; merge into `main` to release).
 4. [projects/template/README.md](../../../projects/template/README.md) and [projects/template/src/python/app.py](../../../projects/template/src/python/app.py).
 5. A neighboring project ([basic](../../../projects/basic), [langchain](../../../projects/langchain), or [rag](../../../projects/rag)) when its structure helps.
 6. The matching `study/NN-<topic>/` folder, if one exists, for feature context and source material: its `.md`, the companion `.html` deck, and the class code under `notes/` (project classes also ship a reference solution folder beside `notes/`).
@@ -76,7 +76,7 @@ Include all applicable sections:
 4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
 5. **Daily local development** — reload/volume behavior, when to rebuild, one-off feature commands, logs, shell access, status, shutdown, persistent-data reset.
 6. **Production setup** — the self-provisioning deploy workflow creates the ECR repository, seeds the image, writes `~/secrets/<project-name>.env`, adds the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting enabled), auto-ensures the `app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` (for JSON 429 responses), and creates the per-project Compose service (image URL not `build:`, `PATH_PREFIX=/<project-name>`, host-port mapping) automatically on every push. Document only the one manual item that remains: if the project introduces brand-new keys, add them to `techtoday/secrets` locally as the `techtoday` IAM user before the first deploy (the EC2 instance role can only read secrets and pull images — `secretsmanager:PutSecretValue` on EC2 fails with `AccessDeniedException` by design). No manual ECR, image seed, Nginx, env-file, or Compose wiring is needed.
-7. **Commit and automatic deployment** — branches (`staging` for pre-production testing, `main` for production release; see `projects/DEPLOYMENT.md`), `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
+7. **Commit and automatic deployment** — branches (push a feature branch to deploy and test it live, then merge into `main` for release; see `projects/DEPLOYMENT.md`), `git add`/commit/push, PR expectations, workflow path, trigger path, ECR repository, affected EC2 service.
 8. **Production verification and troubleshooting** — verification `curl` URL, service logs, Compose inspection, required production command, health/dependency checks, scoped restart.
 9. **Rollback** — ECR repository, region, production service, image-tag procedure, verification URL.
 10. **Manual deployment** — build context, image name, architecture, ECR path, production service, disk-space recovery, retry commands.

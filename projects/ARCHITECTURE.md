@@ -765,7 +765,7 @@ flowchart TD
     }]
   }
   ```
-- Branch Coverage: the `repo:pankajspace/*` subject wildcard covers both deploy branches (`refs/heads/staging` and `refs/heads/main`). A trust policy pinned to `ref:refs/heads/main` would make every `staging` deploy fail at the OIDC token exchange with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
+- Branch Coverage: the `repo:pankajspace/*` subject wildcard covers every branch (`refs/heads/*`), which the deploy workflows need because they run on pushes to any branch. A trust policy pinned to `ref:refs/heads/main` would make every non-`main` deploy fail at the OIDC token exchange with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
 - Permissions Policy (`ECRPushAndSSH`):
   - Grants `ecr:GetAuthorizationToken` on `*`.
   - Grants `ecr:CreateRepository` and `ecr:DescribeRepositories` on `arn:aws:ecr:*:090232461741:repository/techtoday/*`.
@@ -839,7 +839,7 @@ Deployments are entirely automated using GitHub Actions. Pipelines are idempoten
 
 ### 7.1. Pipeline Matrix Overview
 
-All workflows reside under `.github/workflows/`. Every one of them triggers on pushes to `staging` and `main` that touch its own project path, and each also exposes a manual `workflow_dispatch` trigger for re-running a deploy without a code change:
+All workflows reside under `.github/workflows/`. Every one of them triggers on pushes to any branch that touch its own project path, runs in a per-workflow `concurrency` group so deploys of the same project never overlap, and also exposes a manual `workflow_dispatch` trigger for deploying any branch without a code change:
 
 1. **`deploy-techtoday.yml`:** Static site pipeline. Syncs `projects/techtoday/` to `/var/www/techtoday/` via `rsync` over SSH.
 2. **`deploy-basic.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/basic/`), and restarts `basic`.
@@ -875,7 +875,7 @@ sequenceDiagram
     participant Nginx as Host Nginx Service
     participant Docker as Docker Engine
 
-    Dev->>GH: git push origin staging (or main) with changes in projects/<project>/**
+    Dev->>GH: git push origin <any-branch> with changes in projects/<project>/**
     GH->>OIDC: Request temporary AWS credentials via OIDC
     OIDC-->>GH: Return short-lived STS tokens
 
@@ -912,7 +912,7 @@ sequenceDiagram
 
 Self-Provisioning Execution Steps:
 
-1. **Path-Scoped Trigger:** Filtered by `branches: [main, staging]` and `paths: ['projects/<project-name>/**', '.github/workflows/deploy-<project-name>.yml']`. Unrelated commits do not trigger builds; a `workflow_dispatch` entry allows manual runs from the Actions tab.
+1. **Path-Scoped Trigger:** Filtered by `branches: ['**']` (any branch) and `paths: ['projects/<project-name>/**', '.github/workflows/deploy-<project-name>.yml']`. Unrelated commits do not trigger builds; a `workflow_dispatch` entry allows manual runs from the Actions tab.
 2. **OIDC Authentication:** GitHub OIDC provider exchanges the runner's ephemeral JSON Web Token (JWT) for scoped AWS credentials via `aws-actions/configure-aws-credentials@v5`.
 3. **Idempotent ECR Repository Creation:**
    ```bash
@@ -943,13 +943,14 @@ All single-service container applications (`basic`, `langchain`, `rag`, `aws-str
 2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=9 nodelay;`).
 3. **Multi-Service Exception (`docker`):** The `docker` project continues to utilize its multi-service profile orchestration on EC2 while also taking advantage of the automated Nginx location routing and rate limiting.
 
-### 7.5. Dual-Branch Environment Strategy (`staging` and `main`)
+### 7.5. Branch Deployment Strategy (Any Branch Deploys)
 
 For complete step-by-step instructions, branch lifecycles, and rollback commands, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
-1. **`staging` Branch:** Serves as the active development and pre-production validation target. Developers commit and push directly to `staging` to build and deploy to EC2, verifying reverse proxy routing, rate limiting rules, and container health on the live host.
-2. **`main` Branch:** Represents the protected, stable production release. Once changes on `staging` pass live verification, `staging` is merged into `main` and pushed to trigger production deployment.
-3. **Rollback via Force Reset (Way 1):** If changes on `staging` fail or are discarded, `staging` is reset directly to `origin/main` (`git reset --hard origin/main && git push origin staging --force`), which automatically redeploys the stable production version.
+1. **Any Branch Deploys on Push:** Every deploy workflow triggers on pushes to any branch (`branches: ['**']`) that touch its project path, so a feature branch can be pushed and tested live on EC2 — reverse proxy routing, rate limiting rules, and container health — without a dedicated staging branch. `workflow_dispatch` deploys any chosen branch on demand.
+2. **Single Shared Environment:** All branches deploy to the same host, URL, and container, so the most recent deploy of a project is what is live. A per-workflow `concurrency` group (`cancel-in-progress: false`) queues deploys of the same project so two branches never deploy over each other mid-run, and each run's job summary records the deployed branch.
+3. **`main` Branch:** Represents the stable release. Verified branches are merged into `main`, which redeploys the project from `main`.
+4. **Restoring `main`:** If a tested branch fails or is abandoned, redeploy `main` (`gh workflow run deploy-<project>.yml --ref main` or **Actions → Run workflow**) — no force-push is needed.
 
 ---
 

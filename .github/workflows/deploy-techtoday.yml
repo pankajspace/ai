@@ -18,10 +18,18 @@ name: Deploy techtoday
 
 on:
   push:
-    branches: [main, staging]
+    # Every branch deploys on push, so any branch can be tested live. All
+    # branches target the same EC2 host: the most recent deploy is what's live.
+    branches: ['**']
     paths:
       - 'projects/techtoday/**'
   workflow_dispatch:
+
+# Run one deploy of this project at a time, so pushes from different branches
+# queue up instead of racing on the shared EC2 host.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -78,6 +86,7 @@ jobs:
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "### Deployed techtoday home page" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: \`$GITHUB_REF_NAME\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Commit: \`$SHORT_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Target: \`/var/www/techtoday/\` on \`${{ secrets.EC2_HOST }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Live at: https://techtoday.click/" >> "$GITHUB_STEP_SUMMARY"

@@ -229,14 +229,16 @@ git commit -m "feat(docker): short description"
 git push -u origin feat/docker-short-description
 ```
 
-Open a pull request and squash-merge it into `main` after review.
+The branch push deploys it live for testing (see
+[../DEPLOYMENT.md](../DEPLOYMENT.md)). Once verified, open a pull request and
+squash-merge it into `main`, which redeploys from `main`.
 
 ### Automatic Deployment
 
 This project is a multi-service stack, so it does **not** use the single-image
 `deploy.yml.template`. The active workflow is
 [.github/workflows/deploy-docker.yml](../../.github/workflows/deploy-docker.yml).
-On every push to `main` that changes a file under `projects/docker/**`, it:
+On every push to any branch that changes a file under `projects/docker/**`, it:
 
 1. Builds one `linux/amd64` image per buildable service and pushes each to its
    own ECR repository with three tags (git SHA, build tag, `latest`):

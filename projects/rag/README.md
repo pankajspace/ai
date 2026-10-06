@@ -81,7 +81,9 @@ git commit -m "feat(rag): short description"
 git push -u origin feat/rag-short-description
 ```
 
-Open a pull request and squash-merge it into `main`. Changes under
+The branch push deploys it live for testing (see
+[../DEPLOYMENT.md](../DEPLOYMENT.md)). Once verified, open a pull request and
+squash-merge it into `main`, which redeploys from `main`. Changes under
 `projects/rag/**` trigger `.github/workflows/deploy-rag.yml`, which pushes the
 image to `techtoday/rag` in ECR and restarts only the `rag` service on EC2. The
 production Compose service maps EC2 host port `5002` to container port `5000`.
