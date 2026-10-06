@@ -383,6 +383,7 @@ Add or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`.
 ```
 
 - Keep `is-collapsed`, `data-tile-id` and the header's `role`/`tabindex`/`aria-*` attributes (collapsible, accessible).
+- Tile styling: defined in `style.css` with an orangish-yellow amber border (`rgba(245, 158, 11, 0.28)`) and warm hover border/glow (`#f59e0b`), while inner course bullet pills keep their original light-blue scheme (`var(--accent)`).
 - Icon: inline SVG with glowing gradients/filters matching the dark theme.
 - Status: `live`, or `wip` for upcoming topics.
 - Live tiles have no `<p class="hub-tile-desc">` and no `.hub-cta` block; links go only in `ul.hub-bullet-list` (renders as horizontal pills). Only WIP placeholders use `hub-tile-desc`.
