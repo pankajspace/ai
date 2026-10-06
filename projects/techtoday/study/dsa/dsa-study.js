@@ -136,8 +136,40 @@ const JS_BUILTIN = new Set(
         "NaN console parseInt parseFloat isNaN BigInt Int32Array Uint8Array structuredClone").split(" ")
 );
 
+const SH_KW = new Set(
+    ("case do done elif else esac fi for function if in select then time until while export local " +
+        "readonly return set unset source sudo trap exec").split(" ")
+);
+const SH_BUILTIN = new Set(
+    ("echo cat grep awk sed cut sort uniq head tail wc curl jq mkdir cd ls rm cp mv chmod touch xargs " +
+        "docker compose kubectl helm terraform git gh make brew python python3 pip pip3 uv uvicorn node " +
+        "npm npx pytest ruff aws ollama ssh scp rsync watch base64 openssl date env printenv kill nc " +
+        "id groups ps top df du free ss lsof strace").split(" ")
+);
+/* Dockerfiles are labelled "bash": their instructions (FROM, RUN, COPY…) render as types. */
+const YAML_KW = new Set("true false null yes no on off".split(" "));
+const YAML_BUILTIN = new Set(
+    ("services build context dockerfile image ports environment env_file depends_on volumes networks " +
+        "healthcheck restart command entrypoint condition test interval timeout retries " +
+        "name on jobs steps uses with run runs-on needs permissions env strategy matrix " +
+        "apiVersion kind metadata spec containers resources requests limits replicas " +
+        "model_list model_name litellm_params router_settings").split(" ")
+);
+const JSON_KW = new Set("true false null".split(" "));
+const JSON_BUILTIN = new Set();
+const LANG_SPEC = {
+    python: [PY_KW, PY_BUILTIN],
+    javascript: [JS_KW, JS_BUILTIN],
+    bash: [SH_KW, SH_BUILTIN],
+    yaml: [YAML_KW, YAML_BUILTIN],
+    json: [JSON_KW, JSON_BUILTIN],
+};
+const LANG_ALIAS = { js: "javascript", py: "python", sh: "bash", shell: "bash", dockerfile: "bash", yml: "yaml" };
+
 const buildTokenizer = (lang) => {
-    const comment = lang === "python" ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
+    const hashComment = lang === "python" || lang === "bash" || lang === "yaml";
+    /* JSON has no comment syntax - "(?!)" is a group that can never match. */
+    const comment = lang === "json" ? "(?!)" : hashComment ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
     const strings =
         lang === "python"
             ? "[rbfu]{0,2}\"\"\"[\\s\\S]*?\"\"\"|[rbfu]{0,2}'''[\\s\\S]*?'''|[rbfu]{0,2}\"(?:\\\\.|[^\"\\\\])*\"|[rbfu]{0,2}'(?:\\\\.|[^'\\\\])*'"
@@ -153,8 +185,7 @@ const buildTokenizer = (lang) => {
 };
 
 const highlight = (code, lang) => {
-    const kw = lang === "python" ? PY_KW : JS_KW;
-    const builtin = lang === "python" ? PY_BUILTIN : JS_BUILTIN;
+    const [kw, builtin] = LANG_SPEC[lang] || LANG_SPEC.javascript;
     const re = buildTokenizer(lang);
     let out = "";
     let last = 0;
@@ -522,10 +553,10 @@ document.querySelectorAll("pre.mermaid").forEach((block, i) => {
 });
 
 document.querySelectorAll("pre > code").forEach((block) => {
-    const lang = block.dataset.lang || "text";
+    const lang = LANG_ALIAS[block.dataset.lang] || block.dataset.lang || "text";
     const source = dedent(block.textContent);
     block.dataset.source = source;
-    block.innerHTML = lang === "python" || lang === "javascript" ? highlight(source, lang) : esc(source);
+    block.innerHTML = LANG_SPEC[lang] ? highlight(source, lang) : esc(source);
 });
 
 document.querySelectorAll("pre").forEach((block) => {

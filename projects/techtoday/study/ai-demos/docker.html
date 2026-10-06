@@ -577,7 +577,7 @@
                      <span class="code-tab-label">
                         Terminal — install &amp; verify
                      </span>
-                     <pre><code data-lang="text">brew install --cask docker
+                     <pre><code data-lang="bash">brew install --cask docker
 
 docker --version
 docker compose version
@@ -707,7 +707,7 @@ docker run hello-world</code></pre>
                         <span class="code-tab-label">
                            The fix when you hit a platform error
                         </span>
-                        <pre><code data-lang="text">docker run --platform linux/amd64 &lt;image-name&gt;</code></pre>
+                        <pre><code data-lang="bash">docker run --platform linux/amd64 &lt;image-name&gt;</code></pre>
                         <div class="decode">
                            <p class="decode-title">
                               Command decoder
@@ -930,7 +930,7 @@ docker run hello-world</code></pre>
                      <span class="code-tab-label">
                         Terminal
                      </span>
-                     <pre><code data-lang="text">mkdir quickbite-eta &amp;&amp; cd quickbite-eta
+                     <pre><code data-lang="bash">mkdir quickbite-eta &amp;&amp; cd quickbite-eta
 touch train.py app.py requirements.txt Dockerfile .dockerignore</code></pre>
                      <div class="decode">
                         <p class="decode-title">
@@ -966,7 +966,7 @@ touch train.py app.py requirements.txt Dockerfile .dockerignore</code></pre>
                      <span class="code-tab-label">
                         requirements.txt
                      </span>
-                     <pre><code data-lang="text">scikit-learn==1.5.2
+                     <pre><code data-lang="bash">scikit-learn==1.5.2
 pandas==2.2.3
 fastapi==0.115.6
 uvicorn==0.34.0
@@ -1229,7 +1229,7 @@ def predict(order: Order):
                            <span class="code-tab-label">
                               Dockerfile
                            </span>
-                           <pre><code data-lang="text"># ① Base image = rent a ready-made kitchen (from Docker Hub)
+                           <pre><code data-lang="bash"># ① Base image = rent a ready-made kitchen (from Docker Hub)
 FROM python:3.12-slim
 
 # ② Set up your counter inside that kitchen
@@ -1435,7 +1435,7 @@ CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
                      <span class="code-tab-label">
                         .dockerignore
                      </span>
-                     <pre><code data-lang="text">__pycache__/
+                     <pre><code data-lang="bash">__pycache__/
 *.pyc
 venv/
 .venv/
@@ -1497,7 +1497,7 @@ data/raw/</code></pre>
                         <span class="code-tab-label">
                            Terminal — the big moment
                         </span>
-                        <pre><code data-lang="text">docker build -t quickbite-eta:v1 .
+                        <pre><code data-lang="bash">docker build -t quickbite-eta:v1 .
 
 docker images
 
@@ -1651,7 +1651,7 @@ curl -X POST http://localhost:8000/predict \
                      <span class="code-tab-label">
                         Terminal — daily-driver commands
                      </span>
-                     <pre><code data-lang="text">docker ps
+                     <pre><code data-lang="bash">docker ps
 docker ps -a
 docker logs -f eta-service
 docker exec -it eta-service bash
@@ -1785,7 +1785,7 @@ docker rm eta-service</code></pre>
                         <span class="code-tab-label">
                            After ANY code edit
                         </span>
-                        <pre><code data-lang="text">docker build -t quickbite-eta:v1 .
+                        <pre><code data-lang="bash">docker build -t quickbite-eta:v1 .
 docker rm -f eta-service
 docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1</code></pre>
                         <p>
@@ -2067,13 +2067,13 @@ docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1</code></pre>
                      <span class="code-tab-label">
                         Terminal
                      </span>
-                     <pre><code data-lang="text">mkdir scalergpt &amp;&amp; cd scalergpt
+                     <pre><code data-lang="bash">mkdir scalergpt &amp;&amp; cd scalergpt
 mkdir docs
 touch app.py ingest.py requirements.txt Dockerfile docker-compose.yml .env.example .dockerignore .gitignore</code></pre>
                      <span class="code-tab-label">
                         requirements.txt
                      </span>
-                     <pre><code data-lang="text">fastapi==0.115.6
+                     <pre><code data-lang="bash">fastapi==0.115.6
 uvicorn==0.34.0
 openai==1.59.7
 chromadb-client==0.6.3
@@ -2170,7 +2170,7 @@ python-dotenv==1.0.1</code></pre>
                         <span class="code-tab-label">
                            .env.example → copy to .env and add your real key
                         </span>
-                        <pre><code data-lang="text"># Copy this file:  cp .env.example .env   — then paste your real key.
+                        <pre><code data-lang="bash"># Copy this file:  cp .env.example .env   — then paste your real key.
 OPENAI_API_KEY=sk-paste-your-real-key-here</code></pre>
                         <ul>
                            <li>
@@ -2539,7 +2539,7 @@ def ask(q: Question):
                            <span class="code-tab-label">
                               docker-compose.yml
                            </span>
-                           <pre><code data-lang="text"># ① define the containers that make up the RAG stack
+                           <pre><code data-lang="yaml"># ① define the containers that make up the RAG stack
 services:
   app:
     # ② build and run the FastAPI app from this folder
@@ -2760,7 +2760,7 @@ volumes:
                         <span class="code-tab-label">
                            Terminal
                         </span>
-                        <pre><code data-lang="text">cp .env.example .env         # then put your REAL key inside .env
+                        <pre><code data-lang="bash">cp .env.example .env         # then put your REAL key inside .env
 
 docker compose up -d --build
 
@@ -2890,7 +2890,7 @@ curl -X POST http://localhost:8000/ask \
                         <span class="code-tab-label">
                            Destroy everything. Data survives.
                         </span>
-                        <pre><code data-lang="text">docker compose down
+                        <pre><code data-lang="bash">docker compose down
 docker compose up -d
 curl http://localhost:8000/</code></pre>
                         <div class="decode">
@@ -3211,7 +3211,7 @@ curl http://localhost:8000/</code></pre>
                      <span class="code-tab-label">
                         Terminal
                      </span>
-                     <pre><code data-lang="text">mkdir deskbuddy &amp;&amp; cd deskbuddy
+                     <pre><code data-lang="bash">mkdir deskbuddy &amp;&amp; cd deskbuddy
 mkdir agent tools
 touch docker-compose.yml .env.example
 touch agent/app.py agent/requirements.txt agent/Dockerfile
@@ -3228,7 +3228,7 @@ touch tools/app.py tools/requirements.txt tools/Dockerfile</code></pre>
                      <span class="code-tab-label">
                         tools/app.py — two simple tools
                      </span>
-                     <pre><code data-lang="text">from fastapi import FastAPI
+                     <pre><code data-lang="python">from fastapi import FastAPI
 from pydantic import BaseModel
 import datetime
 
@@ -3303,7 +3303,7 @@ def now():
                      <span class="code-tab-label">
                         agent/app.py — the heart of it
                      </span>
-                     <pre><code data-lang="text"># ① connect to shared Redis memory and the private tools service
+                     <pre><code data-lang="python"># ① connect to shared Redis memory and the private tools service
 r = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=6379, decode_responses=True)
 TOOLS_URL = os.getenv("TOOLS_URL", "http://tools:7000")
 
@@ -3402,7 +3402,7 @@ def chat(req: Chat):
                            <span class="code-tab-label">
                               docker-compose.yml
                            </span>
-                           <pre><code data-lang="text"># ① define the agent, tool, and memory containers
+                           <pre><code data-lang="yaml"># ① define the agent, tool, and memory containers
 services:
   agent:
     # ② build the public chat API from the agent folder
@@ -3542,7 +3542,7 @@ volumes:
                         <span class="code-tab-label">
                            Terminal
                         </span>
-                        <pre><code data-lang="text">cp .env.example .env         # real key inside, same as before
+                        <pre><code data-lang="bash">cp .env.example .env         # real key inside, same as before
 docker compose up -d --build
 docker compose ps -a
 

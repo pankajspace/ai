@@ -78,7 +78,8 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 9. Box-and-arrow diagrams → `figure.figure.mermaid-fig > pre.mermaid` (`flowchart LR`), plus a `figcaption`. Write line breaks inside labels as `&lt;br&gt;`; a literal `<br>` is parsed as HTML and lost.
 10. Code blocks:
     - Use `<span class="code-tab-label">filename</span>` + `<pre><code data-lang="python">` holding raw, HTML-escaped code at column 0 (`&lt;`, `&gt;`, `&amp;`).
-    - Use `data-lang="text"` for bash, `.env` and output.
+    - Label every block with its real language; `dsa-study.js` highlights `python`, `javascript`, `bash`, `yaml` and `json` (aliases `js`, `py`, `sh`, `shell`, `dockerfile`, `yml`). Use `bash` for shell commands and `$ …` run transcripts, Dockerfiles, `.env`, `requirements.txt` and `.dockerignore`; `yaml` for `docker-compose.yml` and workflows; `json` for JSON payloads.
+    - Use `data-lang="text"` only for content that is not code: program output, logs, prompts, folder trees, decision trees, ASCII diagrams and worked arithmetic. Never label a Python, shell, Dockerfile or YAML snippet `text`, because it then renders without highlighting.
     - Remove all hand-written highlight spans and copy-button scripts; `dsa-study.js` highlights and adds Copy buttons itself.
     - Give every real code snippet (Python, Dockerfile, compose) numbered step comments — `# ① load your documents …` on its own line above each step — following [explainer-pages.md](explainer-pages.md) *Numbered step comments*. Skip output, prompts and one-line commands, and keep any numbering the prose already refers to.
 11. Delete decorative-only markup: reveal-on-scroll classes and observers, hero orbs, the sticky top nav, and duplicate progress bars.
@@ -117,7 +118,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    - navigation line `Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)`, eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
-   - fenced code with language tags; diagrams as ```` ```mermaid ```` blocks
+   - fenced code with the same language tag as the HTML `data-lang` (```` ```bash ````, ```` ```yaml ````, ```` ```python ````, ```` ```text ```` only for output/prompts/diagrams); diagrams as ```` ```mermaid ```` blocks
    - static examples as a bold `**Example · X**` title line, then the same card/dataset or worked example as numbered bullet points lists (avoiding markdown tables per workspace rules)
 
 ## 7. Validate
@@ -129,6 +130,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    - every sidebar link resolves to an element
    - `.mm-svg` count equals the number of mermaid figures
    - `pre code .tok-kw` > 0
+   - every `pre code` without a `span` child is `data-lang="text"`, and each `text` block is output, a prompt, a tree or a diagram, never Python, shell, Dockerfile or YAML
    - `document.documentElement.scrollWidth <= innerWidth`
    - inside `article.study` there are no `button`, `input`, `select` or `textarea` elements other than the Expand/Collapse buttons and the Copy buttons `dsa-study.js` adds
 3. `grep -ciE 'live sim|viz-btn|viz-input|viz-scrub|viz-controls|type="checkbox"|drag the|click (play|step|the button)'` on the HTML returns 0, and the page has no `<script>` besides those listed in §5.5.

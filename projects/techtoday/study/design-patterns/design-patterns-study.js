@@ -164,16 +164,22 @@ const LANG_SPEC = {
 const buildTokenizer = (lang) => {
     const hashComment = lang === "python";
     const comment = hashComment ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
+    /* Template literals may nest one level: `<tr>${cells.map((c) => `<td>${c}</td>`)}</tr>`. */
+    const tplInner = "`(?:\\\\[\\s\\S]|[^`\\\\])*`";
+    const tpl = "`(?:\\\\[\\s\\S]|\\$\\{(?:" + tplInner + "|\\{[^{}]*\\}|[^{}`])*\\}|[^`\\\\])*`";
     const strings =
         lang === "python"
             ? "[rbfu]{0,2}\"\"\"[\\s\\S]*?\"\"\"|[rbfu]{0,2}'''[\\s\\S]*?'''|[rbfu]{0,2}\"(?:\\\\.|[^\"\\\\])*\"|[rbfu]{0,2}'(?:\\\\.|[^'\\\\])*'"
-            : "`(?:\\\\.|[^`\\\\])*`|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'";
+            : tpl + "|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'";
+    /* JS/TS regex literals, so quotes inside /[&<>"']/g don't open a string. "(?!)" never matches. */
+    const regex = hashComment ? "(?!)" : "\\/(?![*/])(?:\\\\.|\\[(?:\\\\.|[^\\]\\\\\\n])*\\]|[^/\\\\\\n\\[])+\\/[dgimsuvy]*";
     return new RegExp(
         `(${comment})|(${strings})` +
         "|(\\b0[xXbBoO][0-9a-fA-F_]+\\b|\\b\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b)" +
         "|(@?[A-Za-z_$][\\w$]*)" +
         "|([{}()\\[\\],;])" +
-        "|([+\\-*/%=<>!&|^~?:.]+)",
+        `|(${regex})` +
+        "|([+\\-*%=<>!&|^~?:.]+|\\/=?)",
         "g"
     );
 };
@@ -184,12 +190,24 @@ const highlight = (code, lang) => {
     let out = "";
     let last = 0;
     let previous = "";
+    /* True after a value (name, number, string, ")" or "]"), where "/" means division. */
+    let afterValue = false;
     let match;
 
     while ((match = re.exec(code)) !== null) {
+        if (match[6] !== undefined && afterValue) {
+            re.lastIndex = match.index + 1;
+            match = ["/", undefined, undefined, undefined, undefined, undefined, undefined, "/"];
+            match.index = re.lastIndex - 1;
+        }
         out += esc(code.slice(last, match.index));
         last = match.index + match[0].length;
-        const [, com, str, num, word, pun, op] = match;
+        const [, com, str, num, word, pun, rx, op] = match;
+        if (com === undefined) {
+            afterValue = str !== undefined || num !== undefined || rx !== undefined ||
+                (word !== undefined && (!kw.has(word) || /^(this|super|true|false|null|undefined)$/.test(word))) ||
+                pun === ")" || pun === "]";
+        }
 
         if (com !== undefined) {
             out += `<span class="tok-com">${esc(com)}</span>`;
@@ -212,6 +230,8 @@ const highlight = (code, lang) => {
             continue;
         } else if (pun !== undefined) {
             out += `<span class="tok-pun">${esc(pun)}</span>`;
+        } else if (rx !== undefined) {
+            out += `<span class="tok-str">${esc(rx)}</span>`;
         } else if (op !== undefined) {
             out += `<span class="tok-op">${esc(op)}</span>`;
         }

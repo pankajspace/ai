@@ -329,7 +329,7 @@ Create a file literally named `.env` in your project folder, and paste your key 
 
 **.env**
 
-```text
+```bash
 # .env  — keep this file private! Add it to .gitignore
 OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxx
 ```
@@ -571,7 +571,7 @@ Save the three files (`scraper.py`, `summarizer.py`, `main.py`) and your `.env` 
 
 **bash — your project folder**
 
-```text
+```bash
 # 1. install everything you need (one time)
 $ pip install openai requests beautifulsoup4 python-dotenv
 
@@ -692,7 +692,7 @@ print(vote(f"👍 Model {choice}"))
 
 **bash — your project folder**
 
-```text
+```bash
 # install once, then launch
 $ pip install openai python-dotenv
 $ python arena_app.py
