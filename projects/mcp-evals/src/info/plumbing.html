@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — MCP Plumbing · MCP &amp; Evals Lab</title>
+    <meta name="description"
+        content="How the MCP Plumbing demo works: an MCP client starts a FastMCP cricket server over stdio, then runs initialize, tools/list and tools/call with no LLM." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>MCP &amp; Evals Lab</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; MCP &amp; Evals Lab</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-mcp-client-py">mcp_client.py</a></li>
+                    <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F50C; MCP Plumbing<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">No model · MCP Python SDK v1 (FastMCP) · stdio transport · JSON-RPC <code>initialize</code> &rarr; <code>tools/list</code> &rarr; <code>tools/call</code>. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>8 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        The <strong>Model Context Protocol (MCP)</strong> is an agreed set of rules for how AI apps
+                        talk to tools. Each tool is wrapped once as an <strong>MCP server</strong>; each app learns MCP
+                        once as an <strong>MCP client</strong>. Any client can then use any server.
+                    </p>
+                    <p>
+                        This demo shows the protocol on its own, with <strong>no AI at all</strong>. The client starts
+                        <code>cricket_server.py</code> as a child process and makes three calls:
+                    </p>
+                    <ol>
+                        <li><strong>Handshake</strong> (<code>initialize</code>) &mdash; client and server agree on a
+                            protocol version. The report shows the server's name and that version.</li>
+                        <li><strong>List tools</strong> (<code>tools/list</code>) &mdash; the server returns its menu
+                            cards: each tool's name, description and input schema.</li>
+                        <li><strong>Call a tool</strong> (<code>tools/call</code>) &mdash; the client calls the tool you
+                            picked with the argument you typed, and prints the JSON it gets back.</li>
+                    </ol>
+                    <p>
+                        Leaving the model out first makes one point clear: MCP is only plumbing. In the
+                        <strong>Cricket Agent</strong> demo, the model decides which of these tools to call; here, you
+                        decide. All scores and player stats are made-up demo data &mdash; no cricket API is called.
+                    </p>
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Host, client and server</strong></p>
+                    <p>
+                        The <strong>host</strong> is the app the user sees (here, the Flask app). It runs one
+                        <strong>client</strong> per server &mdash; always 1:1. The <strong>server</strong> is a separate
+                        program that does the work. The server never talks to the model; it does not even know which
+                        model is used.
+                    </p>
+                    <p><strong>2. JSON-RPC messages</strong></p>
+                    <p>Client and server exchange JSON-RPC messages: "run this method, with these parameters". A tool call looks like this:</p>
+                    <pre><code data-lang="javascript">{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "get_live_score",
+    "arguments": { "teams": "India vs West Indies" }
+  }
+}</code></pre>
+                    <p><strong>3. The menu card is generated for you</strong></p>
+                    <p>
+                        <code>cricket_server.py</code> contains no JSON. FastMCP builds each tool's
+                        <code>inputSchema</code> from the function name, its type hints and the <code>Field</code>
+                        descriptions. The client reads the parameter name (<code>teams</code> or
+                        <code>player_name</code>) straight from that schema, so it never hard-codes it.
+                    </p>
+                    <p><strong>4. stdio transport: stdout is reserved</strong></p>
+                    <p>
+                        With <code>stdio</code>, the client starts the server as a child process and they talk through
+                        stdin and stdout &mdash; no network and no ports. So the server must log to
+                        <strong>stderr</strong>, never stdout. The demo sends the server's stderr to a temporary file and
+                        prints it under <em>Server log</em>, including FastMCP's own
+                        <code>Processing request of type …</code> lines.
+                    </p>
+                    <p><strong>5. Errors are normal results</strong></p>
+                    <p>
+                        An unknown team or player (try Virat Kohli) does not crash anything. The tool returns
+                        <code>{"error": "No stats found for 'Virat Kohli'."}</code> as an ordinary result, which a model
+                        could read and explain to the user.
+                    </p>
+                    <p><strong>6. One server process per request</strong></p>
+                    <p>
+                        Every request starts a fresh server and closes it when done, so requests never share state. The
+                        MCP SDK passes the child only a minimal environment, so API keys never reach the server.
+                    </p>
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Pick a tool and type its argument</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /plumbing</span>
+                            <span class="flow-detail">Flask route checks the argument and the tool allowlist</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">run_plumbing()</span>
+                            <span class="flow-detail">Starts cricket_server.py as a child process over stdio</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">initialize &rarr; tools/list &rarr; tools/call</span>
+                            <span class="flow-detail">Three JSON-RPC calls; no model involved</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Handshake info, tool schemas, the tool result and the server log</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>tool + argument] -->|POST /plumbing| B[app.py<br/>plumbing_route]
+                        B -->|argument, tool| C[mcp_client.py<br/>run_plumbing]
+                        C -->|start child process over stdio| S[cricket_server.py<br/>FastMCP server]
+                        C -->|initialize| S
+                        S -->|server name + protocol version| C
+                        C -->|tools/list| S
+                        S -->|names, descriptions, input schemas| C
+                        C -->|tools/call name + arguments| S
+                        S -->|score, stats or error JSON| C
+                        S -.->|stderr log| C
+                        C -->|text report| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the modules it uses, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-mcp-client-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-mcp-client-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-mcp-client-py" class="topic-title is-file">mcp_client.py<a class="headerlink" href="#source-mcp-client-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">74 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-mcp-client-py">
+                    <span class="file-path">src/python/mcp_client.py</span>
+                    <p class="file-label">Step 1 — talk to the MCP server WITHOUT any LLM.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Step 1 — talk to the MCP server WITHOUT any LLM.
+
+Shows the raw MCP plumbing: handshake (initialize) -&gt; list tools (tools/list)
+-&gt; call a tool (tools/call). Adapted from the class script ``step1_client.py``.
+No API key is needed.
+&quot;&quot;&quot;
+
+import asyncio
+import json
+import sys
+import tempfile
+
+from mcp import ClientSession
+from mcp.client.stdio import stdio_client
+
+from config import SERVER
+
+# Tools the UI may call directly. &quot;get_live_score&quot; is the class default.
+TOOL_CHOICES = (&quot;get_live_score&quot;, &quot;get_player_stats&quot;)
+
+
+def _argument_name(tool) -&gt; str:
+    &quot;&quot;&quot;Return the first input parameter from the tool&#x27;s auto-generated schema.&quot;&quot;&quot;
+    # ① read the parameter name from the auto-generated JSON schema
+    schema = tool.inputSchema or {}
+    required = schema.get(&quot;required&quot;) or list((schema.get(&quot;properties&quot;) or {}).keys())
+    return required[0]
+
+
+async def _plumbing(argument: str, tool_name: str) -&gt; str:
+    lines = []
+    # The server logs to stderr; capture it so the report shows the server side too.
+    with tempfile.TemporaryFile(mode=&quot;w+&quot;, encoding=&quot;utf-8&quot;) as errlog:
+        # ① start cricket_server.py as a child process and connect over stdio
+        async with stdio_client(SERVER, errlog=errlog) as (read, write):
+            async with ClientSession(read, write) as session:
+                # ② handshake: agree on a protocol version and exchange capabilities
+                init = await session.initialize()
+                lines.append(&quot;STEP 1: Handshake done  (initialize)&quot;)
+                lines.append(f&quot;  Server  : {init.serverInfo.name} {init.serverInfo.version}&quot;)
+                lines.append(f&quot;  Protocol: {init.protocolVersion}\n&quot;)
+
+                # ③ ask the server for its menu cards (tool names, descriptions, schemas)
+                tools = (await session.list_tools()).tools
+                lines.append(&quot;STEP 2: Server says it has these tools  (tools/list)&quot;)
+                for t in tools:
+                    lines.append(f&quot;\n  Tool name   : {t.name}&quot;)
+                    lines.append(f&quot;  Description : {t.description}&quot;)
+                    lines.append(f&quot;  Input schema: {json.dumps(t.inputSchema)}&quot;)
+
+                # ④ call one tool ourselves; no LLM decides anything here
+                tool = next(t for t in tools if t.name == tool_name)
+                args = {_argument_name(tool): argument}
+                lines.append(f&quot;\nSTEP 3: Calling {tool_name} ourselves, no LLM!  (tools/call)&quot;)
+                lines.append(f&quot;  Arguments: {json.dumps(args)}&quot;)
+                result = await session.call_tool(tool_name, args)
+                lines.append(f&quot;  Result   : {result.content[0].text if result.content else &#x27;(empty)&#x27;}&quot;)
+
+        # ⑤ append what the server printed to stderr
+        errlog.seek(0)
+        server_log = errlog.read().strip()
+    if server_log:
+        lines.append(f&quot;\nServer log (stderr):\n{server_log}&quot;)
+    return &quot;\n&quot;.join(lines)
+
+
+def run_plumbing(argument: str, tool: str = &quot;get_live_score&quot;) -&gt; str:
+    &quot;&quot;&quot;Run handshake -&gt; tools/list -&gt; tools/call and return a text report.&quot;&quot;&quot;
+    return asyncio.run(_plumbing(argument, tool))
+
+
+if __name__ == &quot;__main__&quot;:
+    # docker compose run --rm plumbing  -&gt;  the class default call
+    print(run_plumbing(&quot;India vs West Indies&quot;, &quot;get_live_score&quot;), file=sys.stdout)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-cricket-server-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-cricket-server-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-cricket-server-py" class="topic-title is-file">cricket_server.py<a class="headerlink" href="#source-cricket-server-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">58 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-cricket-server-py">
+                    <span class="file-path">src/python/cricket_server.py</span>
+                    <p class="file-label">cricket_server.py — a tiny MCP server It exposes 2 tools. The data is MADE UP for class (no real API call).</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;
+cricket_server.py — a tiny MCP server
+It exposes 2 tools. The data is MADE UP for class (no real API call).
+&quot;&quot;&quot;
+import sys
+from pydantic import Field
+from mcp.server.fastmcp import FastMCP
+
+# ① create the MCP server; FastMCP handles the JSON-RPC protocol for us
+mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
+
+# ② fake &quot;third-party&quot; data (pretend this came from a sports API)
+LIVE_MATCHES = {
+    &quot;india vs west indies&quot;: {
+        &quot;series&quot;: &quot;India vs West Indies ODI Series, Sep-Oct 2026 (DEMO DATA)&quot;,
+        &quot;match&quot;: &quot;2nd ODI&quot;,
+        &quot;status&quot;: &quot;LIVE&quot;,
+        &quot;india&quot;: &quot;287/6 (50 overs)&quot;,
+        &quot;west_indies&quot;: &quot;198/5 (38.2 overs)&quot;,
+        &quot;target&quot;: 288,
+        &quot;required&quot;: &quot;90 runs from 70 balls&quot;,
+        &quot;series_score&quot;: &quot;India lead 1-0&quot;,
+    }
+}
+
+PLAYER_STATS = {
+    &quot;shubman gill&quot;: {&quot;team&quot;: &quot;India&quot;, &quot;series_runs&quot;: 164, &quot;innings&quot;: 3, &quot;highest&quot;: 150},
+    &quot;shai hope&quot;: {&quot;team&quot;: &quot;West Indies&quot;, &quot;series_runs&quot;: 131, &quot;innings&quot;: 2, &quot;highest&quot;: 78},
+}
+
+
+@mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for any question about the current score, who is winning, or runs required.&quot;)
+def get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
+    # ① log the call; logs go to stderr, NEVER stdout (stdout carries the MCP messages)
+    print(f&quot;[server] get_live_score called with teams={teams!r}&quot;, file=sys.stderr)
+    # ② normalise the team names so &quot;Windies&quot; also matches
+    key = teams.strip().lower().replace(&quot;windies&quot;, &quot;west indies&quot;)
+    # ③ return an error the model can read, or the match data
+    if key not in LIVE_MATCHES:
+        return {&quot;error&quot;: f&quot;No live match found for &#x27;{teams}&#x27;. Try &#x27;India vs West Indies&#x27;.&quot;}
+    return LIVE_MATCHES[key]
+
+
+@mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
+def get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
+    # ① log the call to stderr
+    print(f&quot;[server] get_player_stats called with player_name={player_name!r}&quot;, file=sys.stderr)
+    # ② look the player up case-insensitively
+    key = player_name.strip().lower()
+    # ③ return an error the model can read, or the player&#x27;s stats
+    if key not in PLAYER_STATS:
+        return {&quot;error&quot;: f&quot;No stats found for &#x27;{player_name}&#x27;.&quot;}
+    return PLAYER_STATS[key]
+
+
+if __name__ == &quot;__main__&quot;:
+    # ① serve over stdio: the client starts this file as a child process
+    mcp.run(transport=&quot;stdio&quot;)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">68 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env, build the Groq client, and describe the MCP server.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Shared configuration: load .env, build the Groq client, and describe the MCP server.
+
+This module is the single place that knows about secrets, model names, and how
+to start the cricket MCP server. Every feature module imports from here instead
+of reading ``os.environ`` or constructing clients itself.
+&quot;&quot;&quot;
+
+import os
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+from dotenv import load_dotenv
+from mcp import StdioServerParameters
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = &quot;&quot;) -&gt; str:
+    &quot;&quot;&quot;Return an environment variable, falling back to ``default``.&quot;&quot;&quot;
+    return os.environ.get(name, default)
+
+
+# Groq speaks the same API format as OpenAI, so the ``openai`` package works
+# once it points at Groq&#x27;s URL. The model must support tool calling.
+GROQ_BASE_URL = &quot;https://api.groq.com/openai/v1&quot;
+CHAT_MODEL = get_env(&quot;DEMO_MODEL&quot;, &quot;openai/gpt-oss-20b&quot;)
+
+# Upper bound on parallel agent runs per request; keeps the eval suite well
+# under the 60 s Nginx proxy timeout without hammering the provider.
+MAX_WORKERS = 8
+
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+# The class code uses 0, so &quot;0&quot; is the default everywhere.
+TEMPERATURE_CHOICES = {&quot;0&quot;: 0.0, &quot;0.7&quot;: 0.7, &quot;1.2&quot;: 1.2}
+
+# Start cricket_server.py (next to this file) over stdio with the same Python
+# interpreter. The MCP SDK passes the child only a minimal environment, so API
+# keys never reach the server process.
+SERVER = StdioServerParameters(
+    command=sys.executable,
+    args=[str(Path(__file__).with_name(&quot;cricket_server.py&quot;))],
+)
+
+_client = None
+
+
+def get_groq_client() -&gt; OpenAI:
+    &quot;&quot;&quot;Return a shared OpenAI-compatible client pointed at Groq.&quot;&quot;&quot;
+    global _client
+    if _client is None:
+        # ① read the API key lazily so the no-LLM demo runs without credentials
+        api_key = get_env(&quot;GROQ_API_KEY&quot;)
+        if not api_key:
+            raise RuntimeError(
+                &quot;GROQ_API_KEY is not set. Add it to your .env file &quot;
+                &quot;(free key: https://console.groq.com/keys).&quot;
+            )
+        # ② create one reusable client with a bounded timeout and retries
+        _client = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL, timeout=30, max_retries=2)
+    return _client
+
+
+def parallel_map(fn, items):
+    &quot;&quot;&quot;Run ``fn`` over ``items`` concurrently, preserving input order.&quot;&quot;&quot;
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        return list(pool.map(fn, items))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">220 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server for MCP &amp; Evals Lab: MCP plumbing, a tool-calling agent, and evals.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for MCP &amp; Evals Lab: MCP plumbing, a tool-calling agent, and evals.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at &quot;/&quot;,
+  &quot;/plumbing&quot;, etc. In production Nginx forwards ``/mcp-evals/...`` traffic to
+  the container and PATH_PREFIX is set to &quot;/mcp-evals&quot;.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+&quot;&quot;&quot;
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from agent import TOOLS_CHOICES, run_agent_report
+from config import TEMPERATURE_CHOICES
+from evals import AGENT_CHOICES, CASE_CHOICES, run_evals
+from mcp_client import TOOL_CHOICES, run_plumbing
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (&quot;/mcp-evals&quot;) so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint(&quot;main&quot;, __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    &quot;&quot;&quot;Enforce strict 10 requests per hour limit on all POST endpoints.&quot;&quot;&quot;
+    # ① apply the limit only to API actions, not static page loads
+    if request.method == &quot;POST&quot;:
+        # ② ask the shared limiter whether this request should be blocked
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    &quot;&quot;&quot;Serve index.html, injecting the correct API base URL for the environment.&quot;&quot;&quot;
+    # ① read the static HTML shell from the configured Flask static folder
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
+    # The HTML file ships with &#x27;data-api-base=&quot;&quot;&#x27; (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ③ return the modified HTML with an explicit text/html response type
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    &quot;&quot;&quot;Serve stylesheets from the src/css directory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    &quot;&quot;&quot;Serve scripts from the src/js directory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def info(filename):
+    &quot;&quot;&quot;Serve the &quot;how this demo works&quot; explainer pages from src/info.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;info&quot;, filename))
+
+
+def read_message() -&gt; str:
+    &quot;&quot;&quot;Return the trimmed ``message`` field from the JSON body, or &#x27;&#x27;.&quot;&quot;&quot;
+    # ① parse JSON leniently so missing or malformed bodies become empty data
+    data = request.get_json(force=True, silent=True) or {}
+    # ② normalise the message field into a stripped string for route validation
+    return str(data.get(&quot;message&quot;) or &quot;&quot;).strip()
+
+
+def read_choice(name: str, allowed, default: str) -&gt; str | None:
+    &quot;&quot;&quot;Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed.&quot;&quot;&quot;
+    # ① parse JSON leniently and fall back to the route&#x27;s default choice
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    # ② accept only known dropdown values so feature modules receive valid input
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({&quot;error&quot;: f&quot;Invalid {name}. Choose one of: {&#x27;, &#x27;.join(map(str, allowed))}.&quot;}), 400
+
+
+def feature_error(name: str, exc: Exception):
+    &quot;&quot;&quot;Log the failure; surface only the safe missing-key message to the browser.&quot;&quot;&quot;
+    # ① log the full traceback on the server only
+    app.logger.exception(&quot;%s failed&quot;, name)
+    # ② pass through the missing-key hint; hide every other detail
+    if isinstance(exc, RuntimeError) and &quot;GROQ_API_KEY&quot; in str(exc):
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+    return jsonify({&quot;error&quot;: f&quot;{name} failed. Please try again later.&quot;}), 500
+
+
+@bp.route(&quot;/plumbing&quot;, methods=[&quot;POST&quot;])
+def plumbing_route():
+    &quot;&quot;&quot;Step 1: handshake -&gt; tools/list -&gt; tools/call on the MCP server, no LLM.
+
+    Body: ``{&quot;message&quot;: &quot;&lt;tool argument&gt;&quot;, &quot;tool&quot;: &quot;get_live_score&quot; | &quot;get_player_stats&quot;}``
+    &quot;&quot;&quot;
+    # ① validate the tool argument (team names or player name)
+    message = read_message()[:100]
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;A tool argument (teams or player name) is required.&quot;}), 400
+    # ② validate the selected tool against the server&#x27;s tool names
+    tool = read_choice(&quot;tool&quot;, TOOL_CHOICES, &quot;get_live_score&quot;)
+    if tool is None:
+        return invalid_choice(&quot;tool&quot;, TOOL_CHOICES)
+    try:
+        # ③ run the MCP plumbing and return its text report
+        return jsonify({&quot;result&quot;: run_plumbing(message, tool)})
+    except Exception as exc:
+        return feature_error(&quot;MCP plumbing&quot;, exc)
+
+
+@bp.route(&quot;/agent&quot;, methods=[&quot;POST&quot;])
+def agent_route():
+    &quot;&quot;&quot;Step 2: the LLM picks the MCP tool and its arguments; our code calls it.
+
+    Body: ``{&quot;message&quot;: &quot;&lt;question&gt;&quot;, &quot;tools&quot;: &quot;on&quot; | &quot;off&quot; | &quot;both&quot;, &quot;temperature&quot;: &quot;0&quot; | &quot;0.7&quot; | &quot;1.2&quot;}``
+    &quot;&quot;&quot;
+    # ① validate the question
+    message = read_message()[:300]
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;A cricket question is required.&quot;}), 400
+    # ② validate the tools mode and temperature
+    tools = read_choice(&quot;tools&quot;, TOOLS_CHOICES, &quot;on&quot;)
+    if tools is None:
+        return invalid_choice(&quot;tools&quot;, TOOLS_CHOICES)
+    temperature = read_choice(&quot;temperature&quot;, TEMPERATURE_CHOICES, &quot;0&quot;)
+    if temperature is None:
+        return invalid_choice(&quot;temperature&quot;, TEMPERATURE_CHOICES)
+    try:
+        # ③ run the agent loop and return its step-by-step log
+        return jsonify({&quot;result&quot;: run_agent_report(message, tools, TEMPERATURE_CHOICES[temperature])})
+    except Exception as exc:
+        return feature_error(&quot;Cricket agent&quot;, exc)
+
+
+@bp.route(&quot;/evals&quot;, methods=[&quot;POST&quot;])
+def evals_route():
+    &quot;&quot;&quot;Step 3: run the eval suite (tool check + answer check) and report a score.
+
+    Body: ``{&quot;message&quot;: &quot;all&quot; | &quot;1&quot;..&quot;5&quot;, &quot;agent&quot;: &quot;on&quot; | &quot;off&quot; | &quot;both&quot;, &quot;temperature&quot;: &quot;0&quot; | &quot;0.7&quot; | &quot;1.2&quot;}``
+    &quot;&quot;&quot;
+    # ① validate the selected test case (the card&#x27;s preset input)
+    case = read_message()
+    if not case:
+        return jsonify({&quot;error&quot;: &quot;Choose a test case.&quot;}), 400
+    if case not in CASE_CHOICES:
+        return invalid_choice(&quot;test case&quot;, CASE_CHOICES)
+    # ② validate the agent mode and temperature
+    agent = read_choice(&quot;agent&quot;, AGENT_CHOICES, &quot;on&quot;)
+    if agent is None:
+        return invalid_choice(&quot;agent&quot;, AGENT_CHOICES)
+    temperature = read_choice(&quot;temperature&quot;, TEMPERATURE_CHOICES, &quot;0&quot;)
+    if temperature is None:
+        return invalid_choice(&quot;temperature&quot;, TEMPERATURE_CHOICES)
+    try:
+        # ③ run the suite in parallel and return the graded report
+        return jsonify({&quot;result&quot;: run_evals(case, agent, TEMPERATURE_CHOICES[temperature])})
+    except Exception as exc:
+        return feature_error(&quot;Eval suite&quot;, exc)
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. &quot;/plumbing&quot;) and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == &quot;__main__&quot;:
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">MCP &amp; Evals Lab &mdash; 🔌 MCP Plumbing &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

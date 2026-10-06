@@ -13,7 +13,14 @@ Core logic is adapted from the class code in `study/10-mcp-evals/notes/`
 2. **Cricket Agent** (`step2_agent.py`) — the LLM picks the MCP tool; our code calls it.
 3. **Eval Suite** (`step3_evals.py`) — five test cases, two code checks, a score.
 
-The MCP server itself (`cricket_server.py`) is copied unchanged from the class.
+The MCP server itself (`cricket_server.py`) is the class file with numbered step
+comments added (code unchanged).
+
+Each tile's title has a green ⓘ icon that opens its explainer page under
+`src/info/` (`plumbing.html`, `agent.html`, `evals.html`): the concept, the
+theory, a request-flow diagram, a Mermaid code-flow diagram, and every Python
+file the demo runs, complete and unedited. After editing a Python file, re-embed
+it in every explainer that shows it so the pages stay verbatim copies.
 
 ---
 
@@ -82,9 +89,10 @@ value outside the allowed list, `500` on an unexpected failure (or a missing
 1. `GET /` — single-page UI with the `PATH_PREFIX` injected into `data-api-base`.
 2. `GET /css/<path:filename>` — stylesheets.
 3. `GET /js/<path:filename>` — scripts.
-4. `POST /plumbing` — `message` is the tool argument: team names or a player name (truncated to 100 chars). Optional `tool`: `get_live_score` (default), `get_player_stats`. No model calls.
-5. `POST /agent` — `message` is a cricket question (truncated to 300 chars). Optional `tools`: `on` (default), `off`, `both`; `temperature`: `0` (default), `0.7`, `1.2`. Up to 5 model calls per run (2 runs for `both`).
-6. `POST /evals` — `message` is the test case: `all` (default in the UI) or `1`–`5`. Optional `agent`: `on` (default), `off`, `both`; `temperature`: `0` (default), `0.7`, `1.2`. One agent run per case per agent (up to 10 runs).
+4. `GET /info/<path:filename>` — "how this demo works" explainer pages.
+5. `POST /plumbing` — `message` is the tool argument: team names or a player name (truncated to 100 chars). Optional `tool`: `get_live_score` (default), `get_player_stats`. No model calls.
+6. `POST /agent` — `message` is a cricket question (truncated to 300 chars). Optional `tools`: `on` (default), `off`, `both`; `temperature`: `0` (default), `0.7`, `1.2`. Up to 5 model calls per run (2 runs for `both`).
+7. `POST /evals` — `message` is the test case: `all` (default in the UI) or `1`–`5`. Optional `agent`: `on` (default), `off`, `both`; `temperature`: `0` (default), `0.7`, `1.2`. One agent run per case per agent (up to 10 runs).
 
 Each tile exposes these options as dropdowns. The defaults reproduce the class
 scripts exactly (tools on, temperature 0, all five cases).
@@ -101,9 +109,12 @@ projects/mcp-evals/
 ├── deploy.yml.template     # source of .github/workflows/deploy-mcp-evals.yml
 ├── linkedin.txt
 └── src/
-    ├── index.html          # three demo tiles with dropdowns
-    ├── css/style.css       # shared TechToday dark theme + .options dropdown row
+    ├── index.html          # three demo tiles with dropdowns; each title has an ⓘ link to its explainer
+    ├── css/style.css       # shared TechToday dark theme + .options dropdown row + .info-link icon
+    ├── css/info.css        # explainer page layout, flow diagrams, code blocks (shared, byte-identical)
     ├── js/main.js          # setupCard() wiring + preset pickers
+    ├── js/info.js          # explainer accordions, syntax highlighting, Copy buttons, Mermaid (shared)
+    ├── info/               # one explainer per demo: plumbing, agent, evals
     └── python/
         ├── app.py            # Flask Blueprint, PATH_PREFIX, rate limit, routes
         ├── config.py         # .env loading, Groq client, MCP server params, parallel_map

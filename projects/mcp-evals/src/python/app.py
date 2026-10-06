@@ -50,11 +50,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply the limit only to API actions, not static page loads
     if request.method == "POST":
+        # ② ask the shared limiter whether this request should be blocked
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -69,12 +72,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured Flask static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally). For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified HTML with an explicit text/html response type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -90,16 +96,26 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/info/<path:filename>")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
 def read_message() -> str:
     """Return the trimmed ``message`` field from the JSON body, or ''."""
+    # ① parse JSON leniently so missing or malformed bodies become empty data
     data = request.get_json(force=True, silent=True) or {}
+    # ② normalise the message field into a stripped string for route validation
     return str(data.get("message") or "").strip()
 
 
 def read_choice(name: str, allowed, default: str) -> str | None:
     """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    # ① parse JSON leniently and fall back to the route's default choice
     data = request.get_json(force=True, silent=True) or {}
     value = str(data.get(name) or default)
+    # ② accept only known dropdown values so feature modules receive valid input
     return value if value in allowed else None
 
 
@@ -109,7 +125,9 @@ def invalid_choice(name: str, allowed):
 
 def feature_error(name: str, exc: Exception):
     """Log the failure; surface only the safe missing-key message to the browser."""
+    # ① log the full traceback on the server only
     app.logger.exception("%s failed", name)
+    # ② pass through the missing-key hint; hide every other detail
     if isinstance(exc, RuntimeError) and "GROQ_API_KEY" in str(exc):
         return jsonify({"error": str(exc)}), 500
     return jsonify({"error": f"{name} failed. Please try again later."}), 500

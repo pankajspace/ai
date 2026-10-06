@@ -2,6 +2,8 @@
 
 Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/basic`) and which card(s)/demo(s) to explain; defaults to all cards.
 
+Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explainer per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on.
+
 Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explainer page under `src/info/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
 
 This assumes the project already follows the standard template layout (`src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py` with a Flask Blueprint serving `/css/<f>` and `/js/<f>`). See [SKILL.md](SKILL.md) for that layout.
@@ -87,7 +89,7 @@ Create once per project (not once per demo) by copying these two files verbatim 
 - `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
 - `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
 
-Every project (`ai-reliability`, `ai-systems`, `aws-strands`, `basic`, `docker`, `langchain`, `rag`) carries byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
+Every project (`ai-reliability`, `ai-systems`, `aws-strands`, `basic`, `docker`, `langchain`, `mcp-evals`, `rag`) carries byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
 
 ## 4. One page per demo — `src/info/<demo>.html`
 
@@ -101,8 +103,9 @@ Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `
   2. **Theory & Concepts** — the ideas the demo teaches.
   3. **Request flow** — a plain CSS box+arrow diagram (`.flow-diagram`): browser → Flask route → module function → provider API → browser. Use `.flow-diagram.flow-vertical` + `.flow-branch` when a step fans out into parallel calls.
   4. **Code flow** — a Mermaid flowchart (see below).
-- **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers), then `app.py`. Leave out `rate_limiter.py` — it is shared plumbing, not AI-specific code. Before embedding, make sure each file carries numbered step comments (`# ① load the documents …`, see **Numbered step comments** below) in the real source file, so the page and the code stay identical. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
+- **Unit 2 — Source Code** — one topic per Python file the demo runs, **complete and unedited** (never excerpts or rewritten comments): feature module(s) first, then the project-local modules they import (`config.py`, helpers) or start as a separate process (e.g. an MCP server launched over stdio), then `app.py`. Leave out `rate_limiter.py` — it is shared plumbing, not AI-specific code. Before embedding, make sure each file carries numbered step comments (`# ① load the documents …`, see **Numbered step comments** below) in the real source file, so the page and the code stay identical. Title the topic with the file name (`class="topic-title is-file"`), add a `topic-meta-chip` with the line count, a `span.file-path` (`src/python/joke.py`), a `p.file-label` with the module docstring's first paragraph, and `<pre><code data-lang="python">` holding the HTML-escaped file.
 - Do **not** include the generic front-end `setupCard()` wiring.
+- Generate the Unit 2 topics with a short script instead of pasting code by hand: read each file, `html.escape()` it into the `<pre><code>`, take the `p.file-label` from `ast.get_docstring()`'s first paragraph and the line-count chip from the file. Keep the script outside the repo (e.g. the session folder) and re-run it after any edit to an embedded Python file, so every page that shows the file stays a verbatim copy.
 
 Every topic header is `div.topic-header[role=button][tabindex=0][aria-expanded=false]` with a `.topic-badge` number, an `<h2 id>` + `.headerlink`, and a `.topic-chevron`; list every topic in the `.topic-menu` `<ol>`. Use the same topic IDs on every page so deep links are predictable: `concept`, `theory-concepts`, `request-flow`, `code-flow`, then `source-<file-name-kebab>-py` per file (`source-joke-py`, `source-app-py`). Units are `unit-1` and `unit-2`. End with `<footer class="study-footer"><Project> &mdash; <emoji> <Demo> &middot; How it works</footer>`.
 
@@ -166,7 +169,7 @@ Load Mermaid with a plain script tag before `info.js`; `info.js` calls `mermaid.
 
 - Check for errors on every edited/created file.
 - Open `src/index.html` in the integrated browser, confirm each card shows the green ⓘ icon that turns orange on hover with a tooltip reading "Explanation".
-- Open each `src/info/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px, and the back link returns to the project index.
+- Open each `src/info/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px (`document.documentElement.scrollWidth <= document.documentElement.clientWidth`; `innerWidth` includes the scrollbar and reports false overflow; code blocks and Mermaid SVGs scroll inside their own boxes and do not count), and the back link returns to the project index.
 - Diff each embedded file against its source (`html.unescape(code) == file.read_text().rstrip("\n")`) — the source topics must be complete and unedited.
 - Confirm the shared assets are still identical: `md5sum projects/*/src/css/info.css projects/*/src/js/info.js projects/techtoday/js/info.js` shows one hash per file type.
 

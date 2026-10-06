@@ -38,6 +38,7 @@ def call_llm(llm, kwargs, retries=2):
     and sometimes try to call it even though we never offered it. Groq rejects
     that with 'tool_use_failed'. We retry a couple of times, then explain.
     """
+    # ① try the call, retrying only the "tool_use_failed" rejection
     last = None
     for _ in range(retries + 1):
         try:
@@ -46,6 +47,7 @@ def call_llm(llm, kwargs, retries=2):
             last = str(e)
             if "tool_use_failed" not in last:
                 return None, f"API ERROR: {last[:300]}"
+    # ② still failing: name the tool the model invented and explain it
     m = re.search(r'"name":\s*"([^"]+)"', last or "")
     tool = m.group(1) if m else "a tool"
     return None, (f"MODEL TRIED TO CALL A TOOL WE NEVER GAVE IT ({tool}). "
@@ -58,6 +60,7 @@ async def run_agent(question: str, use_tools: bool = True, temperature: float = 
     Returns ``{"answer": str, "trace": [{"tool", "args"}], "log": [str]}``.
     ``trace`` feeds the evals; ``log`` is the step-by-step output for the UI.
     """
+    # ① build the Groq client and pick the system prompt for tools ON or OFF
     llm = get_groq_client()
     trace = []      # every tool call the LLM asked for, kept for evals later
     log = []
@@ -73,15 +76,15 @@ async def run_agent(question: str, use_tools: bool = True, temperature: float = 
     ]
 
     with tempfile.TemporaryFile(mode="w+", encoding="utf-8") as errlog:
-        # ① start the MCP server and complete the handshake
+        # ② start the MCP server and complete the handshake
         async with stdio_client(SERVER, errlog=errlog) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
-                # ② translate MCP menu cards into OpenAI tool format (only when tools are ON)
+                # ③ translate MCP menu cards into OpenAI tool format (only when tools are ON)
                 tools = to_openai_format((await session.list_tools()).tools) if use_tools else None
 
                 for _ in range(MAX_TURNS):
-                    # ③ send the conversation (+ tool menu) to the model
+                    # ④ send the conversation (+ tool menu) to the model
                     kwargs = {"model": CHAT_MODEL, "messages": messages, "temperature": temperature}
                     if tools:
                         kwargs["tools"] = tools
@@ -90,12 +93,12 @@ async def run_agent(question: str, use_tools: bool = True, temperature: float = 
                         log.append(error)
                         return {"answer": f"({error})", "trace": trace, "log": log}
 
-                    # ④ no tool requested -> this is the final answer
+                    # ⑤ no tool requested -> this is the final answer
                     if not reply.tool_calls:
                         log.append(f"FINAL ANSWER: {reply.content}")
                         return {"answer": reply.content, "trace": trace, "log": log}
 
-                    # ⑤ record the model's "prescription" in the conversation
+                    # ⑥ record the model's "prescription" in the conversation
                     messages.append({
                         "role": "assistant",
                         "content": reply.content or "",
@@ -103,7 +106,7 @@ async def run_agent(question: str, use_tools: bool = True, temperature: float = 
                                         "function": {"name": c.function.name, "arguments": c.function.arguments}}
                                        for c in reply.tool_calls],
                     })
-                    # ⑥ OUR code calls each requested tool via MCP and returns the result
+                    # ⑦ OUR code calls each requested tool via MCP and returns the result
                     for call in reply.tool_calls:
                         try:
                             args = json.loads(call.function.arguments or "{}")
@@ -130,13 +133,17 @@ def run_agent_sync(question: str, use_tools: bool = True, temperature: float = 0
 
 def run_agent_report(question: str, tools: str = "on", temperature: float = 0.0) -> str:
     """Run the agent with tools ON, OFF, or both, and return a text report."""
+    # ① run one agent per selected mode, in parallel
     modes = {"on": [True], "off": [False], "both": [False, True]}[tools]
     results = parallel_map(lambda use: run_agent_sync(question, use, temperature), modes)
+
+    # ② print each run's step-by-step log under its own header
 
     sections = []
     for use_tools, result in zip(modes, results):
         header = f"QUESTION: {question}   (tools {'ON' if use_tools else 'OFF'})"
         sections.append("\n".join([header, *result["log"]]))
+    # ③ suggest the side-by-side comparison when only one mode ran
     report = ("\n\n" + "─" * 40 + "\n\n").join(sections)
     if tools != "both":
         report += "\n\nTip: pick 'Both' to compare the same question with and without MCP tools."

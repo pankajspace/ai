@@ -21,6 +21,7 @@ TOOL_CHOICES = ("get_live_score", "get_player_stats")
 
 def _argument_name(tool) -> str:
     """Return the first input parameter from the tool's auto-generated schema."""
+    # ① read the parameter name from the auto-generated JSON schema
     schema = tool.inputSchema or {}
     required = schema.get("required") or list((schema.get("properties") or {}).keys())
     return required[0]
@@ -55,6 +56,7 @@ async def _plumbing(argument: str, tool_name: str) -> str:
                 result = await session.call_tool(tool_name, args)
                 lines.append(f"  Result   : {result.content[0].text if result.content else '(empty)'}")
 
+        # ⑤ append what the server printed to stderr
         errlog.seek(0)
         server_log = errlog.read().strip()
     if server_log:
