@@ -1,6 +1,6 @@
 # Project Setup Guide — techtoday.click
 
-The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use each project's `README.md` for its ports, routes, secrets, routine development, deployment, rollback, and troubleshooting; [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project; [DEPLOYMENT.md](DEPLOYMENT.md) for the `staging` → `main` branch deployment runbook; and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
+The one-time setup shared by every project: **local development prerequisites** (§ 1) and the **one-time AWS infrastructure** (§ 2). Do these once. After setup, use each project's `README.md` for its ports, routes, secrets, routine development, deployment, rollback, and troubleshooting; [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project; [DEPLOYMENT.md](DEPLOYMENT.md) for the branch deployment runbook (every branch deploys on push); and [ARCHITECTURE.md](ARCHITECTURE.md) for architecture and design decisions. Follow the sections below in order — each one builds on the previous.
 
 ---
 
@@ -869,8 +869,7 @@ aws iam create-role \
       "Condition":{
         "StringEquals":{"token.actions.githubusercontent.com:aud":"sts.amazonaws.com"},
         "StringLike":{"token.actions.githubusercontent.com:sub":[
-          "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/main",
-          "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/staging"
+          "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/*"
         ]}
       }
     }]}'
@@ -919,14 +918,13 @@ aws iam put-role-policy \
    - **GitHub Organization:** `YOUR_GITHUB_ORG` (replace with your org name or your username) → **Next**
    - Skip managed policies → **Next**
    - **Role name:** `github-actions-deploy` → **Create role**
-3. **Edit the trust policy:** Open the role → **Trust relationships** tab → **Edit trust policy** → add the `StringLike` condition for your repo. Both deploy branches must be listed, because the workflows run on `main` **and** `staging` (see [DEPLOYMENT.md](DEPLOYMENT.md)):
+3. **Edit the trust policy:** Open the role → **Trust relationships** tab → **Edit trust policy** → add the `StringLike` condition for your repo. Allow every branch (`refs/heads/*`), because the workflows deploy on pushes to **any** branch (see [DEPLOYMENT.md](DEPLOYMENT.md)):
    ```json
    "Condition": {
      "StringEquals": { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com" },
      "StringLike": {
        "token.actions.githubusercontent.com:sub": [
-         "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/main",
-         "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/staging"
+         "repo:YOUR_GITHUB_ORG/YOUR_REPO_NAME:ref:refs/heads/*"
        ]
      }
    }

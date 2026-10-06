@@ -169,25 +169,26 @@ If all keys already exist in `techtoday/secrets`, no manual AWS steps are needed
 
 ## Commit and Automatic Deployment
 
-Follow the repository branch flow (`staging` for pre-production testing, `main` for release):
+Follow the repository branch flow (any branch deploys on push for testing, `main` for release; see [../DEPLOYMENT.md](../DEPLOYMENT.md)):
 
-1. Switch to staging and commit:
+1. Create a branch, commit, and push it (the push deploys the branch live):
    ```bash
-   git checkout staging
+   git checkout main && git pull origin main
+   git checkout -b feat/ai-systems-short-description
    git add projects/ai-systems/ .github/workflows/deploy-ai-systems.yml
-   git commit -m "feat(ai-systems): add AI Systems Lab container project"
-   git push origin staging
+   git commit -m "feat(ai-systems): short description"
+   git push -u origin feat/ai-systems-short-description
    ```
 2. Watch the GitHub Actions run under the **Actions** tab.
-3. After verifying staging, promote to main:
+3. After verifying, merge into main (via a pull request, or locally):
    ```bash
    git checkout main
    git pull origin main
-   git merge staging
+   git merge feat/ai-systems-short-description
    git push origin main
    ```
 
-Pushes touching `projects/ai-systems/**` or `.github/workflows/deploy-ai-systems.yml` trigger automated build and deployment to EC2.
+Pushes to any branch touching `projects/ai-systems/**` or `.github/workflows/deploy-ai-systems.yml` trigger automated build and deployment to EC2.
 
 ---
 

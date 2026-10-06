@@ -79,7 +79,9 @@ git commit -m "feat(langchain): short description"
 git push -u origin feat/langchain-short-description
 ```
 
-Open a pull request and squash-merge it into `main`. Changes under
+The branch push deploys it live for testing (see
+[../DEPLOYMENT.md](../DEPLOYMENT.md)). Once verified, open a pull request and
+squash-merge it into `main`, which redeploys from `main`. Changes under
 `projects/langchain/**` trigger `.github/workflows/deploy-langchain.yml`, which
 pushes the image to `techtoday/langchain` in ECR and restarts only the
 `langchain` service on EC2. The production Compose service maps EC2 host port

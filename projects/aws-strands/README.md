@@ -127,7 +127,9 @@ git commit -m "feat(aws-strands): short description"
 git push -u origin feat/aws-strands-short-description
 ```
 
-Open a pull request and squash-merge it into `main`. Changes under
+The branch push deploys it live for testing (see
+[../DEPLOYMENT.md](../DEPLOYMENT.md)). Once verified, open a pull request and
+squash-merge it into `main`, which redeploys from `main`. Changes under
 `projects/aws-strands/**` trigger `.github/workflows/deploy-aws-strands.yml`, which
 builds the image, pushes it to `techtoday/aws-strands` in ECR, provisions any
 missing EC2 wiring, and restarts the container from

@@ -1,6 +1,6 @@
-# Git Branch Deployment Runbook (Strategy 2: Staging & Main)
+# Git Branch Deployment Runbook (Deploy Any Branch)
 
-This document defines the deployment lifecycle, branch management rules, testing procedures, and rollback commands for projects deployed to `app.techtoday.click` using the dual-branch strategy (`staging` and `main`).
+This document defines the deployment lifecycle, branch rules, testing procedures, and rollback commands for projects deployed to `app.techtoday.click` (and the `techtoday.click` static site). **Every branch deploys on push**, so any branch can be tested live without a dedicated staging branch.
 
 See [SETUP.md](SETUP.md) for the one-time infrastructure setup, [ADD_PROJECT.md](ADD_PROJECT.md) for adding a new container project, and [ARCHITECTURE.md](ARCHITECTURE.md) for the pipeline internals.
 
@@ -8,54 +8,49 @@ See [SETUP.md](SETUP.md) for the one-time infrastructure setup, [ADD_PROJECT.md]
 
 ## 1. Strategy Overview
 
-Strategy 2 provides a streamlined, direct Git workflow for all application features, bugfixes, UI updates, and infrastructure adjustments:
-
-1. **`staging` (Active Development & Testing Workbench)**:
-   - All day-to-day development, feature work, bugfixes, UI changes, and configuration updates are made directly on this branch.
-   - Pushes to `staging` automatically trigger GitHub Actions to build the Docker image, configure Nginx routing and secrets on EC2, and restart the project service for live pre-production testing.
-2. **`main` (Production Release)**:
-   - Represents the verified, stable, and live production environment.
-   - You only merge `staging` into `main` after live verification on the host succeeds.
-   - Pushes/merges to `main` automatically deploy the release to production.
-3. **Rollback of Failed Tests (Way 1 - Force Reset)**:
-   - If changes deployed on `staging` break, fail tests, or are abandoned, `staging` is instantly reset to match `main` and force-pushed.
-   - GitHub Actions detects the force-push and automatically redeploys the stable `main` state to the host.
+1. **Any branch deploys on push**:
+   - Every `deploy-<project>.yml` workflow triggers on pushes to **any** branch (`branches: ['**']`) that touch `projects/<project-name>/**` or the workflow file itself.
+   - The workflow builds the Docker image, configures Nginx routing and secrets on EC2, and restarts only that project's service — exactly as for `main`.
+   - Use a short-lived feature branch per change (for example `feat/<project>-short-description`) and push it to test it live.
+2. **One shared live environment**:
+   - All branches deploy to the **same** EC2 host, URL, and container. Whichever branch deployed a project **last** is what is live for that project.
+   - Each workflow has a `concurrency` group, so deploys of the same project run one at a time (queued, never cancelled mid-deploy). If several pushes queue up, GitHub keeps only the newest pending run.
+   - Each run's job summary records the **branch** and image tags, so the Actions tab always shows which branch is live.
+3. **`main` is the stable release**:
+   - `main` holds verified, stable code. Merging into `main` redeploys the project from `main`.
+   - After testing a branch, always leave the project running `main` again — either by merging the branch into `main`, or by redeploying `main` if the branch is abandoned (§ 2, Step 5).
+4. **Manual deploys of any branch**:
+   - Every workflow also has a `workflow_dispatch` trigger. Use **Actions → Deploy `<project>` → Run workflow** and pick a branch, or `gh workflow run deploy-<project>.yml --ref <branch>`, to deploy a branch without a new commit (for example, a freshly created branch with no new commits under the project path, which does not trigger the path filter).
 
 ---
 
 ## 2. Daily Development & Deployment Lifecycle
 
-Follow these numbered steps for any everyday feature, fix, or update:
+### Step 1: Create a Branch from `main`
+```bash
+git checkout main
+git pull origin main
+git checkout -b feat/<project-name>-short-description
+```
 
-### Step 1: Make Changes Directly on `staging`
-1. Switch to `staging` and make sure it is up to date:
+### Step 2: Make Changes, Commit, and Push
+1. Make your code, UI, or configuration changes under `projects/<project-name>/`.
+2. Commit and push the branch:
    ```bash
-   git checkout staging
-   git pull origin staging
+   git add projects/<project-name>/
+   git commit -m "feat(<project-name>): describe your changes here"
+   git push -u origin feat/<project-name>-short-description
    ```
-2. Make your code, UI, or configuration changes under `projects/<project-name>/`.
-3. Commit your changes:
-   ```bash
-   git add .
-   git commit -m "feat(project): describe your changes here"
-   ```
-4. Push directly to `origin staging`:
-   ```bash
-   git push origin staging
-   ```
-
-### Step 2: Automated Deployment on Staging
-1. GitHub Actions detects the push on `staging` and automatically triggers the corresponding `deploy-<project>.yml` workflow. Each workflow is path-scoped, so it only runs when files under `projects/<project-name>/` or its own workflow file changed. A run can also be started by hand from the **Actions** tab (`workflow_dispatch`).
-2. The workflow:
+3. GitHub Actions detects the push and runs `deploy-<project-name>.yml`. Each workflow is path-scoped, so only the projects you changed are redeployed. The workflow:
    - Builds the Docker image and tags it with the Git commit SHA, build tag, and `:latest`.
    - Pushes the image to Amazon ECR.
    - Auto-provisions Nginx location blocks and secrets on EC2.
    - Pulls the new image and restarts only this container (`docker compose up -d`).
+4. Every further push to the branch redeploys it.
 
-### Step 3: Verify on Live Environment
-1. Check the GitHub Actions tab in your repository to confirm the workflow run succeeded.
-2. Verify the project in your browser:
-   Open `https://app.techtoday.click/<project-name>/` and test the newly added or updated functionality.
+### Step 3: Verify on the Live Environment
+1. Check the **Actions** tab: confirm the run succeeded and the job summary shows your branch.
+2. Open `https://app.techtoday.click/<project-name>/` and test the new or updated functionality.
 3. Verify endpoint responses via terminal:
    ```bash
    # Check page availability
@@ -71,57 +66,48 @@ Follow these numbered steps for any everyday feature, fix, or update:
    ssh -i /path/to/techtoday.pem ec2-user@app.techtoday.click "docker compose -f ~/apps/<project-name>/docker-compose.yml logs --tail 50"
    ```
 
-### Step 4: If Verification SUCCEEDS — Promote to `main`
-Once your changes pass verification:
-1. Switch to `main` and pull the latest changes:
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
-2. Merge `staging` into `main`:
-   ```bash
-   git merge staging
-   ```
-3. Push to `origin main`:
-   ```bash
-   git push origin main
-   ```
-4. GitHub Actions runs the production deployment with the verified code.
+### Step 4: If Verification SUCCEEDS — Merge into `main`
+Open a pull request and merge it into `main` (squash-merge recommended), or merge locally:
+```bash
+git checkout main
+git pull origin main
+git merge feat/<project-name>-short-description
+git push origin main
+```
+The push to `main` redeploys the project from `main`. Delete the feature branch afterwards:
+```bash
+git branch -d feat/<project-name>-short-description
+git push origin --delete feat/<project-name>-short-description
+```
 
-### Step 5: If Verification FAILS — Rollback via Way 1 (Reset Staging to Main)
-If the changes break or do not work as expected, discard them and restore the stable production state using Way 1:
-1. Reset local `staging` to match remote `main`:
-   ```bash
-   git checkout staging
-   git reset --hard origin/main
-   ```
-2. Force push `staging` to remote:
-   ```bash
-   git push origin staging --force
-   ```
-3. GitHub Actions triggers on the force-push and automatically redeploys the clean, working code from `main`.
+### Step 5: If Verification FAILS — Redeploy `main`
+The broken branch is still live, so put `main` back (no force-push needed):
+```bash
+gh workflow run deploy-<project-name>.yml --ref main
+```
+Or use **Actions → Deploy `<project-name>` → Run workflow → Branch: `main`**. Then keep fixing on the branch and push again, or delete the branch if it is abandoned.
 
 ---
 
 ## 3. Production Rollback & Emergency Procedures
 
-### Scenario A: Reverting a Production Release via Git
-If a merged release causes unexpected issues in production:
-1. Find the merge commit hash on `main`:
+### Scenario A: Reverting a Release on `main` via Git
+If a change merged into `main` causes unexpected issues:
+1. Find the commit on `main`:
    ```bash
    git checkout main
    git pull origin main
    git log -n 5 --oneline
    ```
-2. Revert the commit:
+2. Revert it (use `-m 1` for a merge commit; omit it for a squash-merge commit):
    ```bash
-   git revert -m 1 <commit-sha>
+   git revert <commit-sha>
    ```
 3. Push to `main`:
    ```bash
    git push origin main
    ```
-4. GitHub Actions automatically builds and redeploys the previous stable state to production.
+4. GitHub Actions automatically builds and redeploys the previous stable state.
 
 ### Scenario B: Direct Container Rollback on EC2 (Fastest Recovery)
 If you need an instant container rollback on the server without waiting for a new CI/CD build:
@@ -144,23 +130,25 @@ If you need an instant container rollback on the server without waiting for a ne
    docker compose -f ~/apps/<project-name>/docker-compose.yml up -d
    ```
 
-> This pin is temporary: the next deploy of that project rewrites
-> `~/apps/<project-name>/docker-compose.yml` back to `:latest`. Follow up with
-> Scenario A so the fix lands in Git.
+> This pin is temporary: the next deploy of that project (from any branch)
+> rewrites `~/apps/<project-name>/docker-compose.yml` back to `:latest`. Follow
+> up with Scenario A so the fix lands in Git.
 
 ---
 
 ## 4. Quick Reference Cheatsheet
 
-1. **Start working on staging**:
-   `git checkout staging && git pull origin staging`
-2. **Deploy changes to staging**:
-   `git add . && git commit -m "feat: description" && git push origin staging`
-3. **Verify live staging endpoint**:
+1. **Start a branch**:
+   `git checkout main && git pull origin main && git checkout -b feat/<project-name>-desc`
+2. **Deploy the branch for testing**:
+   `git add projects/<project-name>/ && git commit -m "feat: description" && git push -u origin feat/<project-name>-desc`
+3. **Redeploy any branch without a new commit**:
+   `gh workflow run deploy-<project-name>.yml --ref <branch>`
+4. **Verify the live endpoint**:
    `curl -I https://app.techtoday.click/<project-name>/`
-4. **Promote staging to production (when good)**:
-   `git checkout main && git pull origin main && git merge staging && git push origin main`
-5. **Rollback staging to production (Way 1 - when bad)**:
-   `git checkout staging && git reset --hard origin/main && git push origin staging --force`
-6. **Rollback production via Git (if main has an issue)**:
-   `git checkout main && git revert -m 1 <commit-sha> && git push origin main`
+5. **Release (when good)**:
+   `git checkout main && git pull origin main && git merge feat/<project-name>-desc && git push origin main`
+6. **Restore `main` on the host (when bad)**:
+   `gh workflow run deploy-<project-name>.yml --ref main`
+7. **Roll back `main` via Git**:
+   `git checkout main && git revert <commit-sha> && git push origin main`

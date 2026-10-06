@@ -233,26 +233,28 @@ aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-strin
 
 ## Commit and Automatic Deployment
 
-Push to `staging` first, verify, then promote to `main` (see
-[../DEPLOYMENT.md](../DEPLOYMENT.md)):
+Push a branch to deploy it live for testing, verify, then merge into `main`
+(see [../DEPLOYMENT.md](../DEPLOYMENT.md)):
 
 ```bash
-git checkout staging
+git checkout main && git pull origin main
+git checkout -b feat/mcp-evals-short-description
 git add projects/mcp-evals .github/workflows/deploy-mcp-evals.yml
-git commit -m "feat(mcp-evals): add MCP & Evals Lab container project"
-git push origin staging
+git commit -m "feat(mcp-evals): short description"
+git push -u origin feat/mcp-evals-short-description
 ```
 
-Watch the run under the repository's **Actions** tab. After verifying:
+Watch the run under the repository's **Actions** tab. After verifying, merge
+into `main` (via a pull request, or locally):
 
 ```bash
 git checkout main
 git pull origin main
-git merge staging
+git merge feat/mcp-evals-short-description
 git push origin main
 ```
 
-Pushes touching `projects/mcp-evals/**` or the workflow file trigger
+Pushes to any branch touching `projects/mcp-evals/**` or the workflow file trigger
 `deploy-mcp-evals.yml`, which pushes the image to `techtoday/mcp-evals` and
 restarts only the `mcp-evals` service on EC2 (host port `5009`).
 
@@ -362,6 +364,6 @@ If the pull reports `no space left on device`, run `docker system df`, then
 
 Single-service project, fully automated: `.github/workflows/deploy-mcp-evals.yml`
 builds and pushes the one image, provisions ECR, the env file, Nginx, and the
-Compose service, and restarts `mcp-evals` on every push to `staging` or `main`
+Compose service, and restarts `mcp-evals` on every push to any branch
 that touches the trigger paths. The MCP server is not a separate service; it
 runs as a child process inside the `mcp-evals` container.
