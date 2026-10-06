@@ -38,12 +38,13 @@
                     <li><a href="#7-lists-and-slicing">Lists &amp; Slicing</a></li>
                     <li><a href="#8-dictionaries">Dictionaries</a></li>
                     <li><a href="#9-tuples-and-sets">Tuples &amp; Sets</a></li>
-                    <li><a href="#10-list-comprehensions">List Comprehensions</a></li>
-                    <li><a href="#11-functions-and-arguments">Functions &amp; Arguments</a></li>
-                    <li><a href="#12-async-and-await">Async / Await</a></li>
-                    <li><a href="#13-object-oriented-programming">Object-Oriented Programming (OOP)</a></li>
-                    <li><a href="#14-everyday-error-handling">Everyday Error Handling</a></li>
-                    <li><a href="#15-modules-and-imports">Modules &amp; Imports</a></li>
+                    <li><a href="#10-unpacking-and-destructuring">Unpacking &amp; Destructuring</a></li>
+                    <li><a href="#11-list-comprehensions">List Comprehensions</a></li>
+                    <li><a href="#12-functions-and-arguments">Functions &amp; Arguments</a></li>
+                    <li><a href="#13-async-and-await">Async / Await</a></li>
+                    <li><a href="#14-object-oriented-programming">Object-Oriented Programming (OOP)</a></li>
+                    <li><a href="#15-everyday-error-handling">Everyday Error Handling</a></li>
+                    <li><a href="#16-modules-and-imports">Modules &amp; Imports</a></li>
                 </ol>
             </details>
         </nav>
@@ -55,7 +56,7 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>15 Topics</span>
+                    <span>16 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>Daily Essentials, Clean Examples &amp; Practical Questions</span>
                 </div>
@@ -1356,11 +1357,11 @@ print("Common users passed!")
             </section>
 
             <!-- ============================================================ 10 -->
-            <section class="topic-section is-collapsed" id="sec-10-list-comprehensions" data-topic="10-list-comprehensions">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-10-list-comprehensions">
+            <section class="topic-section is-collapsed" id="sec-10-unpacking-and-destructuring" data-topic="10-unpacking-and-destructuring">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-10-unpacking-and-destructuring">
                     <div class="topic-header-main">
                         <span class="topic-badge">10</span>
-                        <h2 id="10-list-comprehensions" class="topic-title">List Comprehensions<a class="headerlink" href="#10-list-comprehensions" title="Permanent link">#</a></h2>
+                        <h2 id="10-unpacking-and-destructuring" class="topic-title">Unpacking &amp; Destructuring<a class="headerlink" href="#10-unpacking-and-destructuring" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -1370,12 +1371,12 @@ print("Common users passed!")
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-10-list-comprehensions">
-                    <div class="part-section is-collapsed" id="10-list-comprehensions-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-list-comprehensions-theory">
+                <div class="topic-content" id="content-10-unpacking-and-destructuring">
+                    <div class="part-section is-collapsed" id="10-unpacking-and-destructuring-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-unpacking-and-destructuring-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-list-comprehensions-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-unpacking-and-destructuring-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -1385,7 +1386,134 @@ print("Common users passed!")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-10-list-comprehensions-theory">
+                        <div class="part-body" id="body-10-unpacking-and-destructuring-theory">
+                            <ul class="meta-strip">
+                                <li><b>Assignment</b> <code class="big-o o-great">a, b = [10, 20]</code></li>
+                                <li><b>Starred</b> <code class="big-o o-great">first, *rest = items</code></li>
+                                <li><b>Dict Merge</b> <code class="big-o o-good">{**defs, **opts}</code></li>
+                            </ul>
+                            <p>Unpacking (often called destructuring) allows you to extract elements from iterables (tuples, lists, dictionaries, or strings) and assign them directly to multiple variables in a single, clean statement. Python inspects the shape of the data on the right and distributes each element to the corresponding variable on the left.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Card Dealer Distributing Hands</b>
+                                    <p>Imagine a card dealer laying out cards onto labelled player mats. Instead of picking up the deck, finding card 0, and walking it over to Player A, then finding card 1 and handing it to Player B, the dealer deals the cards across the table in one swift motion (<code>player_a, player_b = deal()</code>). With a starred variable (<code>*bench</code>), any remaining cards are collected into a single pile automatically.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># 1. Multiple assignment and variable swap
+a, b = 10, 20
+a, b = b, a
+print(f"Swapped: a={a}, b={b}")  # Swapped: a=20, b=10
+
+# 2. Starred unpacking for flexible lengths
+scores = [98, 85, 91, 78, 88]
+highest, *others, lowest = sorted(scores, reverse=True)
+print(f"Top: {highest}, Rest: {others}, Lowest: {lowest}")
+
+# 3. Discarding unneeded elements
+name, _, email = ("Bob Smith", "Accountant", "bob@example.com")
+print(f"{name} &lt;{email}&gt;")
+
+# 4. Nested unpacking and dictionary merging
+user_payload = ("admin_user", ("us-east", "cluster-1"))
+username, (region, cluster) = user_payload
+print(f"User {username} deployed to {region}/{cluster}")
+
+default_settings = {"theme": "light", "notifications": True, "timeout": 30}
+user_settings = {"theme": "dark", "timeout": 60}
+active_settings = {**default_settings, **user_settings}
+print(active_settings)  # {'theme': 'dark', 'notifications': True, 'timeout': 60}
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Expressive &amp; Clean Syntax:</b> Eliminates clunky temporary variables, index lookups like <code>row[0]</code>, and verbose slice assignments.</li>
+                                <li class="is-bad"><b>Weakness — ValueError on Shape Mismatch:</b> Unpacking without <code>*</code> requires the exact number of variables to match the elements (<code>too many values to unpack</code> or <code>not enough values to unpack</code>).</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> In Python, unpacking requires an exact count match. Writing <code>x, y = [1, 2, 3]</code> raises <code>ValueError: too many values to unpack (expected 2)</code>. Use a starred variable like <code>x, y, *rest = [1, 2, 3]</code> or <code>x, *_, y = ...</code> when iterable length varies.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="10-unpacking-and-destructuring-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-unpacking-and-destructuring-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#10-unpacking-and-destructuring-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-unpacking-and-destructuring-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given a list of transaction records where each record is a tuple formatted as <code>(transaction_id, customer_name, (amount, currency), status)</code>, write a function <code>extract_successful_totals(transactions: list[tuple]) -&gt; dict[str, float]</code> that uses destructuring to calculate the total amount spent per currency for all &quot;COMPLETED&quot; transactions.</p>
+                                <p>Loop through transactions using nested destructuring <code>for _tx_id, _customer, (amount, currency), status in transactions:</code>. If status is &quot;COMPLETED&quot;, accumulate <code>amount</code> into the dictionary for that <code>currency</code>.</p>
+                                <div class="code-tabs" data-label="Answer — Extract Successful Totals with Destructuring">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def extract_successful_totals(transactions: list[tuple]) -&gt; dict[str, float]:
+    totals = {}
+    for _tx_id, _customer, (amount, currency), status in transactions:
+        if status == "COMPLETED":
+            totals[currency] = round(totals.get(currency, 0.0) + amount, 2)
+    return totals
+
+# Test cases
+records = [
+    ("TX101", "Alice", (120.50, "USD"), "COMPLETED"),
+    ("TX102", "Bob", (45.00, "EUR"), "PENDING"),
+    ("TX103", "Charlie", (80.25, "USD"), "COMPLETED"),
+    ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
+]
+expected = {"USD": 200.75, "EUR": 30.00}
+assert extract_successful_totals(records) == expected
+print("Extract successful totals passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 11 -->
+            <section class="topic-section is-collapsed" id="sec-11-list-comprehensions" data-topic="11-list-comprehensions">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-11-list-comprehensions">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="11-list-comprehensions" class="topic-title">List Comprehensions<a class="headerlink" href="#11-list-comprehensions" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-list-comprehensions">
+                    <div class="part-section is-collapsed" id="11-list-comprehensions-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-list-comprehensions-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-list-comprehensions-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-list-comprehensions-theory">
                             <ul class="meta-strip">
                                 <li><b>Syntax</b> <code class="big-o o-great">[expr for x in items]</code></li>
                                 <li><b>Filtering</b> <code class="big-o o-great">[expr for x in items if cond]</code></li>
@@ -1424,11 +1552,11 @@ print(clean_tags)  # ['python', 'fastapi', 'sql']
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="10-list-comprehensions-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-10-list-comprehensions-questions">
+                    <div class="part-section is-collapsed" id="11-list-comprehensions-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-list-comprehensions-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#10-list-comprehensions-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#11-list-comprehensions-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -1439,7 +1567,7 @@ print(clean_tags)  # ['python', 'fastapi', 'sql']
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-10-list-comprehensions-questions">
+                        <div class="part-body" id="body-11-list-comprehensions-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Given a list of file names, return a list containing only the .csv files converted to lowercase.</p>
@@ -1470,12 +1598,12 @@ print("Filter CSV files passed!")
                 </div>
             </div>
 
-            <!-- ============================================================ 11 -->
-            <section class="topic-section is-collapsed" id="sec-11-functions-and-arguments" data-topic="11-functions-and-arguments">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-11-functions-and-arguments">
+            <!-- ============================================================ 12 -->
+            <section class="topic-section is-collapsed" id="sec-12-functions-and-arguments" data-topic="12-functions-and-arguments">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-12-functions-and-arguments">
                     <div class="topic-header-main">
-                        <span class="topic-badge">11</span>
-                        <h2 id="11-functions-and-arguments" class="topic-title">Functions &amp; Arguments<a class="headerlink" href="#11-functions-and-arguments" title="Permanent link">#</a></h2>
+                        <span class="topic-badge">12</span>
+                        <h2 id="12-functions-and-arguments" class="topic-title">Functions &amp; Arguments<a class="headerlink" href="#12-functions-and-arguments" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -1485,12 +1613,12 @@ print("Filter CSV files passed!")
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-11-functions-and-arguments">
-                    <div class="part-section is-collapsed" id="11-functions-and-arguments-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-functions-and-arguments-theory">
+                <div class="topic-content" id="content-12-functions-and-arguments">
+                    <div class="part-section is-collapsed" id="12-functions-and-arguments-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-functions-and-arguments-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-functions-and-arguments-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-functions-and-arguments-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -1500,7 +1628,7 @@ print("Filter CSV files passed!")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-11-functions-and-arguments-theory">
+                        <div class="part-body" id="body-12-functions-and-arguments-theory">
                             <ul class="meta-strip">
                                 <li><b>Definition &amp; Defaults</b> <code class="big-o o-great">def fn(param=default):</code></li>
                                 <li><b>Variable Positional</b> <code class="big-o o-great">*args (tuple)</code></li>
@@ -1576,11 +1704,11 @@ print(connect("db.internal", **extra_opts))
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="11-functions-and-arguments-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-11-functions-and-arguments-questions">
+                    <div class="part-section is-collapsed" id="12-functions-and-arguments-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-functions-and-arguments-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#11-functions-and-arguments-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#12-functions-and-arguments-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">2</span>
@@ -1591,7 +1719,7 @@ print(connect("db.internal", **extra_opts))
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-11-functions-and-arguments-questions">
+                        <div class="part-body" id="body-12-functions-and-arguments-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Write a function that calculates a bill's tip amount based on bill total and a percentage, defaulting to 15% tip.</p>
@@ -1641,12 +1769,12 @@ print("Build query URL passed!")
                 </div>
             </section>
 
-            <!-- ============================================================ 12 -->
-            <section class="topic-section is-collapsed" id="sec-12-async-and-await" data-topic="12-async-and-await">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-12-async-and-await">
+            <!-- ============================================================ 13 -->
+            <section class="topic-section is-collapsed" id="sec-13-async-and-await" data-topic="13-async-and-await">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-13-async-and-await">
                     <div class="topic-header-main">
-                        <span class="topic-badge">12</span>
-                        <h2 id="12-async-and-await" class="topic-title">Async / Await<a class="headerlink" href="#12-async-and-await" title="Permanent link">#</a></h2>
+                        <span class="topic-badge">13</span>
+                        <h2 id="13-async-and-await" class="topic-title">Async / Await<a class="headerlink" href="#13-async-and-await" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -1656,12 +1784,12 @@ print("Build query URL passed!")
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-12-async-and-await">
-                    <div class="part-section is-collapsed" id="12-async-and-await-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-async-and-await-theory">
+                <div class="topic-content" id="content-13-async-and-await">
+                    <div class="part-section is-collapsed" id="13-async-and-await-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-async-and-await-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-async-and-await-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-async-and-await-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -1671,7 +1799,7 @@ print("Build query URL passed!")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-12-async-and-await-theory">
+                        <div class="part-body" id="body-13-async-and-await-theory">
                             <ul class="meta-strip">
                                 <li><b>Coroutine Function</b> <code class="big-o o-great">async def fetch(): ...</code></li>
                                 <li><b>Yield Control</b> <code class="big-o o-great">await coroutine()</code></li>
@@ -1734,11 +1862,11 @@ if __name__ == "__main__":
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="12-async-and-await-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-async-and-await-questions">
+                    <div class="part-section is-collapsed" id="13-async-and-await-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-async-and-await-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#12-async-and-await-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-async-and-await-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -1749,7 +1877,7 @@ if __name__ == "__main__":
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-12-async-and-await-questions">
+                        <div class="part-body" id="body-13-async-and-await-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Write an asynchronous function <code>check_all_services(endpoints: list[tuple[str, float]]) -&gt; dict[str, str]</code> that queries multiple service endpoints concurrently using <code>asyncio.gather()</code>. Simulate network latency using <code>asyncio.sleep()</code>, and return a dictionary mapping each service name to its health status.</p>
@@ -1800,12 +1928,12 @@ asyncio.run(run_tests())
                 </div>
             </div>
 
-            <!-- ============================================================ 13 -->
-            <section class="topic-section is-collapsed" id="sec-13-object-oriented-programming" data-topic="13-object-oriented-programming">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-13-object-oriented-programming">
+            <!-- ============================================================ 14 -->
+            <section class="topic-section is-collapsed" id="sec-14-object-oriented-programming" data-topic="14-object-oriented-programming">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-14-object-oriented-programming">
                     <div class="topic-header-main">
-                        <span class="topic-badge">13</span>
-                        <h2 id="13-object-oriented-programming" class="topic-title">Object-Oriented Programming (OOP)<a class="headerlink" href="#13-object-oriented-programming" title="Permanent link">#</a></h2>
+                        <span class="topic-badge">14</span>
+                        <h2 id="14-object-oriented-programming" class="topic-title">Object-Oriented Programming (OOP)<a class="headerlink" href="#14-object-oriented-programming" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -1815,12 +1943,12 @@ asyncio.run(run_tests())
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-13-object-oriented-programming">
-                    <div class="part-section is-collapsed" id="13-object-oriented-programming-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-object-oriented-programming-theory">
+                <div class="topic-content" id="content-14-object-oriented-programming">
+                    <div class="part-section is-collapsed" id="14-object-oriented-programming-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-object-oriented-programming-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-object-oriented-programming-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#14-object-oriented-programming-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -1830,7 +1958,7 @@ asyncio.run(run_tests())
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-13-object-oriented-programming-theory">
+                        <div class="part-body" id="body-14-object-oriented-programming-theory">
                             <ul class="meta-strip">
                                 <li><b>Class &amp; Instance</b> <code class="big-o o-great">class BankAccount: / acc = BankAccount()</code></li>
                                 <li><b>Initializer</b> <code class="big-o o-great">def __init__(self, ...):</code></li>
@@ -1908,11 +2036,11 @@ print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="13-object-oriented-programming-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-object-oriented-programming-questions">
+                    <div class="part-section is-collapsed" id="14-object-oriented-programming-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-object-oriented-programming-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-object-oriented-programming-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#14-object-oriented-programming-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -1923,7 +2051,7 @@ print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-13-object-oriented-programming-questions">
+                        <div class="part-body" id="body-14-object-oriented-programming-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Design an InventoryItem class that tracks product name, stock quantity, and price. Add methods to restock items, record sales (raising a ValueError if stock is insufficient), and calculate the total inventory valuation.</p>
@@ -1991,12 +2119,12 @@ print("Inventory item passed!")
                 </div>
             </div>
 
-            <!-- ============================================================ 14 -->
-            <section class="topic-section is-collapsed" id="sec-14-everyday-error-handling" data-topic="14-everyday-error-handling">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-14-everyday-error-handling">
+            <!-- ============================================================ 15 -->
+            <section class="topic-section is-collapsed" id="sec-15-everyday-error-handling" data-topic="15-everyday-error-handling">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-15-everyday-error-handling">
                     <div class="topic-header-main">
-                        <span class="topic-badge">14</span>
-                        <h2 id="14-everyday-error-handling" class="topic-title">Everyday Error Handling<a class="headerlink" href="#14-everyday-error-handling" title="Permanent link">#</a></h2>
+                        <span class="topic-badge">15</span>
+                        <h2 id="15-everyday-error-handling" class="topic-title">Everyday Error Handling<a class="headerlink" href="#15-everyday-error-handling" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -2006,12 +2134,12 @@ print("Inventory item passed!")
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-14-everyday-error-handling">
-                    <div class="part-section is-collapsed" id="14-everyday-error-handling-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-everyday-error-handling-theory">
+                <div class="topic-content" id="content-15-everyday-error-handling">
+                    <div class="part-section is-collapsed" id="15-everyday-error-handling-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-everyday-error-handling-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#14-everyday-error-handling-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#15-everyday-error-handling-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -2021,7 +2149,7 @@ print("Inventory item passed!")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-14-everyday-error-handling-theory">
+                        <div class="part-body" id="body-15-everyday-error-handling-theory">
                             <ul class="meta-strip">
                                 <li><b>Try / Except</b> <code class="big-o o-great">Catch specific exceptions</code></li>
                                 <li><b>Common Errors</b> <code class="big-o o-great">ValueError, KeyError</code></li>
@@ -2065,11 +2193,11 @@ print(f"Using {retries} retries.")
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="14-everyday-error-handling-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-14-everyday-error-handling-questions">
+                    <div class="part-section is-collapsed" id="15-everyday-error-handling-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-everyday-error-handling-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#14-everyday-error-handling-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#15-everyday-error-handling-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -2080,7 +2208,7 @@ print(f"Using {retries} retries.")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-14-everyday-error-handling-questions">
+                        <div class="part-body" id="body-15-everyday-error-handling-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Write a function that safely divides two numbers and returns None if division by zero occurs.</p>
@@ -2107,12 +2235,12 @@ print("Safe divide passed!")
                 </div>
             </section>
 
-            <!-- ============================================================ 15 -->
-            <section class="topic-section is-collapsed" id="sec-15-modules-and-imports" data-topic="15-modules-and-imports">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-15-modules-and-imports">
+            <!-- ============================================================ 16 -->
+            <section class="topic-section is-collapsed" id="sec-16-modules-and-imports" data-topic="16-modules-and-imports">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-16-modules-and-imports">
                     <div class="topic-header-main">
-                        <span class="topic-badge">15</span>
-                        <h2 id="15-modules-and-imports" class="topic-title">Modules &amp; Imports<a class="headerlink" href="#15-modules-and-imports" title="Permanent link">#</a></h2>
+                        <span class="topic-badge">16</span>
+                        <h2 id="16-modules-and-imports" class="topic-title">Modules &amp; Imports<a class="headerlink" href="#16-modules-and-imports" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -2122,12 +2250,12 @@ print("Safe divide passed!")
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-15-modules-and-imports">
-                    <div class="part-section is-collapsed" id="15-modules-and-imports-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-modules-and-imports-theory">
+                <div class="topic-content" id="content-16-modules-and-imports">
+                    <div class="part-section is-collapsed" id="16-modules-and-imports-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-16-modules-and-imports-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#15-modules-and-imports-theory" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#16-modules-and-imports-theory" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-arrow" aria-hidden="true">
@@ -2137,7 +2265,7 @@ print("Safe divide passed!")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-15-modules-and-imports-theory">
+                        <div class="part-body" id="body-16-modules-and-imports-theory">
                             <ul class="meta-strip">
                                 <li><b>Import Syntax</b> <code class="big-o o-great">import mod / from mod import fn</code></li>
                                 <li><b>Script Guard</b> <code class="big-o o-great">if __name__ == "__main__":</code></li>
@@ -2197,11 +2325,11 @@ if __name__ == "__main__":
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="15-modules-and-imports-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-15-modules-and-imports-questions">
+                    <div class="part-section is-collapsed" id="16-modules-and-imports-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-16-modules-and-imports-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#15-modules-and-imports-questions" title="Permanent link">#</a></h3>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#16-modules-and-imports-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -2212,7 +2340,7 @@ if __name__ == "__main__":
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-15-modules-and-imports-questions">
+                        <div class="part-body" id="body-16-modules-and-imports-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Write a modular configuration loader function <code>load_config(raw_json: str, required_keys: list[str]) -&gt; dict</code> that parses a JSON configuration string and verifies that all required keys are present. If the JSON is malformed or any required key is missing, raise a descriptive ValueError.</p>
