@@ -1,0 +1,32 @@
+🚀 Day 10 — I built MCP & Evals Lab: how an AI app gets new abilities through MCP, and how you test it before users depend on it.
+
+An LLM's knowledge is frozen. Ask it for a live cricket score and it either refuses or makes one up. The Model Context Protocol (MCP) fixes that with a standard plug: any app can discover and call any tool server. 🔌
+
+What MCP & Evals Lab does:
+🔌 MCP Plumbing: starts a cricket MCP server as a child process and shows the raw JSON-RPC steps (initialize, tools/list, tools/call). No LLM, no API key.
+🏏 Cricket Agent: the model reads the MCP tool menu and picks a tool; my code runs it through MCP and sends the result back. Turn tools Off and watch it refuse or invent a score.
+🧪 Eval Suite: five test cases, two checks in code: did the agent call the right tool, and does the answer contain the key fact? Run "Both" to score with vs. without MCP side by side (usually 5/5 vs 1/5).
+
+The 4 big ideas that clicked for me today:
+1) The model never runs a tool. It writes a "prescription"; your code fills it. That's where control and safety live.
+2) MCP turns N apps x M tools integrations into N + M. Write the server once, any MCP client can use it.
+3) The tool description is the model's only manual. Vague descriptions mean wrong tool picks.
+4) "It worked when I tried it" is not a test. Evals turn vibes into a score you can track on every change.
+
+Built with:
+🐍 Python + Flask
+🔌 MCP Python SDK (FastMCP server, stdio transport)
+🤖 Groq (gpt-oss-20b) with tool calling, parallel eval runs
+📦 Docker behind shared Nginx routing with rate limiting
+ⓘ An explainer page per demo: request flow, code flow, real source
+
+And that's the real unlock here: I'm learning straight from @Shivank Agrawal, an industry expert who doesn't just teach theory but builds real AI systems every day and shows us exactly how they work. 🙌
+
+This is Day 10 of my AI Engineering journey with @Scaler, and it changed how I think about agents: give them tools through a standard plug, then prove they use them right.
+
+🔗 Try it live: https://app.techtoday.click/mcp-evals/
+📚 Theory & notes: https://techtoday.click/study/ai-demos/mcp-evals.html
+
+👉 Which tool would you plug into your AI assistant first through MCP?
+
+#AIEngineering #MCP #ModelContextProtocol #LLMEvals #AgenticAI #Groq #Python #Docker #BuildInPublic #100DaysOfCode
