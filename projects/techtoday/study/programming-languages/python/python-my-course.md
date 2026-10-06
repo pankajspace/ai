@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, OOP, modules & imports, and async/await.
+Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, comprehensions, functions, async/await, OOP, error handling, and modules & imports.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -10,25 +10,27 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 
 # Python My Course
 
-The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, practical OOP solutions, modules & imports, and async/await concurrency.
+The high-yield Python course reference: common everyday syntax, type hints, keywords, core collections, functions, async/await concurrency, practical OOP solutions, error handling, and modules & imports.
 
 <a id="table-of-contents"></a>
 
 ## Table of Contents
 
 1. [Variables, Types & Casting](#1-variables-types-and-casting)
-2. [Everyday String Operations](#2-everyday-string-operations)
-3. [Operators, Truthiness & Conditionals](#3-operators-truthiness-and-conditionals)
-4. [Loops & Iteration](#4-loops-and-iteration)
-5. [Lists & Slicing](#5-lists-and-slicing)
-6. [Dictionaries](#6-dictionaries)
-7. [Tuples & Sets](#7-tuples-and-sets)
-8. [List Comprehensions](#8-list-comprehensions)
-9. [Functions & Arguments](#9-functions-and-arguments)
-10. [Everyday Error Handling](#10-everyday-error-handling)
-11. [Object-Oriented Programming (OOP)](#11-object-oriented-programming)
-12. [Modules & Imports](#12-modules-and-imports)
-13. [Async / Await](#13-async-and-await)
+2. [Type Hints](#2-type-hints)
+3. [Keywords in Python](#3-keywords-in-python)
+4. [Everyday String Operations](#4-everyday-string-operations)
+5. [Operators, Truthiness & Conditionals](#5-operators-truthiness-and-conditionals)
+6. [Loops & Iteration](#6-loops-and-iteration)
+7. [Lists & Slicing](#7-lists-and-slicing)
+8. [Dictionaries](#8-dictionaries)
+9. [Tuples & Sets](#9-tuples-and-sets)
+10. [List Comprehensions](#10-list-comprehensions)
+11. [Functions & Arguments](#11-functions-and-arguments)
+12. [Async / Await](#12-async-and-await)
+13. [Object-Oriented Programming (OOP)](#13-object-oriented-programming)
+14. [Everyday Error Handling](#14-everyday-error-handling)
+15. [Modules & Imports](#15-modules-and-imports)
 
 ---
 
@@ -36,7 +38,7 @@ The high-yield Python course reference: common everyday syntax, core collections
 
 ## Unit 1 — Daily Syntax & Logic
 
-The daily syntax: declaring variables, converting types, manipulating text, evaluating conditions, and writing basic loops.
+The daily syntax: declaring variables, type hints, reserved keywords, strings, operators, truthiness, and loops.
 
 <a id="1-variables-types-and-casting"></a>
 
@@ -113,54 +115,284 @@ print("Sum valid integers passed!")
 
 ---
 
-<a id="2-everyday-string-operations"></a>
+<a id="2-type-hints"></a>
 
-## 2. Everyday String Operations
+## 2. Type Hints
 
-- **Formatting** `f"{variable}" interpolation` <!-- great -->
-- **Whitespace Trim** `.strip(), .lstrip(), .rstrip()` <!-- great -->
-- **Search & Replace** `.replace(), in keyword` <!-- good -->
+- **Variable & Return Hints** `x: int = 1, def fn() -> str:` <!-- great -->
+- **Built-in Generics (3.9+)** `list[str], dict[str, int]` <!-- great -->
+- **Union & Optional (3.10+)** `str | None, int | float` <!-- good -->
 
-Strings are one of the most commonly used data types in Python. Python strings are immutable (they cannot be changed in place; operations return a new string). Formatted string literals (f-strings) are the modern, standard way to embed variables and expressions inside text.
+Python is dynamically typed, but modern Python (PEP 484 and Python 3.9+) supports **type hints** (type annotations). Type hints do not change runtime behavior—Python will not throw an error if types don't match—but they make code self-documenting, provide rich IDE autocomplete, and allow static analysis tools like `mypy` or `pyright` to catch bugs before runtime.
+
+> **Analogy** 🎬
+>
+> **Picture it — Blueprint Annotations on Plumbing Pipes**
+>
+> Without type hints, all pipes in a building look identical from the outside; water, gas, or electrical wiring could be routed through any pipe until something leaks or sparks at runtime. Adding type hints is like stenciling labels on the pipes ("Cold Water Only", "Natural Gas", "Max 120V"). The pipes still carry whatever is pumped through them, but inspectors (static type checkers) and technicians (your IDE) immediately catch dangerous mismatches before opening the valve.
+
+Key everyday concepts and syntax:
+1. Basic variable annotations: `name: str = "Alice"`, `age: int = 30`, `is_active: bool = True`
+2. Function parameter and return types: `def greet(name: str) -> str:` and `def process() -> None:`
+3. Built-in generic collections (Python 3.9+): `list[str]`, `dict[str, int]`, `set[int]`, `tuple[str, int]` directly without importing from `typing`
+4. Modern Union and Optional syntax (Python 3.10+): `int | float` replaces legacy `Union[int, float]`, and `str | None` replaces `Optional[str]`
+5. Specialized types from `typing`: `Any` (opts out of type checking), `Callable[[int], bool]` (function arguments), `Literal["json", "csv"]` (exact allowed values)
+6. Type Aliases (Python 3.12+): `type Point = tuple[float, float]` to give meaningful names to complex composite types
+
+```python
+from typing import Callable, Any
+
+# 1. Variables and modern built-in generics (Python 3.9+)
+user_id: int = 101
+tags: list[str] = ["python", "backend"]
+metadata: dict[str, Any] = {"version": 1.2, "active": True}
+
+# 2. Modern union and optional syntax (Python 3.10+)
+def find_user(user_id: int) -> dict[str, str] | None:
+    if user_id == 101:
+        return {"name": "Alice", "role": "engineer"}
+    return None
+
+# 3. Callable parameter type hints
+def apply_operation(values: list[int], operation: Callable[[int], int]) -> list[int]:
+    return [operation(x) for x in values]
+
+squared = apply_operation([1, 2, 3], lambda x: x ** 2)
+print(squared)  # [1, 4, 9]
+
+user = find_user(101)
+if user is not None:
+    print(f"Found: {user['name']}")
+```
+
+- **Strength — Catch Bugs Early & Instant IDE Autocomplete** Static analysis tools catch `NoneType` errors, wrong argument counts, and invalid types before code runs, while IDEs provide instant auto-completion and safe refactoring.
+- **Weakness — No Runtime Validation by Default** Type hints are ignored by Python's runtime interpreter; passing an integer where a string is annotated will not raise an exception unless explicitly checked with `isinstance()` or Pydantic.
+
+**Interview question**
+
+*Write a type-annotated function `parse_record(raw: dict[str, Any]) -> tuple[str, int, float] | None` that safely validates and extracts a user's name (`str`), age (`int`), and account balance (`float`). If any key is missing or conversion fails, return `None`.*
+
+Access required dictionary keys inside a `try / except (KeyError, ValueError, TypeError)` block, cast each field to its expected type, and return the validated tuple. Return `None` if an exception occurs.
+
+**Answer — Validate and Parse Record**
+
+```python
+from typing import Any
+
+def parse_record(raw: dict[str, Any]) -> tuple[str, int, float] | None:
+    try:
+        name = str(raw["name"])
+        age = int(raw["age"])
+        balance = float(raw["balance"])
+        return (name, age, balance)
+    except (KeyError, ValueError, TypeError):
+        return None
+
+# Test cases
+record_ok = {"name": "Charlie", "age": "29", "balance": "150.50"}
+parsed = parse_record(record_ok)
+assert parsed == ("Charlie", 29, 150.5)
+
+record_bad = {"name": "Bob", "balance": "invalid"}
+assert parse_record(record_bad) is None
+
+empty_record = {}
+assert parse_record(empty_record) is None
+print("Parse record with type hints passed!")
+```
+
+> **Key idea**
+>
+> Type hints do not enforce types at runtime. Use tools like `mypy` or `ruff` in your CI pipeline, and use validation libraries like Pydantic when handling untrusted user input.
+
+---
+
+<a id="3-keywords-in-python"></a>
+
+## 3. Keywords in Python
+
+- **Core Reserved Words** `35 keywords in keyword.kwlist` <!-- great -->
+- **Control & Logic** `if, for, while, def, return, and, or` <!-- great -->
+- **Inspection & Testing** `import keyword; keyword.iskeyword()` <!-- good -->
+
+Keywords in Python are reserved words that define the language's fundamental syntax, grammar, and control flow. You cannot use keywords as variable names, function names, or identifiers. Python provides 35 keywords that govern literals (`True`, `False`, `None`), conditional branching (`if`, `elif`, `else`), loops (`for`, `while`, `break`, `continue`, `pass`), functions and generators (`def`, `return`, `lambda`, `yield`), logic, identity and membership (`is`, `in`, `not`, `and`, `or`), and error handling (`try`, `except`, `finally`, `raise`).
+
+> **Analogy** 🎬
+>
+> **Picture it — Traffic Control Signs on City Roads**
+>
+> Keywords are like official municipal traffic signs: STOP, ONE WAY, DO NOT ENTER, SPEED LIMIT, YIELD. A resident cannot paint their mailbox to look like a STOP sign or use traffic sign words as a street name because the traffic system relies on them having fixed, unambiguous rules. When Python's parser sees `def`, `if`, `while`, or `return`, it knows exactly what grammar rule to enforce without hesitation.
+
+Key everyday keyword categories:
+1. **Literals & Singletons (`True`, `False`, `None`):** Capitalized constants representing boolean truth and the absence of a value.
+2. **Branching & Decisions (`if`, `elif`, `else`):** Directs program execution based on boolean conditions.
+3. **Iteration & Loop Control (`for`, `while`, `break`, `continue`, `pass`):** `for` iterates sequences; `while` loops until a condition fails; `break` exits immediately; `continue` skips to next iteration; `pass` acts as a no-op placeholder.
+4. **Functions & Generators (`def`, `return`, `lambda`, `yield`):** `def` defines a function; `return` outputs a result; `lambda` creates an inline anonymous function; `yield` produces values lazily in a generator stream.
+5. **Logic, Identity & Membership (`and`, `or`, `not`, `is`, `in`):** Short-circuit logic, object identity checks (`x is None`), and containment tests (`item in sequence`).
+6. **Error Handling (`try`, `except`, `finally`, `raise`):** Catches and recovers from exceptions gracefully, guarantees cleanup (`finally`), and raises errors.
+
+```python
+import keyword
+
+# 1. Checking reserved keywords dynamically
+print(f"Total Python keywords: {len(keyword.kwlist)}")
+print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")            # True
+print(f"Is 'variable' a keyword? {keyword.iskeyword('variable')}")  # False
+
+# 2. Literals and conditional branching (True, False, None, if, elif, else)
+user_status = "active"
+is_admin = False
+token = None
+
+if user_status == "active" and (is_admin or token is None):
+    access = "standard"
+elif user_status == "banned":
+    access = "denied"
+else:
+    access = "guest"
+print(f"Access granted: {access}")
+
+# 3. Loops, break, continue, and pass (placeholder)
+valid_numbers = []
+for n in [1, 2, -5, 4, 10]:
+    if n < 0:
+        continue  # Skip negatives
+    if n > 8:
+        break     # Stop processing
+    valid_numbers.append(n)
+print(f"Valid numbers: {valid_numbers}")  # [1, 2, 4]
+
+def placeholder_service():
+    pass  # Syntactically valid empty function
+
+# 4. Functions, return, lambda, and yield (generators)
+def calculate_tax(amount: float) -> float:
+    return amount * 0.08
+
+multiplier = lambda x, factor=2: x * factor
+print(f"Tax: {calculate_tax(100):.2f}, Double: {multiplier(5)}")
+
+def stream_batches(items: list, batch_size: int):
+    for i in range(0, len(items), batch_size):
+        yield items[i:i + batch_size]  # Generates batches lazily
+
+batches = list(stream_batches([1, 2, 3, 4, 5], 2))
+print(f"Batches: {batches}")  # [[1, 2], [3, 4], [5]]
+```
+
+- **Strength — Compact, Readable Grammar** Python's small keyword vocabulary (only 35 words) reads like structured English, making control flow instantly recognizable.
+- **Weakness — SyntaxError on Keyword Identifiers** Attempting to name a variable or JSON key after a keyword (e.g. `class = "math"` or `def = 5`) causes a fatal `SyntaxError`. In such cases, append a trailing underscore by convention (e.g. `class_ = "math"`).
+
+**Interview question**
+
+*Write a function `validate_identifier_name(name: str) -> tuple[bool, str]` that checks if a proposed variable name is valid in Python. Return `(False, "Reserved keyword")` if it matches a Python keyword, `(False, "Invalid identifier syntax")` if it's not a valid Python identifier, and `(True, "Valid identifier")` if it is safe to use.*
+
+Verify the input is a non-empty string, check `keyword.iskeyword(name)`, and verify `name.isidentifier()`.
+
+**Answer — Validate Identifier Name**
+
+```python
+import keyword
+
+def validate_identifier_name(name: str) -> tuple[bool, str]:
+    if not isinstance(name, str) or not name:
+        return (False, "Invalid identifier syntax")
+    if keyword.iskeyword(name):
+        return (False, "Reserved keyword")
+    if not name.isidentifier():
+        return (False, "Invalid identifier syntax")
+    return (True, "Valid identifier")
+
+# Test cases
+assert validate_identifier_name("user_id") == (True, "Valid identifier")
+assert validate_identifier_name("total_count") == (True, "Valid identifier")
+assert validate_identifier_name("for") == (False, "Reserved keyword")
+assert validate_identifier_name("class") == (False, "Reserved keyword")
+assert validate_identifier_name("2nd_place") == (False, "Invalid identifier syntax")
+assert validate_identifier_name("my-var") == (False, "Invalid identifier syntax")
+assert validate_identifier_name("") == (False, "Invalid identifier syntax")
+print("Validate identifier name passed!")
+```
+
+> **Key idea**
+>
+> Python has only 35 reserved keywords that cannot be used as variable or function names. Use `keyword.iskeyword(name)` to verify programmatically, and use a trailing underscore (such as `class_` or `type_`) if you must represent a domain concept named after a keyword.
+
+---
+
+<a id="4-everyday-string-operations"></a>
+
+## 4. Everyday String Operations
+
+- **Formatting & Operators** `f"{var}", +, *, in, not in` <!-- great -->
+- **Whitespace & Cleaning** `.strip(), .split(), .join()` <!-- great -->
+- **Search & Inspection** `.replace(), .startswith(), in` <!-- good -->
+
+Strings are one of the most commonly used data types in Python. Python strings are immutable (they cannot be changed in place; operations return a new string). Formatted string literals (f-strings) are the modern, standard way to embed variables and expressions inside text. Python also provides native string operators like `+` for concatenation, `*` for repetition, and the membership operators `in` and `not in` to test for substrings.
 
 > **Analogy** 🎬
 >
 > **Picture it — A Template Letter with Fill-in Blanks**
 >
-> An f-string `f"Hello {name}, your total is ${price:.2f}"` is like a printed letter with blank brackets. Python reads the variables, formats them directly into the blanks, and produces the final letter in a single pass.
+> An f-string `f"Hello {name}, your total is ${price:.2f}"` is like a printed letter with blank brackets. Python reads the variables, formats them directly into the blanks, and produces the final letter in a single pass. The `in` operator is like using Ctrl+F on the document to quickly see if a keyword appears anywhere on the page.
 
-Most commonly used string methods:
-1. `f"{name}"`: Embeds variable or expression inside text
+Most commonly used string methods and operators:
+1. `f"{name}"`: Embeds variable or expression inside text (f-strings)
 2. `f"{price:.2f}"`: Formats float with 2 decimal places
-3. `s.strip()`: Trims leading and trailing spaces or newlines
-4. `s.split(",")`: Splits a string by delimiter into a list of strings
-5. `", ".join(list_of_strings)`: Joins a list of strings into one string
-6. `s.lower()` and `s.upper()`: Changes text casing
-7. `s.replace(old, new)`: Replaces occurrences of a substring
-8. `s.startswith(prefix)` and `s.endswith(suffix)`: Checks prefix or suffix
+3. Membership operators `in` and `not in`: Substring checks (`"@" in email`, `"admin" not in roles`)
+4. String operators `+` and `*`: Concatenation (`first + " " + last`) and repetition (`"=" * 30`)
+5. Safe identity check: `if text is None:` or `if text is not None:` (never use `text is ""` or `text is "hello"`)
+6. `s.strip()`: Trims leading and trailing spaces or newlines
+7. `s.split(",")`: Splits a string by delimiter into a list of strings
+8. `", ".join(list_of_strings)`: Joins a list of strings into one string
+9. `s.lower()` and `s.upper()`: Changes text casing
+10. `s.replace(old, new)`: Replaces occurrences of a substring
+11. `s.startswith(prefix)` and `s.endswith(suffix)`: Checks prefix or suffix
 
 ```python
-# Modern f-strings
+# 1. Modern f-strings and string operators (+, *)
 product = "Coffee Mug"
 price = 12.994
 print(f"Item: {product} | Cost: ${price:.2f}")  # Item: Coffee Mug | Cost: $12.99
 
-# Cleaning user inputs
+divider = "=" * 30
+header = "[ " + product.upper() + " ]"
+print(f"{header}
+{divider}")
+
+# 2. Membership operators (in and not in)
+user_email = "alex@company.com"
+if "@" in user_email and "." in user_email:
+    print("Valid email structure.")
+
+if "admin" not in user_email:
+    print("Standard user account.")
+
+# 3. Cleaning user inputs
 raw_email = "   Alex@Company.COM \n"
 clean_email = raw_email.strip().lower()
 print(clean_email)  # alex@company.com
 
-# Splitting and joining
+# 4. Splitting and joining
 csv_row = "laptop,electronics,999"
 parts = csv_row.split(",")
 print(parts)  # ['laptop', 'electronics', '999']
 
 joined = " -> ".join(parts)
 print(joined)  # laptop -> electronics -> 999
+
+# 5. Safe None check vs value equality
+user_input = None
+if user_input is None:
+    print("No input provided.")
+
+# Value equality vs identity
+status = "active"
+print(status == "active")  # True (always use == for string comparisons)
 ```
 
-- **Strength — Clean F-strings** F-strings can evaluate expressions inline (like `f"{total * 1.08:.2f}"`) cleanly and quickly.
-- **Weakness — Passing None to String Methods** Calling `.strip()` or `.lower()` on a variable that happens to be `None` throws an `AttributeError`.
+- **Strength — Clean F-strings & Native Operators** F-strings and operators like `in`, `+`, and `*` make text formatting, substring search, and visual dividers clean and readable without helper functions.
+- **Weakness — Passing None to String Methods** Calling `.strip()` or `.lower()` on a variable that happens to be `None` throws an `AttributeError`. Always check `if val is not None:` first.
 
 **Interview question**
 
@@ -172,69 +404,137 @@ Use `s.split()` to automatically split words by any amount of consecutive whites
 
 ```python
 def normalize_name(raw_name: str) -> str:
+    if raw_name is None:
+        return ""
     words = raw_name.split()
-    return " ".join(word.capitalize() for word in words)
+    return " ".join(w.capitalize() for w in words)
 
 # Test cases
-assert normalize_name("   john   DOE  ") == "John Doe"
-assert normalize_name("alice") == "Alice"
-assert normalize_name("  ") == ""
+assert normalize_name("  alex   MORGAN  ") == "Alex Morgan"
+assert normalize_name("john") == "John"
+assert normalize_name("   ") == ""
+assert normalize_name(None) == ""
 print("Normalize name passed!")
 ```
 
 > **Key idea**
 >
-> When splitting on whitespace, use `s.split()` without arguments. It automatically strips outer spaces and collapses multiple spaces between words.
+> Use the `in` and `not in` operators for fast substring membership checks (`"@" in email`). When checking whether a string variable is missing, always check `if s is None:`. For comparing string values, always use `==` and `!=` (never `is` or `is not`).
 
 ---
 
-<a id="3-operators-truthiness-and-conditionals"></a>
+<a id="5-operators-truthiness-and-conditionals"></a>
 
-## 3. Operators, Truthiness & Conditionals
+## 5. Operators, Truthiness & Conditionals
 
-- **Division** `/ returns float, // returns int floor` <!-- great -->
-- **Truthiness** `Empty collections and 0 are False` <!-- great -->
-- **Ternary** `val if condition else alt` <!-- good -->
+- **Division & Remainder** `/, //, %, divmod()` <!-- great -->
+- **Identity & Membership** `is, is not, in, not in` <!-- great -->
+- **Logic & Chaining** `and, or, not, 18 <= age < 65` <!-- good -->
 
-Python uses standard comparison operators (`==`, `!=`, `<`, `>`, `<=`, `>=`) and logical operators (`and`, `or`, `not`). Every object in Python has a boolean value: empty lists, empty dictionaries, empty strings, `0`, and `None` evaluate to `False`; populated collections and non-zero numbers evaluate to `True`.
+Python features rich, expressive operators across several key categories:
+- **True Division (`/`), Floor Division (`//`), and Modulo (`%`):** `/` always produces a floating-point result (`10 / 2 == 5.0`). `//` divides and truncates down towards negative infinity (`7 // 2 == 3`). `%` computes the integer remainder (`7 % 2 == 1`).
+- **Identity operators (`is`, `is not`):** Test if two variables point to the exact same object in memory (`id(a) == id(b)`).
+- **Membership operators (`in`, `not in`):** Test whether an item exists inside a sequence or collection (strings, lists, tuples, sets, dictionaries).
+- **Comparison operators (`==`, `!=`, `<`, `>`, `<=`, `>=`):** Compare values, including Python's intuitive comparison chaining (`18 <= age < 65`).
+- **Logical operators (`and`, `or`, `not`):** Combine boolean conditions with short-circuit evaluation.
+- **Assignment expressions (Walrus `:=`):** Assign a variable inline within an expression.
+
+Every object in Python also has an innate truth value: empty collections (`[]`, `""`, `{}`), `0`, and `None` evaluate to `False`; populated collections and non-zero numbers evaluate to `True`.
 
 > **Analogy** 🎬
 >
-> **Picture it — An Empty Box vs A Packed Box**
+> **Picture it — Checking ID Badges vs Checking Outfits**
 >
-> When Python asks `if items:`, it simply checks if the box has anything inside it. If the box is empty (`[]`, `""`, `{}`), Python sees it as empty (`False`). If there is even one item inside, it sees it as populated (`True`).
+> The equality operator `==` is like checking if two people are wearing identical outfits: if both shirts and shoes match, `a == b` is `True`. The identity operator `is` is like checking their government ID numbers: even if identical twins wear the exact same clothes, they are two separate people in memory (`a is b` is `False`). You only use `is` when checking if two references point to the exact same unique individual in memory (most notably `x is None`).
 
-Common patterns:
-1. Checking emptiness: `if not items:` (clean and Pythonic, no need for `len(items) == 0`)
-2. Checking None: `if user is None:` (always use `is None`, not `== None`)
-3. Inline ternary expression: `status = "Approved" if score >= 70 else "Rejected"`
-4. Floor division vs true division: `7 / 2 == 3.5`, while `7 // 2 == 3`
-5. Modulo (remainder): `10 % 3 == 1` (frequently used to check even/odd with `n % 2 == 0`)
+Key everyday operators and patterns:
+1. **True division (`/`):** Always returns a float, even with evenly divisible integers (e.g. `10 / 2 == 5.0`, `7 / 2 == 3.5`).
+2. **Floor division (`//`):** Divides and rounds down to the nearest integer floor (e.g. `7 // 2 == 3`, `10 // 3 == 3`, `-7 // 2 == -4`). Ideal for pagination calculations: `total_pages = (total_items + per_page - 1) // per_page`.
+3. **Modulo remainder (`%`):** Returns the remainder after integer division (e.g. `7 % 2 == 1`, `10 % 3 == 1`). Common for checking even/odd (`n % 2 == 0`) and wrapping circular array indices (`(idx + 1) % len(items)`).
+4. **Combined quotient and remainder (`divmod(a, b)`):** Returns a tuple `(a // b, a % b)` in a single operation. Perfect for time unit conversions (`mins, secs = divmod(total_seconds, 60)`).
+5. **Identity operators (`is`, `is not`):** Tests exact object identity (`id(a) == id(b)`). Always use `is None` and `is not None` to test for `None`.
+6. **Identity vs Equality (`is` vs `==`):** `==` checks value equality; `is` checks memory address. Two lists `[1, 2] == [1, 2]` are equal (`True`), but `[1, 2] is [1, 2]` is `False`.
+7. **Membership operators (`in`, `not in`):** Tests if an item exists inside a container (`"admin" in roles`, `404 not in status_codes`, `"username" in user_dict`).
+8. **Chained comparisons:** Python evaluates chained inequalities naturally: `18 <= age < 65` (evaluates `age >= 18 and age < 65` with single evaluation).
+9. **Logical short-circuiting:** `and` stops at the first falsy operand; `or` stops at the first truthy operand and returns that value.
+10. **Emptiness checking:** `if not items:` (clean and Pythonic, no need for `len(items) == 0`).
+11. **Exponentiation (`**`):** `2 ** 8 == 256` (power operator).
+12. **Inline ternary conditional:** `status = "Approved" if score >= 70 else "Rejected"`.
+13. **Walrus operator (`:=`):** Assigns a variable inline within an expression, e.g. `if (n := len(data)) > 0:`.
 
 ```python
-# Truthiness in if statements
-cart = []
-if not cart:
-    print("Your cart is empty.")
+# 1. Division (/), Floor Division (//), and Modulo (%)
+print(10 / 2)     # 5.0 (True division ALWAYS returns a float)
+print(7 / 2)      # 3.5
+print(7 // 2)     # 3   (Floor division truncates towards -infinity)
+print(10 // 3)    # 3
+print(-7 // 2)    # -4  (Rounds DOWN to -4, not -3!)
+
+# Modulo operator (%)
+print(7 % 2)      # 1   (Remainder)
+print(12 % 4)     # 0   (Evenly divisible)
+
+# Practical 1: Pagination calculation with floor division
+total_records = 23
+per_page = 5
+total_pages = (total_records + per_page - 1) // per_page
+print(f"Total pages needed: {total_pages}")  # 5
+
+# Practical 2: Converting seconds into minutes and seconds
+total_seconds = 145
+minutes = total_seconds // 60   # 2 minutes
+seconds = total_seconds % 60    # 25 seconds
+print(f"Formatted time: {minutes}m {seconds}s")  # 2m 25s
+
+# Bonus: divmod() computes quotient and remainder together
+mins, secs = divmod(total_seconds, 60)
+assert (mins, secs) == (2, 25)
+
+# Practical 3: Circular index wrapping
+total_slides = 5
+for current_slide in range(5):
+    next_slide = (current_slide + 1) % total_slides
+    # Wraps: 0->1, 1->2, 2->3, 3->4, 4->0
+
+# 2. Identity operators (is, is not) vs Equality (==, !=)
+list_a = [1, 2, 3]
+list_b = [1, 2, 3]
+list_c = list_a
+
+print(list_a == list_b)  # True (same values)
+print(list_a is list_b)  # False (different objects in memory)
+print(list_a is list_c)  # True (exact same object)
 
 # Checking None safely
 current_user = None
 if current_user is None:
-    print("Please log in.")
+    print("User is not logged in.")
 
-# Ternary expression
+# 3. Membership operators (in, not in)
+allowed_roles = {"admin", "editor", "moderator"}
+if "editor" in allowed_roles:
+    print("Authorized.")
+
+blocked_ips = ["192.168.1.10", "10.0.0.99"]
+if "172.16.0.1" not in blocked_ips:
+    print("IP connection allowed.")
+
+# 4. Chained comparisons
+user_age = 28
+if 18 <= user_age < 65:
+    print("Working adult tier.")
+
+# 5. Ternary conditional and Walrus operator (:=)
 score = 82
 result = "Pass" if score >= 60 else "Fail"
-print(result)  # Pass
 
-# Checking membership
-admin_users = ["alice", "bob"]
-if "alice" in admin_users:
-    print("Access granted.")
+payload = "sensor_alpha_online"
+if (length := len(payload)) > 10:
+    print(f"Payload accepted with {length} characters.")
 ```
 
-- **Strength — Idiomatic Emptiness Checks** `if items:` and `if not items:` work identically across strings, lists, tuples, and dictionaries.
-- **Weakness — Default with or Trap** Using `x = val or 10` will override `0` because `0` is falsy (`0 or 10` returns `10`).
+- **Strength — Rich Mathematical & Expressive Operators** The distinction between `/` (float) and `//` (integer floor), combined with `%` and `divmod()`, makes arithmetic, pagination, and circular indexing explicit and concise.
+- **Weakness — Confusing is with ==** Using `is` for value equality (`if name is "alice":`) is dangerous because Python string and integer caching creates subtle, intermittent bugs that fail unpredictably.
 
 **Interview question**
 
@@ -265,13 +565,13 @@ print("FizzBuzz passed!")
 
 > **Key idea**
 >
-> If a value can legitimately be `0` or `False`, do not use `val = input_val or default`. Use `val = input_val if input_val is not None else default`.
+> Remember the three division operators: `/` always returns a float (`7 / 2 == 3.5`), `//` performs floor division (`7 // 2 == 3`), and `%` returns the remainder (`7 % 2 == 1`). Use `divmod(a, b)` when you need both quotient and remainder. For object identity, use `is` and `is not` only with singletons like `None`. Use `in` and `not in` for clean membership testing.
 
 ---
 
-<a id="4-loops-and-iteration"></a>
+<a id="6-loops-and-iteration"></a>
 
-## 4. Loops & Iteration
+## 6. Loops & Iteration
 
 - **Counting Loop** `for i in range(n):` <!-- great -->
 - **Index & Item** `for idx, item in enumerate(seq):` <!-- great -->
@@ -390,9 +690,9 @@ print("Find first negative passed!")
 
 The primary data structures used every day: ordered lists, fast key-value dictionaries, unique sets, and readable list comprehensions.
 
-<a id="5-lists-and-slicing"></a>
+<a id="7-lists-and-slicing"></a>
 
-## 5. Lists & Slicing
+## 7. Lists & Slicing
 
 - **Index Lookup** `O(1) instant access` <!-- great -->
 - **Append** `list.append(item) adds to end` <!-- great -->
@@ -470,9 +770,9 @@ print("Deduplicate passed!")
 
 ---
 
-<a id="6-dictionaries"></a>
+<a id="8-dictionaries"></a>
 
-## 6. Dictionaries
+## 8. Dictionaries
 
 - **Key Lookup** `Instant O(1) hash access` <!-- great -->
 - **Safe Retrieval** `d.get(key, default)` <!-- great -->
@@ -546,9 +846,9 @@ print("Word frequency passed!")
 
 ---
 
-<a id="7-tuples-and-sets"></a>
+<a id="9-tuples-and-sets"></a>
 
-## 7. Tuples & Sets
+## 9. Tuples & Sets
 
 - **Tuples** `Immutable fixed records: (x, y)` <!-- great -->
 - **Sets** `Unique values with fast in checks` <!-- great -->
@@ -622,9 +922,9 @@ print("Common users passed!")
 
 ---
 
-<a id="8-list-comprehensions"></a>
+<a id="10-list-comprehensions"></a>
 
-## 8. List Comprehensions
+## 10. List Comprehensions
 
 - **Syntax** `[expression for item in iterable]` <!-- great -->
 - **With Filter** `[expr for item in iterable if condition]` <!-- great -->
@@ -689,13 +989,13 @@ print("Filter CSV files passed!")
 
 <a id="unit-3"></a>
 
-## Unit 3 — Functions & Error Handling
+## Unit 3 — Functions & Asynchronous Programming
 
-Writing clean reusable functions, handling arguments, and catching runtime errors gracefully.
+Writing clean reusable functions, argument packing, and non-blocking asynchronous coroutines.
 
-<a id="9-functions-and-arguments"></a>
+<a id="11-functions-and-arguments"></a>
 
-## 9. Functions & Arguments
+## 11. Functions & Arguments
 
 - **Definition & Defaults** `def fn(param=default):` <!-- great -->
 - **Variable Positional** `*args (packed as tuple)` <!-- great -->
@@ -816,78 +1116,106 @@ print("Build query URL passed!")
 
 ---
 
-<a id="10-everyday-error-handling"></a>
+<a id="12-async-and-await"></a>
 
-## 10. Everyday Error Handling
+## 12. Async / Await
 
-- **Try / Except** `Catch specific exceptions safely` <!-- great -->
-- **Common Errors** `ValueError, KeyError, FileNotFoundError` <!-- great -->
-- **Cleanup** `finally block always runs` <!-- good -->
+- **Coroutine Function** `async def fetch(): ...` <!-- great -->
+- **Yield Control** `await coroutine()` <!-- great -->
+- **Concurrent Execution** `asyncio.gather(*tasks)` <!-- good -->
+- **Event Loop Runner** `asyncio.run(main())` <!-- good -->
 
-Errors happen: an API returns bad text, a user types letters into a number field, or a file doesn't exist. Python uses `try / except` blocks so your program handles errors gracefully instead of crashing abruptly.
+Modern Python supports asynchronous programming via `async` and `await` and the built-in `asyncio` library. Unlike multi-threading which relies on the operating system to switch between threads, asynchronous programming uses **cooperative multitasking** on a single thread. When a coroutine reaches an I/O operation (such as waiting for an HTTP API response or database query), it uses `await` to yield control back to the **event loop**, allowing other tasks to run in the meantime.
 
 > **Analogy** 🎬
 >
-> **Picture it — A Gymnast's Safety Net**
+> **Picture it — A Fast-Order Chef with Kitchen Timers**
 >
-> The code inside `try:` is the gymnast performing high on the trapeze. If they perform the routine smoothly, they finish and dismount. If they slip (an error occurs), the `except:` safety net catches them safely so nobody gets hurt.
+> In synchronous code, a chef puts bread in the toaster and stares blankly at it for 3 minutes before starting to boil water for tea. In asynchronous code (`async/await`), the chef pushes the toaster lever down (`await toast()`), immediately turns around to start the kettle (`await boil_water()`), and chops vegetables. When a timer dings, the chef picks up the finished item. One chef (a single thread), zero idle waiting time.
 
-Key patterns:
-1. `try ... except ValueError as e:`: Catches specific conversion errors
-2. `except (KeyError, IndexError):`: Catches multiple possible lookup errors
-3. `except Exception as e:`: Fallback for unexpected errors
-4. `finally:`: Code that is guaranteed to run (e.g. closing connections)
-5. `raise ValueError("Invalid value")`: Manually triggers an error
+Key async patterns and concepts:
+1. `async def`: Declares an asynchronous coroutine function. Calling it does not run the code immediately; it returns a coroutine object.
+2. `await`: Pauses execution of the coroutine until the awaited operation finishes, yielding the thread back to the event loop. `await` can only be used inside `async def` functions.
+3. `asyncio.run(main())`: The modern entry point to run an async program. It creates a new event loop, executes the passed coroutine, and closes the loop upon completion.
+4. `asyncio.gather(*tasks)`: Runs multiple coroutines concurrently and returns their aggregated results in the order the tasks were passed.
+5. `asyncio.sleep(delay)`: A non-blocking asynchronous sleep. In contrast, `time.sleep()` freezes the entire thread and blocks all concurrent tasks.
+6. `asyncio.create_task(coro)`: Schedules a coroutine to run immediately in the background on the event loop as an independent Task.
+7. I/O-bound vs CPU-bound: Use `asyncio` for I/O-bound operations (network requests, API calls, database queries, file transfers). For CPU-intensive operations (heavy number crunching, image processing), use `multiprocessing` to run tasks on separate CPU cores.
 
 ```python
-# Catching specific parsing errors
-raw_input = "forty-two"
+import asyncio
+import time
 
-try:
-    age = int(raw_input)
-    print(f"Age is {age}")
-except ValueError:
-    print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
-    age = 0
+# Asynchronous coroutine simulating non-blocking network I/O
+async def fetch_service_data(service_name: str, delay: float) -> dict:
+    await asyncio.sleep(delay)  # Non-blocking pause
+    return {"service": service_name, "status": "online", "latency_ms": int(delay * 1000)}
 
-# Safe dictionary lookups
-config = {"timeout": 30}
-try:
-    retries = config["retries"]
-except KeyError:
-    retries = 3
+async def main():
+    # Running multiple coroutines concurrently
+    start = time.perf_counter()
+    results = await asyncio.gather(
+        fetch_service_data("auth-service", 0.05),
+        fetch_service_data("billing-service", 0.03),
+        fetch_service_data("analytics-service", 0.01),
+    )
+    elapsed = time.perf_counter() - start
 
-print(f"Using {retries} retries.")
+    for res in results:
+        print(f"Service: {res['service']} | Status: {res['status']} ({res['latency_ms']}ms)")
+
+    # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
+    print(f"Concurrent fetch completed in {elapsed:.3f}s")
+
+# Entry point to execute top-level coroutine
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-- **Strength — Prevents Application Crashes** Catching specific errors lets services log failures and return fallback responses without taking down the server.
-- **Weakness — Bare `except: pass` Anti-pattern** Writing `except: pass` silences every error, including keyboard interrupts and variable typos, making debugging impossible.
+- **Strength — Massive I/O Concurrency with Low Overhead** A single process can easily manage tens of thousands of concurrent network connections without the high memory and context-switching overhead of OS threads.
+- **Weakness — Blocking Calls Freeze the Entire Event Loop** If you execute synchronous blocking code (like `time.sleep()` or synchronous `requests.get()`) inside a coroutine, the entire event loop stops, stalling every other concurrent task.
 
 **Interview question**
 
-*Write a function that safely divides two numbers and returns None if division by zero occurs.*
+*Write an asynchronous function `check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]` that queries multiple service endpoints concurrently using `asyncio.gather()`. Simulate network latency using `asyncio.sleep()`, and return a dictionary mapping each service name to its health status.*
 
-Wrap the division operation `a / b` inside a `try / except ZeroDivisionError` block.
+Define a helper coroutine `ping_endpoint(name: str, delay: float) -> tuple[str, str]` that awaits `asyncio.sleep(delay)` and returns `(name, "healthy")`. In `check_all_services`, construct task coroutines for each endpoint, execute them concurrently with `await asyncio.gather(*tasks)`, and convert the returned list of tuples into a dictionary.
 
-**Answer — Safe Division**
+**Answer — Concurrent Service Health Checker**
 
 ```python
-def safe_divide(a: float, b: float):
-    try:
-        return a / b
-    except ZeroDivisionError:
-        return None
+import asyncio
+
+async def ping_endpoint(name: str, delay: float) -> tuple[str, str]:
+    await asyncio.sleep(delay)
+    return (name, "healthy")
+
+async def check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]:
+    tasks = [ping_endpoint(name, delay) for name, delay in endpoints]
+    results = await asyncio.gather(*tasks)
+    return dict(results)
 
 # Test cases
-assert safe_divide(10, 2) == 5.0
-assert safe_divide(5, 0) is None
-assert safe_divide(0, 5) == 0.0
-print("Safe divide passed!")
+async def run_tests():
+    services = [("auth", 0.02), ("db", 0.01), ("cache", 0.01)]
+    status_map = await check_all_services(services)
+    assert status_map == {
+        "auth": "healthy",
+        "db": "healthy",
+        "cache": "healthy"
+    }
+
+    # Empty list test
+    empty_res = await check_all_services([])
+    assert empty_res == {}
+    print("Service health checker passed!")
+
+asyncio.run(run_tests())
 ```
 
 > **Key idea**
 >
-> Always specify the error you expect to catch (such as `except ValueError:`, not just `except:`).
+> Never invoke synchronous blocking calls (such as `time.sleep()` or synchronous file/network I/O) inside coroutines. If you must run blocking legacy code, delegate it to a worker thread using `await asyncio.to_thread(blocking_func, arg)`.
 
 ---
 
@@ -897,9 +1225,9 @@ print("Safe divide passed!")
 
 Modeling real-world entities, encapsulating state, and writing clean maintainable classes with methods and inheritance.
 
-<a id="11-object-oriented-programming"></a>
+<a id="13-object-oriented-programming"></a>
 
-## 11. Object-Oriented Programming (OOP)
+## 13. Object-Oriented Programming (OOP)
 
 - **Class & Instance** `class BankAccount: / acc = BankAccount()` <!-- great -->
 - **Initializer** `def __init__(self, ...):` <!-- great -->
@@ -1033,9 +1361,90 @@ print("Inventory item passed!")
 
 ---
 
-<a id="12-modules-and-imports"></a>
+<a id="unit-5"></a>
 
-## 12. Modules & Imports
+## Unit 5 — Error Handling & Modules
+
+Catching runtime exceptions gracefully, structuring scripts, and working with Python modules.
+
+<a id="14-everyday-error-handling"></a>
+
+## 14. Everyday Error Handling
+
+- **Try / Except** `Catch specific exceptions safely` <!-- great -->
+- **Common Errors** `ValueError, KeyError, FileNotFoundError` <!-- great -->
+- **Cleanup** `finally block always runs` <!-- good -->
+
+Errors happen: an API returns bad text, a user types letters into a number field, or a file doesn't exist. Python uses `try / except` blocks so your program handles errors gracefully instead of crashing abruptly.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Gymnast's Safety Net**
+>
+> The code inside `try:` is the gymnast performing high on the trapeze. If they perform the routine smoothly, they finish and dismount. If they slip (an error occurs), the `except:` safety net catches them safely so nobody gets hurt.
+
+Key patterns:
+1. `try ... except ValueError as e:`: Catches specific conversion errors
+2. `except (KeyError, IndexError):`: Catches multiple possible lookup errors
+3. `except Exception as e:`: Fallback for unexpected errors
+4. `finally:`: Code that is guaranteed to run (e.g. closing connections)
+5. `raise ValueError("Invalid value")`: Manually triggers an error
+
+```python
+# Catching specific parsing errors
+raw_input = "forty-two"
+
+try:
+    age = int(raw_input)
+    print(f"Age is {age}")
+except ValueError:
+    print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
+    age = 0
+
+# Safe dictionary lookups
+config = {"timeout": 30}
+try:
+    retries = config["retries"]
+except KeyError:
+    retries = 3
+
+print(f"Using {retries} retries.")
+```
+
+- **Strength — Prevents Application Crashes** Catching specific errors lets services log failures and return fallback responses without taking down the server.
+- **Weakness — Bare `except: pass` Anti-pattern** Writing `except: pass` silences every error, including keyboard interrupts and variable typos, making debugging impossible.
+
+**Interview question**
+
+*Write a function that safely divides two numbers and returns None if division by zero occurs.*
+
+Wrap the division operation `a / b` inside a `try / except ZeroDivisionError` block.
+
+**Answer — Safe Division**
+
+```python
+def safe_divide(a: float, b: float):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
+
+# Test cases
+assert safe_divide(10, 2) == 5.0
+assert safe_divide(5, 0) is None
+assert safe_divide(0, 5) == 0.0
+print("Safe divide passed!")
+```
+
+> **Key idea**
+>
+> Always specify the error you expect to catch (such as `except ValueError:`, not just `except:`).
+
+---
+
+<a id="15-modules-and-imports"></a>
+
+## 15. Modules & Imports
 
 - **Import Syntax** `import mod / from mod import fn` <!-- great -->
 - **Script Guard** `if __name__ == "__main__":` <!-- great -->
@@ -1145,134 +1554,26 @@ print("Load config passed!")
 
 ---
 
-<a id="unit-5"></a>
-
-## Unit 5 — Asynchronous Programming
-
-Writing high-concurrency, non-blocking code using coroutines, event loops, and modern async/await patterns.
-
-<a id="13-async-and-await"></a>
-
-## 13. Async / Await
-
-- **Coroutine Function** `async def fetch(): ...` <!-- great -->
-- **Yield Control** `await coroutine()` <!-- great -->
-- **Concurrent Execution** `asyncio.gather(*tasks)` <!-- good -->
-- **Event Loop Runner** `asyncio.run(main())` <!-- good -->
-
-Modern Python supports asynchronous programming via `async` and `await` and the built-in `asyncio` library. Unlike multi-threading which relies on the operating system to switch between threads, asynchronous programming uses **cooperative multitasking** on a single thread. When a coroutine reaches an I/O operation (such as waiting for an HTTP API response or database query), it uses `await` to yield control back to the **event loop**, allowing other tasks to run in the meantime.
-
-> **Analogy** 🎬
->
-> **Picture it — A Fast-Order Chef with Kitchen Timers**
->
-> In synchronous code, a chef puts bread in the toaster and stares blankly at it for 3 minutes before starting to boil water for tea. In asynchronous code (`async/await`), the chef pushes the toaster lever down (`await toast()`), immediately turns around to start the kettle (`await boil_water()`), and chops vegetables. When a timer dings, the chef picks up the finished item. One chef (a single thread), zero idle waiting time.
-
-Key async patterns and concepts:
-1. `async def`: Declares an asynchronous coroutine function. Calling it does not run the code immediately; it returns a coroutine object.
-2. `await`: Pauses execution of the coroutine until the awaited operation finishes, yielding the thread back to the event loop. `await` can only be used inside `async def` functions.
-3. `asyncio.run(main())`: The modern entry point to run an async program. It creates a new event loop, executes the passed coroutine, and closes the loop upon completion.
-4. `asyncio.gather(*tasks)`: Runs multiple coroutines concurrently and returns their aggregated results in the order the tasks were passed.
-5. `asyncio.sleep(delay)`: A non-blocking asynchronous sleep. In contrast, `time.sleep()` freezes the entire thread and blocks all concurrent tasks.
-6. `asyncio.create_task(coro)`: Schedules a coroutine to run immediately in the background on the event loop as an independent Task.
-7. I/O-bound vs CPU-bound: Use `asyncio` for I/O-bound operations (network requests, API calls, database queries, file transfers). For CPU-intensive operations (heavy number crunching, image processing), use `multiprocessing` to run tasks on separate CPU cores.
-
-```python
-import asyncio
-import time
-
-# Asynchronous coroutine simulating non-blocking network I/O
-async def fetch_service_data(service_name: str, delay: float) -> dict:
-    await asyncio.sleep(delay)  # Non-blocking pause
-    return {"service": service_name, "status": "online", "latency_ms": int(delay * 1000)}
-
-async def main():
-    # Running multiple coroutines concurrently
-    start = time.perf_counter()
-    results = await asyncio.gather(
-        fetch_service_data("auth-service", 0.05),
-        fetch_service_data("billing-service", 0.03),
-        fetch_service_data("analytics-service", 0.01),
-    )
-    elapsed = time.perf_counter() - start
-
-    for res in results:
-        print(f"Service: {res['service']} | Status: {res['status']} ({res['latency_ms']}ms)")
-
-    # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
-    print(f"Concurrent fetch completed in {elapsed:.3f}s")
-
-# Entry point to execute top-level coroutine
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-- **Strength — Massive I/O Concurrency with Low Overhead** A single process can easily manage tens of thousands of concurrent network connections without the high memory and context-switching overhead of OS threads.
-- **Weakness — Blocking Calls Freeze the Entire Event Loop** If you execute synchronous blocking code (like `time.sleep()` or synchronous `requests.get()`) inside a coroutine, the entire event loop stops, stalling every other concurrent task.
-
-**Interview question**
-
-*Write an asynchronous function `check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]` that queries multiple service endpoints concurrently using `asyncio.gather()`. Simulate network latency using `asyncio.sleep()`, and return a dictionary mapping each service name to its health status.*
-
-Define a helper coroutine `ping_endpoint(name: str, delay: float) -> tuple[str, str]` that awaits `asyncio.sleep(delay)` and returns `(name, "healthy")`. In `check_all_services`, construct task coroutines for each endpoint, execute them concurrently with `await asyncio.gather(*tasks)`, and convert the returned list of tuples into a dictionary.
-
-**Answer — Concurrent Service Health Checker**
-
-```python
-import asyncio
-
-async def ping_endpoint(name: str, delay: float) -> tuple[str, str]:
-    await asyncio.sleep(delay)
-    return (name, "healthy")
-
-async def check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]:
-    tasks = [ping_endpoint(name, delay) for name, delay in endpoints]
-    results = await asyncio.gather(*tasks)
-    return dict(results)
-
-# Test cases
-async def run_tests():
-    services = [("auth", 0.02), ("db", 0.01), ("cache", 0.01)]
-    status_map = await check_all_services(services)
-    assert status_map == {
-        "auth": "healthy",
-        "db": "healthy",
-        "cache": "healthy"
-    }
-
-    # Empty list test
-    empty_res = await check_all_services([])
-    assert empty_res == {}
-    print("Service health checker passed!")
-
-asyncio.run(run_tests())
-```
-
-> **Key idea**
->
-> Never invoke synchronous blocking calls (such as `time.sleep()` or synchronous file/network I/O) inside coroutines. If you must run blocking legacy code, delegate it to a worker thread using `await asyncio.to_thread(blocking_func, arg)`.
-
----
-
 ## Daily Python Cheat Sheet
 
 A quick checklist of the most common daily syntax:
 
 1. **Variables & None:** Python is dynamically typed. Check for emptiness with `if items:` or `if not items:`. Compare singletons with `if val is None:`.
-2. **Strings:** Format with `f"Hello {name}"`. Clean with `.strip()`, split into lists with `.split()`, and join with `", ".join(list)`.
-3. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`. Reverse with `[::-1]`.
-4. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`.
-5. **Sets:** Use `set(items)` to instantly remove duplicates. Check membership with `item in my_set` in $O(1)$ time.
-6. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
-7. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
-8. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
-9. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
-10. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
-11. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
+2. **Type Hints:** Annotate variables and functions: `def fn(x: int) -> str | None:`. Use `list[str]` and `dict[str, int]` for generic collections.
+3. **Keywords:** Only 35 reserved words in Python (`keyword.kwlist`). Check with `keyword.iskeyword()`. Never name variables after keywords.
+4. **Strings:** Format with `f"Hello {name}"`. Clean with `.strip()`, split into lists with `.split()`, join with `", ".join(list)`, and test substrings with `in` and `not in`.
+5. **Conditionals & Operators:** Use `/` for float division, `//` for floor division, `%` for modulo, and `divmod()` for both. Use `is` and `is not` for identity (`val is None`), `==` and `!=` for values. Test membership with `in` and `not in`. Chain comparisons: `18 <= age < 65`.
+6. **Loops:** Iterate cleanly with `for item in items:` or `for i, item in enumerate(items):`. Use `break`, `continue`, and `pass`.
+7. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`. Reverse with `[::-1]`.
+8. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`.
+9. **Tuples & Sets:** Use immutable tuples for fixed records. Use `set(items)` to instantly remove duplicates with $O(1)$ membership checks.
+10. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
+11. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
+12. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
+13. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
+14. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
+15. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
 
 ---
 
 © 2026 TechToday. Python Study Library.
-
-
-
