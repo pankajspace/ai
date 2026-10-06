@@ -163,16 +163,23 @@ const JSON_BUILTIN = new Set(
         "Condition Allow Deny Service AWS Federated StringEquals StringLike StringNotEquals Bool " +
         "ArnLike IpAddress DateLessThan Null ForAnyValue ForAllValues").split(" ")
 );
+/* CloudWatch Logs Insights queries. */
+const LOGS_KW = new Set("fields filter stats sort limit parse display dedup by as asc desc and or not in like".split(" "));
+const LOGS_BUILTIN = new Set(
+    ("count count_distinct sum avg min max pct stddev bin ispresent isempty strlen concat " +
+        "datefloor dateceil fromMillis toMillis abs ceil floor greatest least").split(" ")
+);
 const LANG_SPEC = {
     python: [PY_KW, PY_BUILTIN],
     javascript: [JS_KW, JS_BUILTIN],
     bash: [SH_KW, SH_BUILTIN],
     yaml: [YAML_KW, YAML_BUILTIN],
     json: [JSON_KW, JSON_BUILTIN],
+    logs: [LOGS_KW, LOGS_BUILTIN],
 };
 
 const buildTokenizer = (lang) => {
-    const hashComment = lang === "python" || lang === "bash" || lang === "yaml";
+    const hashComment = lang === "python" || lang === "bash" || lang === "yaml" || lang === "logs";
     /* JSON has no comment syntax - "(?!)" is a group that can never match. */
     const comment = lang === "json" ? "(?!)" : hashComment ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
     const strings =

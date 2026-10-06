@@ -286,8 +286,9 @@ Rules for code blocks and syntax highlighting:
 2. **Tabbed panes**: Inside `.code-tabs`, every `.tab-pane` and its child `<code data-lang="…">` must specify matching `data-lang` values. The language must be registered in `LANG_LABEL` in `<slug>-study.js` so tabs render appropriate labels and persist selection via `LANG_KEY`.
 3. **Escape HTML entities**: Always encode `<` as `&lt;`, `>` as `&gt;`, and `&` as `&amp;` inside HTML `<code>` blocks (e.g. `->` becomes `-&gt;`, `items: list[int]` becomes `items: list[int]`, `x < y` becomes `x &lt; y`).
 4. **Clean indentation**: Start code on a new line immediately after `<code data-lang="…">` and close on its own line after the last statement. The script's `dedent()` utility strips common leading indentation automatically.
-5. **Supported languages**: Verify that any language specified in `data-lang` exists in `LANG_SPEC` in `<slug>-study.js`. If introducing new languages, add their keywords and built-ins to `LANG_SPEC` and `buildTokenizer`.
-6. **Other components**: `.big-o` colours: `o-great`, `o-good`, `o-ok`, `o-bad`. Tables need no wrapper (JS adds `.table-wrap`).
+5. **Supported languages**: Verify that any language specified in `data-lang` exists in `LANG_SPEC` in `<slug>-study.js`. If introducing new languages, add their keywords and built-ins to `LANG_SPEC` and `buildTokenizer`. Unregistered values (e.g. `js` instead of `javascript`) render as plain text.
+6. **`text` is not a code language**: Label every snippet with the language it is written in. Use `bash` for shell commands, Dockerfiles, `.env` and `requirements.txt`; `yaml` for Compose/Kubernetes/CI files; `json` for JSON; `ini` (where registered) for `.gitconfig`, `.gitignore`, `.gitattributes` and `.gitmodules`. Reserve `data-lang="text"` for non-code content only: program output, logs, prompts, ASCII diagrams, folder trees, checklists and prose tables.
+7. **Other components**: `.big-o` colours: `o-great`, `o-good`, `o-ok`, `o-bad`. Tables need no wrapper (JS adds `.table-wrap`).
 
 ---
 
@@ -408,7 +409,7 @@ Add or update one `.hub-tile` in `.hub-grid` of `projects/techtoday/index.html`.
 - [ ] Sidebar renders and scroll-spy highlights (TOC IDs resolve); at 390 px it collapses into the "Topics" drawer.
 - [ ] Every `data-viz` has a `VIZ` key: `grep -o 'data-viz="[a-z-]*"' study/<slug>/*.html | sort -u`.
 - [ ] Widgets play, scrub and reverse; the final frame states the conclusion; state classes come from §6; the headless widget check passes for every variant.
-- [ ] Code blocks render syntax highlighting: every `<code>` specifies `data-lang="<lang>"` registered in `LANG_SPEC`, HTML entities (`< > &`) are escaped, copy buttons copy clean source, and language tabs switch and persist.
+- [ ] Code blocks render syntax highlighting: every `<code>` specifies `data-lang="<lang>"` registered in `LANG_SPEC`, no code snippet is labelled `text` (rendered, every non-`text` `pre code` contains `.tok-*` spans), HTML entities (`< > &`) are escaped, copy buttons copy clean source, and language tabs switch and persist.
 - [ ] Crash ↔ detailed ↔ catalog ↔ homepage links resolve, including `../../index.html`.
 - [ ] No external network requests (CDN scripts, fonts, images).
 - [ ] Both READMEs updated (tile counts match `grep -c 'class="hub-tile is-collapsed"' projects/techtoday/index.html`), and `TODO.md` marked done.

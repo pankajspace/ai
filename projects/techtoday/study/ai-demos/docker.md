@@ -115,7 +115,7 @@ Picture two kinds of housing:
 Open **Terminal** (press `Cmd + Space`  , type "Terminal", press Enter). If the terminal is new to you: it's just a way to talk to your computer with text instead of clicks. You type a command, press Enter, the computer replies.
 
 **Terminal — install & verify**
-```text
+```bash
 brew install --cask docker
 
 docker --version
@@ -147,7 +147,7 @@ When `hello-world`  prints *"Hello from Docker!"* — you have just pulled an im
 >
 > **The fix when you hit a platform error**
 >
-> ```text
+> ```bash
 > docker run --platform linux/amd64 <image-name>
 > ```
 >
@@ -200,7 +200,7 @@ Use this list to check your work.
 Build the skeleton first:
 
 **Terminal**
-```text
+```bash
 mkdir quickbite-eta && cd quickbite-eta
 touch train.py app.py requirements.txt Dockerfile .dockerignore
 ```
@@ -213,7 +213,7 @@ Command decoder
 - **touch** — Creates empty files with these names. You'll fill them in next.
 
 **requirements.txt**
-```text
+```bash
 scikit-learn==1.5.2
 pandas==2.2.3
 fastapi==0.115.6
@@ -407,7 +407,7 @@ def predict(order: Order):
 >
 > **Dockerfile**
 >
-> ```text
+> ```bash
 > # ① Base image = rent a ready-made kitchen (from Docker Hub)
 > FROM python:3.12-slim
 >
@@ -462,7 +462,7 @@ def predict(order: Order):
 ### 🙈 .dockerignore
 
 **.dockerignore**
-```text
+```bash
 __pycache__/
 *.pyc
 venv/
@@ -508,7 +508,7 @@ data/raw/
 >
 > **Terminal — the big moment**
 >
-> ```text
+> ```bash
 > docker build -t quickbite-eta:v1 .
 >
 > docker images
@@ -555,7 +555,7 @@ data/raw/
 ### 🛠️ Peek inside the container + your everyday commands
 
 **Terminal — daily-driver commands**
-```text
+```bash
 docker ps
 docker ps -a
 docker logs -f eta-service
@@ -584,7 +584,7 @@ Command decoder
 >
 > **After ANY code edit**
 >
-> ```text
+> ```bash
 > docker build -t quickbite-eta:v1 .
 > docker rm -f eta-service
 > docker run -d -p 8000:8000 --name eta-service quickbite-eta:v1
@@ -650,14 +650,14 @@ Use this list to check your work.
 ### 📁 Project structure
 
 **Terminal**
-```text
+```bash
 mkdir scalergpt && cd scalergpt
 mkdir docs
 touch app.py ingest.py requirements.txt Dockerfile docker-compose.yml .env.example .dockerignore .gitignore
 ```
 
 **requirements.txt**
-```text
+```bash
 fastapi==0.115.6
 uvicorn==0.34.0
 openai==1.59.7
@@ -718,7 +718,7 @@ python-dotenv==1.0.1
 >
 > **.env.example → copy to .env and add your real key**
 >
-> ```text
+> ```bash
 > # Copy this file:  cp .env.example .env   — then paste your real key.
 > OPENAI_API_KEY=sk-paste-your-real-key-here
 > ```
@@ -879,7 +879,7 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 >
 > **docker-compose.yml**
 >
-> ```text
+> ```yaml
 > # ① define the containers that make up the RAG stack
 > services:
 >   app:
@@ -960,7 +960,7 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 >
 > **Terminal**
 >
-> ```text
+> ```bash
 > cp .env.example .env         # then put your REAL key inside .env
 >
 > docker compose up -d --build
@@ -999,7 +999,7 @@ You'll also need `ingest.py`  — it reads every file in `docs/`  , splits them 
 >
 > **Destroy everything. Data survives.**
 >
-> ```text
+> ```bash
 > docker compose down
 > docker compose up -d
 > curl http://localhost:8000/
@@ -1067,7 +1067,7 @@ Use this list to check your work.
 ### 📁 Structure + the tools service
 
 **Terminal**
-```text
+```bash
 mkdir deskbuddy && cd deskbuddy
 mkdir agent tools
 touch docker-compose.yml .env.example
@@ -1085,7 +1085,7 @@ touch tools/app.py tools/requirements.txt tools/Dockerfile
 > Redis needs no folder — it's a ready-made image.
 
 **tools/app.py — two simple tools**
-```text
+```python
 from fastapi import FastAPI
 from pydantic import BaseModel
 import datetime
@@ -1141,7 +1141,7 @@ def now():
 ### 🧠 The agent — the think → act → observe loop
 
 **agent/app.py — the heart of it**
-```text
+```python
 # ① connect to shared Redis memory and the private tools service
 r = redis.Redis(host=os.getenv("REDIS_HOST", "redis"), port=6379, decode_responses=True)
 TOOLS_URL = os.getenv("TOOLS_URL", "http://tools:7000")
@@ -1204,7 +1204,7 @@ def chat(req: Chat):
 > **Analogy** 🧠 — **The full thali — 3-service compose**
 > **docker-compose.yml**
 >
-> ```text
+> ```yaml
 > # ① define the agent, tool, and memory containers
 > services:
 >   agent:
@@ -1261,7 +1261,7 @@ def chat(req: Chat):
 >
 > **Terminal**
 >
-> ```text
+> ```bash
 > cp .env.example .env         # real key inside, same as before
 > docker compose up -d --build
 > docker compose ps -a

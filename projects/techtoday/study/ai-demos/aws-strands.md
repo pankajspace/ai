@@ -76,7 +76,7 @@ Sign in to the AWS console as an admin. Then do this:
 
 **terminal**
 
-```text
+```bash
 aws configure
 # AWS Access Key ID     → paste the key id
 # AWS Secret Access Key → paste the secret
@@ -88,7 +88,7 @@ Check that it worked:
 
 **terminal**
 
-```text
+```bash
 aws sts get-caller-identity
 ```
 
@@ -111,7 +111,7 @@ Use the terminal to check which Anthropic models are active in your account:
 
 **terminal**
 
-```text
+```bash
 aws bedrock list-foundation-models --region us-east-1 \
   --query "modelSummaries[?contains(modelId,'anthropic.claude')].modelId" \
   --output table
@@ -147,7 +147,7 @@ This guide includes all code for both modules. It is already fixed and ready to 
 
 **terminal · from the project folder**
 
-```text
+```bash
 # macOS / Linux
 ./setup.sh
 
@@ -159,7 +159,7 @@ You can also install the packages manually:
 
 **terminal · manual install**
 
-```text
+```bash
 python3 --version          # must be 3.10 or higher
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -177,7 +177,7 @@ This is the most useful command in the project. It checks Python, packages, cred
 
 **Run it**
 
-```text
+```bash
 source .venv/bin/activate
 export AWS_DEFAULT_REGION=us-east-1
 python 00_check_setup.py
@@ -503,7 +503,7 @@ print(response)
 
 **Run it**
 
-```text
+```bash
 python one/01_hello_world_agent.py
 ```
 
@@ -552,7 +552,7 @@ for message in response["messages"]:
 
 **Run it**
 
-```text
+```bash
 python one/02_hello_world_langgraph.py
 ```
 
@@ -669,14 +669,14 @@ def check_server_status(server_url: str) -> str:      # 2. type hints
 
 **give it to the agent**
 
-```text
+```python
 agent = Agent(tools=[check_server_status])
 response = agent("Is the staging server running? Check https://httpbin.org/get")
 ```
 
 **Run it**
 
-```text
+```bash
 python two/01_function_to_tool.py
 ```
 
@@ -744,7 +744,7 @@ agent("Calculate tip for $67.50 at 20%")
 
 **Run it**
 
-```text
+```bash
 python two/02_tip_calculator.py
 ```
 
@@ -811,7 +811,7 @@ You never told the agent the sequence. It recognised that it needed data first, 
 
 **Run it**
 
-```text
+```bash
 python two/03_multi_tool_sales.py
 ```
 
@@ -851,7 +851,7 @@ This also introduces the **system prompt**. A system prompt is a standing instru
 
 **Run it**
 
-```text
+```bash
 python two/05_prebuilt_tools.py
 ```
 
@@ -888,7 +888,7 @@ and save the results to stock_summary.txt
 
 **Run it**
 
-```text
+```bash
 python two/06_multi_prebuilt_tools.py
 ```
 
@@ -926,7 +926,7 @@ The same single tool can handle very different services. Other examples:
 
 **one tool, three services**
 
-```text
+```python
 # DynamoDB
 agent("Look up customer ID 12345 in the DynamoDB customers table and update their email to newemail@example.com")
 
@@ -940,7 +940,7 @@ Notice what happened. You described what you wanted in plain English. The agent 
 
 **Run it**
 
-```text
+```bash
 python two/07_use_aws.py
 ```
 
@@ -1001,7 +1001,7 @@ Notice the mock dictionary. In production, you would replace it with real databa
 
 **Run it**
 
-```text
+```bash
 python two/04_custom_tool_inventory.py
 ```
 
@@ -1080,7 +1080,7 @@ agent("Update PROD-456 stock to 25 units, then confirm the new level")
 
 **Run it**
 
-```text
+```bash
 python two/08_class_based_tools.py
 ```
 
@@ -1144,7 +1144,7 @@ await main()
 
 **Run it**
 
-```text
+```bash
 python two/09_async_tools.py
 ```
 
@@ -1300,7 +1300,7 @@ if __name__ == "__main__":
 
 **Run it**
 
-```text
+```bash
 python three/travel_assistant.py
 
 # or ask your own question:
@@ -1339,7 +1339,7 @@ Use this as a copy-paste reference. Run every command from the project root, whi
 
 **Run it**
 
-```text
+```bash
 ./setup.sh                       # macOS / Linux  (Windows: setup.bat)
 source .venv/bin/activate
 export AWS_DEFAULT_REGION=us-east-1
@@ -1352,7 +1352,7 @@ python 00_check_setup.py         # verifies everything, makes a real model call
 
 **Run it**
 
-```text
+```bash
 # ---- Module 1 · first agents ----
 python one/01_hello_world_agent.py        # simplest agent, no tools
 python one/02_hello_world_langgraph.py    # with a tool — watch the loop
@@ -1378,7 +1378,7 @@ python three/travel_assistant.py
 
 **Run it**
 
-```text
+```bash
 python 00_check_setup.py     # run whenever something breaks
 python 01_list_models.py     # when a model is retired, pick a new one
 aws sts get-caller-identity  # are my credentials alive?

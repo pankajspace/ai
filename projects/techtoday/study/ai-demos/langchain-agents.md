@@ -117,7 +117,7 @@ machines.
 
 **bash**
 
-```text
+```bash
 $ pip install langchain langchain-openai
 ```
 
@@ -547,7 +547,7 @@ while True:                          # ① keep chatting until the user types qu
 
 **bash — your project folder**
 
-```text
+```bash
 $ pip install openai python-dotenv
 $ python main.py
 

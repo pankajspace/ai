@@ -137,7 +137,7 @@
             </div>
             <div class="part-body" id="body-s0-0-2-connect-your-laptop">
               <span class="code-tab-label">terminal</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 aws configure
 # AWS Access Key ID     → paste the key id
 # AWS Secret Access Key → paste the secret
@@ -146,7 +146,7 @@ aws configure
 </code></pre>
               <p>Check that it worked:</p>
               <span class="code-tab-label">terminal</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 aws sts get-caller-identity
 </code></pre>
               <p>A successful command prints your <code class="inl">Account</code>, <code class="inl">UserId</code>, and <code class="inl">Arn</code>. If you get <code class="inl">InvalidClientTokenId</code>, the key is wrong or turned off. Create a new key and run <code class="inl">aws configure</code> again.</p>
@@ -177,7 +177,7 @@ aws sts get-caller-identity
 </ul>
               <p>Use the terminal to check which Anthropic models are active in your account:</p>
               <span class="code-tab-label">terminal</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 aws bedrock list-foundation-models --region us-east-1 \
   --query "modelSummaries[?contains(modelId,'anthropic.claude')].modelId" \
   --output table
@@ -232,7 +232,7 @@ aws bedrock list-foundation-models --region us-east-1 \
             <div class="part-body" id="body-s0-0-5-install-the-packages">
               <span class="code-tab-label">terminal · from the
                 project folder</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 # macOS / Linux
 ./setup.sh
 
@@ -242,7 +242,7 @@ setup.bat
               <p>You can also install the packages manually:</p>
               <span class="code-tab-label">terminal · manual
                 install</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python3 --version          # must be 3.10 or higher
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -269,7 +269,7 @@ pip install -r requirements.txt
             <div class="part-body" id="body-s0-0-6-run-the-readiness-check">
               <p>This is the most useful command in the project. It checks Python, packages, credentials, region, and Bedrock access. It also makes a real model call. If it passes, every example should run.</p>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 source .venv/bin/activate
 export AWS_DEFAULT_REGION=us-east-1
 python 00_check_setup.py
@@ -827,7 +827,7 @@ response = agent("Hello! Tell me a fun fact about AI agents.")
 print(response)
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python one/01_hello_world_agent.py
 </code></pre>
               <p>Four lines make a whole agent. Read each line: choose a model, wrap it in an <code class="inl">Agent</code>, call the agent like a function, and print the answer. There are no tools yet, so the loop runs exactly once. This is the "before" picture for Module 2.</p>
@@ -880,7 +880,7 @@ for message in response["messages"]:
     print(f"{message.type}: {message.text}")
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python one/02_hello_world_langgraph.py
 </code></pre>
               <div class="callout callout-key">
@@ -1044,12 +1044,12 @@ def check_server_status(server_url: str) -&gt; str:      # 2. type hints
 </code></pre>
               <span class="code-tab-label">give it to the
                 agent</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="python">
 agent = Agent(tools=[check_server_status])
 response = agent("Is the staging server running? Check https://httpbin.org/get")
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/01_function_to_tool.py
 </code></pre>
               <div class="callout callout-key">
@@ -1131,7 +1131,7 @@ agent("Bill is $120, we want to tip 18%, split between 3 people")
 agent("Calculate tip for $67.50 at 20%")
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/02_tip_calculator.py
 </code></pre>
               <div class="callout callout-key">
@@ -1217,7 +1217,7 @@ flowchart TD
               </figure>
               <p>You never told the agent the sequence. It recognised that it needed data first, then analysis, then delivery. It chained the tools. That is planning.</p>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/03_multi_tool_sales.py
 </code></pre>
               <div class="callout callout-tip">
@@ -1276,7 +1276,7 @@ agent("What's the derivative of sin(x) * cos(x)?")
 </code></pre>
               <p>This also introduces the <strong>system prompt</strong>. A system prompt is a standing instruction that shapes the agent's behaviour across every request.</p>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/05_prebuilt_tools.py
 </code></pre>
             </div>
@@ -1318,7 +1318,7 @@ and save the results to stock_summary.txt
 """)
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/06_multi_prebuilt_tools.py
 </code></pre>
               <div class="callout callout-warn">
@@ -1374,7 +1374,7 @@ agent("List all S3 buckets in my account")
               <p>The same single tool can handle very different services. Other examples:</p>
               <span class="code-tab-label">one tool, three
                 services</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="python">
 # DynamoDB
 agent("Look up customer ID 12345 in the DynamoDB customers table and update their email to newemail@example.com")
 
@@ -1387,7 +1387,7 @@ agent("Invoke the Lambda function 'order-processor' with order ID 67890")
               </div>
               <p>Notice what happened. You described what you wanted in plain English. The agent worked out the AWS API calls. You did not write boto3 code, handle AWS responses, or name the exact operation.</p>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/07_use_aws.py
 </code></pre>
               <div class="callout callout-warn">
@@ -1465,7 +1465,7 @@ agent("Can I order PROD-123 right now?")
 </code></pre>
               <p>Notice the mock dictionary. In production, you would replace it with real database queries or an API call. The part the agent sees stays the same: decorator, type hints, and docstring.</p>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/04_custom_tool_inventory.py
 </code></pre>
               <div class="callout callout-key">
@@ -1562,7 +1562,7 @@ agent("Check stock for PROD-123")
 agent("Update PROD-456 stock to 25 units, then confirm the new level")
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/08_class_based_tools.py
 </code></pre>
             </div>
@@ -1631,7 +1631,7 @@ async def main():
 await main()
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python two/09_async_tools.py
 </code></pre>
               <div class="callout callout-key">
@@ -1836,7 +1836,7 @@ if __name__ == "__main__":
     print(response)
 </code></pre>
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python three/travel_assistant.py
 
 # or ask your own question:
@@ -1917,7 +1917,7 @@ python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
               <p>Use this as a copy-paste reference. Run every command from the project root, which is the folder that contains <code class="inl">config.py</code>.</p>
 
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 ./setup.sh                       # macOS / Linux  (Windows: setup.bat)
 source .venv/bin/activate
 export AWS_DEFAULT_REGION=us-east-1
@@ -1938,7 +1938,7 @@ python 00_check_setup.py         # verifies everything, makes a real model call
             </div>
             <div class="part-body" id="body-s17b-every-example-in-learning-order">
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 # ---- Module 1 · first agents ----
 python one/01_hello_world_agent.py        # simplest agent, no tools
 python one/02_hello_world_langgraph.py    # with a tool — watch the loop
@@ -1971,7 +1971,7 @@ python three/travel_assistant.py
             </div>
             <div class="part-body" id="body-s17b-helpers">
               <span class="code-tab-label">Run it</span>
-              <pre><code data-lang="text">
+              <pre><code data-lang="bash">
 python 00_check_setup.py     # run whenever something breaks
 python 01_list_models.py     # when a model is retired, pick a new one
 aws sts get-caller-identity  # are my credentials alive?

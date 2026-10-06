@@ -1195,7 +1195,7 @@ Save `pdf_chat.py` (parts 1 + 2), `main.py` and your `.env` in one folder, then 
 
 *bash — your project folder*
 
-```text
+```bash
 $ python main.py
 
 Path to your PDF: annual_report.pdf

@@ -246,7 +246,7 @@ evidence: snapshot @ 21:52
 - **Does:** Keeps claims that can be checked. Drops feelings and demands. Resolves references against the order. Records where each claim appeared in the text.
 - **Out:**
 
-```text
+```json
 [
   {"grievance_id":"g2",
    "text":"2 of the 4 Hyderabadi
@@ -464,7 +464,7 @@ The frozen copy: order lines, timestamps, GPS trail, weights, ratings, as they s
 
 People often forget this table. You made 12 judging calls and you keep **every ruling**, not just the winners. The raw JSON each judge returned, around 2 KB:
 
-```text
+```json
 {"ruling":"ESCALATE","confidence":0.31,
  "reasoning":"No field in the evidence records
   packaging condition on arrival…"}

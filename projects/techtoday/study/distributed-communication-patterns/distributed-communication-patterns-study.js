@@ -183,6 +183,8 @@ const PROTO_BUILTIN = new Set(
     ("double float int32 int64 uint32 uint64 sint32 sint64 fixed32 fixed64 sfixed32 sfixed64 " +
         "bool string bytes google protobuf Timestamp Duration Empty Any").split(" ")
 );
+const GQL_KW = new Set("query mutation subscription fragment on type input enum schema extend true false null".split(" "));
+const GQL_BUILTIN = new Set("ID String Int Float Boolean".split(" "));
 const LANG_SPEC = {
     python: [PY_KW, PY_BUILTIN],
     javascript: [JS_KW, JS_BUILTIN],
@@ -190,10 +192,11 @@ const LANG_SPEC = {
     yaml: [YAML_KW, YAML_BUILTIN],
     json: [JSON_KW, JSON_BUILTIN],
     proto: [PROTO_KW, PROTO_BUILTIN],
+    graphql: [GQL_KW, GQL_BUILTIN],
 };
 
 const buildTokenizer = (lang) => {
-    const hashComment = lang === "python" || lang === "bash" || lang === "yaml";
+    const hashComment = lang === "python" || lang === "bash" || lang === "yaml" || lang === "graphql";
     /* JSON has no comment syntax - "(?!)" is a group that can never match. */
     const comment = lang === "json" ? "(?!)" : hashComment ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
     const strings =
@@ -297,6 +300,7 @@ const LANG_LABEL = {
     yaml: "Config",
     proto: "Protobuf",
     bash: "Shell",
+    graphql: "GraphQL",
     text: "Output",
 };
 const LANG_KEY = "tt-distributed-communication-patterns-lang";
