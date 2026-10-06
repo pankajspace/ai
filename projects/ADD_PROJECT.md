@@ -10,11 +10,11 @@ The day-to-day branch flow for every project is in [DEPLOYMENT.md](DEPLOYMENT.md
 
 The current next available values are:
 
-1. Local development port: `8089`.
-2. EC2 host port: `5009`.
+1. Local development port: `8091`.
+2. EC2 host port: `5010`.
 After adding a project, advance the local and EC2 values in this section so the
 next project does not reuse them. Local port `8090` is reserved by
-`projects/template`, so the local value after `8089` is `8091`.
+`projects/template`, which is why the local value skipped from `8089` to `8091`.
 
 For a new container app, choose:
 

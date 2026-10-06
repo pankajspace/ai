@@ -82,3 +82,11 @@ Trade-offs between prompting styles, and how models give in to pressure (sycopha
 Measures what makes AI output reliable: forcing a schema, chain-of-thought, routing by tool schema, and whether a model admits a failed tool call or makes up data.
 
 [Open project →](https://app.techtoday.click/ai-reliability/)
+
+[ⓘ](mcp-evals.html)
+
+### MCP & Evals Lab
+
+A cricket-score MCP server you can call by hand, an agent that picks the right MCP tool by itself, and a small eval suite that scores the agent with and without tools.
+
+[Open project →](https://app.techtoday.click/mcp-evals/)
