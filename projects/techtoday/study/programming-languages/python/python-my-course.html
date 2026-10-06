@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>Python My Course | TechToday</title>
     <meta name="description"
-        content="Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, and object-oriented programming (OOP)." />
+        content="Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, OOP, modules &amp; imports, and async/await." />
     <link rel="icon" href="../../../logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="python-study.css" />
     <link rel="stylesheet" href="../../../site-header.css" />
@@ -40,6 +40,8 @@
                     <li><a href="#9-functions-and-arguments">Functions &amp; Arguments</a></li>
                     <li><a href="#10-everyday-error-handling">Everyday Error Handling</a></li>
                     <li><a href="#11-object-oriented-programming">Object-Oriented Programming (OOP)</a></li>
+                    <li><a href="#12-modules-and-imports">Modules &amp; Imports</a></li>
+                    <li><a href="#13-async-and-await">Async / Await</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,11 +49,11 @@
         <article class="study">
             <h1 id="python-my-course">Python My Course<a class="headerlink" href="#python-my-course"
                     title="Permanent link">#</a></h1>
-            <p class="lede">The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, and practical OOP solutions.</p>
+            <p class="lede">The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, practical OOP solutions, modules &amp; imports, and async/await concurrency.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>11 Topics</span>
+                    <span>13 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>Daily Essentials, Clean Examples &amp; Practical Questions</span>
                 </div>
@@ -476,6 +478,19 @@ print("FizzBuzz passed!")
                                     <p>In older languages, running a loop is like saying: "Look at seat 0, who is there? Now look at seat 1, who is there?" In Python, the loop is like reading down the attendee roster directly: "Alice, Bob, Charlie."</p>
                                 </div>
                             </div>
+
+                            <h3>Understanding <code>range()</code> in Depth</h3>
+                            <p>In Python, <code>range()</code> generates an immutable arithmetic sequence of integers on demand. Rather than allocating and storing an entire list in memory, <code>range</code> is an immutable sequence type that produces numbers lazily when requested by the loop.</p>
+                            <ol>
+                                <li><strong>Single Argument <code>range(stop)</code>:</strong> Generates numbers from <code>0</code> up to <code>stop - 1</code>. For example, <code>range(5)</code> yields <code>0, 1, 2, 3, 4</code>.</li>
+                                <li><strong>Two Arguments <code>range(start, stop)</code>:</strong> Generates numbers starting from <code>start</code> up to <code>stop - 1</code> (a half-open interval <code>[start, stop)</code>). For example, <code>range(2, 6)</code> yields <code>2, 3, 4, 5</code>.</li>
+                                <li><strong>Three Arguments <code>range(start, stop, step)</code>:</strong> Increments by <code>step</code> on each iteration. For example, <code>range(0, 10, 2)</code> produces even numbers <code>0, 2, 4, 6, 8</code>.</li>
+                                <li><strong>Negative Step (Counting Down):</strong> If <code>step</code> is negative, <code>range()</code> counts backwards (provided <code>start &gt; stop</code>). For example, <code>range(5, 0, -1)</code> yields <code>5, 4, 3, 2, 1</code>.</li>
+                                <li><strong>Lazy Evaluation &amp; <code class="big-o o-great">O(1)</code> Memory:</strong> <code>range()</code> stores only the <code>start</code>, <code>stop</code>, and <code>step</code> parameters. Because numbers are calculated on the fly, <code>range(1_000_000_000)</code> consumes the exact same tiny, constant memory (<code class="big-o o-great">O(1)</code> space, ~48 bytes) as <code>range(5)</code>.</li>
+                                <li><strong>Converting to a List:</strong> Because <code>range</code> computes values lazily, <code>print(range(5))</code> displays <code>range(0, 5)</code>. To materialize the numbers into an explicit list, pass it to <code>list(range(5))</code> which produces <code>[0, 1, 2, 3, 4]</code>.</li>
+                                <li><strong>Fast <code class="big-o o-great">O(1)</code> Membership Testing:</strong> Checking <code>x in range(...)</code> evaluates in <code class="big-o o-great">O(1)</code> constant time because Python checks bounds and step divisibility with arithmetic instead of scanning elements sequentially.</li>
+                            </ol>
+
                             <div class="highlight">
                                 <pre><code data-lang="python">fruits = ["apple", "banana", "orange"]
 
@@ -490,6 +505,26 @@ for rank, fruit in enumerate(fruits, start=1):
 # 2. banana
 # 3. orange
 
+# range() forms:
+# 1. Single argument: stop [0, 5)
+for i in range(3):
+    print(f"Step {i}")  # 0, 1, 2
+
+# 2. Two arguments: start and stop [2, 6)
+for i in range(2, 6):
+    print(f"Offset {i}")  # 2, 3, 4, 5
+
+# 3. Three arguments: start, stop, step
+evens = list(range(0, 10, 2))
+print(f"Evens: {evens}")  # [0, 2, 4, 6, 8]
+
+# 4. Counting backwards with negative step
+countdown = list(range(3, 0, -1))
+print(f"Countdown: {countdown}")  # [3, 2, 1]
+
+# 5. O(1) membership check
+print(50 in range(0, 100, 5))  # True (instant arithmetic check)
+
 # Parallel iteration with zip
 prices = [1.20, 0.50, 0.80]
 for fruit, price in zip(fruits, prices):
@@ -497,17 +532,17 @@ for fruit, price in zip(fruits, prices):
 
 # While loop for conditions
 count = 3
-while count > 0:
+while count &gt; 0:
     print(f"Countdown: {count}")
     count -= 1
 </code></pre>
                             </div>
                             <ul class="card-grid">
-                                <li class="is-good"><b>Strength — Clean Syntax:</b> Direct iteration prevents off-by-one errors and out-of-bounds indexing bugs.</li>
-                                <li class="is-bad"><b>Weakness — Modifying While Looping:</b> Removing items from a list while iterating over it will cause the loop to skip subsequent elements.</li>
+                                <li class="is-good"><b>Strength — Clean Syntax &amp; O(1) Memory:</b> Direct iteration prevents off-by-one errors, while <code>range()</code> generates sequences of any size without allocating memory for elements upfront.</li>
+                                <li class="is-bad"><b>Weakness — Modifying While Looping &amp; Exclusive Stop:</b> Removing items from a list while iterating over it skips elements. In <code>range(start, stop)</code>, remember that <code>stop</code> is exclusive (<code>range(1, 5)</code> stops at 4).</li>
                             </ul>
                             <div class="callout callout-key">
-                                <p><strong>Key idea:</strong> Avoid writing <code>for i in range(len(items)): items[i]</code>. Instead, use <code>for item in items:</code> or <code>for i, item in enumerate(items):</code>.</p>
+                                <p><strong>Key idea:</strong> Avoid writing <code>for i in range(len(items)): items[i]</code>. Instead, use <code>for item in items:</code> or <code>for i, item in enumerate(items):</code>. When you do need numeric sequences, <code>range(start, stop, step)</code> generates them with <code>O(1)</code> memory. Remember that <code>stop</code> is exclusive: <code>range(1, 5)</code> generates 1, 2, 3, 4 (not 5).</p>
                             </div>
                         </div>
                     </div>
@@ -1504,8 +1539,328 @@ print("Inventory item passed!")
                 </div>
             </section>
 
+            <!-- ============================================================ 12 -->
+            <section class="topic-section is-collapsed" id="sec-12-modules-and-imports" data-topic="12-modules-and-imports">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-12-modules-and-imports">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">12</span>
+                        <h2 id="12-modules-and-imports" class="topic-title">Modules &amp; Imports<a class="headerlink" href="#12-modules-and-imports" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-12-modules-and-imports">
+                    <div class="part-section is-collapsed" id="12-modules-and-imports-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-modules-and-imports-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-modules-and-imports-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-modules-and-imports-theory">
+                            <ul class="meta-strip">
+                                <li><b>Import Syntax</b> <code class="big-o o-great">import mod / from mod import fn</code></li>
+                                <li><b>Script Guard</b> <code class="big-o o-great">if __name__ == "__main__":</code></li>
+                                <li><b>Standard Library</b> <code class="big-o o-good">math, os, sys, json, pathlib</code></li>
+                            </ul>
+                            <p>A module in Python is simply a <code>.py</code> file containing functions, classes, and variables. A package is a directory containing multiple modules (often accompanied by an <code>__init__.py</code> file). Python's module system lets you organize code logically across files, reuse utilities, and avoid namespace pollution. The standard library provides dozens of battle-tested modules out of the box without needing third-party packages.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Professional Toolbox with Labeled Drawers</b>
+                                    <p>Instead of dumping every wrench, hammer, screwdriver, and nail onto your workbench all at once (which causes clutter and confusion), a workshop organizes tools into labeled drawers. When you need a measuring tape, you open the <code>math</code> drawer; when you need to serialize data, you open the <code>json</code> drawer. If you only need one specific screwdriver, you take just that tool (<code>from toolbox import screwdriver</code>) without cluttering your workbench.</p>
+                                </div>
+                            </div>
+                            <ol>
+                                <li><strong><code>import module_name</code>:</strong> Imports the entire module under its namespace (e.g. <code>import math; math.sqrt(16)</code>).</li>
+                                <li><strong><code>from module_name import function_name</code>:</strong> Imports specific attributes directly into the local namespace (e.g. <code>from math import sqrt, pi</code>).</li>
+                                <li><strong><code>import module_name as alias</code>:</strong> Aliases the module name for brevity or to avoid collisions (e.g. <code>import datetime as dt</code>).</li>
+                                <li><strong>Avoid <code>from module import *</code>:</strong> Wildcard imports pollute the local namespace, obscure where names originated, and can accidentally overwrite existing variables.</li>
+                                <li><strong><code>if __name__ == "__main__":</code>:</strong> When a Python file is run directly (via <code>python script.py</code>), Python sets <code>__name__</code> to <code>"__main__"</code>. When imported as a module, <code>__name__</code> is set to the module's file name. This guard lets you write files that act as reusable libraries when imported, but execute scripts or tests when run directly.</li>
+                                <li><strong>Standard library powerhouses:</strong> <code>pathlib</code> for modern object-oriented filesystem paths, <code>json</code> for serializing and deserializing JSON, <code>datetime</code> for timestamps, and <code>math</code> for mathematical functions.</li>
+                            </ol>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import json
+import math
+from pathlib import Path
+
+# 1. Standard library math functions
+root = math.isqrt(49)
+print(f"Square root: {root}")  # 7
+
+# 2. JSON serialization and deserialization
+user_data = {"username": "alex_dev", "role": "admin", "active": True}
+json_string = json.dumps(user_data)
+print(f"Serialized JSON: {json_string}")
+
+parsed_data = json.loads(json_string)
+print(f"Parsed username: {parsed_data['username']}")
+
+# 3. Pathlib for filesystem path handling
+config_path = Path("config/app.json")
+print(f"Filename: {config_path.name}, Extension: {config_path.suffix}")
+
+# 4. Entry point guard for standalone script execution
+def run_app():
+    print("Application initialized successfully.")
+
+if __name__ == "__main__":
+    run_app()
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Clean Namespaces &amp; Reusability:</b> Modules separate concerns, prevent variable name collisions, and let teams share tested code across projects without duplication.</li>
+                                <li class="is-bad"><b>Weakness — Circular Imports:</b> If module A imports module B and module B simultaneously imports module A at the top level, Python throws an <code>ImportError</code> or <code>AttributeError</code> because one module is accessed before it finishes executing.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Always wrap executable code in <code>if __name__ == "__main__":</code> so that importing the file from another module or test suite doesn't execute script entry logic. Avoid <code>from module import *</code> in production code to prevent naming collisions and hidden bugs.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="12-modules-and-imports-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-12-modules-and-imports-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#12-modules-and-imports-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-modules-and-imports-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write a modular configuration loader function <code>load_config(raw_json: str, required_keys: list[str]) -&gt; dict</code> that parses a JSON configuration string and verifies that all required keys are present. If the JSON is malformed or any required key is missing, raise a descriptive ValueError.</p>
+                                <p>Use <code>json.loads()</code> to deserialize the input string inside a <code>try / except json.JSONDecodeError</code> block, verify the parsed object is a dictionary, and check that each required key exists in the parsed data.</p>
+                                <div class="code-tabs" data-label="Answer — Load and Validate Config">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">import json
+
+def load_config(raw_json: str, required_keys: list[str]) -&gt; dict:
+    try:
+        data = json.loads(raw_json)
+    except json.JSONDecodeError as err:
+        raise ValueError(f"Invalid JSON format: {err}") from err
+
+    if not isinstance(data, dict):
+        raise ValueError("Configuration payload must be a JSON object.")
+
+    missing = [k for k in required_keys if k not in data]
+    if missing:
+        missing_str = ", ".join(missing)
+        raise ValueError(f"Missing required configuration keys: {missing_str}")
+
+    return data
+
+# Test cases
+valid_payload = '{"host": "localhost", "port": 5432, "database": "analytics"}'
+config = load_config(valid_payload, ["host", "port"])
+assert config["host"] == "localhost"
+assert config["port"] == 5432
+
+# Test missing key raises ValueError
+try:
+    load_config(valid_payload, ["host", "api_key"])
+    assert False, "Should have raised ValueError"
+except ValueError as e:
+    assert "Missing required configuration keys: api_key" in str(e)
+
+# Test invalid JSON syntax raises ValueError
+try:
+    load_config("{invalid: json", ["host"])
+    assert False, "Should have raised ValueError"
+except ValueError as e:
+    assert "Invalid JSON format" in str(e)
+
+print("Load config passed!")
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ Unit 5 -->
+            <div class="unit-divider" id="unit-5">
+                <div class="unit-divider-badge">Unit 5</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Asynchronous Programming<a class="headerlink" href="#unit-5" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Writing high-concurrency, non-blocking code using coroutines, event loops, and modern async/await patterns.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 13 -->
+            <section class="topic-section is-collapsed" id="sec-13-async-and-await" data-topic="13-async-and-await">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-13-async-and-await">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">13</span>
+                        <h2 id="13-async-and-await" class="topic-title">Async / Await<a class="headerlink" href="#13-async-and-await" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-13-async-and-await">
+                    <div class="part-section is-collapsed" id="13-async-and-await-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-async-and-await-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-async-and-await-theory" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-async-and-await-theory">
+                            <ul class="meta-strip">
+                                <li><b>Coroutine Function</b> <code class="big-o o-great">async def fetch(): ...</code></li>
+                                <li><b>Yield Control</b> <code class="big-o o-great">await coroutine()</code></li>
+                                <li><b>Concurrent Execution</b> <code class="big-o o-good">asyncio.gather(*tasks)</code></li>
+                                <li><b>Event Loop Runner</b> <code class="big-o o-good">asyncio.run(main())</code></li>
+                            </ul>
+                            <p>Modern Python supports asynchronous programming via <code>async</code> and <code>await</code> and the built-in <code>asyncio</code> library. Unlike multi-threading which relies on the operating system to switch between threads, asynchronous programming uses <strong>cooperative multitasking</strong> on a single thread. When a coroutine reaches an I/O operation (such as waiting for an HTTP API response or database query), it uses <code>await</code> to yield control back to the <strong>event loop</strong>, allowing other tasks to run in the meantime.</p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A Fast-Order Chef with Kitchen Timers</b>
+                                    <p>In synchronous code, a chef puts bread in the toaster and stares blankly at it for 3 minutes before starting to boil water for tea. In asynchronous code (<code>async/await</code>), the chef pushes the toaster lever down (<code>await toast()</code>), immediately turns around to start the kettle (<code>await boil_water()</code>), and chops vegetables. When a timer dings, the chef picks up the finished item. One chef (a single thread), zero idle waiting time.</p>
+                                </div>
+                            </div>
+                            <ol>
+                                <li><strong><code>async def</code>:</strong> Declares an asynchronous coroutine function. Calling it does not run the code immediately; it returns a coroutine object.</li>
+                                <li><strong><code>await</code>:</strong> Pauses execution of the coroutine until the awaited operation finishes, yielding the thread back to the event loop. <code>await</code> can only be used inside <code>async def</code> functions.</li>
+                                <li><strong><code>asyncio.run(main())</code>:</strong> The modern entry point to run an async program. It creates a new event loop, executes the passed coroutine, and closes the loop upon completion.</li>
+                                <li><strong><code>asyncio.gather(*tasks)</code>:</strong> Runs multiple coroutines concurrently and returns their aggregated results in the order the tasks were passed.</li>
+                                <li><strong><code>asyncio.sleep(delay)</code>:</strong> A non-blocking asynchronous sleep. In contrast, <code>time.sleep()</code> freezes the entire thread and blocks all concurrent tasks.</li>
+                                <li><strong><code>asyncio.create_task(coro)</code>:</strong> Schedules a coroutine to run immediately in the background on the event loop as an independent Task.</li>
+                                <li><strong>I/O-bound vs CPU-bound:</strong> Use <code>asyncio</code> for I/O-bound operations (network requests, API calls, database queries, file transfers). For CPU-intensive operations (heavy number crunching, image processing), use <code>multiprocessing</code> to run tasks on separate CPU cores.</li>
+                            </ol>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import asyncio
+import time
+
+# Asynchronous coroutine simulating non-blocking network I/O
+async def fetch_service_data(service_name: str, delay: float) -&gt; dict:
+    await asyncio.sleep(delay)  # Non-blocking pause
+    return {"service": service_name, "status": "online", "latency_ms": int(delay * 1000)}
+
+async def main():
+    # Running multiple coroutines concurrently
+    start = time.perf_counter()
+    results = await asyncio.gather(
+        fetch_service_data("auth-service", 0.05),
+        fetch_service_data("billing-service", 0.03),
+        fetch_service_data("analytics-service", 0.01),
+    )
+    elapsed = time.perf_counter() - start
+
+    for res in results:
+        print(f"Service: {res['service']} | Status: {res['status']} ({res['latency_ms']}ms)")
+
+    # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
+    print(f"Concurrent fetch completed in {elapsed:.3f}s")
+
+# Entry point to execute top-level coroutine
+if __name__ == "__main__":
+    asyncio.run(main())
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Massive I/O Concurrency with Low Overhead:</b> A single process can easily manage tens of thousands of concurrent network connections without the high memory and context-switching overhead of OS threads.</li>
+                                <li class="is-bad"><b>Weakness — Blocking Calls Freeze the Entire Event Loop:</b> If you execute synchronous blocking code (like <code>time.sleep()</code> or synchronous <code>requests.get()</code>) inside a coroutine, the entire event loop stops, stalling every other concurrent task.</li>
+                            </ul>
+                            <div class="callout callout-key">
+                                <p><strong>Key idea:</strong> Never invoke synchronous blocking calls (such as <code>time.sleep()</code> or synchronous file/network I/O) inside coroutines. If you must run blocking legacy code, delegate it to a worker thread using <code>await asyncio.to_thread(blocking_func, arg)</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="13-async-and-await-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-13-async-and-await-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-async-and-await-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-async-and-await-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Write an asynchronous function <code>check_all_services(endpoints: list[tuple[str, float]]) -&gt; dict[str, str]</code> that queries multiple service endpoints concurrently using <code>asyncio.gather()</code>. Simulate network latency using <code>asyncio.sleep()</code>, and return a dictionary mapping each service name to its health status.</p>
+                                <p>Define a helper coroutine <code>ping_endpoint(name: str, delay: float) -&gt; tuple[str, str]</code> that awaits <code>asyncio.sleep(delay)</code> and returns <code>(name, "healthy")</code>. In <code>check_all_services</code>, construct task coroutines for each endpoint, execute them concurrently with <code>await asyncio.gather(*tasks)</code>, and convert the returned list of tuples into a dictionary.</p>
+                                <div class="code-tabs" data-label="Answer — Concurrent Service Health Checker">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">import asyncio
+
+async def ping_endpoint(name: str, delay: float) -&gt; tuple[str, str]:
+    await asyncio.sleep(delay)
+    return (name, "healthy")
+
+async def check_all_services(endpoints: list[tuple[str, float]]) -&gt; dict[str, str]:
+    tasks = [ping_endpoint(name, delay) for name, delay in endpoints]
+    results = await asyncio.gather(*tasks)
+    return dict(results)
+
+# Test cases
+async def run_tests():
+    services = [("auth", 0.02), ("db", 0.01), ("cache", 0.01)]
+    status_map = await check_all_services(services)
+    assert status_map == {
+        "auth": "healthy",
+        "db": "healthy",
+        "cache": "healthy"
+    }
+
+    # Empty list test
+    empty_res = await check_all_services([])
+    assert empty_res == {}
+    print("Service health checker passed!")
+
+asyncio.run(run_tests())
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <blockquote>
-                <p>🐍 <strong>Next steps:</strong> Ready for advanced topics like decorators, generators, context managers, and async programming? Continue to the <a href="python-crash-course.html">Python Crash Course</a>, or the deep-dive <a href="python-detailed-course.html">Python Detailed Course</a> for CPython internals. Browse all languages in the <a href="../programming-languages.html">Language Courses catalog</a>.</p>
+                <p>🐍 <strong>Next steps:</strong> Ready for advanced topics like decorators, generators, context managers, and CPython internals? Continue to the <a href="python-crash-course.html">Python Crash Course</a>, or the deep-dive <a href="python-detailed-course.html">Python Detailed Course</a>. Browse all languages in the <a href="../programming-languages.html">Language Courses catalog</a>.</p>
             </blockquote>
 
         </article>

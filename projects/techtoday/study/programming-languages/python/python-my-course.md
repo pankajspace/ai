@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, and object-oriented programming (OOP).
+Description: Fast-track Python essentials for everyday programming — variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, OOP, modules & imports, and async/await.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -10,7 +10,7 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 
 # Python My Course
 
-The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, and practical OOP solutions.
+The high-yield Python course reference: common everyday syntax, core collections, functions, error handling, practical OOP solutions, modules & imports, and async/await concurrency.
 
 <a id="table-of-contents"></a>
 
@@ -27,6 +27,8 @@ The high-yield Python course reference: common everyday syntax, core collections
 9. [Functions & Arguments](#9-functions-and-arguments)
 10. [Everyday Error Handling](#10-everyday-error-handling)
 11. [Object-Oriented Programming (OOP)](#11-object-oriented-programming)
+12. [Modules & Imports](#12-modules-and-imports)
+13. [Async / Await](#13-async-and-await)
 
 ---
 
@@ -292,6 +294,19 @@ Key iteration patterns:
 6. `break`: Immediately exits the loop
 7. `continue`: Skips the remainder of the current iteration and jumps to the next
 
+### Understanding `range()` in Depth
+
+In Python, `range()` generates an immutable arithmetic sequence of integers on demand. Rather than creating and storing an entire list of numbers in memory, `range` is an immutable sequence type that produces each number lazily when requested by the loop.
+
+Key features and signatures of `range()`:
+1. **Single Argument `range(stop)`:** Generates numbers from `0` up to `stop - 1`. For example, `range(5)` yields `0, 1, 2, 3, 4`.
+2. **Two Arguments `range(start, stop)`:** Generates numbers starting from `start` up to `stop - 1` (a half-open interval `[start, stop)`). For example, `range(2, 6)` yields `2, 3, 4, 5`.
+3. **Three Arguments `range(start, stop, step)`:** Increments by `step` on each iteration. For example, `range(0, 10, 2)` produces even numbers `0, 2, 4, 6, 8`.
+4. **Negative Step (Counting Down):** If `step` is negative, `range()` counts backwards (provided `start > stop`). For example, `range(5, 0, -1)` yields `5, 4, 3, 2, 1`.
+5. **Lazy Evaluation & $O(1)$ Memory:** `range()` stores only the `start`, `stop`, and `step` values. Because numbers are calculated on the fly, `range(1_000_000_000)` consumes the same tiny, constant memory ($O(1)$ space, ~48 bytes) as `range(5)`.
+6. **Converting to a List:** Because `range` computes values lazily, `print(range(5))` displays `range(0, 5)`. To materialize the numbers into an explicit list, pass it to `list(range(5))` which produces `[0, 1, 2, 3, 4]`.
+7. **Fast $O(1)$ Membership Testing:** Checking `x in range(...)` runs in $O(1)$ constant time because Python checks bounds and step divisibility with arithmetic instead of scanning elements sequentially.
+
 ```python
 fruits = ["apple", "banana", "orange"]
 
@@ -306,6 +321,26 @@ for rank, fruit in enumerate(fruits, start=1):
 # 2. banana
 # 3. orange
 
+# range() forms:
+# 1. Single argument: stop [0, 5)
+for i in range(3):
+    print(f"Step {i}")  # 0, 1, 2
+
+# 2. Two arguments: start and stop [2, 6)
+for i in range(2, 6):
+    print(f"Offset {i}")  # 2, 3, 4, 5
+
+# 3. Three arguments: start, stop, step
+evens = list(range(0, 10, 2))
+print(f"Evens: {evens}")  # [0, 2, 4, 6, 8]
+
+# 4. Counting backwards with negative step
+countdown = list(range(3, 0, -1))
+print(f"Countdown: {countdown}")  # [3, 2, 1]
+
+# 5. O(1) membership check
+print(50 in range(0, 100, 5))  # True (instant arithmetic check)
+
 # Parallel iteration with zip
 prices = [1.20, 0.50, 0.80]
 for fruit, price in zip(fruits, prices):
@@ -318,8 +353,8 @@ while count > 0:
     count -= 1
 ```
 
-- **Strength — Clean Syntax** Direct iteration prevents off-by-one errors and out-of-bounds indexing bugs.
-- **Weakness — Modifying While Looping** Removing items from a list while iterating over it will cause the loop to skip subsequent elements.
+- **Strength — Clean Syntax & O(1) Memory** Direct iteration prevents off-by-one errors, while `range()` generates sequences of any size without allocating memory for elements upfront.
+- **Weakness — Modifying While Looping & Exclusive Stop** Removing items from a list while iterating over it skips elements. In `range(start, stop)`, remember that `stop` is exclusive (`range(1, 5)` stops at 4).
 
 **Interview question**
 
@@ -345,7 +380,7 @@ print("Find first negative passed!")
 
 > **Key idea**
 >
-> Avoid writing `for i in range(len(items)): items[i]`. Instead, use `for item in items:` or `for i, item in enumerate(items):`.
+> Avoid writing `for i in range(len(items)): items[i]`. Instead, use `for item in items:` or `for i, item in enumerate(items):`. When you do need numeric sequences, `range(start, stop, step)` generates them with $O(1)$ memory. Remember that `stop` is exclusive: `range(1, 5)` generates 1, 2, 3, 4 (not 5).
 
 ---
 
@@ -998,6 +1033,227 @@ print("Inventory item passed!")
 
 ---
 
+<a id="12-modules-and-imports"></a>
+
+## 12. Modules & Imports
+
+- **Import Syntax** `import mod / from mod import fn` <!-- great -->
+- **Script Guard** `if __name__ == "__main__":` <!-- great -->
+- **Standard Library** `math, os, sys, json, pathlib` <!-- good -->
+
+A module in Python is simply a `.py` file containing functions, classes, and variables. A package is a directory containing multiple modules (often accompanied by an `__init__.py` file). Python's module system lets you organize code logically across files, reuse utilities, and avoid namespace pollution. The standard library provides dozens of battle-tested modules out of the box without needing third-party packages.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Professional Toolbox with Labeled Drawers**
+>
+> Instead of dumping every wrench, hammer, screwdriver, and nail onto your workbench all at once (which causes clutter and confusion), a workshop organizes tools into labeled drawers. When you need a measuring tape, you open the `math` drawer; when you need to serialize data, you open the `json` drawer. If you only need one specific screwdriver, you take just that tool (`from toolbox import screwdriver`) without cluttering your workbench.
+
+Key import patterns and practices:
+1. `import module_name`: Imports the entire module under its namespace (e.g. `import math; math.sqrt(16)`).
+2. `from module_name import function_name`: Imports specific attributes directly into the local namespace (e.g. `from math import sqrt, pi`).
+3. `import module_name as alias`: Aliases the module name for brevity or to avoid collisions (e.g. `import datetime as dt`).
+4. Avoid `from module import *`: Wildcard imports pollute the local namespace, obscure where names originated, and can accidentally overwrite existing variables.
+5. `if __name__ == "__main__":`: When a Python file is run directly (via `python script.py`), Python sets `__name__` to `"__main__"`. When imported as a module, `__name__` is set to the module's file name. This guard lets you write files that act as reusable libraries when imported, but execute scripts or tests when run directly.
+6. Standard library powerhouses: `pathlib` for modern object-oriented filesystem paths, `json` for serializing and deserializing JSON, `datetime` for timestamps, and `math` for mathematical functions.
+
+```python
+import json
+import math
+from pathlib import Path
+
+# 1. Standard library math functions
+root = math.isqrt(49)
+print(f"Square root: {root}")  # 7
+
+# 2. JSON serialization and deserialization
+user_data = {"username": "alex_dev", "role": "admin", "active": True}
+json_string = json.dumps(user_data)
+print(f"Serialized JSON: {json_string}")
+
+parsed_data = json.loads(json_string)
+print(f"Parsed username: {parsed_data['username']}")
+
+# 3. Pathlib for filesystem path handling
+config_path = Path("config/app.json")
+print(f"Filename: {config_path.name}, Extension: {config_path.suffix}")
+
+# 4. Entry point guard for standalone script execution
+def run_app():
+    print("Application initialized successfully.")
+
+if __name__ == "__main__":
+    run_app()
+```
+
+- **Strength — Clean Namespaces & Reusability** Modules separate concerns, prevent variable name collisions, and let teams share tested code across projects without duplication.
+- **Weakness — Circular Imports** If module A imports module B and module B simultaneously imports module A at the top level, Python throws an `ImportError` or `AttributeError` because one module is accessed before it finishes executing.
+
+**Interview question**
+
+*Write a modular configuration loader function `load_config(raw_json: str, required_keys: list[str]) -> dict` that parses a JSON configuration string and verifies that all required keys are present. If the JSON is malformed or any required key is missing, raise a descriptive ValueError.*
+
+Use `json.loads()` to deserialize the input string inside a `try / except json.JSONDecodeError` block, verify the parsed object is a dictionary, and check that each required key exists in the parsed data.
+
+**Answer — Load and Validate Config**
+
+```python
+import json
+
+def load_config(raw_json: str, required_keys: list[str]) -> dict:
+    try:
+        data = json.loads(raw_json)
+    except json.JSONDecodeError as err:
+        raise ValueError(f"Invalid JSON format: {err}") from err
+
+    if not isinstance(data, dict):
+        raise ValueError("Configuration payload must be a JSON object.")
+
+    missing = [k for k in required_keys if k not in data]
+    if missing:
+        missing_str = ", ".join(missing)
+        raise ValueError(f"Missing required configuration keys: {missing_str}")
+
+    return data
+
+# Test cases
+valid_payload = '{"host": "localhost", "port": 5432, "database": "analytics"}'
+config = load_config(valid_payload, ["host", "port"])
+assert config["host"] == "localhost"
+assert config["port"] == 5432
+
+# Test missing key raises ValueError
+try:
+    load_config(valid_payload, ["host", "api_key"])
+    assert False, "Should have raised ValueError"
+except ValueError as e:
+    assert "Missing required configuration keys: api_key" in str(e)
+
+# Test invalid JSON syntax raises ValueError
+try:
+    load_config("{invalid: json", ["host"])
+    assert False, "Should have raised ValueError"
+except ValueError as e:
+    assert "Invalid JSON format" in str(e)
+
+print("Load config passed!")
+```
+
+> **Key idea**
+>
+> Always wrap executable code in `if __name__ == "__main__":` so that importing the file from another module or test suite doesn't execute script entry logic. Avoid `from module import *` in production code to prevent naming collisions and hidden bugs.
+
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — Asynchronous Programming
+
+Writing high-concurrency, non-blocking code using coroutines, event loops, and modern async/await patterns.
+
+<a id="13-async-and-await"></a>
+
+## 13. Async / Await
+
+- **Coroutine Function** `async def fetch(): ...` <!-- great -->
+- **Yield Control** `await coroutine()` <!-- great -->
+- **Concurrent Execution** `asyncio.gather(*tasks)` <!-- good -->
+- **Event Loop Runner** `asyncio.run(main())` <!-- good -->
+
+Modern Python supports asynchronous programming via `async` and `await` and the built-in `asyncio` library. Unlike multi-threading which relies on the operating system to switch between threads, asynchronous programming uses **cooperative multitasking** on a single thread. When a coroutine reaches an I/O operation (such as waiting for an HTTP API response or database query), it uses `await` to yield control back to the **event loop**, allowing other tasks to run in the meantime.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Fast-Order Chef with Kitchen Timers**
+>
+> In synchronous code, a chef puts bread in the toaster and stares blankly at it for 3 minutes before starting to boil water for tea. In asynchronous code (`async/await`), the chef pushes the toaster lever down (`await toast()`), immediately turns around to start the kettle (`await boil_water()`), and chops vegetables. When a timer dings, the chef picks up the finished item. One chef (a single thread), zero idle waiting time.
+
+Key async patterns and concepts:
+1. `async def`: Declares an asynchronous coroutine function. Calling it does not run the code immediately; it returns a coroutine object.
+2. `await`: Pauses execution of the coroutine until the awaited operation finishes, yielding the thread back to the event loop. `await` can only be used inside `async def` functions.
+3. `asyncio.run(main())`: The modern entry point to run an async program. It creates a new event loop, executes the passed coroutine, and closes the loop upon completion.
+4. `asyncio.gather(*tasks)`: Runs multiple coroutines concurrently and returns their aggregated results in the order the tasks were passed.
+5. `asyncio.sleep(delay)`: A non-blocking asynchronous sleep. In contrast, `time.sleep()` freezes the entire thread and blocks all concurrent tasks.
+6. `asyncio.create_task(coro)`: Schedules a coroutine to run immediately in the background on the event loop as an independent Task.
+7. I/O-bound vs CPU-bound: Use `asyncio` for I/O-bound operations (network requests, API calls, database queries, file transfers). For CPU-intensive operations (heavy number crunching, image processing), use `multiprocessing` to run tasks on separate CPU cores.
+
+```python
+import asyncio
+import time
+
+# Asynchronous coroutine simulating non-blocking network I/O
+async def fetch_service_data(service_name: str, delay: float) -> dict:
+    await asyncio.sleep(delay)  # Non-blocking pause
+    return {"service": service_name, "status": "online", "latency_ms": int(delay * 1000)}
+
+async def main():
+    # Running multiple coroutines concurrently
+    start = time.perf_counter()
+    results = await asyncio.gather(
+        fetch_service_data("auth-service", 0.05),
+        fetch_service_data("billing-service", 0.03),
+        fetch_service_data("analytics-service", 0.01),
+    )
+    elapsed = time.perf_counter() - start
+
+    for res in results:
+        print(f"Service: {res['service']} | Status: {res['status']} ({res['latency_ms']}ms)")
+
+    # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
+    print(f"Concurrent fetch completed in {elapsed:.3f}s")
+
+# Entry point to execute top-level coroutine
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+- **Strength — Massive I/O Concurrency with Low Overhead** A single process can easily manage tens of thousands of concurrent network connections without the high memory and context-switching overhead of OS threads.
+- **Weakness — Blocking Calls Freeze the Entire Event Loop** If you execute synchronous blocking code (like `time.sleep()` or synchronous `requests.get()`) inside a coroutine, the entire event loop stops, stalling every other concurrent task.
+
+**Interview question**
+
+*Write an asynchronous function `check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]` that queries multiple service endpoints concurrently using `asyncio.gather()`. Simulate network latency using `asyncio.sleep()`, and return a dictionary mapping each service name to its health status.*
+
+Define a helper coroutine `ping_endpoint(name: str, delay: float) -> tuple[str, str]` that awaits `asyncio.sleep(delay)` and returns `(name, "healthy")`. In `check_all_services`, construct task coroutines for each endpoint, execute them concurrently with `await asyncio.gather(*tasks)`, and convert the returned list of tuples into a dictionary.
+
+**Answer — Concurrent Service Health Checker**
+
+```python
+import asyncio
+
+async def ping_endpoint(name: str, delay: float) -> tuple[str, str]:
+    await asyncio.sleep(delay)
+    return (name, "healthy")
+
+async def check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, str]:
+    tasks = [ping_endpoint(name, delay) for name, delay in endpoints]
+    results = await asyncio.gather(*tasks)
+    return dict(results)
+
+# Test cases
+async def run_tests():
+    services = [("auth", 0.02), ("db", 0.01), ("cache", 0.01)]
+    status_map = await check_all_services(services)
+    assert status_map == {
+        "auth": "healthy",
+        "db": "healthy",
+        "cache": "healthy"
+    }
+
+    # Empty list test
+    empty_res = await check_all_services([])
+    assert empty_res == {}
+    print("Service health checker passed!")
+
+asyncio.run(run_tests())
+```
+
+> **Key idea**
+>
+> Never invoke synchronous blocking calls (such as `time.sleep()` or synchronous file/network I/O) inside coroutines. If you must run blocking legacy code, delegate it to a worker thread using `await asyncio.to_thread(blocking_func, arg)`.
+
+---
+
 ## Daily Python Cheat Sheet
 
 A quick checklist of the most common daily syntax:
@@ -1011,9 +1267,12 @@ A quick checklist of the most common daily syntax:
 7. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
 8. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
 9. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
+10. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
+11. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
 
 ---
 
 © 2026 TechToday. Python Study Library.
+
 
 
