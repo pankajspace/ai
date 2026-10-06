@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, comprehensions, functions, async/await, OOP, error handling, and modules & imports.
+Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, and modules & imports.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -25,12 +25,13 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 7. [Lists & Slicing](#7-lists-and-slicing)
 8. [Dictionaries](#8-dictionaries)
 9. [Tuples & Sets](#9-tuples-and-sets)
-10. [List Comprehensions](#10-list-comprehensions)
-11. [Functions & Arguments](#11-functions-and-arguments)
-12. [Async / Await](#12-async-and-await)
-13. [Object-Oriented Programming (OOP)](#13-object-oriented-programming)
-14. [Everyday Error Handling](#14-everyday-error-handling)
-15. [Modules & Imports](#15-modules-and-imports)
+10. [Unpacking & Destructuring](#10-unpacking-and-destructuring)
+11. [List Comprehensions](#11-list-comprehensions)
+12. [Functions & Arguments](#12-functions-and-arguments)
+13. [Async / Await](#13-async-and-await)
+14. [Object-Oriented Programming (OOP)](#14-object-oriented-programming)
+15. [Everyday Error Handling](#15-everyday-error-handling)
+16. [Modules & Imports](#16-modules-and-imports)
 
 ---
 
@@ -922,9 +923,97 @@ print("Common users passed!")
 
 ---
 
-<a id="10-list-comprehensions"></a>
+<a id="10-unpacking-and-destructuring"></a>
 
-## 10. List Comprehensions
+## 10. Unpacking & Destructuring
+
+- **Multiple Assignment** `a, b = [10, 20]` <!-- great -->
+- **Starred Unpacking** `first, *rest = items` <!-- great -->
+- **Dict Merging** `{**defaults, **custom}` <!-- good -->
+
+Unpacking (often called destructuring) allows you to extract elements from iterables (tuples, lists, dictionaries, or strings) and assign them directly to multiple variables in a single, clean statement. Python inspects the shape of the data on the right and distributes each element to the corresponding variable on the left.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Card Dealer Distributing Hands**
+>
+> Imagine a card dealer laying out cards onto labelled player mats. Instead of picking up the deck, finding card 0, and walking it over to Player A, then finding card 1 and handing it to Player B, the dealer deals the cards across the table in one swift motion (`player_a, player_b = deal()`). With a starred variable (`*bench`), any remaining cards are collected into a single pile automatically.
+
+Common unpacking patterns:
+1. Sequence unpacking: `x, y = (10, 20)` or `a, b, c = [1, 2, 3]`
+2. In-place swapping: `a, b = b, a` (evaluates right-hand side first into a temporary tuple, then unpacks)
+3. Starred leftovers: `first, *middle, last = [1, 2, 3, 4, 5]` (`first=1, middle=[2, 3, 4], last=5`)
+4. Discarding unused values: `user, _, email = ("Alice", 28, "alice@example.com")` or `head, *_ = items`
+5. Unpacking in iterations: `for key, value in config.items():` or `for idx, val in enumerate(items):`
+6. Nested data destructuring: `name, (lat, lon) = ("Warehouse", (37.77, -122.42))`
+7. Dictionary unpacking & merging: `merged = {**defaults, **custom}` (keys on the right overwrite earlier ones)
+
+```python
+# 1. Multiple assignment and variable swap
+a, b = 10, 20
+a, b = b, a
+print(f"Swapped: a={a}, b={b}")  # Swapped: a=20, b=10
+
+# 2. Starred unpacking for flexible lengths
+scores = [98, 85, 91, 78, 88]
+highest, *others, lowest = sorted(scores, reverse=True)
+print(f"Top: {highest}, Rest: {others}, Lowest: {lowest}")
+
+# 3. Discarding unneeded elements
+name, _, email = ("Bob Smith", "Accountant", "bob@example.com")
+print(f"{name} <{email}>")
+
+# 4. Nested unpacking and dictionary merging
+user_payload = ("admin_user", ("us-east", "cluster-1"))
+username, (region, cluster) = user_payload
+print(f"User {username} deployed to {region}/{cluster}")
+
+default_settings = {"theme": "light", "notifications": True, "timeout": 30}
+user_settings = {"theme": "dark", "timeout": 60}
+active_settings = {**default_settings, **user_settings}
+print(active_settings)  # {'theme': 'dark', 'notifications': True, 'timeout': 60}
+```
+
+- **Strength — Expressive & Clean Syntax** Eliminates clunky temporary variables, index lookups like `row[0]`, and verbose slice assignments.
+- **Weakness — ValueError on Shape Mismatch** Unpacking without `*` requires the exact number of variables to match the elements (`too many values to unpack` or `not enough values to unpack`).
+
+**Interview question**
+
+*Given a list of transaction records where each record is a tuple formatted as `(transaction_id, customer_name, (amount, currency), status)`, write a function `extract_successful_totals(transactions: list[tuple]) -> dict[str, float]` that uses destructuring to calculate the total amount spent per currency for all `"COMPLETED"` transactions.*
+
+Loop through transactions using nested destructuring `for _tx_id, _customer, (amount, currency), status in transactions:`. If status is `"COMPLETED"`, accumulate `amount` into the dictionary for that `currency`.
+
+**Answer — Extract Successful Totals with Destructuring**
+
+```python
+def extract_successful_totals(transactions: list[tuple]) -> dict[str, float]:
+    totals = {}
+    for _tx_id, _customer, (amount, currency), status in transactions:
+        if status == "COMPLETED":
+            totals[currency] = round(totals.get(currency, 0.0) + amount, 2)
+    return totals
+
+# Test cases
+records = [
+    ("TX101", "Alice", (120.50, "USD"), "COMPLETED"),
+    ("TX102", "Bob", (45.00, "EUR"), "PENDING"),
+    ("TX103", "Charlie", (80.25, "USD"), "COMPLETED"),
+    ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
+]
+expected = {"USD": 200.75, "EUR": 30.00}
+assert extract_successful_totals(records) == expected
+print("Extract successful totals passed!")
+```
+
+> **Key idea**
+>
+> In Python, unpacking requires an exact count match. Writing `x, y = [1, 2, 3]` raises `ValueError: too many values to unpack (expected 2)`. Use a starred variable like `x, y, *rest = [1, 2, 3]` or `x, *_, y = ...` when iterable length varies.
+
+---
+
+<a id="11-list-comprehensions"></a>
+
+## 11. List Comprehensions
 
 - **Syntax** `[expression for item in iterable]` <!-- great -->
 - **With Filter** `[expr for item in iterable if condition]` <!-- great -->
@@ -993,9 +1082,9 @@ print("Filter CSV files passed!")
 
 Writing clean reusable functions, argument packing, and non-blocking asynchronous coroutines.
 
-<a id="11-functions-and-arguments"></a>
+<a id="12-functions-and-arguments"></a>
 
-## 11. Functions & Arguments
+## 12. Functions & Arguments
 
 - **Definition & Defaults** `def fn(param=default):` <!-- great -->
 - **Variable Positional** `*args (packed as tuple)` <!-- great -->
@@ -1116,9 +1205,9 @@ print("Build query URL passed!")
 
 ---
 
-<a id="12-async-and-await"></a>
+<a id="13-async-and-await"></a>
 
-## 12. Async / Await
+## 13. Async / Await
 
 - **Coroutine Function** `async def fetch(): ...` <!-- great -->
 - **Yield Control** `await coroutine()` <!-- great -->
@@ -1225,9 +1314,9 @@ asyncio.run(run_tests())
 
 Modeling real-world entities, encapsulating state, and writing clean maintainable classes with methods and inheritance.
 
-<a id="13-object-oriented-programming"></a>
+<a id="14-object-oriented-programming"></a>
 
-## 13. Object-Oriented Programming (OOP)
+## 14. Object-Oriented Programming (OOP)
 
 - **Class & Instance** `class BankAccount: / acc = BankAccount()` <!-- great -->
 - **Initializer** `def __init__(self, ...):` <!-- great -->
@@ -1367,9 +1456,9 @@ print("Inventory item passed!")
 
 Catching runtime exceptions gracefully, structuring scripts, and working with Python modules.
 
-<a id="14-everyday-error-handling"></a>
+<a id="15-everyday-error-handling"></a>
 
-## 14. Everyday Error Handling
+## 15. Everyday Error Handling
 
 - **Try / Except** `Catch specific exceptions safely` <!-- great -->
 - **Common Errors** `ValueError, KeyError, FileNotFoundError` <!-- great -->
@@ -1442,9 +1531,9 @@ print("Safe divide passed!")
 
 ---
 
-<a id="15-modules-and-imports"></a>
+<a id="16-modules-and-imports"></a>
 
-## 15. Modules & Imports
+## 16. Modules & Imports
 
 - **Import Syntax** `import mod / from mod import fn` <!-- great -->
 - **Script Guard** `if __name__ == "__main__":` <!-- great -->
@@ -1567,12 +1656,13 @@ A quick checklist of the most common daily syntax:
 7. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`. Reverse with `[::-1]`.
 8. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`.
 9. **Tuples & Sets:** Use immutable tuples for fixed records. Use `set(items)` to instantly remove duplicates with $O(1)$ membership checks.
-10. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
-11. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
-12. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
-13. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
-14. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
-15. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
+10. **Unpacking & Destructuring:** Multiple assignment (`a, b = b, a`), capture leftovers (`head, *tail = items`), ignore values (`first, *_ = items`), and merge dictionaries with `{**defaults, **custom}`.
+11. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
+12. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
+13. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
+14. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
+15. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
+16. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
 
 ---
 
