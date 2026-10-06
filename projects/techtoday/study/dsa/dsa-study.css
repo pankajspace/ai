@@ -150,8 +150,8 @@ body.is-crash .study>h1:first-child::before {
     content: "DSA crash course";
 }
 
-body.is-quick .study>h1:first-child::before {
-    content: "DSA quick course";
+body.is-my .study>h1:first-child::before {
+    content: "DSA my course";
 }
 
 body.is-advanced .study>h1:first-child::before,
@@ -438,12 +438,79 @@ blockquote p:last-child {
 
 .worked>p:last-child,
 .worked>ol:last-child,
-.worked>ul:last-child {
+.worked>ul:last-child,
+.worked-body>p:last-child,
+.worked-body>ol:last-child,
+.worked-body>ul:last-child {
     margin-bottom: 0;
 }
 
 .worked .code-tabs {
     margin: 10px 0 0;
+}
+
+.worked.is-collapsible {
+    position: relative;
+}
+
+.worked.is-collapsible>b:first-child,
+.worked.is-collapsible>.worked-q {
+    cursor: pointer;
+}
+
+.worked.is-collapsible>.worked-q {
+    padding-right: 32px;
+    border-radius: 4px;
+}
+
+.worked.is-collapsible:not(.is-open)>.worked-q {
+    margin-bottom: 0;
+}
+
+.worked.is-collapsible>.worked-q:hover {
+    color: #f1f5f9;
+}
+
+.worked.is-collapsible>.worked-q:focus-visible {
+    outline: 2px solid rgba(197, 134, 192, 0.6);
+    outline-offset: 3px;
+}
+
+.worked-arrow {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #8c9ba8;
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.worked-arrow svg {
+    width: 13px;
+    height: 13px;
+}
+
+.worked-arrow-v {
+    transform-origin: center;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.worked.is-open .worked-arrow-v {
+    transform: scaleY(0);
+}
+
+.worked.is-open>.worked-arrow {
+    color: #c586c0;
+    background: rgba(197, 134, 192, 0.12);
+    border-color: rgba(197, 134, 192, 0.25);
 }
 
 /* --------------------------------------------------------------- code */
@@ -1618,7 +1685,7 @@ details.extra[open] {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
-    margin: 16px 0 14px;
+    margin: 16px 0 10px;
     padding: 8px 14px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1628,6 +1695,7 @@ details.extra[open] {
 .course-toolbar-actions {
     display: flex;
     gap: 8px;
+    margin: 0 0 14px;
 }
 
 .action-btn {
@@ -2016,9 +2084,9 @@ details.extra[open] {
     padding: 10px 12px 6px;
 }
 
-.part-section:has(.ind-questions) > .part-body,
-.part-section:has(.ind-assignments) > .part-body,
-.part-section:has(.ind-problems) > .part-body,
+.part-section:has(.ind-questions)>.part-body,
+.part-section:has(.ind-assignments)>.part-body,
+.part-section:has(.ind-problems)>.part-body,
 .part-body:has(> .worked) {
     padding-left: 0;
     padding-right: 0;
@@ -2069,8 +2137,8 @@ details.extra[open] {
     margin-bottom: 5px;
 }
 
-.part-body > ul:not(.card-grid):not(.meta-strip),
-.part-body > ol {
+.part-body>ul:not(.card-grid):not(.meta-strip),
+.part-body>ol {
     margin: 8px 0 12px;
     padding-left: 20px;
     color: #c6d1dc;
@@ -2078,8 +2146,8 @@ details.extra[open] {
     font-size: 15px;
 }
 
-.part-body > ul:not(.card-grid):not(.meta-strip) li,
-.part-body > ol li {
+.part-body>ul:not(.card-grid):not(.meta-strip) li,
+.part-body>ol li {
     margin-bottom: 5px;
 }
 

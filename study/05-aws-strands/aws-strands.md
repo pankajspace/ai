@@ -83,9 +83,9 @@ All the code ships with the guide, already fixed and ready to run. You can renam
 ├── setup.sh / setup.bat
 ├── 00_check_setup.py     # run this FIRST
 ├── 01_list_models.py     # use when a model is retired
-├── shivank1/             # 2 examples
-├── shivank2/             # 9 examples
-└── shivank3/             # capstone project
+├── one/             # 2 examples
+├── two/             # 9 examples
+└── three/             # capstone project
 ```
 
 ### 0.5 · Install the packages
@@ -249,12 +249,12 @@ The loop in plain terms:
 
 ## 8. Building a "Hello World" agent
 
-**How to run every example:** run everything **from the project root** (the folder containing `config.py`), not from inside `shivank1/`. The scripts import shared settings from `config.py`, so running from a subfolder gives `ModuleNotFoundError: No module named 'config'`.
+**How to run every example:** run everything **from the project root** (the folder containing `config.py`), not from inside `one/`. The scripts import shared settings from `config.py`, so running from a subfolder gives `ModuleNotFoundError: No module named 'config'`.
 
 ### 8.1 · The simplest possible agent — Strands + Nova Lite
 
 ```python
-# shivank1/01_hello_world_agent.py
+# one/01_hello_world_agent.py
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from config import NOVA_LITE
@@ -269,7 +269,7 @@ print(response)
 ```
 
 ```bash
-python shivank1/01_hello_world_agent.py
+python one/01_hello_world_agent.py
 ```
 
 **Four lines is a whole agent.** Read each one: choose a model, wrap it in an `Agent`, call the agent like a function, print the answer. There are no tools here yet, so the loop runs exactly once — this is the "before" picture for Module 2.
@@ -279,7 +279,7 @@ python shivank1/01_hello_world_agent.py
 Strands is not the only framework. This version uses LangGraph and adds a small tool, so you can watch the loop actually loop.
 
 ```python
-# shivank1/02_hello_world_langgraph.py
+# one/02_hello_world_langgraph.py
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
@@ -313,7 +313,7 @@ for message in response["messages"]:
 ```
 
 ```bash
-python shivank1/02_hello_world_langgraph.py
+python one/02_hello_world_langgraph.py
 ```
 
 **Expected output — and the moment it clicks:** you'll see five lines: `human:` the request · `ai:` (empty) · `tool:` Hello, Alice! · `tool:` Hello, Bob! · `ai:` a summary. **Stop and unpack this.** The empty `ai:` line is the model *choosing to use a tool instead of answering*. That is the agentic loop, visible in your terminal.
@@ -373,7 +373,7 @@ The bridge is **function calling** (also called tool use). Add three things:
 3. **A proper docstring** — describes what it does, so the agent knows *when* to use it.
 
 ```python
-# shivank2/01_function_to_tool.py
+# two/01_function_to_tool.py
 from strands import Agent, tool
 import requests
 
@@ -402,7 +402,7 @@ response = agent("Is the staging server running? Check https://httpbin.org/get")
 ```
 
 ```bash
-python shivank2/01_function_to_tool.py
+python two/01_function_to_tool.py
 ```
 
 **The one thing to take away:** the docstring is **not a comment — it is the user manual the model reads.** The model decides whether to call your tool based on that description alone. Vague docstring, unreliable agent. Deliberately break one: change the docstring to `"Does a thing."` and watch the agent stop calling it. That single experiment teaches more than any amount of reading.
@@ -414,7 +414,7 @@ In short: this pattern works for any function. Add `@tool`, give it to your `Age
 A practical, self-contained example. Nothing external to configure.
 
 ```python
-# shivank2/01_function_to_tool.py
+# two/01_function_to_tool.py
 from strands import Agent, tool
 
 @tool
@@ -446,14 +446,14 @@ print(response.message['content'][0]['text'])
 The agent understands *intent*, not keywords — all three of these work without any extra code:
 
 ```python
-# shivank2/02_tip_calculator.py
+# two/02_tip_calculator.py
 agent("What's a 15% tip on $42?")
 agent("Bill is $120, we want to tip 18%, split between 3 people")
 agent("Calculate tip for $67.50 at 20%")
 ```
 
 ```bash
-python shivank2/02_tip_calculator.py
+python two/02_tip_calculator.py
 ```
 
 **Contrast worth drawing:** in traditional chatbot development you'd write regex patterns and intent classifiers to handle those three phrasings, and separately extract the numbers. Here you wrote one function with a clear description and the model did the intent recognition *and* the parameter extraction. That is the leap.
@@ -463,7 +463,7 @@ python shivank2/02_tip_calculator.py
 The scenario: you ask a sales assistant to *"pull last quarter's sales data and email a summary to the team."* That's not one task — it's three: query the database, analyse the numbers, send an email.
 
 ```python
-# shivank2/03_multi_tool_sales.py
+# two/03_multi_tool_sales.py
 from strands import Agent, tool
 
 @tool
@@ -490,7 +490,7 @@ response = agent("Pull last quarter's sales data and email a summary to the team
 The agent plans the order itself: `1·get_sales_data` (revenue, deals) → `2·analyze_sales` (avg deal size) → `3·send_email` (delivers summary).
 
 ```bash
-python shivank2/03_multi_tool_sales.py
+python two/03_multi_tool_sales.py
 ```
 
 You never told the agent the sequence. It recognised it needed data first, then analysis, then delivery — and chained them. **That is planning.**
@@ -504,7 +504,7 @@ You don't have to write everything. `strands_tools` ships ready-made tools — i
 ### 13.1 · Calculator
 
 ```python
-# shivank2/05_prebuilt_tools.py
+# two/05_prebuilt_tools.py
 from strands import Agent
 from strands_tools import calculator
 
@@ -521,7 +521,7 @@ agent("What's the derivative of sin(x) * cos(x)?")
 This also introduces the **system prompt** — standing instructions that shape the agent's behaviour across every request.
 
 ```bash
-python shivank2/05_prebuilt_tools.py
+python two/05_prebuilt_tools.py
 ```
 
 ### 13.2 · Combining several pre-built tools
@@ -529,7 +529,7 @@ python shivank2/05_prebuilt_tools.py
 Fetch data from the web, do maths on it, and write a file — one request, three tools.
 
 ```python
-# shivank2/06_multi_prebuilt_tools.py
+# two/06_multi_prebuilt_tools.py
 import os
 from strands import Agent
 from strands_tools import http_request, calculator, file_write
@@ -550,7 +550,7 @@ and save the results to stock_summary.txt
 ```
 
 ```bash
-python shivank2/06_multi_prebuilt_tools.py
+python two/06_multi_prebuilt_tools.py
 ```
 
 **`BYPASS_TOOL_CONSENT` explained:** some tools are sensitive — they write files or touch cloud resources — so Strands **pauses and asks permission** before running them. Setting `BYPASS_TOOL_CONSENT="true"` turns that prompt off so the cell runs unattended. It's a real safety feature: in production you often *want* a human approving actions. If a cell seems to hang with `[*]`, it's waiting for your `y` at a hidden prompt.
@@ -560,7 +560,7 @@ python shivank2/06_multi_prebuilt_tools.py
 One tool, many services. `use_aws` translates plain English into AWS API calls.
 
 ```python
-# shivank2/07_use_aws.py
+# two/07_use_aws.py
 from strands import Agent
 from strands_tools import use_aws
 
@@ -586,7 +586,7 @@ agent("Invoke the Lambda function 'order-processor' with order ID 67890")
 These examples assume the AWS resources already exist in your account. While learning, **stick to the S3 listing example** — it works on any account, even an empty one (an empty list is a valid result, not an error).
 
 ```bash
-python shivank2/07_use_aws.py
+python two/07_use_aws.py
 ```
 
 You described what you wanted in plain English, and the agent figured out the AWS API calls. **You didn't write boto3 code, didn't handle AWS responses, and didn't even specify which operation to use.**
@@ -598,7 +598,7 @@ You described what you wanted in plain English, and the agent figured out the AW
 When community tools don't fit — an internal API, a proprietary database, something new — you write your own. Example: an online store checking inventory.
 
 ```python
-# shivank2/04_custom_tool_inventory.py
+# two/04_custom_tool_inventory.py
 from strands import Agent, tool
 
 @tool
@@ -632,7 +632,7 @@ agent("Can I order PROD-123 right now?")
 ```
 
 ```bash
-python shivank2/04_custom_tool_inventory.py
+python two/04_custom_tool_inventory.py
 ```
 
 Note the mock dictionary: in production you'd replace it with real database queries or an API call. The *agent-facing* part — decorator, type hints, docstring — stays identical either way.
@@ -650,7 +650,7 @@ The story: your agent has five tools, each opening its own database connection. 
 **The fix:** group related tools in a class so they share one connection.
 
 ```python
-# shivank2/08_class_based_tools.py
+# two/08_class_based_tools.py
 from strands import Agent, tool
 
 class InventoryTools:
@@ -697,7 +697,7 @@ agent("Update PROD-456 stock to 25 units, then confirm the new level")
 ```
 
 ```bash
-python shivank2/08_class_based_tools.py
+python two/08_class_based_tools.py
 ```
 
 The key line is `inventory = InventoryTools()` followed by passing the *bound methods* `inventory.check_stock` and `inventory.update_stock` as tools — both share the single instance's state (`self.products`), so in production they'd share one database connection instead of opening one per call.
@@ -707,7 +707,7 @@ The key line is `inventory = InventoryTools()` followed by passing the *bound me
 If three warehouse lookups take 2 seconds each, doing them one after another costs 6 seconds. Make the tool `async` and they run in parallel.
 
 ```python
-# shivank2/09_async_tools.py
+# two/09_async_tools.py
 import asyncio
 import time
 from strands import Agent, tool
@@ -750,7 +750,7 @@ await main()
 ```
 
 ```bash
-python shivank2/09_async_tools.py
+python two/09_async_tools.py
 ```
 
 **Great demo moment:** the printed timing is the lesson — roughly 2 seconds instead of 6. Run it yourself and you *see* concurrency instead of just reading about it. The key call is `agent.invoke_async(...)`, the async counterpart to calling the agent directly. (The bare `await main()` works in a Jupyter cell; in a plain script use `asyncio.run(main())`.)
@@ -773,7 +773,7 @@ The four tools:
 ### Starter code
 
 ```python
-# shivank3/travel_assistant.py
+# three/travel_assistant.py
 """Capstone: Travel Assistant Agent (Modules 1 & 2)."""
 
 from strands import Agent, tool
@@ -874,10 +874,10 @@ if __name__ == "__main__":
 ```
 
 ```bash
-python shivank3/travel_assistant.py
+python three/travel_assistant.py
 
 # or ask your own question:
-python shivank3/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 ```
 
 ### What to observe together
@@ -911,22 +911,22 @@ python 00_check_setup.py         # verifies everything, makes a real model call
 
 ```bash
 # ---- Module 1 · first agents ----
-python shivank1/01_hello_world_agent.py        # simplest agent, no tools
-python shivank1/02_hello_world_langgraph.py    # with a tool — watch the loop
+python one/01_hello_world_agent.py        # simplest agent, no tools
+python one/02_hello_world_langgraph.py    # with a tool — watch the loop
 
 # ---- Module 2 · tools ----
-python shivank2/01_function_to_tool.py         # THE core idea: @tool
-python shivank2/02_tip_calculator.py           # first useful tool agent
-python shivank2/03_multi_tool_sales.py         # 3 tools, agent picks the order
-python shivank2/04_custom_tool_inventory.py    # build your own tool
-python shivank2/05_prebuilt_tools.py           # community tools + system prompt
-python shivank2/06_multi_prebuilt_tools.py     # combining several tools
-python shivank2/07_use_aws.py                  # one tool, many AWS services
-python shivank2/08_class_based_tools.py        # shared-resource pattern
-python shivank2/09_async_tools.py              # parallel tools: 2s not 6s
+python two/01_function_to_tool.py         # THE core idea: @tool
+python two/02_tip_calculator.py           # first useful tool agent
+python two/03_multi_tool_sales.py         # 3 tools, agent picks the order
+python two/04_custom_tool_inventory.py    # build your own tool
+python two/05_prebuilt_tools.py           # community tools + system prompt
+python two/06_multi_prebuilt_tools.py     # combining several tools
+python two/07_use_aws.py                  # one tool, many AWS services
+python two/08_class_based_tools.py        # shared-resource pattern
+python two/09_async_tools.py              # parallel tools: 2s not 6s
 
 # ---- Module 3 · capstone ----
-python shivank3/travel_assistant.py
+python three/travel_assistant.py
 ```
 
 ### Helpers

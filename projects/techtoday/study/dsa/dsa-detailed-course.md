@@ -58,6 +58,12 @@ A complete, self-contained course. Every structure is explained from first princ
 37. [Pattern Recognition Playbook](#37-pattern-recognition-playbook)
 38. [Practice Roadmap](#38-practice-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations
+
+How to measure an algorithm, and how memory shapes the real cost of every structure.
+
 <a id="1-how-to-use-this-course"></a>
 
 ## 1. How to Use This Course
@@ -332,6 +338,12 @@ console.log(depth());               // ~10,000-15,000 depending on engine
 // No engine ships tail-call optimisation in practice either, so the same
 // advice applies: convert deep recursion into an explicit stack loop.
 ```
+
+<a id="unit-2"></a>
+
+## Unit 2 — Linear Structures & Hashing
+
+Sequences and the techniques that make them fast: arrays, strings, two pointers, windows, prefix sums, hashing, lists, stacks and queues.
 
 <a id="4-arrays"></a>
 
@@ -2695,6 +2707,12 @@ function orangesRotting(grid) {         // O(rows * cols)
 console.log(orangesRotting([[2, 1, 1], [1, 1, 0], [0, 1, 1]]));   // 4
 ```
 
+<a id="unit-3"></a>
+
+## Unit 3 — Recursion, Sorting & Searching
+
+The three fundamental algorithmic moves: recurse, sort and binary-search.
+
 <a id="13-recursion"></a>
 
 ## 13. Recursion
@@ -3893,6 +3911,12 @@ function searchRotated(nums, target) {  // O(log n)
 console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 0));   // 4
 console.log(searchRotated([4, 5, 6, 7, 0, 1, 2], 3));   // -1
 ```
+
+<a id="unit-4"></a>
+
+## Unit 4 — Trees & Hierarchies
+
+Hierarchical structures: binary and balanced trees, heaps, tries and disjoint sets.
 
 <a id="16-trees"></a>
 
@@ -5946,6 +5970,12 @@ function findRedundantConnection(edges) {   // effectively O(n)
 console.log(findRedundantConnection([[1, 2], [1, 3], [2, 3]]));   // [2, 3]
 ```
 
+<a id="unit-5"></a>
+
+## Unit 5 — Graphs
+
+Modelling relationships as graphs, and the classic traversal, ordering, shortest-path and spanning-tree algorithms.
+
 <a id="22-graph-representations"></a>
 
 ## 22. Graph Representations
@@ -7705,6 +7735,12 @@ function minCostToSupplyWater(n, wells, pipes) {   // O(E log E)
 
 console.log(minCostToSupplyWater(3, [1, 2, 2], [[1, 2, 1], [2, 3, 1]]));   // 3
 ```
+
+<a id="unit-6"></a>
+
+## Unit 6 — Paradigms & Advanced Topics
+
+Greedy, divide and conquer, backtracking and DP, specialised techniques, and the revision material.
 
 <a id="27-greedy-algorithms"></a>
 

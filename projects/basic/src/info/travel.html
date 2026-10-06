@@ -4,191 +4,666 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Travel Suggestion · AI Playground</title>
-    <meta name="description" content="How the Travel Suggestion demo works: GPT-4o mini and the code behind it." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <meta name="description"
+        content="How the Travel Suggestion demo works: GPT-4o mini and the code behind it." />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Playground</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Playground</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-travel-py">travel.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x2708;&#xFE0F; Travel Suggestion<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x2708;&#xFE0F; Travel Suggestion</h1>
-                <p class="subtitle">GPT-4o mini via OpenAI</p>
+            <p class="lede">GPT-4o mini via OpenAI. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    This demo asks an LLM to suggest one thing to do in a city you name. It uses
-                    <strong>OpenAI's GPT-4o mini</strong> because the task is open-ended creative writing that
-                    benefits from strong instruction-following, while staying cheap and fast enough for an
-                    interactive demo.
-                </p>
-                <p>
-                    A short system prompt ("You are a witty travel guide") gives the model a consistent persona
-                    for every request, and the user prompt asks for exactly one suggestion so the reply stays
-                    short enough to fit in the result card.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>Prompt Engineering for UI Constraints</strong></p>
-                <p>The Travel Suggestion demo illustrates how careful prompt design can adapt LLM outputs to fit
-                    specific application requirements:</p>
-                <ul>
-                    <li><strong>Enforcing Brevity:</strong> In a UI designed around compact result cards, long-winded
-                        answers break the layout. By explicitly structuring the user prompt as <em>"Suggest one thing to
-                            do in {city}"</em>, we force the GPT-4o mini model to narrow its focus. This guarantees a
-                        concise, punchy response that fits perfectly into the demo's visual design.</li>
-                    <li><strong>Stateless Persona Maintenance:</strong> Every time you click "Suggest something," the
-                        backend makes a fresh, isolated API call. Because the OpenAI API is stateless, it doesn't
-                        remember your previous city searches. Therefore, we must inject the system prompt (<em>"You are
-                            a witty travel guide."</em>) into every single request to guarantee the tone remains
-                        consistently playful, regardless of how many times you use the tool.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Type a city, click “Suggest something”</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /travel</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">get_travel_suggestion()</span>
-                        <span class="flow-detail">Builds the prompt</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">OpenAI API</span>
-                        <span class="flow-detail">GPT-4o mini suggests an activity</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Suggestion rendered in the result box</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        This demo asks an LLM to suggest one thing to do in a city you name. It uses
+                        <strong>OpenAI's GPT-4o mini</strong> because the task is open-ended creative writing that
+                        benefits from strong instruction-following, while staying cheap and fast enough for an
+                        interactive demo.
+                    </p>
+                    <p>
+                        A short system prompt ("You are a witty travel guide") gives the model a consistent persona
+                        for every request, and the user prompt asks for exactly one suggestion so the reply stays
+                        short enough to fit in the result card.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />city] -->|POST /travel| B[app.py<br />travel route]
-                        B -->|city| C[travel.py<br />get_travel_suggestion]
-                        C -->|prompt| D[OpenAI API<br />GPT-4o mini]
-                        D -->|suggestion| C
-                        C -->|suggestion| B
-                        B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Prompt Engineering for UI Constraints</strong></p>
+                    <p>The Travel Suggestion demo illustrates how careful prompt design can adapt LLM outputs to fit
+                        specific application requirements:</p>
+                    <ul>
+                        <li><strong>Enforcing Brevity:</strong> In a UI designed around compact result cards, long-winded
+                            answers break the layout. By explicitly structuring the user prompt as <em>"Suggest one thing to
+                                do in {city}"</em>, we force the GPT-4o mini model to narrow its focus. This guarantees a
+                            concise, punchy response that fits perfectly into the demo's visual design.</li>
+                        <li><strong>Stateless Persona Maintenance:</strong> Every time you click "Suggest something," the
+                            backend makes a fresh, isolated API call. Because the OpenAI API is stateless, it doesn't
+                            remember your previous city searches. Therefore, we must inject the system prompt (<em>"You are
+                                a witty travel guide."</em>) into every single request to guarantee the tone remains
+                            consistently playful, regardless of how many times you use the tool.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Generates the suggestion via OpenAI's chat completions API.</span>
-                <pre><code class="language-python">from config import get_openai_client
 
-# gpt-4o-mini: fast, cheap, and well-suited for a concise creative reply
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Type a city, click “Suggest something”</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /travel</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">get_travel_suggestion()</span>
+                            <span class="flow-detail">Builds the prompt</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">GPT-4o mini suggests an activity</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Suggestion rendered in the result box</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />city] -->|POST /travel| B[app.py<br />travel route]
+                            B -->|city| C[travel.py<br />get_travel_suggestion]
+                            C -->|prompt| D[OpenAI API<br />GPT-4o mini]
+                            D -->|suggestion| C
+                            C -->|suggestion| B
+                            B -->|JSON result| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-travel-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-travel-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-travel-py" class="topic-title is-file">travel.py<a class="headerlink" href="#source-travel-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">51 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-travel-py">
+                    <span class="file-path">src/python/travel.py</span>
+                    <p class="file-label">Suggest something to do in a given city using GPT-4o mini.</p>
+                    <pre><code data-lang="python">"""Suggest something to do in a given city using GPT-4o mini.
+
+GPT-4o mini is used here because the task is open-ended creative writing
+that benefits from OpenAI's instruction-following quality, while still being
+cheap and fast enough for an interactive demo.
+"""
+
+from config import get_openai_client
+
+# gpt-4o-mini is a smaller, faster, and cheaper variant of GPT-4o that still
+# produces high-quality creative responses — a good fit for this demo.
 TRAVEL_MODEL = "gpt-4o-mini"
 
 
-def get_travel_suggestion(city: str = "Bangalore") -> str:
-    # Step 1: Initialize the OpenAI client
-    client = get_openai_client()
+def get_travel_suggestion(city: str = "Bangalore") -&gt; str:
+    """Return a travel suggestion for the given city using GPT-4o mini.
 
-    # Step 2: Query the model with travel guide persona
+    Args:
+        city: The city to suggest an activity for.
+              Defaults to Bangalore if the caller does not supply one.
+
+    Returns:
+        The text of the assistant's reply as a plain string.
+    """
+    # ① create the OpenAI client used for the travel suggestion
+    client = get_openai_client()
+    # ② ask the model for one concise activity in the requested city
     response = client.chat.completions.create(
         model=TRAVEL_MODEL,
         messages=[
             {
                 "role": "system",
-                # A brief persona keeps every response short, lively, and engaging
+                # A brief, vivid persona keeps responses short and fun.
+                # The model inherits this context for every user message.
                 "content": "You are a witty travel guide.",
             },
             {
                 "role": "user",
-                # Asking for exactly one suggestion keeps the reply punchy and concise
+                # Asking for exactly one suggestion keeps the response
+                # concise enough to display in a small UI card.
                 "content": f"Suggest one thing to do in {city}.",
             },
         ],
     )
-    # Step 3: Extract and return the completion content
-    return response.choices[0].message.content</code></pre>
+    # ③ return the first assistant reply as plain text for the API
+    return response.choices[0].message.content
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the travel suggester over HTTP as <code>POST /travel</code>.</span>
-                <pre><code class="language-python">@bp.route("/travel", methods=["POST"])
-def travel():
-    # Step 1: Parse request JSON payload
+
+if __name__ == "__main__":
+    # Quick manual test: run `python travel.py` to print a suggestion to the terminal.
+    print(get_travel_suggestion())</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">42 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create API clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create API clients.
+
+This module is the single place that knows about API keys and base URLs.
+Every other module calls get_openai_client() or get_groq_client() instead
+of constructing the client themselves, so key management stays in one place.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Read key=value pairs from the .env file in the project root and inject
+# them into os.environ.  This call is safe to make at import time — if no
+# .env file exists (e.g. in production where env vars are set directly),
+# python-dotenv simply does nothing.
+load_dotenv()
+
+# Groq exposes an OpenAI-compatible REST API at this base URL.  Because
+# the interface is identical we can reuse the official `openai` package
+# by just pointing it at a different host — no extra SDK required.
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return an OpenAI client authenticated with OPENAI_API_KEY."""
+    # The OpenAI constructor reads api_key from the environment automatically
+    # if you pass it explicitly, which makes the dependency visible at the
+    # call site rather than relying on an implicit env lookup inside the SDK.
+    # We dont need BASE_URL as its the default for OpenAI as https://api.openai.com/v1
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY")) 
+
+
+def get_groq_client() -&gt; OpenAI:
+    """Return an OpenAI client pointed at the Groq API.
+
+    The returned object is an instance of the standard ``openai.OpenAI``
+    class — Groq's API is wire-compatible so no additional library is
+    needed.  Only ``api_key`` and ``base_url`` differ from the OpenAI
+    client above.
+    """
+    return OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=GROQ_BASE_URL)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">239 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing joke, travel, summarize, and arena endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing joke, travel, summarize, and arena endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/joke",
+  etc.  In production Nginx forwards ``/basic/...`` traffic to the container
+  and PATH_PREFIX is set to "/basic", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from arena import battle
+from joke import get_joke
+from rate_limiter import check_rate_limit
+from summarizer import MAX_TEXT_CHARS, PERSONALITIES, summarize, summarize_text
+from travel import get_travel_suggestion
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/basic") so the app
+# works correctly behind an Nginx location block.  Locally it is empty string,
+# which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit POST requests because static pages are safe to serve
+    if request.method == "POST":
+        # ② ask the shared limiter whether this client has exceeded the window
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a 429 response when the limiter says the client is blocked
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the bundled HTML shell from the static source directory
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the deployment path prefix so browser fetch calls hit the API
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML with the correct content type
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/joke", methods=["POST"])
+def joke():
+    """Return a joke generated by GPT OSS 120B on Groq.
+
+    Request body (JSON): ``{ "topic": "&lt;optional topic&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;joke text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    # ① parse the JSON request body from the browser
     data = request.get_json(force=True)
-
-    # Step 2: Default to Bangalore if input is blank so the demo always succeeds
-    city = (data.get("city") or "").strip() or "Bangalore"
-
-    # Step 3: Generate suggestion and return JSON response
+    # ② normalize the optional topic so get_joke can choose random if empty
+    # topic is optional; an empty string causes get_joke() to pick randomly.
+    topic = (data.get("topic") or "").strip()
     try:
-        text = get_travel_suggestion(city)
-        return jsonify({"result": text})
+        # ③ generate the joke through the Groq-backed feature module
+        text = get_joke(topic)
+        # ④ wrap the joke in JSON and disable caching so each click is fresh
+        response = jsonify({"result": text})
+        # Prevent the browser from caching joke responses — every click
+        # should fetch a fresh joke from the API.
+        response.headers["Cache-Control"] = "no-store"
+        return response
+    # ⑤ convert unexpected model or API failures into a JSON error
     except Exception as e:
-        # Return error details on failure
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+@bp.route("/travel", methods=["POST"])
+def travel():
+    """Return a travel suggestion for a city via GPT-4o mini.
+
+    Request body (JSON): ``{ "city": "&lt;city name&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;suggestion text&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 500
+    """
+    # ① parse the JSON request body from the browser
+    data = request.get_json(force=True)
+    # ② choose the submitted city or a Bangalore default for empty input
+    # Fall back to Bangalore if the user submits an empty city, so the
+    # call to get_travel_suggestion() always has a usable value.
+    city = (data.get("city") or "").strip() or "Bangalore"
+    try:
+        # ③ ask the travel feature module for one suggestion
+        text = get_travel_suggestion(city)
+        # ④ return the suggestion in the response shape the UI expects
+        return jsonify({"result": text})
+    # ⑤ convert unexpected model or API failures into a JSON error
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/summarize", methods=["POST"])
+def summarizer():
+    """Summarize a URL (scraped) or pasted article text with GPT-4o mini.
+
+    Request body (JSON): ``{ "url": "&lt;website URL&gt;" }`` or
+                         ``{ "text": "&lt;article text&gt;" }``, plus an optional
+                         ``"personality"`` (friendly | snarky | eli5 | professional)
+    Response (JSON):     ``{ "result": "&lt;markdown summary&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (bad input)
+                         or HTTP 500 (API / scraping error)
+    """
+    # ① parse the JSON request body from the browser
+    data = request.get_json(force=True)
+    # ② normalize URL, article text, and summary personality inputs
+    url = (data.get("url") or "").strip()
+    article = (data.get("text") or "").strip()
+    personality = (data.get("personality") or "friendly").strip()
+    # ③ validate at the boundary before spending scraper or model work
+    # Validate at the boundary — return 400 immediately rather than letting
+    # the scraper or model run on bad input.
+    if not url and not article:
+        return jsonify({"error": "A website URL or article text is required."}), 400
+    if personality not in PERSONALITIES:
+        return jsonify({"error": "Unknown personality."}), 400
+    if len(article) &gt; MAX_TEXT_CHARS:
+        return jsonify({"error": f"Text is too long (max {MAX_TEXT_CHARS:,} characters)."}), 400
+    try:
+        # ④ summarize pasted text directly, otherwise scrape and summarize the URL
+        text = summarize_text(article, personality) if article else summarize(url, personality)
+        # ⑤ return the markdown summary in the response shape the UI expects
+        return jsonify({"result": text})
+    # ⑥ convert unexpected scraper or model failures into a JSON error
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/arena", methods=["POST"])
+def arena():
+    """Send one prompt to two models and return both responses.
+
+    Request body (JSON): ``{ "prompt": "&lt;user prompt&gt;" }``
+    Response (JSON)::
+
+        {
+          "result": {
+            "model_a": {"model": "gpt-4o-mini",            "reply": "..."},
+            "model_b": {"model": "openai/gpt-oss-120b", "reply": "..."}
+          }
+        }
+
+    Error response: ``{ "error": "&lt;message&gt;" }`` with HTTP 400 (missing prompt)
+                    or HTTP 500 (API error)
+    """
+    # ① parse the JSON request body from the browser
+    data = request.get_json(force=True)
+    # ② normalize the prompt before validating it
+    prompt = (data.get("prompt") or "").strip()
+    # ③ reject empty prompts before calling either model
+    if not prompt:
+        return jsonify({"error": "A prompt is required."}), 400
+    try:
+        # ④ send the prompt to both arena models for comparison
+        result = battle(prompt)
+        # ⑤ return both labelled model replies to the UI
+        return jsonify({"result": result})
+    # ⑥ convert unexpected model or API failures into a JSON error
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/joke") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8080 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Playground &mdash; ✈️ Travel Suggestion &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

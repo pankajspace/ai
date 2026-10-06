@@ -4,131 +4,308 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Reranking · RAG Lab</title>
     <meta name="description"
         content="How the Reranking demo works: bi-encoder retrieval, cross-encoder reranking, and the code behind it." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>RAG Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; RAG Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-rerank-py">rerank.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F500; Reranking<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F500; Reranking</h1>
-                <p class="subtitle">bi-encoder retrieval + cross-encoder reranking</p>
+            <p class="lede">bi-encoder retrieval + cross-encoder reranking. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    A bi-encoder (the sentence-transformer used for vector indexing) is fast but approximate because it
-                    encodes the query and candidate documents independently. A cross-encoder evaluates the query and
-                    candidate pair together with full joint attention, which is significantly more accurate but
-                    computationally prohibitive to run over an entire document collection.
-                </p>
-                <p>
-                    The solution is a two-stage retrieval pipeline: retrieve a candidate pool with the fast bi-encoder
-                    (<code>initial_k=25</code>), then rerank with the cross-encoder to select the highest-scoring
-                    passages (<code>top_k=3</code>). This achieves cross-encoder precision with bi-encoder speed.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p>The <strong>Reranking</strong> demo illustrates how a two-stage retrieval pipeline optimizes both
-                    latency and retrieval precision in RAG systems:</p>
-                <ul>
-                    <li><strong>Stage 1 — Rapid Bi-Encoder Retrieval:</strong> The system uses Chroma to quickly
-                        retrieve candidate chunks by comparing pre-computed vector embeddings. While fast, independent
-                        encoding means bi-encoders can miss subtle semantic relationships, occasionally ranking a highly
-                        relevant chunk lower than it should.</li>
-                    <li><strong>Stage 2 — High-Precision Cross-Encoder Reranking:</strong> The cross-encoder
-                        (<code>ms-marco-MiniLM-L6-v2</code>) takes each candidate chunk paired directly with the
-                        question. Full cross-attention mechanisms analyze token-level interactions simultaneously,
-                        generating a refined relevance score.</li>
-                    <li><strong>Optimal Efficiency:</strong> Running the computationally intensive cross-encoder on only
-                        the top 25 candidates delivers cross-encoder precision with the sub-second speed of a vector
-                        search.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Knowledge base + question</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /rerank</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">build_index()</span>
-                        <span class="flow-detail">Chroma vector store</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">retrieve_with_rerank(db, question)</span>
-                        <span class="flow-detail">bi-encoder: k=25 → cross-encoder rerank → top 3</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Top 3 chunks rendered</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        A bi-encoder (the sentence-transformer used for vector indexing) is fast but approximate because it
+                        encodes the query and candidate documents independently. A cross-encoder evaluates the query and
+                        candidate pair together with full joint attention, which is significantly more accurate but
+                        computationally prohibitive to run over an entire document collection.
+                    </p>
+                    <p>
+                        The solution is a two-stage retrieval pipeline: retrieve a candidate pool with the fast bi-encoder
+                        (<code>initial_k=25</code>), then rerank with the cross-encoder to select the highest-scoring
+                        passages (<code>top_k=3</code>). This achieves cross-encoder precision with bi-encoder speed.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser<br />knowledge base + question"] -->|POST /rerank| B["app.py<br />rerank_route"]
-                        B -->|docs| C["index.py<br />build_index"]
-                        C -->|Chroma db| B
-                        B -->|db, question| D["rerank.py<br />retrieve_with_rerank"]
-                        D -->|question| E["Chroma<br />similarity_search k=25"]
-                        E -->|25 candidate chunks| D
-                        D -->|question, candidate pairs| F["CrossEncoder<br />ms-marco-MiniLM-L6-v2"]
-                        F -->|relevance scores| D
-                        D -->|sort by score, take top 3| G["Top 3 chunks"]
-                        G -->|page_content list| B
-                        B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <strong>Reranking</strong> demo illustrates how a two-stage retrieval pipeline optimizes both
+                        latency and retrieval precision in RAG systems:</p>
+                    <ul>
+                        <li><strong>Stage 1 — Rapid Bi-Encoder Retrieval:</strong> The system uses Chroma to quickly
+                            retrieve candidate chunks by comparing pre-computed vector embeddings. While fast, independent
+                            encoding means bi-encoders can miss subtle semantic relationships, occasionally ranking a highly
+                            relevant chunk lower than it should.</li>
+                        <li><strong>Stage 2 — High-Precision Cross-Encoder Reranking:</strong> The cross-encoder
+                            (<code>ms-marco-MiniLM-L6-v2</code>) takes each candidate chunk paired directly with the
+                            question. Full cross-attention mechanisms analyze token-level interactions simultaneously,
+                            generating a refined relevance score.</li>
+                        <li><strong>Optimal Efficiency:</strong> Running the computationally intensive cross-encoder on only
+                            the top 25 candidates delivers cross-encoder precision with the sub-second speed of a vector
+                            search.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Retrieves candidates with a bi-encoder, then reranks with a
-                    cross-encoder.</span>
-                <pre><code class="language-python">from sentence_transformers import CrossEncoder
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Knowledge base + question</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /rerank</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">build_index()</span>
+                            <span class="flow-detail">Chroma vector store</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">retrieve_with_rerank(db, question)</span>
+                            <span class="flow-detail">bi-encoder: k=25 → cross-encoder rerank → top 3</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Top 3 chunks rendered</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser<br />knowledge base + question"] -->|POST /rerank| B["app.py<br />rerank_route"]
+                            B -->|docs| C["index.py<br />build_index"]
+                            C -->|Chroma db| B
+                            B -->|db, question| D["rerank.py<br />retrieve_with_rerank"]
+                            D -->|question| E["Chroma<br />similarity_search k=25"]
+                            E -->|25 candidate chunks| D
+                            D -->|question, candidate pairs| F["CrossEncoder<br />ms-marco-MiniLM-L6-v2"]
+                            F -->|relevance scores| D
+                            D -->|sort by score, take top 3| G["Top 3 chunks"]
+                            G -->|page_content list| B
+                            B -->|JSON result| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-rerank-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-rerank-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-rerank-py" class="topic-title is-file">rerank.py<a class="headerlink" href="#source-rerank-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">82 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-rerank-py">
+                    <span class="file-path">src/python/rerank.py</span>
+                    <p class="file-label">Reranking: refine retrieval results with a cross-encoder.</p>
+                    <pre><code data-lang="python">"""Reranking: refine retrieval results with a cross-encoder.
+
+A bi-encoder (the sentence-transformer used for indexing) is fast but
+approximate. A cross-encoder scores each (question, candidate) pair more
+accurately but is too slow to run over an entire corpus. The trick is to
+retrieve many cheap candidates with the bi-encoder, then rerank the top
+ones with the cross-encoder.
+
+Can be run directly:  ``docker compose run --rm rerank``
+"""
+
+from sentence_transformers import CrossEncoder
 from langchain_chroma import Chroma
 
 from config import get_embedder
 
-# Lazy-loaded cross-encoder — initialized on first use to prevent blocking Flask startup
+# Lazy-loaded cross-encoder — only downloaded when /rerank is first called,
+# not at import time (which would block Flask startup).
 _reranker = None
 
 
 def _get_reranker():
     global _reranker
+    # ① download and cache the cross-encoder only on first use
     if _reranker is None:
         _reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")
+    # ② return the cached reranker for all later requests
     return _reranker
 
 
@@ -138,29 +315,365 @@ def retrieve_with_rerank(
     top_k: int = 3,
     initial_k: int = 25,
 ) -&gt; list:
-    """Retrieve candidates with bi-encoder, rerank with cross-encoder."""
-    # Stage 1: Fast bi-encoder vector search retrieving a broad candidate pool (top 25)
+    """Retrieve candidates, then rerank with a cross-encoder.
+
+    Args:
+        db: A Chroma vector store to search.
+        question: The user's query.
+        top_k: Number of final results to return.
+        initial_k: Number of cheap bi-encoder candidates to fetch before
+            reranking (should be &gt;&gt; top_k).
+
+    Returns:
+        The *top_k* most relevant document chunks, reranked by the
+        cross-encoder.
+    """
+    # ① retrieve many fast bi-encoder candidates from the vector store
     candidates = db.similarity_search(question, k=initial_k)
+    # ② stop early if the vector store found no matches
     if not candidates:
         return []
-
-    # Stage 2: Initialize cross-encoder and build (query, passage) pairs
+    # ③ load the slower but more accurate cross-encoder reranker
     reranker = _get_reranker()
+    # ④ pair the same question with every candidate chunk
     pairs = [(question, c.page_content) for c in candidates]
-
-    # Stage 3: Cross-encoder jointly attends over query and chunk tokens to produce accurate relevance scores
+    # ⑤ score each question-and-chunk pair for relevance
     scores = reranker.predict(pairs)
-
-    # Stage 4: Sort candidate documents by cross-encoder score in descending order
-    # (Sort by score only to prevent comparison errors on tie scores between Document instances)
+    # ⑥ sort by score only so tied scores never compare Document objects
+    # Sort by score only. Sorting whole (score, Document) tuples breaks when
+    # two scores tie, because Python then compares the Document objects, which
+    # don't support "&lt;" ("'&lt;' not supported between instances of 'Document'").
     ranked = sorted(zip(scores, candidates), key=lambda pair: pair[0], reverse=True)
+    # ⑦ return just the highest-ranked document chunks
+    return [c for _, c in ranked[:top_k]]
 
-    # Stage 5: Return top-k highest scoring chunks
-    return [c for _, c in ranked[:top_k]]</code></pre>
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the reranking pipeline over HTTP as <code>POST /rerank</code>.</span>
-                <pre><code class="language-python">@bp.route("/rerank", methods=["POST"])
+if __name__ == "__main__":
+    # ① load embeddings so Chroma can query the persisted demo index
+    embedder = get_embedder()
+    # ② open the existing Chroma index built by index.py
+    db = Chroma(persist_directory="./chroma_db", embedding_function=embedder)
+    # ③ choose a sample query for reranked retrieval
+    question = "What is the return policy?"
+    # ④ retrieve and rerank the most relevant chunks
+    results = retrieve_with_rerank(db, question)
+    # ⑤ print the query and reranked chunk contents
+    print(f"Q: {question}")
+    for i, doc in enumerate(results):
+        print(f"  {i + 1}. {doc.page_content}")</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">52 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and create model clients.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and create model clients.
+
+This module is the single place that knows about API keys and model names.
+Every other module calls get_chat_model() or get_embedder() instead of
+constructing a client itself, so key and model management stays in one place.
+
+Two kinds of client are exposed because the features need different tools:
+  - get_chat_model()  → a LangChain ``ChatOpenAI`` for the RAG chain and
+                         PDF chat, which are built as LangChain chains
+                         (prompt | model).
+  - get_embedder()    → a ``HuggingFaceEmbeddings`` instance used by the
+                         vector store to embed documents and queries.
+"""
+
+import os
+
+from dotenv import load_dotenv
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Every LLM feature in this project uses the cheap, fast gpt-4o-mini model.
+CHAT_MODEL = "gpt-4o-mini"
+
+# Free, fast, 384-dimension sentence embedding model — runs locally, no API key.
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+
+def get_chat_model(temperature: float = 0) -&gt; ChatOpenAI:
+    """Return a LangChain ChatOpenAI model.
+
+    Args:
+        temperature: Sampling temperature (0 = deterministic, 2 = very random).
+                     Defaults to 0 for factual RAG answers.
+
+    Returns:
+        A ``ChatOpenAI`` instance ready to be composed into a LangChain chain.
+    """
+    return ChatOpenAI(model=CHAT_MODEL, temperature=temperature)
+
+
+def get_embedder() -&gt; HuggingFaceEmbeddings:
+    """Return a HuggingFace sentence embedding model.
+
+    Uses ``all-MiniLM-L6-v2`` — a free, fast model that produces 384-dimension
+    vectors. Runs entirely on the local CPU; no API key required.
+    """
+    return HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">311 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/embeddings",
+  etc.  In production Nginx forwards ``/rag/...`` traffic to the container
+  and PATH_PREFIX is set to "/rag", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from chunk import chunk_text
+from embeddings import compare_similarity
+from index import build_index
+from rag import rag_answer
+from rerank import retrieve_with_rerank
+from pdf_chat import build_pdf_text_index, ask_pdf
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/rag") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+MAX_TEXTAREA_CHARS = 1000
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① rate-limit only POST requests because they run the demo features
+    if request.method == "POST":
+        # ② ask the shared limiter whether this request exceeds the quota
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a 429 response with retry timing when the quota is spent
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+# Server-side state for PDF chat — stores the in-memory Chroma index per
+# session.  In a production multi-user app this would use a session store;
+# for this learning project a single shared state is fine. It's a dict
+# (not a plain variable) so the route functions below can mutate it in
+# place without needing a `global` declaration.
+_pdf_state = {"db": None}
+
+
+def validate_textarea(value: str, label: str):
+    """Validate required textarea content and enforce the shared size cap."""
+    # ① reject missing text before the feature code runs
+    if not value:
+        return jsonify({"error": f"{label} is required."}), 400
+    # ② reject oversized text so demos stay responsive
+    if len(value) &gt; MAX_TEXTAREA_CHARS:
+        return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    # ③ signal that validation passed
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from disk
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetch calls hit the API
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the customized HTML response
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/embeddings", methods=["POST"])
+def embeddings_route():
+    """Compare two texts and return their cosine similarity.
+
+    Request body (JSON): ``{ "text_a": "&lt;text&gt;", "text_b": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize both input texts before validation
+    text_a = (data.get("text_a") or "").strip()
+    text_b = (data.get("text_b") or "").strip()
+    # ③ require both texts so the similarity comparison is meaningful
+    if not text_a or not text_b:
+        return jsonify({"error": "Both text_a and text_b are required."}), 400
+    try:
+        # ④ compute cosine similarity and return a rounded JSON result
+        score = compare_similarity(text_a, text_b)
+        return jsonify({"result": {"similarity": round(score, 4)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/chunk", methods=["POST"])
+def chunk_route():
+    """Split text into overlapping chunks.
+
+    Request body (JSON): ``{ "text": "&lt;long text&gt;" }``
+    Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the submitted text before validation
+    text = (data.get("text") or "").strip()
+    # ③ enforce required text and the shared textarea size limit
+    validation = validate_textarea(text, "Text")
+    if validation:
+        return validation
+    try:
+        # ④ split the text and return both chunks and count
+        chunks = chunk_text(text)
+        return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rag", methods=["POST"])
+def rag_route():
+    """Answer a question using a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    # ④ require a question so the RAG chain has a query
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        # ⑤ turn each non-blank knowledge-base line into one document
+        # One "document" per non-blank line of the pasted knowledge base.
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
+        # persist_directory=None keeps the index in memory only — it's rebuilt
+        # fresh from the request body on every call, nothing is written to disk.
+        db, _ = build_index(docs, persist_directory=None)
+        # ⑦ answer the question using the freshly built index
+        answer = rag_answer(question, db=db)
+        # ⑧ return the grounded answer as JSON
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rerank", methods=["POST"])
 def rerank_route():
     """Retrieve and rerank results from a user-provided knowledge base.
 
@@ -168,63 +681,108 @@ def rerank_route():
     Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
-    # Step 1: Parse request JSON payload
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
     knowledge = (data.get("knowledge_base") or "").strip()
     question = (data.get("question") or "").strip()
-
-    # Step 2: Validate knowledge base and question inputs
+    # ③ validate the knowledge base before building an index
     validation = validate_textarea(knowledge, "Knowledge base")
     if validation:
         return validation
+    # ④ require a question so retrieval has a query
     if not question:
         return jsonify({"error": "A question is required."}), 400
-
-    # Step 3: Run two-stage retrieval (bi-encoder retrieval followed by cross-encoder reranking)
     try:
+        # ⑤ turn each non-blank knowledge-base line into one document
         docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
         db, _ = build_index(docs, persist_directory=None)
-        reranked = retrieve_with_rerank(db, question, top_k=3)  # Select top 3 after cross-encoder reranking
+        # ⑦ retrieve and rerank the top chunks for the question
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        # ⑧ extract plain text so the browser receives simple JSON
         results = [doc.page_content for doc in reranked]
+        # ⑨ return the reranked results as JSON
         return jsonify({"result": {"results": results}})
     except Exception as e:
-        # Return HTTP 500 on unexpected errors
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+@bp.route("/pdf-index", methods=["POST"])
+def pdf_index():
+    """Index pasted PDF text in an in-memory vector store.
+
+    Request body (JSON): ``{ "pdf_text": "&lt;text copied from a PDF&gt;" }``
+    Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
+    Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the pasted PDF text before validation
+    pdf_text = (data.get("pdf_text") or "").strip()
+    # ③ validate required PDF text and the shared size limit
+    validation = validate_textarea(pdf_text, "PDF text")
+    if validation:
+        return validation
+    try:
+        # ④ build and store the in-memory PDF index for later questions
+        _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        # ⑤ confirm that the PDF text is ready for chat
+        return jsonify({"result": "PDF text indexed. Ask me anything about it."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-chat", methods=["POST"])
+def pdf_chat():
+    """Answer a question about the previously indexed PDF text.
+
+    Request body (JSON): ``{ "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize and validate the question
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    # ③ require a previously indexed PDF before answering
+    if _pdf_state["db"] is None:
+        return jsonify({"error": "Please add PDF text first."}), 400
+    try:
+        # ④ answer from the stored PDF index
+        answer = ask_pdf(_pdf_state["db"], question)
+        # ⑤ return the PDF-grounded answer as JSON
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/rag") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8082 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">RAG Lab &mdash; 🔀 Reranking &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

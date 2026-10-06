@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP &amp; Evals Lab</title>
+    <meta name="description"
+        content="Give an AI new abilities with the Model Context Protocol (MCP), then test it with evals: a live cricket-score MCP server, a tool-calling agent, and a tiny eval suite." />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏏</text></svg>" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-demos/ai-demos.html" class="nav-back-link">&larr; AI Demos</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>MCP &amp; Evals Lab</h1>
+                <p class="subtitle">Give an AI new abilities with MCP, then test it with evals</p>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="container">
+                <div class="grid">
+
+                    <div class="card card-half">
+                        <h2>
+                            <span class="card-title">&#x1F50C; MCP Plumbing</span>
+                            <a class="info-link" href="info/plumbing.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p>No AI at all &mdash; just MCP. The client starts the cricket MCP server, does the
+                            handshake (<code>initialize</code>), reads its menu cards (<code>tools/list</code>),
+                            and calls one tool by hand (<code>tools/call</code>). Try a player with
+                            <code>get_player_stats</code>, or Virat Kohli to see the error path. All scores are
+                            made-up demo data.</p>
+                        <div class="options">
+                            <label class="option">Tool
+                                <select id="plumbingTool">
+                                    <option value="get_live_score" selected>get_live_score</option>
+                                    <option value="get_player_stats">get_player_stats</option>
+                                </select>
+                            </label>
+                            <label class="option">Argument
+                                <select id="plumbingPreset" data-target="plumbingInput">
+                                    <option selected data-text="India vs West Indies">India vs West Indies</option>
+                                    <option data-text="India vs Windies">India vs Windies (alias)</option>
+                                    <option data-text="Shubman Gill">Shubman Gill</option>
+                                    <option data-text="Shai Hope">Shai Hope</option>
+                                    <option data-text="Virat Kohli">Virat Kohli (not in data)</option>
+                                    <option data-text="">Custom&hellip;</option>
+                                </select>
+                            </label>
+                        </div>
+                        <input type="text" id="plumbingInput" placeholder="e.g. India vs West Indies, or Shubman Gill" />
+                        <span class="validation" id="plumbingValidation"></span>
+                        <button id="plumbingBtn" disabled>Call the tool</button>
+                        <div class="result" id="plumbingResult"></div>
+                    </div>
+
+                    <div class="card card-half">
+                        <h2>
+                            <span class="card-title">&#x1F3CF; Cricket Agent</span>
+                            <a class="info-link" href="info/agent.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p>Now the AI decides. The model reads the MCP menu cards, writes a
+                            &ldquo;prescription&rdquo; (which tool, which arguments), our code calls the tool,
+                            and the model answers from the result. Pick <em>Both</em> to see the same question
+                            answered with and without tools.</p>
+                        <div class="options">
+                            <label class="option">Question
+                                <select id="agentPreset" data-target="agentInput">
+                                    <option selected data-text="What is the live score of India vs West Indies?">Live score</option>
+                                    <option data-text="How many runs has Shubman Gill scored this series?">Shubman Gill&rsquo;s runs</option>
+                                    <option data-text="How many runs has Virat Kohli scored?">Virat Kohli (not in data)</option>
+                                    <option data-text="">Custom&hellip;</option>
+                                </select>
+                            </label>
+                            <label class="option">Tools
+                                <select id="agentTools">
+                                    <option value="on" selected>On</option>
+                                    <option value="off">Off</option>
+                                    <option value="both">Both</option>
+                                </select>
+                            </label>
+                            <label class="option">Temperature
+                                <select id="agentTemperature">
+                                    <option value="0" selected>0</option>
+                                    <option value="0.7">0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </label>
+                        </div>
+                        <input type="text" id="agentInput" placeholder="e.g. Who is winning India vs West Indies?" />
+                        <span class="validation" id="agentValidation"></span>
+                        <button id="agentBtn" disabled>Ask the agent</button>
+                        <div class="result" id="agentResult"></div>
+                    </div>
+
+                    <div class="card card-wide">
+                        <h2>
+                            <span class="card-title">&#x1F9EA; Eval Suite</span>
+                            <a class="info-link" href="info/evals.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p>Tests for an AI app: a list of questions, two code checks, and a score. Each case
+                            checks that the agent picked the expected tool (or <em>no</em> tool for
+                            &ldquo;2 + 2&rdquo;) and that the answer contains the key fact. Score the agent
+                            without tools to watch the evals catch it.</p>
+                        <div class="options">
+                            <label class="option">Test case
+                                <select id="evalsInput">
+                                    <option value="all" selected>All 5 cases</option>
+                                    <option value="1">1 &middot; Live score &rarr; 287</option>
+                                    <option value="2">2 &middot; Runs needed &rarr; 90</option>
+                                    <option value="3">3 &middot; Shubman Gill&rsquo;s runs &rarr; 164</option>
+                                    <option value="4">4 &middot; Shai Hope&rsquo;s highest &rarr; 78</option>
+                                    <option value="5">5 &middot; 2 + 2 &rarr; no tool</option>
+                                </select>
+                            </label>
+                            <label class="option">Agent
+                                <select id="evalsAgent">
+                                    <option value="on" selected>With MCP tools</option>
+                                    <option value="off">Without tools</option>
+                                    <option value="both">Both</option>
+                                </select>
+                            </label>
+                            <label class="option">Temperature
+                                <select id="evalsTemperature">
+                                    <option value="0" selected>0</option>
+                                    <option value="0.7">0.7</option>
+                                    <option value="1.2">1.2</option>
+                                </select>
+                            </label>
+                        </div>
+                        <span class="validation" id="evalsValidation"></span>
+                        <button id="evalsBtn" disabled>Run evals</button>
+                        <div class="result" id="evalsResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

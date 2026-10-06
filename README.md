@@ -10,6 +10,7 @@
 7. [Project: Shipment Exception Desk](study/07-project-shipment-exception-desk/project-shipment-exception-desk.md) : 05-09-2026
 8. [AI Systems](study/08-ai-systems/ai-systems.md) : 19-09-2026
 9. [AI Reliability](study/09-ai-reliability/ai-reliability.md) : 26-09-2026
+10. [MCP](study/10-mcp-evals/mcp-evals.md) : 03-10-2026
 
 # Projects
 
@@ -28,7 +29,10 @@
 6. [AWS Strands Lab](projects/aws-strands/README.md)
 7. [InterviewIQ](projects/interviewiq/README.md)
 8. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
-9. [Container App Template](projects/template/README.md)
+9. [AI Systems Lab](projects/ai-systems/README.md)
+10. [AI Reliability Lab](projects/ai-reliability/README.md)
+11. [MCP & Evals Lab](projects/mcp-evals/README.md)
+12. [Container App Template](projects/template/README.md)
 
 ---
 
@@ -45,6 +49,7 @@
 ## Python
 1. [Python Crash Course](projects/techtoday/study/programming-languages/python/python-crash-course.html)
 2. [Python Detailed Course](projects/techtoday/study/programming-languages/python/python-detailed-course.html)
+3. [Python My Course](projects/techtoday/study/programming-languages/python/python-my-course.html)
 
 ## JavaScript
 1. [JavaScript Crash Course](projects/techtoday/study/programming-languages/javascript/javascript-crash-course.html)
@@ -53,8 +58,12 @@
 ## DSA
 1. [DSA Crash Course](projects/techtoday/study/dsa/dsa-crash-course.html)
 2. [DSA Detailed Course](projects/techtoday/study/dsa/dsa-detailed-course.html)
-3. [DSA Quick Course](projects/techtoday/study/dsa/dsa-quick-course.html)
+3. [DSA My Course](projects/techtoday/study/dsa/dsa-my-course.html)
 4. [DSA Advanced Course](projects/techtoday/study/dsa/dsa-advanced-course.html)
+
+## Design Patterns
+1. [Design Patterns Crash Course](projects/techtoday/study/design-patterns/design-patterns-crash-course.html)
+2. [Design Patterns Detailed Course](projects/techtoday/study/design-patterns/design-patterns-detailed-course.html)
 
 ## Git
 1. [Git Crash Course](projects/techtoday/study/git/git-crash-course.html)

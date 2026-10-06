@@ -140,6 +140,12 @@ enc.free(); // tiktoken holds WASM memory; release it
 
 ---
 
+<a id="unit-1"></a>
+
+## Unit 1 — Talking to the Model
+
+How a single request works: what the model sees, why its output varies, and how to make answers reliable and parseable.
+
 <a id="1-the-context-window-and-the-chat-contract"></a>
 
 ## The Context Window & the Chat Contract
@@ -559,6 +565,12 @@ console.log(triage.queue, triage.urgency);
 > **Tip**
 >
 > **Design the schema for the model, not only for your database.** Flat beats deeply nested. Enums beat free strings. Descriptions on every field are read by the model and are the cheapest accuracy you will ever buy. And always include an explicit escape hatch — a `needs_human` boolean or a nullable field — or the grammar will force a confident answer out of a model that had none.
+
+<a id="unit-2"></a>
+
+## Unit 2 — Knowledge & Tools
+
+Connecting the model to the outside world: tools it can call, context it can remember and knowledge it can retrieve.
 
 <a id="5-tool-calling-and-mcp"></a>
 
@@ -1067,6 +1079,12 @@ async function answer(question: string, user: User, history: Msg[]) {
 
 ---
 
+<a id="unit-3"></a>
+
+## Unit 3 — Agents
+
+Letting the model act in a loop, and deciding when a fixed workflow, several agents or a human should be in charge.
+
 <a id="9-the-agent-loop"></a>
 
 ## The Agent Loop
@@ -1246,6 +1264,12 @@ Decide for each action where it sits on the autonomy scale, and enforce it in co
 > **The decision procedure, in order.** Can one well-written prompt do it? Do that. Can a fixed chain of two or three calls do it? Do that. Does the path depend on what is discovered at runtime? Now you need an agent — one agent, with the smallest toolset that works. Does one agent genuinely drown in context? Only then split it. *Every step down that list multiplies cost, latency and the number of ways your system can fail.*
 
 ---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Shipping to Production
+
+Proving the system works, keeping it fast and affordable, and stopping it from failing in ways that matter.
 
 <a id="11-evaluation"></a>
 

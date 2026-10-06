@@ -1,6 +1,6 @@
 # AI Infused Learning
 
-A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (Llama 3.3 70B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
+A collection of LLM-powered demos that show how to connect to two different AI providers — **OpenAI** (GPT-4o mini) and **Groq** (GPT OSS 120B) — using the same OpenAI-compatible Python client, served through a Flask web UI running in a Docker container.
 
 The project is structured so that each feature lives in its own module (`joke.py`, `travel.py`, etc.) and is exposed through a thin Flask endpoint.  This makes it easy to add, remove, or modify individual features without touching unrelated code.
 
@@ -183,16 +183,16 @@ docker compose -f ~/apps/basic/docker-compose.yml up -d
 ## Features
 
 ### 😂 Joke Generator
-Calls **Groq** (Llama 3.3 70B Versatile) to generate a joke on a topic you provide.  `temperature=1.3` pushes the model toward creative, varied responses so you get a fresh joke on every request.
+Calls **Groq** (GPT OSS 120B, `openai/gpt-oss-120b`) to generate a joke on a topic you provide.  `temperature=1.3` pushes the model toward creative, varied responses so you get a fresh joke on every request.
 
 ### ✈️ Travel Suggestion
 Calls **OpenAI** (GPT-4o mini) with a witty-travel-guide persona to suggest one thing to do in any city you enter.
 
 ### 🔎 Website Summarizer
-Takes any URL, fetches the page with a browser-like User-Agent, strips away scripts / navigation / footer noise, then asks **GPT-4o mini** to produce a short markdown summary of what remains.
+Pick a sample (🚀 Startup site, 📰 News article, ✍️ Personal blog), or paste a URL or any article text, then choose a personality (🙂 Friendly, 😏 Snarky, 🧒 Explain like I'm 5, 💼 Professional). URLs are fetched with a browser-like User-Agent and stripped of scripts / navigation / footer noise; pasted text skips scraping. **GPT-4o mini** then writes a short markdown summary using the system prompt for the chosen personality.
 
 ### 🥊 LLM Arena
-Sends the exact same prompt to both **GPT-4o mini** (OpenAI) and **Llama 3.3 70B** (Groq) and displays both replies side by side, making it easy to compare how a proprietary model and an open-source model handle the same question.
+Sends the exact same prompt to two models and shows the replies **blind** as Model A / Model B (sides are shuffled). Pick an example prompt or type your own, vote 👍 / 👎 on each answer to reveal which model wrote it, and watch a running per-model score — a tiny version of arena.ai.
 
 ---
 
@@ -210,7 +210,7 @@ projects/basic/
 └── src/
     ├── python/
     │   ├── config.py       # loads .env; exposes get_openai_client() / get_groq_client()
-    │   ├── joke.py         # Groq → Llama 3.3 70B → random joke
+    │   ├── joke.py         # Groq → GPT OSS 120B → random joke
     │   ├── travel.py       # OpenAI → GPT-4o mini → city activity suggestion
     │   ├── scraper.py      # requests + BeautifulSoup → cleaned page text
     │   ├── summarizer.py   # scraper + OpenAI → markdown page summary
@@ -232,7 +232,7 @@ projects/basic/
 - `get_groq_client()` — constructs an `OpenAI` client with `GROQ_API_KEY` and `base_url` set to `https://api.groq.com/openai/v1`.  No extra SDK is needed because Groq's API is wire-compatible with OpenAI's.
 
 **`joke.py`**
-- `get_joke(topic)` — sends a user prompt to `llama-3.3-70b-versatile` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
+- `get_joke(topic)` — sends a user prompt to `openai/gpt-oss-120b` on Groq with `temperature=1.3`.  Falls back to the word `"random"` if no topic is given so the prompt is always explicit.
 - Can be run directly from the project root: `python src/python/joke.py`.
 
 **`travel.py`**
@@ -244,7 +244,9 @@ projects/basic/
 - Returns a formatted string (`Title: …\n\nPage contents:\n…`) ready to embed in an LLM prompt, or an error message string if the fetch fails.
 
 **`summarizer.py`**
-- `summarize(url)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion with a markdown-summary system prompt.
+- `summarize(url, personality)` — chains `fetch_website_contents(url)` (scraper) → `gpt-4o-mini` chat completion.
+- `summarize_text(text, personality)` — summarizes pasted article text directly, no scraping.
+- `PERSONALITIES` maps `friendly` / `snarky` / `eli5` / `professional` to the phrase swapped into the system prompt by `build_system_prompt()`.
 - The two steps are deliberately separate so the scraper can be reused by other features independently.
 - Can be run directly from the project root: `python src/python/summarizer.py`.
 
@@ -258,7 +260,7 @@ projects/basic/
 - `GET /` — reads `index.html`, replaces the `const API = "";` placeholder with `PATH_PREFIX`, and returns the patched HTML.  This keeps the same HTML file working both locally (empty prefix) and in production (e.g. `/basic`).
 - `POST /joke` — body: `{ "topic": "..." }` (optional) → `{ "result": "..." }` with `Cache-Control: no-store`.
 - `POST /travel` — body: `{ "city": "..." }` (required) → `{ "result": "..." }`.
-- `POST /summarize` — body: `{ "url": "..." }` (required) → `{ "result": "..." }`.  Returns HTTP 400 if `url` is missing.
+- `POST /summarize` — body: `{ "url": "..." }` or `{ "text": "..." }`, plus optional `"personality"` → `{ "result": "..." }`.  Returns HTTP 400 if both are missing, the personality is unknown, or `text` exceeds 20,000 characters.
 - `POST /arena` — body: `{ "prompt": "..." }` (required) → `{ "result": { "model_a": {…}, "model_b": {…} } }`.  Returns HTTP 400 if `prompt` is missing.
 - Listens on `0.0.0.0:5000` inside the container (mapped to host port `8080` by `docker-compose.yml`).
 
@@ -284,7 +286,7 @@ groq_client = OpenAI(
 )
 
 response = groq_client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     messages=[{"role": "user", "content": "Hello!"}],
 )
 print(response.choices[0].message.content)

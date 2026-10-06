@@ -4,166 +4,1227 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — AI Reliability Lab · TechToday</title>
     <meta name="description"
         content="How the AI Reliability Lab works: four measured demos of output constraints, chain-of-thought, tool schema routing, and tool error handling." />
-    <link rel="icon" href="../logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../style.css" />
+    <link rel="icon"
+        href="../logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>TechToday</span>
             </a>
-            <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+            <a href="../study/ai-demos/ai-demos.html" class="nav-back-link">&larr; AI Demos</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-cot-py">cot.py</a></li>
+                    <li><a href="#source-variance-py">variance.py</a></li>
+                    <li><a href="#source-tool-routing-py">tool_routing.py</a></li>
+                    <li><a href="#source-tool-errors-py">tool_errors.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🎯 AI Reliability Lab<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🎯 AI Reliability Lab</h1>
-                <p class="subtitle">Output Constraints · Chain-of-Thought · Tool Schema Routing · Tool Error Handling
-                </p>
+            <p class="lede">Output Constraints · Chain-of-Thought · Tool Schema Routing · Tool Error Handling. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>10 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>6 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    <strong>AI Reliability Lab</strong> measures the levers that turn an LLM from a flaky text
-                    generator into a dependable software component. Every demo runs the same task many times under
-                    contrasting conditions and scores the outputs automatically, so you see a
-                    <strong>distribution</strong> rather than one lucky or unlucky example.
-                </p>
-                <p>
-                    All four demos use <strong>gpt-4o-mini</strong>, a non-reasoning model, on purpose: reasoning
-                    models think internally even when told not to, which erases the gaps being measured. API calls
-                    inside a demo run in parallel (up to 8 at a time) so each click finishes inside the 60-second
-                    proxy timeout.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-
-                <p><strong>1. 🎲 Variance &amp; Determinism — constrain the output, not the temperature</strong></p>
-                <p>
-                    The same extraction runs 5 times under each of three strategies at temperature 0.7: an
-                    unconstrained prompt, a prompt that asks for JSON, and an API-enforced strict JSON schema. A strict
-                    <code>json.loads()</code> parser grades every output. Reliability comes from narrowing what the
-                    model is allowed to emit — a structural guarantee — not from persuasion or lower randomness.
-                </p>
-
-                <p><strong>2. 🧠 Chain-of-Thought vs Direct — reasoning as a reliability lever</strong></p>
-                <p>
-                    A multi-step puzzle runs 5 times with "no working" and 5 times with "think step by step". Only the
-                    final line is scored, so CoT is never credited for a candidate it later rejected. The report puts
-                    the accuracy gain next to the latency cost.
-                </p>
-
-                <p><strong>3. 🧭 Tool Schema Calibration — what does the model route on?</strong></p>
-                <p>
-                    Three weather tools with identical parameters are offered under a 2x2 of descriptive vs opaque
-                    names and loose vs tight descriptions, with <code>tool_choice="required"</code>. When names are
-                    self-explanatory the model routes on the name; rename tools generically and the description is
-                    the only signal left.
-                </p>
-
-                <p><strong>4. 🚨 Tool Error Injection — does the model admit a failure?</strong></p>
-                <p>
-                    An agent's second <code>get_weather</code> call always returns HTTP 503. Under a plain prompt and
-                    a must-report-errors prompt, each answer is scored for admitting the failure, surfacing the error
-                    code, and — the production risk — inventing weather for the city the API never answered.
-                </p>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">🧑 Browser</span>
-                        <span class="flow-detail">Pick a demo tile, enter input, click its button</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Nginx /ai-reliability/</span>
-                        <span class="flow-detail">Rate limit, proxy to the container</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Flask Blueprint</span>
-                        <span class="flow-detail">10 POSTs/hour/IP · validate input (400)</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">POST /variance</span>
-                            <span class="flow-detail">15 calls</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">POST /cot</span>
-                            <span class="flow-detail">10 calls</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">POST /routing</span>
-                            <span class="flow-detail">52 calls</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">POST /errors</span>
-                            <span class="flow-detail">2 agent loops</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">OpenAI API · gpt-4o-mini</span>
-                        <span class="flow-detail">Parallel calls via parallel_map()</span>
-                    </div>
-                    <div class="flow-arrow-down">↓</div>
-                    <div class="flow-step">
-                        <span class="flow-title">🧑 Browser</span>
-                        <span class="flow-detail">Scored text report in the tile</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>AI Reliability Lab</strong> measures the levers that turn an LLM from a flaky text
+                        generator into a dependable software component. Every demo runs the same task many times under
+                        contrasting conditions and scores the outputs automatically, so you see a
+                        <strong>distribution</strong> rather than one lucky or unlucky example.
+                    </p>
+                    <p>
+                        All four demos use <strong>gpt-4o-mini</strong>, a non-reasoning model, on purpose: reasoning
+                        models think internally even when told not to, which erases the gaps being measured. API calls
+                        inside a demo run in parallel (up to 8 at a time) so each click finishes inside the 60-second
+                        proxy timeout.
+                    </p>
 
-                <h2>Code flow</h2>
-                <!-- beautify ignore:start -->
-                <!-- prettier-ignore -->
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A[Browser<br/>demo input] -->|POST| B[app.py<br/>Blueprint + rate limit]
-    B -->|review| V[variance.py<br/>run_variance]
-    B -->|preset| C[cot.py<br/>run_cot]
-    B -->|question| R[tool_routing.py<br/>run_routing]
-    B -->|question| E[tool_errors.py<br/>run_error_injection]
-    V -->|jobs| P[config.py<br/>parallel_map]
-    C -->|jobs| P
-    R -->|jobs| P
-    E -->|scenarios| P
-    P -->|prompts / tools| O[OpenAI API<br/>gpt-4o-mini]
-    O -->|responses| P
-    P -->|results| V
-    P -->|results| C
-    P -->|results| R
-    P -->|results| E
-    V -->|report| B
-    C -->|report| B
-    R -->|report| B
-    E -->|report| B
-    B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
-                <!-- beautify ignore:end -->
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. 🎲 Variance &amp; Determinism — constrain the output, not the temperature</strong></p>
+                    <p>
+                        The same extraction runs 5 times under each of three strategies at temperature 0.7: an
+                        unconstrained prompt, a prompt that asks for JSON, and an API-enforced strict JSON schema. A strict
+                        <code>json.loads()</code> parser grades every output. Reliability comes from narrowing what the
+                        model is allowed to emit — a structural guarantee — not from persuasion or lower randomness.
+                    </p>
 
-                <h2>Shared configuration</h2>
-                <span class="file-label">config.py — one OpenAI client, the model name, and the parallel runner every
-                    demo uses</span>
-                <pre><code class="language-python"># A NON-reasoning model: reasoning models think internally even when told not
+                    <p><strong>2. 🧠 Chain-of-Thought vs Direct — reasoning as a reliability lever</strong></p>
+                    <p>
+                        A multi-step puzzle runs 5 times with "no working" and 5 times with "think step by step". Only the
+                        final line is scored, so CoT is never credited for a candidate it later rejected. The report puts
+                        the accuracy gain next to the latency cost.
+                    </p>
+
+                    <p><strong>3. 🧭 Tool Schema Calibration — what does the model route on?</strong></p>
+                    <p>
+                        Three weather tools with identical parameters are offered under a 2x2 of descriptive vs opaque
+                        names and loose vs tight descriptions, with <code>tool_choice="required"</code>. When names are
+                        self-explanatory the model routes on the name; rename tools generically and the description is
+                        the only signal left.
+                    </p>
+
+                    <p><strong>4. 🚨 Tool Error Injection — does the model admit a failure?</strong></p>
+                    <p>
+                        An agent's second <code>get_weather</code> call always returns HTTP 503. Under a plain prompt and
+                        a must-report-errors prompt, each answer is scored for admitting the failure, surfacing the error
+                        code, and — the production risk — inventing weather for the city the API never answered.
+                    </p>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">🧑 Browser</span>
+                            <span class="flow-detail">Pick a demo tile, enter input, click its button</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Nginx /ai-reliability/</span>
+                            <span class="flow-detail">Rate limit, proxy to the container</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask Blueprint</span>
+                            <span class="flow-detail">10 POSTs/hour/IP · validate input (400)</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">POST /variance</span>
+                                <span class="flow-detail">15 calls</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">POST /cot</span>
+                                <span class="flow-detail">10 calls</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">POST /routing</span>
+                                <span class="flow-detail">52 calls</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">POST /errors</span>
+                                <span class="flow-detail">2 agent loops</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API · gpt-4o-mini</span>
+                            <span class="flow-detail">Parallel calls via parallel_map()</span>
+                        </div>
+                        <div class="flow-arrow-down">↓</div>
+                        <div class="flow-step">
+                            <span class="flow-title">🧑 Browser</span>
+                            <span class="flow-detail">Scored text report in the tile</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>demo input] -->|POST| B[app.py<br/>Blueprint + rate limit]
+                        B -->|review| V[variance.py<br/>run_variance]
+                        B -->|preset| C[cot.py<br/>run_cot]
+                        B -->|question| R[tool_routing.py<br/>run_routing]
+                        B -->|question| E[tool_errors.py<br/>run_error_injection]
+                        V -->|jobs| P[config.py<br/>parallel_map]
+                        C -->|jobs| P
+                        R -->|jobs| P
+                        E -->|scenarios| P
+                        P -->|prompts / tools| O[OpenAI API<br/>gpt-4o-mini]
+                        O -->|responses| P
+                        P -->|results| V
+                        P -->|results| C
+                        P -->|results| R
+                        P -->|results| E
+                        V -->|report| B
+                        C -->|report| B
+                        R -->|report| B
+                        E -->|report| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-cot-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-cot-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-cot-py" class="topic-title is-file">cot.py<a class="headerlink" href="#source-cot-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">177 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-cot-py">
+                    <span class="file-path">ai-reliability/src/python/cot.py</span>
+                    <p class="file-label">Chain-of-Thought vs. Direct Answer: CoT as a reliability lever.</p>
+                    <pre><code data-lang="python">"""Chain-of-Thought vs. Direct Answer: CoT as a reliability lever.
+
+Adapted from ``study/09-ai-reliability/cot-vs-direct-answer.py``. One preset
+multi-step reasoning problem runs N times under two prompts at temperature
+0.7, and only the final line of each response is scored, so a CoT trace is
+not credited for a candidate answer it raised and then rejected.
+"""
+
+import time
+
+from config import CHAT_MODEL, bar, get_openai_client, parallel_map
+
+RUNS_PER_STRATEGY = 5
+TEMPERATURE = 0.7
+TAIL_LINES = 1
+
+STRATEGY_CHOICES = ("both", "direct", "cot")
+
+PROBLEMS = {
+    "grid": {
+        "title": "Spatial Navigation (Grid)",
+        "question": (
+            "Start at origin (0,0) facing North (+Y direction). "
+            "Move forward 3 units. Turn right 90 degrees. Move forward 2 units. "
+            "Turn right 90 degrees. Move forward 5 units. "
+            "Turn left 90 degrees. Move backward 2 units. "
+            "What are your exact final (X,Y) coordinates? Format as (X, Y)."
+        ),
+        "correct_answers": ["(0, -2)", "(0,-2)"],
+        "explanation": "N: (0,3) → E: (2,3) → S: (2,-2) → E, backwards 2: (0,-2).",
+    },
+    "family": {
+        "title": "Relational Logic (Family Tree)",
+        "question": (
+            "Alice is the sister of Bob. Bob is the father of Charlie. "
+            "Charlie is the brother of Diana. Diana is the mother of Eve. "
+            "What is the exact biological relationship of Alice to Eve?"
+        ),
+        "correct_answers": ["great-aunt", "great aunt", "grand-aunt", "grand aunt"],
+        "explanation": "Alice is Diana's aunt; Diana is Eve's mother, so Alice is Eve's great-aunt.",
+    },
+    "schedule": {
+        "title": "Temporal Scheduling",
+        "question": (
+            "Five speakers (A, B, C, D, E) present one after another. "
+            "E must speak exactly third. B must speak immediately after D. "
+            "D cannot be the first speaker. C must speak at some point before A. "
+            "What is the exact sequence of the 5 speakers from first to last? "
+            "Format as a comma-separated list."
+        ),
+        "correct_answers": ["c, a, e, d, b", "c,a,e,d,b"],
+        "explanation": "E is 3rd; the D-B block must be 4-5; C before A fills 1-2 → C, A, E, D, B.",
+    },
+    "inventory": {
+        "title": "Inventory State Tracking",
+        "question": (
+            "An empty box is given to you. You put in an Apple, a Banana, and a Carrot. "
+            "You remove the Apple and add a Date. You remove the Carrot and put the Apple back in. "
+            "You swap the Banana for an Eggplant. Finally, you take out the Date. "
+            "List exactly the items currently in the box."
+        ),
+        "correct_answers": ["apple, eggplant", "eggplant, apple", "apple and eggplant", "eggplant and apple"],
+        "explanation": "[A,B,C] → [B,C,D] → [A,B,D] → [A,D,E] → [A,E].",
+    },
+    "boxes": {
+        "title": "Logic Puzzle (Truth-Tellers)",
+        "question": (
+            "There are three boxes: X, Y, and Z. Exactly one contains a diamond. "
+            "Box X says: 'The diamond is in Box Y.' "
+            "Box Y says: 'The diamond is not in Box Y.' "
+            "Box Z says: 'The diamond is not in Box X.' "
+            "Exactly one box's statement is true. Which box contains the diamond? "
+            "Answer with the exact phrase 'Box X', 'Box Y', or 'Box Z'."
+        ),
+        "correct_answers": ["box x"],
+        "explanation": "Diamond in X: X false, Y true, Z false - exactly one true statement.",
+    },
+}
+
+
+def direct_prompt(question: str) -&gt; str:
+    return f"{question}\n\nAnswer in one short sentence only. Do not show any working or reasoning."
+
+
+def cot_prompt(question: str) -&gt; str:
+    return (
+        f"{question}\n\n"
+        "Think step by step. Show each step of your reasoning clearly, "
+        "then state your final answer on the last line."
+    )
+
+
+def ask(prompt: str, temperature: float = TEMPERATURE) -&gt; tuple[str, float]:
+    """Return (response_text, elapsed_seconds); failures become 'Error: ...'."""
+    # ① start a timer so the demo can show the latency cost of each prompt
+    start = time.perf_counter()
+    try:
+        # ② send the prompt to the selected chat model with the chosen randomness
+        response = get_openai_client().chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+        )
+        # ③ trim the model reply so scoring sees only the answer text
+        text = (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        # ④ convert provider failures into reportable text instead of crashing
+        text = f"Error: {e}"
+    # ⑤ return both the reply and its measured runtime
+    return text, time.perf_counter() - start
+
+
+def is_correct(response: str, correct_answers: list[str]) -&gt; bool:
+    """Score only the final non-empty line(s) against the accepted answers."""
+    # ① treat captured provider failures as incorrect answers
+    if response.startswith("Error:"):
+        return False
+    # ② keep only non-empty lines so blank formatting does not affect scoring
+    lines = [ln for ln in response.splitlines() if ln.strip()]
+    if not lines:
+        return False
+    # ③ compare the final answer line against all accepted answer variants
+    tail = "\n".join(lines[-TAIL_LINES:]).lower()
+    return any(ans.lower() in tail for ans in correct_answers)
+
+
+def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPERATURE) -&gt; str:
+    """Run Direct and/or CoT on one preset problem and return a text report."""
+    # ① load the chosen reasoning problem and start with both prompt styles
+    problem = PROBLEMS[problem_key]
+    strategies = [("direct", "Direct", direct_prompt), ("cot", "CoT   ", cot_prompt)]
+    if strategy != "both":
+        # ② narrow to the requested prompt style when the learner filters the demo
+        strategies = [s for s in strategies if s[0] == strategy]
+
+    # ③ build repeated prompts for each strategy and run the API calls in parallel
+    prompts = [fn(problem["question"]) for _, _, fn in strategies for _ in range(RUNS_PER_STRATEGY)]
+    outputs = parallel_map(lambda p: ask(p, temperature), prompts)
+
+    def last_line(text: str) -&gt; str:
+        # ① extract a compact final-answer sample for the report
+        lines = [ln for ln in text.splitlines() if ln.strip()]
+        return (lines[-1] if lines else text)[:200]
+
+    # ④ begin the report with the problem, accepted answer, and explanation
+    lines = [
+        f"{problem['title']} · {RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
+        f"Correct answer: {problem['correct_answers'][0]}",
+        f"Why: {problem['explanation']}",
+        "",
+    ]
+    stats = {}
+    for i, (key, label, _) in enumerate(strategies):
+        # ⑤ score each strategy's batch and record its average latency
+        runs = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
+        ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in runs)
+        avg_t = sum(t for _, t in runs) / len(runs)
+        stats[key] = (ok, avg_t)
+        lines.append(f"{label}  {bar(ok, RUNS_PER_STRATEGY)} · avg {avg_t:.1f}s")
+        lines.append(f"  sample final line: {last_line(runs[0][0])}")
+
+    # ⑥ finish with either the accuracy-latency trade-off or a comparison tip
+    lines.append("")
+    if len(stats) == 2:
+        (d_ok, d_t), (c_ok, c_t) = stats["direct"], stats["cot"]
+        lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
+        latency = (c_t / d_t - 1) * 100 if d_t else 0
+        lines.append(f"Trade-off: CoT bought {lift:+.0f}pp accuracy for {latency:+.0f}% latency.")
+    else:
+        lines.append("Tip: pick 'Both' to see the accuracy-for-latency trade-off.")
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run every preset problem when this module is executed directly
+    for key in PROBLEMS:
+        print(run_cot(key), end="\n\n")</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-variance-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-variance-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-variance-py" class="topic-title is-file">variance.py<a class="headerlink" href="#source-variance-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">181 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-variance-py">
+                    <span class="file-path">ai-reliability/src/python/variance.py</span>
+                    <p class="file-label">Variance &amp; Determinism: how output constraints make a model a reliable component.</p>
+                    <pre><code data-lang="python">"""Variance &amp; Determinism: how output constraints make a model a reliable component.
+
+Adapted from ``study/09-ai-reliability/variance-determinism.py``. The same
+extraction task runs N times under three strategies at temperature 0.7:
+
+  A  Unconstrained prompt
+  B  Prompt asks for JSON
+  C  Schema enforced by the API (``response_format=json_schema``, strict)
+
+Each response is graded by a strict downstream parser (plain ``json.loads``,
+no fence stripping or repair), so the report shows how often a real pipeline
+would survive the output.
+"""
+
+import json
+from collections import Counter
+
+from config import CHAT_MODEL, get_openai_client, parallel_map
+
+RUNS_PER_STRATEGY = 5
+TEMPERATURE = 0.7
+MAX_REVIEW_CHARS = 1000
+
+STRATEGY_CHOICES = ("all", "A", "B", "C")
+
+DEFAULT_REVIEW = (
+    "The new smartphone is amazing, the camera quality is top-notch but the "
+    "battery life is a bit disappointing. I love the design though!"
+)
+
+RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "sentiment": {"type": "string", "enum": ["Positive", "Negative", "Mixed"]},
+        "entities": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["sentiment", "entities"],
+    "additionalProperties": False,
+}
+
+SCHEMA_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {"name": "review_extraction", "strict": True, "schema": RESPONSE_SCHEMA},
+}
+
+
+def build_prompts(review: str) -&gt; tuple[str, str]:
+    """Return (unconstrained_prompt, json_prompt) for a review."""
+    # ① describe the extraction task with no output-shape guarantee
+    task = f"Extract the sentiment and key entities from this customer review: '{review}'"
+    # ② add plain-language JSON instructions for the prompt-only strategy
+    constrained = (
+        f"{task}\n"
+        "Output only a JSON object with the keys 'sentiment' and 'entities'. "
+        "'sentiment' should be a string (Positive, Negative, or Mixed). "
+        "'entities' should be a list of strings."
+    )
+    return task, constrained
+
+
+def call_model(prompt: str, response_format: dict | None = None, temperature: float = TEMPERATURE) -&gt; str:
+    """Return the model's text, or a string starting with 'Error:' on failure."""
+    # ① build the shared chat-completion arguments for this strategy
+    kwargs = {
+        "model": CHAT_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": temperature,
+    }
+    if response_format is not None:
+        # ② attach the schema contract only for the API-enforced strategy
+        kwargs["response_format"] = response_format
+    try:
+        # ③ call the model and return the raw text the downstream parser will see
+        response = get_openai_client().chat.completions.create(**kwargs)
+        return (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        # ④ capture provider failures so the report can exclude them explicitly
+        return f"Error: {e}"
+
+
+def parse_downstream(raw: str) -&gt; tuple[bool, bool]:
+    """Return (parsed_ok, schema_ok) the way a strict pipeline would see it."""
+    # ① reject captured provider failures before attempting JSON parsing
+    if raw.startswith("Error:"):
+        return False, False
+    try:
+        # ② parse exactly what the model emitted, with no cleanup or repair
+        data = json.loads(raw)
+    except (json.JSONDecodeError, ValueError):
+        return False, False
+    # ③ require an object before checking the expected fields
+    if not isinstance(data, dict):
+        return True, False
+    sentiment = data.get("sentiment")
+    entities = data.get("entities")
+    # ④ validate the minimal schema the downstream application needs
+    schema_ok = (
+        sentiment in ("Positive", "Negative", "Mixed")
+        and isinstance(entities, list)
+        and all(isinstance(e, str) for e in entities)
+    )
+    return True, schema_ok
+
+
+def metrics(responses: list[str]) -&gt; dict:
+    """Variance and downstream-reliability metrics; API errors are excluded."""
+    # ① separate provider errors from responses a downstream parser could process
+    valid = [r for r in responses if not r.startswith("Error:")]
+    errors = len(responses) - len(valid)
+    if not valid:
+        return {"unique": 0, "consistency": 0, "parse": 0, "schema": 0, "total": 0, "errors": errors}
+    # ② score each valid response for JSON parsing and schema compliance
+    verdicts = [parse_downstream(r) for r in valid]
+    n = len(valid)
+    # ③ summarize variance, consistency, and reliability percentages
+    return {
+        "unique": len(Counter(valid)),
+        "consistency": round(Counter(valid).most_common(1)[0][1] / n * 100),
+        "parse": round(sum(p for p, _ in verdicts) / n * 100),
+        "schema": round(sum(s for _, s in verdicts) / n * 100),
+        "total": n,
+        "errors": errors,
+    }
+
+
+def run_variance(review: str, strategy: str = "all", temperature: float = TEMPERATURE) -&gt; str:
+    """Run the selected strategy (or all three) on ``review`` and return a text report."""
+    # ① trim learner input to a safe demo length and prepare both prompt variants
+    review = review.strip()[:MAX_REVIEW_CHARS]
+    unconstrained, constrained = build_prompts(review)
+    # ② define the three reliability strategies from loosest to strictest
+    strategies = [
+        ("A", "A · Unconstrained prompt", unconstrained, None),
+        ("B", "B · Prompt asks for JSON", constrained, None),
+        ("C", "C · Schema enforced by API", constrained, SCHEMA_FORMAT),
+    ]
+    if strategy != "all":
+        # ③ keep only the requested strategy when the UI filter is used
+        strategies = [s for s in strategies if s[0] == strategy]
+
+    # ④ run repeated calls for every selected strategy in parallel
+    jobs = [(p, fmt, temperature) for _, _, p, fmt in strategies for _ in range(RUNS_PER_STRATEGY)]
+    outputs = parallel_map(lambda job: call_model(*job), jobs)
+
+    # ⑤ build a report showing parser survival and a sample output per strategy
+    lines = [
+        f"{RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
+        "",
+    ]
+    schema_scores = []
+    for i, (_, label, _, _) in enumerate(strategies):
+        # ⑥ compute metrics for this strategy's batch and append them to the report
+        responses = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
+        m = metrics(responses)
+        schema_scores.append(m["schema"])
+        lines.append(label)
+        lines.append(
+            f"  unique responses {m['unique']}/{m['total']} · consistency {m['consistency']}% · "
+            f"parses as JSON {m['parse']}% · matches schema {m['schema']}%"
+        )
+        if m["errors"]:
+            lines.append(f"  ({m['errors']} API call(s) failed and were excluded)")
+        sample = next((r for r in responses if not r.startswith("Error:")), responses[0])
+        lines.append(f"  sample: {sample[:300]}{'…' if len(sample) &gt; 300 else ''}")
+        lines.append("")
+
+    # ⑦ finish with the full comparison takeaway or a tip for filtered runs
+    if len(schema_scores) == 3:
+        lines.append(
+            f"Takeaway: usable output went {schema_scores[0]}% → {schema_scores[1]}% → {schema_scores[2]}% "
+            "at the same temperature. Determinism came from narrowing what the model "
+            "was allowed to emit, not from turning down randomness."
+        )
+    else:
+        lines.append("Tip: re-run at another temperature, or pick 'All three' to compare strategies.")
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run the default review when this module is executed directly
+    print(run_variance(DEFAULT_REVIEW))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-tool-routing-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-tool-routing-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-tool-routing-py" class="topic-title is-file">tool_routing.py<a class="headerlink" href="#source-tool-routing-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">201 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-tool-routing-py">
+                    <span class="file-path">ai-reliability/src/python/tool_routing.py</span>
+                    <p class="file-label">Tool Schema Calibration: which part of a tool schema does the model route on?</p>
+                    <pre><code data-lang="python">"""Tool Schema Calibration: which part of a tool schema does the model route on?
+
+Adapted from ``study/09-ai-reliability/tool-schema-calibration.py``. Three weather
+tools are offered under a 2x2 of conditions (descriptive vs opaque names x
+loose vs tight descriptions). ``tool_choice="required"`` forces a pick so
+"which tool" is isolated from "whether to call a tool at all".
+
+The web demo routes the visitor's own question under all four conditions, then
+scores a fixed labelled sample to fill in the accuracy matrix.
+"""
+
+from config import CHAT_MODEL, bar, get_openai_client, parallel_map
+
+TEMPERATURE = 0
+MAX_QUERY_CHARS = 300
+
+CANONICAL = ("current", "forecast", "history")
+
+NAME_SETS = {
+    "descriptive": {
+        "current": "get_weather_current",
+        "forecast": "get_weather_forecast",
+        "history": "get_weather_history",
+    },
+    # plausible but uninformative - the shape real MCP servers often ship with
+    "opaque": {
+        "current": "weather_service_a",
+        "forecast": "weather_service_b",
+        "history": "weather_service_c",
+    },
+}
+
+DESCRIPTION_SETS = {
+    "loose": {
+        "current": "Get weather information for a location.",
+        "forecast": "Get weather data for a city.",
+        "history": "Fetch weather records for a specific area.",
+    },
+    "tight": {
+        "current": (
+            "Get CURRENT, REAL-TIME weather conditions for a specific location. "
+            "Use only for queries about 'now', 'today', or current status."
+        ),
+        "forecast": (
+            "Get FUTURE weather predictions and forecasts. Use only for queries "
+            "about 'tomorrow', 'next week', 'upcoming', or future dates."
+        ),
+        "history": (
+            "Fetch HISTORICAL weather records from the past. Use only for queries "
+            "about yesterday, last year, or specific past dates."
+        ),
+    },
+}
+
+CONDITIONS = [
+    ("A", "descriptive", "loose"),
+    ("B", "descriptive", "tight"),
+    ("C", "opaque", "loose"),
+    ("D", "opaque", "tight"),
+]
+
+NAME_CHOICES = ("both", *NAME_SETS)
+DESCRIPTION_CHOICES = ("both", *DESCRIPTION_SETS)
+
+# A balanced subset of the study prototype's 50 labelled queries.
+SAMPLE_QUERIES = [
+    ("Is it raining in London at the moment?", "current"),
+    ("Show me today's weather for NYC.", "current"),
+    ("Check weather for Rome.", "current"),
+    ("Weather update for Cape Town.", "current"),
+    ("Will it rain next Tuesday in Paris?", "forecast"),
+    ("Give me the 5-day forecast for Sydney.", "forecast"),
+    ("Upcoming weather for Chicago.", "forecast"),
+    ("Weather outlook for Seoul next month.", "forecast"),
+    ("What was the weather like in London yesterday?", "history"),
+    ("Weather records for Tokyo in 1990.", "history"),
+    ("Last week's weather in Toronto.", "history"),
+    ("Was it raining in Seoul three days ago?", "history"),
+]
+
+
+def build_condition(name_style: str, desc_style: str) -&gt; tuple[list, dict]:
+    """Return (tools, lookup) where lookup maps emitted names to canonical slots."""
+    # ① choose the name and description set for this calibration condition
+    names = NAME_SETS[name_style]
+    descs = DESCRIPTION_SETS[desc_style]
+    # ② build OpenAI tool schemas for the same three weather capabilities
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": names[c],
+                "description": descs[c],
+                "parameters": {
+                    "type": "object",
+                    "properties": {"location": {"type": "string", "description": "The city name."}},
+                    "required": ["location"],
+                },
+            },
+        }
+        for c in CANONICAL
+    ]
+    # ③ return the schemas plus a lookup back to the canonical answer labels
+    return tools, {names[c]: c for c in CANONICAL}
+
+
+def select_tool(query: str, name_style: str, desc_style: str) -&gt; str:
+    """Return the canonical slot the model routed to, '(no call)', or '(error)'."""
+    # ① build the exact tool menu for this name-description condition
+    tools, lookup = build_condition(name_style, desc_style)
+    try:
+        # ② force the model to choose one tool so routing can be measured directly
+        response = get_openai_client().chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[{"role": "user", "content": query}],
+            tools=tools,
+            tool_choice="required",
+            temperature=TEMPERATURE,
+        )
+        # ③ read the selected tool call and map it back to current/forecast/history
+        calls = response.choices[0].message.tool_calls
+        if not calls:
+            return "(no call)"
+        return lookup.get(calls[0].function.name, calls[0].function.name)
+    except Exception:
+        # ④ keep API failures visible as a routing outcome instead of crashing
+        return "(error)"
+
+
+def run_routing(query: str, names: str = "both", descriptions: str = "both") -&gt; str:
+    """Route ``query`` under the selected conditions and score the labelled sample."""
+    # ① trim the learner's question and choose the requested 2x2 conditions
+    query = query.strip()[:MAX_QUERY_CHARS]
+    conditions = [
+        c for c in CONDITIONS
+        if names in ("both", c[1]) and descriptions in ("both", c[2])
+    ]
+    # ② queue the learner query first, then the labelled sample for each condition
+    jobs = [(query, n, d) for _, n, d in conditions]
+    jobs += [(q, n, d) for _, n, d in conditions for q, _ in SAMPLE_QUERIES]
+    # ③ run all routing decisions in parallel to keep the demo responsive
+    picks = parallel_map(lambda job: select_tool(*job), jobs)
+
+    # ④ split personal picks from sample picks and score each condition
+    yours, sample = picks[: len(conditions)], picks[len(conditions):]
+    total = len(SAMPLE_QUERIES)
+    scores = {}
+    for i, (label, _, _) in enumerate(conditions):
+        chunk = sample[i * total:(i + 1) * total]
+        scores[label] = sum(p == exp for p, (_, exp) in zip(chunk, SAMPLE_QUERIES))
+
+    # ⑤ report how the learner's question routed under every selected condition
+    lines = [f"Your question · {CHAT_MODEL} · temperature {TEMPERATURE} · tool_choice=required"]
+    for (label, n, d), pick in zip(conditions, yours):
+        tool_name = NAME_SETS[n].get(pick, pick)
+        lines.append(f"  {label} {n} names + {d} descs → {tool_name} ({pick})")
+
+    # ⑥ add the labelled-sample accuracy matrix and lift comparisons
+    lines += ["", f"Routing accuracy on {total} labelled queries"]
+    for label, n, d in conditions:
+        lines.append(f"  {label} {n:&lt;11} + {d:&lt;5}  {bar(scores[label], total)}")
+
+    lifts = [
+        ("Description lift with self-explanatory names", "B", "A"),
+        ("Description lift with opaque names", "D", "C"),
+        ("Name lift with vague descriptions", "A", "C"),
+        ("Name lift with tight descriptions", "B", "D"),
+    ]
+    lift_lines = [
+        f"{text}: {scores[hi] - scores[lo]:+d}" for text, hi, lo in lifts if hi in scores and lo in scores
+    ]
+    if lift_lines:
+        lines += [""] + lift_lines
+
+    # ⑦ explain either how to see the full grid or what the grid shows
+    lines.append("")
+    if len(scores) &lt; 4:
+        lines.append("Tip: set both dropdowns to 'Both' for the full 2x2 and a verdict.")
+        return "\n".join(lines)
+
+    desc_lift_desc = scores["B"] - scores["A"]
+    desc_lift_opaque = scores["D"] - scores["C"]
+    if desc_lift_opaque &gt; desc_lift_desc:
+        lines.append(
+            "Verdict: descriptions are load-bearing - but only when the names are not "
+            "already doing the work. Rename tools generically and the description is the "
+            "only signal left."
+        )
+    elif desc_lift_desc &gt; 0 or desc_lift_opaque &gt; 0:
+        lines.append("Verdict: tightening descriptions improves routing regardless of naming.")
+    else:
+        lines.append(
+            "Verdict: no measurable effect from descriptions on this sample - the model "
+            "is saturating the task."
+        )
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run one forecast-style example when this module is executed directly
+    print(run_routing("Will it snow in Oslo this weekend?"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-tool-errors-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-tool-errors-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-tool-errors-py" class="topic-title is-file">tool_errors.py<a class="headerlink" href="#source-tool-errors-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">216 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-tool-errors-py">
+                    <span class="file-path">ai-reliability/src/python/tool_errors.py</span>
+                    <p class="file-label">Tool Call Error Injection: does the model tell the user when a tool fails?</p>
+                    <pre><code data-lang="python">"""Tool Call Error Injection: does the model tell the user when a tool fails?
+
+Adapted from ``study/09-ai-reliability/tool-call-error-injection.py``. One tool,
+``get_weather(city)``: by default the first call in a scenario succeeds and
+the second returns an HTTP 503 (the failing call is selectable). The visitor's
+question runs under one or both system prompts:
+
+  A  plain prompt, no error guidance
+  B  prompt that requires reporting tool errors explicitly
+
+Each final answer is scored for: admitted failure, surfaced the error code,
+and - the production risk - invented weather for the city whose call failed.
+"""
+
+import json
+import re
+
+from config import CHAT_MODEL, get_openai_client, parallel_map
+
+TEMPERATURE = 0.7
+MAX_ROUNDS = 6
+MAX_QUESTION_CHARS = 300
+
+DEFAULT_QUESTION = "What is the current weather in Tokyo and London?"
+
+SCENARIOS = [
+    ("A", "A · No error guidance", "You are a helpful weather assistant."),
+    (
+        "B",
+        "B · Explicit error guidance",
+        "You are a helpful weather assistant. "
+        "If a tool returns an error field, you MUST report it explicitly: "
+        "state code and details. Do not guess.",
+    ),
+]
+
+PROMPT_CHOICES = ("both", "A", "B")
+
+FAIL_ON_CALL_LABELS = {
+    1: "1st tool call returns HTTP 503",
+    2: "2nd tool call returns HTTP 503",
+    0: "no failure injected (control)",
+}
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Returns simulated weather data.",
+            "parameters": {
+                "type": "object",
+                "properties": {"city": {"type": "string", "description": "The city to get the weather for."}},
+                "required": ["city"],
+            },
+        },
+    }
+]
+
+FAILURE_WORDS = (
+    "error", "unavailable", "failed", "failure", "unable", "couldn't", "could not",
+    "wasn't able", "was not able", "issue", "problem", "trouble", "timed out",
+    "timeout", "retry", "try again",
+)
+CONDITION_WORDS = ("sunny", "cloudy", "rain", "clear", "humid", "snow", "overcast")
+
+
+class WeatherService:
+    """Simulated weather API whose Nth call of a scenario fails (0 = never)."""
+
+    def __init__(self, fail_on_call: int = 2):
+        self.calls = 0
+        self.fail_on_call = fail_on_call
+        self.failed_cities = []
+
+    def get_weather(self, city: str) -&gt; dict:
+        # ① count each tool call so the configured Nth call can fail
+        self.calls += 1
+        if self.calls == self.fail_on_call:
+            # ② remember the failed city and return a realistic upstream error payload
+            self.failed_cities.append(city)
+            return {
+                "error": "SERVICE_UNAVAILABLE",
+                "http_status": 503,
+                "detail": f"Upstream weather API timed out for '{city}'",
+            }
+        # ③ otherwise return stable fake weather data for comparison
+        return {"city": city, "temperature_c": 28, "condition": "Sunny", "humidity_pct": 45}
+
+
+def run_agent(system_prompt: str, question: str, fail_on_call: int = 2) -&gt; dict:
+    """Run a bounded manual tool-calling loop and return a trace and the answer."""
+    # ① create the simulated weather service and seed the chat with system/user turns
+    service = WeatherService(fail_on_call)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question},
+    ]
+    trace = []
+    final_text = "(no final answer - round limit reached)"
+
+    # ② let the model and tools interact for a bounded number of rounds
+    for _ in range(MAX_ROUNDS):
+        try:
+            # ③ ask the model whether to answer or call the weather tool
+            response = get_openai_client().chat.completions.create(
+                model=CHAT_MODEL, messages=messages, tools=TOOLS, temperature=TEMPERATURE
+            )
+        except Exception as e:
+            final_text = f"Error: {e}"
+            break
+
+        # ④ stop when the model gives a final answer instead of tool calls
+        msg = response.choices[0].message
+        if not msg.tool_calls:
+            final_text = msg.content or ""
+            break
+
+        # ⑤ preserve the assistant tool-call message exactly for the next model turn
+        messages.append({
+            "role": "assistant",
+            "content": msg.content,
+            "tool_calls": [
+                {"id": c.id, "type": "function",
+                 "function": {"name": c.function.name, "arguments": c.function.arguments}}
+                for c in msg.tool_calls
+            ],
+        })
+        for call in msg.tool_calls:
+            # ⑥ parse tool arguments, execute the simulated service, and log the outcome
+            try:
+                args = json.loads(call.function.arguments or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            city = str(args.get("city", "")) if isinstance(args, dict) else ""
+            result = service.get_weather(city)
+            status = f"FAILED {result['http_status']}" if "error" in result else "ok"
+            trace.append(f"get_weather({city!r}) → {status}")
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result)})
+
+    # ⑦ return everything needed for the scenario report and hallucination checks
+    return {"trace": trace, "answer": final_text, "failed_cities": service.failed_cities}
+
+
+def acknowledged_failure(text: str) -&gt; bool:
+    low = text.lower()
+    return any(w in low for w in FAILURE_WORDS)
+
+
+def gave_error_detail(text: str) -&gt; bool:
+    low = text.lower()
+    return "503" in low or "service_unavailable" in low or "service unavailable" in low
+
+
+def fabricated_data(text: str, failed_cities: list[str]) -&gt; bool:
+    """True when a sentence naming a failed city asserts a reading without reporting the failure."""
+    # ① inspect each sentence independently so one safe sentence does not mask another
+    for sentence in re.split(r"(?&lt;=[.!?])\s+|\n+", text):
+        low = sentence.lower()
+        # ② skip sentences that do not mention a city whose tool call failed
+        if not any(city and city.lower() in low for city in failed_cities):
+            continue
+        # ③ flag weather readings that are not paired with failure language
+        has_reading = re.search(r"\d+\s*(°|deg|celsius|c\b|f\b)", low) or any(
+            w in low for w in CONDITION_WORDS
+        )
+        if has_reading and not any(w in low for w in FAILURE_WORDS):
+            return True
+    return False
+
+
+def yes_no(flag: bool) -&gt; str:
+    return "YES" if flag else "NO"
+
+
+def run_error_injection(question: str, prompt: str = "both", fail_on_call: int = 2) -&gt; str:
+    """Run the selected scenario(s) on ``question`` and return a text report."""
+    # ① trim the learner's question and choose the requested prompt scenario(s)
+    question = question.strip()[:MAX_QUESTION_CHARS]
+    scenarios = [s for s in SCENARIOS if prompt in ("both", s[0])]
+    # ② run each system prompt against the same injected tool-failure setup
+    results = parallel_map(lambda s: run_agent(s[2], question, fail_on_call), scenarios)
+
+    # ③ start the report with model settings and the failure mode
+    failure = FAIL_ON_CALL_LABELS[fail_on_call]
+    lines = [f"{CHAT_MODEL} · temperature {TEMPERATURE} · {failure}", ""]
+    for (_, label, _), res in zip(scenarios, results):
+        # ④ show the tool trace, final answer, and safety scores for each scenario
+        lines.append(label)
+        lines.append("  tool calls: " + (", ".join(res["trace"]) or "none"))
+        lines.append(f"  answer: {res['answer']}")
+        if res["failed_cities"]:
+            lines.append(
+                f"  admitted failure? {yes_no(acknowledged_failure(res['answer']))} · "
+                f"gave error code? {yes_no(gave_error_detail(res['answer']))} · "
+                f"invented data for failed city? "
+                f"{yes_no(fabricated_data(res['answer'], res['failed_cities']))}"
+            )
+        elif fail_on_call == 0:
+            lines.append("  control run - no failure injected.")
+        else:
+            lines.append("  no tool call failed - ask about more cities to reach the failing call.")
+        lines.append("")
+
+    # ⑤ close with the lesson: same tool failure, different prompt behavior
+    lines.append(
+        "How to read this: the tool fails identically in A and B; only the system prompt "
+        "differs. An invented reading for a city the API never answered is the failure "
+        "that turns a degraded response into an incident."
+    )
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run the default two-city question when this module is executed directly
+    print(run_error_injection(DEFAULT_QUESTION))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">ai-reliability/src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and build the OpenAI client.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and build the OpenAI client.
+
+This module is the single place that knows about secrets and model names.
+Every feature module imports from here instead of reading ``os.environ`` or
+constructing API clients itself.
+"""
+
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+# A NON-reasoning model: reasoning models think internally even when told not
 # to, which erases the gaps these demos measure.
 CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
 
@@ -171,16 +1232,21 @@ CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
 # the 60 s Nginx proxy timeout without hammering the provider.
 MAX_WORKERS = 8
 
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
 _client = None
 
 
-def get_openai_client() -> OpenAI:
+def get_openai_client() -&gt; OpenAI:
     """Return a shared OpenAI client built from OPENAI_API_KEY."""
     global _client
     if _client is None:
+        # ① read the API key lazily so tests/imports do not require credentials
         api_key = get_env("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        # ② create one reusable client with bounded timeout and retries
         _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
     return _client
 
@@ -188,76 +1254,292 @@ def get_openai_client() -> OpenAI:
 def parallel_map(fn, items):
     """Run ``fn`` over ``items`` concurrently, preserving input order."""
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
-        return list(pool.map(fn, items))</code></pre>
+        return list(pool.map(fn, items))
 
-                <h2>API routes</h2>
-                <span class="file-label">app.py — rate limiting and one validated POST route per demo</span>
-                <pre><code class="language-python">@bp.before_request
+
+def bar(correct: int, total: int, width: int = 10) -&gt; str:
+    """Render a text accuracy bar with a count and percentage."""
+    # ① avoid dividing by zero when a filtered comparison has no examples
+    if total == 0:
+        return "n/a"
+    # ② convert the score into filled and empty bar characters
+    filled = round(correct / total * width)
+    return f"{'█' * filled}{'░' * (width - filled)}  {correct}/{total} ({round(correct / total * 100)}%)"</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 10 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">241 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">ai-reliability/src/python/app.py</span>
+                    <p class="file-label">Flask server for AI Reliability Lab: four measured LLM reliability demos.</p>
+                    <pre><code data-lang="python">"""Flask server for AI Reliability Lab: four measured LLM reliability demos.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/variance", etc. In production Nginx forwards ``/ai-reliability/...``
+  traffic to the container and PATH_PREFIX is set to "/ai-reliability".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from config import TEMPERATURE_CHOICES
+from cot import PROBLEMS, run_cot
+from cot import STRATEGY_CHOICES as COT_STRATEGIES
+from rate_limiter import check_rate_limit
+from tool_errors import FAIL_ON_CALL_LABELS, PROMPT_CHOICES, run_error_injection
+from tool_routing import DESCRIPTION_CHOICES, NAME_CHOICES, run_routing
+from variance import STRATEGY_CHOICES as VARIANCE_STRATEGIES
+from variance import run_variance
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment ("/ai-reliability") so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply the limit only to API actions, not static page loads
     if request.method == "POST":
+        # ② ask the shared limiter whether this request should be blocked
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
             return resp
 
 
-def read_message() -> str:
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured Flask static folder
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified HTML with an explicit text/html response type
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+def read_message() -&gt; str:
     """Return the trimmed ``message`` field from the JSON body, or ''."""
+    # ① parse JSON leniently so missing or malformed bodies become empty data
     data = request.get_json(force=True, silent=True) or {}
+    # ② normalize the message field into a stripped string for route validation
     return str(data.get("message") or "").strip()
+
+
+def read_choice(name: str, allowed, default: str) -&gt; str | None:
+    """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    # ① parse JSON leniently and fall back to the route's default choice
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    # ② accept only known UI choices so feature modules receive valid selectors
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+
+
+@bp.route("/variance", methods=["POST"])
+def variance_route():
+    """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
+    # ① validate that the learner supplied review text to analyze
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A customer review is required."}), 400
+    # ② read and validate the selected extraction strategy
+    strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+    try:
+        # ④ run the variance feature and return its text report as JSON
+        return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("variance failed")
+        return jsonify({"error": "Variance test failed. Please try again later."}), 500
 
 
 @bp.route("/cot", methods=["POST"])
 def cot_route():
     """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    # ① read the requested problem key and normalize it for lookup
     message = read_message().lower()
     if not message:
         return jsonify({"error": "A problem name is required."}), 400
     if message not in PROBLEMS:
         return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    # ② read and validate the selected prompt strategy
+    strategy = read_choice("strategy", COT_STRATEGIES, "both")
+    if strategy is None:
+        return invalid_choice("strategy", COT_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
-        return jsonify({"result": run_cot(message)})
+        # ④ run the CoT feature and return its text report as JSON
+        return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("cot failed")
         return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
 
-# /variance, /routing and /errors follow the same validate → run → report pattern.</code></pre>
 
-            </div>
-        </section>
+@bp.route("/routing", methods=["POST"])
+def routing_route():
+    """Route a weather question under the names x descriptions 2x2."""
+    # ① validate that the learner supplied a weather-routing question
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate the selected tool-name condition
+    names = read_choice("names", NAME_CHOICES, "both")
+    if names is None:
+        return invalid_choice("names", NAME_CHOICES)
+    # ③ read and validate the selected tool-description condition
+    descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
+    if descriptions is None:
+        return invalid_choice("descriptions", DESCRIPTION_CHOICES)
+    try:
+        # ④ run the routing feature and return its text report as JSON
+        return jsonify({"result": run_routing(message, names, descriptions)})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("routing failed")
+        return jsonify({"error": "Routing test failed. Please try again later."}), 500
+
+
+@bp.route("/errors", methods=["POST"])
+def errors_route():
+    """Run the tool-error injection scenarios on a weather question."""
+    # ① validate that the learner supplied a weather question for the agent
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate which system-prompt scenario to run
+    prompt = read_choice("prompt", PROMPT_CHOICES, "both")
+    if prompt is None:
+        return invalid_choice("prompt", PROMPT_CHOICES)
+    # ③ derive valid failure-injection choices from the shared labels
+    fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
+    fail_on_call = read_choice("fail_on_call", fail_choices, "2")
+    if fail_on_call is None:
+        return invalid_choice("fail_on_call", fail_choices)
+    try:
+        # ④ run the error-injection feature and return its text report as JSON
+        return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("error injection failed")
+        return jsonify({"error": "Error-injection test failed. Please try again later."}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/variance") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">TechToday &mdash; 🎯 AI Reliability Lab &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: { nodeSpacing: 34, rankSpacing: 60, padding: 16 },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

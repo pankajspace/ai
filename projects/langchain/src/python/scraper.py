@@ -40,25 +40,32 @@ def fetch_website_contents(url: str) -> str:
 
         …or an error message prefixed with "Could not fetch the website."
     """
+    # ① normalize bare domains to https so the loader receives a full URL
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
     try:
+        # ② create the loader that fetches HTML and extracts readable text
         # WebBaseLoader uses requests and BeautifulSoup under the hood.
         loader = WebBaseLoader(url)
-        # Pass headers and timeout via requests_kwargs
+        # ③ pass headers and timeout via requests_kwargs
         loader.requests_kwargs = {"headers": HEADERS, "timeout": 15}
         
+        # ④ download and parse the page into LangChain document objects
         docs = loader.load()
+        # ⑤ stop early if the loader could not find any document content
         if not docs:
             return "Could not fetch the website."
             
+        # ⑥ pull the page title and cleaned body text from the first document
         title = docs[0].metadata.get("title", "No title found")
         # WebBaseLoader parses text with soup.get_text() by default.
         text = docs[0].page_content.strip()
         
+        # ⑦ return prompt-ready text that clearly separates title and body
         return f"Title: {title}\n\nPage contents:\n{text}"
     except Exception as e:
+        # ⑧ turn network or parsing failures into a caller-friendly message
         return f"Could not fetch the website. Error: {e}"
 
 

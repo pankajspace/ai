@@ -90,6 +90,12 @@ None of the above exists when you press the power button. The CPU starts in a pr
 
 ---
 
+<a id="unit-1"></a>
+
+## Unit 1 — Processes & Scheduling
+
+How the OS turns a few CPUs into many running programs.
+
 <a id="1-processes"></a>
 
 ## Processes
@@ -342,6 +348,12 @@ strace -p <pid> -c -f
 
 ---
 
+<a id="unit-2"></a>
+
+## Unit 2 — Memory
+
+How every process gets its own private memory, and what that illusion costs.
+
 <a id="4-the-address-space"></a>
 
 ## The Address Space
@@ -476,6 +488,12 @@ The OS spends enormous effort keeping your data near the top of a ladder whose r
 > Two properties make caching work at every level, and they are the same two: **temporal locality** (what you touched, you will touch again) and **spatial locality** (what is next to it, you will touch next). Iterating an array row-wise is fast and column-wise is slow for exactly this reason, and it is the same reason the page cache, the TLB, readahead and branch predictors all exist.
 
 ---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Concurrency & Communication
+
+Coordinating threads and processes that share data, without corrupting it or freezing.
 
 <a id="7-synchronisation"></a>
 
@@ -682,6 +700,12 @@ yes | head -1   # head exits, yes gets SIGPIPE, the pipeline ends cleanly
 ```
 
 ---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Storage, I/O & Isolation
+
+Persistent files, talking to devices, and isolating whole systems from each other.
 
 <a id="10-files-and-file-systems"></a>
 

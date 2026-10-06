@@ -77,12 +77,14 @@ CANONICAL_COMPLAINT = (
 
 def get_bench_judges(bench: str = "mixed3"):
     """Returns one judge configuration per seat of the selected bench layout."""
+    # ① map provider keys to their display name, model, and client factory
     providers = {
         "openai": ("OpenAI", OPENAI_MODEL, get_openai_client),
         "gemini": ("Gemini", GEMINI_MODEL, get_gemini_client),
         "grok": ("Groq", GROK_MODEL, get_grok_client),
     }
     judges = []
+    # ② expand the selected bench seats into concrete judge configurations
     for seat, key in enumerate(BENCH_CHOICES[bench]["seats"], start=1):
         provider, model, client_fn = providers[key]
         judges.append(
@@ -99,13 +101,16 @@ def get_bench_judges(bench: str = "mixed3"):
 
 def extract_json(text: str):
     """Extracts JSON object or array from markdown-fenced or raw response."""
+    # ① remove a markdown JSON fence if the model wrapped its answer
     text = text.strip()
     match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
     if match:
         text = match.group(1).strip()
     try:
+        # ② parse clean JSON first because that is the expected output
         return json.loads(text)
     except Exception:
+        # ③ fall back to parsing from the first JSON-looking bracket
         start_idx = min(
             (text.find(c) for c in "[{" if text.find(c) != -1), default=-1
         )
@@ -119,7 +124,9 @@ def extract_json(text: str):
 
 def stage2_extract_grievances(complaint_text: str, line_items: list) -> list:
     """Extracts checkable grievances with co-reference resolution."""
+    # ① open the extraction model client for the grievance-intake step
     client = get_openai_client()
+    # ② build a strict JSON prompt from the complaint and frozen order lines
     prompt = f"""You are a precise dispute-intake assistant.
 
 Given a customer complaint and the order's line items, extract every atomic, checkable grievance.
@@ -146,6 +153,7 @@ Schema:
 Complaint: {complaint_text}
 Order line items: {json.dumps(line_items)}"""
 
+    # ③ ask the model to extract grievances and parse its JSON response
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -155,10 +163,12 @@ Order line items: {json.dumps(line_items)}"""
         content = response.choices[0].message.content or "[]"
         data = extract_json(content)
         if isinstance(data, list) and len(data) > 0:
+            # ④ return the model extraction only when it is a non-empty list
             return data
     except Exception as e:
         print(f"Error in extraction: {e}")
 
+    # ⑤ fall back to deterministic grievances so the pipeline can still run
     # Fallback deterministic extraction
     return [
         {
@@ -194,6 +204,7 @@ Order line items: {json.dumps(line_items)}"""
 
 def judge_single_grievance(grievance_text: str, evidence: dict, judge: dict) -> dict:
     """A single independent judge model ruling on a grievance."""
+    # ① build an evidence-bound adjudication prompt for one grievance
     prompt = f"""You are an impartial claims adjudicator ({judge['name']}).
 Rule on the following grievance using ONLY the evidence given.
 
@@ -219,6 +230,7 @@ Schema:
   "reasoning": "<one to two sentences>"
 }}"""
 
+    # ② ask the assigned judge model for one ruling
     # Attempt primary judge client and model
     try:
         client = judge["client_fn"]()
@@ -230,6 +242,7 @@ Schema:
         content = response.choices[0].message.content or "{}"
         data = extract_json(content)
         if isinstance(data, dict) and "ruling" in data:
+            # ③ validate the model ruling into one of the allowed labels
             ruling = str(data["ruling"]).upper()
             if ruling not in ("UPHELD", "REJECTED", "ESCALATE"):
                 ruling = "ESCALATE"
@@ -246,6 +259,7 @@ Schema:
             }
     except Exception as err:
         print(f"Error in {judge['name']}: {err}. Trying OpenAI fallback...")
+        # ④ fall back to OpenAI if the external judge provider fails
         # Fallback to OpenAI if external judge provider encounters error
         try:
             fb_client = get_openai_client()
@@ -274,6 +288,7 @@ Schema:
         except Exception as fb_err:
             print(f"Fallback also failed for {judge['name']}: {fb_err}")
 
+    # ⑤ route unresolved errors to human review instead of guessing
     return {
         "judge_id": judge["id"],
         "judge_name": judge["name"],
@@ -289,8 +304,11 @@ Schema:
 
 def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") -> list:
     """Runs every judge on every grievance (in parallel) and tallies the majority verdict."""
+    # ① expand the selected bench into independent judge seats
     judges = get_bench_judges(bench)
+    # ② create every grievance/judge pair so each judge sees each claim
     pairs = [(g, judge) for g in grievances for judge in judges]
+    # ③ run independent rulings concurrently within the proxy timeout
     # Judges share no history, so all rulings can run concurrently within the proxy timeout.
     with ThreadPoolExecutor(max_workers=8) as pool:
         all_rulings = list(
@@ -299,8 +317,10 @@ def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") 
     judged_grievances = []
 
     for gi, g in enumerate(grievances):
+        # ④ group the flat ruling list back into the current grievance
         rulings = all_rulings[gi * len(judges):(gi + 1) * len(judges)]
 
+        # ⑤ tally votes in code and choose the majority verdict
         # Tally majority vote in code
         votes = {"UPHELD": 0, "REJECTED": 0, "ESCALATE": 0}
         for r in rulings:
@@ -312,11 +332,13 @@ def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") 
         majority_ruling = sorted_votes[0][0]
         majority_count = sorted_votes[0][1]
 
+        # ⑥ calculate overall confidence from vote split and judge confidence
         # Calculate confidence from vote split and judge confidence
         avg_judge_conf = sum(r.get("confidence", 0.5) for r in rulings) / len(rulings)
         split_ratio = majority_count / len(judges)
         overall_confidence = round(split_ratio * avg_judge_conf, 2)
 
+        # ⑦ convert the verdict and grievance category into refund amounts
         # Code-driven pricing calculation
         category = g.get("category", "")
         amount = 0.0
@@ -343,6 +365,7 @@ def stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") 
             amount = 0.0
             held_amount = 0.0
 
+        # ⑧ append the UI-ready result for this grievance
         judged_grievances.append(
             {
                 "grievance_id": g.get("grievance_id", ""),
@@ -364,9 +387,11 @@ def stage4_settle(
     complaint_text: str, judged_grievances: list, evidence: dict, cap: float = AUTO_APPROVE_CAP
 ) -> dict:
     """Computes settlement totals, checks auto-approval cap, and synthesizes customer message."""
+    # ① total approved and held amounts across all judged grievances
     total_approved = sum(g["refund_amount"] for g in judged_grievances)
     total_held = sum(g["held_amount"] for g in judged_grievances)
 
+    # ② enforce the auto-approval cap before drafting the customer reply
     escalated_to_human = False
     if total_approved > cap:
         escalated_to_human = True
@@ -374,6 +399,7 @@ def stage4_settle(
         total_approved = 0.0
 
     client = get_openai_client()
+    # ③ summarise final rulings so the writer model cannot re-adjudicate
     verdicts_summary = [
         {
             "id": g["grievance_id"],
@@ -406,6 +432,7 @@ Rulings: {json.dumps(verdicts_summary)}
 Approved Refund: ₹{total_approved:.0f}
 Held for review: ₹{total_held:.0f}"""
 
+    # ④ ask the model to write the customer-facing settlement message
     try:
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -420,6 +447,7 @@ Held for review: ₹{total_held:.0f}"""
             f"(₹{total_held:.0f}) and will update you shortly."
         )
 
+    # ⑤ return the settlement payload consumed by the frontend
     return {
         "dispute_id": evidence.get("order_id", "ord_9841"),
         "total_approved_refund": total_approved,
@@ -435,20 +463,25 @@ def adjudicate_dispute(
     complaint_text: str, bench: str = "mixed3", cap: float = AUTO_APPROVE_CAP
 ) -> dict:
     """Executes the full 4-stage Refund Bench pipeline with the selected judge bench and cap."""
+    # ① normalise the complaint, using the canonical scenario when input is empty
     cleaned_complaint = (complaint_text or "").strip()
     if not cleaned_complaint:
         cleaned_complaint = CANONICAL_COMPLAINT
 
+    # ② freeze the evidence snapshot that every downstream stage must use
     evidence = DEFAULT_ORDER_EVIDENCE
 
+    # ③ extract atomic grievances from the complaint text
     # Stage 2: Grievance Extraction
     grievances = stage2_extract_grievances(
         cleaned_complaint, evidence["line_items"]
     )
 
+    # ④ run the selected multi-judge bench over every grievance
     # Stage 3: Multi-Judge Bench
     judged_grievances = stage3_judge_bench(grievances, evidence, bench)
 
+    # ⑤ settle approved and held amounts, then attach the bench label
     # Stage 4: Settle
     settlement = stage4_settle(cleaned_complaint, judged_grievances, evidence, cap)
     settlement["bench_label"] = BENCH_CHOICES[bench]["label"]

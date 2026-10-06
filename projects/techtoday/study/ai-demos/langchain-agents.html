@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>LangChain &amp; Agents | TechToday</title>
+  <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../dsa/dsa-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="stylesheet" href="ai-demos.css" />
+  <style>
+    body.is-ai .study>h1:first-child::before { content: "100% Hands-On · Build Your First Agent"; }
+    .study>h1 em, .topic-title em { color: var(--accent); }
+    .mono { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 12.5px; }
+    .chat-log { display: grid; gap: 8px; align-content: start; }
+    .bub { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+    .bub.user { justify-self: end; color: var(--page); background: var(--blue); border-bottom-right-radius: 4px; }
+    .bub.bot { justify-self: start; background: var(--surface-raised); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+    .bub.tool { justify-self: start; display: flex; align-items: center; gap: 8px; color: var(--accent-bright); background: rgba(224, 175, 104, 0.1); border: 1px dashed var(--accent); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+    .bub.note { justify-self: center; padding: 0; color: var(--muted); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 11.5px; }
+    .tpl-line { margin: 0 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; }
+    .tpl-slot { padding: 1px 6px; color: var(--accent-bright); background: rgba(224, 175, 104, 0.14); border-radius: 5px; font-weight: 700; }
+    .tpl-out { margin-top: 12px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 13px; white-space: pre-wrap; }
+    .tpl-fill { color: var(--accent-bright); font-weight: 700; }
+    .tpl-muted { color: var(--muted); }
+    .envstage { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; min-height: 140px; }
+    .envelope { min-width: 220px; padding: 12px 14px; background: var(--surface-raised); border: 1px solid var(--violet); border-radius: 8px; }
+    .env-title { margin-bottom: 6px; color: var(--violet); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+    .env-field { margin: 4px 0; padding: 5px 8px; color: var(--muted); background: var(--code); border-radius: 5px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+    .env-field.is-star { color: var(--green); background: rgba(115, 201, 145, 0.1); border: 1px dashed var(--green); font-weight: 700; }
+    .envarrow { color: var(--accent); font-size: 18px; }
+    .envout { max-width: 240px; padding: 12px 14px; color: var(--green); background: rgba(115, 201, 145, 0.1); border: 1px solid var(--green); border-radius: 8px; font-size: 14px; font-weight: 600; }
+    .envout small { display: block; font-size: 11.5px; font-weight: 400; }
+    .chain-slots { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; min-height: 72px; padding: 12px; border: 2px solid var(--green); border-radius: 8px; }
+    .chain-pipe { color: var(--accent); font-size: 22px; font-weight: 800; }
+    .chain-piece { padding: 8px 14px; border: 1px solid; border-radius: 8px; font-size: 14px; font-weight: 700; }
+    .chain-piece.prompt { color: var(--accent-bright); background: rgba(224, 175, 104, 0.12); border-color: var(--accent); }
+    .chain-piece.model { color: var(--red); background: rgba(244, 135, 113, 0.12); border-color: var(--red); }
+    .chain-piece.parser { color: var(--cyan); background: rgba(78, 201, 176, 0.12); border-color: var(--cyan); }
+    .chain-out .d1 { color: var(--accent-bright); }
+    .chain-out .d2 { color: var(--red); }
+    .chain-out .d3 { color: var(--green); }
+    .msg { margin: 8px 0; padding: 8px 12px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 13px; background: var(--surface-raised); border-left: 3px solid var(--line); border-radius: 0 6px 6px 0; }
+    .msg b { display: block; color: var(--muted); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .msg.user { border-left-color: var(--blue); }
+    .msg.request { border-left-color: var(--accent); }
+    .msg.tool { border-left-color: var(--cyan); }
+    .msg.final { border-left-color: var(--green); }
+    .qa-list li { margin-bottom: 10px; }
+
+  </style>
+</head>
+
+<body class="is-ai">
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html">
+        <span class="tt-site-logo" aria-hidden="true"></span>
+        <span>TechToday</span>
+      </a>
+      <a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>
+    </nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main class="study-layout">
+    <nav class="topic-menu" aria-label="Topics">
+      <details class="topic-menu-panel">
+        <summary>Topics</summary>
+        <ol class="table-of-contents table-of-contents-numbered">
+          <li><a href="#recap">10-Second Recap</a></li>
+          <li><a href="#adapt">3 Ways to Steer a Model</a></li>
+          <li><a href="#langchain">LangChain Fundamentals</a></li>
+          <li><a href="#agent">Your First Tool-Using Agent</a></li>
+          <li><a href="#project">Hands-On Project</a></li>
+          <li><a href="#next">What's Next</a></li>
+        </ol>
+      </details>
+    </nav>
+    <article class="study">
+      <h1 id="langchain-agents">Make your AI answer questions and use tools.<a class="headerlink"
+          href="#langchain-agents" title="Permanent link">#</a></h1>
+
+      <p class="lede">You already talked to a model. Now you give it <strong>tools</strong>. You will meet LangChain, build your first chain, and then build an <strong>agent that decides when to use a tool.</strong> The examples below show each step.</p>
+
+      <ul class="meta-strip">
+        <li>🧭 3 ways to steer a model</li>
+        <li>🔗 LangChain, hands-on</li>
+        <li>🤖 A real tool-using agent</li>
+        <li>🎮 "Tool or No Tool?" questions</li>
+      </ul>
+
+      <div class="viz">
+        <div class="viz-head"><span class="viz-title">Example · Smart Shop Assistant</span><span class="viz-step">tool decision transcript</span>
+        </div>
+        <div class="viz-stage is-text chat-log" id="heroChat">
+          <div class="bub user">How much are the shoes?</div>
+          <div class="bub tool">🔧 get_price("shoes") → ₹799</div>
+          <div class="bub bot">The shoes are ₹799! Anything else? 🙂</div>
+          <div class="bub user">Nice. What can you do?</div>
+          <div class="bub bot">I can look up any item's price. I decide when to check the database myself. 😎</div>
+        </div>
+        <div class="viz-note">The assistant calls <code>get_price</code> for a price question. It answers directly when the user only asks what it can do.</div>
+      </div>
+
+      <p><strong>Scaler Academy</strong> — type along. Every code block has 📋 Copy. Every example shows its full input and output.</p>
+
+      <div class="course-toolbar">
+        <div class="course-toolbar-info">
+          <span>6 Topics</span>
+          <span class="dot">&bull;</span>
+          <span>Concepts, Worked Examples &amp; a Tool-Using Agent</span>
+        </div>
+      </div>
+      <div class="course-toolbar-actions">
+        <button type="button" class="action-btn" data-course-action="expand-all">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="7 13 12 18 17 13"></polyline>
+            <polyline points="7 6 12 11 17 6"></polyline>
+          </svg>
+          <span>Expand All</span>
+        </button>
+        <button type="button" class="action-btn" data-course-action="collapse-all">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="17 11 12 6 7 11"></polyline>
+            <polyline points="17 18 12 13 7 18"></polyline>
+          </svg>
+          <span>Collapse All</span>
+        </button>
+      </div>
+
+      <!-- ====== 1: Recap ====== -->
+      <section class="topic-section is-collapsed" id="sec-recap" data-topic="recap">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-recap">
+          <div class="topic-header-main">
+            <span class="topic-badge">1</span>
+            <h2 id="recap" class="topic-title">You already know the basics<a class="headerlink" href="#recap"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-recap">
+          <div class="part-section is-collapsed" id="recap-basics">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-recap-basics">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">10-Second Recap<a class="headerlink" href="#recap-basics"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-recap-basics">
+              <ul class="meta-strip">
+                <li><b>Recap</b> 10 seconds</li>
+              </ul>
+              <ul>
+                <li>✅ Called an LLM with the OpenAI library</li>
+                <li>✅ <code>system</code> / <code>user</code> / <code>assistant</code> messages</li>
+                <li>✅ Key safely in <code>.env</code></li>
+                <li>✅ Shipped a Summarizer + an LLM Arena</li>
+              </ul>
+              <div class="callout callout-tip">
+                <p><strong>🛠️ The deal — minimal slides, maximum doing.</strong> Everything here is the <em>same
+                    OpenAI call you already know</em>, organised more cleverly. Keep your LLMs &amp; Prompting
+                  project folder open; we build directly on top of it.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 2: Three ways to steer ====== -->
+      <section class="topic-section is-collapsed" id="sec-adapt" data-topic="adapt">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-adapt">
+          <div class="topic-header-main">
+            <span class="topic-badge">2</span>
+            <h2 id="adapt" class="topic-title">3 ways to steer a model<a class="headerlink"
+                href="#adapt" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-adapt">
+          <div class="part-section is-collapsed" id="adapt-three-ways">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-adapt-three-ways">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Prompting, RAG &amp; Fine-Tuning<a class="headerlink" href="#adapt-three-ways"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-adapt-three-ways">
+              <ul class="meta-strip">
+                <li><b>Block 9</b> ~5 min · the map</li>
+              </ul>
+              <p>Before you build, remember the <strong>three</strong> main ways to steer a pre-trained model. You will use the first one most of the time. You will use the second one soon. You will rarely need the third.</p>
+              <ul class="card-grid">
+                <li class="is-good"><b>✍️ 1. Prompting</b>Just <em>tell</em> it clearly. Free, instant, no training.
+                  <strong>90% of real work lives here</strong> — including everything on this page.
+                </li>
+                <li><b>📚 2. RAG</b>Hand it <em>your</em> documents at question-time so it answers from real data.
+                  Coming up next.</li>
+                <li><b>🎓 3. Fine-tuning</b>Actually re-train on examples. Powerful, costly, rarely needed. Reach for
+                  it last.</li>
+              </ul>
+              <div class="callout callout-tip">
+                <p><strong>🧭 Why this matters here.</strong> Chains, tools, agents — it's all still <strong>option 1,
+                    organised cleverly</strong>. Nothing new to fear. Let's build.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 3: LangChain ====== -->
+      <section class="topic-section is-collapsed" id="sec-langchain" data-topic="langchain">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-langchain">
+          <div class="topic-header-main">
+            <span class="topic-badge">3</span>
+            <h2 id="langchain" class="topic-title">LangChain connects the pieces<a class="headerlink" href="#langchain"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-langchain">
+          <div class="part-section is-collapsed" id="langchain-why">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-why">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Why LangChain (and Install It)<a class="headerlink" href="#langchain-why"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-why">
+              <ul class="meta-strip">
+                <li><b>Block 10</b> ~35 min · hands-on</li>
+              </ul>
+              <p>With the raw OpenAI API you called the model by hand — perfect for one call. The moment you want
+                <strong>reusable prompts, multi-step pipelines, and memory</strong>, you'd be rebuilding the same
+                plumbing forever. <strong>LangChain is that plumbing, pre-built.</strong>
+              </p>
+              <div class="analogy">
+                <span class="analogy-icon">🧰</span>
+                <div class="analogy-body">
+                  <b>One-line intuition</b>
+                  <p>The raw OpenAI call is a Lego brick. LangChain is the box of connectors that snaps bricks into
+                    machines.</p>
+                </div>
+              </div>
+              <h4>Install it</h4>
+              <span class="code-tab-label">bash</span>
+              <pre><code data-lang="text">
+$ pip install langchain langchain-openai
+</code></pre>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-new-words">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-new-words">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The 3 new words in plain English<a class="headerlink"
+                    href="#langchain-new-words" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-new-words">
+              <p>LangChain code uses three names that look scary. They aren't. Read these <em>before</em> we touch
+                code — each one is a thing you already understand:</p>
+              <ul class="card-grid">
+                <li><b><code>ChatPromptTemplate</code> = a prompt with blanks</b>A normal prompt where some parts are
+                  left as <code>{blanks}</code> to fill in later. Like a wedding-invite template: "Dear
+                  <code>{name}</code>, join us on <code>{date}</code>". Write once, reuse for every guest.<br><em>say
+                    it as: "my reusable prompt"</em>
+                </li>
+                <li><b><code>ChatOpenAI</code> = the model, in a LangChain wrapper</b>The exact same GPT you called
+                  with the raw OpenAI API — just wrapped so it can snap onto other LangChain pieces. Same
+                  <code>model=</code>, same <code>temperature=</code>.<br><em>say it as: "the model"</em>
+                </li>
+                <li><b><code>StrOutputParser</code> = unwraps the answer</b>The model doesn't return plain text — it
+                  returns a <em>package</em> (text + metadata like token counts). This piece opens the package and
+                  hands you just the string. ("Str" = string, i.e. plain text.)<br><em>say it as: "give me just the
+                    text"</em></li>
+              </ul>
+              <div class="analogy">
+                <span class="analogy-icon">🗣️</span>
+                <div class="analogy-body">
+                  <b>Why is it called "Chat"PromptTemplate?</b>
+                  <p>Because it builds prompts in the <strong>chat format you already know</strong> from the raw
+                    OpenAI API — system / user / assistant messages. Same grammar, now reusable.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-template">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-template">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Feel a Template (Before Coding One)<a class="headerlink"
+                    href="#langchain-template" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-template">
+              <p>A template is text with blanks. You fill the blanks with a dict. The dict you pass to LangChain, such as <code>{"tone": "witty", ...}</code>, tells LangChain what value goes into each blank.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Template playground</span><span class="viz-step">worked prompt fills</span></div>
+                <div class="viz-stage is-text">
+                  <p class="tpl-line">Template: Write a <span class="tpl-slot">{tone}</span> <span class="tpl-slot">{length}</span> post about <span class="tpl-slot">{topic}</span>.</p>
+                  <ul class="card-grid">
+  <li><b><code>tone</code></b> <code>witty</code>, <code>professional</code>, <code>inspiring</code></li>
+  <li><b><code>length</code></b> <code>short</code>, <code>medium</code>, <code>detailed</code></li>
+  <li><b><code>topic</code></b> <code>AI agents</code>, <code>LangChain</code>, <code>your first job</code></li>
+</ul>
+                  <div class="tpl-out"><span class="tpl-muted">Default call:</span>
+chain.invoke({"tone": "witty", "length": "short", "topic": "AI agents"})
+→ Write a <span class="tpl-fill">witty</span> <span class="tpl-fill">short</span> post about <span class="tpl-fill">AI agents</span>.</div>
+                  <ul class="card-grid">
+  <li><b><code>tone="witty"</code>, <code>length="short"</code>, <code>topic="AI agents"</code></b> Write a <strong>witty</strong> <strong>short</strong> post about <strong>AI agents</strong>.</li>
+  <li><b><code>tone="professional"</code>, <code>length="medium"</code>, <code>topic="LangChain"</code></b> Write a <strong>professional</strong> <strong>medium</strong> post about <strong>LangChain</strong>.</li>
+  <li><b><code>tone="inspiring"</code>, <code>length="detailed"</code>, <code>topic="your first job"</code></b> Write an <strong>inspiring</strong> <strong>detailed</strong> post about <strong>your first job</strong>.</li>
+</ul>
+                </div>
+                <div class="viz-note">The keys in the dict match the blank names: <code>tone</code>, <code>length</code>, and <code>topic</code>.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-parser">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-parser">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">What the model returns and why the parser helps<a class="headerlink"
+                    href="#langchain-parser" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-parser">
+              <p>When the model replies, you do not get plain text. You get a <strong>package called an <code>AIMessage</code></strong>. It holds the text and bookkeeping data. The parser opens the package and returns only the text.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Open the package</span><span class="viz-step">why StrOutputParser exists</span></div>
+                <div class="viz-stage is-text envstage">
+                  <div class="envelope" id="envBox"><div class="env-title">AIMessage ← the package</div><div class="env-field is-star">content: "Anthropic builds safe AI…"</div><div class="env-field">tokens_used: 213</div><div class="env-field">model: "gpt-4o-mini"</div><div class="env-field">finish_reason: "stop"</div></div>
+                  <div class="envarrow" id="envArrow">➜ 🧹 parser ➜</div>
+                  <div class="envout" id="envOut">"Anthropic builds safe AI…"<small>Just the text. It is ready to print, show in your app, or save.</small></div>
+                </div>
+                <div class="viz-note">Without the parser, you would write <code>response.content</code> by hand each time. With the raw OpenAI API, you wrote <code>response.choices[0].message.content</code>. The parser does that cleanup for you.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-builder">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-builder">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Build the chain in order<a class="headerlink" href="#langchain-builder"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-builder">
+              <p>A chain is three pieces joined by <code>|</code>, the pipe. Read the pipe as <strong>"then"</strong>: prompt <em>then</em> model <em>then</em> parser.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Chain builder</span><span class="viz-step">pieces, order, and output</span></div>
+                <div class="viz-stage is-text">
+                  <div class="chain-slots" id="cbSlots"><span class="chain-piece prompt">📝 Prompt</span><span class="chain-pipe">|</span><span class="chain-piece model">🤖 Model</span><span class="chain-pipe">|</span><span class="chain-piece parser">🧹 Parser</span></div>
+                  <ul class="card-grid">
+  <li><b>📝 Prompt</b> The prompt comes first. It shapes the request.</li>
+  <li><b>🤖 Model</b> The model goes in the middle. It does the thinking.</li>
+  <li><b>🧹 Parser</b> The parser comes last. It cleans the output into plain text.</li>
+</ul>
+                  <p>The challenge tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a later piece too early, the feedback explained which piece was expected next.</p>
+                  <div class="mono chain-out" id="cbOut" style="margin-top:12px"><div class="d1">📝 prompt fills the blank → "Summarize this website: anthropic.com…"</div><div class="d2">🤖 model thinks… generates the summary</div><div class="d3">🧹 parser returns clean text → "Anthropic builds safe AI systems, including Claude…" ✅</div></div>
+                </div>
+                <div class="viz-note">This is why <code>prompt | model | parser</code> reads like a small assembly line.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-code">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-code">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">The same chain in real code, decoded line by line<a class="headerlink"
+                    href="#langchain-code" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-code">
+              <p>Rebuilding the earlier website summarizer the LangChain way. The numbered comments match the decoder
+                below — nothing here is mystery code:</p>
+              <span class="code-tab-label">summarizer_langchain.py</span>
+              <pre><code data-lang="python">
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from dotenv import load_dotenv
+from scraper import fetch_website_contents   # reuse the earlier scraper
+load_dotenv()
+
+prompt = ChatPromptTemplate.from_template(            # ①
+    "Give a short, friendly summary of this website:\n\n{website}")
+
+model  = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)   # ②
+
+parser = StrOutputParser()                             # ③
+
+chain = prompt | model | parser                        # ④
+
+def summarize(url):
+    return chain.invoke({"website": fetch_website_contents(url)})   # ⑤
+
+print(summarize("https://anthropic.com"))
+</code></pre>
+              <p><strong>🔍 Decoder — what each numbered line does</strong></p>
+              <ol>
+                <li><strong><code>from_template(...)</code></strong> turns my text into a <strong>reusable
+                    prompt</strong>. The <code>{website}</code> part is the blank — it will be filled in later, just
+                  like the playground above.</li>
+                <li><strong>The model.</strong> The <strong>same model you called with the raw OpenAI API</strong>,
+                  wrapped for LangChain. <code>temperature=0.3</code> = mostly focused (summaries shouldn't be wildly
+                  creative).</li>
+                <li><strong>The parser.</strong> The <strong>package-opener</strong> you just saw in the animation:
+                  takes the model's <code>AIMessage</code> package, hands back plain text.</li>
+                <li><strong>The pipe <code>|</code></strong> means <strong>"then"</strong>. Read aloud: "the prompt,
+                  <em>then</em> the model, <em>then</em> the parser." Data flows left → right, exactly like the
+                  builder.
+                </li>
+                <li><strong><code>invoke</code></strong> means <strong>"run it"</strong>. The dict
+                  <code>{"website": ...}</code> says which blank gets what — the key <code>"website"</code> matches
+                  the <code>{website}</code> blank by name.
+                </li>
+              </ol>
+              <div class="callout callout-key">
+                <p><strong>✨ The unlock.</strong> <code>chain</code> is now a <strong>reusable building
+                    block</strong>. New task? Swap the template. Different model? Swap line ②. Hindi summaries? Add
+                  one word to the prompt. That composability is LangChain's entire point.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="langchain-memory">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-langchain-memory">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Bonus piece: memory, decoded<a class="headerlink"
+                    href="#langchain-memory" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-langchain-memory">
+              <p>Remember the basic truth: models forget everything between calls. The fix is simple —
+                <strong>re-send the old messages every time</strong>. LangChain gives that a tidy home. Two tiny new
+                words first:
+              </p>
+              <ul class="card-grid">
+                <li><b><code>HumanMessage</code> / <code>AIMessage</code> = labelled chat bubbles</b>Just a way to
+                  store "the human said X" and "the AI replied Y" — the same user/assistant roles from the raw OpenAI
+                  API, as Python objects.</li>
+                <li><b><code>MessagesPlaceholder</code> = a parking spot for history</b>A blank in your prompt that
+                  holds <em>a list of past messages</em> instead of one word. "Insert the whole conversation so far,
+                  right here."</li>
+              </ul>
+              <span class="code-tab-label">memory_demo.py</span>
+              <pre><code data-lang="python">
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a friendly tutor."),     # ① personality, like the raw API
+    MessagesPlaceholder("history"),              # ② past turns park here
+    ("human", "{question}"),                     # ③ the new question
+])
+chain = prompt | model
+
+history = [HumanMessage("My name is Aarav."), AIMessage("Hi Aarav!")]
+print(chain.invoke({"history": history, "question": "What's my name?"}).content)
+# → "Your name is Aarav." It remembered because we re-sent the history
+</code></pre>
+              <div class="callout callout-tip">
+                <p><strong>💡 De-mystify this for them.</strong> The model didn't magically remember. <strong>We
+                    re-sent the old messages</strong>, and the placeholder slotted them in. All "chatbot memory"
+                  everywhere is exactly this trick. (One thing: this invoke returns the <em>package</em> — that's why
+                  we wrote <code>.content</code>. Add <code>| parser</code> to the chain and you wouldn't need it. See
+                  how the pieces connect?)</p>
+              </div>
+              <div class="callout callout-tip">
+                <p><strong>🎙️ Speaker note.</strong> Run the summarizer live and change the template in front of them
+                  ("now make it snarky"). The target feeling: <em>"oh — it's just my raw OpenAI code, tidied
+                    up."</em></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 4: Agent ====== -->
+      <section class="topic-section is-collapsed" id="sec-agent" data-topic="agent">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-agent">
+          <div class="topic-header-main">
+            <span class="topic-badge">4</span>
+            <h2 id="agent" class="topic-title">Your first small agent<a class="headerlink" href="#agent"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-agent">
+          <div class="part-section is-collapsed" id="agent-intro">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-agent-intro">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Agent = LLM + tool + loop<a class="headerlink" href="#agent-intro"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-agent-intro">
+              <ul class="meta-strip">
+                <li><b>Block 11</b> ~30 min · the leap</li>
+              </ul>
+              <p>Everything so far only <em>talks</em>. An <strong>agent</strong> is a model with a <strong>tool</strong> and the freedom to <strong>decide when to use it</strong>. You will build a small shop assistant with one skill: looking up real prices.</p>
+              <blockquote>
+                <p><strong>agent = LLM + tool + loop.</strong> The model checks, "Do I need a tool here?" If yes, it asks for the tool, reads the result, and answers. You do not hard-code <em>when</em>. <strong>That decision is the difference between a chatbot and an agent.</strong></p>
+              </blockquote>
+              <div class="analogy">
+                <span class="analogy-icon">🧮</span>
+                <div class="analogy-body">
+                  <b>Why tools?</b>
+                  <p>LLMs are great with language, terrible with facts they don't have — today's price, live stock,
+                    exact math. A tool lets the model <em>fetch truth</em> instead of guessing. Tools cure "confident
+                    but wrong."</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="agent-build">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-agent-build">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Our shop database is small on purpose<a class="headerlink"
+                    href="#agent-build" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-agent-build">
+              <ul class="meta-strip">
+                <li>👟 shoes — <b>₹799</b></li>
+                <li>🧢 hat — <b>₹399</b></li>
+                <li>🎒 bag — <b>₹1420</b></li>
+                <li>🩳 shorts — <b>₹1299</b></li>
+                <li>👖 pants — <b>₹1699</b></li>
+              </ul>
+
+              <h4>Step 1 — the tool is just a Python function</h4>
+              <span class="code-tab-label">agent.py · part 1</span>
+              <pre><code data-lang="python">
+import json
+from openai import OpenAI
+from dotenv import load_dotenv
+# ① load the API key and create the OpenAI client
+load_dotenv()
+client = OpenAI()
+
+PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
+
+def get_price(item):
+    # ① log the tool call so learners can see when it fired
+    print(f"🔧 tool called: get_price({item})")     # show when the tool runs
+    # ② look up the item and return a readable price string
+    return f"₹{PRICES.get(item.lower(), 'unknown')}"
+</code></pre>
+              <p>Two tiny notes for the Python: <code>PRICES</code> is an ordinary dict standing in for a database,
+                and <code>.get(item, 'unknown')</code> means "look it up, and if it's not there, say
+                <em>unknown</em> instead of crashing." That's the entire tool — <strong>any function you can write
+                  can become an agent's tool.</strong>
+              </p>
+
+              <h4>Step 2 — describe the tool so the model knows it exists</h4>
+              <p>The model can't see your Python. You hand it a <strong>menu card describing the tool</strong> —
+                written as a dict (the nested braces look busy, but it's only four facts). Decoder below:</p>
+              <span class="code-tab-label">agent.py · part 2</span>
+              <pre><code data-lang="python">
+tools = [{
+    "type": "function",                                      # ①
+    "function": {
+        "name": "get_price",                                 # ②
+        "description": "Get the price of a shop item the user asks about.",  # ③
+        "parameters": {                                       # ④
+            "type": "object",
+            "properties": {"item": {"type": "string", "description": "the item name"}},
+            "required": ["item"],
+        },
+    },
+}]
+</code></pre>
+              <p><strong>🔍 Decoder — the menu card, four facts</strong></p>
+              <ol>
+                <li><strong>What kind of tool?</strong> A function. (That's the only kind you'll use for a long time —
+                  just write this line as-is.)</li>
+                <li><strong>Its name</strong> — must exactly match your Python function's name, so we can find it
+                  when the model asks for it.</li>
+                <li><strong>When to use it</strong> — written for the <em>model</em> to read. This sentence is
+                  literally how the model decides whether to call your tool. Write it clearly!</li>
+                <li><strong>What inputs it needs</strong> — one input called <code>item</code>, which is text
+                  (<code>"string"</code>), and it's <code>required</code>. That's all the nesting says.</li>
+              </ol>
+              <div class="callout callout-tip">
+                <p><strong>✍️ The non-obvious insight.</strong> Line ③ is <strong>prompt engineering in
+                    disguise</strong>. A vague description ("does stuff with items") → the model misuses the tool. A
+                  clear one → it behaves. Your words steer the machine, even inside JSON.</p>
+              </div>
+
+              <h4>Step 3 — the loop: think → maybe call tool → answer</h4>
+              <span class="code-tab-label">agent.py · part 3</span>
+              <pre><code data-lang="python">
+def agent(user_message):
+    messages = [{"role": "user", "content": user_message}]
+
+    response = client.chat.completions.create(          # ① send message + tools menu
+        model="gpt-4o-mini", messages=messages, tools=tools)
+    msg = response.choices[0].message
+
+    if msg.tool_calls:                                  # ② did it ask for a tool?
+        messages.append(msg)
+        for call in msg.tool_calls:
+            args = json.loads(call.function.arguments)  # ③ read its request, run it
+            result = get_price(args["item"])
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
+        response = client.chat.completions.create(      # ④ send it all back → nice answer
+            model="gpt-4o-mini", messages=messages)
+        msg = response.choices[0].message
+
+    return msg.content
+
+print(agent("How much are the shoes?"))      # → tool fires → "₹799"
+print(agent("Hi! What can you help with?"))   # → no tool → just chats
+</code></pre>
+              <p><strong>🔍 Decoder — the loop, step by step</strong></p>
+              <ol>
+                <li><strong>Send message + menu.</strong> We send the user's message <em>plus our tools menu</em>.
+                  The model now knows a tool exists and may ask to use it.</li>
+                <li><strong>Check for a tool request.</strong> <code>msg.tool_calls</code> = "did the model ask to
+                  run a tool?" If it did, this holds <em>which tool</em> and <em>with what input</em> — e.g.
+                  <code>get_price</code>, <code>item="shoes"</code>. If not, it's empty and we skip straight to the
+                  answer.
+                </li>
+                <li><strong>Run the tool.</strong> The model's request arrives as text, so
+                  <code>json.loads(...)</code> converts it into a Python dict we can read — then <strong>we</strong>
+                  run the real function. (Important: the model never runs code itself. It <em>asks</em>; your Python
+                  <em>does</em>.)
+                </li>
+                <li><strong>Send it all back.</strong> We append the tool's result to the conversation with
+                  <code>role: "tool"</code> (a third role, joining system/user/assistant!) and send everything back,
+                  so the model can write a friendly final answer using the real data.
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="agent-messages">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-agent-messages">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Watch the message list grow<a class="headerlink"
+                    href="#agent-messages" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-agent-messages">
+              <p>The whole agent is <strong>a list of messages that gets longer</strong>. One question adds four records. These are the same records created by the <code>messages.append(...)</code> lines in the code.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · The messages list</span><span class="viz-step">"How much are the shoes?"</span></div>
+                <div class="viz-stage is-text"><div class="mono" style="color:var(--muted)">messages = [</div><div id="msList"><div class="msg user"><b>user</b>"How much are the shoes?"</div><div class="msg request"><b>assistant (tool request)</b>→ wants: get_price(item="shoes")</div><div class="msg tool"><b>tool</b>"₹799"</div><div class="msg final"><b>assistant (final)</b>"The shoes are ₹799! Anything else? 🙂"</div></div><div class="mono" style="color:var(--muted)">]</div>
+                  <ol><li><strong>Step 1.</strong> The list starts with the user's question, plus the tools menu on the side.</li><li><strong>Step 2.</strong> The model does not answer yet. It asks to run <code>get_price</code> for <code>shoes</code>. This is what <code>msg.tool_calls</code> holds.</li><li><strong>Step 3.</strong> Your Python runs <code>get_price("shoes")</code> and appends the result with the new role: <code>tool</code>. The model never runs code. It asks, and your Python does the work.</li><li><strong>Step 4.</strong> You send the longer list back. Now the model writes a friendly answer using the real price.</li></ol>
+                </div><div class="viz-note" id="msExplain">That is the whole agent loop: user → tool request → tool result → answer.</div>
+              </div>
+              <div class="callout callout-key"><p><strong>🤯 <code>if msg.tool_calls</code> is the core check.</strong> The model asked to run <code>get_price("shoes")</code> by itself. If you give it ten tools, it can pick among them. Cursor, support bots, and many "AI agent" systems use this same pattern with a bigger toolbox.</p></div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="agent-game">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-agent-game">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Quick check: think like the agent<a class="headerlink" href="#agent-game"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-agent-game">
+              <p>Before you trust the agent, check the rule. For each question, decide whether the model should <strong>call the tool or answer directly</strong>. The answers and reasons are below.</p>
+              <div class="viz" id="gmQ"><div class="viz-head"><span class="viz-title">Example · Tool or No Tool?</span><span class="viz-step" id="gmCounter">5 questions with answers</span></div><div class="viz-stage is-text"><ol class="qa-list">
+                <li><strong>"How much is the bag?"</strong><br>Correct answer: <strong>Calls the tool.</strong><br>Reason: A price question needs real data, so the model calls <code>get_price("bag")</code>.</li>
+                <li><strong>"Hi! How are you today?"</strong><br>Correct answer: <strong>Just answers.</strong><br>Reason: This is small talk. No shop facts are needed.</li>
+                <li><strong>"Is the hat cheaper than the shorts?"</strong><br>Correct answer: <strong>Calls the tool.</strong><br>Reason: Comparing prices needs the real numbers, so it calls the tool twice.</li>
+                <li><strong>"What's the capital of France?"</strong><br>Correct answer: <strong>Just answers.</strong><br>Reason: This is the trick question. The model already knows this, and the price tool cannot help.</li>
+                <li><strong>"I have ₹1500 — can I afford the pants?"</strong><br>Correct answer: <strong>Calls the tool.</strong><br>Reason: It must check the real price, ₹1699, before answering. It calls the tool and then says the budget is not quite enough.</li>
+              </ol></div><div class="viz-note" id="gmVerdict">The score text was either <strong>"Perfect 5/5 — you think like an agent"</strong> or <strong>"Final score: X/5 — solid"</strong>. The lesson is to ask whether the available tool can improve the answer.</div></div>
+              <div class="callout callout-tip"><p><strong>🎙️ Speaker note.</strong> Use these as class questions. The fourth question is useful because it shows that a tool should not run when it cannot help.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 5: Project ====== -->
+      <section class="topic-section is-collapsed" id="sec-project" data-topic="project">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-project">
+          <div class="topic-header-main">
+            <span class="topic-badge">5</span>
+            <h2 id="project" class="topic-title">Project: Smart Shop Assistant<a class="headerlink" href="#project"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-project">
+          <div class="part-section is-collapsed" id="project-build">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-build">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Give the agent a chat loop and run it<a class="headerlink"
+                    href="#project-build" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-build">
+              <ul class="meta-strip">
+                <li><b>Block 12</b> ~25 min · 🏁 THE BUILD</li>
+              </ul>
+              <p>Same <code>agent()</code> from Block 11 — we give it a simple chat loop in the terminal, so this
+                takes a few lines:</p>
+              <span class="code-tab-label">main.py</span>
+              <pre><code data-lang="python">
+from agent import agent              # use the function you wrote
+
+while True:                          # ① keep chatting until the user types quit
+    message = input("You: ")
+    if message.strip().lower() in ("quit", "exit"):
+        break
+    print("Shop:", agent(message))   # ②
+</code></pre>
+              <p><strong>🔍 Decoder</strong></p>
+              <ol>
+                <li><strong>The chat loop.</strong> <code>input()</code> reads each new message you type, and the loop
+                  keeps going until you type <code>quit</code>. We only pass the message today; <em>your homework
+                    hint:</em> keep a <code>history</code> list of past turns and pass it into the agent and it gains
+                  memory — exactly the trick from the memory section.</li>
+                <li><strong>One agent turn.</strong> <code>agent(message)</code> runs the full think → maybe-tool →
+                  answer loop, and we print its reply.</li>
+              </ol>
+              <h4>Run it</h4>
+              <span class="code-tab-label">bash — your project folder</span>
+              <pre><code data-lang="text">
+$ pip install openai python-dotenv
+$ python main.py
+
+You: How much are the pants?
+🔧 tool called: get_price(pants)
+Shop: The pants are ₹1699.
+</code></pre>
+              <ol>
+                <li><strong>Ask a price question.</strong> "How much are the pants?" — watch your terminal print
+                  <code>🔧 tool called: get_price(pants)</code>. Your agent used its tool!
+                </li>
+                <li><strong>Then ask small talk.</strong> "What's your return policy?" — no tool fires. It's
+                  <em>deciding</em>, not following a script.
+                </li>
+                <li><strong>Compare the two.</strong> One tool question, one chat question, terminal visible — that
+                  contrast is the whole agent idea in 15 seconds.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-demo">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-project-demo">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Example run of the working agent<a class="headerlink" href="#project-demo"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-demo">
+              <p>This trace shows a sample chat with the agent. Watch when the 🔧 tool line appears and when the assistant answers directly.</p>
+              <div class="viz"><div class="viz-head"><span class="viz-title">Example · Smart Shop Assistant</span><span class="viz-step">preset traces</span></div><div class="viz-stage is-text" id="shopLog">
+                <p><strong>Starting message:</strong> Hi! I'm your shop assistant. Ask me the price of anything 🙂</p>
+                <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">How much are the shoes?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price("shoes") → ₹799</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">The shoes are <strong>₹799</strong>. Anything else? 🙂</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Is the hat cheaper than the bag?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price("hat") → ₹399</code><br><code>get_price("bag") → ₹1420</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">hat: <strong>₹399</strong> · bag: <strong>₹1420</strong><br>So the <strong>hat</strong> is the cheaper one!</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Do you sell laptops?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Hi! What can you do?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">What's your return policy?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val">— no tool needed, answering directly —</span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">I'm your shop helper! Ask me any item's price and I'll look it up in the database. 🛍️</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">How much is the laptop?</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Trace</span><span class="data-val"><code>get_price(...) → unknown</code></span></div>
+      <div class="data-field"><span class="data-label">Assistant answer</span><span class="data-val">Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants!</span></div>
+    </div>
+  </div>
+</div>
+                <p><strong>Shop data:</strong> shoes ₹799, hat ₹399, bag ₹1420, shorts ₹1299, pants ₹1699.</p>
+                <p><strong>How this sample trace was made:</strong> keyword rules stand in for the model. They look for item names, including simple singular forms. They treat <code>price</code>, <code>cost</code>, <code>how much</code>, <code>cheap</code>, <code>expensive</code>, <code>afford</code>, and <code>₹</code> as price-related words. Each item found adds one tool call. A price question about an unknown item adds one "unknown" tool call. Anything else is a direct answer.</p>
+              </div><div class="viz-note">In this sample, keyword matching stands in for the model. In your real <code>agent.py</code>, GPT makes the decision more flexibly, but the loop and trace stay the same.</div></div>
+              <div class="callout callout-interview"><p><strong>Industry spotlight · real agents use this same loop.</strong> Today the assistant has one tool. Tomorrow you can add tools for your database, email, and calendar. Then it can handle tasks such as "find my order, refund it, email the customer." Production agents, including coding agents, use this loop with a bigger toolbox.</p><ul class="meta-strip" style="margin:10px 0 0"><li>Support bots</li><li>Booking assistants</li><li>Coding agents</li><li>Ops automation</li></ul></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 6: What's next ====== -->
+      <section class="topic-section is-collapsed" id="sec-next" data-topic="next">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-next">
+          <div class="topic-header-main">
+            <span class="topic-badge">6</span>
+            <h2 id="next" class="topic-title">What you did and what comes next<a class="headerlink" href="#next"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-next">
+          <div class="part-section is-collapsed" id="next-recap">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-next-recap">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">What You Did<a class="headerlink" href="#next-recap"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-next-recap">
+              <ul class="meta-strip">
+                <li><b>Block 14</b> ~10 min</li>
+              </ul>
+              <ul class="card-grid">
+                <li><b>🧭 3 ways to steer</b>Prompting, RAG, fine-tuning — you'll mostly prompt.</li>
+                <li><b>🔗 LangChain</b>prompt | model | parser — chains you can snap together.</li>
+                <li><b>🤖 Agents</b>LLM + tool + loop. The model decides. You saw it.</li>
+                <li><b>🛍️ You shipped</b>A working tool-using agent. 🎉</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="next-road">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-next-road">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The road ahead, still hands-on<a class="headerlink" href="#next-road"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-next-road">
+              <ol>
+                <li><strong>More tools (your homework).</strong> Add <code>check_stock(item)</code> or
+                  <code>apply_discount(item)</code> and watch the agent pick the right one.
+                </li>
+                <li><strong>RAG — chat with your own PDFs.</strong> The next big build: a model that answers from
+                  <em>your</em> documents.
+                </li>
+                <li><strong>Multi-agent teams.</strong> Several agents handing work to each other — once one agent
+                  feels easy.</li>
+              </ol>
+              <div class="callout callout-tip">
+                <p><strong>📚 A note on theory.</strong> We're deliberately deferring the deep "how models are built"
+                  topics — attention, training, scaling — until you're comfortable building. They'll land as "<em>oh,
+                    that's why it works</em>" instead of abstract lecture.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+  <footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>
+  <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+  <script src="../dsa/dsa-study.js"></script>
+  <script>
+    // Topic & inner part accordions (same behaviour as the DSA courses)
+    (() => {
+      const toggleCard = (card, headerSelector, forceOpen = null) => {
+        if (!card) return;
+        const header = card.querySelector(headerSelector);
+        const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+        card.classList.toggle("is-collapsed", !willOpen);
+        if (header) header.setAttribute("aria-expanded", String(willOpen));
+      };
+
+      const openAndScrollTo = (targetId) => {
+        if (!targetId) return;
+        const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+        const target = document.getElementById(decodeURIComponent(cleanId));
+        if (!target) return;
+        const part = target.closest(".part-section");
+        if (part) toggleCard(part, ".part-header", true);
+        const section = target.closest(".topic-section");
+        if (section) {
+          toggleCard(section, ".topic-header", true);
+          setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+        } else {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".headerlink")) return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+          return;
+        }
+        const link = e.target.closest("a");
+        const href = link && link.getAttribute("href");
+        if (href && href.startsWith("#") && href.length > 1) openAndScrollTo(href);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          e.preventDefault();
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          e.preventDefault();
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-course-action]");
+        if (!btn) return;
+        const open = btn.dataset.courseAction === "expand-all";
+        document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", open));
+        document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", open));
+      });
+
+      if (window.location.hash) setTimeout(() => openAndScrollTo(window.location.hash), 150);
+      window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
+    })();
+  </script>
+  <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
+</body>
+
+</html>

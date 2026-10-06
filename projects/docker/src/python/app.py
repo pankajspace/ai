@@ -48,10 +48,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so page assets stay fast
     if request.method == "POST":
+        # ② check the caller's hourly quota before proxying work
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a 429 with Retry-After when the quota is used up
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -78,19 +81,23 @@ def proxy_request(method, url, json_body=None):
     Returns a tuple of (response_dict, http_status_code). On connection
     errors, returns a helpful error message instead of crashing.
     """
+    # ① forward the request to the selected internal service
     try:
         if method == "GET":
             resp = http_client.get(url, timeout=PROXY_TIMEOUT)
         else:
             resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        # ② pass through the service JSON and HTTP status code
         return resp.json(), resp.status_code
     except http_client.ConnectionError:
+        # ③ turn connection failures into a helpful service-start message
         service = url.split("//")[1].split(":")[0]
         return {
             "error": f"Service '{service}' is not running. "
                      f"Start it with: docker compose up {service}"
         }, 503
     except Exception as e:
+        # ④ return unexpected proxy failures as JSON instead of crashing
         return {"error": str(e)}, 500
 
 
@@ -102,9 +109,12 @@ def proxy_request(method, url, json_body=None):
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static homepage template from the shared src folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime API prefix so browser calls hit this gateway
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the rendered HTML with the correct MIME type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -134,15 +144,20 @@ def info(filename):
 @bp.route("/quickbite/predict", methods=["POST"])
 def quickbite_predict():
     """Proxy ETA prediction to the QuickBite FastAPI service."""
+    # ① parse the browser's order JSON
     body = request.get_json(force=True)
+    # ② proxy the order to the QuickBite prediction service
     data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/quickbite/status")
 def quickbite_status():
     """Check if QuickBite service is running."""
+    # ① ask QuickBite for its health payload
     data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -154,15 +169,20 @@ def quickbite_status():
 @bp.route("/scalergpt/ask", methods=["POST"])
 def scalergpt_ask():
     """Proxy RAG question to the ScalerGPT FastAPI service."""
+    # ① parse the browser's question JSON
     body = request.get_json(force=True)
+    # ② proxy the question to the ScalerGPT RAG service
     data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    # ③ return the service JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/scalergpt/status")
 def scalergpt_status():
     """Check if ScalerGPT service is running and how many docs are indexed."""
+    # ① ask ScalerGPT for its health and index summary
     data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 
@@ -174,15 +194,20 @@ def scalergpt_status():
 @bp.route("/deskbuddy/chat", methods=["POST"])
 def deskbuddy_chat():
     """Proxy chat message to the DeskBuddy agent service."""
+    # ① parse the browser's chat JSON
     body = request.get_json(force=True)
+    # ② proxy the message to the DeskBuddy agent loop
     data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    # ③ return the agent JSON and status code unchanged
     return jsonify(data), status
 
 
 @bp.route("/deskbuddy/status")
 def deskbuddy_status():
     """Check if DeskBuddy agent service is running."""
+    # ① ask DeskBuddy for its health payload
     data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    # ② return the health JSON and status code unchanged
     return jsonify(data), status
 
 

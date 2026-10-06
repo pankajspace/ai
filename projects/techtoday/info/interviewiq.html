@@ -4,201 +4,392 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — InterviewIQ · TechToday</title>
     <meta name="description"
         content="How the InterviewIQ demo works: ReAct tool-calling agents, deterministic evaluation, and anti-recency session memory." />
-    <link rel="icon" href="../logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../style.css" />
+    <link rel="icon"
+        href="../logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>TechToday</span>
             </a>
-            <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+            <a href="../study/ai-demos/ai-demos.html" class="nav-back-link">&larr; AI Demos</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-agent-py">agent.py</a></li>
+                    <li><a href="#source-tools-py">tools.py</a></li>
+                    <li><a href="#source-interview-bank-py">interview_bank.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🎯 InterviewIQ<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>🎯 InterviewIQ</h1>
-                <p class="subtitle">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency
-                    Session Memory</p>
+            <p class="lede">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency Session Memory. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>9 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>5 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn
-                    <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a
-                    single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ
-                    embeds the LLM as a cognitive orchestrator inside an autonomous loop.
-                </p>
-                <p>
-                    The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density,
-                    STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and
-                    synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger
-                    tracks candidate performance across all turns, applying deterministic mathematical ranking to
-                    eliminate recency bias and power mid-session meta-coaching.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-
-                <p><strong>1. Autonomous ReAct Agent Loop vs. Static Pipelines</strong></p>
-                <p>
-                    Traditional LLM applications operate in a rigid, single-turn sequence:
-                    <code>User Prompt &rarr; LLM &rarr; Output</code>. This passive paradigm struggles in complex
-                    evaluation tasks because language models suffer from cognitive overload, hallucination during
-                    precise mathematical counting, and an inability to inspect intermediate diagnostic data.
-                </p>
-                <p>
-                    InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022)
-                    via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
-                </p>
-                <ul>
-                    <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema
-                        (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter
-                        specifications, and natural-language descriptions.</li>
-                    <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata,
-                        the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g.,
-                        invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and
-                        <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate
-                        arguments.
-                    </li>
-                    <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to
-                        deterministic Python functions, captures the structured outputs, and appends them back to the
-                        message transcript under the <code>tool</code> role.</li>
-                    <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>)
-                        until all necessary observations are gathered, then switches from tool calling to generating its
-                        final synthesized coaching critique.</li>
-                </ul>
-
-                <p><strong>2. Separation of Concerns: Deterministic NLP vs. Generative Synthesis</strong></p>
-                <p>
-                    A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code
-                        does with 100% precision</em>. Large Language Models are probabilistic next-token predictors;
-                    they are inherently unreliable at exact character counting, regex matching, and statistical
-                    calculations.
-                </p>
-                <ul>
-                    <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled
-                        regex word-boundary patterns
-                        (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word
-                        frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).
-                    </li>
-                    <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically
-                        parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action,
-                        Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact
-                        metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
-                    <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates
-                        morphological regex stems to match expected domain keywords across grammatical inflections
-                        (e.g., <code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>), scoring
-                        coverage against a calibrated tiered curve (0–100).</li>
-                    <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural
-                        analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language
-                        capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging,
-                        constructive feedback.</li>
-                </ul>
-
-                <p><strong>3. Structured Session Memory &amp; Anti-Recency Bias</strong></p>
-                <p>
-                    Standard conversational AI setups pass entire chat transcripts into the prompt context. This
-                    introduces severe <strong>recency bias</strong> and <strong>context dilution</strong>
-                    ("lost-in-the-middle" phenomenon), where the model overemphasizes recent turns and forgets early
-                    answers.
-                </p>
-                <p>
-                    InterviewIQ overcomes this using an append-only structured session ledger
-                    (<code>InterviewSessionMemory</code>):
-                </p>
-                <ul>
-                    <li><strong>Immutable Turn Ledgers:</strong> Every interview turn stores the question metadata,
-                        candidate answer, and raw structured dicts from all tool executions.</li>
-                    <li><strong>Mathematical Composite Ranking:</strong> Weakest and strongest performance areas are
-                        determined globally across all turns using a deterministic composite sort key:
-                        <br />
-                        <code>rank_key(turn) = (relevance_score &uarr;, star_score &uarr;, -total_filler_count &darr;)</code>
-                        <br />
-                        The globally weakest turn is computed as <code>min(turns, key=rank_key)</code>, ensuring an
-                        objective assessment even if the candidate aced the most recent question.
-                    </li>
-                    <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes
-                        <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session
-                        meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls
-                        this tool, reads the aggregated memory state, and provides an evidence-based progress review.
-                    </li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Submit answer</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /evaluate</span>
-                        <span class="flow-detail">Flask blueprint route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">_run_loop()</span>
-                        <span class="flow-detail">ReAct tool-calling loop</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Tool Execution</span>
-                        <span class="flow-detail">Deterministic Python tools</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">LLM Synthesis</span>
-                        <span class="flow-detail">Coaching feedback</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Live dashboard updated</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn
+                        <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a
+                        single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ
+                        embeds the LLM as a cognitive orchestrator inside an autonomous loop.
+                    </p>
+                    <p>
+                        The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density,
+                        STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and
+                        synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger
+                        tracks candidate performance across all turns, applying deterministic mathematical ranking to
+                        eliminate recency bias and power mid-session meta-coaching.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A[Browser<br />question_id + answer] -->|POST /evaluate| B[app.py<br />evaluate route]
-                        B -->|question_data + answer| C[agent.py<br />EvaluatorAgent.evaluate_answer]
-                        C -->|messages + TOOLS_SCHEMA| D[OpenAI API / LLM]
-                        D -->|tool_calls request| E[Tool Dispatcher<br />_tool_functions]
-                        E -->|call detect_filler_words| F[tools.py<br />detect_filler_words]
-                        E -->|call check_star_structure| G[tools.py<br />check_star_structure]
-                        E -->|call score_relevance| H[tools.py<br />score_relevance]
-                        F -->|filler metrics dict| E
-                        G -->|STAR metrics dict| E
-                        H -->|relevance score dict| E
-                        E -->|structured tool observations| C
-                        C -->|messages + tool results| D
-                        D -->|synthesized coaching advice| C
-                        C -->|record turn + raw results| I[InterviewSessionMemory<br />add_turn]
-                        C -->|structured JSON evaluation| B
-                        B -->|HTTP 200 JSON| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Autonomous ReAct Agent Loop vs. Static Pipelines</strong></p>
+                    <p>
+                        Traditional LLM applications operate in a rigid, single-turn sequence:
+                        <code>User Prompt &rarr; LLM &rarr; Output</code>. This passive paradigm struggles in complex
+                        evaluation tasks because language models suffer from cognitive overload, hallucination during
+                        precise mathematical counting, and an inability to inspect intermediate diagnostic data.
+                    </p>
+                    <p>
+                        InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022)
+                        via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
+                    </p>
+                    <ul>
+                        <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema
+                            (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter
+                            specifications, and natural-language descriptions.</li>
+                        <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata,
+                            the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g.,
+                            invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and
+                            <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate
+                            arguments.
+                        </li>
+                        <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to
+                            deterministic Python functions, captures the structured outputs, and appends them back to the
+                            message transcript under the <code>tool</code> role.</li>
+                        <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>)
+                            until all necessary observations are gathered, then switches from tool calling to generating its
+                            final synthesized coaching critique.</li>
+                    </ul>
 
-                <h2>Backend — ReAct Agent &amp; Session Memory</h2>
-                <span class="file-label">agent.py — The multi-turn tool-calling loop and anti-recency session
-                    store</span>
-                <pre><code class="language-python">class InterviewSessionMemory:
+                    <p><strong>2. Separation of Concerns: Deterministic NLP vs. Generative Synthesis</strong></p>
+                    <p>
+                        A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code
+                            does with 100% precision</em>. Large Language Models are probabilistic next-token predictors;
+                        they are inherently unreliable at exact character counting, regex matching, and statistical
+                        calculations.
+                    </p>
+                    <ul>
+                        <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled
+                            regex word-boundary patterns
+                            (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word
+                            frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).
+                        </li>
+                        <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically
+                            parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action,
+                            Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact
+                            metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
+                        <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates
+                            morphological regex stems to match expected domain keywords across grammatical inflections
+                            (e.g., <code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>), scoring
+                            coverage against a calibrated tiered curve (0–100).</li>
+                        <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural
+                            analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language
+                            capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging,
+                            constructive feedback.</li>
+                    </ul>
+
+                    <p><strong>3. Structured Session Memory &amp; Anti-Recency Bias</strong></p>
+                    <p>
+                        Standard conversational AI setups pass entire chat transcripts into the prompt context. This
+                        introduces severe <strong>recency bias</strong> and <strong>context dilution</strong>
+                        ("lost-in-the-middle" phenomenon), where the model overemphasizes recent turns and forgets early
+                        answers.
+                    </p>
+                    <p>
+                        InterviewIQ overcomes this using an append-only structured session ledger
+                        (<code>InterviewSessionMemory</code>):
+                    </p>
+                    <ul>
+                        <li><strong>Immutable Turn Ledgers:</strong> Every interview turn stores the question metadata,
+                            candidate answer, and raw structured dicts from all tool executions.</li>
+                        <li><strong>Mathematical Composite Ranking:</strong> Weakest and strongest performance areas are
+                            determined globally across all turns using a deterministic composite sort key:
+                            <br />
+                            <code>rank_key(turn) = (relevance_score &uarr;, star_score &uarr;, -total_filler_count &darr;)</code>
+                            <br />
+                            The globally weakest turn is computed as <code>min(turns, key=rank_key)</code>, ensuring an
+                            objective assessment even if the candidate aced the most recent question.
+                        </li>
+                        <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes
+                            <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session
+                            meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls
+                            this tool, reads the aggregated memory state, and provides an evidence-based progress review.
+                        </li>
+                    </ul>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Submit answer</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /evaluate</span>
+                            <span class="flow-detail">Flask blueprint route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">_run_loop()</span>
+                            <span class="flow-detail">ReAct tool-calling loop</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Tool Execution</span>
+                            <span class="flow-detail">Deterministic Python tools</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">LLM Synthesis</span>
+                            <span class="flow-detail">Coaching feedback</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Live dashboard updated</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />question_id + answer] -->|POST /evaluate| B[app.py<br />evaluate route]
+                            B -->|question_data + answer| C[agent.py<br />EvaluatorAgent.evaluate_answer]
+                            C -->|messages + TOOLS_SCHEMA| D[OpenAI API / LLM]
+                            D -->|tool_calls request| E[Tool Dispatcher<br />_tool_functions]
+                            E -->|call detect_filler_words| F[tools.py<br />detect_filler_words]
+                            E -->|call check_star_structure| G[tools.py<br />check_star_structure]
+                            E -->|call score_relevance| H[tools.py<br />score_relevance]
+                            F -->|filler metrics dict| E
+                            G -->|STAR metrics dict| E
+                            H -->|relevance score dict| E
+                            E -->|structured tool observations| C
+                            C -->|messages + tool results| D
+                            D -->|synthesized coaching advice| C
+                            C -->|record turn + raw results| I[InterviewSessionMemory<br />add_turn]
+                            C -->|structured JSON evaluation| B
+                            B -->|HTTP 200 JSON| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink" href="#source-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">660 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-agent-py">
+                    <span class="file-path">interviewiq/src/python/agent.py</span>
+                    <p class="file-label">InterviewIQ Agent — tool-calling evaluator with session memory.</p>
+                    <pre><code data-lang="python">"""InterviewIQ Agent — tool-calling evaluator with session memory.
+
+Architecture
+------------
+- **InterviewSessionMemory**: append-only session store with on-demand
+  aggregation methods and anti-recency-bias weakest-area detection.
+- **EvaluatorAgent**: wraps the LLM client and the genuine tool-calling loop
+  (the LLM *chooses* which tools to invoke, just like the class-notes
+  reference) plus session memory.
+
+The key design choice: tools return structured *dicts*, and the LLM decides
+dynamically which tools to call via the OpenAI function-calling API.  This
+is the authentic ReAct-style agent pattern taught in the class.
+"""
+
+import json
+
+from openai import BadRequestError
+
+from config import get_openai_client
+from tools import check_star_structure, detect_filler_words, score_relevance
+
+# ---------------------------------------------------------------------------
+# Session memory
+# ---------------------------------------------------------------------------
+
+
+class InterviewSessionMemory:
     """Append-only session store for interview turns.
 
     Each turn records the question, answer, and the structured dict results
@@ -206,15 +397,22 @@
     """
 
     def __init__(self):
-        # Step 1: Initialize empty ledger for recorded question turns
         self._turns: list[dict] = []
+
+    @property
+    def turns(self) -&gt; list[dict]:
+        return list(self._turns)
+
+    @property
+    def turn_count(self) -&gt; int:
+        return len(self._turns)
 
     def add_turn(
         self, question: str, answer: str, results: dict,
         category: str = "", question_id: int = 0,
         expected_keywords: list | None = None,
-    ) -> None:
-        # Step 2: Append immutable turn record containing metadata and tool observations
+    ) -&gt; None:
+        # ① store this answer and every tool result as the next interview turn
         self._turns.append({
             "turn_id": len(self._turns) + 1,
             "question_id": question_id,
@@ -225,30 +423,32 @@
             "results": results,
         })
 
-    def get_weakest_area(self) -> dict | None:
+    def get_weakest_area(self) -&gt; dict | None:
         """Return the turn with the lowest composite score.
 
         Uses a 3-key sort (relevance ASC, star_score ASC, filler_count DESC)
         to explicitly avoid recency bias — the weakest area is the globally
         worst turn, not the most recent one.
         """
+        # ① stop early when no answers have been recorded
         if not self._turns:
             return None
 
-        # Step 3: Define 3-tuple sort key: (relevance ASC, star_score ASC, -filler_count DESC)
+        # ② define how to rank turns from weakest to strongest
         def sort_key(turn):
             r = turn["results"]
             rel = r.get("score_relevance", {}).get("score", 50)
             star = r.get("check_star_structure", {}).get("star_score", 50)
             fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
-            # Lower relevance, lower STAR, higher fillers = weaker performance
+            # ① lower relevance, lower STAR, higher fillers = weaker
             return (rel, star, -fillers)
 
-        # Step 4: Deterministically select the globally worst turn
+        # ③ pick the globally weakest turn and unpack its tool scores
         weakest = min(self._turns, key=sort_key)
         rel_data = weakest["results"].get("score_relevance", {})
         star_data = weakest["results"].get("check_star_structure", {})
         filler_data = weakest["results"].get("detect_filler_words", {})
+        # ④ return only the weakness details needed by the UI and report
         return {
             "turn_id": weakest["turn_id"],
             "question_id": weakest["question_id"],
@@ -260,19 +460,480 @@
             "unmatched_keywords": rel_data.get("unmatched_keywords", []),
         }
 
+    def get_strongest_area(self) -&gt; dict | None:
+        """Return the turn with the highest composite score."""
+        # ① stop early when no answers have been recorded
+        if not self._turns:
+            return None
+
+        # ② define how to rank turns from weakest to strongest
+        def sort_key(turn):
+            r = turn["results"]
+            rel = r.get("score_relevance", {}).get("score", 50)
+            star = r.get("check_star_structure", {}).get("star_score", 50)
+            fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
+            return (rel, star, -fillers)
+
+        # ③ pick the strongest turn and unpack its tool scores
+        strongest = max(self._turns, key=sort_key)
+        rel_data = strongest["results"].get("score_relevance", {})
+        star_data = strongest["results"].get("check_star_structure", {})
+        filler_data = strongest["results"].get("detect_filler_words", {})
+        # ④ return only the strength details needed by the UI and report
+        return {
+            "turn_id": strongest["turn_id"],
+            "question_id": strongest["question_id"],
+            "question": strongest["question"],
+            "category": strongest["category"],
+            "relevance_score": rel_data.get("score", 0),
+            "star_score": star_data.get("star_score", 0),
+            "filler_count": filler_data.get("total_filler_count", 0),
+        }
+
+    def get_average_relevance(self) -&gt; float:
+        # ① collect relevance scores from turns that have relevance data
+        scores = [
+            t["results"].get("score_relevance", {}).get("score", 0)
+            for t in self._turns
+            if "score_relevance" in t["results"]
+        ]
+        # ② average available scores, or return zero before any scoring
+        return round(sum(scores) / len(scores), 1) if scores else 0.0
+
+    def get_total_questions(self) -&gt; int:
+        return len(self._turns)
+
+    def get_scorecard(self) -&gt; list[dict]:
+        """Return a structured summary list for the scorecard table."""
+        # ① start an empty list of rows for the scorecard table
+        card = []
+        for t in self._turns:
+            # ② pull the three visible scores from this turn's tool results
+            r = t["results"]
+            rel = r.get("score_relevance", {}).get("score", 0)
+            star = r.get("check_star_structure", {}).get("star_score", 0)
+            fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
+            q_text = t["question"]
+            # ③ append a compact learner-facing row for this question
+            card.append({
+                "Turn": t["turn_id"],
+                "Category": t["category"],
+                "Question": (q_text[:55] + "...") if len(q_text) &gt; 55 else q_text,
+                "Relevance Score": f"{rel}/100",
+                "STAR Score": f"{star}%",
+                "Fillers": fillers,
+            })
+        return card
+
+    def get_category_breakdown(self) -&gt; dict:
+        """Compute category-wise average performance."""
+        # ① collect relevance and STAR scores under each question category
+        cat_stats: dict[str, list] = {}
+        for t in self._turns:
+            cat = t["category"]
+            if cat not in cat_stats:
+                cat_stats[cat] = []
+            r = t["results"]
+            cat_stats[cat].append({
+                "relevance_score": r.get("score_relevance", {}).get("score", 0),
+                "star_score": r.get("check_star_structure", {}).get("star_score", 0),
+            })
+        # ② average the collected scores for each category
+        breakdown = {}
+        for cat, items in cat_stats.items():
+            avg_rel = round(sum(i["relevance_score"] for i in items) / len(items), 1)
+            avg_star = round(sum(i["star_score"] for i in items) / len(items), 1)
+            breakdown[cat] = {"count": len(items), "avg_relevance": avg_rel, "avg_star": avg_star}
+        # ③ return the category summary for reports and scorecards
+        return breakdown
+
+    def generate_final_report_dict(self) -&gt; dict:
+        """Generate a comprehensive report as a dict with report_text markdown."""
+        # ① return an empty-session report before calculating aggregates
+        if not self._turns:
+            return {
+                "total_questions": 0,
+                "average_relevance": 0.0,
+                "weakest_area": None,
+                "strongest_area": None,
+                "total_fillers": 0,
+                "report_text": "No questions have been answered yet in this session.",
+            }
+
+        # ② calculate session-wide counts, averages, and strongest/weakest areas
+        total_questions = len(self._turns)
+        avg_relevance = self.get_average_relevance()
+        weakest = self.get_weakest_area()
+        strongest = self.get_strongest_area()
+        total_fillers = sum(
+            t["results"].get("detect_filler_words", {}).get("total_filler_count", 0)
+            for t in self._turns
+        )
+        avg_fillers = round(total_fillers / total_questions, 1)
+        star_compliant = sum(
+            1 for t in self._turns
+            if t["results"].get("check_star_structure", {}).get("star_score", 0) &gt;= 75
+        )
+        star_rate = round((star_compliant / total_questions) * 100, 1)
+        category_breakdown = self.get_category_breakdown()
+
+        # ③ start the markdown report with top-line metrics
+        lines = [
+            "# 🎯 InterviewIQ Final Assessment Report",
+            f"**Total Questions Answered:** {total_questions} | "
+            f"**Average Relevance Score:** {avg_relevance}/100",
+            f"**Total Filler Words:** {total_fillers} (avg {avg_fillers}/turn) | "
+            f"**STAR Framework Mastery:** {star_rate}%",
+            "",
+            "## 📊 Key Highlights &amp; Aggregations",
+        ]
+        # ④ add strongest and weakest highlights when available
+        if strongest:
+            lines.append(
+                f"1. **Strongest Area:** {strongest['category']} "
+                f"(Score: {strongest['relevance_score']}/100)\n"
+                f"   - Question: *\"{strongest['question']}\"*"
+            )
+        if weakest:
+            missed = ", ".join(weakest.get("unmatched_keywords", [])[:5]) or "None"
+            lines.append(
+                f"2. **Weakest Area (Needs Focus):** {weakest['category']} "
+                f"(Score: {weakest['relevance_score']}/100)\n"
+                f"   - Question: *\"{weakest['question']}\"*\n"
+                f"   - Missing Concepts: {missed}"
+            )
+        # ⑤ append per-category averages to show topic-level patterns
+        lines.append("\n## 📈 Category Breakdown")
+        for cat, stats in category_breakdown.items():
+            lines.append(
+                f"- **{cat}**: {stats['count']} question(s) | "
+                f"Avg Relevance: {stats['avg_relevance']}/100 | "
+                f"Avg STAR: {stats['avg_star']}%"
+            )
+        # ⑥ add coaching recommendations based on the aggregate scores
+        lines.append("\n## 💡 Coach Recommendations")
+        if avg_relevance &gt;= 80:
+            lines.append("- **Knowledge Depth**: Excellent domain grasp and comprehensive keyword coverage.")
+        elif avg_relevance &gt;= 60:
+            lines.append("- **Knowledge Depth**: Solid baseline; focus on articulating deeper architectural trade-offs.")
+        else:
+            weak_cat = weakest["category"] if weakest else "all areas"
+            lines.append(f"- **Knowledge Depth**: Review core concepts, particularly in {weak_cat}.")
+        if total_fillers &gt; total_questions * 2:
+            lines.append(f"- **Delivery**: High filler word frequency ({total_fillers} total). Practice deliberate pauses.")
+        else:
+            lines.append("- **Delivery**: Clean, articulate delivery with minimal filler words.")
+        if star_rate &lt; 75:
+            lines.append("- **Structure**: Strengthen STAR structure, particularly quantifiable Results.")
+        else:
+            lines.append("- **Structure**: Consistently strong STAR narrative with measurable Results.")
+
+        # ⑦ return structured fields plus the rendered markdown report
+        return {
+            "total_questions": total_questions,
+            "average_relevance": avg_relevance,
+            "weakest_area": weakest,
+            "strongest_area": strongest,
+            "total_fillers": total_fillers,
+            "star_compliance_rate": star_rate,
+            "category_breakdown": category_breakdown,
+            "report_text": "\n".join(lines),
+        }
+
+    def clear(self) -&gt; None:
+        self._turns.clear()
+
+
+# ---------------------------------------------------------------------------
+# Tool schema (the "menu" the LLM reads)
+# ---------------------------------------------------------------------------
+
+TOOLS_SCHEMA = [
+    {
+        "type": "function",
+        "function": {
+            "name": "detect_filler_words",
+            "description": (
+                "Count filler words (um, like, basically, etc.) in a "
+                "candidate's answer and compute density per 100 words."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {"answer": {"type": "string"}},
+                "required": ["answer"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_star_structure",
+            "description": (
+                "Check whether a behavioral answer covers Situation, Task, "
+                "Action, Result (the STAR framework) and return a percentage "
+                "score."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {"answer": {"type": "string"}},
+                "required": ["answer"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "score_relevance",
+            "description": (
+                "Score how many expected keywords/concepts for the question "
+                "appear in the answer, using a 0-100 calibrated scale."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "answer": {"type": "string"},
+                    "expected_keywords": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["answer", "expected_keywords"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_final_report",
+            "description": (
+                "Summarise the whole interview session so far, including the "
+                "weakest area. Call this whenever the candidate asks how "
+                "they're doing, what their weakest area is, or for an overall "
+                "report — at any point in the session, not only at the end."
+            ),
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+]
+
+SYSTEM_PROMPT = (
+    "You are InterviewIQ, an AI mock-interview coach.\n"
+    "For every candidate answer, call the relevant evaluation tools "
+    "(filler words, STAR structure, relevance) before giving feedback.\n"
+    "Keep feedback short, specific, and encouraging.\n"
+    "If the candidate asks how they're doing, what their weakest area is, "
+    "or for an overall report — at any point in the session — call "
+    "generate_final_report and answer using what it returns."
+)
+
+MAX_TOOL_ROUNDS = 5
+MAX_GLITCH_RETRIES = 3
+
+
+# ---------------------------------------------------------------------------
+# Evaluator agent
+# ---------------------------------------------------------------------------
+
 
 class EvaluatorAgent:
-    """Tool-calling evaluator agent with session memory."""
+    """Tool-calling evaluator agent with session memory.
 
-    def _run_loop(self, messages: list, results_out: dict | None = None) -> str:
+    Uses the authentic ReAct-style tool-calling loop: the LLM dynamically
+    decides which tools to invoke via the function-calling API.
+    """
+
+    def __init__(self, memory: InterviewSessionMemory | None = None):
+        # ① reuse supplied memory and choose the configured LLM provider
+        self.memory = memory or InterviewSessionMemory()
+        self._client, self._model = get_openai_client()
+
+        # ② register the tool functions; generate_final_report is a method on
+        # this instance so it can access self.memory.
+        self._tool_functions = {
+            "detect_filler_words": lambda args: detect_filler_words(args["answer"]),
+            "check_star_structure": lambda args: check_star_structure(args["answer"]),
+            "score_relevance": lambda args: score_relevance(
+                args["answer"], args["expected_keywords"]
+            ),
+            "generate_final_report": lambda _args: self.generate_final_report(),
+        }
+
+    # -- Public API ----------------------------------------------------------
+
+    def evaluate_answer(
+        self, question_data: dict, answer: str
+    ) -&gt; dict:
+        """Evaluate one interview answer and record the turn.
+
+        Args:
+            question_data: Dict with keys ``question``, ``expected_keywords``,
+                ``category``, ``id``.
+            answer: The candidate's answer text.
+
+        Returns a structured dict with ``turn``, ``feedback``,
+        ``relevance_evaluation``, ``star_evaluation``, ``filler_evaluation``
+        that the UI's ``renderEvaluationResult`` expects.
+        """
+        # ① unpack question fields needed by tools and session memory
+        question = question_data["question"]
+        expected_keywords = question_data.get("expected_keywords", [])
+        category = question_data.get("category", "")
+        question_id = question_data.get("id", 0)
+
+        # ② fall back to deterministic scoring when no LLM provider is configured
+        if not self._client:
+            return self._deterministic_evaluate(
+                question, answer, expected_keywords, category, question_id,
+            )
+
+        # ③ build the prompt with the question, answer, and scoring rubric
+        user_msg = (
+            f"Question: {question}\n"
+            f"Candidate's answer: {answer}\n"
+            f"Expected keywords for this question: {expected_keywords}\n"
+            f"Evaluate this answer using the available tools, then give "
+            f"short feedback."
+        )
+        # ④ start the tool-calling conversation with system and user messages
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_msg},
+        ]
+
+        # ⑤ run the agent loop and save the evaluated turn in memory
+        results: dict = {}
+        feedback = self._run_loop(messages, results_out=results)
+        self.memory.add_turn(
+            question, answer, results,
+            category=category,
+            question_id=question_id,
+            expected_keywords=expected_keywords,
+        )
+
+        # ⑥ return the UI-shaped evaluation payload
+        return {
+            "turn": self.memory.turn_count,
+            "feedback": feedback,
+            "relevance_evaluation": results.get("score_relevance", {}),
+            "star_evaluation": results.get("check_star_structure", {}),
+            "filler_evaluation": results.get("detect_filler_words", {}),
+        }
+
+    def ask_agent(self, user_message: str) -&gt; str:
+        """Handle a free-form meta-question ("How am I doing?").
+
+        Uses the same tool-calling loop — the LLM decides whether to call
+        generate_final_report to answer the question.
+        """
+        # ① use the deterministic report when no LLM provider is configured
+        if not self._client:
+            return self.generate_final_report()
+
+        # ② send the meta-question through the same tool-calling loop
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_message},
+        ]
+        return self._run_loop(messages)
+
+    def generate_final_report(self) -&gt; str:
+        """Aggregate session memory into a formatted report.
+
+        Called as a tool by the LLM, or directly by the UI.
+        """
+        # ① read recorded turns and stop if nothing has been scored
+        turns = self.memory.turns
+        if not turns:
+            return "No answers scored yet."
+
+        # ② prepare report lines and running totals
+        lines = [f"Interview Report — {len(turns)} question(s) answered so far\n"]
+        relevance_scores: list[tuple[int, str]] = []
+        total_fillers = 0
+
+        # ③ summarize each turn's tool results into readable report lines
+        for t in turns:
+            results = t["results"]
+            lines.append(f"Q{t['turn_id']}: {t['question']}")
+
+            if "detect_filler_words" in results:
+                r = results["detect_filler_words"]
+                count = r.get("total_filler_count", 0)
+                total_fillers += count
+                density = r.get("filler_density_per_100_words", 0)
+                lines.append(f"   - Filler words: {count} ({density}% density)")
+
+            if "check_star_structure" in results:
+                r = results["check_star_structure"]
+                star = r.get("star_score", 0)
+                if r.get("is_star_complete"):
+                    note = "all stages present"
+                else:
+                    note = f"missing {', '.join(r.get('missing_components', []))}"
+                lines.append(f"   - STAR structure: {star}% — {note}")
+
+            if "score_relevance" in results:
+                r = results["score_relevance"]
+                score = r.get("score", 0)
+                relevance_scores.append((score, t["question"]))
+                missed = r.get("unmatched_keywords", [])
+                missed_str = ", ".join(missed[:4]) if missed else "none"
+                lines.append(f"   - Relevance: {score}/100 (missed: {missed_str})")
+
+        # ④ add average relevance and weakest area when relevance scores exist
+        if relevance_scores:
+            avg = round(sum(s for s, _ in relevance_scores) / len(relevance_scores))
+            weakest = self.memory.get_weakest_area()
+            lines.append(f"\nAverage relevance score: {avg}/100")
+            if weakest:
+                w_score = weakest.get("relevance_score", "?")
+                lines.append(
+                    f'Weakest area: "{weakest["question"]}" '
+                    f"(relevance {w_score}/100)"
+                )
+
+        # ⑤ append the delivery total and return the final report text
+        lines.append(f"Total filler words across the session: {total_fillers}")
+        return "\n".join(lines)
+
+    def reset(self) -&gt; None:
+        """Clear session memory for a fresh start."""
+        self.memory.clear()
+
+    # -- Internal helpers ----------------------------------------------------
+
+    def _create_with_retry(self, **kwargs):
+        """Call ``client.chat.completions.create`` with retry for Groq glitches.
+
+        Groq's gpt-oss-20b occasionally leaks a format token into the tool
+        name (e.g. ``score_relevance&lt;|channel|&gt;commentary``), which Groq then
+        rejects as unknown.  Regenerating almost always fixes it.
+        """
+        last_error = None
+        # ① try the chat completion a few times in case the provider glitches
+        for _ in range(MAX_GLITCH_RETRIES):
+            try:
+                return self._client.chat.completions.create(**kwargs)
+            except BadRequestError as e:
+                # ② retry only the known Groq tool-call formatting glitch
+                if getattr(e, "code", None) != "tool_use_failed":
+                    raise
+                last_error = e
+        # ③ raise the final retryable error after all attempts fail
+        raise last_error
+
+    def _run_loop(self, messages: list, results_out: dict | None = None) -&gt; str:
         """Shared tool-calling loop (the authentic ReAct pattern).
 
         Sends messages to the LLM, executes whichever tools the LLM requests,
         appends the results back, and loops until the model stops calling
-        tools (up to MAX_TOOL_ROUNDS).
+        tools (up to ``MAX_TOOL_ROUNDS``).
+
+        If ``results_out`` (a dict) is passed, tool results are recorded into
+        it by tool name — used by ``evaluate_answer`` to build a session turn.
         """
         for _ in range(MAX_TOOL_ROUNDS):
-            # Step 1: Model inference with tools schema provided
+            # ① ask the model whether to call tools or answer directly
             response = self._create_with_retry(
                 model=self._model,
                 messages=messages,
@@ -281,31 +942,30 @@ class EvaluatorAgent:
             )
             msg = response.choices[0].message
 
-            # Step 2: Termination condition — if no tool calls made, return final text reply
+            # ② return the final reply once the model stops requesting tools
             if not msg.tool_calls:
                 return msg.content or ""
 
-            # Step 3: Append assistant message requesting tool calls to history
             messages.append(msg)
             for call in msg.tool_calls:
-                # Parse JSON arguments emitted by the model
+                # ③ parse arguments and execute the requested Python tool
                 args = (
                     json.loads(call.function.arguments)
                     if call.function.arguments
                     else {}
                 )
-                # Dispatch execution to registered Python tool function
                 fn = self._tool_functions[call.function.name]
                 result = fn(args)
 
-                # Record tool results for session logging (except meta-report tool)
+                # ④ record tool results for session logging (except the report
+                # itself, which is meta-data, not per-answer evaluation).
                 if (
                     results_out is not None
                     and call.function.name != "generate_final_report"
                 ):
                     results_out[call.function.name] = result
 
-                # Append tool observation under "role": "tool" with matching tool_call_id
+                # ⑤ append tool output so the model can continue reasoning
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.id,
@@ -314,200 +974,912 @@ class EvaluatorAgent:
                     ),
                 })
 
-        # Step 4: Safety fallback — if rounds exhausted, request answer without offering tools
+        # ⑥ ran out of rounds — ask for a final answer without offering tools
         response = self._create_with_retry(
             model=self._model, messages=messages
         )
-        return response.choices[0].message.content or ""</code></pre>
+        return response.choices[0].message.content or ""
 
-                <h2>Deterministic Tools</h2>
-                <span class="file-label">tools.py — Rule-based exact metrics for filler words, STAR coverage, and
-                    keyword relevance</span>
-                <pre><code class="language-python">def detect_filler_words(answer: str) -> dict[str, Any]:
-    """Count filler words (um, like, basically, etc.) and compute density."""
-    # Step 1: Return zero counts immediately if response text is empty
+    def _deterministic_evaluate(
+        self, question: str, answer: str, expected_keywords: list[str],
+        category: str = "", question_id: int = 0,
+    ) -&gt; dict:
+        """Fallback evaluation when no LLM client is available.
+
+        Runs all three tools deterministically and formats a plain-text
+        summary.  No LLM synthesis.
+        """
+        # ① run all deterministic tools against the same answer
+        filler = detect_filler_words(answer)
+        star = check_star_structure(answer)
+        relevance = score_relevance(answer, expected_keywords)
+
+        # ② package results under the same names used by tool calls
+        results = {
+            "detect_filler_words": filler,
+            "check_star_structure": star,
+            "score_relevance": relevance,
+        }
+        # ③ record the deterministic turn in shared session memory
+        self.memory.add_turn(
+            question, answer, results,
+            category=category,
+            question_id=question_id,
+            expected_keywords=expected_keywords,
+        )
+
+        # ④ format concise feedback from the three tool messages
+        lines = [
+            f"Relevance: {relevance['message']}",
+            f"STAR: {star['message']}",
+            f"Fillers: {filler['message']}",
+        ]
+        # ⑤ return the same UI payload shape as the LLM path
+        return {
+            "turn": self.memory.turn_count,
+            "feedback": "\n".join(lines),
+            "relevance_evaluation": relevance,
+            "star_evaluation": star,
+            "filler_evaluation": filler,
+        }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-tools-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-tools-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">306 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-tools-py">
+                    <span class="file-path">interviewiq/src/python/tools.py</span>
+                    <p class="file-label">Evaluation tools for InterviewIQ.</p>
+                    <pre><code data-lang="python">"""Evaluation tools for InterviewIQ.
+
+Deterministic, rule-based tools for evaluating candidate interview answers:
+1. detect_filler_words: Identifies and counts speech filler words/phrases.
+2. check_star_structure: Analyzes answers for Situation, Task, Action, Result.
+3. score_relevance: Evaluates answer relevance (0-100) against expected keywords.
+
+Each returns a structured dict (not a pre-formatted string) so the agent can
+use the raw numbers for session aggregation and the final report.
+"""
+
+import re
+from typing import Any
+
+# ---------------------------------------------------------------------------
+# Filler-word detection
+# ---------------------------------------------------------------------------
+
+# Standard filler words and conversational crutch phrases.
+FILLER_PATTERNS = [
+    ("you know", r"\byou know\b"),
+    ("sort of", r"\bsort of\b"),
+    ("kind of", r"\bkind of\b"),
+    ("i mean", r"\bi mean\b"),
+    ("um", r"\bum+\b"),
+    ("uh", r"\buh+\b"),
+    ("like", r"\blike\b"),
+    ("basically", r"\bbasically\b"),
+    ("actually", r"\bactually\b"),
+    ("literally", r"\bliterally\b"),
+    ("honestly", r"\bhonestly\b"),
+    ("right", r"\bright\b"),
+]
+
+
+def detect_filler_words(answer: str) -&gt; dict[str, Any]:
+    """Count filler words (um, like, basically, etc.) in a candidate's answer.
+
+    Returns a structured dict with detected fillers, total count, density per
+    100 words, and a verdict message.
+    """
+    # ① reject empty answers before running pattern matching
     if not answer or not answer.strip():
-        return {"detected_fillers": {}, "total_filler_count": 0, "filler_density_per_100_words": 0.0}
+        return {
+            "detected_fillers": {},
+            "total_filler_count": 0,
+            "has_fillers": False,
+            "filler_density_per_100_words": 0.0,
+            "message": "No answer provided or answer is empty.",
+        }
 
+    # ② normalize the answer and prepare filler counters
     text_lower = answer.lower()
     detected_fillers: dict[str, int] = {}
     total_count = 0
 
-    # Step 2: Iterate compiled regex patterns with word boundaries (\b)
+    # ③ count each filler pattern and accumulate totals
     for name, pattern in FILLER_PATTERNS:
         matches = re.findall(pattern, text_lower, flags=re.IGNORECASE)
         count = len(matches)
-        if count > 0:
+        if count &gt; 0:
             detected_fillers[name] = count
             total_count += count
 
-    # Step 3: Count total words in answer using token regex
+    # ④ compute word count for density calculation
     words = re.findall(r"\b\w+\b", text_lower)
     word_count = len(words)
-
-    # Step 4: Compute normalized filler density per 100 words
     density = round((total_count / max(word_count, 1)) * 100, 1)
 
-    # Step 5: Return comprehensive metrics dictionary
+    # ⑤ build a learner-friendly message based on detected fillers
+    if total_count &gt; 0:
+        details = ", ".join(
+            f"{k} ({v})"
+            for k, v in sorted(detected_fillers.items(), key=lambda x: -x[1])
+        )
+        message = f"Found {total_count} filler word(s) ({density}% density): {details}."
+    else:
+        message = "Excellent! No filler words detected in this answer."
+
+    # ⑥ return structured score data for the agent and UI
     return {
         "detected_fillers": detected_fillers,
         "total_filler_count": total_count,
-        "has_fillers": total_count > 0,
+        "has_fillers": total_count &gt; 0,
         "filler_density_per_100_words": density,
         "word_count": word_count,
+        "message": message,
     }
 
 
-def check_star_structure(answer: str) -> dict[str, Any]:
-    """Check whether a behavioral answer covers Situation, Task, Action, Result."""
+# ---------------------------------------------------------------------------
+# STAR structure detection
+# ---------------------------------------------------------------------------
+
+# Cue words and phrase patterns for STAR framework detection.
+STAR_PATTERNS = {
+    "Situation": [
+        r"\b(?:in my (?:previous|former|past|last) role|when i was (?:at|working|leading)|at my previous company)\b",
+        r"\b(?:the situation was|the context was|our company|our team was facing|we had a project)\b",
+        r"\b(?:during a|during the|faced with|at the time|background|scenario)\b",
+    ],
+    "Task": [
+        r"\b(?:my (?:task|goal|objective|role|responsibility|duty) was)\b",
+        r"\b(?:i (?:was assigned to|was tasked with|needed to|had to|was responsible for))\b",
+        r"\b(?:the challenge was|our target was|required to|aimed to)\b",
+    ],
+    "Action": [
+        r"\b(?:i (?:decided|implemented|built|created|led|developed|analyzed|organized|proposed|initiated|designed|coordinated|refactored|migrated|reached out))\b",
+        r"\b(?:my approach was|steps i took|i set up|i established|i wrote|i introduced)\b",
+        r"\b(?:to resolve this, i|i worked with|i facilitated)\b",
+    ],
+    "Result": [
+        r"\b(?:as a result|the outcome was|we achieved|we delivered|we improved|successfully)\b",
+        r"\b(?:increased|reduced|decreased|saved|boosted|resolved|prevented)\b",
+        r"\b(?:\d+%(?: reduction| increase| improvement| latency| failure)?|\$\d+[\d,.]*(?:k|m|b)?|\d+ (?:days|weeks|months|minutes|hours))\b",
+        r"\b(?:impact was|outcome|post-mortem|non-conformities|contract closed)\b",
+    ],
+}
+
+
+def check_star_structure(answer: str) -&gt; dict[str, Any]:
+    """Check whether a behavioral answer covers Situation, Task, Action, Result.
+
+    Returns a structured dict with per-component coverage, a percentage score,
+    and a recommendation message.
+    """
+    # ① reject empty answers before checking STAR components
+    if not answer or not answer.strip():
+        return {
+            "situation": False,
+            "task": False,
+            "action": False,
+            "result": False,
+            "covered_components": [],
+            "missing_components": ["Situation", "Task", "Action", "Result"],
+            "star_score": 0.0,
+            "is_star_complete": False,
+            "message": "Answer is empty. Please provide a detailed response.",
+        }
+
+    # ② normalize the answer and prepare component tracking buckets
     text_lower = answer.lower()
     covered: list[str] = []
     missing: list[str] = []
     components_status: dict[str, bool] = {}
 
-    # Step 1: Evaluate presence of contextual indicator patterns for each STAR phase
+    # ③ scan each STAR component's cue patterns in the answer
     for component, patterns in STAR_PATTERNS.items():
-        found = any(re.search(p, text_lower, flags=re.IGNORECASE) for p in patterns)
+        found = any(
+            re.search(pattern, text_lower, flags=re.IGNORECASE)
+            for pattern in patterns
+        )
         components_status[component.lower()] = found
         if found:
             covered.append(component)
         else:
             missing.append(component)
 
-    # Step 2: Compute percentage of STAR components satisfied (0% to 100%)
+    # ④ convert covered components into a percentage completion score
     star_score = round((len(covered) / 4) * 100, 1)
+    is_complete = len(covered) == 4
 
-    # Step 3: Return STAR structural breakdown
+    # ⑤ choose a coaching message based on STAR coverage
+    if is_complete:
+        message = "Outstanding! All 4 STAR components are clearly present."
+    elif len(covered) &gt;= 2:
+        message = f"Good structure ({star_score}% STAR). Strengthen: {', '.join(missing)}."
+    else:
+        message = f"Weak structure ({star_score}% STAR). Missing: {', '.join(missing)}."
+
+    # ⑥ return per-component status for feedback and aggregation
     return {
+        "situation": components_status.get("situation", False),
+        "task": components_status.get("task", False),
+        "action": components_status.get("action", False),
+        "result": components_status.get("result", False),
         "covered_components": covered,
         "missing_components": missing,
         "star_score": star_score,
-        "is_star_complete": len(covered) == 4,
+        "is_star_complete": is_complete,
+        "message": message,
     }
 
 
-def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]:
-    """Score relevance against expected domain concepts using inflection matching."""
+# ---------------------------------------------------------------------------
+# Keyword relevance scoring
+# ---------------------------------------------------------------------------
+
+
+def _build_keyword_pattern(kw_clean: str) -&gt; str:
+    """Build a regex pattern that matches a keyword and common inflections."""
+    # ① handle multi-word phrases and hyphenated/underscored terms
+    if " " in kw_clean or "-" in kw_clean or "_" in kw_clean:
+        tokens = [re.escape(t) for t in re.split(r"[\s\-_]+", kw_clean) if t]
+        return r"\b" + r"[\s\-_]+".join(tokens) + r"\b"
+
+    # ② expand -tion into verb forms (resolution → resolve, resolving, …)
+    if kw_clean.endswith("tion") and len(kw_clean) &gt; 5:
+        stem = re.escape(kw_clean[:-4])
+        return rf"\b(?:{re.escape(kw_clean)}s?|{stem}t(?:e|es|ed|ing)?|{stem[:-1]}v(?:e|es|ed|ing)?)\b"
+    # ③ expand -ment into verb forms (alignment → align, aligning, …)
+    if kw_clean.endswith("ment") and len(kw_clean) &gt; 5:
+        stem = re.escape(kw_clean[:-4])
+        return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:s|ed|ing|e)?)\b"
+    # ④ expand -e endings (cache → caching, cached, …)
+    if kw_clean.endswith("e") and len(kw_clean) &gt; 3:
+        stem = re.escape(kw_clean[:-1])
+        return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:ing|ed|es|able|ability)?)\b"
+    # ⑤ expand -y endings (delivery → deliveries, …)
+    if kw_clean.endswith("y") and len(kw_clean) &gt; 3:
+        stem = re.escape(kw_clean[:-1])
+        return rf"\b(?:{re.escape(kw_clean)}|{stem}(?:ies|ied|ying))\b"
+    # ⑥ default to base plus common suffixes
+    base = re.escape(kw_clean)
+    return rf"\b(?:{base}|{base}(?:s|es|ed|ing)?)\b"
+
+
+def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, Any]:
+    """Score relevance of an answer against expected keywords (0-100).
+
+    Uses regex-based matching with grammatical inflection support and a
+    calibrated tiered scoring curve.
+    """
+    # ① reject empty answers and mark all expected keywords as unmatched
+    if not answer or not answer.strip():
+        return {
+            "score": 0,
+            "matched_keywords": [],
+            "unmatched_keywords": list(expected_keywords),
+            "keyword_coverage_ratio": 0.0,
+            "total_expected": len(expected_keywords),
+            "total_matched": 0,
+            "message": "Answer is empty. Relevance score is 0.",
+        }
+
+    # ② give full credit when no keyword rubric was supplied
+    if not expected_keywords:
+        return {
+            "score": 100,
+            "matched_keywords": [],
+            "unmatched_keywords": [],
+            "keyword_coverage_ratio": 1.0,
+            "total_expected": 0,
+            "total_matched": 0,
+            "message": "No expected keywords specified.",
+        }
+
+    # ③ normalize the answer and prepare matched/unmatched buckets
     text_lower = answer.lower()
     matched_keywords: list[str] = []
     unmatched_keywords: list[str] = []
 
-    # Step 1: Match morphological keyword regex stems against candidate response
+    # ④ match each expected keyword using an inflection-aware regex
     for kw in expected_keywords:
-        pattern = _build_keyword_pattern(kw.lower().strip())
+        kw_clean = kw.lower().strip()
+        if not kw_clean:
+            continue
+        pattern = _build_keyword_pattern(kw_clean)
         if re.search(pattern, text_lower, flags=re.IGNORECASE):
             matched_keywords.append(kw)
         else:
             unmatched_keywords.append(kw)
 
-    # Step 2: Compute raw coverage ratio
+    # ⑤ compute coverage totals used by the scoring curve
     total_expected = len(expected_keywords)
     total_matched = len(matched_keywords)
     coverage_ratio = total_matched / max(total_expected, 1)
 
-    # Step 3: Map coverage ratio to calibrated tiered scoring curve (0 to 100)
+    # ⑥ apply the calibrated scoring curve
+    #   &gt;= 70% coverage -&gt; 90-100 score
+    #   &gt;= 45% coverage -&gt; 75-89 score
+    #   &gt;= 25% coverage -&gt; 50-74 score
+    #   &lt;  25% coverage -&gt; 0-49 score
     if total_expected == 0:
         score = 100
     elif total_matched == 0:
         score = 0
-    elif coverage_ratio >= 0.70:
+    elif coverage_ratio &gt;= 0.70:
         score = min(100, int(round(90 + ((coverage_ratio - 0.70) / 0.30) * 10)))
-    elif coverage_ratio >= 0.45:
+    elif coverage_ratio &gt;= 0.45:
         score = int(round(75 + ((coverage_ratio - 0.45) / 0.25) * 14))
-    elif coverage_ratio >= 0.25:
+    elif coverage_ratio &gt;= 0.25:
         score = int(round(50 + ((coverage_ratio - 0.25) / 0.20) * 24))
     else:
         score = max(5, int(round((coverage_ratio / 0.25) * 45)))
 
-    # Step 4: Return relevance metrics dictionary
+    # ⑦ write the feedback message for the score band
+    if score &gt;= 80:
+        message = f"High relevance ({score}/100). Hit {total_matched}/{total_expected} expected concepts."
+    elif score &gt;= 50:
+        tops = ", ".join(unmatched_keywords[:3])
+        message = f"Moderate relevance ({score}/100). Hit {total_matched}/{total_expected}. Consider: {tops}."
+    else:
+        tops = ", ".join(unmatched_keywords[:4])
+        message = f"Low relevance ({score}/100). Hit only {total_matched}/{total_expected}. Missed: {tops}."
+
+    # ⑧ return structured relevance data for the agent and UI
     return {
         "score": score,
         "matched_keywords": matched_keywords,
         "unmatched_keywords": unmatched_keywords,
         "keyword_coverage_ratio": round(coverage_ratio, 2),
+        "total_expected": total_expected,
+        "total_matched": total_matched,
+        "message": message,
     }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
 
-                <h2>API route</h2>
-                <span class="file-label">app.py — Flask blueprint endpoints exposing evaluation and session
-                    reporting</span>
-                <pre><code class="language-python">@bp.route("/evaluate", methods=["POST"])
+            <section class="topic-section is-collapsed" id="sec-source-interview-bank-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-interview-bank-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a class="headerlink" href="#source-interview-bank-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">157 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-interview-bank-py">
+                    <span class="file-path">interviewiq/src/python/interview_bank.py</span>
+                    <p class="file-label">Interview Question Bank for InterviewIQ.</p>
+                    <pre><code data-lang="python">"""Interview Question Bank for InterviewIQ.
+
+Contains categorized interview questions along with expected key concepts,
+and sample strong &amp; weak answers for testing and demonstration.
+"""
+
+QUESTIONS = [
+    {
+        "id": 1,
+        "category": "Behavioral",
+        "question": "Tell me about a time you had a major conflict or disagreement with a teammate and how you handled it.",
+        "expected_keywords": [
+            "conflict", "disagreement", "perspective", "listen", "communication",
+            "compromise", "resolution", "collaborate", "respect", "team",
+            "alignment", "outcome",
+        ],
+        "sample_strong_answer": (
+            "In my previous role as a senior engineer, our team encountered a major "
+            "conflict and technical disagreement regarding our API architecture. My "
+            "task was to facilitate open communication and achieve a win-win "
+            "resolution. I respected every teammate's perspective and actively "
+            "listened during technical review meetings. I encouraged both sides to "
+            "collaborate and propose a practical compromise. As a result, we achieved "
+            "full team alignment, successfully resolved the dispute, and delivered a "
+            "positive business outcome with a 35% performance gain."
+        ),
+        "sample_weak_answer": (
+            "Um, basically, like, someone disagreed with my PR and was arguing with "
+            "me. I know I was right so I just told them to look at the code again. "
+            "Eventually they gave up and approved it, you know."
+        ),
+    },
+    {
+        "id": 2,
+        "category": "Technical",
+        "question": "How do you design a scalable microservices architecture and manage reliable inter-service communication?",
+        "expected_keywords": [
+            "microservices", "api gateway", "rest", "grpc", "async",
+            "message queue", "kafka", "rabbitmq", "event-driven",
+            "load balancer", "circuit breaker", "resilience",
+            "database per service", "caching", "idempotency", "scalability",
+        ],
+        "sample_strong_answer": (
+            "To design a high-scalability microservices architecture, I decouple "
+            "services using the database per service pattern. For external client "
+            "ingress, I deploy an API Gateway with load balancer and rate limiting. "
+            "For high-throughput inter-service communication, I implement "
+            "asynchronous event-driven message queue systems using Kafka or RabbitMQ "
+            "with idempotency guarantees. For low-latency synchronous RPC calls, I "
+            "use gRPC protected by circuit breaker patterns to guarantee system "
+            "resilience. Finally, distributed Redis caching and REST APIs ensure "
+            "high performance and loose coupling."
+        ),
+        "sample_weak_answer": (
+            "Well, microservices are just splitting code into multiple servers. You "
+            "just make REST API calls between them and use a single database that "
+            "everyone connects to so data stays in sync."
+        ),
+    },
+    {
+        "id": 3,
+        "category": "Problem-Solving",
+        "question": "Describe a critical production incident or bug you diagnosed and resolved under pressure.",
+        "expected_keywords": [
+            "incident", "production", "monitoring", "logs", "metrics",
+            "root cause", "debug", "reproduce", "patch", "rollback",
+            "post-mortem", "alert", "latency",
+        ],
+        "sample_strong_answer": (
+            "During a high-severity production incident with elevated latency, our "
+            "monitoring alerts triggered on payment failures. As incident commander, "
+            "I analyzed APM metrics and distributed server logs to debug and isolate "
+            "the root cause: an unindexed database query causing connection pool "
+            "deadlocks. I immediately initiated a safe rollback to restore production "
+            "stability within 8 minutes. Once stable, we reproduced the issue in "
+            "staging, deployed a tested patch, and published a blameless post-mortem "
+            "with new monitoring alerts."
+        ),
+        "sample_weak_answer": (
+            "Uh, yeah, one day the website was down. Basically I restarted the "
+            "server and it worked again. I don't know exactly what happened, but "
+            "restarting fixed it, like, right away."
+        ),
+    },
+    {
+        "id": 4,
+        "category": "Leadership",
+        "question": "Tell me about a high-stakes project you led where you had to manage tight deadlines and shifting requirements.",
+        "expected_keywords": [
+            "leadership", "prioritize", "delegate", "deadline", "milestones",
+            "stakeholders", "scope", "communication", "delivery", "risk",
+            "alignment", "impact",
+        ],
+        "sample_strong_answer": (
+            "When tasked with leadership on an enterprise compliance initiative with "
+            "an aggressive 60-day deadline, my objective was on-time delivery without "
+            "compromising security. I established 2-week sprint milestones, "
+            "prioritized mission-critical security controls, and delegated "
+            "specialized tasks across three engineering teams. I maintained "
+            "transparent communication and weekly alignment sessions with executive "
+            "stakeholders to manage scope and mitigate delivery risks. As a result of "
+            "this leadership, we passed the audit with zero defects ahead of deadline "
+            "and achieved a $1.2M revenue impact."
+        ),
+        "sample_weak_answer": (
+            "Like, we had a really short deadline from our manager. We worked late "
+            "hours every day and pushed everyone to finish. It was stressful but we "
+            "got it done, you know."
+        ),
+    },
+    {
+        "id": 5,
+        "category": "System Design",
+        "question": "How would you design a distributed URL shortening service like TinyURL capable of handling billions of redirects?",
+        "expected_keywords": [
+            "url shortener", "hash", "base62", "encoding", "collisions",
+            "database", "nosql", "redis", "cache", "load balancing", "cdn",
+            "throughput", "capacity", "zookeeper",
+        ],
+        "sample_strong_answer": (
+            "To design a high-throughput distributed url shortener service handling "
+            "billions of redirects, I estimate capacity for a 100:1 read-to-write "
+            "ratio. I utilize Base62 encoding on unique 64-bit integer IDs generated "
+            "by a distributed counter with ZooKeeper coordination to guarantee zero "
+            "collisions without hash retry penalties. For persistence, I use a "
+            "distributed NoSQL database partitioned by short key. To maximize "
+            "throughput, I place a multi-tier Redis cache cluster behind Anycast CDN "
+            "and load balancing tiers."
+        ),
+        "sample_weak_answer": (
+            "You take a long URL, run MD5 hash on it, take the first 6 letters, and "
+            "save it in a MySQL table. When someone requests it, query the table and "
+            "redirect."
+        ),
+    },
+]
+
+
+def get_all_questions() -&gt; list[dict]:
+    """Return all available questions."""
+    return QUESTIONS
+
+
+def get_question_by_id(question_id: int) -&gt; dict | None:
+    """Retrieve a specific question by its ID."""
+    # ① scan the question bank for the requested id
+    for q in QUESTIONS:
+        # ② return the first matching question record
+        if q["id"] == question_id:
+            return q
+    # ③ return None when the id is not in the bank
+    return None
+
+
+def get_question_categories() -&gt; list[str]:
+    """Return unique categories across the question bank."""
+    return list(dict.fromkeys(q["category"] for q in QUESTIONS))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">interviewiq/src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env, build API clients for Groq / OpenAI.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env, build API clients for Groq / OpenAI.
+
+This module is the single place that knows about secrets and model names.
+Every other module imports from here instead of reading ``os.environ`` or
+constructing API clients itself, so key and model management stays in one
+place.
+
+Provider priority:
+    1. Groq (free tier) — ``GROQ_API_KEY``
+    2. OpenAI — ``OPENAI_API_KEY``
+    3. None — deterministic-only mode (tools still work, LLM feedback disabled)
+"""
+
+import os
+
+from dotenv import load_dotenv
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+# ---------------------------------------------------------------------------
+# LLM provider configuration
+# ---------------------------------------------------------------------------
+
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+
+
+def get_openai_client():
+    """Return an OpenAI-compatible client using Groq first, OpenAI second.
+
+    Returns:
+        A tuple of ``(client, model_name)`` or ``(None, None)`` when no API
+        key is available.
+    """
+    # ① import the client only when a provider lookup is needed
+    from openai import OpenAI
+
+    # ② use Groq first because it is the preferred free-tier provider
+    if GROQ_API_KEY:
+        return (
+            OpenAI(
+                api_key=GROQ_API_KEY,
+                base_url="https://api.groq.com/openai/v1",
+            ),
+            "openai/gpt-oss-20b",
+        )
+
+    # ③ fall back to OpenAI when no Groq key is configured
+    if OPENAI_API_KEY:
+        return OpenAI(api_key=OPENAI_API_KEY), "gpt-4o-mini"
+
+    # ④ signal deterministic-only mode when no API keys are available
+    return None, None</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">224 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">interviewiq/src/python/app.py</span>
+                    <p class="file-label">Flask server exposing InterviewIQ evaluation endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing InterviewIQ evaluation endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/evaluate",
+  etc.  In production Nginx forwards ``/interviewiq/...`` traffic to the
+  container and PATH_PREFIX is set to "/interviewiq", keeping every URL
+  consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from agent import EvaluatorAgent, InterviewSessionMemory
+from interview_bank import get_all_questions, get_question_by_id
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/interviewiq") so
+# the app works correctly behind an Nginx location block.  Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit mutating API requests
+    if request.method == "POST":
+        # ② ask the shared rate limiter whether this client is blocked
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            # ③ return a 429 response with a retry hint for the browser
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# Shared session memory and evaluator agent (single-process, not multi-user).
+_memory = InterviewSessionMemory()
+_agent = EvaluatorAgent(memory=_memory)
+
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the frontend HTML template from the static folder
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② replace the empty data-api-base with the deployment path prefix
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML response to the browser
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/questions", methods=["GET"])
+def questions():
+    """Return all interview questions from the bank.
+
+    Response (JSON): ``[{"id": 1, "category": "...", "question": "...", ...}, ...]``
+    """
+    return jsonify(get_all_questions())
+
+
+@bp.route("/evaluate", methods=["POST"])
 def evaluate():
-    """Evaluate a candidate's answer to an interview question."""
-    # Step 1: Parse request JSON
+    """Evaluate a candidate's answer to an interview question.
+
+    Request body (JSON): ``{"question_id": 1, "answer": "..."}``
+    Response (JSON): ``{"turn": 1, "feedback": "...", "relevance_evaluation": {...},
+        "star_evaluation": {...}, "filler_evaluation": {...}}``
+    """
+    # ① parse the JSON payload and normalize the answer text
     data = request.get_json(force=True)
     question_id = data.get("question_id")
     answer = (data.get("answer") or "").strip()
 
-    # Step 2: Validate non-empty candidate response
+    # ② reject empty answers before doing any scoring
     if not answer:
         return jsonify({"error": "An answer is required."}), 400
 
-    # Step 3: Lookup question metadata by ID
+    # ③ find the requested question in the interview bank
     q = get_question_by_id(question_id)
     if not q:
         return jsonify({"error": f"Question ID {question_id} not found."}), 400
 
-    # Step 4: Execute evaluation via agent ReAct loop and return structured assessment
     try:
+        # ④ let the evaluator agent score the answer and update memory
         result = _agent.evaluate_answer(q, answer)
         return jsonify(result)
     except Exception as e:
+        # ⑤ return scoring errors as JSON so the frontend can display them
         return jsonify({"error": str(e)}), 500
 
 
 @bp.route("/coach", methods=["POST"])
 def coach():
-    """Handle free-form candidate meta-questions via the ReAct agent."""
-    # Step 1: Parse query or chat message from request body
+    """Handle a free-form meta-question from the candidate.
+
+    Request body (JSON): ``{"query": "How am I doing?"}``
+    Response (JSON): ``{"response": "..."}``
+    """
+    # ① parse the candidate's coaching question from either supported field
     data = request.get_json(force=True)
     message = (data.get("query") or data.get("message") or "").strip()
 
-    # Step 2: Validate question presence
+    # ② reject empty coaching questions
     if not message:
         return jsonify({"error": "A question is required."}), 400
 
-    # Step 3: Ask agent to review session memory and synthesize guidance
     try:
+        # ③ ask the agent to answer using current session memory
         reply = _agent.ask_agent(message)
         return jsonify({"response": reply})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500</code></pre>
+        # ④ return agent errors as JSON for the frontend
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+@bp.route("/scorecard", methods=["GET"])
+def scorecard():
+    """Return live session scorecard and running average.
+
+    Response (JSON): ``{"scorecard": [...], "average_relevance": 75.5,
+        "total_questions": 3, "weakest_area": {...}}``
+    """
+    # ① gather live session metrics into one scorecard response
+    return jsonify({
+        "scorecard": _memory.get_scorecard(),
+        "average_relevance": _memory.get_average_relevance(),
+        "total_questions": _memory.get_total_questions(),
+        "weakest_area": _memory.get_weakest_area(),
+    })
+
+
+@bp.route("/report", methods=["GET"])
+def report():
+    """Generate the aggregated final assessment report.
+
+    Response (JSON): ``{"report_text": "...", "total_questions": 3, ...}``
+    """
+    try:
+        # ① ask memory to aggregate all turns into a final report
+        return jsonify(_memory.generate_final_report_dict())
+    except Exception as e:
+        # ② return report-generation errors as JSON for the frontend
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/reset", methods=["POST"])
+def reset():
+    """Clear session memory and start a fresh interview.
+
+    Response (JSON): ``{"status": "ok", "message": "Session reset successfully."}``
+    """
+    # ① clear session state in memory and the evaluator agent
+    _agent.reset()
+    # ② confirm the fresh session to the browser
+    return jsonify({"status": "ok", "message": "Session reset successfully."})
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/evaluate") and the prefix is prepended.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8085 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">TechToday &mdash; 🎯 InterviewIQ &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

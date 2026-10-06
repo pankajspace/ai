@@ -41,8 +41,10 @@ def get_openai_client():
         A tuple of ``(client, model_name)`` or ``(None, None)`` when no API
         key is available.
     """
+    # ① import the client only when a provider lookup is needed
     from openai import OpenAI
 
+    # ② use Groq first because it is the preferred free-tier provider
     if GROQ_API_KEY:
         return (
             OpenAI(
@@ -52,7 +54,9 @@ def get_openai_client():
             "openai/gpt-oss-20b",
         )
 
+    # ③ fall back to OpenAI when no Groq key is configured
     if OPENAI_API_KEY:
         return OpenAI(api_key=OPENAI_API_KEY), "gpt-4o-mini"
 
+    # ④ signal deterministic-only mode when no API keys are available
     return None, None

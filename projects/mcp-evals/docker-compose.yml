@@ -1,0 +1,27 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    command: python src/python/app.py
+    ports:
+      - "8089:5000"
+    volumes:
+      - ./src:/app/src
+
+  # One-off CLI services: run a class step directly and print its text report.
+  # The cricket MCP server is never started on its own: every client launches
+  # src/python/cricket_server.py as a child process over stdio.
+  plumbing:
+    build: .
+    env_file: .env
+    command: python src/python/mcp_client.py
+
+  agent:
+    build: .
+    env_file: .env
+    entrypoint: ["python", "src/python/agent.py"]
+
+  evals:
+    build: .
+    env_file: .env
+    entrypoint: ["python", "src/python/evals.py"]

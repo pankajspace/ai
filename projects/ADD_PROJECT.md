@@ -10,10 +10,11 @@ The day-to-day branch flow for every project is in [DEPLOYMENT.md](DEPLOYMENT.md
 
 The current next available values are:
 
-1. Local development port: `8089`.
-2. EC2 host port: `5009`.
+1. Local development port: `8091`.
+2. EC2 host port: `5010`.
 After adding a project, advance the local and EC2 values in this section so the
-next project does not reuse them.
+next project does not reuse them. Local port `8090` is reserved by
+`projects/template`, which is why the local value skipped from `8089` to `8091`.
 
 For a new container app, choose:
 
@@ -196,17 +197,17 @@ After the project works:
 1. Document its folder, URLs, ports, ECR repository, path prefix, routes, workflow, trigger path, and secrets in its `README.md`.
 2. Advance the next available local and EC2 host ports in § 1 of this guide.
 3. Verify every workflow path listed in the project README exists under `.github/workflows/`.
-4. If the project should appear in the public catalog or home page, update `projects/techtoday/study/ai-projects/ai-projects.html` (and optionally `projects/techtoday/index.html`).
+4. If the project should appear in the public catalog or home page, update `projects/techtoday/study/ai-demos/ai-demos.html` (and optionally `projects/techtoday/index.html`).
 
 Public project catalog card update:
 
-1. Open `projects/techtoday/study/ai-projects/ai-projects.html`.
+1. Open `projects/techtoday/study/ai-demos/ai-demos.html`.
 2. Locate the project grid inside the projects section.
 3. Copy an existing project card.
 4. Update the title, description, link, icon or visual marker, and theory/explanation link.
 5. Use a live status only after the production URL works.
-6. If the project is featured on the homepage, update the AI Projects tile in `projects/techtoday/index.html`.
-7. Preview `projects/techtoday/index.html` and `projects/techtoday/study/ai-projects/ai-projects.html` locally before committing.
+6. If the project is featured on the homepage, update the AI Demos tile in `projects/techtoday/index.html`.
+7. Preview `projects/techtoday/index.html` and `projects/techtoday/study/ai-demos/ai-demos.html` locally before committing.
 
 After this, routine work follows the new project's `README.md`. Verify that it
 contains concrete local setup, daily development, deployment, production

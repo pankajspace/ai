@@ -4,123 +4,389 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — DeskBuddy · Docker Demo Lab</title>
     <meta name="description"
         content="How the DeskBuddy demo works." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐳</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo">🐳</span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>Docker Demo Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; Docker Demo Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-desk-buddy-agent-app-py">desk-buddy/agent/app.py</a></li>
+                    <li><a href="#source-desk-buddy-tools-app-py">desk-buddy/tools/app.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F916; DeskBuddy<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F916; DeskBuddy</h1>
-                <p class="subtitle">Level 3 &middot; 3 containers</p>
+            <p class="lede">Level 3 &middot; 3 containers. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
-<h2>Concept</h2>
-<p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
-<h2>Theory & Concepts</h2>
-<p>The <b>DeskBuddy</b> demo illustrates a production-ready <b>Agentic Architecture</b> distributed across multiple Docker containers. At its core, an agent uses a Large Language Model (LLM) not just to generate text, but to iteratively reason and take action—specifically, by deciding when to call external functions (tools). In this demo, when you ask DeskBuddy to "calculate 23 * 47" or "what time is it", the LLM realizes it needs external help and emits a structured JSON request rather than a direct answer.</p>
-<p>To make this secure and scalable, the demo adopts a <b>Microservices approach</b> with three isolated containers:</p>
-<ul>
-    <li><b>The Agent Container:</b> This FastAPI service runs the core loop. It receives your chat, asks the GPT-4o-mini model for a response, and handles the conditional logic. If the LLM requests a tool call, the agent pauses to dispatch the request to the Tools Container, then feeds the result back to the LLM to form a final answer.</li>
-    <li><b>The Tools Container:</b> Running tools in the same process as your agent can be dangerous, especially with features like math evaluation. The DeskBuddy architecture isolates the <code>/calculator</code> and <code>/datetime</code> endpoints in a separate, sandboxed service. The agent communicates with this container over a private Docker network, minimizing security risks.</li>
-    <li><b>The Redis Container (Memory):</b> LLMs are stateless by nature. To remember your past messages, the DeskBuddy agent loads and saves the conversation history from a Redis database using your session ID. By externalizing state, the agent container itself remains stateless and resilient.</li>
-</ul>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 1 -->
 
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">POST /deskbuddy/chat</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">app.py</span>
-                        <span class="flow-detail">proxy</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">DeskBuddy Agent Container</span>
-                        <span class="flow-detail">Chat route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Redis</span>
-                        <span class="flow-detail">load history</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Agent Loop</span>
-                        <span class="flow-detail">OpenAI &harr; Tools Container</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Redis</span>
-                        <span class="flow-detail">save history</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">answer</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>A multi-container agentic system with three containers: the <code>deskbuddy-agent</code> (FastAPI + LLM logic), a <code>tools</code> service (for executing functions like calculator/datetime), and <code>redis</code> for conversation memory. The LLM decides when to call a tool, the agent pauses to call the <code>tools</code> service, and the result is fed back into the prompt in a loop until the final answer is reached.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br/>deskbuddy_chat"]
-    B -->|proxy_request| C["deskbuddy-agent:9000<br/>POST /chat"]
-    C -->|load history| D["Redis<br/>history:session_id"]
-    D -->|history| C
-    C -->|messages + tools| E["OpenAI API<br/>gpt-4o-mini"]
-    E -.->|tool_calls| C
-    C -.->|call_tool| F["tools:7000<br/>/calculator or /datetime"]
-    F -.->|result| C
-    C -.->|append tool result| E
-    E -->|final answer| C
-    C -->|save history| D
-    C -->|answer| B
-    B -->|answer| A
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <b>DeskBuddy</b> demo illustrates a production-ready <b>Agentic Architecture</b> distributed across multiple Docker containers. At its core, an agent uses a Large Language Model (LLM) not just to generate text, but to iteratively reason and take action—specifically, by deciding when to call external functions (tools). In this demo, when you ask DeskBuddy to "calculate 23 * 47" or "what time is it", the LLM realizes it needs external help and emits a structured JSON request rather than a direct answer.</p>
+                    <p>To make this secure and scalable, the demo adopts a <b>Microservices approach</b> with three isolated containers:</p>
+                    <ul>
+                        <li><b>The Agent Container:</b> This FastAPI service runs the core loop. It receives your chat, asks the GPT-4o-mini model for a response, and handles the conditional logic. If the LLM requests a tool call, the agent pauses to dispatch the request to the Tools Container, then feeds the result back to the LLM to form a final answer.</li>
+                        <li><b>The Tools Container:</b> Running tools in the same process as your agent can be dangerous, especially with features like math evaluation. The DeskBuddy architecture isolates the <code>/calculator</code> and <code>/datetime</code> endpoints in a separate, sandboxed service. The agent communicates with this container over a private Docker network, minimizing security risks.</li>
+                        <li><b>The Redis Container (Memory):</b> LLMs are stateless by nature. To remember your past messages, the DeskBuddy agent loads and saves the conversation history from a Redis database using your session ID. By externalizing state, the agent container itself remains stateless and resilient.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Agent loop handling tool calls and Redis memory.</span>
-                <pre><code class="language-python">@app.post("/chat")
+
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">POST /deskbuddy/chat</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">app.py</span>
+                            <span class="flow-detail">proxy</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">DeskBuddy Agent Container</span>
+                            <span class="flow-detail">Chat route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Redis</span>
+                            <span class="flow-detail">load history</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Agent Loop</span>
+                            <span class="flow-detail">OpenAI &harr; Tools Container</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Redis</span>
+                            <span class="flow-detail">save history</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">answer</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A["Browser"] -->|POST /deskbuddy/chat| B["app.py<br/>deskbuddy_chat"]
+                        B -->|proxy_request| C["deskbuddy-agent:9000<br/>POST /chat"]
+                        C -->|load history| D["Redis<br/>history:session_id"]
+                        D -->|history| C
+                        C -->|messages + tools| E["OpenAI API<br/>gpt-4o-mini"]
+                        E -.->|tool_calls| C
+                        C -.->|call_tool| F["tools:7000<br/>/calculator or /datetime"]
+                        F -.->|result| C
+                        C -.->|append tool result| E
+                        E -->|final answer| C
+                        C -->|save history| D
+                        C -->|answer| B
+                        B -->|answer| A
+                                        </div>
+                                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-desk-buddy-agent-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-desk-buddy-agent-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-desk-buddy-agent-app-py" class="topic-title is-file">desk-buddy/agent/app.py<a class="headerlink" href="#source-desk-buddy-agent-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">146 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-desk-buddy-agent-app-py">
+                    <span class="file-path">src/desk-buddy/agent/app.py</span>
+                    <p class="file-label">DeskBuddy Agent - an LLM with hands.</p>
+                    <pre><code data-lang="python">"""
+DeskBuddy Agent - an LLM with hands.
+
+The agent loop:
+  1. Show the LLM the conversation + a menu of available tools
+  2. If the LLM answers in words -&gt; done
+  3. If the LLM says "run tool X with these arguments" -&gt; we call the
+     tools service over HTTP, paste the result back, and loop again
+  4. Max 5 laps (a safety fuse so a confused model can't loop forever)
+
+Memory:
+  Conversation history is stored in Redis per session_id, so the agent
+  remembers context across requests - and across container restarts,
+  because Redis has a volume.
+"""
+import json
+import os
+import sys
+
+import httpx
+import redis
+from fastapi import FastAPI
+from openai import OpenAI
+from pydantic import BaseModel
+
+app = FastAPI(title="DeskBuddy Agent")
+
+# --- Fail loudly and clearly if the key is missing --------------------------
+API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not API_KEY or API_KEY.startswith("sk-paste"):
+    sys.exit(
+        "\n[DeskBuddy] OPENAI_API_KEY is missing.\n"
+        "  Fix: cp .env.example .env, put your real key in it, then\n"
+        "       docker compose up -d --force-recreate\n"
+    )
+
+llm = OpenAI(api_key=API_KEY)
+
+# --- Service addresses: SERVICE NAMES, not IPs (Compose networking) ---------
+# redis-py connects lazily (only on first command), so no retry loop needed:
+# by the time the first /chat request arrives, Redis is long since ready.
+r = redis.Redis(
+    host=os.getenv("REDIS_HOST", "redis"),
+    port=6379,
+    decode_responses=True,
+)
+TOOLS_URL = os.getenv("TOOLS_URL", "http://tools:7000")
+
+# --- The tool menu we show the LLM ------------------------------------------
+# Each entry describes one tool: its name, what it does, and what inputs
+# it expects. The LLM reads these descriptions to decide when to use them.
+TOOL_DEFS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "calculator",
+            "description": "Evaluate a math expression, e.g. '23*47' or '(100-8)/4'",
+            "parameters": {
+                "type": "object",
+                "properties": {"expression": {"type": "string"}},
+                "required": ["expression"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_datetime",
+            "description": "Get the current date and time",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+]
+
+
+def call_tool(name: str, args: dict) -&gt; dict:
+    """Actually execute a tool by calling the tools microservice over HTTP."""
+    try:
+        # ① send calculator requests to the calculator endpoint
+        if name == "calculator":
+            return httpx.post(f"{TOOLS_URL}/calculator", json=args, timeout=10).json()
+        # ② send datetime requests to the datetime endpoint
+        if name == "get_datetime":
+            return httpx.get(f"{TOOLS_URL}/datetime", timeout=10).json()
+        # ③ report unknown tool names instead of guessing
+        return {"error": f"unknown tool: {name}"}
+    except Exception as e:
+        # ④ turn tool-service failures into JSON the agent can read
+        return {"error": f"tool call failed: {e}"}
+
+
+class Chat(BaseModel):
+    session_id: str
+    message: str
+
+
+@app.get("/")
+def health():
+    return {
+        "status": "DeskBuddy Agent is live 🤖",
+        "tools_url": TOOLS_URL,
+        "redis_host": os.getenv("REDIS_HOST", "redis"),
+    }
+
+
+@app.post("/chat")
 def chat(req: Chat):
-    # --- 1. Load this session's memory from Redis ---------------------------
-    # Construct session key and deserialize conversation history list
+    # ① load this session's memory from Redis and append the new user message
     key = f"history:{req.session_id}"
     history = [json.loads(m) for m in r.lrange(key, 0, -1)]
-    # Append the newest incoming user turn
     history.append({"role": "user", "content": req.message})
 
-    # --- 2. The agent loop: think -> act -> observe -> repeat ---------------
+    # ② run the bounded agent loop: think, act, observe, repeat
     msg = None
-    for _ in range(5):  # safety fuse: max 5 iterations to avoid runaway loops
-        # Step 2a: Send current history and tool schemas to GPT-4o mini
+    for _ in range(5):  # safety fuse: max 5 laps
         resp = llm.chat.completions.create(
             model="gpt-4o-mini",
             messages=history,
@@ -128,17 +394,15 @@ def chat(req: Chat):
         )
         msg = resp.choices[0].message
 
-        # Step 2b: If model made no tool calls, it has reached its final answer
+        # ③ stop looping when the model answers in normal text
         if not msg.tool_calls:
             break  # the LLM answered in words - we're done
 
-        # Step 2c: Model requested one or more tool calls
-        # Record assistant tool-call request message in conversation history
+        # ④ run one or more tools and append their results for the next lap
+        # The LLM asked to run one or more tools
         history.append(msg.model_dump(exclude_none=True))
         for tc in msg.tool_calls:
-            # Forward call across Docker network to the tools microservice
             result = call_tool(tc.function.name, json.loads(tc.function.arguments))
-            # Append tool observation with matching tool_call_id
             history.append(
                 {
                     "role": "tool",
@@ -147,87 +411,337 @@ def chat(req: Chat):
                 }
             )
 
-    # --- 3. Save memory back to Redis and return the answer -----------------
-    # Append final assistant reply to conversation history
+    # ⑤ save memory back to Redis and return the final answer
     history.append({"role": "assistant", "content": msg.content})
-    # Overwrite Redis session list with full updated history
     r.delete(key)
     for m in history:
         r.rpush(key, json.dumps(m))
 
     return {"answer": msg.content}</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-                <h2>API route</h2>
-                <span class="file-label">app.py &mdash; proxies the browser to the DeskBuddy agent container.</span>
-                <pre><code class="language-python">@bp.route("/deskbuddy/chat", methods=["POST"])
-def deskbuddy_chat():
-    """Proxy chat message to the DeskBuddy agent service."""
-    # Step 1: Parse request JSON payload from the browser
-    body = request.get_json(force=True)
+            <section class="topic-section is-collapsed" id="sec-source-desk-buddy-tools-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-desk-buddy-tools-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-desk-buddy-tools-app-py" class="topic-title is-file">desk-buddy/tools/app.py<a class="headerlink" href="#source-desk-buddy-tools-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">43 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-desk-buddy-tools-app-py">
+                    <span class="file-path">src/desk-buddy/tools/app.py</span>
+                    <p class="file-label">DeskBuddy Tools - a tiny microservice exposing two tools: POST /calculator  -&gt; evaluates a math expression GET  /datetime    -&gt; returns the current date &amp; time</p>
+                    <pre><code data-lang="python">"""
+DeskBuddy Tools - a tiny microservice exposing two tools:
+  POST /calculator  -&gt; evaluates a math expression
+  GET  /datetime    -&gt; returns the current date &amp; time
 
-    # Step 2: Proxy HTTP request to the deskbuddy-agent container over internal Docker network
-    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+Nothing AI about this file. It's a plain worker department.
+The agent (a separate container) calls these over the private Docker network.
+"""
+import datetime
 
-    # Step 3: Return agent response payload and status code directly to client
-    return jsonify(data), status</code></pre>
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-                <h2>Tools service</h2>
-                <span class="file-label">tools/app.py &mdash; a plain FastAPI worker with no AI, called over the private Docker network.</span>
-                <pre><code class="language-python">@app.post("/calculator")
+app = FastAPI(title="DeskBuddy Tools")
+
+
+class Calc(BaseModel):
+    expression: str
+
+
+@app.get("/")
+def health():
+    return {"status": "DeskBuddy Tools is live 🧰"}
+
+
+@app.post("/calculator")
 def calculator(c: Calc):
     """Evaluate a math expression like '23*47' or '(100-8)/4'."""
     try:
-        # Demo only — never use eval on untrusted input in production!
+        # ① demo only — never use eval on untrusted input in production!
         # The empty __builtins__ blocks access to dangerous functions,
-        # but a real system would use a proper math parser (e.g. ast.literal_eval).
+        # but a real system would use a proper math parser.
         result = eval(c.expression, {"__builtins__": {}})
         return {"result": result}
     except Exception as e:
-        # Return error description if expression fails to evaluate
+        # ② return parser or evaluation errors as JSON for the agent
         return {"error": str(e)}
 
 
 @app.get("/datetime")
 def now():
     """Return the current date and time in ISO format."""
-    # Deterministic microservice endpoint returning current server timestamp
     return {"now": datetime.datetime.now().isoformat()}</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
 
-            </div>
-        </section>
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">222 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server proxying browser requests to internal Docker demo services.</p>
+                    <pre><code data-lang="python">"""Flask server proxying browser requests to internal Docker demo services.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/quickbite/predict", etc. In production Nginx forwards ``/docker/...``
+  traffic to the container and PATH_PREFIX is set to "/docker".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+- Proxy routes forward browser requests to internal Docker services
+  (quickbite, scalergpt, deskbuddy-agent) using service-name networking.
+"""
+
+import os
+from pathlib import Path
+
+import requests as http_client
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/docker") so the app
+# works correctly behind an Nginx location block. Locally it is an empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit write requests so page assets stay fast
+    if request.method == "POST":
+        # ② check the caller's hourly quota before proxying work
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a 429 with Retry-After when the quota is used up
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# Internal service URLs — these use Docker Compose service names, never IPs.
+QUICKBITE_URL = "http://quickbite:8000"
+SCALERGPT_URL = "http://scalergpt:8000"
+DESKBUDDY_URL = "http://deskbuddy-agent:9000"
+
+# Timeout for proxy requests to example services (seconds).
+PROXY_TIMEOUT = 30
+
+
+# ---------------------------------------------------------------------------
+# Helper
+# ---------------------------------------------------------------------------
+
+def proxy_request(method, url, json_body=None):
+    """Forward a request to an internal service and return its JSON response.
+
+    Returns a tuple of (response_dict, http_status_code). On connection
+    errors, returns a helpful error message instead of crashing.
+    """
+    # ① forward the request to the selected internal service
+    try:
+        if method == "GET":
+            resp = http_client.get(url, timeout=PROXY_TIMEOUT)
+        else:
+            resp = http_client.post(url, json=json_body, timeout=PROXY_TIMEOUT)
+        # ② pass through the service JSON and HTTP status code
+        return resp.json(), resp.status_code
+    except http_client.ConnectionError:
+        # ③ turn connection failures into a helpful service-start message
+        service = url.split("//")[1].split(":")[0]
+        return {
+            "error": f"Service '{service}' is not running. "
+                     f"Start it with: docker compose up {service}"
+        }, 503
+    except Exception as e:
+        # ④ return unexpected proxy failures as JSON instead of crashing
+        return {"error": str(e)}, 500
+
+
+# ---------------------------------------------------------------------------
+# Routes — Static files
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static homepage template from the shared src folder
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime API prefix so browser calls hit this gateway
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the rendered HTML with the correct MIME type
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+# ---------------------------------------------------------------------------
+# Routes — QuickBite ETA (Level 1, keyless)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/quickbite/predict", methods=["POST"])
+def quickbite_predict():
+    """Proxy ETA prediction to the QuickBite FastAPI service."""
+    # ① parse the browser's order JSON
+    body = request.get_json(force=True)
+    # ② proxy the order to the QuickBite prediction service
+    data, status = proxy_request("POST", f"{QUICKBITE_URL}/predict", body)
+    # ③ return the service JSON and status code unchanged
+    return jsonify(data), status
+
+
+@bp.route("/quickbite/status")
+def quickbite_status():
+    """Check if QuickBite service is running."""
+    # ① ask QuickBite for its health payload
+    data, status = proxy_request("GET", f"{QUICKBITE_URL}/")
+    # ② return the health JSON and status code unchanged
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — ScalerGPT (Level 2, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/scalergpt/ask", methods=["POST"])
+def scalergpt_ask():
+    """Proxy RAG question to the ScalerGPT FastAPI service."""
+    # ① parse the browser's question JSON
+    body = request.get_json(force=True)
+    # ② proxy the question to the ScalerGPT RAG service
+    data, status = proxy_request("POST", f"{SCALERGPT_URL}/ask", body)
+    # ③ return the service JSON and status code unchanged
+    return jsonify(data), status
+
+
+@bp.route("/scalergpt/status")
+def scalergpt_status():
+    """Check if ScalerGPT service is running and how many docs are indexed."""
+    # ① ask ScalerGPT for its health and index summary
+    data, status = proxy_request("GET", f"{SCALERGPT_URL}/")
+    # ② return the health JSON and status code unchanged
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Routes — DeskBuddy (Level 3, needs OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/deskbuddy/chat", methods=["POST"])
+def deskbuddy_chat():
+    """Proxy chat message to the DeskBuddy agent service."""
+    # ① parse the browser's chat JSON
+    body = request.get_json(force=True)
+    # ② proxy the message to the DeskBuddy agent loop
+    data, status = proxy_request("POST", f"{DESKBUDDY_URL}/chat", body)
+    # ③ return the agent JSON and status code unchanged
+    return jsonify(data), status
+
+
+@bp.route("/deskbuddy/status")
+def deskbuddy_status():
+    """Check if DeskBuddy agent service is running."""
+    # ① ask DeskBuddy for its health payload
+    data, status = proxy_request("GET", f"{DESKBUDDY_URL}/")
+    # ② return the health JSON and status code unchanged
+    return jsonify(data), status
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">Docker Demo Lab &mdash; 🤖 DeskBuddy &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        // Theme the flowchart to match the site's dark palette.
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

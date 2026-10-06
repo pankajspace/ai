@@ -1,7 +1,7 @@
 <!--
 Source: distributed-communication-patterns-crash-course.html
 Title: Distributed Communication Crash Course | TechToday
-Description: A visual crash course in how services talk to each other — sync vs async, gRPC, discovery, timeouts, retries, idempotency, circuit breakers, queues, delivery guarantees, the outbox, sagas and real-time push, each with an animation.
+Description: A visual crash course in how services talk to each other — sync vs async, gRPC, discovery, timeouts, retries, idempotency, circuit breakers, queues, delivery guarantees, the outbox, sagas, polling, server-sent events, WebSockets, webhooks and async request-reply, each with an animation.
 Theme-color: #0b0d10
 Stylesheets: distributed-communication-patterns-study.css, ../../site-header.css
 Scripts: distributed-communication-patterns-study.js
@@ -36,8 +36,9 @@ The moment your code makes a call that leaves the process, everything you knew a
 11. [Dead Letters & Backpressure](#10-dead-letters-and-backpressure)
 12. [The Dual Write & the Outbox](#11-the-outbox)
 13. [Sagas](#12-sagas)
-14. [Pushing to the Client](#13-pushing-to-the-client)
-15. [The Whole Thing on One Page](#14-the-whole-thing-on-one-page)
+14. [Polling, SSE & WebSockets](#13-polling-sse-and-websockets)
+15. [Webhooks & Async Request-Reply](#14-webhooks-and-async-request-reply)
+16. [The Whole Thing on One Page](#15-the-whole-thing-on-one-page)
 
 <a id="0-the-third-outcome"></a>
 
@@ -86,6 +87,14 @@ chain of 4 services, each 99.9% available
 > **Tip**
 >
 > Two rules of thumb worth memorising before anything else. **First: the network is not reliable, not fast, not secure, and its topology changes** — these are four of the famous *eight fallacies of distributed computing*, and every outage you will ever debug is someone having assumed one of them. **Second: you cannot make a distributed call as safe as a local one; you can only make its failure cheap.**
+
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Calling Another Service
+
+Choosing whether to wait for an answer, picking an API style, and finding a healthy instance to send the call to.
 
 <a id="1-sync-or-async"></a>
 
@@ -276,6 +285,14 @@ Then you pick one. The default everyone inherits is round robin, and it fails in
 One instance is *grey failing* — up, answering, passing a shallow `/healthz` that only proves the process can return 200, but slow. With round robin it keeps receiving its full share, so a fixed fraction of requests is slow and the tail moves while the median does not. The tell is the shape: if p99 tripled and p50 did not, look for a *subset* of instances, not a global regression.
 
 Three fixes, in increasing order of value: make health checks *deep* (check the dependencies the endpoint actually needs); switch to least-request load balancing so slowness is self-limiting; and add **outlier detection** so an instance whose error or latency profile deviates from its peers is ejected automatically for a cool-down period.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Surviving Failure
+
+Timeouts, retries, idempotency and circuit breakers — the tools that turn the third outcome from an outage into a blip.
 
 <a id="4-timeouts-and-deadlines"></a>
 
@@ -544,6 +561,14 @@ Four layers, each of which would have been enough on its own. **A short timeout*
 
 The framing to say out loud: *recommendations is a non-critical dependency, so the design fault was letting a non-critical dependency fail a critical path at all.* Classify every dependency as critical or not, and make the non-critical ones structurally incapable of taking you down.
 
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Asynchronous Messaging
+
+Putting a broker between services: how queues and topics decouple them, what delivery guarantees really promise, and what to do when consumers fall behind.
+
 <a id="8-queues-and-topics"></a>
 
 ## Queues & Topics
@@ -670,6 +695,14 @@ The other broker failure mode is quieter, and it is the one that kills processes
 >
 > **Every queue must be bounded, and the bound must come from a latency target rather than from available memory.** “Unbounded” always means “bounded by RAM, discovered during an incident”. Once bounded you have three real options when it fills: *push back* (stop reading, so the producer slows down), *shed* (reject with `503` plus `Retry-After`), or *drop by policy* (discard the oldest, which is right for live data whose value decays).
 
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Consistency Across Services
+
+Keeping data correct when one business action spans a database, a broker and several services that can each fail halfway through.
+
 <a id="11-the-outbox"></a>
 
 ## The Dual Write & the Outbox
@@ -786,18 +819,41 @@ For contrast, the mechanism sagas replace — two-phase commit — is worth unde
 
 > **Interactive animation:** `two-phase-commit` — rendered by the page script in the HTML version.
 
-<a id="13-pushing-to-the-client"></a>
+---
 
-## Pushing to the Client
+<a id="unit-5"></a>
 
-- **Polling** `simple, wasteful`
-- **SSE** `server → client`
-- **WebSocket** `both ways`
-- **Webhook** `server → server`
+## Unit 5 — Reaching Clients & Long-Running Work
 
-Everything so far has been servers talking to servers. The last hop is different, because the client is behind a NAT, on a flaky radio, and cannot be called. So the connection must start from their side, and the question becomes how long you keep it open.
+Pushing updates to browsers and partners, handing back results that take minutes, and the whole course on one page.
+
+<a id="13-polling-sse-and-websockets"></a>
+
+## Polling, SSE & WebSockets
+
+- **Polling** `simple, wasteful` <!-- ok -->
+- **Long polling** `push over plain HTTP` <!-- ok -->
+- **SSE** `server → client` <!-- great -->
+- **WebSocket** `both ways` <!-- good -->
+
+Everything so far has been servers talking to servers. The last hop is different, because the client is behind a NAT, on a flaky radio, and cannot be called. So the connection must start from their side, and the question becomes how long you keep it open: a fresh request every few seconds (polling), one request the server holds until it has news (long polling), one response that never ends (server-sent events), or a connection that stops being HTTP and carries messages both ways (WebSockets).
+
+> **Analogy** 📬
+>
+> **Picture it — waiting for a parcel**
+>
+> *Polling* is walking to the post office every hour to ask whether anything has come. *Long polling* is waiting at the counter until something arrives, then joining the back of the queue again. *Server-sent events* is a courier who rings your bell for each parcel — and when you were out, checks the number on your last receipt and brings everything since. A *WebSocket* is a phone line you keep open all day: either of you can talk at any time, but somebody has to pay for the line, and when it drops nobody redials for you.
 
 > **Interactive animation:** `push-channels` — rendered by the page script in the HTML version.
+
+- **Strength — SSE is just HTTP** — It carries your cookies, auth, CORS rules, tracing and HTTP/2 multiplexing unchanged, and `EventSource` reconnects by itself, sending `Last-Event-ID` so the server can resume.
+- **Strength — WebSockets are truly two-way** — Either side sends whenever it likes with a few bytes of framing, which is what chat, collaborative editing and games need.
+- **Weakness — SSE is one-way text** — The client still sends with ordinary requests, binary costs a base64 tax, and `EventSource` cannot set an `Authorization` header.
+- **Weakness — a WebSocket is a protocol you now own** — After the `101` there are no status codes, retries, acks or per-request auth. Envelopes, acks, heartbeats, resume and reconnect are all yours to build.
+
+The detail that separates a demo from a production stream is what happens on reconnect. Connections *will* drop — every deploy drops all of them at once — so each event needs an id, and the server needs a backlog it can replay from:
+
+> **Interactive animation:** `sse-resume` — rendered by the page script in the HTML version.
 
 > **Tip**
 >
@@ -807,11 +863,164 @@ Everything so far has been servers talking to servers. The last hop is different
 >
 > **Long-lived connections are state, and that is the real cost.** Every deploy disconnects everyone at once (so you need jittered reconnect, or they all come back together). Autoscaling is driven by connection count, not CPU. And because any server may need to reach any client, you need a pub/sub backplane behind them — which means the fan-out problem you solved in section 8 reappears, one layer down.
 
-When the “client” is another company's server, the pattern flips into a **webhook**: you make the HTTP call, to an endpoint you do not control and cannot debug.
+**Interview question**
+
+*A food-delivery app shows live order status — “preparing”, “picked up”, “two minutes away”. Two million users have the screen open at peak. How do you deliver the updates?*
+
+Start with direction: the server talks, the client only watches. That rules out WebSockets as unnecessary and points to SSE — ordinary HTTP, existing auth, and resumption built in. Polling every 5 seconds would be 400,000 requests per second of mostly “nothing new” for six status changes per order.
+
+Then the parts that make it work at scale. Each status change gets a monotonic `id`, and the server keeps a short per-order backlog, so a phone that drives through a tunnel reconnects with `Last-Event-ID` and gets what it missed. Connections land on arbitrary nodes, so every node subscribes to a pub/sub backplane keyed by order id. Proxy buffering is switched off for the route, a `: keepalive` comment goes out every 15 seconds, and the `retry:` value is jittered so a deploy does not bring two million clients back in the same second. Finally, a 30-second poll of `GET /orders/{id}` stays as the fallback for networks that eat streams.
+
+**Answer — a resumable SSE endpoint**
+
+```python
+@app.get("/orders/{order_id}/events")
+async def order_events(order_id: str, request: Request,
+                       last_event_id: str | None = Header(None)):
+    async def gen():
+        last = int(last_event_id or 0)
+        live = bus.subscribe(f"order:{order_id}")      # subscribe BEFORE replaying
+        try:
+            for ev in await backlog.since(order_id, last):   # what the tunnel ate
+                yield f"id: {ev.seq}\ndata: {json.dumps(ev.data)}\n\n"
+                last = ev.seq
+            while not await request.is_disconnected():
+                try:
+                    ev = await asyncio.wait_for(live.next(), timeout=15)
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+                    continue
+                if ev.seq > last:                      # skip what the replay sent
+                    yield f"id: {ev.seq}\ndata: {json.dumps(ev.data)}\n\n"
+                    last = ev.seq
+        finally:
+            await live.close()
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+```
+
+```javascript
+app.get("/orders/:id/events", async (req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "X-Accel-Buffering": "no",
+  });
+  let last = Number(req.get("Last-Event-ID") ?? 0);
+  const send = (ev) => {
+    if (ev.seq <= last) return;                         // skip what the replay sent
+    last = ev.seq;
+    res.write(`id: ${ev.seq}\ndata: ${JSON.stringify(ev.data)}\n\n`);
+  };
+
+  const pending = [];
+  let replaying = true;
+  const live = await bus.subscribe(`order:${req.params.id}`, (ev) =>  // subscribe BEFORE replaying
+    replaying ? pending.push(ev) : send(ev));
+  for (const ev of await backlog.since(req.params.id, last)) send(ev); // what the tunnel ate
+  replaying = false;
+  pending.forEach(send);
+
+  const keepalive = setInterval(() => res.write(": keepalive\n\n"), 15_000);
+  req.on("close", () => { clearInterval(keepalive); live.unsubscribe(); });
+});
+```
+
+> **Key idea**
+>
+> **“It works locally but updates arrive in bursts in production” is almost always buffering.** nginx, gzip middleware, some CDNs and most serverless gateways hold a response until it is complete or a buffer fills — which for a stream that never ends means “much later”. Send `X-Accel-Buffering: no`, exclude `text/event-stream` from compression, and test through the real proxy chain before launch.
+
+<a id="14-webhooks-and-async-request-reply"></a>
+
+## Webhooks & Async Request-Reply
+
+- **Webhook** `server → server` <!-- ok -->
+- **Retry window** `hours, not ms` <!-- bad -->
+- **Long job** `202 + status URL` <!-- great -->
+- **Reply matching** `correlation id` <!-- good -->
+
+Two patterns for when the answer cannot come back on the connection that asked for it. A **webhook** is used when the receiver is another company's server: you make the HTTP call, to an endpoint you do not control and cannot debug. **Asynchronous request-reply** is used when the work outlasts any sane timeout: you return a handle immediately (`202 Accepted` plus a status URL) and deliver the result later — by the client polling, by a push, or by a webhook. Inside a system the same shape runs over queues, with a `reply_to` queue and a **correlation id** that matches each answer to its question.
+
+> **Analogy** 🎫
+>
+> **Picture it — the dry cleaner's ticket**
+>
+> You do not stand at the counter while your suit is cleaned. You get a numbered ticket and leave. You can come back and ask (*polling the status URL*), or leave your phone number so they call you (*a webhook callback*). The ticket number is the *correlation id*: it is the only thing that connects the suit on the rail to you. And if the shop loses the ticket book in a fire — an in-memory job table during a deploy — the suits are still there but nobody can claim them.
 
 > **Interactive animation:** `webhook-retry` — rendered by the page script in the HTML version.
 
-<a id="14-the-whole-thing-on-one-page"></a>
+> **Interactive animation:** `async-request-reply` — rendered by the page script in the HTML version.
+
+- **Strength — nobody holds a connection** — The caller is released in milliseconds, the work runs on workers that scale independently, and a deploy in the middle costs nothing because the job lives in a database.
+- **Strength — the server sets the pace** — `Retry-After` on every status response lets you slow every poller down during an incident without a client release.
+- **Weakness — a resource you now own** — The job handle must survive restarts, be idempotent to create, expose progress and errors, and expire explicitly with `410 Gone`.
+- **Weakness — webhooks fail on their schedule, not yours** — Receivers are down for hours, deliveries arrive out of order and more than once, and the callback URL is an SSRF vector you have to validate.
+
+> **Warning**
+>
+> **Never hold a request open for a long job.** The load balancer's idle timeout (often 60 s) kills it, the client sees an error, the user clicks again — and now two jobs are running, because the first one never stopped. Return `202` fast, make the start idempotent with a key the client sends, and let the client wait on the *status*, not on the connection.
+
+**Interview question**
+
+*A “download my annual statement” endpoint takes 2–4 minutes to build the PDF. It times out at the load balancer, users click again, and support sees duplicate statements and angry tickets. Fix it.*
+
+Two bugs are hiding in one symptom. The first is *shape*: a synchronous request cannot outlive the shortest timeout on the path, so the work has to move off the request and the client needs a handle to come back with. That is async request-reply — `POST` returns `202 Accepted` with `Location: /jobs/{id}` and `Retry-After`, a worker builds the PDF, and `GET /jobs/{id}` answers “running” until it redirects with `303` to the finished file.
+
+The second is *duplication*, and the new shape does not fix it alone: a user who clicks twice still sends two `POST`s. The client generates one idempotency key per *intent* — per click of “download 2025 statement”, reused on any retry — and the server enforces it with a unique constraint, so a repeated start returns the existing job. Finally, keep the status URL even if you also push a “ready” notification, because the notification can be missed and the status cannot.
+
+**Answer — start returns a handle; status redirects when done**
+
+```python
+@app.post("/statements", status_code=202)
+async def start_statement(req: StatementRequest, response: Response,
+                          idempotency_key: str = Header(...)):
+    job = await jobs.get_by_key(idempotency_key)        # a double click returns the same job
+    if job is None:
+        async with db.transaction():                    # unique constraint on key
+            job = await jobs.create(key=idempotency_key, params=req.model_dump())
+            await outbox.append("statement.requested", {"jobId": job.id})
+    response.headers["Location"] = f"/jobs/{job.id}"
+    response.headers["Retry-After"] = "5"
+    return {"jobId": job.id, "status": job.status}
+
+
+@app.get("/jobs/{job_id}")
+async def job_status(job_id: str, response: Response):
+    job = await jobs.get_or_404(job_id)
+    if job.status == "succeeded":
+        return RedirectResponse(f"/files/{job.file_id}", status_code=303)
+    response.headers["Retry-After"] = "10"
+    return {"status": job.status, "progress": job.progress, "error": job.error}
+```
+
+```javascript
+app.post("/statements", async (req, res) => {
+  const key = req.get("Idempotency-Key");
+  let job = await jobs.getByKey(key);                   // a double click returns the same job
+  if (!job) {
+    job = await db.transaction(async (tx) => {          // unique constraint on key
+      const created = await jobs.create(tx, { key, params: req.body });
+      await outbox.append(tx, "statement.requested", { jobId: created.id });
+      return created;
+    });
+  }
+  res.status(202).location(`/jobs/${job.id}`).set("Retry-After", "5")
+    .json({ jobId: job.id, status: job.status });
+});
+
+app.get("/jobs/:id", async (req, res) => {
+  const job = await jobs.getOr404(req.params.id);
+  if (job.status === "succeeded") return res.redirect(303, `/files/${job.fileId}`);
+  res.set("Retry-After", "10").json({ status: job.status, progress: job.progress, error: job.error });
+});
+```
+
+> **Key idea**
+>
+> **A timed-out reply is not a failed request.** Whether the answer comes back over HTTP polling or a reply queue, the requester can always give up before the work finishes — so the work must be idempotent, a late reply with an unknown correlation id must be dropped quietly, and “I stopped waiting” must never be confused with “it did not happen”. It is the third outcome from section 0, wearing a ticket number.
+
+<a id="15-the-whole-thing-on-one-page"></a>
 
 ## The Whole Thing on One Page
 
@@ -829,6 +1038,7 @@ Everything above, compressed into the three decisions you actually make.
 | wants replay, or many independent readers | log (Kafka, Kinesis, Pulsar) | partition-capped parallelism, rebalance duplicates |
 | is a browser that needs updates | SSE, or WebSocket if it must send too | connections are state: deploys, scaling, backplane |
 | is another company's server | webhook, signed and retried for hours | out-of-order delivery, endpoints you cannot debug |
+| starts a job that outlasts any timeout | async request-reply: `202` + status URL (or a reply queue + correlation id) | a job resource to store, poll traffic, results that expire |
 
 <a id="pick-a-reliability-pattern"></a>
 
@@ -874,7 +1084,7 @@ For every arrow you draw between two boxes, answer these:
 
 ### Where to go next
 
-1. 📘 The [Distributed Communication Patterns Detailed Course](distributed-communication-patterns-detailed-course.html) — the same ground in 43 sections, plus transports and HTTP/3, service meshes, consensus and quorums, CQRS and event sourcing, scatter-gather and tail latency, distributed tracing, contract testing and a practice roadmap.
+1. 📘 The [Distributed Communication Patterns Detailed Course](distributed-communication-patterns-detailed-course.html) — the same ground in 47 sections, plus transports and HTTP/3, polling, server-sent events, WebSockets and async request-reply in depth, service meshes, consensus and quorums, CQRS and event sourcing, scatter-gather and tail latency, distributed tracing, contract testing and a practice roadmap.
 2. 📚 Browse both guides in the [Distributed Communication Courses catalog](distributed-communication-patterns-courses.html).
 3. 📖 [AWS Builders' Library — Timeouts, retries, and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/) — the measured data behind section 5, from people running it at planetary scale.
 4. 🧩 [microservices.io pattern catalog](https://microservices.io/patterns/) — Chris Richardson's reference for saga, outbox, API gateway and their variants.

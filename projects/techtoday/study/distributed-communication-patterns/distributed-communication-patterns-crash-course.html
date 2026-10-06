@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>Distributed Communication Crash Course | TechToday</title>
     <meta name="description"
-        content="A visual crash course in how services talk to each other — sync vs async, gRPC, discovery, timeouts, retries, idempotency, circuit breakers, queues, delivery guarantees, the outbox, sagas and real-time push, each with an animation." />
+        content="A visual crash course in how services talk to each other — sync vs async, gRPC, discovery, timeouts, retries, idempotency, circuit breakers, queues, delivery guarantees, the outbox, sagas, polling, server-sent events, WebSockets, webhooks and async request-reply, each with an animation." />
     <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="distributed-communication-patterns-study.css" />
     <link rel="stylesheet" href="../../site-header.css" />
@@ -44,8 +44,9 @@
                     <li><a href="#10-dead-letters-and-backpressure">Dead Letters &amp; Backpressure</a></li>
                     <li><a href="#11-the-outbox">The Dual Write &amp; the Outbox</a></li>
                     <li><a href="#12-sagas">Sagas</a></li>
-                    <li><a href="#13-pushing-to-the-client">Pushing to the Client</a></li>
-                    <li><a href="#14-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
+                    <li><a href="#13-polling-sse-and-websockets">Polling, SSE &amp; WebSockets</a></li>
+                    <li><a href="#14-webhooks-and-async-request-reply">Webhooks &amp; Async Request-Reply</a></li>
+                    <li><a href="#15-the-whole-thing-on-one-page">The Whole Thing on One Page</a></li>
                 </ol>
             </details>
         </nav>
@@ -67,10 +68,68 @@
                     currency you must be willing to spend: latency, duplication, staleness, or complexity.</p>
             </div>
 
-<!-- ============================================================ 0 -->
-            <h2 id="0-the-third-outcome">The Third Outcome<a class="headerlink" href="#0-the-third-outcome"
-                    title="Permanent link">#</a></h2>
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>16 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>Mental Models, Interactive Animations &amp; Worked Questions</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
+<!-- ============================================================ 0 -->
+
+            <section class="topic-section is-collapsed" id="sec-0-the-third-outcome" data-topic="0-the-third-outcome">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-0-the-third-outcome">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="0-the-third-outcome" class="topic-title">The Third Outcome<a class="headerlink" href="#0-the-third-outcome"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-0-the-third-outcome">
+                    <div class="part-section is-collapsed" id="0-the-third-outcome-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-0-the-third-outcome-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#0-the-third-outcome-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-0-the-third-outcome-theory">
             <p>Before any pattern makes sense you need one idea. A local function call has two outcomes: it returns, or
                 it throws. A <strong>remote</strong> call has three: it returns, it fails, or <strong>you never find
                     out</strong>. That third outcome does not exist inside a process, it cannot be eliminated, and
@@ -143,11 +202,57 @@
                     someone having assumed one of them. <strong>Second: you cannot make a distributed call as safe as a
                         local one; you can only make its failure cheap.</strong></p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Calling Another Service<a class="headerlink" href="#unit-1" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Choosing whether to wait for an answer, picking an API style, and finding a healthy instance to send the call to.</p>
+                </div>
+            </div>
 
             <!-- ============================================================ 1 -->
-            <h2 id="1-sync-or-async">Synchronous or Asynchronous<a class="headerlink" href="#1-sync-or-async"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-1-sync-or-async" data-topic="1-sync-or-async">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-1-sync-or-async">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="1-sync-or-async" class="topic-title">Synchronous or Asynchronous<a class="headerlink" href="#1-sync-or-async"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-1-sync-or-async">
+                    <div class="part-section is-collapsed" id="1-sync-or-async-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-1-sync-or-async-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#1-sync-or-async-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-sync-or-async-theory">
             <ul class="meta-strip">
                 <li><b>Sync latency</b> <code class="big-o o-bad">sum of the chain</code></li>
                 <li><b>Sync availability</b> <code class="big-o o-bad">product of the chain</code></li>
@@ -190,6 +295,33 @@
                     paid for.</li>
             </ul>
 
+            <div class="callout callout-interview">
+                <p><strong>The answer interviewers are listening for</strong> is not &ldquo;use a queue&rdquo;. It is
+                    the sentence <em>&ldquo;asynchronous buys availability and pays for it in consistency, so the real
+                        question is what the user sees in between&rdquo;</em>. Naming the intermediate state is what
+                    separates someone who has read about queues from someone who has shipped one.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="1-sync-or-async-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-1-sync-or-async-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#1-sync-or-async-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-1-sync-or-async-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">A user uploads a profile photo. What happens synchronously, and what happens
@@ -254,18 +386,49 @@ app.post("/profile/photo", async (req, res) =&gt; {
                     </div>
                 </div>
             </div>
-
-            <div class="callout callout-interview">
-                <p><strong>The answer interviewers are listening for</strong> is not &ldquo;use a queue&rdquo;. It is
-                    the sentence <em>&ldquo;asynchronous buys availability and pays for it in consistency, so the real
-                        question is what the user sees in between&rdquo;</em>. Naming the intermediate state is what
-                    separates someone who has read about queues from someone who has shipped one.</p>
-            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 2 -->
-            <h2 id="2-rest-grpc-graphql">REST, gRPC &amp; GraphQL<a class="headerlink" href="#2-rest-grpc-graphql"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-2-rest-grpc-graphql" data-topic="2-rest-grpc-graphql">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-2-rest-grpc-graphql">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="2-rest-grpc-graphql" class="topic-title">REST, gRPC &amp; GraphQL<a class="headerlink" href="#2-rest-grpc-graphql"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-2-rest-grpc-graphql">
+                    <div class="part-section is-collapsed" id="2-rest-grpc-graphql-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-2-rest-grpc-graphql-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#2-rest-grpc-graphql-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-2-rest-grpc-graphql-theory">
             <ul class="meta-strip">
                 <li><b>REST + JSON</b> <code class="big-o o-good">universal</code></li>
                 <li><b>gRPC + protobuf</b> <code class="big-o o-great">4&times; smaller</code></li>
@@ -360,11 +523,49 @@ query {
             </div>
 
             <div class="viz" data-viz="schema-evolution"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 3 -->
-            <h2 id="3-discovery-and-load-balancing">Finding &amp; Choosing an Instance<a class="headerlink"
-                    href="#3-discovery-and-load-balancing" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-3-discovery-and-load-balancing" data-topic="3-discovery-and-load-balancing">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-3-discovery-and-load-balancing">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="3-discovery-and-load-balancing" class="topic-title">Finding &amp; Choosing an Instance<a class="headerlink"
+                    href="#3-discovery-and-load-balancing" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-3-discovery-and-load-balancing">
+                    <div class="part-section is-collapsed" id="3-discovery-and-load-balancing-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-3-discovery-and-load-balancing-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#3-discovery-and-load-balancing-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-discovery-and-load-balancing-theory">
             <ul class="meta-strip">
                 <li><b>Discovery</b> <code class="big-o o-ok">a freshness problem</code></li>
                 <li><b>Round robin</b> <code class="big-o o-bad">counts turns</code></li>
@@ -399,7 +600,27 @@ query {
                     hashing distributes <em>keys</em>, which is what you want when the server has a cache worth keeping
                     warm.</p>
             </div>
-
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="3-discovery-and-load-balancing-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-3-discovery-and-load-balancing-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#3-discovery-and-load-balancing-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-3-discovery-and-load-balancing-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your p50 is healthy but your p99 tripled after a deploy. All instances pass their
@@ -414,11 +635,57 @@ query {
                     and add <strong>outlier detection</strong> so an instance whose error or latency profile deviates
                     from its peers is ejected automatically for a cool-down period.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Surviving Failure<a class="headerlink" href="#unit-2" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Timeouts, retries, idempotency and circuit breakers — the tools that turn the third outcome from an outage into a blip.</p>
+                </div>
+            </div>
 
             <!-- ============================================================ 4 -->
-            <h2 id="4-timeouts-and-deadlines">Timeouts &amp; Deadlines<a class="headerlink"
-                    href="#4-timeouts-and-deadlines" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-4-timeouts-and-deadlines" data-topic="4-timeouts-and-deadlines">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-4-timeouts-and-deadlines">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="4-timeouts-and-deadlines" class="topic-title">Timeouts &amp; Deadlines<a class="headerlink"
+                    href="#4-timeouts-and-deadlines" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-4-timeouts-and-deadlines">
+                    <div class="part-section is-collapsed" id="4-timeouts-and-deadlines-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-4-timeouts-and-deadlines-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#4-timeouts-and-deadlines-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-4-timeouts-and-deadlines-theory">
             <ul class="meta-strip">
                 <li><b>No timeout</b> <code class="big-o o-bad">wait forever</code></li>
                 <li><b>Per-hop timeout</b> <code class="big-o o-ok">wasted work</code></li>
@@ -508,11 +775,49 @@ async function getPrice(sku, deadline) {
                         larger than an outer one is always a bug</em>; the inner call can never win, so it is pure
                     wasted capacity. Timeouts must <strong>shrink</strong> as you go down the stack.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 5 -->
-            <h2 id="5-retries-and-backoff">Retries, Backoff &amp; Jitter<a class="headerlink"
-                    href="#5-retries-and-backoff" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-5-retries-and-backoff" data-topic="5-retries-and-backoff">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-5-retries-and-backoff">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="5-retries-and-backoff" class="topic-title">Retries, Backoff &amp; Jitter<a class="headerlink"
+                    href="#5-retries-and-backoff" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-5-retries-and-backoff">
+                    <div class="part-section is-collapsed" id="5-retries-and-backoff-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-5-retries-and-backoff-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#5-retries-and-backoff-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-5-retries-and-backoff-theory">
             <ul class="meta-strip">
                 <li><b>Immediate retry</b> <code class="big-o o-bad">load amplifier</code></li>
                 <li><b>Exponential</b> <code class="big-o o-ok">still synchronised</code></li>
@@ -589,11 +894,49 @@ async function callWithRetries(fn, { attempts = 4, base = 200, cap = 10_000 } = 
                     of requests, stop retrying entirely until the ratio recovers. Every other layer fails fast and
                     reports upward. Add a circuit breaker so that repeated failure stops producing traffic at all.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 6 -->
-            <h2 id="6-idempotency">Idempotency<a class="headerlink" href="#6-idempotency" title="Permanent link">#</a>
-            </h2>
 
+            <section class="topic-section is-collapsed" id="sec-6-idempotency" data-topic="6-idempotency">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-6-idempotency">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="6-idempotency" class="topic-title">Idempotency<a class="headerlink" href="#6-idempotency" title="Permanent link">#</a>
+            </h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-6-idempotency">
+                    <div class="part-section is-collapsed" id="6-idempotency-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-6-idempotency-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#6-idempotency-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-6-idempotency-theory">
             <ul class="meta-strip">
                 <li><b>Safe to retry</b> <code class="big-o o-great">GET, PUT, DELETE</code></li>
                 <li><b>Not safe</b> <code class="big-o o-bad">POST charge, send</code></li>
@@ -704,11 +1047,49 @@ app.post("/charges", async (req, res) =&gt; {
                     transaction from the effect — which reintroduces exactly the dual-write problem you will meet in
                     section 11.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 7 -->
-            <h2 id="7-circuit-breakers-and-bulkheads">Circuit Breakers &amp; Bulkheads<a class="headerlink"
-                    href="#7-circuit-breakers-and-bulkheads" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-7-circuit-breakers-and-bulkheads" data-topic="7-circuit-breakers-and-bulkheads">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-7-circuit-breakers-and-bulkheads">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="7-circuit-breakers-and-bulkheads" class="topic-title">Circuit Breakers &amp; Bulkheads<a class="headerlink"
+                    href="#7-circuit-breakers-and-bulkheads" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-7-circuit-breakers-and-bulkheads">
+                    <div class="part-section is-collapsed" id="7-circuit-breakers-and-bulkheads-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-7-circuit-breakers-and-bulkheads-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#7-circuit-breakers-and-bulkheads-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-circuit-breakers-and-bulkheads-theory">
             <ul class="meta-strip">
                 <li><b>Breaker</b> <code class="big-o o-great">stop calling</code></li>
                 <li><b>Bulkhead</b> <code class="big-o o-great">cap the damage</code></li>
@@ -748,7 +1129,27 @@ app.post("/charges", async (req, res) =&gt; {
                     it. Partition by dependency, and pair every breaker with a <strong>fallback</strong> — a cached
                     value, a degraded feature, a queued write, or an honest error.</p>
             </div>
-
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="7-circuit-breakers-and-bulkheads-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-7-circuit-breakers-and-bulkheads-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#7-circuit-breakers-and-bulkheads-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-7-circuit-breakers-and-bulkheads-questions">
             <div class="worked">
                 <b>Interview question</b>
                 <p class="worked-q">Your recommendations service is down. The product page is timing out. Walk through
@@ -765,11 +1166,57 @@ app.post("/charges", async (req, res) =&gt; {
                     dependency as critical or not, and make the non-critical ones structurally incapable of taking you
                     down.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Asynchronous Messaging<a class="headerlink" href="#unit-3" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Putting a broker between services: how queues and topics decouple them, what delivery guarantees really promise, and what to do when consumers fall behind.</p>
+                </div>
+            </div>
 
             <!-- ============================================================ 8 -->
-            <h2 id="8-queues-and-topics">Queues &amp; Topics<a class="headerlink" href="#8-queues-and-topics"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-8-queues-and-topics" data-topic="8-queues-and-topics">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-8-queues-and-topics">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="8-queues-and-topics" class="topic-title">Queues &amp; Topics<a class="headerlink" href="#8-queues-and-topics"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-8-queues-and-topics">
+                    <div class="part-section is-collapsed" id="8-queues-and-topics-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-8-queues-and-topics-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#8-queues-and-topics-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-8-queues-and-topics-theory">
             <ul class="meta-strip">
                 <li><b>Queue</b> <code class="big-o o-great">one consumer gets it</code></li>
                 <li><b>Topic</b> <code class="big-o o-great">everyone gets a copy</code></li>
@@ -822,11 +1269,49 @@ app.post("/charges", async (req, res) =&gt; {
                     front. Rebalances produce duplicates. And there is no per-message retry — one poison record blocks
                     its whole partition unless you handle it yourself.</li>
             </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 9 -->
-            <h2 id="9-delivery-and-ordering">Delivery Guarantees &amp; Ordering<a class="headerlink"
-                    href="#9-delivery-and-ordering" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-9-delivery-and-ordering" data-topic="9-delivery-and-ordering">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-9-delivery-and-ordering">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="9-delivery-and-ordering" class="topic-title">Delivery Guarantees &amp; Ordering<a class="headerlink"
+                    href="#9-delivery-and-ordering" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-9-delivery-and-ordering">
+                    <div class="part-section is-collapsed" id="9-delivery-and-ordering-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-9-delivery-and-ordering-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#9-delivery-and-ordering-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-9-delivery-and-ordering-theory">
             <ul class="meta-strip">
                 <li><b>At most once</b> <code class="big-o o-bad">may lose</code></li>
                 <li><b>At least once</b> <code class="big-o o-good">may duplicate</code></li>
@@ -907,11 +1392,49 @@ async function handle(event) {
                     one. Ask instead: <em>which entity's events must not overtake each other?</em> That entity's id is
                     your partition key, and everything else is free to be reordered.</p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 10 -->
-            <h2 id="10-dead-letters-and-backpressure">Dead Letters &amp; Backpressure<a class="headerlink"
-                    href="#10-dead-letters-and-backpressure" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-10-dead-letters-and-backpressure" data-topic="10-dead-letters-and-backpressure">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-10-dead-letters-and-backpressure">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="10-dead-letters-and-backpressure" class="topic-title">Dead Letters &amp; Backpressure<a class="headerlink"
+                    href="#10-dead-letters-and-backpressure" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-10-dead-letters-and-backpressure">
+                    <div class="part-section is-collapsed" id="10-dead-letters-and-backpressure-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-10-dead-letters-and-backpressure-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-dead-letters-and-backpressure-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-dead-letters-and-backpressure-theory">
             <ul class="meta-strip">
                 <li><b>Poison message</b> <code class="big-o o-bad">fails forever</code></li>
                 <li><b>DLQ</b> <code class="big-o o-great">unblocks the stream</code></li>
@@ -944,11 +1467,57 @@ async function handle(event) {
                     which is right for live data whose value decays).
                 </p>
             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-4">
+                <div class="unit-divider-badge">Unit 4</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Consistency Across Services<a class="headerlink" href="#unit-4" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Keeping data correct when one business action spans a database, a broker and several services that can each fail halfway through.</p>
+                </div>
+            </div>
 
             <!-- ============================================================ 11 -->
-            <h2 id="11-the-outbox">The Dual Write &amp; the Outbox<a class="headerlink" href="#11-the-outbox"
-                    title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-11-the-outbox" data-topic="11-the-outbox">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-11-the-outbox">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">12</span>
+                        <h2 id="11-the-outbox" class="topic-title">The Dual Write &amp; the Outbox<a class="headerlink" href="#11-the-outbox"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-the-outbox">
+                    <div class="part-section is-collapsed" id="11-the-outbox-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-11-the-outbox-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-the-outbox-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-the-outbox-theory">
             <ul class="meta-strip">
                 <li><b>Dual write</b> <code class="big-o o-bad">no correct version</code></li>
                 <li><b>Outbox</b> <code class="big-o o-great">one transaction</code></li>
@@ -1043,10 +1612,48 @@ async function relay() {
                 cannot change the application at all, is to let the database's own log be the source of events:</p>
 
             <div class="viz" data-viz="cdc"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- ============================================================ 12 -->
-            <h2 id="12-sagas">Sagas<a class="headerlink" href="#12-sagas" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-12-sagas" data-topic="12-sagas">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-12-sagas">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">13</span>
+                        <h2 id="12-sagas" class="topic-title">Sagas<a class="headerlink" href="#12-sagas" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-12-sagas">
+                    <div class="part-section is-collapsed" id="12-sagas-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-12-sagas-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#12-sagas-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-12-sagas-theory">
             <ul class="meta-strip">
                 <li><b>Steps</b> <code class="big-o o-good">local transactions</code></li>
                 <li><b>Rollback</b> <code class="big-o o-bad">does not exist</code></li>
@@ -1098,51 +1705,375 @@ async function relay() {
                 can explain why you did not use it:</p>
 
             <div class="viz" data-viz="two-phase-commit"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-5">
+                <div class="unit-divider-badge">Unit 5</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Reaching Clients &amp; Long-Running Work<a class="headerlink" href="#unit-5" title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Pushing updates to browsers and partners, handing back results that take minutes, and the whole course on one page.</p>
+                </div>
+            </div>
 
             <!-- ============================================================ 13 -->
-            <h2 id="13-pushing-to-the-client">Pushing to the Client<a class="headerlink"
-                    href="#13-pushing-to-the-client" title="Permanent link">#</a></h2>
 
+            <section class="topic-section is-collapsed" id="sec-13-polling-sse-and-websockets" data-topic="13-polling-sse-and-websockets">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-13-polling-sse-and-websockets">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">14</span>
+                        <h2 id="13-polling-sse-and-websockets" class="topic-title">Polling, SSE &amp; WebSockets<a class="headerlink" href="#13-polling-sse-and-websockets"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-13-polling-sse-and-websockets">
+                    <div class="part-section is-collapsed" id="13-polling-sse-and-websockets-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-13-polling-sse-and-websockets-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#13-polling-sse-and-websockets-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-polling-sse-and-websockets-theory">
             <ul class="meta-strip">
                 <li><b>Polling</b> <code class="big-o o-ok">simple, wasteful</code></li>
-                <li><b>SSE</b> <code class="big-o o-great">server &rarr; client</code></li>
+                <li><b>Long polling</b> <code class="big-o o-ok">push over plain HTTP</code></li>
+                <li><b>SSE</b> <code class="big-o o-great">server → client</code></li>
                 <li><b>WebSocket</b> <code class="big-o o-good">both ways</code></li>
-                <li><b>Webhook</b> <code class="big-o o-ok">server &rarr; server</code></li>
             </ul>
 
-            <p>Everything so far has been servers talking to servers. The last hop is different, because the client is
-                behind a NAT, on a flaky radio, and cannot be called. So the connection must start from their side,
-                and the question becomes how long you keep it open.</p>
+            <p>Everything so far has been servers talking to servers. The last hop is different, because the client is behind a NAT, on a flaky radio, and cannot be called. So the connection must start from their side, and the question becomes how long you keep it open: a fresh request every few seconds (polling), one request the server holds until it has news (long polling), one response that never ends (server-sent events), or a connection that stops being HTTP and carries messages both ways (WebSockets).</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">📬</span>
+                <div class="analogy-body">
+                    <b>Picture it — waiting for a parcel</b>
+                    <p><em>Polling</em> is walking to the post office every hour to ask whether anything has come. <em>Long polling</em> is waiting at the counter until something arrives, then joining the back of the queue again. <em>Server-sent events</em> is a courier who rings your bell for each parcel — and when you were out, checks the number on your last receipt and brings everything since. A <em>WebSocket</em> is a phone line you keep open all day: either of you can talk at any time, but somebody has to pay for the line, and when it drops nobody redials for you.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="push-channels"></div>
 
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — SSE is just HTTP</b>It carries your cookies, auth, CORS rules, tracing and HTTP/2 multiplexing unchanged, and <code>EventSource</code> reconnects by itself, sending <code>Last-Event-ID</code> so the server can resume.</li>
+                <li class="is-good"><b>Strength — WebSockets are truly two-way</b>Either side sends whenever it likes with a few bytes of framing, which is what chat, collaborative editing and games need.</li>
+                <li class="is-bad"><b>Weakness — SSE is one-way text</b>The client still sends with ordinary requests, binary costs a base64 tax, and <code>EventSource</code> cannot set an <code>Authorization</code> header.</li>
+                <li class="is-bad"><b>Weakness — a WebSocket is a protocol you now own</b>After the <code>101</code> there are no status codes, retries, acks or per-request auth. Envelopes, acks, heartbeats, resume and reconnect are all yours to build.</li>
+            </ul>
+
+            <p>The detail that separates a demo from a production stream is what happens on reconnect. Connections <em>will</em> drop — every deploy drops all of them at once — so each event needs an id, and the server needs a backlog it can replay from:</p>
+
+            <div class="viz" data-viz="sse-resume"></div>
+
             <div class="callout callout-tip">
-                <p><strong>Default to server-sent events.</strong> They ride on ordinary HTTP with your existing auth,
-                    reconnect automatically with <code>Last-Event-ID</code> resumption built in, and cover the common
-                    case of server-to-client updates. Reach for WebSockets only when the <em>client</em> needs to send
-                    frequently — chat, collaborative editing, games. Keep polling in your pocket for updates that are
-                    rare and not urgent; it is not a bad design, just a bad default.</p>
+                <p><strong>Default to server-sent events.</strong> They ride on ordinary HTTP with your existing auth, reconnect automatically with <code>Last-Event-ID</code> resumption built in, and cover the common case of server-to-client updates. Reach for WebSockets only when the <em>client</em> needs to send frequently — chat, collaborative editing, games. Keep polling in your pocket for updates that are rare and not urgent; it is not a bad design, just a bad default.</p>
             </div>
 
             <div class="callout callout-warn">
-                <p><strong>Long-lived connections are state, and that is the real cost.</strong> Every deploy
-                    disconnects everyone at once (so you need jittered reconnect, or they all come back together).
-                    Autoscaling is driven by connection count, not CPU. And because any server may need to reach any
-                    client, you need a pub/sub backplane behind them &mdash; which means the fan-out problem you solved
-                    in section 8 reappears, one layer down.</p>
+                <p><strong>Long-lived connections are state, and that is the real cost.</strong> Every deploy disconnects everyone at once (so you need jittered reconnect, or they all come back together). Autoscaling is driven by connection count, not CPU. And because any server may need to reach any client, you need a pub/sub backplane behind them — which means the fan-out problem you solved in section 8 reappears, one layer down.</p>
             </div>
 
-            <p>When the &ldquo;client&rdquo; is another company's server, the pattern flips into a
-                <strong>webhook</strong>: you make the HTTP call, to an endpoint you do not control and cannot
-                debug.
-            </p>
+            <div class="callout callout-key">
+                <p><strong>“It works locally but updates arrive in bursts in production” is almost always buffering.</strong> nginx, gzip middleware, some CDNs and most serverless gateways hold a response until it is complete or a buffer fills — which for a stream that never ends means “much later”. Send <code>X-Accel-Buffering: no</code>, exclude <code>text/event-stream</code> from compression, and test through the real proxy chain before launch.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="13-polling-sse-and-websockets-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-13-polling-sse-and-websockets-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#13-polling-sse-and-websockets-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-13-polling-sse-and-websockets-questions">
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A food-delivery app shows live order status — “preparing”, “picked up”, “two minutes away”. Two million users have the screen open at peak. How do you deliver the updates?</p>
+                <p>Start with direction: the server talks, the client only watches. That rules out WebSockets as unnecessary and points to SSE — ordinary HTTP, existing auth, and resumption built in. Polling every 5 seconds would be 400,000 requests per second of mostly “nothing new” for six status changes per order.</p>
+                <p>Then the parts that make it work at scale. Each status change gets a monotonic <code>id</code>, and the server keeps a short per-order backlog, so a phone that drives through a tunnel reconnects with <code>Last-Event-ID</code> and gets what it missed. Connections land on arbitrary nodes, so every node subscribes to a pub/sub backplane keyed by order id. Proxy buffering is switched off for the route, a <code>: keepalive</code> comment goes out every 15 seconds, and the <code>retry:</code> value is jittered so a deploy does not bring two million clients back in the same second. Finally, a 30-second poll of <code>GET /orders/{id}</code> stays as the fallback for networks that eat streams.</p>
+                <div class="code-tabs" data-label="Answer — a resumable SSE endpoint">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+@app.get("/orders/{order_id}/events")
+async def order_events(order_id: str, request: Request,
+                       last_event_id: str | None = Header(None)):
+    async def gen():
+        last = int(last_event_id or 0)
+        live = bus.subscribe(f"order:{order_id}")      # subscribe BEFORE replaying
+        try:
+            for ev in await backlog.since(order_id, last):   # what the tunnel ate
+                yield f"id: {ev.seq}\ndata: {json.dumps(ev.data)}\n\n"
+                last = ev.seq
+            while not await request.is_disconnected():
+                try:
+                    ev = await asyncio.wait_for(live.next(), timeout=15)
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+                    continue
+                if ev.seq &gt; last:                      # skip what the replay sent
+                    yield f"id: {ev.seq}\ndata: {json.dumps(ev.data)}\n\n"
+                    last = ev.seq
+        finally:
+            await live.close()
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+app.get("/orders/:id/events", async (req, res) =&gt; {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    "X-Accel-Buffering": "no",
+  });
+  let last = Number(req.get("Last-Event-ID") ?? 0);
+  const send = (ev) =&gt; {
+    if (ev.seq &lt;= last) return;                         // skip what the replay sent
+    last = ev.seq;
+    res.write(`id: ${ev.seq}\ndata: ${JSON.stringify(ev.data)}\n\n`);
+  };
+
+  const pending = [];
+  let replaying = true;
+  const live = await bus.subscribe(`order:${req.params.id}`, (ev) =&gt;  // subscribe BEFORE replaying
+    replaying ? pending.push(ev) : send(ev));
+  for (const ev of await backlog.since(req.params.id, last)) send(ev); // what the tunnel ate
+  replaying = false;
+  pending.forEach(send);
+
+  const keepalive = setInterval(() =&gt; res.write(": keepalive\n\n"), 15_000);
+  req.on("close", () =&gt; { clearInterval(keepalive); live.unsubscribe(); });
+});</code></pre>
+                    </div>
+                </div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- ============================================================ 14 -->
+
+            <section class="topic-section is-collapsed" id="sec-14-webhooks-and-async-request-reply" data-topic="14-webhooks-and-async-request-reply">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-14-webhooks-and-async-request-reply">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">15</span>
+                        <h2 id="14-webhooks-and-async-request-reply" class="topic-title">Webhooks &amp; Async Request-Reply<a class="headerlink" href="#14-webhooks-and-async-request-reply"
+                    title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-14-webhooks-and-async-request-reply">
+                    <div class="part-section is-collapsed" id="14-webhooks-and-async-request-reply-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-14-webhooks-and-async-request-reply-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#14-webhooks-and-async-request-reply-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-14-webhooks-and-async-request-reply-theory">
+            <ul class="meta-strip">
+                <li><b>Webhook</b> <code class="big-o o-ok">server → server</code></li>
+                <li><b>Retry window</b> <code class="big-o o-bad">hours, not ms</code></li>
+                <li><b>Long job</b> <code class="big-o o-great">202 + status URL</code></li>
+                <li><b>Reply matching</b> <code class="big-o o-good">correlation id</code></li>
+            </ul>
+
+            <p>Two patterns for when the answer cannot come back on the connection that asked for it. A <strong>webhook</strong> is used when the receiver is another company's server: you make the HTTP call, to an endpoint you do not control and cannot debug. <strong>Asynchronous request-reply</strong> is used when the work outlasts any sane timeout: you return a handle immediately (<code>202 Accepted</code> plus a status URL) and deliver the result later — by the client polling, by a push, or by a webhook. Inside a system the same shape runs over queues, with a <code>reply_to</code> queue and a <strong>correlation id</strong> that matches each answer to its question.</p>
+
+            <div class="analogy">
+                <span class="analogy-icon">🎫</span>
+                <div class="analogy-body">
+                    <b>Picture it — the dry cleaner's ticket</b>
+                    <p>You do not stand at the counter while your suit is cleaned. You get a numbered ticket and leave. You can come back and ask (<em>polling the status URL</em>), or leave your phone number so they call you (<em>a webhook callback</em>). The ticket number is the <em>correlation id</em>: it is the only thing that connects the suit on the rail to you. And if the shop loses the ticket book in a fire — an in-memory job table during a deploy — the suits are still there but nobody can claim them.</p>
+                </div>
+            </div>
 
             <div class="viz" data-viz="webhook-retry"></div>
 
-            <!-- ============================================================ 14 -->
-            <h2 id="14-the-whole-thing-on-one-page">The Whole Thing on One Page<a class="headerlink"
-                    href="#14-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+            <div class="viz" data-viz="async-request-reply"></div>
 
+            <ul class="card-grid">
+                <li class="is-good"><b>Strength — nobody holds a connection</b>The caller is released in milliseconds, the work runs on workers that scale independently, and a deploy in the middle costs nothing because the job lives in a database.</li>
+                <li class="is-good"><b>Strength — the server sets the pace</b><code>Retry-After</code> on every status response lets you slow every poller down during an incident without a client release.</li>
+                <li class="is-bad"><b>Weakness — a resource you now own</b>The job handle must survive restarts, be idempotent to create, expose progress and errors, and expire explicitly with <code>410 Gone</code>.</li>
+                <li class="is-bad"><b>Weakness — webhooks fail on their schedule, not yours</b>Receivers are down for hours, deliveries arrive out of order and more than once, and the callback URL is an SSRF vector you have to validate.</li>
+            </ul>
+
+            <div class="callout callout-warn">
+                <p><strong>Never hold a request open for a long job.</strong> The load balancer's idle timeout (often 60 s) kills it, the client sees an error, the user clicks again — and now two jobs are running, because the first one never stopped. Return <code>202</code> fast, make the start idempotent with a key the client sends, and let the client wait on the <em>status</em>, not on the connection.</p>
+            </div>
+
+            <div class="callout callout-key">
+                <p><strong>A timed-out reply is not a failed request.</strong> Whether the answer comes back over HTTP polling or a reply queue, the requester can always give up before the work finishes — so the work must be idempotent, a late reply with an unknown correlation id must be dropped quietly, and “I stopped waiting” must never be confused with “it did not happen”. It is the third outcome from section 0, wearing a ticket number.</p>
+            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="14-webhooks-and-async-request-reply-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-14-webhooks-and-async-request-reply-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink" href="#14-webhooks-and-async-request-reply-questions"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-14-webhooks-and-async-request-reply-questions">
+            <div class="worked">
+                <b>Interview question</b>
+                <p class="worked-q">A “download my annual statement” endpoint takes 2–4 minutes to build the PDF. It times out at the load balancer, users click again, and support sees duplicate statements and angry tickets. Fix it.</p>
+                <p>Two bugs are hiding in one symptom. The first is <em>shape</em>: a synchronous request cannot outlive the shortest timeout on the path, so the work has to move off the request and the client needs a handle to come back with. That is async request-reply — <code>POST</code> returns <code>202 Accepted</code> with <code>Location: /jobs/{id}</code> and <code>Retry-After</code>, a worker builds the PDF, and <code>GET /jobs/{id}</code> answers “running” until it redirects with <code>303</code> to the finished file.</p>
+                <p>The second is <em>duplication</em>, and the new shape does not fix it alone: a user who clicks twice still sends two <code>POST</code>s. The client generates one idempotency key per <em>intent</em> — per click of “download 2025 statement”, reused on any retry — and the server enforces it with a unique constraint, so a repeated start returns the existing job. Finally, keep the status URL even if you also push a “ready” notification, because the notification can be missed and the status cannot.</p>
+                <div class="code-tabs" data-label="Answer — start returns a handle; status redirects when done">
+                    <div class="tab-pane" data-lang="python">
+                        <pre><code data-lang="python">
+@app.post("/statements", status_code=202)
+async def start_statement(req: StatementRequest, response: Response,
+                          idempotency_key: str = Header(...)):
+    job = await jobs.get_by_key(idempotency_key)        # a double click returns the same job
+    if job is None:
+        async with db.transaction():                    # unique constraint on key
+            job = await jobs.create(key=idempotency_key, params=req.model_dump())
+            await outbox.append("statement.requested", {"jobId": job.id})
+    response.headers["Location"] = f"/jobs/{job.id}"
+    response.headers["Retry-After"] = "5"
+    return {"jobId": job.id, "status": job.status}
+
+
+@app.get("/jobs/{job_id}")
+async def job_status(job_id: str, response: Response):
+    job = await jobs.get_or_404(job_id)
+    if job.status == "succeeded":
+        return RedirectResponse(f"/files/{job.file_id}", status_code=303)
+    response.headers["Retry-After"] = "10"
+    return {"status": job.status, "progress": job.progress, "error": job.error}</code></pre>
+                    </div>
+                    <div class="tab-pane" data-lang="javascript">
+                        <pre><code data-lang="javascript">
+app.post("/statements", async (req, res) =&gt; {
+  const key = req.get("Idempotency-Key");
+  let job = await jobs.getByKey(key);                   // a double click returns the same job
+  if (!job) {
+    job = await db.transaction(async (tx) =&gt; {          // unique constraint on key
+      const created = await jobs.create(tx, { key, params: req.body });
+      await outbox.append(tx, "statement.requested", { jobId: created.id });
+      return created;
+    });
+  }
+  res.status(202).location(`/jobs/${job.id}`).set("Retry-After", "5")
+    .json({ jobId: job.id, status: job.status });
+});
+
+app.get("/jobs/:id", async (req, res) =&gt; {
+  const job = await jobs.getOr404(req.params.id);
+  if (job.status === "succeeded") return res.redirect(303, `/files/${job.fileId}`);
+  res.set("Retry-After", "10").json({ status: job.status, progress: job.progress, error: job.error });
+});</code></pre>
+                    </div>
+                </div>
+            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 15 -->
+
+            <section class="topic-section is-collapsed" id="sec-15-the-whole-thing-on-one-page" data-topic="15-the-whole-thing-on-one-page">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-15-the-whole-thing-on-one-page">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">16</span>
+                        <h2 id="15-the-whole-thing-on-one-page" class="topic-title">The Whole Thing on One Page<a class="headerlink"
+                    href="#15-the-whole-thing-on-one-page" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-15-the-whole-thing-on-one-page">
+                    <div class="part-section is-collapsed" id="15-the-whole-thing-on-one-page-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-15-the-whole-thing-on-one-page-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#15-the-whole-thing-on-one-page-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-15-the-whole-thing-on-one-page-theory">
             <p>Everything above, compressed into the three decisions you actually make.</p>
 
             <h3 id="pick-a-style">Pick a communication style<a class="headerlink" href="#pick-a-style"
@@ -1186,6 +2117,11 @@ async function relay() {
                         <td>is another company's server</td>
                         <td>webhook, signed and retried for hours</td>
                         <td>out-of-order delivery, endpoints you cannot debug</td>
+                    </tr>
+                    <tr>
+                        <td>starts a job that outlasts any timeout</td>
+                        <td>async request-reply: <code>202</code> + status URL (or a reply queue + correlation id)</td>
+                        <td>a job resource to store, poll traffic, results that expire</td>
                     </tr>
                 </tbody>
             </table>
@@ -1290,10 +2226,11 @@ async function relay() {
 
             <h3 id="where-next">Where to go next<a class="headerlink" href="#where-next" title="Permanent link">#</a>
             </h3>
+
             <ol>
                 <li>📘 The <a href="distributed-communication-patterns-detailed-course.html">Distributed Communication
-                        Patterns Detailed Course</a> &mdash; the same ground in 43 sections, plus transports and
-                    HTTP/3, service meshes, consensus and quorums, CQRS and event sourcing, scatter-gather and tail
+                        Patterns Detailed Course</a> &mdash; the same ground in 47 sections, plus transports and
+                    HTTP/3, polling, server-sent events, WebSockets and async request-reply in depth, service meshes, consensus and quorums, CQRS and event sourcing, scatter-gather and tail
                     latency, distributed tracing, contract testing and a practice roadmap.</li>
                 <li>📚 Browse both guides in the <a href="distributed-communication-patterns-courses.html">Distributed
                         Communication Courses catalog</a>.</li>
@@ -1311,6 +2248,11 @@ async function relay() {
                 <p><em>"A distributed system is one in which the failure of a computer you didn't even know existed can
                         render your own computer unusable."</em> &mdash; Leslie Lamport</p>
             </blockquote>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </article>
     </main>
     <footer class="study-footer">TechToday Study Library &mdash; Distributed Communication Patterns</footer>

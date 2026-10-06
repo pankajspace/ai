@@ -41,6 +41,12 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 23. [23. Pythonic Tips](#23-pythonic-tips)
 24. [24. Quick Reference Card](#quick-reference-card)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Python Basics
+
+The building blocks: values, operators, strings, collections and control flow.
+
 <a id="1-hello-python"></a>
 
 ## 1. Hello Python
@@ -543,6 +549,12 @@ for i in range(10):
 # 6
 ```
 
+<a id="unit-2"></a>
+
+## Unit 2 — Functions, Classes & Modules
+
+Structuring programs: functions, comprehensions, classes, errors, modules and files.
+
 <a id="8-functions"></a>
 
 ## 8. Functions
@@ -992,6 +1004,12 @@ Path("new/dir").mkdir(parents=True, exist_ok=True)
 list(Path(".").glob("**/*.py"))       # [PosixPath('...')]  all .py files
 ```
 
+<a id="unit-3"></a>
+
+## Unit 3 — Pythonic Power Tools
+
+The features that make code idiomatic: generators, decorators, context managers, type hints and unpacking.
+
 <a id="14-iterators--generators"></a>
 
 ## 14. Iterators & Generators
@@ -1185,6 +1203,12 @@ sorted(items, key=lambda x: x["name"]) # [{'name': 'a'}, {'name': 'b'}]
 list(map(str.upper, ["a", "b"]))       # ['A', 'B']
 list(filter(lambda n: n > 0, nums))    # [1, 7, 3]
 ```
+
+<a id="unit-4"></a>
+
+## Unit 4 — Ecosystem & Beyond
+
+The standard library, packaging, concurrency, and the habits of idiomatic Python.
 
 <a id="19-common-standard-library"></a>
 
@@ -1492,7 +1516,7 @@ from math import sqrt
 sqrt(9)                              # 3.0
 ```
 
-> 🐍 **Next steps:** For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Detailed Course](python-detailed-course.html) or browse all languages in the [Language Courses catalog](../programming-languages.html).
+> 🐍 **Next steps:** Looking for high-frequency daily patterns and interview cheat sheets? Check out the [Python My Course](python-my-course.html). For deeper coverage of OOP, generators, async, testing, and more — see the full [Python Detailed Course](python-detailed-course.html) or browse all languages in the [Language Courses catalog](../programming-languages.html).
 
 ---
 

@@ -1,0 +1,2590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>RAG &amp; Embeddings | TechToday</title>
+  <meta name="description"
+    content="RAG from scratch: why retrieval exists, embeddings and cosine similarity, chunking strategies, vector databases, a 30-line RAG pipeline, reranking and hybrid search, and a chat-with-your-PDF project." />
+  <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../dsa/dsa-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="stylesheet" href="ai-demos.css" />
+  <style>
+    body.is-ai .study>h1:first-child::before {
+      content: "RAG · Talk to your own documents";
+    }
+
+    .study>h1 em,
+    .topic-title em {
+      color: var(--accent);
+    }
+
+    .viz-label {
+      display: block;
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .viz-label:first-child {
+      margin-top: 0;
+    }
+
+
+    .viz-stage.is-text {
+      padding: 12px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .viz-hint,
+    .placeholder {
+      color: var(--muted);
+      font-size: 12.5px;
+      font-style: italic;
+    }
+
+    .viz-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .duo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .msg {
+      margin: 8px 0;
+      padding: 8px 12px;
+      font-size: 14px;
+      background: var(--surface-raised);
+      border-left: 3px solid var(--line);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .msg b {
+      display: block;
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .msg.s1 {
+      border-left-color: var(--blue);
+    }
+
+    .msg.s2 {
+      border-left-color: var(--violet);
+    }
+
+    .msg.s3 {
+      border-left-color: var(--accent);
+    }
+
+    .msg.s4 {
+      border-left-color: var(--cyan);
+    }
+
+    .msg.s5 {
+      border-left-color: var(--green);
+    }
+
+    .chunk-pill {
+      display: inline-block;
+      margin: 3px 4px 0 0;
+      padding: 3px 8px;
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      border: 1px dashed var(--accent);
+      border-radius: 5px;
+    }
+
+    /* vector arithmetic */
+    .eq-line {
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 2.2;
+      text-align: center;
+    }
+
+    .eq-line .w {
+      margin: 0 2px;
+      padding: 3px 8px;
+      color: var(--accent-bright);
+      background: rgba(224, 175, 104, 0.14);
+      border-radius: 6px;
+    }
+
+    .eq-line .op,
+    .eq-line .eq-sign {
+      margin: 0 4px;
+      color: var(--muted);
+    }
+
+    .eq-line .ans {
+      padding: 3px 10px;
+      color: var(--green);
+      background: rgba(115, 201, 145, 0.16);
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .eq-line .ans.show {
+      opacity: 1;
+    }
+
+    /* similarity meter */
+    .meter {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .meter-val {
+      color: var(--accent-bright);
+      font-size: 44px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .meter-lab {
+      margin-top: 6px;
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .meter-bar {
+      height: 12px;
+      margin-top: 14px;
+      overflow: hidden;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      min-width: 2px;
+      background: linear-gradient(90deg, var(--red), var(--accent), var(--green));
+      transition: width 0.5s ease;
+    }
+
+    .meter-verdict {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #c6d1dc;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    /* chunking strategies */
+    .src-text {
+      white-space: pre-wrap;
+      font-size: 13.5px;
+    }
+
+    .strat-tab small {
+      font-weight: 500;
+      opacity: 0.75;
+    }
+
+    .strat-chunks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cchunk {
+      display: flex;
+      overflow: hidden;
+      border: 1px solid;
+      border-radius: 8px;
+    }
+
+    .cchunk .stripe {
+      flex: none;
+      width: 6px;
+    }
+
+    .cchunk .cbody {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 12px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+
+    .cchunk .meta {
+      flex: none;
+      min-width: 82px;
+      align-self: center;
+      padding: 0 10px;
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      text-align: center;
+      border-left: 1px dashed var(--line);
+    }
+
+    .cchunk.split {
+      border-style: dashed;
+    }
+
+    .cchunk.split .cbody::before {
+      content: "🪓 ";
+      opacity: 0.7;
+    }
+
+    .cchunk .topic-tag {
+      display: inline-block;
+      margin-right: 8px;
+      padding: 1px 7px;
+      color: var(--page);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      vertical-align: 1px;
+      border-radius: 4px;
+    }
+
+    .cchunk .header-line {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .strat-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .strat-stats b {
+      display: block;
+      color: var(--accent-bright);
+      font-size: 18px;
+    }
+
+    /* reranker */
+    .rr-cols {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .rr-col {
+      padding: 12px;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .rr-head {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .rr-head.before {
+      color: var(--blue);
+    }
+
+    .rr-head.after {
+      color: var(--cyan);
+    }
+
+    .rr-arrow {
+      color: var(--accent);
+      font-size: 26px;
+      text-align: center;
+    }
+
+    .rr-col .doc {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 5px 0;
+      padding: 8px 10px;
+      font-size: 13px;
+      background: var(--code);
+      border: 1px solid var(--line-soft);
+      border-radius: 6px;
+    }
+
+    .rr-col .doc .sc {
+      flex: none;
+      padding: 1px 6px;
+      color: var(--accent-bright);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--surface);
+      border-radius: 4px;
+    }
+
+    .rr-col .doc.gold {
+      background: rgba(224, 175, 104, 0.1);
+      border-color: var(--accent);
+    }
+
+    /* hybrid */
+    .hy-cols {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .hcol {
+      padding: 12px;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .hcol-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .hcol-tag {
+      padding: 1px 6px;
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+
+    .hcol.bm .hcol-tag {
+      color: var(--accent-bright);
+      background: rgba(224, 175, 104, 0.14);
+    }
+
+    .hcol.vec .hcol-tag {
+      color: var(--violet);
+      background: rgba(197, 134, 192, 0.14);
+    }
+
+    .hcol.hy .hcol-tag {
+      color: var(--cyan);
+      background: rgba(78, 201, 176, 0.14);
+    }
+
+    .h-doc {
+      margin: 4px 0;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      background: var(--code);
+      border: 1px solid var(--line-soft);
+      border-radius: 6px;
+    }
+
+    .h-doc.win {
+      font-weight: 600;
+      background: rgba(78, 201, 176, 0.1);
+      border-color: var(--cyan);
+    }
+
+    .h-doc small {
+      color: var(--muted);
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-weight: 400;
+    }
+
+    .hcol .why {
+      margin: 8px 0 0;
+      padding-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-style: italic;
+      border-top: 1px dashed var(--line);
+    }
+
+    /* pdf chat */
+    .pdf-ui {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 12px;
+    }
+
+    .pdf-prev {
+      max-height: 230px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 12.5px;
+    }
+
+    .pdf-log {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 260px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+
+
+    @media (max-width: 720px) {
+
+      .duo,
+      .rr-cols,
+      .hy-cols,
+      .pdf-ui {
+        grid-template-columns: 1fr;
+      }
+
+      .rr-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+  </style>
+</head>
+
+<body class="is-ai">
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation">
+      <a class="tt-site-brand" href="../../index.html">
+        <span class="tt-site-logo" aria-hidden="true"></span>
+        <span>TechToday</span>
+      </a>
+      <a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>
+    </nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main class="study-layout">
+    <nav class="topic-menu" aria-label="Topics">
+      <details class="topic-menu-panel">
+        <summary>Topics</summary>
+        <ol class="table-of-contents table-of-contents-numbered">
+          <li><a href="#recap">Recap: LLMs &amp; LangChain Agents</a></li>
+          <li><a href="#why">Why RAG: Beyond Model Memory</a></li>
+          <li><a href="#how">How RAG Works End-to-End</a></li>
+          <li><a href="#emb">Embeddings &amp; Vector Space</a></li>
+          <li><a href="#chunk">Chunking Strategies</a></li>
+          <li><a href="#vdb">Vector Databases</a></li>
+          <li><a href="#build">Build Your RAG Pipeline</a></li>
+          <li><a href="#rerank">Reranking &amp; Hybrid Search</a></li>
+          <li><a href="#project">Chat with Your Documents</a></li>
+          <li><a href="#next">What's Next</a></li>
+        </ol>
+      </details>
+    </nav>
+    <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
+    <article class="study">
+      <h1 id="rag-and-embeddings">Stop letting your AI <em>guess</em>. Give it a library.<a class="headerlink"
+          href="#rag-and-embeddings" title="Permanent link">#</a></h1>
+
+      <p class="lede">LangChain agents can <em>act</em>, but they still do not know <strong>your</strong> data. RAG fixes that. You will build a system that reads your PDFs, finds the right passage for a question, and answers from <strong>real text</strong>. <strong>RAG</strong> is the pattern behind most "chat with your docs" apps.
+      </p>
+
+      <ul class="meta-strip">
+        <li>📚 Embeddings, intuition first</li>
+        <li>✂️ Chunking, explained simply</li>
+        <li>🗂️ Vector databases</li>
+        <li>🎯 Reranking + hybrid search</li>
+        <li>📄 Chat-with-your-PDF, shipped</li>
+      </ul>
+
+      <p><strong>Scaler Academy</strong> — every example below is shown with data, tables and worked steps.</p>
+
+      <div class="course-toolbar">
+        <div class="course-toolbar-info">
+          <span>10 Topics</span>
+          <span class="dot">&bull;</span>
+          <span>Concepts, Worked Examples &amp; a Chat-with-your-PDF Project</span>
+        </div>
+      </div>
+      <div class="course-toolbar-actions">
+        <button type="button" class="action-btn" data-course-action="expand-all">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="7 13 12 18 17 13"></polyline>
+            <polyline points="7 6 12 11 17 6"></polyline>
+          </svg>
+          <span>Expand All</span>
+        </button>
+        <button type="button" class="action-btn" data-course-action="collapse-all">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="17 11 12 6 7 11"></polyline>
+            <polyline points="17 18 12 13 7 18"></polyline>
+          </svg>
+          <span>Collapse All</span>
+        </button>
+      </div>
+
+      <!-- ====== 1: Recap ====== -->
+      <section class="topic-section is-collapsed" id="sec-recap" data-topic="recap">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-recap">
+          <div class="topic-header-main">
+            <span class="topic-badge">1</span>
+            <h2 id="recap" class="topic-title">What You Can <em>Already</em> Do<a class="headerlink" href="#recap"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-recap">
+          <div class="part-section is-collapsed" id="recap-bridge">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-recap-bridge">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Where You Are, and the Two Problems Left<a class="headerlink"
+                    href="#recap-bridge" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-recap-bridge">
+              <ul class="meta-strip">
+                <li><b>Recap</b> 30 seconds · LLM calls + LangChain agents</li>
+              </ul>
+              <ul class="meta-strip">
+                <li>✓ Call any LLM (OpenAI, Groq, Ollama)</li>
+                <li>✓ Snap a LangChain chain together</li>
+                <li>✓ Pass chat history with placeholders</li>
+                <li>✓ Build an agent that picks tools</li>
+              </ul>
+              <div class="analogy">
+                <span class="analogy-icon">🤔</span>
+                <div class="analogy-body">
+                  <b>But your agent has two real problems</b>
+                  <p><strong>1) It doesn't know <em>your</em> stuff</strong> — your company's docs, your PDFs,
+                    last week's release notes. <strong>2) When it doesn't know, it makes things up</strong>
+                    (hallucinates) confidently. What follows is the single biggest fix in AI engineering. Same
+                    agent loop — but now it can look things up in a library <em>you</em> built.</p>
+                </div>
+              </div>
+              <div class="callout callout-tip">
+                <p><strong>🎙️ Speaker note · landing the bridge.</strong> If the shop-assistant agent felt
+                  unclear, this is the cleanup. Say it plainly: "With agents, the model <em>chose</em> a tool. Now
+                  the tool is its own library — and the main idea moves from <em>which tool</em> to <em>how do we
+                    find the right page?</em>." That's RAG, in one sentence.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 2: Why RAG ====== -->
+      <section class="topic-section is-collapsed" id="sec-why" data-topic="why">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-why">
+          <div class="topic-header-main">
+            <span class="topic-badge">2</span>
+            <h2 id="why" class="topic-title">Why Does RAG <em>Exist?</em><a class="headerlink" href="#why"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-why">
+          <div class="part-section is-collapsed" id="why-problems">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-why-problems">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The 4 Problems RAG Solves<a class="headerlink" href="#why-problems"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-why-problems">
+              <ul class="meta-strip">
+                <li><b>Block 14</b> ~10 min · the hook</li>
+              </ul>
+              <p>An LLM is a smart intern who finished training a year ago and was never allowed inside your
+                office. RAG fixes both — fresh data, <em>and</em> your private data — by handing the intern a
+                relevant page <strong>at question-time</strong>.</p>
+              <ul class="card-grid">
+                <li><b>🗓️ Knowledge cutoff</b>The model's training ended months ago. It doesn't know yesterday's
+                  RBI rate cut or last week's Budget numbers. <code>✓ RAG: fetch today's article</code></li>
+                <li><b>🔒 Private / internal data</b>It has never seen your HR policy, your contracts, your
+                  product wiki, or your customer tickets — and you can't paste them all into one prompt.
+                  <code>✓ RAG: search your docs</code>
+                </li>
+                <li><b>🌀 Hallucinations</b>When unsure, the model invents confident-sounding answers. Bad in
+                  customer support, dangerous in legal, fatal in healthcare. <code>✓ RAG: ground in real
+                    text</code></li>
+                <li><b>🔗 No citations</b>Ask "where did you get that?" and a raw LLM has nothing. Real products
+                  need <em>"see source: page 14"</em>. <code>✓ RAG: return the source chunk</code></li>
+              </ul>
+              <div class="callout callout-key">
+                <p><strong>💡 The 1-line definition.</strong> <strong>RAG = Retrieval-Augmented
+                    Generation.</strong> Before the model answers, <em>you</em> retrieve the most relevant
+                  snippets from your own data and stuff them into the prompt. The model then answers
+                  <em>from</em> those snippets. No retraining. No fine-tuning. Just open-book exam instead of
+                  closed-book.
+                </p>
+              </div>
+              <div class="callout callout-interview">
+                <p><strong>Industry spotlight · where you've seen this already — almost every "AI feature"
+                    you've used is RAG underneath.</strong> Notion AI answering from your workspace, Glean
+                  searching your company's apps, Perplexity citing sources, Intercom's Fin support bot,
+                  ChatGPT's "search the web", Cursor finding code in your repo, even the new "ask about this
+                  PDF" button in your browser — same pattern, every time. Master this, and you can clone any of
+                  them.</p>
+                <ul class="meta-strip" style="margin:10px 0 0">
+                  <li>Notion AI</li>
+                  <li>Glean</li>
+                  <li>Perplexity</li>
+                  <li>Intercom Fin</li>
+                  <li>Cursor</li>
+                  <li>ChatGPT Search</li>
+                </ul>
+              </div>
+              <div class="callout callout-tip">
+                <p><strong>💡 Quick reality-check (mention this).</strong> People sometimes ask: "Why not just
+                  fine-tune the model on our data?" Three reasons it's usually wrong: <strong>(1)</strong>
+                  expensive and slow to redo every time data changes, <strong>(2)</strong> still can't cite
+                  sources, <strong>(3)</strong> still hallucinates. RAG is faster, cheaper, traceable, and
+                  almost always the right first move.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 3: Mental model ====== -->
+      <section class="topic-section is-collapsed" id="sec-how" data-topic="how">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-how">
+          <div class="topic-header-main">
+            <span class="topic-badge">3</span>
+            <h2 id="how" class="topic-title">RAG in One Simple <em>Picture</em><a class="headerlink" href="#how"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-how">
+          <div class="part-section is-collapsed" id="how-librarian">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-how-librarian">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The Smart Librarian<a class="headerlink" href="#how-librarian"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-how-librarian">
+              <ul class="meta-strip">
+                <li><b>Block 15</b> ~10 min · the picture</li>
+              </ul>
+              <p>Forget the buzzwords. The whole pipeline is just <strong>a smart librarian</strong> sitting
+                between your question and the model.</p>
+              <div class="analogy">
+                <span class="analogy-icon">📚</span>
+                <div class="analogy-body">
+                  <b>The library analogy that explains everything</b>
+                  <p>Imagine you ask your friend a question about a 800-page book they've never read. Bad idea —
+                    they'll guess. Smart move? <strong>You find the 3 most relevant pages, hand them over, and
+                      <em>then</em> ask.</strong> They read the pages and answer confidently with the real text.
+                    That's RAG. The "librarian" who finds those 3 pages is the only new thing we're building
+                    today.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="how-pipeline">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-how-pipeline">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The 5-Box Pipeline (Memorise This)<a class="headerlink" href="#how-pipeline"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-how-pipeline">
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  Q[❓ Question&lt;br&gt;user types it] --> S[🔎 Search&lt;br&gt;find relevant chunks]:::hl
+  S --> F[📋 Stuff&lt;br&gt;add chunks to prompt]:::hl
+  F --> L[🧠 LLM&lt;br&gt;answer using them]
+  L --> A[💬 Answer&lt;br&gt;+ source citation]:::good
+                </pre>
+                <figcaption>Boxes 1, 4, 5 you already know from calling an LLM directly. Boxes 2 + 3 are the
+                  entire job of everything below.</figcaption>
+              </figure>
+              <blockquote>
+                <p><strong>Two phases · don't confuse them.</strong></p>
+                <p><strong>Phase 1 — Indexing (offline, once):</strong> read your docs → break into chunks →
+                  turn each chunk into numbers (embedding) → store in a vector database. Slow, but you only do it
+                  when documents change.</p>
+                <p><strong>Phase 2 — Querying (online, every question):</strong> turn the question into numbers
+                  → find nearest chunks in the database → paste them into the prompt → LLM answers. Milliseconds
+                  per query.</p>
+              </blockquote>
+              <div class="callout callout-key">
+                <p><strong>💡 The important idea.</strong> You are <em>not</em> retraining the
+                  model. The model stays exactly the same <code>gpt-4o-mini</code> you called through the raw
+                  OpenAI API. We're only changing <strong>what goes into the prompt</strong>. RAG is, at its
+                  core, very fancy <em>prompt engineering</em> — automated.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 4: Embeddings ====== -->
+      <section class="topic-section is-collapsed" id="sec-emb" data-topic="emb">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-emb">
+          <div class="topic-header-main">
+            <span class="topic-badge">4</span>
+            <h2 id="emb" class="topic-title">Embeddings: Words Become <em>Coordinates</em><a class="headerlink"
+                href="#emb" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-emb">
+          <div class="part-section is-collapsed" id="emb-definition">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-emb-definition">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">What Is an Embedding?<a class="headerlink" href="#emb-definition"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-definition">
+              <ul class="meta-strip">
+                <li><b>Block 16</b> ~25 min · the key idea of this topic</li>
+              </ul>
+              <p>Before we can "search by meaning", we need a way to <strong>turn meaning into
+                  numbers</strong>. That's an <em>embedding</em>. And once you see what it does, every confusing
+                thing about RAG becomes easier to understand.</p>
+              <blockquote>
+                <p><strong>Definition · keep this in your head.</strong> An <strong>embedding</strong> is a list
+                  of numbers (a <em>vector</em>) that captures the meaning of a piece of text. Similar meanings ⟶
+                  similar numbers ⟶ nearby points in space. Different meanings ⟶ far apart.</p>
+              </blockquote>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Vector space</span><span class="viz-step">2-D map</span></div>
+                <div class="viz-stage">
+                  <svg id="heroSvg" class="viz-svg" viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" style="max-width:440px;margin:0 auto">
+                    <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#28303a" stroke-width="0.5" /></pattern></defs>
+                    <rect width="360" height="280" fill="url(#grid)" />
+                    <circle cx="80" cy="93" r="35" fill="rgba(78,201,176,.08)" stroke="rgba(78,201,176,.4)" stroke-dasharray="3 3"/>
+                    <circle cx="282" cy="82" r="35" fill="rgba(224,175,104,.08)" stroke="rgba(224,175,104,.4)" stroke-dasharray="3 3"/>
+                    <circle cx="200" cy="170" r="32" fill="rgba(244,135,113,.08)" stroke="rgba(244,135,113,.4)" stroke-dasharray="3 3"/>
+                    <g id="heroDots"><circle cx="80" cy="90" r="5" fill="#4ec9b0"/><text x="88" y="94" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">banana</text><circle cx="60" cy="115" r="5" fill="#4ec9b0"/><text x="68" y="119" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">mango</text><circle cx="100" cy="75" r="5" fill="#4ec9b0"/><text x="108" y="79" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">grape</text><circle cx="280" cy="80" r="5" fill="#e0af68"/><text x="288" y="84" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">cat</text><circle cx="300" cy="105" r="5" fill="#e0af68"/><text x="308" y="109" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">dog</text><circle cx="265" cy="60" r="5" fill="#e0af68"/><text x="273" y="64" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">tiger</text><circle cx="180" cy="175" r="5" fill="#f48771"/><text x="188" y="179" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">king</text><circle cx="215" cy="155" r="5" fill="#f48771"/><text x="223" y="159" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">queen</text><circle cx="120" cy="215" r="5" fill="#8cc8ff"/><text x="128" y="219" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">man</text><circle cx="160" cy="200" r="5" fill="#8cc8ff"/><text x="168" y="204" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">woman</text><circle cx="60" cy="240" r="5" fill="#c586c0"/><text x="68" y="244" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">laptop</text><circle cx="90" cy="255" r="5" fill="#c586c0"/><text x="98" y="259" font-family="ui-monospace, monospace" font-size="11" fill="#dce4ec">computer</text></g>
+                  </svg>
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">banana</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">80</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">90</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#4ec9b0</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">mango</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">60</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">115</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#4ec9b0</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">grape</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">100</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">75</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#4ec9b0</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">cat</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">280</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">80</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#e0af68</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">dog</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">300</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">105</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#e0af68</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">tiger</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">265</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">60</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#e0af68</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">king</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">180</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">175</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#f48771</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">queen</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">215</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">155</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#f48771</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">man</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">120</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">215</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#8cc8ff</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">woman</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">160</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">200</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#8cc8ff</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">laptop</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">60</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">240</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#c586c0</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">computer</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">x</span><span class="data-val">90</span></div>
+      <div class="data-field"><span class="data-label">y</span><span class="data-val">255</span></div>
+      <div class="data-field"><span class="data-label">Colour group</span><span class="data-val">#c586c0</span></div>
+    </div>
+  </div>
+</div>
+                </div>
+                <div class="viz-note">similar meaning ⟶ nearby points. Fruits cluster together. Animals cluster together. Royalty terms sit near each other. That is the main idea.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-2d-world">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-emb-2d-world">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Imagine a 2D World First — Height &amp; Weight<a class="headerlink"
+                    href="#emb-2d-world" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-2d-world">
+              <p>Forget AI for a second. If I plot people by <em>height vs weight</em>, people of similar build end
+                up close together on the chart. Same idea, scaled up. Real embeddings have <strong>384, 768 or even
+                  3072 dimensions</strong> — way more than we can draw — but the principle is identical:
+                <em>similar ⟶ close, different ⟶ far.</em>
+              </p>
+              <div class="analogy">
+                <span class="analogy-icon">📊</span>
+                <div class="analogy-body">
+                  <b>"Why so many dimensions?"</b>
+                  <p>Because meaning is rich. Two words can be similar in many ways at once — <em>topic, tone,
+                      formality, language, sentiment</em>. Each dimension captures a different axis of
+                    similarity. 768 isn't arbitrary; it's just enough to separate millions of distinct ideas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-arithmetic">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-emb-arithmetic">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Embedding Math Works<a class="headerlink"
+                    href="#emb-arithmetic" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-arithmetic">
+              <p>This example shows why engineers trust embeddings. After training on enough text, vectors carry relationships that you can use in arithmetic. Here are four examples:</p>
+              <div class="viz varith">
+                <div class="viz-head"><span class="viz-title">Example · Vector arithmetic</span><span class="viz-step">four known relationships</span></div>
+                <div class="viz-stage is-text">
+                  <ul class="card-grid">
+  <li><b>king − man + woman</b> queen</li>
+  <li><b>paris − france + india</b> delhi</li>
+  <li><b>tokyo − japan + germany</b> berlin</li>
+  <li><b>walking − walk + run</b> running</li>
+</ul>
+                </div>
+                <div class="viz-note">Each equation is a real result from GloVe / Word2Vec embeddings. The model did not receive a rule such as "queen is the female king". The pattern comes from the geometry of meaning.</div>
+              </div>
+              <div class="callout callout-key">
+                <p><strong>💡 Why this is the foundation of everything here.</strong> If <em>woman</em> and
+                  <em>queen</em> can be found by simple arithmetic, then "find the chunk most similar to my
+                  question" is also just arithmetic — fast, scalable, and runs on commodity hardware. Every RAG
+                  system uses exactly this idea. <strong>Search by meaning = nearest point in vector
+                    space.</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-mini-map">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-emb-mini-map">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">See It in 2D — Same Idea in a Drawing<a class="headerlink" href="#emb-mini-map"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-mini-map">
+              <p>This is a real word-vector plot reduced from 768 dimensions to 2 so we can draw it. The examples show that the <em>direction</em> between related words stays similar:</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Vector space mini-map</span><span class="viz-step">points and directions</span></div>
+                <div class="viz-stage">
+                  <svg id="vec2d" class="viz-svg" viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dce4ec"/></marker></defs><circle cx="160" cy="120" r="6" fill="#e0af68"/><text x="170" y="124" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">king</text><circle cx="240" cy="90" r="6" fill="#e0af68"/><text x="250" y="94" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">queen</text><circle cx="140" cy="200" r="6" fill="#e0af68"/><text x="150" y="204" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">man</text><circle cx="220" cy="170" r="6" fill="#e0af68"/><text x="230" y="174" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">woman</text><circle cx="380" cy="80" r="6" fill="#e0af68"/><text x="390" y="84" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">paris</text><circle cx="340" cy="160" r="6" fill="#e0af68"/><text x="350" y="164" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">france</text><circle cx="500" cy="90" r="6" fill="#e0af68"/><text x="510" y="94" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">delhi</text><circle cx="460" cy="170" r="6" fill="#e0af68"/><text x="470" y="174" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">india</text><circle cx="80" cy="240" r="6" fill="#e0af68"/><text x="90" y="244" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">banana</text><circle cx="110" cy="255" r="6" fill="#e0af68"/><text x="120" y="259" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">grape</text><circle cx="520" cy="260" r="6" fill="#e0af68"/><text x="530" y="264" font-family="ui-monospace, monospace" font-size="12" fill="#dce4ec">aeroplane</text><line x1="160" y1="120" x2="240" y2="90" stroke="#f2c98a" stroke-width="2.5" marker-end="url(#ah)"/><line x1="140" y1="200" x2="220" y2="170" stroke="#4ec9b0" stroke-width="2.5" marker-end="url(#ah)"/><line x1="340" y1="160" x2="380" y2="80" stroke="#8cc8ff" stroke-width="2.5" marker-end="url(#ah)"/><line x1="460" y1="170" x2="500" y2="90" stroke="#c586c0" stroke-width="2.5" marker-end="url(#ah)"/><circle cx="80" cy="240" r="42" fill="rgba(78,201,176,.12)" stroke="rgba(78,201,176,.5)" stroke-dasharray="3 3"/><line x1="80" y1="240" x2="520" y2="260" stroke="#f48771" stroke-width="2" stroke-dasharray="5 5"/><text x="260" y="248" font-family="ui-monospace, monospace" font-size="11" fill="#f48771" font-weight="700">far apart (cos ≈ 0.05)</text></svg>
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">Royalty</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Pair A</span><span class="data-val">king → queen</span></div>
+      <div class="data-field"><span class="data-label">Pair B</span><span class="data-val">man → woman</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">Both arrows point in a similar direction.</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Capital-of</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Pair A</span><span class="data-val">france → paris</span></div>
+      <div class="data-field"><span class="data-label">Pair B</span><span class="data-val">india → delhi</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">The country-to-capital relationship is a direction.</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Food vs aeroplane</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Pair A</span><span class="data-val">banana and grape</span></div>
+      <div class="data-field"><span class="data-label">Pair B</span><span class="data-val">aeroplane</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">banana and grape are close. aeroplane is far away, with cos ≈ 0.05.</span></div>
+    </div>
+  </div>
+</div>
+                </div>
+                <div class="viz-note"><em>capital-of</em> is encoded as the direction from country → capital. The direction is the relationship.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-cosine">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-emb-cosine">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The Score We Use: <em>Cosine Similarity</em><a class="headerlink"
+                    href="#emb-cosine" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-cosine">
+              <p>Two vectors close together = the <em>angle</em> between them is small. The cosine of that angle
+                is our score. It ranges from <strong>-1 (opposite) to +1 (identical)</strong>. Practically:
+                <strong>above 0.7 means "very similar"</strong>, below 0.3 means "barely related". No math needed
+                to use it — just remember: <em>bigger number = more similar</em>.
+              </p>
+              <div class="analogy">
+                <span class="analogy-icon">📐</span>
+                <div class="analogy-body">
+                  <b>The clock-hands intuition</b>
+                  <p>Two clock hands pointing at the same time ⟶ angle = 0 ⟶ cosine = 1 ⟶ perfectly similar.
+                    Pointing at 12 and 6 ⟶ angle = 180° ⟶ cosine = −1 ⟶ opposites. We don't care how
+                    <em>long</em> the hands are, only the angle. That's why text length doesn't break the score.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-meter">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-emb-meter">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Example Scores from the Similarity Meter<a class="headerlink" href="#emb-meter"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-meter">
+              <p>This example compares pairs of sentences with cosine similarity. It shows the scores for preset pairs and the scoring rules. The scores come from a small built-in table of topics, so common topics look realistic.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Cosine similarity meter</span><span class="viz-step">preset scores and scoring rules</span></div>
+                <div class="viz-stage is-text">
+                  <p><strong>Default example.</strong> Sentence A: <code>A cat is sleeping on the couch.</code> Sentence B: <code>A kitten is napping on the sofa.</code> Score: <strong>0.89</strong>.</p>
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">synonyms</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">A cat is sleeping on the couch.</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">A kitten is napping on the sofa.</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.89</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">paraphrase</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">I love programming.</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">I enjoy coding.</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.86</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">same city, different names</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">Flight to Mumbai</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">Plane to Bombay</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.92</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">related concepts</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">I am hungry</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">I want food</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.83</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">unrelated</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">I love programming</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">I hate vegetables</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.08</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">totally unrelated</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Sentence A</span><span class="data-val">The stock market crashed</span></div>
+      <div class="data-field"><span class="data-label">Sentence B</span><span class="data-val">A cat is sleeping</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.04</span></div>
+    </div>
+  </div>
+</div>
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">cat sleeping couch</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">kitten napping sofa</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.89</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">cat sleeping couch</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">dog running park</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.32</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">cat sleeping couch</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">stock market crash</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.04</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">love programming</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">enjoy coding</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.86</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">love programming</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">hate vegetables</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.08</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">love programming</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">i write software</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.71</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">flight to mumbai</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">plane to bombay</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.92</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">i am hungry</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">i want food</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.83</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">how to fix bug</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Baked token pair B</span><span class="data-val">debugging tips</span></div>
+      <div class="data-field"><span class="data-label">Score</span><span class="data-val">0.79</span></div>
+    </div>
+  </div>
+</div>
+                  <ul class="card-grid">
+  <li><b>0.85 to 1.00</b> 🟢 Near-synonyms — same meaning, different words.</li>
+  <li><b>0.65 to 0.84</b> 🟢 Strongly related — same topic.</li>
+  <li><b>0.40 to 0.64</b> 🟡 Loosely related — shares some concepts.</li>
+  <li><b>0.20 to 0.39</b> 🟠 Distantly related — barely overlapping.</li>
+  <li><b>Below 0.20</b> 🔴 Unrelated — totally different vector neighbourhoods.</li>
+</ul>
+                  <p><strong>Fallback formula for other text.</strong> For text outside the presets, the example scorer lowercases the text, removes punctuation, keeps words longer than 2 characters, counts exact token overlap, checks shared topic buckets, then returns <code>min(0.97, max(0.02, jaccard * 0.55 + bucketScore + 0.05))</code>. <code>bucketScore</code> is <code>min(0.75, matchingBuckets * 0.4)</code>.</p>
+                  <ul class="card-grid">
+  <li><b>food</b> eat, food, hungry, breakfast, lunch, dinner, meal, restaurant, recipe, cook, tasty, sweet, spicy, rice, dal, curry, biryani</li>
+  <li><b>animal</b> cat, dog, kitten, puppy, tiger, lion, animal, pet, bird, fish</li>
+  <li><b>tech</b> code, coding, program, programming, software, bug, debug, python, java, laptop, computer, API, LLM, AI</li>
+  <li><b>travel</b> flight, plane, travel, journey, trip, vacation, airport, train, bombay, mumbai, delhi, bangalore</li>
+  <li><b>work</b> office, meeting, job, work, career, salary, manager, team</li>
+  <li><b>sleep</b> sleep, sleeping, nap, napping, rest, tired, bed, couch, sofa</li>
+  <li><b>money</b> money, price, cost, stock, market, rupees, dollar, income, wealth</li>
+</ul>
+                </div>
+                <div class="viz-note">Cosine similarity ranges from −1 to +1. In practice, above 0.7 is very similar. Below 0.3 is barely related.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="emb-code">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-emb-code">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">How Do We Actually Get an Embedding? One Function Call.<a class="headerlink"
+                    href="#emb-code" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-emb-code">
+              <p>You don't have to train anything — somebody else already did. Open-source models from Hugging
+                Face (<code>sentence-transformers</code>) or APIs from OpenAI / Cohere give you embeddings in one
+                line:</p>
+              <span class="code-tab-label">embeddings.py</span>
+              <pre><code data-lang="python">
+# pip install sentence-transformers
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")   # ① free, fast, 384 dims
+
+vec = model.encode("A cat is sleeping on the couch")  # ② that's an embedding!
+print(vec.shape)         # → (384,)  — 384 numbers
+print(vec[:5])          # → [-0.05, 0.12, 0.41, -0.08, 0.22] (something like that)
+
+# to compare two pieces of text → encode both → take cosine similarity
+from numpy import dot
+from numpy.linalg import norm
+
+v1 = model.encode("A cat is sleeping on the couch")
+v2 = model.encode("A kitten is napping on the sofa")
+similarity = dot(v1, v2) / (norm(v1) * norm(v2))   # cosine
+print(similarity)       # → 0.87 (very similar 🎉)
+</code></pre>
+              <h4>🔍 Decoder</h4>
+              <ul>
+                <li><strong>①</strong> <strong>all-MiniLM-L6-v2</strong> is a tiny but excellent open-source
+                  embedding model — runs on your laptop, no API key needed. For production, look at
+                  <code>BAAI/bge-large-en-v1.5</code> (best English) or OpenAI's
+                  <code>text-embedding-3-small</code> (paid, very good multilingual).
+                </li>
+                <li><strong>②</strong> <code>.encode("text")</code> returns the vector. That's the whole API
+                  surface — one call, 384 numbers back. Now your text is searchable by meaning.</li>
+              </ul>
+              <div class="callout callout-tip">
+                <p><strong>🎙️ Speaker note · how to pitch this section.</strong> This is the "physics" of RAG.
+                  Don't rush. Spend a full 5 minutes letting them play with the meter and the king-queen
+                  equation. Once they internalize <em>"similar meaning = nearby vector"</em>, everything else here
+                  is bookkeeping.</p>
+              </div>
+              <ul class="card-grid">
+                <li><b>📍 Vectors = coordinates</b>Every chunk of text gets a point in space.</li>
+                <li><b>📐 Cosine similarity</b>Score from −1 to +1. Bigger = closer.</li>
+                <li><b>🪄 Math you can do</b>king − man + woman ≈ queen. Really.</li>
+                <li><b>⚡ One function call</b><code>.encode(text)</code> — that's it.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 5: Chunking ====== -->
+      <section class="topic-section is-collapsed" id="sec-chunk" data-topic="chunk">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-chunk">
+          <div class="topic-header-main">
+            <span class="topic-badge">5</span>
+            <h2 id="chunk" class="topic-title">Chunking: Cut the Book into <em>Snippets</em><a class="headerlink"
+                href="#chunk" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-chunk">
+          <div class="part-section is-collapsed" id="chunk-why">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-chunk-why">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Why Chunking Decides Everything<a class="headerlink" href="#chunk-why"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-chunk-why">
+              <ul class="meta-strip">
+                <li><b>Block 17</b> ~15 min · the unglamorous part that decides everything</li>
+              </ul>
+              <p>Before we embed anything, we have to cut it up. You can't embed a 200-page PDF as one vector —
+                meaning gets averaged away to mush. So we split it into <em>chunks</em>. <strong>How</strong> you
+                chunk decides how good your RAG actually is. Engineers underestimate this; the best ones obsess
+                over it.</p>
+              <div class="analogy">
+                <span class="analogy-icon">🍕</span>
+                <div class="analogy-body">
+                  <b>The pizza-slice analogy</b>
+                  <p>One whole pizza is hard to share — too big. Cut it into 100 confetti-sized bits and nobody
+                    can taste anything. <strong>Slice sizes matter.</strong> Chunks are pizza slices: too big and
+                    you lose precision (the relevant bit is buried), too small and you lose context (each crumb is
+                    meaningless).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="chunk-strategies">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-chunk-strategies">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The 4 Chunking Strategies Worth Knowing<a class="headerlink"
+                    href="#chunk-strategies" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-chunk-strategies">
+              <ul class="card-grid">
+                <li><b>📏 Fixed size</b>Every N characters or tokens — done. Very simple, fast, your
+                  default. <em>Downside:</em> chops mid-sentence, mid-table, mid-thought. <code>Best for:
+                    prototypes, blog posts</code></li>
+                <li><b>🔁 Recursive</b>Try to split on paragraphs first; if too big, split on sentences; if still
+                  too big, on words. A clear fallback ladder. The default in LangChain. <code>Best for: most real
+                    apps</code></li>
+                <li><b>🧠 Semantic</b>Embed every sentence; group consecutive sentences that "talk about the same
+                  thing". Chunks follow meaning, not size. <code>Best for: long flowing prose</code></li>
+                <li><b>📑 Structure-aware</b>Use the document's own structure — markdown headings, code blocks,
+                  HTML sections. Each section becomes a chunk. <code>Best for: docs, code, wikis</code></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="chunk-sim">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-chunk-sim">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Compare All 4 Strategies — Same Text, Four Different Cuts<a class="headerlink"
+                    href="#chunk-sim" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-chunk-sim">
+              <p>The same source passage is cut in four ways. The table shows <strong>where the cuts land</strong> and <strong>how chunk shape changes</strong>. The differences are the lesson.</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · 4 chunking strategies · same source</span><span class="viz-step">same source, four results</span></div>
+                <span class="viz-label">📄 Source · a tiny markdown doc with 3 topics</span>
+                <div class="viz-stage is-text src-text" id="srcText"># Bengaluru Overview
+
+## Tech Industry
+Bengaluru is known as India&#x27;s Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.
+
+## Climate
+The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.
+
+## Food
+Bengaluru&#x27;s food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.</div>
+                <div class="viz-stage is-text">
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">Fixed size</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Setting</span><span class="data-val">80 characters for the worked example. The old range was 40–240 characters, default 120.</span></div>
+      <div class="data-field"><span class="data-label">Output chunks</span><span class="data-val"><b>Chunk 1 (80 chars; mid-word cut)</b><br># Bengaluru Overview<br><br>## Tech Industry<br>Bengaluru is known as India&#x27;s Silicon Val<br><br><b>Chunk 2 (80 chars; mid-word cut)</b><br>ley. Tech parks like Electronic City and Whitefield host thousands of tech compa<br><br><b>Chunk 3 (80 chars; mid-word cut)</b><br>nies. Major firms include Infosys, Wipro, and TCS.<br><br>## Climate<br>The city sits at <br><br><b>Chunk 4 (80 chars; mid-word cut)</b><br>920 meters altitude. This gives it pleasantly cool weather year-round. Average t<br><br><b>Chunk 5 (80 chars; mid-word cut)</b><br>emperatures rarely exceed 30 degrees.<br><br>## Food<br>Bengaluru&#x27;s food scene is legenda<br><br><b>Chunk 6 (80 chars; mid-word cut)</b><br>ry. South Indian classics like masala dosa and idli thrive here. Filter coffee s<br><br><b>Chunk 7 (29 chars; mid-word cut)</b><br>hops dot every street corner.</span></div>
+      <div class="data-field"><span class="data-label">Stats</span><span class="data-val">7 chunks; 73 average chars; 7 mid-word cuts</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">Cuts land at character N. They do not respect words, sentences, or paragraphs. This is cheap to write, but poor for retrieval.</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Recursive</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Setting</span><span class="data-val">80 characters, with paragraph → sentence → word fallback.</span></div>
+      <div class="data-field"><span class="data-label">Output chunks</span><span class="data-val"><b>Chunk 1 (20 chars)</b><br># Bengaluru Overview<br><br><b>Chunk 2 (62 chars)</b><br>## Tech Industry<br>Bengaluru is known as India&#x27;s Silicon Valley.<br><br><b>Chunk 3 (80 chars)</b><br>Tech parks like Electronic City and Whitefield host thousands of tech companies.<br><br><b>Chunk 4 (44 chars)</b><br>Major firms include Infosys, Wipro, and TCS.<br><br><b>Chunk 5 (48 chars)</b><br>## Climate<br>The city sits at 920 meters altitude.<br><br><b>Chunk 6 (49 chars)</b><br>This gives it pleasantly cool weather year-round.<br><br><b>Chunk 7 (46 chars)</b><br>Average temperatures rarely exceed 30 degrees.<br><br><b>Chunk 8 (44 chars)</b><br>## Food<br>Bengaluru&#x27;s food scene is legendary.<br><br><b>Chunk 9 (60 chars)</b><br>South Indian classics like masala dosa and idli thrive here.<br><br><b>Chunk 10 (44 chars)</b><br>Filter coffee shops dot every street corner.</span></div>
+      <div class="data-field"><span class="data-label">Stats</span><span class="data-val">10 chunks; 50 average chars; 0 mid-word cuts</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">Same character budget, cleaner cuts. LangChain uses RecursiveCharacterTextSplitter as the safe default for about 90% of RAG apps.</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Semantic</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Setting</span><span class="data-val">No size knob. Sentences are tagged by topic and adjacent same-topic sentences are merged.</span></div>
+      <div class="data-field"><span class="data-label">Output chunks</span><span class="data-val"><b>tech (171 chars)</b><br>Bengaluru is known as India&#x27;s Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br><b>climate (134 chars)</b><br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br><b>food (142 chars)</b><br>Bengaluru&#x27;s food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.</span></div>
+      <div class="data-field"><span class="data-label">Stats</span><span class="data-val">3 chunks; 3 topics detected; size range 134-171</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">Chunks are shaped by meaning, not size. Tech sentences join together. Climate sentences join together. Food sentences join together.</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Structure-aware</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Setting</span><span class="data-val">No size knob. Markdown headers set the boundaries.</span></div>
+      <div class="data-field"><span class="data-label">Output chunks</span><span class="data-val"><b>Section 1 (20 chars)</b><br># Bengaluru Overview<br><br><b>Section 2 (188 chars)</b><br>## Tech Industry<br>Bengaluru is known as India&#x27;s Silicon Valley. Tech parks like Electronic City and Whitefield host thousands of tech companies. Major firms include Infosys, Wipro, and TCS.<br><br><b>Section 3 (145 chars)</b><br>## Climate<br>The city sits at 920 meters altitude. This gives it pleasantly cool weather year-round. Average temperatures rarely exceed 30 degrees.<br><br><b>Section 4 (150 chars)</b><br>## Food<br>Bengaluru&#x27;s food scene is legendary. South Indian classics like masala dosa and idli thrive here. Filter coffee shops dot every street corner.</span></div>
+      <div class="data-field"><span class="data-label">Stats</span><span class="data-val">4 chunks; 4 sections; 126 average chars</span></div>
+      <div class="data-field"><span class="data-label">What to notice</span><span class="data-val">Each ## section becomes one chunk with its header attached. This is best for docs, wikis, source code, Markdown, and HTML.</span></div>
+    </div>
+  </div>
+</div>
+                  <ul class="card-grid">
+  <li><b>Fixed size 120</b> 5 chunks; 102 average chars; 2 mid-word cuts</li>
+  <li><b>Recursive size 120</b> 8 chunks; 62 average chars; 0 mid-word cuts</li>
+</ul>
+                </div>
+                <div class="viz-note"><b>Recall vs precision.</b> Big chunks raise recall because the answer is probably inside. They lower precision because there is more extra text. Small chunks raise precision but can split the answer across chunks.</div>
+              </div>
+              <p><strong>Read this sequence:</strong> Fixed at size 80 creates mid-word cuts. Recursive at the same size removes those cuts. Semantic creates three chunks that match the three topics. Structure uses the markdown <code>##</code> headers as ready-made boundaries.</p>
+              <blockquote>
+                <p><strong>The recall vs precision tradeoff · keep this in mind.</strong> <strong>Big
+                    chunks</strong> → high recall (the answer is probably <em>in</em> there), but low precision
+                  (lots of fluff around it). <strong>Small chunks</strong> → high precision (the chunk is exactly
+                  the answer), but low recall (the relevant bit might be split across two chunks and you only
+                  pulled one). Most teams sweep chunk size as their first RAG tuning knob.</p>
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="chunk-code">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-chunk-code">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">One Line of Real Code<a class="headerlink" href="#chunk-code"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-chunk-code">
+              <span class="code-tab-label">chunk.py</span>
+              <pre><code data-lang="python">
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# ① choose chunk size and overlap so nearby context stays connected
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,        # aim for ~800 chars per chunk
+    chunk_overlap=100,     # adjacent chunks share 100 chars (context glue)
+)
+
+# ② split the long document into chunks ready for embedding
+chunks = splitter.split_text(your_long_document)
+# ③ print how many chunks will go into the vector search index
+print(len(chunks))    # → e.g. 47 chunks ready to embed
+</code></pre>
+              <div class="callout callout-tip">
+                <p><strong>💡 Why <code>chunk_overlap</code>?</strong> If your question's answer sits exactly at
+                  a chunk boundary, you'd miss it. Overlap (50–100 chars) makes sure every sentence appears in at
+                  least one chunk fully. Cheap insurance.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 6: Vector DB ====== -->
+      <section class="topic-section is-collapsed" id="sec-vdb" data-topic="vdb">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-vdb">
+          <div class="topic-header-main">
+            <span class="topic-badge">6</span>
+            <h2 id="vdb" class="topic-title">Vector Databases: a Search Engine for <em>Meaning</em><a class="headerlink"
+                href="#vdb" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-vdb">
+          <div class="part-section is-collapsed" id="vdb-definition">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-vdb-definition">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">What a Vector Database Is<a class="headerlink" href="#vdb-definition"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-vdb-definition">
+              <ul class="meta-strip">
+                <li><b>Block 18</b> ~10 min</li>
+              </ul>
+              <p>You have thousands of embeddings. For every question, you need the top-k nearest ones —
+                <em>fast</em>. That's what a vector database does, and that's <strong>all</strong> it does.
+              </p>
+              <div class="analogy">
+                <span class="analogy-icon">🗂️</span>
+                <div class="analogy-body">
+                  <b>One-line definition</b>
+                  <p>A vector database is a <em>search engine</em> where instead of "find documents containing
+                    this word", the query is "find vectors closest to <em>this</em> vector". Same idea as Google,
+                    swapped engine.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="vdb-options">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-vdb-options">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The Three Names You'll Hear All the Time<a class="headerlink"
+                    href="#vdb-options" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-vdb-options">
+              <ul class="card-grid">
+                <li class="is-good"><b>🟢 Chroma ★ today</b>Open-source, runs in-process (no server!), one
+                  <code>pip install</code>. Perfect for prototypes &amp; up to ~10M vectors. <strong>What we'll
+                    use today.</strong>
+                </li>
+                <li><b>🔵 Pinecone</b>Fully managed SaaS. Zero ops, scales to billions, but paid. The
+                  boring-and-reliable choice for production.</li>
+                <li><b>🟣 Qdrant</b>Open-source <em>and</em> production-grade. Self-host or use their cloud. Great
+                  middle ground when you outgrow Chroma.</li>
+              </ul>
+              <div class="callout callout-tip">
+                <p><strong>🎯 Picking one (don't overthink).</strong> Prototyping or under 1M chunks?
+                  <strong>Chroma</strong>. Want zero ops &amp; have a budget? <strong>Pinecone</strong>. Need to
+                  self-host at scale? <strong>Qdrant</strong> or <strong>Weaviate</strong>. The good news:
+                  LangChain wraps all of them with the same interface, so swapping later is a one-line change.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="vdb-operations">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-vdb-operations">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">What It Actually Does — Three Operations<a class="headerlink"
+                    href="#vdb-operations" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-vdb-operations">
+              <p>A vector DB is just these three calls:</p>
+              <ol>
+                <li><strong><code>db.add(documents, embeddings)</code></strong> — store chunks and their vectors.
+                  (Indexing.)</li>
+                <li><strong><code>db.query(query_vector, k=3)</code></strong> — return the 3 chunks whose vectors
+                  are closest. (Retrieval.)</li>
+                <li><strong><code>db.delete(ids)</code></strong> — remove chunks when a doc is deleted. That's it.
+                  Three calls.</li>
+              </ol>
+              <div class="callout callout-interview">
+                <p><strong>Industry spotlight · how it stays fast — HNSW, the trick behind every vector
+                    DB.</strong> Searching billions of vectors naively means computing billions of distances per
+                  query. <strong>HNSW</strong> (Hierarchical Navigable Small World — a 2018 algorithm) builds a
+                  "ladder" graph so each query takes only ~log(N) hops. Result: sub-10ms lookups on 100M vectors.
+                  You'll never write this yourself — every vector DB ships it built-in.</p>
+                <ul class="meta-strip" style="margin:10px 0 0">
+                  <li>Chroma · HNSW</li>
+                  <li>Pinecone · proprietary</li>
+                  <li>Qdrant · HNSW</li>
+                  <li>FAISS · IVF + HNSW</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 7: Build it ====== -->
+      <section class="topic-section is-collapsed" id="sec-build" data-topic="build">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-build">
+          <div class="topic-header-main">
+            <span class="topic-badge">7</span>
+            <h2 id="build" class="topic-title">Build a Real RAG in <em>30 Lines</em><a class="headerlink" href="#build"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-build">
+          <div class="part-section is-collapsed" id="build-index">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-build-index">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Step 1 — Index Your Documents (Once)<a class="headerlink" href="#build-index"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-build-index">
+              <ul class="meta-strip">
+                <li><b>Block 19</b> ~20 min · all four pieces, working together</li>
+              </ul>
+              <p>We've talked about every piece. Now we wire them up. This is the whole pattern — every RAG system
+                you'll see in production is just a fancier version of <em>this</em>.</p>
+              <span class="code-tab-label">index.py</span>
+              <pre><code data-lang="python">
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+
+# ① load your documents (any text — for now, hardcoded)
+docs = [
+    "Our return policy allows refunds within 30 days of purchase.",
+    "Shipping is free for orders above ₹999 across India.",
+    "For corporate orders above 50 units, contact sales@example.com.",
+    "Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm.",
+]
+
+# ② split into chunks (small docs here, but production = thousands of pages)
+splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+chunks = splitter.create_documents(docs)
+
+# ③ pick an embedding model (free, runs locally, no API key)
+embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+
+# ④ build the vector store from chunks + embeddings (saves to disk)
+db = Chroma.from_documents(chunks, embedder, persist_directory="./chroma_db")
+
+print(f"Indexed {len(chunks)} chunks 🎉")
+</code></pre>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="build-query">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-build-query">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Step 2 — Ask a Question (Every Time)<a class="headerlink" href="#build-query"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-build-query">
+              <span class="code-tab-label">rag.py</span>
+              <pre><code data-lang="python">
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
+load_dotenv()
+
+# ⑤ open the same vector store we built in step 1
+embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+db       = Chroma(persist_directory="./chroma_db", embedding_function=embedder)
+model    = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+# ⑥ the prompt: instructions + chunks + question
+prompt = ChatPromptTemplate.from_template("""
+Answer the question using ONLY the context below. If the context doesn't contain
+the answer, say "I don't know." Be concise and quote facts directly.
+
+Context:
+{context}
+
+Question: {question}
+""")
+
+def rag_answer(question):
+    chunks = db.similarity_search(question, k=3)         # ⑦ retrieve top 3
+    context = "\n\n".join(c.page_content for c in chunks)
+    chain = prompt | model                                # ⑧ same LangChain chain trick
+    return chain.invoke({"context": context, "question": question}).content
+
+print(rag_answer("How long do I have to return something?"))
+# → "30 days from the purchase date."  ✅ from your data, not a guess
+</code></pre>
+              <h4>🔍 Decoder — the 8 numbered steps</h4>
+              <ul>
+                <li><strong>①</strong> Your data. In real life this is PDFs, web pages, Notion exports — anything
+                  you can turn into text.</li>
+                <li><strong>②</strong> Chunk it. Block 17 in action. <code>chunk_size=500</code> is a sane
+                  default.</li>
+                <li><strong>③</strong> Pick an embedder. We're using a free local one — swap to
+                  <code>OpenAIEmbeddings()</code> for a paid, slightly better version.
+                </li>
+                <li><strong>④</strong> <code>Chroma.from_documents</code> embeds every chunk and stores both the
+                  text and the vector. Done once per dataset.</li>
+                <li><strong>⑤</strong> Reopen the same database. The embeddings are already on disk — no
+                  re-encoding.</li>
+                <li><strong>⑥</strong> The important prompt template. Notice <code>"ONLY the context below"</code> —
+                  this single line is the most important hallucination reducer in RAG.</li>
+                <li><strong>⑦</strong> <code>similarity_search</code> = embed the question, find the 3 nearest
+                  chunks, return them. The librarian.</li>
+                <li><strong>⑧</strong> Same LangChain pipe (<code>prompt | model</code>) you used for LangChain
+                  chains. <strong>RAG didn't replace your previous knowledge — it slotted right in.</strong></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="build-sim">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-build-sim">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Follow the Pipeline Step by Step<a class="headerlink" href="#build-sim"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-build-sim">
+              <p>Here is what happens inside <code>rag_answer("How long do I have to return something?")</code>. Each item is one step in the RAG flow:
+              </p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · RAG, step by step</span><span class="viz-step">one question through the pipeline</span></div>
+                <div class="viz-stage is-text" id="ragPipe">
+                  <ol>
+                  <li><strong>1 · User question.</strong> <code>"How long do I have to return something?"</code></li>
+                  <li><strong>2 · Embed the question.</strong> Turn the question into a 384-number vector with <code>model.encode(question)</code>. Think of it as the question's coordinates.</li>
+                  <li><strong>3 · Search the vector DB.</strong> <code>db.similarity_search(query, k=3)</code> finds the 3 nearest chunks: <span class="chunk-pill">refunds within 30 days...</span><span class="chunk-pill">shipping is free above ₹999</span><span class="chunk-pill">corporate orders contact sales@</span></li>
+                  <li><strong>4 · Put the chunks into the prompt.</strong> The retrieved chunks become <code>{context}</code>. The question becomes <code>{question}</code>. One string goes to the LLM.</li>
+                  <li><strong>5 · LLM answers from context.</strong> GPT-4o-mini replies: <em>"You can return items within 30 days of purchase."</em> ✅ The answer came from the chunk, not from memory.</li>
+                </ol>
+                </div>
+                <div class="viz-note">RAG complete. The same loop runs for every question.</div>
+              </div>
+              <div class="callout callout-key">
+                <p><strong>🎯 Take a moment — this <em>is</em> the canonical pattern.</strong> That's it. Every
+                  RAG system in the world — from a hobby project to Perplexity — is a variant of these 8 lines.
+                  From here we're just making it <em>better</em>: smarter retrieval, smarter prompts, multiple
+                  passes. The core never changes.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 8: Rerank & hybrid ====== -->
+      <section class="topic-section is-collapsed" id="sec-rerank" data-topic="rerank">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-rerank">
+          <div class="topic-header-main">
+            <span class="topic-badge">8</span>
+            <h2 id="rerank" class="topic-title">Make It Better: <em>Rerank</em> + <em>Hybrid</em> Search<a
+                class="headerlink" href="#rerank" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-rerank">
+          <div class="part-section is-collapsed" id="rerank-two-stage">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-rerank-two-stage">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Problem 1: the Top-5 from Vector Search Isn't the <em>Best</em> 5<a
+                    class="headerlink" href="#rerank-two-stage" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-rerank-two-stage">
+              <ul class="meta-strip">
+                <li><b>Block 20</b> ~15 min · 80% of RAG quality lives here</li>
+              </ul>
+              <p>A vanilla RAG works. A <em>good</em> RAG works <strong>well</strong>. The two tricks that close
+                that gap — and that every senior engineer asks about — are <em>reranking</em> and <em>hybrid
+                  search</em>. Both are easy to add.</p>
+              <p>Embedding similarity is fast, but it sometimes ranks shallow word-matches above deep semantic
+                matches. So we use a <strong>two-stage retrieval</strong> — a fast first pass to narrow down, then
+                a slow accurate pass to pick the real winners.</p>
+              <div class="analogy">
+                <span class="analogy-icon">📄</span>
+                <div class="analogy-body">
+                  <b>Imagine hiring for one open role — with 1,000 applicants</b>
+                  <p>You can't interview 1,000 people (it would take a year). You also can't pick someone by gut
+                    feel from a stack of resumes (you'd hire badly). So you do <strong>two passes</strong>: a fast
+                    <em>resume scan</em> to shortlist 25, then a real <em>30-minute interview</em> with each of
+                    those 25. <strong>Bi-encoder and cross-encoder are exactly these two passes.</strong>
+                  </p>
+                </div>
+              </div>
+              <ul class="card-grid">
+                <li><b>📋 Bi-encoder · like a resume scan</b>Reads the query and the document
+                  <strong>separately</strong>, turns each into a vector, then compares the two vectors with cosine
+                  similarity. The encoder <em>never sees them together</em> — it judges each "card" alone.
+                  <br>⚡ <strong>Fast</strong> — sub-10ms over millions of docs
+                  <br>💾 <strong>Pre-computable</strong> — encode all your docs once, store forever, only encode
+                  the query at runtime
+                  <br>📉 <strong>Shallow</strong> — misses subtle relevance because the model never compares them
+                  side-by-side
+                  <br><code>→ use it to grab top 50–100 candidates</code>
+                </li>
+                <li><b>🎙️ Cross-encoder · like a 30-min interview</b>Feeds the query <strong>and</strong> the
+                  document into one transformer <em>together</em>, lets the model attend to both at once, then
+                  outputs a single relevance score. The model can compare them token by token, weigh trade-offs,
+                  spot nuance.
+                  <br>🎯 <strong>Way more accurate</strong> — sees query↔doc word interactions directly
+                  <br>🐢 <strong>Slow</strong> — full transformer run per (query, doc) pair
+                  <br>❌ <strong>Not pre-computable</strong> — each score is pair-specific, you can't cache
+                  anything
+                  <br><code>→ use it to rerank those 50 → top 3</code>
+                </li>
+              </ul>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  A[1,000,000&lt;br&gt;all your chunks] -->|📋 bi-encoder · ~10 ms| B[50&lt;br&gt;candidates]:::hl
+  B -->|🎙️ cross-encoder · ~200 ms| C[3&lt;br&gt;to the LLM]:::good
+                </pre>
+                <figcaption>Funnel total: ~210ms — fast enough for live chat, accurate enough to beat raw vector
+                  search by miles.</figcaption>
+              </figure>
+              <blockquote>
+                <p><strong>Remember this — the two-stage pattern is universal.</strong></p>
+                <p><strong>Stage 1 (bi-encoder):</strong> grab top 50-100 candidates from the vector DB. Fast.</p>
+                <p><strong>Stage 2 (cross-encoder):</strong> re-score those candidates with a smarter model. Slow
+                  per item, but you're only re-scoring 50, not 50 million. Keep the top 3-5 for the LLM.</p>
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="rerank-sim">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-rerank-sim">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Reranking Flips the Order<a class="headerlink" href="#rerank-sim"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-rerank-sim">
+              <p>Same query, same candidates. <em>Left</em>: what cosine similarity returned. <em>Right</em>: what a cross-encoder reranker returned. The relevant answer rises to the top:</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Reranker · before vs after</span><span class="viz-step">query: "how do I return a defective product?"</span></div>
+                <div class="rr-cols" id="rerankUI">
+                  <div class="rr-col"><div class="rr-head before">stage 1 · vector search (top 5)</div><div class="doc">1. Our shipping is fast and reliable for all returns.<span class="sc">0.78</span></div><div class="doc">2. Refund policy: items can be returned within 30 days.<span class="sc">0.74</span></div><div class="doc">3. Return shipping labels are emailed after request.<span class="sc">0.71</span></div><div class="doc">4. For damaged or defective items, replacements are sent free of cost.<span class="sc">0.69</span></div><div class="doc">5. Our return desk is at the warehouse in Pune.<span class="sc">0.66</span></div></div>
+                  <div class="rr-arrow">➜</div>
+                  <div class="rr-col"><div class="rr-head after">stage 2 · cross-encoder rerank</div><div class="doc gold">1. For damaged or defective items, replacements are sent free of cost.<span class="sc">0.94</span></div><div class="doc">2. Refund policy: items can be returned within 30 days.<span class="sc">0.88</span></div><div class="doc">3. Return shipping labels are emailed after request.<span class="sc">0.81</span></div><div class="doc">4. Our return desk is at the warehouse in Pune.<span class="sc">0.62</span></div><div class="doc">5. Our shipping is fast and reliable for all returns.<span class="sc">0.45</span></div></div>
+                </div>
+                <div class="viz-note">Doc #4 does not use the word "return", but it is the best answer for a defective product. Vector search put it at #4. The cross-encoder moved it to #1.</div>
+              </div>
+              <p>The code to add reranking is short:</p>
+              <span class="code-tab-label">rerank.py</span>
+              <pre><code data-lang="python">
+from sentence_transformers import CrossEncoder
+
+# ① load a cross-encoder that can score a question with one chunk
+reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L6-v2")   # free, fast
+
+def retrieve_with_rerank(question, top_k=3):
+    # ① retrieve more cheap candidates than you finally need
+    candidates = db.similarity_search(question, k=25)        # grab 25 cheap candidates
+    # ② pair the same question with each candidate chunk for scoring
+    pairs = [(question, c.page_content) for c in candidates]
+    # ③ score every question chunk pair with the cross-encoder
+    scores = reranker.predict(pairs)                          # cross-encoder scores each pair
+    # ④ sort by score and return the best chunks
+    return [c for _, c in sorted(zip(scores, candidates), reverse=True)[:top_k]]
+</code></pre>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="rerank-keywords">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-rerank-keywords">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Problem 2: Sometimes You Need the <em>Exact Word</em><a class="headerlink"
+                    href="#rerank-keywords" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-rerank-keywords">
+              <p>Pure semantic search ignores keywords. Ask "what's the price of <strong>SKU-4429</strong>?" and the
+                embedding doesn't care about that specific code — it just sees "price" and "product". For codes,
+                names, IDs, dates — <strong>keyword search beats semantic</strong> hands down. The fix isn't to pick
+                one or the other. It's to use <em>both</em>, with very different strengths.</p>
+              <div class="analogy">
+                <span class="analogy-icon">📚</span>
+                <div class="analogy-body">
+                  <b>Two librarians, very different strengths</b>
+                  <p>Remember our librarian from Block 15? She has <strong>two assistants</strong> who search the
+                    stacks completely differently. One is a literalist who lives for exact words. The other is a
+                    philosopher who lives for meaning. Send your query to the right one and you get great results.
+                    <strong>Send your query to <em>both</em> — and let them merge their rankings — and you get
+                      strong results.</strong> That's hybrid search.
+                  </p>
+                </div>
+              </div>
+              <ul class="card-grid">
+                <li><b>🔤 Librarian A · BM25 · the literalist</b>Obsessed with <strong>exact words</strong>. Type
+                  <em>"SKU-4429"</em> or <em>"Article 21"</em> and she'll find every single doc containing those
+                  exact characters. But ask for <em>"running shoes"</em> and she'll skip the doc titled
+                  <em>"marathon footwear"</em> — different words, even though same meaning.
+                  <br>✅ <strong>Brilliant at</strong> product codes, SKUs, model numbers, version strings
+                  <br>✅ <strong>Brilliant at</strong> proper nouns, dates, legal references, technical jargon
+                  <br>❌ <strong>Blind to</strong> synonyms, paraphrase, intent — words are just characters to her
+                  <br><code>→ catches what vector misses</code>
+                </li>
+                <li><b>🧠 Librarian B · Vector · the philosopher</b>Obsessed with <strong>meaning</strong>. Ask for
+                  <em>"running shoes"</em> and she surfaces <em>"marathon footwear"</em>, <em>"jogging
+                    trainers"</em>, even <em>"sneakers for athletes"</em>. But ask for <em>"SKU-4429"</em> and
+                  she shrugs — random letters and numbers are just noise to her.
+                  <br>✅ <strong>Brilliant at</strong> natural-language questions, "what's this about?"
+                  <br>✅ <strong>Brilliant at</strong> unclear queries, paraphrase, multilingual matching
+                  <br>❌ <strong>Blind to</strong> exact codes, IDs, technical strings — drowns them in averages
+                  <br><code>→ catches what BM25 misses</code>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="rerank-hybrid">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-rerank-hybrid">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Hybrid = Both Librarians on the Case<a class="headerlink" href="#rerank-hybrid"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-rerank-hybrid">
+              <p>Send the same query to <em>both</em> librarians at the same time. Each ranks the docs by their own
+                logic. You then <strong>merge their two ranked lists into one</strong> using a tiny formula called
+                <strong>Reciprocal Rank Fusion (RRF)</strong>:
+              </p>
+              <div class="callout callout-key">
+                <p><strong>⚡ Reciprocal Rank Fusion in one line.</strong> For each doc, final score =
+                  <code>1 / (60 + rank in BM25) + 1 / (60 + rank in Vector)</code>. Docs that <em>both</em>
+                  librarians ranked highly bubble to the top. Docs only one of them liked still get a fair shot. No
+                  tuning, no thresholds, no main idea numbers (well, 60 — but it almost never matters). <em>That's
+                    it.</em> Used by almost every production RAG system in the wild.
+                </p>
+              </div>
+              <div class="analogy">
+                <span class="analogy-icon">🤝</span>
+                <div class="analogy-body">
+                  <b>Why this works so well in practice</b>
+                  <p>Real user queries are <em>messy</em> — mostly natural language, but sprinkled with technical
+                    terms, product codes, names, or jargon the embedding model has never seen. Hybrid covers both
+                    halves of every messy query automatically: the natural-language part goes to Vector, the
+                    technical-term part goes to BM25, and RRF stitches the answers together. <strong>You're not
+                      picking sides — you're using each tool for what it's actually good at.</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="rerank-hybrid-sim">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-rerank-hybrid-sim">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Compare Search Methods on <em>"I Want Running Shoes"</em><a class="headerlink"
+                    href="#rerank-hybrid-sim" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-rerank-hybrid-sim">
+              <p>Same query, three rankings. Librarian A and Librarian B return different top picks. Hybrid merges the rankings:</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · BM25 vs Vector vs Hybrid</span><span class="viz-step">query: "I want running shoes"</span></div>
+                <div class="hy-cols">
+                  <div class="hcol bm"><div class="hcol-title">🔤 BM25 <span class="hcol-tag">keyword</span></div><div class="h-doc win">1. Adidas Ultraboost sneakers · Marathon running shoes<br><small>score: 8.40</small></div><div class="h-doc">2. Reebok CrossFit gym shoes<br><small>score: 3.10</small></div><div class="h-doc">3. Bata kids school shoes<br><small>score: 2.40</small></div><div class="h-doc">4. Nike Air Zoom Pegasus trainers<br><small>score: 1.20</small></div><p class="why">Counts word overlap. It likes documents that include "shoes".</p></div>
+                  <div class="hcol vec"><div class="hcol-title">🧠 Vector <span class="hcol-tag">semantic</span></div><div class="h-doc win">1. Nike Air Zoom Pegasus trainers<br><small>score: 0.83</small></div><div class="h-doc">2. Asics Gel-Kayano stability trainers<br><small>score: 0.78</small></div><div class="h-doc">3. Adidas Ultraboost sneakers · Marathon running shoes<br><small>score: 0.71</small></div><div class="h-doc">4. Reebok CrossFit gym shoes<br><small>score: 0.55</small></div><p class="why">Understands that "running" relates to jogging and trainers.</p></div>
+                  <div class="hcol hy"><div class="hcol-title">⚡ Hybrid <span class="hcol-tag">blended</span></div><div class="h-doc win">1. Adidas Ultraboost sneakers · Marathon running shoes<br><small>fused: 0.0328</small></div><div class="h-doc">2. Nike Air Zoom Pegasus trainers<br><small>fused: 0.0325</small></div><div class="h-doc">3. Reebok CrossFit gym shoes<br><small>fused: 0.0323</small></div><div class="h-doc">4. Asics Gel-Kayano stability trainers<br><small>fused: 0.0318</small></div><p class="why">Reciprocal rank fusion combines both ranked lists. It is a common production default.</p></div>
+                </div>
+              </div>
+              <div class="callout callout-interview">
+                <p><strong>Industry spotlight · this is what the leaderboard chases — every "+10% retrieval
+                    quality" paper is one of these tricks.</strong> Reranking + hybrid search are the two single
+                  biggest quality wins in RAG. Add them and you go from "demo works" to "production works". Almost
+                  every benchmark in the MTEB leaderboard uses some combination. You now know the playbook.</p>
+                <ul class="meta-strip" style="margin:10px 0 0">
+                  <li>BM25 + Vector</li>
+                  <li>Cross-encoder rerank</li>
+                  <li>Reciprocal rank fusion</li>
+                  <li>Cohere Rerank API</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 9: Mini project ====== -->
+      <section class="topic-section is-collapsed" id="sec-project" data-topic="project">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-project">
+          <div class="topic-header-main">
+            <span class="topic-badge">9</span>
+            <h2 id="project" class="topic-title">Mini-Project: Chat with <em>Your</em> PDF<a class="headerlink"
+                href="#project" title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-project">
+          <div class="part-section is-collapsed" id="project-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-overview">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The Full App — 4 Files<a class="headerlink" href="#project-overview"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-overview">
+              <ul class="meta-strip">
+                <li><b>Block 21</b> ~20 min · 🏁 THE BUILD</li>
+              </ul>
+              <p>Time to ship. Point it at any PDF — your resume, a research paper, an annual report, your college
+                notes — and chat with it. Every answer cites the page it came from. This is the project that gets
+                people asking <strong>"how did you build this?"</strong></p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  P[📄 PDF in&lt;br&gt;user gives a path] --> C[✂️ Chunk&lt;br&gt;~800 chars]
+  C --> E[📍 Embed + store&lt;br&gt;Chroma]:::hl
+  E --> R[🔎 Retrieve&lt;br&gt;top-3 chunks]:::hl
+  R --> T[💬 Chat&lt;br&gt;terminal loop]:::good
+                </pre>
+                <figcaption>Load → chunk → embed → retrieve → answer. Let's write each piece.</figcaption>
+              </figure>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-index">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-index">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Step 1 — Load the PDF &amp; Index It Once<a class="headerlink"
+                    href="#project-index" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-index">
+              <span class="code-tab-label">pdf_chat.py · part 1</span>
+              <pre><code data-lang="python">
+# pip install langchain langchain-openai langchain-chroma langchain-huggingface \
+#             langchain-community pypdf sentence-transformers python-dotenv
+
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+
+def build_index(pdf_path):
+    pages    = PyPDFLoader(pdf_path).load()                    # ① read all pages
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    chunks   = splitter.split_documents(pages)                # ② chunk them
+    embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    db       = Chroma.from_documents(chunks, embedder)         # ③ in-memory store
+    return db
+</code></pre>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-answer">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-answer">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Step 2 — Answer with Retrieval + Citations<a class="headerlink"
+                    href="#project-answer" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-answer">
+              <span class="code-tab-label">pdf_chat.py · part 2</span>
+              <pre><code data-lang="python">
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
+# ① load the API key and create the PDF assistant model
+load_dotenv()
+
+model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+# ② define the grounded answer prompt and source-citation format
+prompt = ChatPromptTemplate.from_template("""
+You are a helpful PDF assistant. Answer the question using ONLY the context below.
+If the context doesn't contain the answer, say "I couldn't find that in the document."
+After your answer, list the page numbers you used as: Sources: page X, page Y.
+
+Context:
+{context}
+
+Question: {question}
+""")
+
+def ask(db, question):
+    # ① retrieve the most relevant PDF chunks for the question
+    chunks  = db.similarity_search(question, k=4)
+    # ② include page numbers beside each chunk before prompting the model
+    context = "\n\n".join(
+        f"[page {c.metadata['page']+1}] {c.page_content}" for c in chunks)
+    # ③ connect the prompt to the model for this answer
+    chain = prompt | model
+    # ④ ask the model using only the retrieved PDF context
+    return chain.invoke({"context": context, "question": question}).content
+</code></pre>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-entry">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-entry">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Step 3 — The Entry Point<a class="headerlink" href="#project-entry"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-entry">
+              <p>A tiny <code>main.py</code> indexes the PDF once, then answers questions in a loop:</p>
+              <span class="code-tab-label">main.py</span>
+              <pre><code data-lang="python">
+from pdf_chat import build_index, ask
+
+pdf_path = input("Path to your PDF: ")
+db = build_index(pdf_path)                 # ① index once, before the chat loop
+print("✅ PDF indexed! Ask me anything about it. (blank line to quit)")
+
+while True:
+    question = input("\nYou: ").strip()    # ② every question reuses the same index
+    if not question:
+        break
+    print("Bot:", ask(db, question))
+</code></pre>
+              <h4>🔍 Decoder · the 3 small choices that matter</h4>
+              <ul>
+                <li><strong>①</strong> <code>build_index</code> runs once, before the loop, and the result is kept
+                  in <code>db</code>. Without that, every question would re-index the PDF from scratch (slow!).
+                </li>
+                <li><strong>②</strong> Indexing only once means each question is instant. This is the same
+                  indexing/querying split from Block 15.</li>
+                <li><strong>③</strong> We pass <code>page</code> from the chunk metadata into the prompt (in
+                  <code>ask</code>) — that's how the model knows which page to cite. <strong>Metadata is RAG's
+                    strength.</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-run">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-project-run">
+              <div class="part-header-left">
+                <span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Run It<a class="headerlink" href="#project-run" title="Permanent link">#</a>
+                </h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-run">
+              <p>Save <code>pdf_chat.py</code> (parts 1 + 2), <code>main.py</code> and your <code>.env</code> in one
+                folder, then run:</p>
+              <span class="code-tab-label">bash — your project folder</span>
+              <pre><code data-lang="text">
+$ python main.py
+
+Path to your PDF: annual_report.pdf
+✅ PDF indexed! Ask me anything about it. (blank line to quit)
+
+You: What was the revenue this year?
+</code></pre>
+              <ol>
+                <li><strong>Point it at <em>any</em> PDF.</strong> Your resume, the Indian Constitution, your
+                  company's HR policy, last quarter's earnings call transcript. Anything text-based.</li>
+                <li><strong>Ask 3 questions.</strong> One factual ("when was X founded?"), one summary ("what's
+                  the main argument?"), one tricky ("compare X and Y"). Notice the citations.</li>
+                <li><strong>Try a question that's NOT in the doc.</strong> The answer should be <em>"I couldn't
+                    find that in the document."</em> — that's RAG <strong>refusing to hallucinate</strong>. Watch
+                  for this moment. It's the main point.</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-demo">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-project-demo">
+              <div class="part-header-left">
+                <span class="part-indicator ind-questions"></span>
+                <h3 class="part-heading">Walkthrough of the PDF Chat<a class="headerlink" href="#project-demo"
+                    title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-demo">
+              <p>This walkthrough uses three sample documents that are already indexed. The table shows the documents, example questions, retrieved answers, and the refusal message for questions not in the document:</p>
+              <div class="viz">
+                <div class="viz-head"><span class="viz-title">Example · Chat with your PDF</span><span class="viz-step">three indexed sample documents</span></div>
+                <div class="viz-stage is-text">
+                  <p><strong>Index message from the old demo.</strong> <code>Indexed "📋 HR Policy" — 1 page, ~8 chunks. Ask me anything!</code> The same pattern applied to each sample document.</p>
+                  <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">📋 HR Policy</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Indexed text</span><span class="data-val">Annual leave: 22 days/year for full-time employees, accrued monthly.<br>Sick leave: 12 days/year, no carry-forward.<br>Work from home: up to 2 days per week with manager approval.<br>Maternity leave: 26 weeks paid as per Indian law.<br>Paternity leave: 10 working days.<br>Reimbursements: internet ₹1500/month, mobile ₹800/month.<br>Notice period: 60 days for senior roles, 30 days for others.<br>Probation: 6 months. Probation extension requires HR approval.</span></div>
+      <div class="data-field"><span class="data-label">Answer keys and answers</span><span class="data-val"><b>leave</b>: Full-time employees get 22 days of annual leave (accrued monthly) plus 12 days of sick leave per year. Sources: page 1.<br><b>wfh</b>: Yes — up to 2 days per week with your manager&#x27;s approval. Sources: page 1.<br><b>work from home</b>: Yes — up to 2 days per week with your manager&#x27;s approval. Sources: page 1.<br><b>maternity</b>: 26 weeks of paid maternity leave, in line with Indian law. Sources: page 1.<br><b>paternity</b>: 10 working days of paternity leave. Sources: page 1.<br><b>notice</b>: Notice period is 60 days for senior roles, 30 days for others. Sources: page 1.<br><b>reimbursement</b>: Internet: ₹1500/month. Mobile: ₹800/month. Sources: page 1.<br><b>internet</b>: Internet reimbursement is ₹1500/month. Sources: page 1.<br><b>probation</b>: Probation period is 6 months. Extensions require HR approval. Sources: page 1.</span></div>
+      <div class="data-field"><span class="data-label">Example questions</span><span class="data-val"><code>How many leaves do I get?</code>, <code>Can I work from home?</code>, <code>What is the notice period?</code>, <code>What is the maternity policy?</code></span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">💰 TCS Q3 Earnings</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Indexed text</span><span class="data-val">Revenue: ₹62,613 cr, up 4.0% YoY in constant currency.<br>Operating margin: 24.6%, up 50 bps QoQ.<br>Net profit: ₹12,380 cr.<br>TCV (Total Contract Value): $13.2 bn, highest in 7 quarters.<br>Headcount: 612,724 employees, net addition of 5,370 this quarter.<br>Attrition: 13.0% (LTM), down from 13.3%.<br>Cash and equivalents: ₹58,200 cr.<br>Dividend: ₹76/share interim declared.<br>BFSI segment grew 3.8%, retail 2.1%, manufacturing 5.9%.</span></div>
+      <div class="data-field"><span class="data-label">Answer keys and answers</span><span class="data-val"><b>revenue</b>: Revenue was ₹62,613 cr, up 4.0% YoY in constant currency. Sources: page 1.<br><b>margin</b>: Operating margin was 24.6%, up 50 basis points quarter-on-quarter. Sources: page 1.<br><b>profit</b>: Net profit was ₹12,380 cr. Sources: page 1.<br><b>tcv</b>: TCV (Total Contract Value) hit $13.2 bn — the highest in 7 quarters. Sources: page 1.<br><b>headcount</b>: 612,724 employees, with a net addition of 5,370 this quarter. Sources: page 1.<br><b>attrition</b>: Attrition (LTM) was 13.0%, down from 13.3%. Sources: page 1.<br><b>dividend</b>: Interim dividend of ₹76 per share was declared. Sources: page 1.<br><b>bfsi</b>: BFSI segment grew 3.8% this quarter. Sources: page 1.</span></div>
+      <div class="data-field"><span class="data-label">Example questions</span><span class="data-val"><code>What was the revenue?</code>, <code>How was the operating margin?</code>, <code>What is the attrition rate?</code>, <code>How big is the latest TCV?</code></span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">📜 Indian Constitution (Part III)</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Indexed text</span><span class="data-val">Article 14: Equality before law — the State shall not deny equality to any person.<br>Article 15: Prohibition of discrimination on grounds of religion, race, caste, sex or place of birth.<br>Article 19: Six fundamental freedoms — speech, assembly, association, movement, residence, profession.<br>Article 21: Right to life and personal liberty — no person shall be deprived except by procedure established by law.<br>Article 21A: Right to education for children aged 6-14.<br>Article 25: Freedom of conscience and free profession of religion.<br>Article 32: Right to constitutional remedies — Supreme Court can be approached for enforcement.</span></div>
+      <div class="data-field"><span class="data-label">Answer keys and answers</span><span class="data-val"><b>article 14</b>: Article 14 guarantees equality before law — the State shall not deny equality to any person. Sources: page 1.<br><b>article 15</b>: Article 15 prohibits discrimination on grounds of religion, race, caste, sex or place of birth. Sources: page 1.<br><b>article 19</b>: Article 19 grants six fundamental freedoms: speech, assembly, association, movement, residence, and profession. Sources: page 1.<br><b>article 21</b>: Article 21 protects the right to life and personal liberty — no person shall be deprived except by procedure established by law. Sources: page 1.<br><b>article 32</b>: Article 32 is the right to constitutional remedies — citizens can approach the Supreme Court for enforcement of Fundamental Rights. Sources: page 1.<br><b>right to education</b>: Article 21A guarantees the right to education for children aged 6 to 14. Sources: page 1.<br><b>religion</b>: Article 25 guarantees freedom of conscience and free profession of religion. Article 15 prohibits discrimination on grounds of religion. Sources: page 1.<br><b>freedom of speech</b>: Article 19 grants freedom of speech as one of six fundamental freedoms. Sources: page 1.</span></div>
+      <div class="data-field"><span class="data-label">Example questions</span><span class="data-val"><code>What does Article 21 say?</code>, <code>Tell me about Article 19</code>, <code>What is the right to education?</code>, <code>Which article covers religion?</code></span></div>
+    </div>
+  </div>
+</div>
+                  <p><strong>Unknown question response.</strong> <code>I couldn't find that in the document. 🤷</code> This is RAG refusing to hallucinate.</p>
+                </div>
+                <div class="viz-note">These sample answers come from a tiny semantic-matching layer, not a model. The real <code>pdf_chat.py</code> uses actual embeddings + GPT with the same flow.</div>
+              </div>
+              
+              <div class="callout callout-interview">
+                <p><strong>Industry spotlight · this <em>is</em> the canonical AI product — you just built the
+                    most-shipped AI app of 2024–26.</strong> "Chat with [your docs / your PDF / your codebase / your
+                  Notion]" is the single most common AI feature on the market today — and almost all of them are
+                  this exact pattern with a more polished UI. ChatGPT's "Browse my files", Claude Projects, Cursor's
+                  <code>@codebase</code>, Glean, Notion AI — every one of them. You now own the recipe.
+                </p>
+                <ul class="meta-strip" style="margin:10px 0 0">
+                  <li>Notion AI</li>
+                  <li>Glean</li>
+                  <li>Claude Projects</li>
+                  <li>Cursor @docs</li>
+                  <li>Perplexity Spaces</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="project-variations">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-project-variations">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Want a Variation? Pick a Flavour, Swap the PDF<a class="headerlink"
+                    href="#project-variations" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-project-variations">
+              <p>The recipe is the same; the data makes it interesting. Try one of these on your own:</p>
+              <ul class="card-grid">
+                <li><b>📜 Chat with the Constitution</b>Index the Indian Constitution PDF. Ask "what are the
+                  Fundamental Rights?" with citations. <code>data: indiacode.nic.in</code></li>
+                <li><b>📊 Chat with an earnings call</b>Index TCS or Infosys' last quarterly transcript. Ask about
+                  margins, guidance, hiring. <code>data: investor relations sites</code></li>
+                <li><b>📚 Chat with your textbook</b>Index a chapter. Ask exam-style questions. Suddenly: a
+                  personalised tutor. <code>data: your bookshelf</code></li>
+                <li><b>🧾 Chat with company HR policy</b>Genuinely useful at your workplace. "How many leaves do I
+                  have left?" "What's the WFH policy?" <code>data: your HR portal</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 10: Peek ahead ====== -->
+      <section class="topic-section is-collapsed" id="sec-next" data-topic="next">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-next">
+          <div class="topic-header-main">
+            <span class="topic-badge">10</span>
+            <h2 id="next" class="topic-title">Where This Is <em>Going</em><a class="headerlink" href="#next"
+                title="Permanent link">#</a></h2>
+          </div>
+          <div class="topic-header-meta">
+            <span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span>
+          </div>
+        </div>
+        <div class="topic-content" id="content-next">
+          <div class="part-section is-collapsed" id="next-agentic">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-next-agentic">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">🤖 Agentic RAG — When Retrieval Becomes a Decision<a class="headerlink"
+                    href="#next-agentic" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-next-agentic">
+              <ul class="meta-strip">
+                <li><b>Block 23</b> ~5 min · what's coming</li>
+              </ul>
+              <p>RAG works. But the frontier is making it <em>smarter</em> — and that's where this course leads
+                next.</p>
+              <p>The RAG you just built always retrieves. But sometimes you don't need to (small talk), and
+                sometimes one retrieval isn't enough (multi-hop questions). <strong>Agentic RAG</strong> = combine
+                the LangChain agent loop with this RAG library. The agent <em>decides</em>: "do I need to look this
+                up? Is what I found enough? Should I rewrite my query and try again?"</p>
+              <div class="analogy">
+                <span class="analogy-icon">🔁</span>
+                <div class="analogy-body">
+                  <b>The loop you'll meet next</b>
+                  <p><em>Query → retrieve → grade chunks → if bad, rewrite query, search again → if still bad, ask
+                      user for clarification → answer.</em> Same agent loop you built with LangChain agents, with
+                    the RAG librarian as one of its tools.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="part-section is-collapsed" id="next-advanced">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-next-advanced">
+              <div class="part-header-left">
+                <span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">📈 Advanced RAG — the Tricks the Senior Engineers Use<a class="headerlink"
+                    href="#next-advanced" title="Permanent link">#</a></h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-next-advanced">
+              <ul class="card-grid">
+                <li><b>✍️ HyDE</b>Hypothetical Document Embeddings: have the LLM <em>imagine</em> what the answer
+                  would look like, then search for chunks that match the imagined answer. Counter-intuitive, works
+                  surprisingly well.</li>
+                <li><b>🪜 Step-back prompting</b>Before searching, ask the LLM to generalize the question. "What's
+                  the formula for compound interest in this case?" → "What is compound interest?" → broader, better
+                  retrieval.</li>
+                <li><b>🕸️ Graph RAG</b>Build a knowledge graph from your docs (entities + relationships). Now you
+                  can answer "who reports to X" by walking the graph, not just searching.</li>
+                <li><b>📊 RAG evaluation</b>How do you measure if your RAG is good? Three metrics:
+                  <em>relevance</em>, <em>faithfulness</em>, <em>correctness</em>. We'll wire up a real eval
+                  pipeline.
+                </li>
+              </ul>
+              <div class="callout callout-key">
+                <p><strong>🚀 Where you are right now.</strong> By now you've built a chatbot, an agent, and a RAG
+                  system. You understand the four pieces of every AI product — <em>model · prompt · tool ·
+                    retrieval</em>. Almost everything ahead is recombining these four in cleverer ways. You're past
+                  the steep part of the curve.</p>
+              </div>
+              <ul class="card-grid">
+                <li><b>📍 Embeddings</b>Text → vectors. Similar meaning = nearby.</li>
+                <li><b>✂️ Chunking</b>The unglamorous knob that decides quality.</li>
+                <li><b>🗂️ Vector DB</b>Three calls: add, query, delete.</li>
+                <li><b>🎯 You shipped</b>A real "Chat with your PDF". 🎉</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+  <footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>
+  <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+  <script src="../dsa/dsa-study.js"></script>
+  <script>
+    // Topic & inner part accordions (same behaviour as the DSA courses)
+    (() => {
+      const toggleCard = (card, headerSelector, forceOpen = null) => {
+        if (!card) return;
+        const header = card.querySelector(headerSelector);
+        const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+        card.classList.toggle("is-collapsed", !willOpen);
+        if (header) header.setAttribute("aria-expanded", String(willOpen));
+      };
+
+      const openAndScrollTo = (targetId) => {
+        if (!targetId) return;
+        const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+        const target = document.getElementById(decodeURIComponent(cleanId));
+        if (!target) return;
+        const part = target.closest(".part-section");
+        if (part) toggleCard(part, ".part-header", true);
+        const section = target.closest(".topic-section");
+        if (section) {
+          toggleCard(section, ".topic-header", true);
+          setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+        } else {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".headerlink")) return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+          return;
+        }
+        const link = e.target.closest("a");
+        const href = link && link.getAttribute("href");
+        if (href && href.startsWith("#") && href.length > 1) openAndScrollTo(href);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          e.preventDefault();
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          e.preventDefault();
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-course-action]");
+        if (!btn) return;
+        const open = btn.dataset.courseAction === "expand-all";
+        document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", open));
+        document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", open));
+      });
+
+      if (window.location.hash) setTimeout(() => openAndScrollTo(window.location.hash), 150);
+      window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
+    })();
+  </script>
+</body>
+
+</html>

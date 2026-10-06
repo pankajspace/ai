@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0d10" />
+  <title>AI Agents on AWS — Strands SDK | TechToday</title>
+  <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../dsa/dsa-study.css" />
+  <link rel="stylesheet" href="../../site-header.css" />
+  <link rel="stylesheet" href="ai-demos.css" />
+  <style>
+    body.is-ai .study>h1:first-child::before {
+      content: "Future with Shivank · AI Agents on AWS";
+    }
+
+    .study>h1 em,
+    .topic-title em {
+      color: var(--accent);
+    }
+
+  </style>
+</head>
+
+<body class="is-ai">
+  <header class="tt-site-header">
+    <nav class="tt-site-nav" aria-label="Main navigation"><a class="tt-site-brand" href="../../index.html"><span
+          class="tt-site-logo" aria-hidden="true"></span><span>TechToday</span></a><a href="ai-demos.html"
+        class="nav-back-link">&larr; AI Demos</a></nav>
+  </header>
+  <div class="progress" aria-hidden="true"></div>
+  <main class="study-layout">
+    <nav class="topic-menu" aria-label="Topics">
+      <details class="topic-menu-panel">
+        <summary>Topics</summary>
+        <ol class="table-of-contents table-of-contents-numbered">
+          <li><a href="#s0">AWS setup from zero</a></li>
+          <li><a href="#s1">Why agents exist at all</a></li>
+          <li><a href="#s2">RAG and how it works</a></li>
+          <li><a href="#s3">What is an agent?</a></li>
+          <li><a href="#s4">From LLMs to multi-agent systems</a></li>
+          <li><a href="#s5">Agent protocols — MCP and A2A</a></li>
+          <li><a href="#s6">The AWS agentic stack</a></li>
+          <li><a href="#s7">The Strands SDK and the agentic loop</a></li>
+          <li><a href="#s8">Building a &quot;Hello World&quot; agent</a></li>
+          <li><a href="#s9">LLM, agent, and tools — who does what</a></li>
+          <li><a href="#s10">From function to tool</a></li>
+          <li><a href="#s11">Your first tool-enabled agent — the tip calculator</a></li>
+          <li><a href="#s12">When one tool isn&#x27;t enough</a></li>
+          <li><a href="#s13">Pre-built community tools</a></li>
+          <li><a href="#s14">AWS integration with use_aws</a></li>
+          <li><a href="#s15">Building custom tools</a></li>
+          <li><a href="#s16">When simple tools aren&#x27;t enough</a></li>
+          <li><a href="#s17">Project — build a Travel Assistant Agent</a></li>
+          <li><a href="#s17b">Every command in one place</a></li>
+          <li><a href="#s18">Troubleshooting</a></li>
+        </ol>
+      </details>
+    </nav>
+    <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
+    <article class="study">
+      <h1 id="aws-strands">From LLM to a <em>working agent</em></h1>
+      <p class="lede">This hands-on guide is for you if you already know the basics of LLMs and agents. It uses plain language, diagrams, and runnable commands after each idea. It also includes AWS setup from scratch and a capstone project.</p>
+      <ul class="meta-strip">
+        <li>Level · <b>Beginner-friendly</b></li>
+        <li>Framework · <b>AWS Strands SDK</b></li>
+        <li>Model host · <b>Amazon Bedrock</b></li>
+        <li>Region · <b>us-east-1</b></li>
+      </ul>
+      <div class="course-toolbar">
+        <div class="course-toolbar-info"><span>20 Topics</span><span class="dot">&bull;</span><span>AI agents, AWS
+            Strands, tools &amp; a travel-assistant capstone</span></div>
+      </div>
+      <div class="course-toolbar-actions"><button type="button" class="action-btn"
+          data-course-action="expand-all"><span>Expand All</span></button><button type="button" class="action-btn"
+          data-course-action="collapse-all"><span>Collapse All</span></button></div>
+      <section class="topic-section is-collapsed" id="topic-s0">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s0">
+          <div class="topic-header-main"><span class="topic-badge">1</span>
+            <h2 id="s0" class="topic-title">AWS setup from zero</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s0">
+          <div class="part-section is-collapsed" id="s0-0-1-create-an-access-key-browser-once">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-1-create-an-access-key-browser-once">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">0.1 · Create an access key (browser, once)</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-1-create-an-access-key-browser-once">
+              <ul class="meta-strip">
+                <li>Section 0 · Setup</li>
+              </ul>
+
+
+              <p>Both modules run on your laptop and call AI models hosted on AWS. You need two things: <strong>credentials</strong>, which let your laptop talk to AWS, and <strong>model access</strong>, which lets your AWS account use the models. That is all.</p>
+              <div class="callout callout-tip">
+
+                <p><strong>What this costs.</strong> Running code locally is free. You pay only for model calls. AWS prices those calls per token, which means per small piece of text. The examples in this guide cost a fraction of a cent in total. Nothing keeps running in the background, so there is nothing to switch off later.</p>
+              </div>
+
+              <p>Sign in to the AWS console as an admin. Then do this:</p>
+              <ol>
+                <li>Use the top search bar. Type <strong>IAM</strong> and open it.</li>
+                <li>In the left menu, open <strong>Users</strong>. Then click your username.</li>
+                <li>Open the <strong>Security credentials</strong> tab.</li>
+                <li>Scroll to <strong>Access keys</strong>. Click <strong>Create access key</strong>.</li>
+                <li>For use case, choose <strong>Command Line Interface (CLI)</strong>. Tick the box. Click <strong>Next</strong>, then <strong>Create access key</strong>.</li>
+                <li>Copy the <strong>Access key ID</strong> and <strong>Secret access key</strong> now. AWS shows the secret only once.</li>
+              </ol>
+              <div class="callout callout-warn">
+
+                <p><strong>Treat the secret like a password.</strong> Never paste it into chat, screenshots, or a Git repo. <code class="inl">aws configure</code> stores it on your machine in <code class="inl">~/.aws/credentials</code>. That is the right place for it.</p>
+              </div>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s0-0-2-connect-your-laptop">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-2-connect-your-laptop">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">0.2 · Connect your laptop</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-2-connect-your-laptop">
+              <span class="code-tab-label">terminal</span>
+              <pre><code data-lang="text">
+aws configure
+# AWS Access Key ID     → paste the key id
+# AWS Secret Access Key → paste the secret
+# Default region name   → us-east-1
+# Default output format → (press Enter, leave blank)
+</code></pre>
+              <p>Check that it worked:</p>
+              <span class="code-tab-label">terminal</span>
+              <pre><code data-lang="text">
+aws sts get-caller-identity
+</code></pre>
+              <p>A successful command prints your <code class="inl">Account</code>, <code class="inl">UserId</code>, and <code class="inl">Arn</code>. If you get <code class="inl">InvalidClientTokenId</code>, the key is wrong or turned off. Create a new key and run <code class="inl">aws configure</code> again.</p>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s0-0-3-enable-the-models-in-bedrock">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-3-enable-the-models-in-bedrock">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">0.3 · Enable the models in Bedrock</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-3-enable-the-models-in-bedrock">
+              <p>Models are off by default. In the console, do this:</p>
+              <ol>
+                <li>In the top-right region selector, choose <strong>US East (N. Virginia) · us-east-1</strong>.</li>
+                <li>Search for <strong>Bedrock</strong> and open it. In the left menu, open <strong>Model access</strong>.</li>
+                <li>Click <strong>Modify model access</strong>. Tick the models below, then submit.</li>
+              </ol>
+              <ul class="card-grid">
+  <li><b>Amazon Nova Lite</b> Module 1 Hello World (cheap, fast)</li>
+  <li><b>Claude Haiku 4.5</b> Module 1 LangGraph example, Module 2 tools</li>
+  <li><b>Claude Sonnet 4.5</b> Stronger reasoning. Useful later.</li>
+</ul>
+              <p>Use the terminal to check which Anthropic models are active in your account:</p>
+              <span class="code-tab-label">terminal</span>
+              <pre><code data-lang="text">
+aws bedrock list-foundation-models --region us-east-1 \
+  --query "modelSummaries[?contains(modelId,'anthropic.claude')].modelId" \
+  --output table
+</code></pre>
+              <div class="callout callout-warn">
+
+                <p><strong>The most common error.</strong> The repo pins older model IDs that AWS has retired. You may see <code class="inl">ResourceNotFoundException … model version has reached the end of its life</code> or <code class="inl">… marked by provider as Legacy</code>. <strong>The fix is always the same:</strong> list the active models with the command above, pick one, add the <code class="inl">us.</code> prefix, and put it in the code. This is a useful skill, not a bug.</p>
+              </div>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s0-0-4-the-project-folder">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-4-the-project-folder">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">0.4 · The project folder</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-4-the-project-folder">
+              <p>This guide includes all code for both modules. It is already fixed and ready to run. Unzip it anywhere and open the folder in VS Code. <strong>You can rename the folder to whatever you like</strong>; nothing depends on the folder name.</p>
+              <span class="code-tab-label">what's
+                inside</span>
+              <pre><code data-lang="text">
+.
+├── GUIDE.html            # this file
+├── README.md             # how to run everything
+├── config.py             # model IDs — change once, applies everywhere
+├── requirements.txt
+├── setup.sh / setup.bat
+├── 00_check_setup.py     # run this FIRST
+├── 01_list_models.py     # use when a model is retired
+├── one/             # 2 examples
+├── two/             # 9 examples
+└── three/             # capstone project
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s0-0-5-install-the-packages">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-5-install-the-packages">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">0.5 · Install the packages</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-5-install-the-packages">
+              <span class="code-tab-label">terminal · from the
+                project folder</span>
+              <pre><code data-lang="text">
+# macOS / Linux
+./setup.sh
+
+# Windows
+setup.bat
+</code></pre>
+              <p>You can also install the packages manually:</p>
+              <span class="code-tab-label">terminal · manual
+                install</span>
+              <pre><code data-lang="text">
+python3 --version          # must be 3.10 or higher
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install --upgrade pip
+pip install -r requirements.txt
+</code></pre>
+              <div class="callout callout-tip">
+
+                <p><strong>If you are in conda and your prompt shows (base).</strong> The venv keeps this project separate from your conda environment. After activation, you should see <code class="inl">(.venv)</code> at the start of your prompt. In VS Code, also choose the interpreter: <kbd>⌘</kbd><kbd>⇧</kbd><kbd>P</kbd> → <em>Python: Select Interpreter</em> → choose the <code class="inl">.venv</code> interpreter.</p>
+              </div>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s0-0-6-run-the-readiness-check">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s0-0-6-run-the-readiness-check">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">0.6 · Run the readiness check</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s0-0-6-run-the-readiness-check">
+              <p>This is the most useful command in the project. It checks Python, packages, credentials, region, and Bedrock access. It also makes a real model call. If it passes, every example should run.</p>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+source .venv/bin/activate
+export AWS_DEFAULT_REGION=us-east-1
+python 00_check_setup.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>What success looks like.</strong> You should see six <code class="inl">[ OK ]</code> lines ending with <em>"All checks passed."</em> If something fails, the script prints the fix. It may ask you to enable model access, paste fresh credentials, or replace a retired model. Run this before anything else. If it passes, every example in this guide should work.</p>
+              </div>
+              <div class="callout callout-key">
+
+                <p><strong>Do this before anything else.</strong> Spend 15 minutes on Section 0 before you write agent code. Setup failures are the main reason people stop hands-on AI work. Do not continue until <code class="inl">get-caller-identity</code> returns your account details.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s1">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s1">
+          <div class="topic-header-main"><span class="topic-badge">2</span>
+            <h2 id="s1" class="topic-title">Why agents exist at all</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s1">
+          <div class="part-section is-collapsed" id="s1-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s1-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s1-overview">
+              <ul class="meta-strip">
+                <li>Section 1</li>
+                <li>Module 1 · one</li>
+              </ul>
+
+
+
+              <p>Start here because it frames the rest of the guide. A standard LLM has two hard limits:</p>
+              <ul>
+                <li>Knowledge cutoff: it knows only what it learned during training. Ask about yesterday's news and it cannot help.</li>
+                <li>No access to your world: it cannot read your company database, check today's weather, or send an email.</li>
+              </ul>
+              <p>You can fix this in two ways without retraining the model:</p>
+              <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header"><strong>RAG</strong></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">What it adds</span><span class="data-val">Relevant context fetched from your data</span></div>
+      <div class="data-field"><span class="data-label">The model becomes…</span><span class="data-val">A better-informed <em>knowledge retriever</em></span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header"><strong>Agents</strong></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">What it adds</span><span class="data-val">The ability to reason and <em>use tools</em></span></div>
+      <div class="data-field"><span class="data-label">The model becomes…</span><span class="data-val">An <em>actor</em> that gets things done</span></div>
+    </div>
+  </div>
+</div>
+              <p>Here is the key point. Many teams build a RAG system. Then users ask the AI to do the work: book the meeting, update the record, or run the workflow. Teams often get stuck when they move from a passive retriever to an active agent. These two modules help you make that move.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s2">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s2">
+          <div class="topic-header-main"><span class="topic-badge">3</span>
+            <h2 id="s2" class="topic-title">RAG and how it works</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s2">
+          <div class="part-section is-collapsed" id="s2-the-full-rag-pipeline">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s2-the-full-rag-pipeline">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The full RAG pipeline</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s2-the-full-rag-pipeline">
+              <ul class="meta-strip">
+                <li>Section 2</li>
+              </ul>
+
+
+              <p>RAG combines an LLM with a search system. It has three steps:</p>
+              <ol>
+                <li>Retrieve: search an external knowledge base for information that matches the question.</li>
+                <li>Augment: attach the retrieved context to the original question to make a richer prompt.</li>
+                <li>Generate: the LLM writes the answer using the supplied context.</li>
+              </ol>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  Q[User query&lt;br&gt;the question]
+  R[1 · Retrieve&lt;br&gt;search the data]
+  A[2 · Augment&lt;br&gt;context + query]
+  G[3 · Generate&lt;br&gt;grounded answer]
+  O[answer]
+  Q --&gt; R
+  R --&gt; A
+  A --&gt; G
+  G --&gt; O
+</pre>
+                <figcaption>Diagram 1 — How Retrieval Augmented Generation works</figcaption>
+              </figure>
+              <p>Example: <em>"Who won the 2024 Nobel Prize in Physics?"</em> The system queries a real-time news database, finds the fact, adds it to the prompt, and the LLM gives an accurate answer. It can do this even though the fact is after the model's training cutoff.</p>
+
+              <p>The next diagram shows the seven stages you use to build a real RAG system.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  I[INDEXING (done once, ahead of time)]
+  L[1 · Load data&lt;br&gt;ingest documents]
+  C[2 · Chunk&lt;br&gt;split into pieces]
+  E[3 · Embed&lt;br&gt;text → vectors]
+  S[4 · Store&lt;br&gt;vector database]
+  Q[QUERY TIME (every question)]
+  R[5 · Retrieve&lt;br&gt;top-k matches]
+  F[6 · Filter &amp; rerank&lt;br&gt;optional quality step]
+  G[7 · Generate answer&lt;br&gt;LLM + retrieved context]
+  U[→ user]
+  I --&gt; L
+  L --&gt; C
+  C --&gt; E
+  E --&gt; S
+  S --&gt; Q
+  Q --&gt; R
+  R --&gt; F
+  F --&gt; G
+  G --&gt; U
+</pre>
+                <figcaption>Diagram 2 — The RAG pipeline, from raw documents to a final answer</figcaption>
+              </figure>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s2-the-stages-in-plain-language">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s2-the-stages-in-plain-language">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The stages, in plain language</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s2-the-stages-in-plain-language">
+              <ul>
+                <li>Load: bring in the documents you want to query.</li>
+                <li>Chunk: split the documents into small pieces. This matters for two reasons. Models have a limited context window, and small chunks reduce the lost-in-the-middle effect, where details buried in a long passage get missed.</li>
+                <li>Embed: convert each chunk into a vector. A vector is a list of numbers that represents meaning. You can use an embedding model such as Amazon Titan.</li>
+                <li>Store: keep chunks and vectors in a vector database that supports similarity search. Common examples are Amazon OpenSearch Service, Pinecone, FAISS, Chroma, and PostgreSQL with pgvector.</li>
+                <li>Retrieve: turn the user's question into a vector too. Then pull the top-k most similar chunks, such as k = 3, 5, or 10.</li>
+                <li>Filter &amp; rerank: optionally re-sort results for quality. This can improve answers, but it adds cost and complexity.</li>
+                <li>Generate: give the retrieved chunks and the original question to the LLM. The LLM writes the final answer.</li>
+              </ul>
+              <div class="analogy"><span class="analogy-icon">📖</span>
+                <div class="analogy-body"><b>Analogy that lands</b>
+
+                  <p>RAG is an <strong>open-book exam</strong>. The model has not memorised the textbook. You let it open the three most relevant pages before it answers. Chunking decides how big each page is. Embedding is the index at the back that tells you which pages to open.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s3">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s3">
+          <div class="topic-header-main"><span class="topic-badge">4</span>
+            <h2 id="s3" class="topic-title">What is an agent?</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s3">
+          <div class="part-section is-collapsed" id="s3-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s3-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s3-overview">
+              <ul class="meta-strip">
+                <li>Section 3</li>
+              </ul>
+
+
+              <p>The word <em>agent</em> means something that performs a task for you. A working definition is: <strong>AI agents are autonomous software systems that use AI to reason, plan, and carry out tasks</strong> for humans or other systems. Autonomous means they can keep working without step-by-step instructions. They make decisions, adapt to new information, and act.</p>
+              <p>Their strength is <strong>iterative thinking</strong>. They check results, adjust, and keep working toward a goal. They often use RAG as one part of that workflow.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  Q[User query&lt;br&gt;“What to pack for NY?”]
+  A[AI Agent&lt;br&gt;reason → plan → act → evaluate]
+  R[RAG: historical weather&lt;br&gt;knowledge base]
+  F[API: live forecast&lt;br&gt;real-time data]
+  P[User preferences&lt;br&gt;“pack light, hates cold”]
+  S[synthesises all three →]
+  O[“Pack light, bring a&lt;br&gt;light jacket for evenings”]
+  Q --&gt; A
+  A --&gt; R
+  A --&gt; F
+  A --&gt; P
+  R --&gt; S
+  F --&gt; S
+  P --&gt; S
+  S --&gt; O
+</pre>
+                <figcaption>Diagram 3 — An AI agent as a travel planner, using agentic RAG</figcaption>
+              </figure>
+              <p>Follow this example closely. The agent receives <em>"What should I pack for New York summer?"</em>. It does not just look up one fact. It:</p>
+              <ol>
+                <li>Uses RAG to retrieve historical weather data.</li>
+                <li>Checks a real-time forecast through an API.</li>
+                <li>Analyses user preferences, such as packing light but avoiding cold weather.</li>
+                <li>Combines everything into a personalised recommendation.</li>
+              </ol>
+              <p>That final synthesis combines three sources into one judgement. This decision-making separates an agent from simple retrieval.</p>
+              <div class="callout callout-key">
+
+                <p><strong>The key distinction.</strong> <strong>RAG answers questions. Agents accomplish goals.</strong> RAG gives the model better information. An agent gives it the ability to act, check the result, and try again.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s4">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s4">
+          <div class="topic-header-main"><span class="topic-badge">5</span>
+            <h2 id="s4" class="topic-title">From LLMs to multi-agent systems</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s4">
+          <div class="part-section is-collapsed" id="s4-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s4-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s4-overview">
+              <ul class="meta-strip">
+                <li>Section 4</li>
+              </ul>
+
+
+              <p>Think of this as a progression. Each step adds one capability. Use it to orient yourself if you already know agents a little.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  L[1 · Plain LLM&lt;br&gt;Answers from training data alone. Knows a lot, can do nothing.]
+  C[2 · Chatbot&lt;br&gt;Adds memory of the conversation. Now it can hold a dialogue.]
+  R[3 · RAG chatbot&lt;br&gt;Adds retrieval. Now it is grounded in your data and current facts.]
+  A[4 · Agent&lt;br&gt;Adds tools + a reasoning loop. Now it can act, check, and retry.]
+  M[5 · Multi-agent system&lt;br&gt;specialised agents cooperating on one goal]
+  L --&gt; C
+  C --&gt; R
+  R --&gt; A
+  A --&gt; M
+</pre>
+                <figcaption>Diagram 4 — Progression from basic LLM capabilities to multi-agent systems</figcaption>
+              </figure>
+              <p>Remember this line: each level adds exactly one thing. First memory, then grounding, then action, then teamwork. If you can name what each level adds, you understand the shape of the field.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s5">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s5">
+          <div class="topic-header-main"><span class="topic-badge">6</span>
+            <h2 id="s5" class="topic-title">Agent protocols — MCP and A2A</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s5">
+          <div class="part-section is-collapsed" id="s5-mcp-model-context-protocol">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s5-mcp-model-context-protocol">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">MCP — Model Context Protocol</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s5-mcp-model-context-protocol">
+              <ul class="meta-strip">
+                <li>Section 5</li>
+              </ul>
+
+
+              <p>When agents need to reach the outside world or other agents, you need standard connection methods. Two protocols matter. People often confuse them, so compare them side by side.</p>
+
+              <p>MCP connects an agent to <strong>tools and data</strong>. A server exposes capabilities. A client, which is your agent, discovers and calls them. Think of it as <strong>USB for AI tools</strong>: plug in a new server and the agent gains new abilities without changing its code.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  A[Agent (MCP client)&lt;br&gt;has the model&lt;br&gt;and the reasoning]
+  S[MCP server&lt;br&gt;• Tools — actions the agent can perform&lt;br&gt;• Resources — data the agent can read&lt;br&gt;• Prompts — reusable prompt templates]
+  A --&gt;|1 · what can you do?| S
+  S --&gt;|2 · list of tools / resources / prompts| A
+</pre>
+                <figcaption>Diagram 5 — MCP workflow: the client discovers a server's capabilities, then calls them
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s5-a2a-agent-to-agent">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s5-a2a-agent-to-agent">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">A2A — Agent to Agent</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s5-a2a-agent-to-agent">
+              <p>A2A connects an agent to <strong>other agents</strong>. Each agent publishes an <em>agent card</em>. This is a small profile with its name, skills, and contact method. Other agents read the card and send it messages.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  O[Orchestrator agent&lt;br&gt;coordinates the work]
+  W[Weather agent&lt;br&gt;/.well-known/agent-card.json]
+  F[Flights agent&lt;br&gt;/.well-known/agent-card.json]
+  O --&gt; W
+  O --&gt; F
+</pre>
+                <figcaption>Diagram 6 — How A2A works: an orchestrator discovers and messages independent agents
+                </figcaption>
+              </figure>
+              <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header">Connects an agent to…</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">MCP</span><span class="data-val">Tools, data, prompts</span></div>
+      <div class="data-field"><span class="data-label">A2A</span><span class="data-val">Other agents</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">The other side is…</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">MCP</span><span class="data-val">A server that exposes capabilities</span></div>
+      <div class="data-field"><span class="data-label">A2A</span><span class="data-val">A peer agent with its own reasoning</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Discovery via</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">MCP</span><span class="data-val">A list of tools, resources, and prompts</span></div>
+      <div class="data-field"><span class="data-label">A2A</span><span class="data-val">The agent card</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header">Analogy</div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">MCP</span><span class="data-val">USB port for abilities</span></div>
+      <div class="data-field"><span class="data-label">A2A</span><span class="data-val">Colleagues calling each other</span></div>
+    </div>
+  </div>
+</div>
+              <figcaption style="text-align:left;margin-top:-6px">Diagram 7 — MCP vs A2A, side by side</figcaption>
+              <div class="callout callout-tip">
+
+                <p><strong>Scope note.</strong> Module 1 only introduces these protocols. Building MCP servers and A2A agents is a larger topic. Learn the vocabulary now so it is familiar later. Then move on. Do not build an MCP server today; finish the agent fundamentals first.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s6">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s6">
+          <div class="topic-header-main"><span class="topic-badge">7</span>
+            <h2 id="s6" class="topic-title">The AWS agentic stack</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s6">
+          <div class="part-section is-collapsed" id="s6-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s6-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s6-overview">
+              <ul class="meta-strip">
+                <li>Section 6</li>
+              </ul>
+
+
+              <p>AWS offers three layers for building agents. Know which layer you are using.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  F[Frameworks · Strands Agents SDK&lt;br&gt;Where you write agent code. Model + tools + prompt. ← this masterclass lives here]
+  R[Runtime &amp; services · Bedrock AgentCore, Lambda, ECS&lt;br&gt;Where agents run in production — Lambda, ECS, AgentCore.]
+  M[Models · Amazon Bedrock&lt;br&gt;The brains: Claude, Nova, and others — served on demand, no servers to manage.]
+  F --&gt; R
+  R --&gt; M
+</pre>
+                <figcaption>Diagram 8 — The AWS agentic stack and where Strands sits within it</figcaption>
+              </figure>
+              <p><strong>Amazon Bedrock</strong> is the key service for this guide. It is a managed service, which means AWS runs it for you. It hosts foundation models such as Claude, Nova, and others behind one API. You enabled model access in Section 0. That is what lets your code call these models.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s7">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s7">
+          <div class="topic-header-main"><span class="topic-badge">8</span>
+            <h2 id="s7" class="topic-title">The Strands SDK and the agentic loop</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s7">
+          <div class="part-section is-collapsed" id="s7-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s7-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s7-overview">
+              <ul class="meta-strip">
+                <li>Section 7</li>
+              </ul>
+
+
+              <p>Strands has three core components: <strong>model</strong>, <strong>tools</strong>, and <strong>prompt</strong>. It also has an agentic feedback loop.</p>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  U[User prompt&lt;br&gt;“Write a story about…”]
+  A[Agent (the coordinator)&lt;br&gt;holds model + tools + prompt]
+  M[Model&lt;br&gt;reasons, picks tools]
+  T[Tools&lt;br&gt;act on the real world]
+  L[↻ the loop repeats until the task is fully addressed]
+  F[Final response to user]
+  U --&gt; A
+  A --&gt;|asks| M
+  M --&gt;|“call tool X”| A
+  A --&gt;|executes| T
+  T --&gt;|result| A
+  A --&gt; L
+  L --&gt; F
+</pre>
+                <figcaption>Diagram 9 — The Strands agentic loop: agent asks model, model reasons and selects tools,
+                  agent
+                  executes, results feed back</figcaption>
+              </figure>
+              <p>Here is the loop in plain terms. The agent asks the model. The model reasons, responds, and chooses tools. The agent runs those tools. Results go back into the agent, which may call the model again. This continues until the agent decides the prompt is fully handled. Then it combines the work and returns the result.</p>
+              <div class="callout callout-key">
+
+                <p><strong>The key sentence.</strong> "A chatbot answers once. An agent keeps going until the job is done." The loop is the difference. Everything else is detail.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s8">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s8">
+          <div class="topic-header-main"><span class="topic-badge">9</span>
+            <h2 id="s8" class="topic-title">Building a "Hello World" agent</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s8">
+          <div class="part-section is-collapsed" id="s8-8-1-the-simplest-possible-agent-strands-nova-lite">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s8-8-1-the-simplest-possible-agent-strands-nova-lite">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">8.1 · The simplest possible agent — Strands + Nova Lite</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s8-8-1-the-simplest-possible-agent-strands-nova-lite">
+              <ul class="meta-strip">
+                <li>Section 8 · Hands-on</li>
+              </ul>
+
+
+              <div class="callout callout-tip">
+
+                <p><strong>How to run every example in this guide.</strong> Run everything from the project root, which is the folder that contains <code class="inl">config.py</code>. Do not run from inside <code class="inl">one/</code>. The scripts import shared settings from <code class="inl">config.py</code>. If you run from a subfolder, you get <code class="inl">ModuleNotFoundError: No module named 'config'</code>.</p>
+              </div>
+
+              <span class="code-tab-label">one/01_hello_world_agent.py</span>
+              <pre><code data-lang="python">
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+from config import NOVA_LITE
+
+# ① nova lite: amazon's cheapest model — ideal for a first run
+model = BedrockModel(model_id=NOVA_LITE)
+
+# ② wrap the model in a strands agent
+agent = Agent(model=model)
+
+# ③ send one user message and capture the agent's reply
+response = agent("Hello! Tell me a fun fact about AI agents.")
+# ④ print the reply so learners can see the result
+print(response)
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python one/01_hello_world_agent.py
+</code></pre>
+              <p>Four lines make a whole agent. Read each line: choose a model, wrap it in an <code class="inl">Agent</code>, call the agent like a function, and print the answer. There are no tools yet, so the loop runs exactly once. This is the "before" picture for Module 2.</p>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s8-8-2-same-idea-in-langgraph-with-a-tool">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s8-8-2-same-idea-in-langgraph-with-a-tool">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">8.2 · Same idea in LangGraph, with a tool</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s8-8-2-same-idea-in-langgraph-with-a-tool">
+              <p>Strands is not the only framework. This version uses LangGraph and adds a small tool. You can see the loop run more than once.</p>
+              <span class="code-tab-label">one/02_hello_world_langgraph.py</span>
+              <pre><code data-lang="python">
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langgraph.prebuilt import create_react_agent
+from config import MODEL_ID
+
+
+# ① define a simple langchain greeting tool
+@tool
+def greet(name: str) -&gt; str:
+    """Greet someone by name."""
+    return f"Hello, {name}! Welcome to the world of AI agents."
+
+
+# ② initialize the llm via bedrock using config.py
+llm = init_chat_model(
+    MODEL_ID,
+    model_provider="bedrock_converse",
+)
+
+# ③ create a react agent with the tool so it can decide calls
+agent = create_react_agent(model=llm, tools=[greet])
+
+# ④ run the agent with a request that should trigger tool calls
+response = agent.invoke(
+    {"messages": [{"role": "user", "content": "Please greet Alice and Bob."}]}
+)
+
+# ⑤ print every step so you can see the loop
+for message in response["messages"]:
+    print(f"{message.type}: {message.text}")
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python one/02_hello_world_langgraph.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>Expected output.</strong> You will see five lines: <code class="inl">human:</code> the request · <code class="inl">ai:</code> (empty) · <code class="inl">tool:</code> Hello, Alice! · <code class="inl">tool:</code> Hello, Bob! · <code class="inl">ai:</code> a summary. The empty <code class="inl">ai:</code> line means the model chose to use a tool instead of answering. That is the agentic loop from Diagram 9, visible in your terminal.</p>
+              </div>
+              <div class="callout callout-tip">
+
+                <p><strong>Model note.</strong> Older tutorials pin <code class="inl">anthropic.claude-3-5-haiku-20241022-v1:0</code>, which AWS has retired. These files already use the current model through <code class="inl">config.py</code>, so you do not need to patch anything. If AWS retires a model later, run <code class="inl">python 01_list_models.py</code>, pick an active model, and change the single line in <code class="inl">config.py</code>. Every example uses that setting.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s9">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s9">
+          <div class="topic-header-main"><span class="topic-badge">10</span>
+            <h2 id="s9" class="topic-title">LLM, agent, and tools — who does what</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s9">
+          <div class="part-section is-collapsed" id="s9-types-of-tools">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s9-types-of-tools">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Types of tools</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s9-types-of-tools">
+              <ul class="meta-strip">
+                <li>Section 9</li>
+                <li>Module 2 · two</li>
+              </ul>
+
+
+
+              <p>Use this simple division of labour:</p>
+              <ul>
+                <li>The LLM is the brain. It understands requests, reasons about what needs to happen, and decides which tools to use.</li>
+                <li>Tools are the hands and senses. They perform actions and gather information from the outside world.</li>
+                <li>The agent is the coordinator. It manages the conversation between the LLM and the tools.</li>
+              </ul>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart LR
+  L[LLM — the brain&lt;br&gt;understands, reasons, decides which tool]
+  A[Agent&lt;br&gt;the coordinator&lt;br&gt;runs the loop]
+  T[Tools — hands &amp; senses&lt;br&gt;act on the world, fetch real data]
+  N[the agent carries messages both ways until the task is complete]
+  L --&gt; A
+  A --&gt; L
+  A --&gt; T
+  T --&gt; A
+  A --&gt; N
+</pre>
+                <figcaption>Diagram 10 — LLM, Agent, and Tools</figcaption>
+              </figure>
+
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  D[Data access&lt;br&gt;databases, files,&lt;br&gt;search, APIs]
+  C[Computation&lt;br&gt;calculator, code,&lt;br&gt;data analysis]
+  M[Communication&lt;br&gt;email, Slack,&lt;br&gt;notifications]
+  S[Cloud / systems&lt;br&gt;AWS services,&lt;br&gt;internal systems]
+  P[Pre-built · community&lt;br&gt;import and use — strands_tools]
+  U[Custom · yours&lt;br&gt;any Python function + @tool]
+</pre>
+                <figcaption>Diagram 11 — Types of tools an agent can use</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s10">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s10">
+          <div class="topic-header-main"><span class="topic-badge">11</span>
+            <h2 id="s10" class="topic-title">From function to tool</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s10">
+          <div class="part-section is-collapsed" id="s10-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s10-overview">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s10-overview">
+              <ul class="meta-strip">
+                <li>Section 10 · Hands-on</li>
+              </ul>
+
+
+              <p>This is the most important idea in this module. Start with a normal Python function that checks whether a server is up:</p>
+              <span class="code-tab-label">plain python — the
+                agent cannot use this</span>
+              <pre><code data-lang="python">
+import requests
+
+def check_server_status(server_url):
+    """Check if a server is responding."""
+    # ① call the url and report success if it responds in time
+    try:
+        response = requests.get(server_url, timeout=5)
+        return f"Server is up. Status code: {response.status_code}"
+    except requests.exceptions.RequestException:
+        # ② return a clear status when the request fails
+        return "Server is down or unreachable"
+
+# ① use the helper like this with a sample server url
+status = check_server_status("https://staging.myapp.com")
+# ② print what the helper returned
+print(status)
+# "Server is up. Status code: 200"
+</code></pre>
+              <p>If you ask the agent <em>"Is the staging server running?"</em>, it says it cannot check server status. The agent cannot discover your function by itself. That is the gap.</p>
+              <p>The bridge is <strong>function calling</strong>, also called tool use. Add three things:</p>
+              <ul class="card-grid">
+  <li><b><code>@tool</code> decorator</b> Tells Strands to make this function available to agents.</li>
+  <li><b>Type hints</b> Tell the agent what data types to expect.</li>
+  <li><b>A proper docstring</b> Describes what the function does, so the agent knows when to use it.</li>
+</ul>
+              <span class="code-tab-label">two/01_function_to_tool.py</span>
+              <pre><code data-lang="python">
+from strands import Agent, tool
+import requests
+
+@tool                                              # 1. decorator
+def check_server_status(server_url: str) -&gt; str:      # 2. type hints
+    """Check if a server is responding by making an HTTP request.
+
+    Args:
+        server_url: The URL of the server to check
+
+    Returns:
+        A message indicating whether the server is up or down
+    """                                           # 3. docstring
+    # ① call the server and return success if it responds
+    try:
+        response = requests.get(server_url, timeout=5)
+        return f"Server is up. Status code: {response.status_code}"
+    except requests.exceptions.RequestException:
+        # ② return a clear down or unreachable message on request errors
+        return "Server is down or unreachable"
+</code></pre>
+              <span class="code-tab-label">give it to the
+                agent</span>
+              <pre><code data-lang="text">
+agent = Agent(tools=[check_server_status])
+response = agent("Is the staging server running? Check https://httpbin.org/get")
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/01_function_to_tool.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>The main point.</strong> The docstring is not just a comment. It is the user manual the model reads. The model decides whether to call your tool based on that description. A vague docstring makes the agent unreliable. Try breaking one on purpose: change the docstring to <code class="inl">"Does a thing."</code> and watch the agent stop calling it. That experiment teaches more than reading alone.</p>
+              </div>
+              <p>This pattern works for any function. Add <code class="inl">@tool</code>, give it to your <code class="inl">Agent</code>, and the agent can execute it.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s11">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s11">
+          <div class="topic-header-main"><span class="topic-badge">12</span>
+            <h2 id="s11" class="topic-title">Your first tool-enabled agent — the tip calculator</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s11">
+          <div class="part-section is-collapsed" id="s11-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s11-overview">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s11-overview">
+              <ul class="meta-strip">
+                <li>Section 11 · Hands-on</li>
+              </ul>
+
+
+              <p>This is a practical, self-contained example from Module 2. You do not need to configure anything external.</p>
+              <span class="code-tab-label">two/01_function_to_tool.py</span>
+              <pre><code data-lang="python">
+from strands import Agent, tool
+
+@tool
+def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict:
+    """Calculate tip and split the bill among people.
+
+    Args:
+        bill_amount: Total bill amount in dollars
+        tip_percentage: Tip percentage (e.g., 15, 18, 20)
+        num_people: Number of people splitting the bill (default: 1)
+    """
+    # ① compute the tip, total bill, and per-person share from the inputs
+    tip = bill_amount * (tip_percentage / 100)
+    total = bill_amount + tip
+    per_person = total / num_people
+
+    # ② return rounded values so the agent can explain them cleanly
+    return {
+        "bill": bill_amount,
+        "tip": round(tip, 2),
+        "total": round(total, 2),
+        "per_person": round(per_person, 2)
+    }
+
+# ① create an agent that is allowed to call the calculator
+agent = Agent(tools=[calculate_tip])
+
+# ② ask in plain english so the model extracts the numbers
+response = agent("The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?")
+# ③ print the final natural-language answer
+print(response.message['content'][0]['text'])
+</code></pre>
+              <p>Then show that the agent understands <em>intent</em>, not just keywords. All three requests work without extra code:</p>
+              <span class="code-tab-label">two/02_tip_calculator.py</span>
+              <pre><code data-lang="python">
+agent("What's a 15% tip on $42?")
+agent("Bill is $120, we want to tip 18%, split between 3 people")
+agent("Calculate tip for $67.50 at 20%")
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/02_tip_calculator.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>Important contrast.</strong> In traditional chatbot development, you would write regex patterns and intent classifiers for those three phrasings. You would also extract the numbers separately. Here you wrote one function with a clear description. The model handled intent recognition and parameter extraction.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s12">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s12">
+          <div class="topic-header-main"><span class="topic-badge">13</span>
+            <h2 id="s12" class="topic-title">When one tool isn't enough</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s12">
+          <div class="part-section is-collapsed" id="s12-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s12-overview">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s12-overview">
+              <ul class="meta-strip">
+                <li>Section 12</li>
+              </ul>
+
+
+              <p>Scenario: you ask a sales assistant to <em>"pull last quarter's sales data and email a summary to the team."</em> That is not one task. It is three tasks: query the database, analyse the numbers, and send an email.</p>
+              <span class="code-tab-label">two/03_multi_tool_sales.py</span>
+              <pre><code data-lang="python">
+from strands import Agent, tool
+
+# ① make sales lookup available as the first tool
+@tool
+def get_sales_data(quarter: str) -&gt; dict:
+    """Retrieve sales data for a specific quarter."""
+    return {"revenue": 1250000, "deals": 47, "quarter": quarter}
+
+# ② make the analysis step available as a second tool
+@tool
+def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str:
+    """Calculate key metrics from sales data."""
+    avg_deal = revenue / deals
+    return f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"
+
+# ③ make the delivery step available as a third tool
+@tool
+def send_email(to: str, subject: str, body: str) -&gt; str:
+    """Send an email message."""
+    return f"Email sent to {to}"
+
+# ④ register all tools with one agent so it can chain them
+agent = Agent(tools=[get_sales_data, analyze_sales, send_email])
+
+# ⑤ give one business request and let the agent choose the order
+response = agent("Pull last quarter's sales data and email a summary to the team")
+</code></pre>
+              <figure class="figure mermaid-fig">
+                <pre class="mermaid">
+flowchart TD
+  Q[“Pull last quarter's sales data and email a summary to&lt;br&gt;the team”]
+  A[Agent plans the order]
+  G[1 · get_sales_data&lt;br&gt;revenue, deals]
+  N[2 · analyze_sales&lt;br&gt;avg deal size]
+  E[3 · send_email&lt;br&gt;delivers summary]
+  Q --&gt; A
+  A --&gt; G
+  A --&gt; N
+  A --&gt; E
+</pre>
+                <figcaption>Diagram 12 — One request, three tools: the agent works out which to call and in what order
+                </figcaption>
+              </figure>
+              <p>You never told the agent the sequence. It recognised that it needed data first, then analysis, then delivery. It chained the tools. That is planning.</p>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/03_multi_tool_sales.py
+</code></pre>
+              <div class="callout callout-tip">
+
+                <p><strong>Rule of thumb.</strong> Build focused, single-purpose tools. Do not create one mega-tool that does everything. It becomes harder to maintain, harder for the agent to reason about, and impossible to reuse elsewhere. Small tools combine well. The same <code class="inl">analyze_sales</code> tool works with data from any source.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s13">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s13">
+          <div class="topic-header-main"><span class="topic-badge">14</span>
+            <h2 id="s13" class="topic-title">Pre-built community tools</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s13">
+          <div class="part-section is-collapsed" id="s13-13-1-calculator">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s13-13-1-calculator">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">13.1 · Calculator</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s13-13-1-calculator">
+              <ul class="meta-strip">
+                <li>Section 13 · Hands-on</li>
+              </ul>
+
+
+              <p>You do not have to write every tool yourself. <code class="inl">strands_tools</code> includes ready-made tools. Import them and use them.</p>
+
+              <span class="code-tab-label">two/05_prebuilt_tools.py</span>
+              <pre><code data-lang="python">
+from strands import Agent
+from strands_tools import calculator
+
+# ① create an agent with the calculator tool and math-focused instructions
+agent = Agent(
+    tools=[calculator],
+    system_prompt="You are a helpful math assistant."
+)
+
+# ② ask several math questions so the same tool can be reused
+agent("What's 42 raised to the power of 9?")
+agent("Solve the equation x^2 + 5x + 6 = 0")
+agent("What's the derivative of sin(x) * cos(x)?")
+</code></pre>
+              <p>This also introduces the <strong>system prompt</strong>. A system prompt is a standing instruction that shapes the agent's behaviour across every request.</p>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/05_prebuilt_tools.py
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s13-13-2-combining-several-pre-built-tools">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s13-13-2-combining-several-pre-built-tools">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">13.2 · Combining several pre-built tools</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s13-13-2-combining-several-pre-built-tools">
+              <p>This example fetches data from the web, does maths on it, and writes a file. One request uses three tools.</p>
+              <span class="code-tab-label">two/06_multi_prebuilt_tools.py</span>
+              <pre><code data-lang="python">
+import os
+from strands import Agent
+from strands_tools import http_request, calculator, file_write
+
+# ① create an agent with web, calculator, and file-writing tools
+agent = Agent(
+    tools=[http_request, calculator, file_write],
+    system_prompt="You help with data analysis tasks."
+)
+
+# ② turn off interactive tool approval for this unattended demo
+os.environ["BYPASS_TOOL_CONSENT"] = "true"
+
+# ③ give one end-to-end request that uses all three tools
+agent("""
+Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d,
+extract the latest closing prices,
+calculate the average price over the period,
+and save the results to stock_summary.txt
+""")
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/06_multi_prebuilt_tools.py
+</code></pre>
+              <div class="callout callout-warn">
+
+                <p><strong>Explain BYPASS_TOOL_CONSENT before running it.</strong> Some tools are sensitive because they write files or touch cloud resources. Strands pauses and asks for permission before it runs them. Setting <code class="inl">BYPASS_TOOL_CONSENT="true"</code> turns that prompt off so the cell runs unattended. Treat this as a real safety feature. In production, you often want a human to approve actions. If a cell seems stuck at <code class="inl">[*]</code>, it is waiting for your <code class="inl">y</code> at a hidden prompt.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s14">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s14">
+          <div class="topic-header-main"><span class="topic-badge">15</span>
+            <h2 id="s14" class="topic-title">AWS integration with <code class="inl">use_aws</code></h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s14">
+          <div class="part-section is-collapsed" id="s14-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s14-overview">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s14-overview">
+              <ul class="meta-strip">
+                <li>Section 14 · Hands-on</li>
+              </ul>
+
+
+              <p>One tool can work with many services. <code class="inl">use_aws</code> translates plain English into AWS API calls.</p>
+              <span class="code-tab-label">two/07_use_aws.py</span>
+              <pre><code data-lang="python">
+from strands import Agent
+from strands_tools import use_aws
+
+# ① create an aws assistant with the prebuilt use_aws tool
+agent = Agent(
+    tools=[use_aws],
+    system_prompt="You are an AWS assistant that helps manage cloud resources."
+)
+
+# ② ask a read-only cloud question in plain english
+agent("List all S3 buckets in my account")
+</code></pre>
+              <p>The same single tool can handle very different services. Other examples:</p>
+              <span class="code-tab-label">one tool, three
+                services</span>
+              <pre><code data-lang="text">
+# DynamoDB
+agent("Look up customer ID 12345 in the DynamoDB customers table and update their email to newemail@example.com")
+
+# Lambda
+agent("Invoke the Lambda function 'order-processor' with order ID 67890")
+</code></pre>
+              <div class="callout callout-tip">
+
+                <p><strong>Before you run this.</strong> These examples assume the AWS resources already exist in your account. The S3 bucket, DynamoDB table, and Lambda function in the snippets must exist. While you learn, stick to the S3 listing example. It works on any account, even an empty one. An empty list is a valid result, not an error.</p>
+              </div>
+              <p>Notice what happened. You described what you wanted in plain English. The agent worked out the AWS API calls. You did not write boto3 code, handle AWS responses, or name the exact operation.</p>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/07_use_aws.py
+</code></pre>
+              <div class="callout callout-warn">
+
+                <p><strong>Handle with care.</strong> <code class="inl">use_aws</code> can modify real resources. While you learn, stick to read-only requests such as "list" and "describe". Always use a sandbox account, never production. This is why the consent prompt exists. Read it before you type <code class="inl">y</code>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s15">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s15">
+          <div class="topic-header-main"><span class="topic-badge">16</span>
+            <h2 id="s15" class="topic-title">Building custom tools</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s15">
+          <div class="part-section is-collapsed" id="s15-overview">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s15-overview">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Overview</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s15-overview">
+              <ul class="meta-strip">
+                <li>Section 15 · Hands-on</li>
+              </ul>
+
+
+              <p>When community tools do not fit your need, write your own. This applies to an internal API, a private database, or a new action. Example: an online store checking inventory.</p>
+              <span class="code-tab-label">two/04_custom_tool_inventory.py</span>
+              <pre><code data-lang="python">
+from strands import Agent, tool
+
+@tool
+def check_inventory(product_id: str) -&gt; str:
+    """Check if a product is in stock.
+
+    Args:
+        product_id: The product ID to check (e.g., "PROD-123")
+    """
+    # ① use a mock table where you'd query your actual database
+    inventory = {
+        "PROD-123": 15,
+        "PROD-456": 0,
+        "PROD-789": 8
+    }
+
+    # ② pull the requested product quantity, defaulting missing items to zero
+    quantity = inventory.get(product_id, 0)
+
+    # ③ return an in-stock message when quantity is positive
+    if quantity &gt; 0:
+        return f"Product {product_id} is in stock. We have {quantity} units available."
+    else:
+        # ④ return an out-of-stock message otherwise
+        return f"Product {product_id} is currently out of stock."
+
+# ① give the inventory tool to the agent
+agent = Agent(tools=[check_inventory])
+
+# ② all of these work because the agent understands intent, not just keywords
+agent("Is PROD-123 in stock?")
+agent("Do we have PROD-456 available?")
+agent("Check inventory for PROD-789")
+agent("Can I order PROD-123 right now?")
+</code></pre>
+              <p>Notice the mock dictionary. In production, you would replace it with real database queries or an API call. The part the agent sees stays the same: decorator, type hints, and docstring.</p>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/04_custom_tool_inventory.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>Exercise: pick one.</strong> Build a tool for a problem you care about. Ideas: check the weather in your city by calling a weather API; validate email format; calculate age from birthdate; calculate BMI; calculate shipping costs from weight and distance. The logic can be simple. The goal is to see how a custom tool fits into the agent workflow.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s16">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s16">
+          <div class="topic-header-main"><span class="topic-badge">17</span>
+            <h2 id="s16" class="topic-title">When simple tools aren't enough</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s16">
+          <div class="part-section is-collapsed" id="s16-16-1-the-database-connection-problem-class-based-tools">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s16-16-1-the-database-connection-problem-class-based-tools">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">16.1 · The database connection problem → class-based tools</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s16-16-1-the-database-connection-problem-class-based-tools">
+              <ul class="meta-strip">
+                <li>Section 16 · Advanced</li>
+              </ul>
+
+
+              <p>This module ends with three cases where the plain <code class="inl">@tool</code> approach starts to strain. Learn them so you can recognise the pattern when it appears. You do not need to memorise them.</p>
+
+              <p>Story: your agent has five tools. Each tool opens its own database connection. Your DBA asks, <em>"Why is your agent opening 50 database connections per minute?"</em> Each tool call opens and closes a connection. With many users at the same time, the database gets overloaded.</p>
+              <p><strong>The fix:</strong> group related tools in a class so they share one connection.</p>
+              <span class="code-tab-label">two/08_class_based_tools.py</span>
+              <pre><code data-lang="python">
+from strands import Agent, tool
+
+class InventoryTools:
+    def __init__(self):
+        # ① shared resource: all tools access the same data store
+        # In production: self.db = connect_to_database()
+        self.products = {
+            "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
+            "PROD-456": {"name": "USB-C Hub", "quantity": 0, "price": 49.99},
+            "PROD-789": {"name": "Mechanical Keyboard", "quantity": 8, "price": 89.99},
+        }
+
+    @tool
+    def check_stock(self, product_id: str) -&gt; str:
+        """Check product stock level.
+
+        Args:
+            product_id: The product ID to check
+        """
+        # ① find the product in the shared inventory
+        product = self.products.get(product_id)
+        # ② return a not-found message for unknown ids
+        if not product:
+            return f"Product {product_id} not found"
+        # ③ report stock and price when the product exists
+        return f"{product['name']}: {product['quantity']} units at ${product['price']}"
+
+    @tool
+    def update_stock(self, product_id: str, quantity: int) -&gt; str:
+        """Update product stock quantity.
+
+        Args:
+            product_id: The product ID to update
+            quantity: New quantity to set
+        """
+        # ① update the shared inventory when the id exists
+        if product_id in self.products:
+            self.products[product_id]["quantity"] = quantity
+            return f"Updated {product_id} to {quantity} units"
+        # ② report not-found when no product matched
+        return f"Product {product_id} not found"
+
+# ① create one instance with shared state for multiple tools
+inventory = InventoryTools()
+# ② register both class methods with the agent
+agent = Agent(tools=[inventory.check_stock, inventory.update_stock])
+
+# ③ ask the agent to read and then update inventory through the tools
+agent("Check stock for PROD-123")
+agent("Update PROD-456 stock to 25 units, then confirm the new level")
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/08_class_based_tools.py
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s16-16-2-slow-sequential-calls-async-tools">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s16-16-2-slow-sequential-calls-async-tools">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">16.2 · Slow sequential calls → async tools</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s16-16-2-slow-sequential-calls-async-tools">
+              <p>If three warehouse lookups take 2 seconds each, running them one after another takes 6 seconds. Make the tool <code class="inl">async</code> and they run in parallel.</p>
+              <span class="code-tab-label">two/09_async_tools.py</span>
+              <pre><code data-lang="python">
+import asyncio
+import time
+from strands import Agent, tool
+
+@tool
+async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
+    """Check inventory at a specific warehouse.
+
+    Args:
+        product_id: Product ID to check
+        warehouse: Warehouse identifier (e.g., "east", "west", "central")
+    """
+    # ① simulate api call delay with a two-second wait
+    await asyncio.sleep(2)
+
+    # ② load mock inventory for each warehouse
+    data = {
+        "east":    {"PROD-123": 45, "PROD-456": 12},
+        "west":    {"PROD-123": 30, "PROD-456": 0},
+        "central": {"PROD-123": 60, "PROD-456": 25},
+    }
+
+    # ③ read the requested quantity, defaulting missing items to zero
+    quantity = data.get(warehouse, {}).get(product_id, 0)
+    # ④ return a structured result the agent can compare across warehouses
+    return {
+        "warehouse": warehouse,
+        "product_id": product_id,
+        "quantity": quantity
+    }
+
+async def main():
+    # ① create an agent that can call the async warehouse tool
+    agent = Agent(tools=[check_warehouse_inventory])
+    # ② start a timer before the agent makes parallel tool calls
+    start = time.time()
+    # ③ ask for all warehouses so the model can call the tool concurrently
+    response = await agent.invoke_async(
+        "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
+    )
+    # ④ calculate and print elapsed time to compare with sequential calls
+    elapsed = time.time() - start
+    print(response.message['content'][0]['text'])
+    print(f"\nTotal time: {elapsed:.1f}s (sequential would be ~6s)")
+
+# ① run the async demo in notebook-style environments
+await main()
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python two/09_async_tools.py
+</code></pre>
+              <div class="callout callout-key">
+
+                <p><strong>What to notice.</strong> The printed timing is the lesson: roughly 2 seconds instead of 6. Run it yourself so you see concurrency, not just read about it. The bare <code class="inl">await main()</code> works in a Jupyter cell. In a plain script, use <code class="inl">asyncio.run(main())</code>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s17">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s17">
+          <div class="topic-header-main"><span class="topic-badge">18</span>
+            <h2 id="s17" class="topic-title">Project — build a Travel Assistant Agent</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s17">
+          <div class="part-section is-collapsed" id="s17-the-brief">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17-the-brief">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The brief</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17-the-brief">
+              <ul class="meta-strip">
+                <li>Section 17</li>
+                <li>Capstone</li>
+              </ul>
+
+
+
+              <p>This project mirrors Diagram 3, the travel planner. You finish where Module 1 began, but now you build it yourself. It uses every skill from both modules: custom tools, multiple tools, a pre-built tool, a system prompt, and the agentic loop.</p>
+
+              <p>Build an agent that answers: <em>"I'm going to Goa for 3 days next week with a budget of ₹20,000. What should I pack and what will it cost?"</em> The agent should reason across weather, packing, and budget before it answers.</p>
+              <div class="data-cards">
+  <div class="data-card">
+    <div class="data-card-header"><code>get_weather_forecast</code></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Job</span><span class="data-val">Return conditions for a city and date range</span></div>
+      <div class="data-field"><span class="data-label">Skill practised</span><span class="data-val">Custom tool, mock data</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header"><code>suggest_packing_list</code></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Job</span><span class="data-val">Turn weather and trip length into a packing list</span></div>
+      <div class="data-field"><span class="data-label">Skill practised</span><span class="data-val">Tool that consumes another tool's output</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header"><code>estimate_trip_cost</code></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Job</span><span class="data-val">Estimate rough cost from city, days, and travellers</span></div>
+      <div class="data-field"><span class="data-label">Skill practised</span><span class="data-val">Numeric logic and a dict return</span></div>
+    </div>
+  </div>
+  <div class="data-card">
+    <div class="data-card-header"><code>calculator</code></div>
+    <div class="data-card-body">
+      <div class="data-field"><span class="data-label">Job</span><span class="data-val">Budget maths</span></div>
+      <div class="data-field"><span class="data-label">Skill practised</span><span class="data-val">Pre-built community tool</span></div>
+    </div>
+  </div>
+</div>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s17-starter-code">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17-starter-code">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Starter code</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17-starter-code">
+              <span class="code-tab-label">three/travel_assistant.py</span>
+              <pre><code data-lang="python">
+"""Capstone: Travel Assistant Agent (Modules 1 &amp; 2)."""
+
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+from strands_tools import calculator
+
+
+@tool
+def get_weather_forecast(city: str, days: int) -&gt; dict:
+    """Get the weather forecast for a city over a number of days.
+
+    Args:
+        city: Destination city name (e.g., "Goa", "Bangalore")
+        days: Number of days in the trip
+    """
+    # ① use mock data — replace with a real weather api to go further
+    forecasts = {
+        "goa":       {"high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"},
+        "bangalore": {"high_c": 27, "low_c": 18, "conditions": "mild, light evening rain"},
+        "jaipur":    {"high_c": 38, "low_c": 25, "conditions": "hot and dry"},
+        "manali":    {"high_c": 14, "low_c": 3,  "conditions": "cold, chance of snow"},
+    }
+    # ② pick matching city weather or a default forecast for unknown cities
+    data = forecasts.get(city.lower(), {"high_c": 28, "low_c": 20, "conditions": "moderate"})
+    # ③ return the requested city and trip length with forecast fields
+    return {"city": city, "days": days, **data}
+
+
+@tool
+def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list:
+    """Suggest what to pack based on temperatures, trip length and conditions.
+
+    Args:
+        high_c: Daytime high in Celsius
+        low_c: Night-time low in Celsius
+        days: Number of days in the trip
+        conditions: Short description of expected weather
+    """
+    # ① start with essentials based on trip length
+    items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
+
+    # ② add hot-weather items when daytime temperatures are high
+    if high_c &gt;= 30:
+        items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
+    # ③ add warm layers when nights are cool or cold
+    if low_c &lt;= 15:
+        items += ["warm jacket", "thermal layer"]
+    elif low_c &lt;= 22:
+        items += ["light jacket for evenings"]
+    # ④ add rain gear when conditions mention rain or showers
+    if "rain" in conditions.lower() or "shower" in conditions.lower():
+        items += ["compact umbrella", "quick-dry footwear"]
+    # ⑤ add snow gear when snow appears in the forecast
+    if "snow" in conditions.lower():
+        items += ["gloves", "woollen cap", "waterproof boots"]
+
+    # ⑥ return the final packing checklist
+    return items
+
+
+@tool
+def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
+    """Estimate the cost of a trip in Indian rupees.
+
+    Args:
+        city: Destination city
+        days: Number of days
+        travellers: Number of people travelling (default: 1)
+    """
+    # ① estimate lodging from city-specific nightly rates
+    per_night = {"goa": 3500, "bangalore": 3000, "jaipur": 2500, "manali": 2800}
+    stay = per_night.get(city.lower(), 3000) * days
+    # ② estimate food and local travel for the whole trip
+    food = 1200 * days * travellers
+    local_travel = 800 * days
+    # ③ add the cost categories into one total
+    total = stay + food + local_travel
+
+    # ④ return a structured cost breakdown for the agent
+    return {
+        "city": city,
+        "days": days,
+        "travellers": travellers,
+        "stay_inr": stay,
+        "food_inr": food,
+        "local_travel_inr": local_travel,
+        "total_inr": total,
+    }
+
+
+# ① choose the bedrock model for the capstone agent
+model = BedrockModel(model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0")
+
+# ② register weather, packing, cost, and calculator tools
+agent = Agent(
+    model=model,
+    tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
+    system_prompt=(
+        "You are a practical travel assistant. "
+        "When asked about a trip: check the weather first, then suggest what to pack "
+        "based on that weather, then estimate the cost. "
+        "Always say whether the trip fits the user's budget, and keep advice concise."
+    ),
+)
+
+if __name__ == "__main__":
+    # ① ask one realistic travel-planning question
+    response = agent(
+        "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
+        "What should I pack, and does it fit my budget?"
+    )
+    # ② print the agent's plan and budget answer
+    print(response)
+</code></pre>
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python three/travel_assistant.py
+
+# or ask your own question:
+python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s17-what-to-observe-together">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17-what-to-observe-together">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">What to observe together</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17-what-to-observe-together">
+              <p>Notice that the agent calls <code class="inl">get_weather_forecast</code> first. Then it feeds those numbers into <code class="inl">suggest_packing_list</code>. Then it prices the trip and compares it with the budget. Nobody wrote that sequence. The agentic loop worked it out. That is Diagram 9 running in your terminal.</p>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s17-extension-challenges">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17-extension-challenges">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Extension challenges</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17-extension-challenges">
+              <ul>
+                <li>Easy: add a <code class="inl">get_visa_requirements(country)</code> tool and ask about an international trip.</li>
+                <li>Medium: replace the mock weather with a real API call using <code class="inl">requests</code>. This uses the same pattern from Section 10.</li>
+                <li>Medium: regroup the three tools into a <code class="inl">TravelTools</code> class with shared state, as in Section 16.1.</li>
+                <li>Harder: make the weather and cost lookups <code class="inl">async</code> so a multi-city comparison runs in parallel. See Section 16.2.</li>
+                <li>Harder: add <code class="inl">file_write</code> from <code class="inl">strands_tools</code> and have the agent save an itinerary to disk.</li>
+              </ul>
+              <div class="callout callout-key">
+
+                <p><strong>How to know you understand it.</strong> You understand these two modules if you can do four things: (1) explain why the docstring matters, (2) add a fourth tool without help, (3) predict which tools the agent will call for a question, and (4) debug a retired-model error on your own.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s17b">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s17b">
+          <div class="topic-header-main"><span class="topic-badge">19</span>
+            <h2 id="s17b" class="topic-title">Every command in one place</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s17b">
+          <div class="part-section is-collapsed" id="s17b-setup-once">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17b-setup-once">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Setup (once)</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17b-setup-once">
+              <ul class="meta-strip">
+                <li>Section 17b</li>
+              </ul>
+
+
+              <p>Use this as a copy-paste reference. Run every command from the project root, which is the folder that contains <code class="inl">config.py</code>.</p>
+
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+./setup.sh                       # macOS / Linux  (Windows: setup.bat)
+source .venv/bin/activate
+export AWS_DEFAULT_REGION=us-east-1
+python 00_check_setup.py         # verifies everything, makes a real model call
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s17b-every-example-in-learning-order">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s17b-every-example-in-learning-order">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Every example, in learning order</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17b-every-example-in-learning-order">
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+# ---- Module 1 · first agents ----
+python one/01_hello_world_agent.py        # simplest agent, no tools
+python one/02_hello_world_langgraph.py    # with a tool — watch the loop
+
+# ---- Module 2 · tools ----
+python two/01_function_to_tool.py         # THE core idea: @tool
+python two/02_tip_calculator.py           # first useful tool agent
+python two/03_multi_tool_sales.py         # 3 tools, agent picks the order
+python two/04_custom_tool_inventory.py    # build your own tool
+python two/05_prebuilt_tools.py           # community tools + system prompt
+python two/06_multi_prebuilt_tools.py     # combining several tools
+python two/07_use_aws.py                  # one tool, many AWS services
+python two/08_class_based_tools.py        # shared-resource pattern
+python two/09_async_tools.py              # parallel tools: 2s not 6s
+
+# ---- Module 3 · capstone ----
+python three/travel_assistant.py
+</code></pre>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s17b-helpers">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-s17b-helpers">
+              <div class="part-header-left"><span class="part-indicator ind-assignments"></span>
+                <h3 class="part-heading">Helpers</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s17b-helpers">
+              <span class="code-tab-label">Run it</span>
+              <pre><code data-lang="text">
+python 00_check_setup.py     # run whenever something breaks
+python 01_list_models.py     # when a model is retired, pick a new one
+aws sts get-caller-identity  # are my credentials alive?
+env | grep AWS               # what credentials are actually set?
+</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="topic-section is-collapsed" id="topic-s18">
+        <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-s18">
+          <div class="topic-header-main"><span class="topic-badge">20</span>
+            <h2 id="s18" class="topic-title">Troubleshooting</h2>
+          </div>
+          <div class="topic-header-meta"><span class="topic-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"
+                width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg></span></div>
+        </div>
+        <div class="topic-content" id="content-s18">
+          <div class="part-section is-collapsed" id="s18-troubleshooting-keep-this-open-while-you-work">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s18-troubleshooting-keep-this-open-while-you-work">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">Troubleshooting — keep this open while you work</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s18-troubleshooting-keep-this-open-while-you-work">
+              <ul class="meta-strip">
+                <li>Section 18</li>
+              </ul>
+
+
+              <ul class="card-grid">
+  <li><b><code>ResourceNotFoundException … end of its life</code> /
+                    <code>marked by provider as Legacy</code></b> Retired model. Run <code class="inl">python 01_list_models.py</code>, pick an active model, and change <code class="inl">MODEL_ID</code> in <code class="inl">config.py</code>.</li>
+  <li><b><code>AccessDeniedException</code></b> The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both.</li>
+  <li><b><code>InvalidClientTokenId</code></b> Credentials are stale or deleted. Create a new access key and rerun <code class="inl">aws configure</code>.</li>
+  <li><b><code>ModuleNotFoundError: No module named 'strands'</code></b> Wrong Python. Activate the venv. In Jupyter, switch the kernel.</li>
+  <li><b>Notebook cell stuck on <code>[*]</code></b> A tool is waiting for consent. Type <code class="inl">y</code> at the hidden prompt, or set <code class="inl">BYPASS_TOOL_CONSENT="true"</code> in an earlier cell.</li>
+  <li><b>Terminal shows <code>quote&gt;</code> or <code>:</code> and seems frozen</b> <code class="inl">quote&gt;</code> means an unclosed quote. Press Ctrl+C. <code class="inl">:</code> is the AWS CLI pager. Press <code class="inl">q</code>. Set <code class="inl">export AWS_PAGER=""</code> to stop it.</li>
+  <li><b>Agent ignores your tool</b> The docstring is weak, or type hints are missing. Rewrite the description so it says plainly when the tool should be used.</li>
+  <li><b><code>ModuleNotFoundError: No module named 'config'</code></b> You ran from inside a subfolder. Run from the project root: <code class="inl">python one/01_hello_world_agent.py</code>.</li>
+  <li><b>Worked yesterday but fails today</b> Usually expired SSO credentials. Paste a fresh block, then run <code class="inl">python 00_check_setup.py</code>.</li>
+</ul>
+            </div>
+          </div>
+          <div class="part-section is-collapsed" id="s18-the-five-sentences-to-remember">
+            <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+              aria-controls="body-s18-the-five-sentences-to-remember">
+              <div class="part-header-left"><span class="part-indicator ind-theory"></span>
+                <h3 class="part-heading">The five sentences to remember</h3>
+              </div>
+              <div class="part-header-right"><span class="part-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"
+                    width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg></span></div>
+            </div>
+            <div class="part-body" id="body-s18-the-five-sentences-to-remember">
+              <ol>
+                <li>RAG gives a model better information. Tools give it the ability to act.</li>
+                <li>An agent is a loop: reason → call a tool → read the result → repeat until done.</li>
+                <li>A tool is a Python function plus a decorator, type hints, and a good docstring.</li>
+                <li>The docstring is the model's user manual. Write it for the model, not for yourself.</li>
+                <li>Build small, single-purpose tools. The agent handles the sequence.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+  <footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>
+  <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+  <script src="../dsa/dsa-study.js"></script>
+  <script>
+    // Topic & inner part accordions (same behaviour as the DSA courses)
+    (() => {
+      const toggleCard = (card, headerSelector, forceOpen = null) => {
+        if (!card) return;
+        const header = card.querySelector(headerSelector);
+        const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+        card.classList.toggle("is-collapsed", !willOpen);
+        if (header) header.setAttribute("aria-expanded", String(willOpen));
+      };
+
+      const openAndScrollTo = (targetId) => {
+        if (!targetId) return;
+        const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+        const target = document.getElementById(decodeURIComponent(cleanId));
+        if (!target) return;
+        const part = target.closest(".part-section");
+        if (part) toggleCard(part, ".part-header", true);
+        const section = target.closest(".topic-section");
+        if (section) {
+          toggleCard(section, ".topic-header", true);
+          setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+        } else {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      };
+
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".headerlink")) return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+          return;
+        }
+        const link = e.target.closest("a");
+        const href = link && link.getAttribute("href");
+        if (href && href.startsWith("#") && href.length > 1) openAndScrollTo(href);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+          e.preventDefault();
+          toggleCard(partHeader.closest(".part-section"), ".part-header");
+          return;
+        }
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+          e.preventDefault();
+          toggleCard(topicHeader.closest(".topic-section"), ".topic-header");
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-course-action]");
+        if (!btn) return;
+        const open = btn.dataset.courseAction === "expand-all";
+        document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", open));
+        document.querySelectorAll(".part-section").forEach((p) => toggleCard(p, ".part-header", open));
+      });
+
+      if (window.location.hash) setTimeout(() => openAndScrollTo(window.location.hash), 150);
+      window.addEventListener("hashchange", () => openAndScrollTo(window.location.hash));
+    })();
+  </script>
+</body>
+
+</html>

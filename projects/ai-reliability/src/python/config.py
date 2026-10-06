@@ -37,9 +37,11 @@ def get_openai_client() -> OpenAI:
     """Return a shared OpenAI client built from OPENAI_API_KEY."""
     global _client
     if _client is None:
+        # ① read the API key lazily so tests/imports do not require credentials
         api_key = get_env("OPENAI_API_KEY")
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        # ② create one reusable client with bounded timeout and retries
         _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
     return _client
 
@@ -52,8 +54,9 @@ def parallel_map(fn, items):
 
 def bar(correct: int, total: int, width: int = 10) -> str:
     """Render a text accuracy bar with a count and percentage."""
+    # ① avoid dividing by zero when a filtered comparison has no examples
     if total == 0:
         return "n/a"
+    # ② convert the score into filled and empty bar characters
     filled = round(correct / total * width)
     return f"{'█' * filled}{'░' * (width - filled)}  {correct}/{total} ({round(correct / total * 100)}%)"
-

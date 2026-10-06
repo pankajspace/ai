@@ -23,6 +23,12 @@ In-depth study covering OOP, magic methods, decorators, generators, async/await,
 
 [Start learning →](python/python-detailed-course.html)
 
+### Python My Course
+
+Fast-track essentials covering variables, strings, lists, dictionaries, tuples, sets, loops, comprehensions, functions, error handling, OOP, modules, and async/await.
+
+[Start learning →](python/python-my-course.html)
+
 ### JavaScript Crash Course
 
 Types and coercion, scope and the temporal dead zone, references, closures, prototypes, the event loop, promises and the DOM.

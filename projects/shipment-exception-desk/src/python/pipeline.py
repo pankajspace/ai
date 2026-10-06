@@ -29,7 +29,7 @@ except ImportError:
     )
     from session import log_exception
 
-# Compensation escalation thresholds
+# ① set compensation escalation thresholds for manager review
 # Premium customers receive manager intervention at a lower dollar threshold ($50 vs $100)
 ESCALATION_THRESHOLDS = {
     "standard": 100.0,
@@ -48,18 +48,22 @@ def evaluate_escalation(
     - Unknown or unclassifiable exceptions escalate automatically regardless of value.
     - Escalates if compensation exceeds tier threshold (Standard: $100, Premium: $50).
     """
+    # ① normalize the tier and choose its escalation threshold
     tier_normalized = customer_tier.strip().lower()
     threshold = ESCALATION_THRESHOLDS.get(tier_normalized, 100.0)
 
+    # ② escalate unclear reports so a human can review them
     if category == "unknown":
         return True, "Unclassifiable or garbled report requires manual operations review."
 
+    # ③ escalate payouts that exceed the tier approval limit
     if compensation_amount > threshold:
         return (
             True,
             f"Compensation amount (${compensation_amount:.2f}) exceeds {tier_normalized.capitalize()} tier threshold (${threshold:.2f}).",
         )
 
+    # ④ auto-approve payouts that stay inside the tier limit
     return (
         False,
         f"Compensation (${compensation_amount:.2f}) is within {tier_normalized.capitalize()} tier auto-approval limit (${threshold:.2f}).",
@@ -73,15 +77,16 @@ def process_exception(
     log_to_session: bool = True,
 ) -> Dict[str, Any]:
     """Process an incoming shipment exception report through the full triage pipeline."""
+    # ① prepare the decision trail and normalize inputs for consistent rules
     steps: List[str] = []
     customer_tier = customer_tier.strip().lower()
     shipment_value = float(shipment_value)
 
-    # 1. Classify Report
+    # ② classify report with the classifier chain
     category = classify_chain.invoke({"report_text": report_text})
     steps.append(f"Step 1 [Classify]: Report classified as '{category.upper()}' via LLM.")
 
-    # 2. Route to Compensation Calculator
+    # ③ route to compensation calculator by category
     if category == "delayed":
         comp_result = calculate_delay_compensation(shipment_value)
     elif category == "damaged":
@@ -97,7 +102,7 @@ def process_exception(
         f"Step 2 [Compensate]: Calculated compensation ${comp_amount:.2f} ({comp_reason})."
     )
 
-    # 3. Escalation Decision
+    # ④ make the escalation decision from tier and payout
     escalated, escalation_reason = evaluate_escalation(
         category=category,
         compensation_amount=comp_amount,
@@ -106,7 +111,7 @@ def process_exception(
     action_taken = "Escalated to Manager" if escalated else "Auto-Resolved"
     steps.append(f"Step 3 [Escalation Check]: {action_taken} — {escalation_reason}")
 
-    # 4. Draft Appropriate Message
+    # ⑤ draft appropriate message for manager or customer
     if escalated:
         draft = escalate_chain.invoke(
             {
@@ -132,6 +137,7 @@ def process_exception(
         )
         steps.append("Step 4 [Draft]: Generated customer resolution & apology email.")
 
+    # ⑥ package every pipeline decision into the API/CLI result
     result = {
         "report_text": report_text,
         "shipment_value": shipment_value,
@@ -146,10 +152,9 @@ def process_exception(
         "steps": steps,
     }
 
-    # 5. Log to session
+    # ⑦ log to session for daily aggregation when requested
     if log_to_session:
         log_exception(result)
         steps.append("Step 5 [Session]: Exception logged into daily triage ledger.")
 
     return result
-

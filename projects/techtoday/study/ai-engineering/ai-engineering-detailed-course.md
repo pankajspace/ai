@@ -82,6 +82,12 @@ Sixty-two sections, ordered so that each one depends only on the ones before it:
 61. [Pattern-Recognition Playbook](#61-playbook)
 62. [Practice Roadmap](#62-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Model Foundations
+
+How LLMs work under the hood, just deeply enough to reason about their behaviour, latency and cost.
+
 <a id="1-what-ai-engineering-is"></a>
 
 ## 1. What AI Engineering Is
@@ -460,6 +466,12 @@ The use cases that earn their cost are narrower than the demos suggest:
 > **Vision models hallucinate the same way text models do, and it is harder to notice.** They will confidently read a number that is not in the image, especially at low resolution or in a dense table. Ask for a confidence field and the bounding region, cross-check totals with arithmetic you do yourself, and route low-confidence extractions to a human. Send the highest resolution the budget allows — most extraction errors are resolution errors.
 
 ---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Prompting, Structured Output & Tools
+
+Controlling a single model call: prompts, output schemas, tool calls and the context you feed it.
 
 <a id="11-prompting-fundamentals"></a>
 
@@ -889,6 +901,12 @@ The justification is architectural. Attention is a finite budget spread across e
 
 ---
 
+<a id="unit-3"></a>
+
+## Unit 3 — Retrieval-Augmented Generation
+
+Grounding answers in your own data, from parsing and chunking to retrieval, reranking and evaluation.
+
 <a id="20-document-processing"></a>
 
 ## 20. Document Processing & Parsing
@@ -1241,6 +1259,12 @@ for (const k of [1, 3, 5, 10, 30]) {
 
 ---
 
+<a id="unit-4"></a>
+
+## Unit 4 — Agents
+
+Letting the model act in a loop: planning, durable execution, memory, multi-agent coordination and human oversight.
+
 <a id="29-agent-loop"></a>
 
 ## 29. The Agent Loop — Observe, Think, Act
@@ -1565,6 +1589,12 @@ The graph model deserves a note because it maps well onto what agents actually n
 
 ---
 
+<a id="unit-5"></a>
+
+## Unit 5 — Evaluation & Observability
+
+Proving a system works and seeing why it doesn't: the discipline that makes every other change safe.
+
 <a id="40-good-evals"></a>
 
 ## 40. What Makes a Good Eval
@@ -1812,6 +1842,12 @@ Use the **OpenTelemetry GenAI semantic conventions** for attribute names (`gen_a
 > **Prompts and retrieved documents contain user data.** Redact before storing, sample rather than storing everything, set a short retention on full payloads, and keep aggregates forever. A trace store with unredacted prompts is a GDPR incident with good indexing.
 
 ---
+
+<a id="unit-6"></a>
+
+## Unit 6 — Customising & Serving Models
+
+Adapting models to your task and serving them efficiently: fine-tuning, local inference, caching, routing and cost.
 
 <a id="47-fine-tuning-when"></a>
 
@@ -2076,6 +2112,12 @@ Two terms are the ones teams forget. **Agent steps multiply everything** — a t
 > **Warning**
 >
 > **Put a hard spend limit in the code, not just an alert in the dashboard.** A loop that retries on a hostile input, an agent with no step cap, or a batch job that re-embeds the whole corpus can produce a five-figure bill overnight. Per-user, per-feature and global daily caps with a circuit breaker that actually refuses requests — that is OWASP LLM10, and it is a two-hour implementation.
+
+<a id="unit-7"></a>
+
+## Unit 7 — Shipping Safely
+
+Security, guardrails, rollout and system design for AI in production, plus the revision material to hold it all together.
 
 <a id="54-security"></a>
 

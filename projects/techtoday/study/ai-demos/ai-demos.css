@@ -1,0 +1,856 @@
+/* ==========================================================================
+   TechToday — AI Demos Stylesheet
+   Slick design system matching the main homepage courses:
+   - Polished catalog page with glowing cards and clean masonry grid
+   - Spacious, elegant course typography and layout
+   - Level 1 Topic & Level 2 Part collapsible accordions with smooth states
+   - Clean, beautiful table styling with uppercase headers and .table-wrap
+   - Modern toolbar, code blocks, callouts, analogies, and static viz cards
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Catalog Page Styles (ai-demos.html)
+   -------------------------------------------------------------------------- */
+
+header .nav {
+    padding: 0.75rem 1.5rem;
+}
+
+.hero {
+    padding: 2.5rem 1.5rem 1.5rem;
+    text-align: left;
+}
+
+.hero h1 {
+    font-size: clamp(28px, 4.5vw, 40px);
+    font-weight: 700;
+    color: #f3f8fc;
+    line-height: 1.2;
+    margin-bottom: 0.4rem;
+}
+
+.hero .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-muted, #9e9e9e);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    padding: 1rem 0 3rem;
+}
+
+.card {
+    background: var(--bg-elevated, #1e1e1e);
+    border: 1px solid var(--border, #2c2c2c);
+    border-radius: 10px;
+    padding: 1.35rem 1.45rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.card .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.3;
+}
+
+.card p {
+    margin: 0 0 1.2rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-muted, #9e9e9e);
+    flex: 1;
+}
+
+.card a:not(.info-link) {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #38bdf8;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.card a:not(.info-link):hover {
+    color: #7dd3fc;
+    text-decoration: underline;
+}
+
+.corner-link.info-link {
+    position: absolute;
+    top: 0.9rem;
+    right: 1rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #64748b;
+    border-radius: 50%;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.corner-link.info-link:hover {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. Study Guide Pages — Slick Course Layout & Spacing
+   -------------------------------------------------------------------------- */
+
+body.is-ai .study-layout {
+    display: grid;
+    grid-template-columns: 268px minmax(0, 1fr);
+    justify-content: center;
+    gap: 28px;
+    width: min(1500px, 92%);
+    margin: 0 auto;
+    padding: 24px 0 64px;
+}
+
+body.is-ai .study {
+    padding: 0;
+    min-width: 0;
+}
+
+body.is-ai .topic-menu {
+    position: sticky;
+    top: 72px;
+    padding: 0 0 24px;
+    max-height: calc(100vh - 88px);
+}
+
+body.is-ai .study>h1:first-child {
+    margin: 0 0 18px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #f3f8fc;
+}
+
+body.is-ai .study>h1:first-child::before {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--accent, #e0af68);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.is-ai .lede {
+    max-width: 76ch;
+    margin: 0 0 24px;
+    color: #c6d1dc;
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+body.is-ai p,
+body.is-ai ul,
+body.is-ai ol {
+    margin: 0 0 16px;
+    line-height: 1.7;
+}
+
+body.is-ai .part-body>ul:not(.card-grid):not(.meta-strip),
+body.is-ai .part-body>ol {
+    margin: 8px 0 16px;
+    padding-left: 22px;
+}
+
+body.is-ai .part-body>ul:not(.card-grid):not(.meta-strip) li,
+body.is-ai .part-body>ol li {
+    margin-bottom: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Course Toolbar & Action Buttons
+   -------------------------------------------------------------------------- */
+
+body.is-ai .course-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0 10px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+}
+
+body.is-ai .course-toolbar-info {
+    color: #8c9ba8;
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.is-ai .course-toolbar-info .dot {
+    opacity: 0.5;
+}
+
+body.is-ai .course-toolbar-actions {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+body.is-ai .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    color: #f1f5f9;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+body.is-ai .action-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+}
+
+body.is-ai .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+body.is-ai .meta-strip li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--surface-raised, #171c22);
+    border: 1px solid var(--line, #28303a);
+    border-radius: 999px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    color: var(--text, #dce4ec);
+}
+
+/* --------------------------------------------------------------------------
+   4. Level 1 Topic Accordion (.topic-section)
+   -------------------------------------------------------------------------- */
+
+body.is-ai .topic-section {
+    margin: 12px 0;
+    background: #0f1217;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+body.is-ai .topic-section:hover {
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+body.is-ai .topic-section:not(.is-collapsed) {
+    border-color: rgba(56, 189, 248, 0.35);
+    border-left: 1px solid rgba(56, 189, 248, 0.35);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.45);
+    background: #11141b;
+}
+
+body.is-ai .topic-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+body.is-ai .topic-header:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+body.is-ai .topic-section:not(.is-collapsed) .topic-header {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.07) 0%, rgba(20, 24, 33, 0.3) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.is-ai .topic-header:focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: -2px;
+}
+
+body.is-ai .topic-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 6px;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+body.is-ai .topic-section:not(.is-collapsed) .topic-badge {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: rgba(56, 189, 248, 0.45);
+}
+
+body.is-ai .topic-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: #f1f5f9 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.01em !important;
+}
+
+body.is-ai .topic-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #8c9ba8;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+body.is-ai .topic-chevron svg {
+    width: 15px;
+    height: 15px;
+}
+
+body.is-ai .topic-section:not(.is-collapsed) .topic-chevron {
+    transform: rotate(180deg);
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+}
+
+body.is-ai .topic-content {
+    padding: 12px 16px 16px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Level 2 Part Accordion (.part-section)
+   -------------------------------------------------------------------------- */
+
+body.is-ai .part-section {
+    margin: 10px 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+}
+
+body.is-ai .part-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 7px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+body.is-ai .part-header:hover {
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.is-ai .part-section:not(.is-collapsed) .part-header {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.09);
+}
+
+body.is-ai .part-section:not(.is-collapsed):has(.ind-theory) .part-header {
+    background: rgba(167, 139, 250, 0.07);
+    border-color: rgba(167, 139, 250, 0.28);
+}
+
+body.is-ai .part-section:not(.is-collapsed):has(.ind-questions) .part-header {
+    background: rgba(56, 189, 248, 0.07);
+    border-color: rgba(56, 189, 248, 0.28);
+}
+
+body.is-ai .part-section:not(.is-collapsed):has(.ind-assignments) .part-header {
+    background: rgba(52, 211, 153, 0.07);
+    border-color: rgba(52, 211, 153, 0.28);
+}
+
+body.is-ai .part-header:focus-visible {
+    outline: 2px solid #38bdf8;
+    outline-offset: -2px;
+}
+
+body.is-ai .part-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    color: #8c9ba8;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+}
+
+body.is-ai .part-arrow svg {
+    width: 13px;
+    height: 13px;
+}
+
+body.is-ai .part-section:not(.is-collapsed) .part-arrow {
+    transform: rotate(180deg);
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+body.is-ai .part-body {
+    padding: 12px 14px 6px;
+}
+
+body.is-ai .topic-content h3,
+body.is-ai .part-body h3 {
+    margin: 18px 0 10px;
+    font-size: 17px;
+    color: #f1f5f9;
+}
+
+body.is-ai .topic-content h4,
+body.is-ai .part-body h4 {
+    margin: 14px 0 8px;
+    font-size: 15px;
+    color: var(--accent-bright, #f2c98a);
+}
+
+/* --------------------------------------------------------------------------
+   6. Data Tables & Static Tables (Slick, Accessible, Responsive)
+   -------------------------------------------------------------------------- */
+
+body.is-ai .table-wrap {
+    margin: 20px 0;
+    overflow-x: auto;
+    border: 1px solid var(--line, #28303a);
+    border-radius: 8px;
+    background: var(--surface, #11151a);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    -webkit-overflow-scrolling: touch;
+}
+
+body.is-ai table,
+body.is-ai .static-table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+body.is-ai thead {
+    display: table-header-group !important;
+}
+
+body.is-ai tbody {
+    display: table-row-group !important;
+    flex-direction: unset !important;
+    gap: unset !important;
+    width: unset !important;
+}
+
+body.is-ai tr,
+body.is-ai table tr,
+body.is-ai .static-table tr {
+    display: table-row !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+body.is-ai th,
+body.is-ai .static-table th {
+    display: table-cell !important;
+    padding: 10px 14px !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    color: var(--accent-bright, #f2c98a) !important;
+    background: var(--surface-raised, #171c22) !important;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid var(--line, #28303a) !important;
+    white-space: nowrap !important;
+}
+
+body.is-ai td,
+body.is-ai .static-table td {
+    display: table-cell !important;
+    padding: 10px 14px !important;
+    text-align: left !important;
+    vertical-align: top !important;
+    border-bottom: 1px solid var(--line, #28303a) !important;
+    color: var(--text, #dce4ec) !important;
+    background: transparent !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+}
+
+body.is-ai tbody tr:hover {
+    background: rgba(255, 255, 255, 0.025) !important;
+}
+
+body.is-ai tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Reset data-label pseudo-elements so text is never duplicated */
+body.is-ai table td[data-label]::before,
+body.is-ai .static-table td[data-label]::before {
+    display: none !important;
+}
+
+body.is-ai td code,
+body.is-ai th code {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 12.5px;
+}
+
+/* --------------------------------------------------------------------------
+   6.1 Responsive Data Cards (.data-cards, .data-card)
+   -------------------------------------------------------------------------- */
+
+body.is-ai .data-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+}
+
+body.is-ai .data-card {
+    background: var(--surface, #11151a);
+    border: 1px solid var(--line, #28303a);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+body.is-ai .data-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+}
+
+body.is-ai .data-card-header {
+    padding: 10px 14px;
+    background: var(--surface-raised, #171c22);
+    border-bottom: 1px solid var(--line-soft, #1e252d);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--accent-bright, #f2c98a);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+body.is-ai .data-card-header code {
+    font-size: 12.5px;
+    color: var(--blue, #8cc8ff);
+}
+
+body.is-ai .data-card-title {
+    font-weight: 600;
+}
+
+body.is-ai .data-card-badge {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+body.is-ai .data-card-body {
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text, #dce4ec);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+body.is-ai .data-card-body code {
+    font-size: 12px;
+}
+
+body.is-ai .data-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+body.is-ai .data-label {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted, #94a0ad);
+}
+
+body.is-ai .data-val {
+    font-size: 13px;
+    color: var(--text, #dce4ec);
+    word-break: break-word;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. Static Example Panels (.viz) & Visual Helpers
+   -------------------------------------------------------------------------- */
+
+body.is-ai .viz {
+    margin: 20px 0;
+    padding: 16px 18px;
+    background: var(--surface, #11151a);
+    border: 1px solid var(--line, #28303a);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+body.is-ai .viz-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--line-soft, #1e252d);
+    padding-bottom: 8px;
+}
+
+body.is-ai .viz-title {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent, #e0af68);
+}
+
+body.is-ai .viz-step {
+    font-size: 12px;
+    color: var(--muted, #94a0ad);
+}
+
+body.is-ai .viz-stage {
+    padding: 8px 0;
+    min-height: auto;
+}
+
+body.is-ai .viz-note {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: var(--surface-raised, #171c22);
+    border-left: 3px solid var(--blue, #8cc8ff);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--muted, #94a0ad);
+}
+
+/* --------------------------------------------------------------------------
+   8. Callouts, Analogies, Card Grids & Code
+   -------------------------------------------------------------------------- */
+
+body.is-ai .callout {
+    margin: 20px 0;
+    padding: 14px 18px 14px 44px;
+    border-radius: 8px;
+}
+
+body.is-ai .card-grid {
+    gap: 12px;
+    margin: 18px 0;
+}
+
+body.is-ai .card-grid li {
+    padding: 12px 14px;
+}
+
+body.is-ai .analogy {
+    margin: 22px 0;
+    padding: 16px 20px;
+    gap: 16px;
+    border-radius: 10px;
+}
+
+body.is-ai pre {
+    margin: 20px 0;
+    padding: 18px;
+    border-radius: 8px;
+}
+
+body.is-ai .figure {
+    margin: 22px 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. Mobile Responsive Tweaks (< 768px & < 960px)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 960px) {
+    body.is-ai .study-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px 0 48px;
+    }
+
+    body.is-ai .topic-menu {
+        position: static;
+        max-height: none;
+        padding: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 1.75rem 1rem 1rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0.75rem 0 2rem;
+    }
+
+    .card {
+        padding: 1.15rem 1.25rem 1.1rem;
+    }
+
+    body.is-ai .study>h1:first-child {
+        font-size: 28px;
+        margin-bottom: 12px;
+    }
+
+    body.is-ai .lede {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    body.is-ai .topic-header {
+        padding: 10px 14px;
+    }
+
+    body.is-ai .part-header {
+        padding: 7px 10px;
+    }
+
+    body.is-ai .part-body {
+        padding: 10px 8px 4px;
+    }
+
+    body.is-ai pre {
+        padding: 14px 12px;
+        margin: 14px 0;
+    }
+
+    body.is-ai .callout {
+        padding: 12px 14px 12px 38px;
+        margin: 14px 0;
+    }
+
+    body.is-ai .viz {
+        padding: 12px 14px;
+        margin: 14px 0;
+    }
+
+    body.is-ai th,
+    body.is-ai .static-table th,
+    body.is-ai td,
+    body.is-ai .static-table td {
+        padding: 8px 10px !important;
+        font-size: 12.5px !important;
+    }
+}

@@ -22,7 +22,9 @@ def get_travel_suggestion(city: str = "Bangalore") -> str:
     Returns:
         The text of the assistant's reply as a plain string.
     """
+    # ① create the OpenAI client used for the travel suggestion
     client = get_openai_client()
+    # ② ask the model for one concise activity in the requested city
     response = client.chat.completions.create(
         model=TRAVEL_MODEL,
         messages=[
@@ -40,6 +42,7 @@ def get_travel_suggestion(city: str = "Bangalore") -> str:
             },
         ],
     )
+    # ③ return the first assistant reply as plain text for the API
     return response.choices[0].message.content
 
 

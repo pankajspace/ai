@@ -55,12 +55,15 @@ def _to_messages(history: list[dict]) -> list:
     Returns:
         A list of alternating ``HumanMessage`` / ``AIMessage`` objects.
     """
+    # ① start an empty list for the LangChain message objects
     messages = []
+    # ② translate each saved browser turn into the matching LangChain class
     for turn in history:
         if turn.get("role") == "assistant":
             messages.append(AIMessage(turn.get("content", "")))
         else:
             messages.append(HumanMessage(turn.get("content", "")))
+    # ③ hand the converted history back to the prompt placeholder
     return messages
 
 
@@ -75,8 +78,11 @@ def reply(question: str, history: list[dict] | None = None) -> str:
     Returns:
         The assistant's reply text.
     """
+    # ① convert optional JSON history into LangChain message objects
     messages = _to_messages(history or [])
+    # ② run the prompt/model chain with the history and newest question
     response = _build_chain().invoke({"history": messages, "question": question})
+    # ③ return only the text content from the model's message object
     return response.content
 
 

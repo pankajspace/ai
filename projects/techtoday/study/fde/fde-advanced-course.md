@@ -61,6 +61,12 @@ The other FDE courses teach the job: the engagement, the discovery, the politics
 40. [Pattern Recognition Playbook](#40-pattern-recognition)
 41. [Practice Roadmap](#41-practice-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Model & Prompt Engineering
+
+Getting reliable, efficient behaviour out of a single model call at production scale.
+
 <a id="1-what-this-course-assumes"></a>
 
 ## 1. What This Course Assumes
@@ -972,6 +978,12 @@ It also imposes an architecture. Once you stream, your output guardrails (§29) 
 >
 > Timeouts, not retries, are the most commonly missing line. An LLM call with no timeout will occasionally hang for minutes, hold a connection and a semaphore slot, and cascade into a queue backup that looks like a capacity problem. Set a total timeout, a connect timeout and a time-to-first-token timeout, and make the first one shorter than your caller's.
 
+<a id="unit-2"></a>
+
+## Unit 2 — Retrieval & RAG
+
+Grounding answers in enterprise data, from chunking and indexing to hybrid search, reranking, evaluation and GraphRAG.
+
 <a id="10-chunking"></a>
 
 ## 10. Chunking
@@ -1733,6 +1745,12 @@ five seconds.
 >
 > Carry OCR confidence through to the answer and refuse to assert from low-confidence text. A digit misread on a scanned invoice — 1 for 7, 0 for 8 — produces an answer that is fluent, precise, specific and wrong, with no signal anywhere in the pipeline that anything went amiss. This is the most dangerous failure mode in document AI precisely because it looks like success.
 
+<a id="unit-3"></a>
+
+## Unit 3 — Agents & Orchestration
+
+Agent architectures, LangGraph, multi-agent coordination, memory and the Model Context Protocol.
+
 <a id="19-agent-architectures"></a>
 
 ## 19. Agent Architectures
@@ -2150,6 +2168,12 @@ Every cloud now offers a managed agent service — Bedrock Agents, Vertex Agents
 - **Refuse it when** You need control over chunking, hybrid search, the reranker or the relevance floor — the four things that actually decide retrieval quality (§§10, 13, 14). A managed knowledge base gives you a knob or two and hides the rest, so when quality is poor you have no lever and no diagnosis.
 - **Also refuse when** The run must pause for days for a human approver, or the audit trail must record per-step state. Durable interrupts and replayable checkpoints (§20) are where managed loops are weakest.
 - **The hybrid that usually wins** Managed guardrails and managed identity, because those are commodity and their security team already trusts them; your own retrieval and your own graph, because those are where the engagement's value is.
+
+<a id="unit-4"></a>
+
+## Unit 4 — Production in the Enterprise
+
+Adapting models and wiring them into real enterprise systems securely, observably and affordably.
 
 <a id="24-fine-tuning"></a>
 
@@ -3161,6 +3185,12 @@ only works at today's prices is not a business case.
 > **Key idea**
 >
 > Never present cost per token or per call to a business stakeholder — they cannot evaluate it and it invites the wrong comparison. Present **cost per completed outcome against the cost of the human doing it**, with the override-rework term included and the sensitivity to a price change shown. That is the table that survives a procurement review.
+
+<a id="unit-5"></a>
+
+## Unit 5 — Architecture & Review
+
+Putting it together: reference architectures, the framework landscape, the platform underneath, and the revision material.
 
 <a id="34-reference-architectures"></a>
 

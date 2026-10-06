@@ -45,9 +45,12 @@ def check_stock(item: str) -> str:
     Returns:
         A string describing the stock level, or "unknown item" if not found.
     """
+    # ① normalize the item name so lookups work no matter how the user types it
     item_lower = item.lower()
+    # ② reject items that are not in the shop catalog before checking quantity
     if item_lower not in STOCK:
         return f"{item} is not a known item in our shop."
+    # ③ read the quantity and turn it into a shopper-friendly stock message
     qty = STOCK[item_lower]
     if qty == 0:
         return f"{item} is currently out of stock."
@@ -63,9 +66,12 @@ def apply_discount(item: str) -> str:
     Returns:
         A string with the original and discounted price, or an error message.
     """
+    # ① normalize the item name so the price lookup matches the catalog keys
     item_lower = item.lower()
+    # ② reject unknown items before calculating a discount
     if item_lower not in PRICES:
         return f"{item} is not a known item in our shop."
+    # ③ calculate the discounted rupee price from the original catalog price
     original = PRICES[item_lower]
     discounted = original - (original * DISCOUNT_PERCENT // 100)
     return f"{item}: ₹{original} → ₹{discounted} ({DISCOUNT_PERCENT}% off)"
@@ -139,19 +145,23 @@ def ask(user_message: str) -> str:
     Returns:
         The assistant's final natural-language reply.
     """
+    # ① create the client and start the conversation with the user's question
     client = get_openai_client()
     messages = [{"role": "user", "content": user_message}]
 
-    # 1. First call — the model sees the tools menu and may ask for a tool.
+    # ② first call: the model sees the tools menu and may ask for a tool
     response = client.chat.completions.create(
         model=CHAT_MODEL, messages=messages, tools=TOOLS
     )
     msg = response.choices[0].message
 
-    # 2. Did it request one or more tool calls?
+    # ③ check whether it requested one or more tool calls
     if msg.tool_calls:
 
-        # add the tool REQUEST first — required: every "tool" result must follow the assistant message that asked for it (matched by tool_call_id), or the API rejects the next call for context
+        # ④ record the tool request before adding any tool results
+        # Required: every "tool" result must follow the assistant message that
+        # asked for it (matched by tool_call_id), or the API rejects the next
+        # call for context.
         messages.append(msg)
 
         for call in msg.tool_calls:
@@ -161,11 +171,14 @@ def ask(user_message: str) -> str:
             # args = json.loads(call.function.arguments)  # read the request...
             # result = get_price(args["item"])            # ...and run the tool
 
-            # the model's arguments arrive as a JSON string, e.g. '{"item": "shoes"}' — parse it into a Python dict so we can read args["item"]
+            # ⑤ parse the model's JSON arguments into a Python dict
+            # The model's arguments arrive as a JSON string, e.g.
+            # '{"item": "shoes"}', so we can read args["item"].
             args = json.loads(call.function.arguments)
-            # Look up the tool function from the registry and call it.
+            # ⑥ look up the requested Python tool and run it with the item
             fn = TOOL_FUNCTIONS.get(fn_name)
             result = fn(args["item"]) if fn else f"Unknown tool: {fn_name}"
+            # ⑦ append the tool result in the protocol format the API expects
             messages.append(
                 {
                     "role": "tool",  # the third role, alongside user/assistant
@@ -173,12 +186,13 @@ def ask(user_message: str) -> str:
                     "content": result,
                 }
             )
-        # 3. Send tool results back so the model can answer in plain language.
+        # ⑧ send tool results back so the model can answer in plain language
         response = client.chat.completions.create(
             model=CHAT_MODEL, messages=messages
         )
         msg = response.choices[0].message
 
+    # ⑨ return the model's final text, whether it used tools or not
     return msg.content
 
 

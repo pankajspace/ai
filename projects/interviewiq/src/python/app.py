@@ -49,11 +49,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit mutating API requests
     if request.method == "POST":
+        # ② ask the shared rate limiter whether this client is blocked
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 response with a retry hint for the browser
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -74,12 +77,15 @@ _agent = EvaluatorAgent(memory=_memory)
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the frontend HTML template from the static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② replace the empty data-api-base with the deployment path prefix
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally).  For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the patched HTML response to the browser
     return app.response_class(html, mimetype="text/html")
 
 
@@ -112,21 +118,26 @@ def evaluate():
     Response (JSON): ``{"turn": 1, "feedback": "...", "relevance_evaluation": {...},
         "star_evaluation": {...}, "filler_evaluation": {...}}``
     """
+    # ① parse the JSON payload and normalize the answer text
     data = request.get_json(force=True)
     question_id = data.get("question_id")
     answer = (data.get("answer") or "").strip()
 
+    # ② reject empty answers before doing any scoring
     if not answer:
         return jsonify({"error": "An answer is required."}), 400
 
+    # ③ find the requested question in the interview bank
     q = get_question_by_id(question_id)
     if not q:
         return jsonify({"error": f"Question ID {question_id} not found."}), 400
 
     try:
+        # ④ let the evaluator agent score the answer and update memory
         result = _agent.evaluate_answer(q, answer)
         return jsonify(result)
     except Exception as e:
+        # ⑤ return scoring errors as JSON so the frontend can display them
         return jsonify({"error": str(e)}), 500
 
 
@@ -137,16 +148,20 @@ def coach():
     Request body (JSON): ``{"query": "How am I doing?"}``
     Response (JSON): ``{"response": "..."}``
     """
+    # ① parse the candidate's coaching question from either supported field
     data = request.get_json(force=True)
     message = (data.get("query") or data.get("message") or "").strip()
 
+    # ② reject empty coaching questions
     if not message:
         return jsonify({"error": "A question is required."}), 400
 
     try:
+        # ③ ask the agent to answer using current session memory
         reply = _agent.ask_agent(message)
         return jsonify({"response": reply})
     except Exception as e:
+        # ④ return agent errors as JSON for the frontend
         return jsonify({"error": str(e)}), 500
 
 
@@ -157,6 +172,7 @@ def scorecard():
     Response (JSON): ``{"scorecard": [...], "average_relevance": 75.5,
         "total_questions": 3, "weakest_area": {...}}``
     """
+    # ① gather live session metrics into one scorecard response
     return jsonify({
         "scorecard": _memory.get_scorecard(),
         "average_relevance": _memory.get_average_relevance(),
@@ -172,8 +188,10 @@ def report():
     Response (JSON): ``{"report_text": "...", "total_questions": 3, ...}``
     """
     try:
+        # ① ask memory to aggregate all turns into a final report
         return jsonify(_memory.generate_final_report_dict())
     except Exception as e:
+        # ② return report-generation errors as JSON for the frontend
         return jsonify({"error": str(e)}), 500
 
 
@@ -183,7 +201,9 @@ def reset():
 
     Response (JSON): ``{"status": "ok", "message": "Session reset successfully."}``
     """
+    # ① clear session state in memory and the evaluator agent
     _agent.reset()
+    # ② confirm the fresh session to the browser
     return jsonify({"status": "ok", "message": "Session reset successfully."})
 
 

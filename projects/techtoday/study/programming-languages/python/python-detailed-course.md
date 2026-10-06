@@ -52,6 +52,12 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 34. [Pythonic Idioms & Best Practices](#34-pythonic-idioms--best-practices)
 35. [What's Next?](#35-whats-next)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Python Basics
+
+Getting set up, then values, operators, strings, collections and control flow.
+
 <a id="1-getting-started"></a>
 
 ## 1. Getting Started
@@ -939,6 +945,12 @@ for i in range(5):
     pass   # do nothing (useful during development)
 ```
 
+<a id="unit-2"></a>
+
+## Unit 2 — Functions & Comprehensions
+
+Defining functions, how scope and closures work, and comprehensions.
+
 <a id="8-functions"></a>
 
 ## 8. Functions
@@ -1231,6 +1243,12 @@ next(gen)    # 1
 # Often used directly in functions
 total = sum(x ** 2 for x in range(1000))
 ```
+
+<a id="unit-3"></a>
+
+## Unit 3 — Classes, Modules & Files
+
+Object-oriented Python, dunder methods, modules and packages, errors and file I/O.
 
 <a id="11-object-oriented-programming-oop"></a>
 
@@ -2038,6 +2056,12 @@ for py_file in Path(".").glob("**/*.py"):   # recursive
 Path("new/nested/dir").mkdir(parents=True, exist_ok=True)
 ```
 
+<a id="unit-4"></a>
+
+## Unit 4 — Pythonic Language Features
+
+Generators, decorators, context managers, type hints, functional tools, unpacking and formatting.
+
 <a id="16-iterators--generators"></a>
 
 ## 16. Iterators & Generators
@@ -2744,6 +2768,12 @@ message = (
 )
 ```
 
+<a id="unit-5"></a>
+
+## Unit 5 — The Standard Library Toolkit
+
+Regular expressions, dates, collections, dataclasses and enums.
+
 <a id="24-regular-expressions"></a>
 
 ## 24. Regular Expressions
@@ -3096,6 +3126,12 @@ match direction:
     case Direction.NORTH:
         print("Going north!")    # Going north!
 ```
+
+<a id="unit-6"></a>
+
+## Unit 6 — Concurrency, Tooling & Practice
+
+Async and parallel code, environments, testing, the wider standard library and idiomatic Python.
 
 <a id="29-async--await-asyncio"></a>
 

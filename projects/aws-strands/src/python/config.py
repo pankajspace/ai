@@ -38,9 +38,13 @@ def agent_text(response) -> str:
     Strands returns a rich result object; ``str(response)`` yields the final
     assistant text, which is what the browser needs.
     """
+    # ① convert the rich Strands response into displayable text
     text = str(response)
+    # ② strip hidden thinking blocks some models include before the answer
     # Some models (e.g. Amazon Nova) wrap their reasoning in <thinking>...</thinking>
     # tags — strip those blocks (and any stray tags) so only the answer is shown.
     text = re.sub(r"<thinking>.*?</thinking>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # ③ remove any leftover thinking tags without touching the answer text
     text = re.sub(r"</?thinking>", "", text, flags=re.IGNORECASE)
+    # ④ trim surrounding whitespace before returning text to the browser
     return text.strip()

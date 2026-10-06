@@ -4,149 +4,330 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Tool Schema Calibration · AI Reliability Lab</title>
     <meta name="description"
         content="How the Tool Schema Calibration demo works: a 2x2 of tool names vs descriptions to find which signal an LLM routes on." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Reliability Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Reliability Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-tool-routing-py">tool_routing.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F9ED; Tool Schema Calibration<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F9ED; Tool Schema Calibration</h1>
-                <p class="subtitle">gpt-4o-mini · temperature 0 · tool_choice="required" · names × descriptions 2x2
-                </p>
+            <p class="lede">gpt-4o-mini · temperature 0 · tool_choice="required" · names × descriptions 2x2. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    The model is offered three weather tools — current, forecast, and history — that take the
-                    <strong>same parameters</strong>. The only things that differ are each tool's
-                    <strong>name</strong> and <strong>description</strong>. Crossing two naming styles with two
-                    description styles gives four conditions, and the demo measures how often the model picks the
-                    right tool in each.
-                </p>
-                <p>
-                    Your own question is routed under all four conditions so you can see the choices side by side,
-                    then 12 labelled queries (4 per tool) fill in the accuracy matrix.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>1. The 2x2 design</strong></p>
-                <ul>
-                    <li><strong>A · descriptive names + loose descriptions</strong> —
-                        <code>get_weather_forecast</code> / "Get weather data for a city."
-                    </li>
-                    <li><strong>B · descriptive names + tight descriptions</strong> — names plus "Use only for
-                        'tomorrow', 'next week'…"</li>
-                    <li><strong>C · opaque names + loose descriptions</strong> — <code>weather_service_b</code> /
-                        vague prose. No real signal at all.</li>
-                    <li><strong>D · opaque names + tight descriptions</strong> — the description is the only signal.
-                    </li>
-                </ul>
-                <p><strong>2. Why the names had to vary too</strong></p>
-                <p>
-                    An earlier version varied only the descriptions while the names stayed
-                    <code>get_weather_current/_forecast/_history</code>. Those names already encode the distinction,
-                    so the model routed on the name and scored near 100% either way. Crossing names with descriptions
-                    separates the two signals.
-                </p>
-                <p><strong>3. Forced tool choice</strong></p>
-                <p>
-                    <code>tool_choice="required"</code> makes the model pick one of the three tools. That isolates
-                    "which tool" from "whether to call a tool at all" — two different bugs with different fixes.
-                    Temperature 0 keeps the schema text as the only variable.
-                </p>
-                <p><strong>4. The practical lesson</strong></p>
-                <p>
-                    Descriptions look optional right up until someone renames a tool, or you mount an MCP server whose
-                    tools are called <code>query</code>, <code>search</code>, and <code>execute</code>. Condition C
-                    is what that feels like.
-                </p>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Type a weather question, click “Route question”</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /routing</span>
-                        <span class="flow-detail">Flask route validates the question</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">run_routing()</span>
-                        <span class="flow-detail">52 routing calls in parallel (max 8)</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">Your question × 4</span>
-                            <span class="flow-detail">One pick per condition</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">12 labelled × 4</span>
-                            <span class="flow-detail">Accuracy per condition</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Signal attribution</span>
-                        <span class="flow-detail">Description lift, name lift, verdict</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Picks, accuracy bars, verdict</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        The model is offered three weather tools — current, forecast, and history — that take the
+                        <strong>same parameters</strong>. The only things that differ are each tool's
+                        <strong>name</strong> and <strong>description</strong>. Crossing two naming styles with two
+                        description styles gives four conditions, and the demo measures how often the model picks the
+                        right tool in each.
+                    </p>
+                    <p>
+                        Your own question is routed under all four conditions so you can see the choices side by side,
+                        then 12 labelled queries (4 per tool) fill in the accuracy matrix.
+                    </p>
 
-                <h2>Code flow</h2>
-                <!-- beautify ignore:start -->
-                <!-- prettier-ignore -->
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A[Browser<br/>question] -->|POST /routing| B[app.py<br/>routing_route]
-    B -->|question| C[tool_routing.py<br/>run_routing]
-    C -->|52 jobs| D[config.py<br/>parallel_map]
-    D -->|query, name style, desc style| E[select_tool]
-    E -->|styles| G[build_condition]
-    G -->|tools + lookup| E
-    E -->|tools, tool_choice=required| F[OpenAI API<br/>gpt-4o-mini]
-    F -->|function name| E
-    E -->|canonical slot| C
-    C -->|text report| B
-    B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
-                <!-- beautify ignore:end -->
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The 2x2 design</strong></p>
+                    <ul>
+                        <li><strong>A · descriptive names + loose descriptions</strong> —
+                            <code>get_weather_forecast</code> / "Get weather data for a city."
+                        </li>
+                        <li><strong>B · descriptive names + tight descriptions</strong> — names plus "Use only for
+                            'tomorrow', 'next week'…"</li>
+                        <li><strong>C · opaque names + loose descriptions</strong> — <code>weather_service_b</code> /
+                            vague prose. No real signal at all.</li>
+                        <li><strong>D · opaque names + tight descriptions</strong> — the description is the only signal.
+                        </li>
+                    </ul>
+                    <p><strong>2. Why the names had to vary too</strong></p>
+                    <p>
+                        An earlier version varied only the descriptions while the names stayed
+                        <code>get_weather_current/_forecast/_history</code>. Those names already encode the distinction,
+                        so the model routed on the name and scored near 100% either way. Crossing names with descriptions
+                        separates the two signals.
+                    </p>
+                    <p><strong>3. Forced tool choice</strong></p>
+                    <p>
+                        <code>tool_choice="required"</code> makes the model pick one of the three tools. That isolates
+                        "which tool" from "whether to call a tool at all" — two different bugs with different fixes.
+                        Temperature 0 keeps the schema text as the only variable.
+                    </p>
+                    <p><strong>4. The practical lesson</strong></p>
+                    <p>
+                        Descriptions look optional right up until someone renames a tool, or you mount an MCP server whose
+                        tools are called <code>query</code>, <code>search</code>, and <code>execute</code>. Condition C
+                        is what that feels like.
+                    </p>
 
-                <h2>Tool definitions</h2>
-                <span class="file-label">Names and descriptions are the only things that change between
-                    conditions.</span>
-                <pre><code class="language-python">NAME_SETS = {
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Type a weather question, click “Route question”</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /routing</span>
+                            <span class="flow-detail">Flask route validates the question</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">run_routing()</span>
+                            <span class="flow-detail">52 routing calls in parallel (max 8)</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">Your question × 4</span>
+                                <span class="flow-detail">One pick per condition</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">12 labelled × 4</span>
+                                <span class="flow-detail">Accuracy per condition</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Signal attribution</span>
+                            <span class="flow-detail">Description lift, name lift, verdict</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Picks, accuracy bars, verdict</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>question] -->|POST /routing| B[app.py<br/>routing_route]
+                        B -->|question| C[tool_routing.py<br/>run_routing]
+                        C -->|52 jobs| D[config.py<br/>parallel_map]
+                        D -->|query, name style, desc style| E[select_tool]
+                        E -->|styles| G[build_condition]
+                        G -->|tools + lookup| E
+                        E -->|tools, tool_choice=required| F[OpenAI API<br/>gpt-4o-mini]
+                        F -->|function name| E
+                        E -->|canonical slot| C
+                        C -->|text report| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-tool-routing-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-tool-routing-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-tool-routing-py" class="topic-title is-file">tool_routing.py<a class="headerlink" href="#source-tool-routing-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">201 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-tool-routing-py">
+                    <span class="file-path">src/python/tool_routing.py</span>
+                    <p class="file-label">Tool Schema Calibration: which part of a tool schema does the model route on?</p>
+                    <pre><code data-lang="python">"""Tool Schema Calibration: which part of a tool schema does the model route on?
+
+Adapted from ``study/09-ai-reliability/tool-schema-calibration.py``. Three weather
+tools are offered under a 2x2 of conditions (descriptive vs opaque names x
+loose vs tight descriptions). ``tool_choice="required"`` forces a pick so
+"which tool" is isolated from "whether to call a tool at all".
+
+The web demo routes the visitor's own question under all four conditions, then
+scores a fixed labelled sample to fill in the accuracy matrix.
+"""
+
+from config import CHAT_MODEL, bar, get_openai_client, parallel_map
+
+TEMPERATURE = 0
+MAX_QUERY_CHARS = 300
+
+CANONICAL = ("current", "forecast", "history")
+
+NAME_SETS = {
     "descriptive": {
         "current": "get_weather_current",
         "forecast": "get_weather_forecast",
@@ -187,14 +368,34 @@ CONDITIONS = [
     ("B", "descriptive", "tight"),
     ("C", "opaque", "loose"),
     ("D", "opaque", "tight"),
-]</code></pre>
+]
 
-                <h2>Backend</h2>
-                <span class="file-label">Builds one condition's tools and asks the model to route a query.</span>
-                <pre><code class="language-python">def build_condition(name_style: str, desc_style: str) -> tuple[list, dict]:
+NAME_CHOICES = ("both", *NAME_SETS)
+DESCRIPTION_CHOICES = ("both", *DESCRIPTION_SETS)
+
+# A balanced subset of the study prototype's 50 labelled queries.
+SAMPLE_QUERIES = [
+    ("Is it raining in London at the moment?", "current"),
+    ("Show me today's weather for NYC.", "current"),
+    ("Check weather for Rome.", "current"),
+    ("Weather update for Cape Town.", "current"),
+    ("Will it rain next Tuesday in Paris?", "forecast"),
+    ("Give me the 5-day forecast for Sydney.", "forecast"),
+    ("Upcoming weather for Chicago.", "forecast"),
+    ("Weather outlook for Seoul next month.", "forecast"),
+    ("What was the weather like in London yesterday?", "history"),
+    ("Weather records for Tokyo in 1990.", "history"),
+    ("Last week's weather in Toronto.", "history"),
+    ("Was it raining in Seoul three days ago?", "history"),
+]
+
+
+def build_condition(name_style: str, desc_style: str) -&gt; tuple[list, dict]:
     """Return (tools, lookup) where lookup maps emitted names to canonical slots."""
+    # ① choose the name and description set for this calibration condition
     names = NAME_SETS[name_style]
     descs = DESCRIPTION_SETS[desc_style]
+    # ② build OpenAI tool schemas for the same three weather capabilities
     tools = [
         {
             "type": "function",
@@ -210,13 +411,16 @@ CONDITIONS = [
         }
         for c in CANONICAL
     ]
+    # ③ return the schemas plus a lookup back to the canonical answer labels
     return tools, {names[c]: c for c in CANONICAL}
 
 
-def select_tool(query: str, name_style: str, desc_style: str) -> str:
+def select_tool(query: str, name_style: str, desc_style: str) -&gt; str:
     """Return the canonical slot the model routed to, '(no call)', or '(error)'."""
+    # ① build the exact tool menu for this name-description condition
     tools, lookup = build_condition(name_style, desc_style)
     try:
+        # ② force the model to choose one tool so routing can be measured directly
         response = get_openai_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": query}],
@@ -224,77 +428,450 @@ def select_tool(query: str, name_style: str, desc_style: str) -> str:
             tool_choice="required",
             temperature=TEMPERATURE,
         )
+        # ③ read the selected tool call and map it back to current/forecast/history
         calls = response.choices[0].message.tool_calls
         if not calls:
             return "(no call)"
         return lookup.get(calls[0].function.name, calls[0].function.name)
     except Exception:
-        return "(error)"</code></pre>
+        # ④ keep API failures visible as a routing outcome instead of crashing
+        return "(error)"
 
-                <h2>Orchestration</h2>
-                <span class="file-label">Routes your question and the labelled sample, then scores each
-                    condition.</span>
-                <pre><code class="language-python">def run_routing(query: str) -> str:
-    """Route ``query`` under all four conditions and score the labelled sample."""
+
+def run_routing(query: str, names: str = "both", descriptions: str = "both") -&gt; str:
+    """Route ``query`` under the selected conditions and score the labelled sample."""
+    # ① trim the learner's question and choose the requested 2x2 conditions
     query = query.strip()[:MAX_QUERY_CHARS]
-    jobs = [(query, n, d) for _, n, d in CONDITIONS]
-    jobs += [(q, n, d) for _, n, d in CONDITIONS for q, _ in SAMPLE_QUERIES]
+    conditions = [
+        c for c in CONDITIONS
+        if names in ("both", c[1]) and descriptions in ("both", c[2])
+    ]
+    # ② queue the learner query first, then the labelled sample for each condition
+    jobs = [(query, n, d) for _, n, d in conditions]
+    jobs += [(q, n, d) for _, n, d in conditions for q, _ in SAMPLE_QUERIES]
+    # ③ run all routing decisions in parallel to keep the demo responsive
     picks = parallel_map(lambda job: select_tool(*job), jobs)
 
-    yours, sample = picks[: len(CONDITIONS)], picks[len(CONDITIONS):]
+    # ④ split personal picks from sample picks and score each condition
+    yours, sample = picks[: len(conditions)], picks[len(conditions):]
     total = len(SAMPLE_QUERIES)
     scores = {}
-    for i, (label, _, _) in enumerate(CONDITIONS):
+    for i, (label, _, _) in enumerate(conditions):
         chunk = sample[i * total:(i + 1) * total]
         scores[label] = sum(p == exp for p, (_, exp) in zip(chunk, SAMPLE_QUERIES))
-    ...
-    desc_lift_desc = scores["B"] - scores["A"]
-    desc_lift_opaque = scores["D"] - scores["C"]</code></pre>
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the demo as <code>POST /routing</code>.</span>
-                <pre><code class="language-python">@bp.route("/routing", methods=["POST"])
+    # ⑤ report how the learner's question routed under every selected condition
+    lines = [f"Your question · {CHAT_MODEL} · temperature {TEMPERATURE} · tool_choice=required"]
+    for (label, n, d), pick in zip(conditions, yours):
+        tool_name = NAME_SETS[n].get(pick, pick)
+        lines.append(f"  {label} {n} names + {d} descs → {tool_name} ({pick})")
+
+    # ⑥ add the labelled-sample accuracy matrix and lift comparisons
+    lines += ["", f"Routing accuracy on {total} labelled queries"]
+    for label, n, d in conditions:
+        lines.append(f"  {label} {n:&lt;11} + {d:&lt;5}  {bar(scores[label], total)}")
+
+    lifts = [
+        ("Description lift with self-explanatory names", "B", "A"),
+        ("Description lift with opaque names", "D", "C"),
+        ("Name lift with vague descriptions", "A", "C"),
+        ("Name lift with tight descriptions", "B", "D"),
+    ]
+    lift_lines = [
+        f"{text}: {scores[hi] - scores[lo]:+d}" for text, hi, lo in lifts if hi in scores and lo in scores
+    ]
+    if lift_lines:
+        lines += [""] + lift_lines
+
+    # ⑦ explain either how to see the full grid or what the grid shows
+    lines.append("")
+    if len(scores) &lt; 4:
+        lines.append("Tip: set both dropdowns to 'Both' for the full 2x2 and a verdict.")
+        return "\n".join(lines)
+
+    desc_lift_desc = scores["B"] - scores["A"]
+    desc_lift_opaque = scores["D"] - scores["C"]
+    if desc_lift_opaque &gt; desc_lift_desc:
+        lines.append(
+            "Verdict: descriptions are load-bearing - but only when the names are not "
+            "already doing the work. Rename tools generically and the description is the "
+            "only signal left."
+        )
+    elif desc_lift_desc &gt; 0 or desc_lift_opaque &gt; 0:
+        lines.append("Verdict: tightening descriptions improves routing regardless of naming.")
+    else:
+        lines.append(
+            "Verdict: no measurable effect from descriptions on this sample - the model "
+            "is saturating the task."
+        )
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run one forecast-style example when this module is executed directly
+    print(run_routing("Will it snow in Oslo this weekend?"))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and build the OpenAI client.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and build the OpenAI client.
+
+This module is the single place that knows about secrets and model names.
+Every feature module imports from here instead of reading ``os.environ`` or
+constructing API clients itself.
+"""
+
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+# A NON-reasoning model: reasoning models think internally even when told not
+# to, which erases the gaps these demos measure.
+CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
+
+# Upper bound on parallel API calls per request; keeps each demo well under
+# the 60 s Nginx proxy timeout without hammering the provider.
+MAX_WORKERS = 8
+
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
+_client = None
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return a shared OpenAI client built from OPENAI_API_KEY."""
+    global _client
+    if _client is None:
+        # ① read the API key lazily so tests/imports do not require credentials
+        api_key = get_env("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        # ② create one reusable client with bounded timeout and retries
+        _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
+    return _client
+
+
+def parallel_map(fn, items):
+    """Run ``fn`` over ``items`` concurrently, preserving input order."""
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        return list(pool.map(fn, items))
+
+
+def bar(correct: int, total: int, width: int = 10) -&gt; str:
+    """Render a text accuracy bar with a count and percentage."""
+    # ① avoid dividing by zero when a filtered comparison has no examples
+    if total == 0:
+        return "n/a"
+    # ② convert the score into filled and empty bar characters
+    filled = round(correct / total * width)
+    return f"{'█' * filled}{'░' * (width - filled)}  {correct}/{total} ({round(correct / total * 100)}%)"</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">241 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server for AI Reliability Lab: four measured LLM reliability demos.</p>
+                    <pre><code data-lang="python">"""Flask server for AI Reliability Lab: four measured LLM reliability demos.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/variance", etc. In production Nginx forwards ``/ai-reliability/...``
+  traffic to the container and PATH_PREFIX is set to "/ai-reliability".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from config import TEMPERATURE_CHOICES
+from cot import PROBLEMS, run_cot
+from cot import STRATEGY_CHOICES as COT_STRATEGIES
+from rate_limiter import check_rate_limit
+from tool_errors import FAIL_ON_CALL_LABELS, PROMPT_CHOICES, run_error_injection
+from tool_routing import DESCRIPTION_CHOICES, NAME_CHOICES, run_routing
+from variance import STRATEGY_CHOICES as VARIANCE_STRATEGIES
+from variance import run_variance
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment ("/ai-reliability") so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply the limit only to API actions, not static page loads
+    if request.method == "POST":
+        # ② ask the shared limiter whether this request should be blocked
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured Flask static folder
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified HTML with an explicit text/html response type
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+def read_message() -&gt; str:
+    """Return the trimmed ``message`` field from the JSON body, or ''."""
+    # ① parse JSON leniently so missing or malformed bodies become empty data
+    data = request.get_json(force=True, silent=True) or {}
+    # ② normalize the message field into a stripped string for route validation
+    return str(data.get("message") or "").strip()
+
+
+def read_choice(name: str, allowed, default: str) -&gt; str | None:
+    """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    # ① parse JSON leniently and fall back to the route's default choice
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    # ② accept only known UI choices so feature modules receive valid selectors
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+
+
+@bp.route("/variance", methods=["POST"])
+def variance_route():
+    """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
+    # ① validate that the learner supplied review text to analyze
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A customer review is required."}), 400
+    # ② read and validate the selected extraction strategy
+    strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+    try:
+        # ④ run the variance feature and return its text report as JSON
+        return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("variance failed")
+        return jsonify({"error": "Variance test failed. Please try again later."}), 500
+
+
+@bp.route("/cot", methods=["POST"])
+def cot_route():
+    """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    # ① read the requested problem key and normalize it for lookup
+    message = read_message().lower()
+    if not message:
+        return jsonify({"error": "A problem name is required."}), 400
+    if message not in PROBLEMS:
+        return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    # ② read and validate the selected prompt strategy
+    strategy = read_choice("strategy", COT_STRATEGIES, "both")
+    if strategy is None:
+        return invalid_choice("strategy", COT_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+    try:
+        # ④ run the CoT feature and return its text report as JSON
+        return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("cot failed")
+        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
+
+
+@bp.route("/routing", methods=["POST"])
 def routing_route():
     """Route a weather question under the names x descriptions 2x2."""
+    # ① validate that the learner supplied a weather-routing question
     message = read_message()
     if not message:
         return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate the selected tool-name condition
+    names = read_choice("names", NAME_CHOICES, "both")
+    if names is None:
+        return invalid_choice("names", NAME_CHOICES)
+    # ③ read and validate the selected tool-description condition
+    descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
+    if descriptions is None:
+        return invalid_choice("descriptions", DESCRIPTION_CHOICES)
     try:
-        return jsonify({"result": run_routing(message)})
+        # ④ run the routing feature and return its text report as JSON
+        return jsonify({"result": run_routing(message, names, descriptions)})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("routing failed")
-        return jsonify({"error": "Routing test failed. Please try again later."}), 500</code></pre>
+        return jsonify({"error": "Routing test failed. Please try again later."}), 500
 
-            </div>
-        </section>
+
+@bp.route("/errors", methods=["POST"])
+def errors_route():
+    """Run the tool-error injection scenarios on a weather question."""
+    # ① validate that the learner supplied a weather question for the agent
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate which system-prompt scenario to run
+    prompt = read_choice("prompt", PROMPT_CHOICES, "both")
+    if prompt is None:
+        return invalid_choice("prompt", PROMPT_CHOICES)
+    # ③ derive valid failure-injection choices from the shared labels
+    fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
+    fail_on_call = read_choice("fail_on_call", fail_choices, "2")
+    if fail_on_call is None:
+        return invalid_choice("fail_on_call", fail_choices)
+    try:
+        # ④ run the error-injection feature and return its text report as JSON
+        return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("error injection failed")
+        return jsonify({"error": "Error-injection test failed. Please try again later."}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/variance") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Reliability Lab &mdash; 🧭 Tool Schema Calibration &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

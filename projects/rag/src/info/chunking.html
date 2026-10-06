@@ -4,138 +4,509 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Chunking · RAG Lab</title>
     <meta name="description"
         content="How the Chunking demo works: RecursiveCharacterTextSplitter, overlapping chunks, and the code behind it." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>RAG Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; RAG Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-chunk-py">chunk.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x2702;&#xFE0F; Chunking<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x2702;&#xFE0F; Chunking</h1>
-                <p class="subtitle">RecursiveCharacterTextSplitter &middot; local, no API key</p>
+            <p class="lede">RecursiveCharacterTextSplitter &middot; local, no API key. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    LLMs have a context window limit — you cannot pass an entire book as a single prompt without running
-                    into token limits or degraded recall. The standard solution is splitting documents into smaller,
-                    overlapping chunks. LangChain's <code>RecursiveCharacterTextSplitter</code> splits at natural
-                    semantic boundaries (paragraphs, sentences, and words) rather than cutting mid-word.
-                </p>
-                <p>
-                    Overlapping boundaries (<code>chunk_overlap</code>) ensure context spanning across split points is
-                    never lost — acting as "context glue" that makes downstream vector retrieval accurate.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p>The <strong>Chunking</strong> demo illustrates the essential preprocessing step for building
-                    effective Retrieval-Augmented Generation (RAG) systems:</p>
-                <ul>
-                    <li><strong>Managing Context Window Limits:</strong> Pushing entire documents into an LLM context is
-                        expensive and causes "needle-in-a-haystack" retrieval failure. Segmenting source documents into
-                        digestible chunks allows precise, relevant information to be retrieved on demand.</li>
-                    <li><strong>Recursive Boundary Splitting:</strong> Naive splitting by fixed character counts can cut
-                        words or sentences in half, destroying meaning. <code>RecursiveCharacterTextSplitter</code>
-                        recursively checks split characters in order: double line breaks (paragraphs), single line
-                        breaks (sentences), and spaces (words) to preserve semantic coherence.</li>
-                    <li><strong>Context Continuity via Overlap:</strong> The <code>chunk_overlap</code> setting creates
-                        a sliding window between consecutive passages. When an important concept or sentence spans
-                        across a chunk boundary, both chunks retain enough shared text so vector embeddings correctly
-                        capture the full context.</li>
-                </ul>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Long text</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /chunk</span>
-                        <span class="flow-detail">Flask route</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">chunk_route()</span>
-                        <span class="flow-detail">app.py</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">chunk_text()</span>
-                        <span class="flow-detail">chunk.py</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">RecursiveCharacterTextSplitter</span>
-                        <span class="flow-detail">split at paragraphs / sentences / words</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">List of chunks rendered</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        LLMs have a context window limit — you cannot pass an entire book as a single prompt without running
+                        into token limits or degraded recall. The standard solution is splitting documents into smaller,
+                        overlapping chunks. LangChain's <code>RecursiveCharacterTextSplitter</code> splits at natural
+                        semantic boundaries (paragraphs, sentences, and words) rather than cutting mid-word.
+                    </p>
+                    <p>
+                        Overlapping boundaries (<code>chunk_overlap</code>) ensure context spanning across split points is
+                        never lost — acting as "context glue" that makes downstream vector retrieval accurate.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser<br />long text"] -->|POST /chunk| B["app.py<br />chunk_route"]
-                        B -->|text| C["chunk.py<br />chunk_text"]
-                        C -->|text, chunk_size=100, overlap=10| D["RecursiveCharacterTextSplitter<br />split at
-                        paragraphs/sentences/words"]
-                        D -->|list of chunk strings| C
-                        C -->|chunks list| B
-                        B -->|JSON result: chunks + count| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <strong>Chunking</strong> demo illustrates the essential preprocessing step for building
+                        effective Retrieval-Augmented Generation (RAG) systems:</p>
+                    <ul>
+                        <li><strong>Managing Context Window Limits:</strong> Pushing entire documents into an LLM context is
+                            expensive and causes "needle-in-a-haystack" retrieval failure. Segmenting source documents into
+                            digestible chunks allows precise, relevant information to be retrieved on demand.</li>
+                        <li><strong>Recursive Boundary Splitting:</strong> Naive splitting by fixed character counts can cut
+                            words or sentences in half, destroying meaning. <code>RecursiveCharacterTextSplitter</code>
+                            recursively checks split characters in order: double line breaks (paragraphs), single line
+                            breaks (sentences), and spaces (words) to preserve semantic coherence.</li>
+                        <li><strong>Context Continuity via Overlap:</strong> The <code>chunk_overlap</code> setting creates
+                            a sliding window between consecutive passages. When an important concept or sentence spans
+                            across a chunk boundary, both chunks retain enough shared text so vector embeddings correctly
+                            capture the full context.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">Splits text into overlapping chunks using LangChain's splitter.</span>
-                <pre><code class="language-python"># Import LangChain text splitter designed to maintain semantic boundaries
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Long text</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /chunk</span>
+                            <span class="flow-detail">Flask route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">chunk_route()</span>
+                            <span class="flow-detail">app.py</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">chunk_text()</span>
+                            <span class="flow-detail">chunk.py</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">RecursiveCharacterTextSplitter</span>
+                            <span class="flow-detail">split at paragraphs / sentences / words</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">List of chunks rendered</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser<br />long text"] -->|POST /chunk| B["app.py<br />chunk_route"]
+                            B -->|text| C["chunk.py<br />chunk_text"]
+                            C -->|text, chunk_size=100, overlap=10| D["RecursiveCharacterTextSplitter<br />split at
+                            paragraphs/sentences/words"]
+                            D -->|list of chunk strings| C
+                            C -->|chunks list| B
+                            B -->|JSON result: chunks + count| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-chunk-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-chunk-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-chunk-py" class="topic-title is-file">chunk.py<a class="headerlink" href="#source-chunk-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">53 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-chunk-py">
+                    <span class="file-path">src/python/chunk.py</span>
+                    <p class="file-label">Text chunking demo: split a long document into overlapping chunks.</p>
+                    <pre><code data-lang="python">"""Text chunking demo: split a long document into overlapping chunks.
+
+Adjacent chunks share ``chunk_overlap`` characters so context at the boundary
+is never lost — this is the \"context glue\" that makes retrieval work well.
+
+Can be run directly:  ``docker compose run --rm chunk``
+"""
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 def chunk_text(
     text: str,
-    chunk_size: int = 100,   # target character length per segment
-    chunk_overlap: int = 10,  # character overlap window between adjacent chunks to preserve context
+    chunk_size: int = 100,  # target characters per chunk
+    chunk_overlap: int = 10,  # characters shared between adjacent chunks
 ) -&gt; list[str]:
-    """Split text into overlapping chunks."""
-    # Step 1: Initialize RecursiveCharacterTextSplitter with target size and overlap
+    """Split *text* into overlapping chunks.
+
+    Args:
+        text: The long document to split.
+        chunk_size: Target size (in characters) per chunk.
+        chunk_overlap: Number of characters shared between adjacent chunks.
+
+    Returns:
+        A list of chunk strings.
+    """
+    # ① configure the splitter with the requested chunk size and overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
-    # Step 2: Split text hierarchically (paragraphs > sentences > words) before hard-cutting
-    return splitter.split_text(text)</code></pre>
+    # ② split the long text into overlapping pieces for retrieval
+    return splitter.split_text(text)
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the text splitter over HTTP as <code>POST /chunk</code>.</span>
-                <pre><code class="language-python">@bp.route("/chunk", methods=["POST"])
+
+if __name__ == "__main__":
+    # ① create a repeated sample so chunk boundaries are easy to see
+    sample = (
+        "Our return policy allows refunds within 30 days of purchase. "
+        "Shipping is free for orders above ₹999 across India. "
+        "For corporate orders above 50 units, contact sales@example.com. "
+        "Our office is in Indiranagar, Bangalore. Open Mon-Fri 10am-7pm. "
+    ) * 10  # repeat to make it long enough for chunking to be visible
+
+    # ② split the sample with the default demo settings
+    chunks = chunk_text(sample)
+    # ③ print the input size and how many chunks were created
+    print(f"Input length : {len(sample)} characters")
+    print(f"Chunk count  : {len(chunks)}")
+    # ④ preview each chunk so learners can inspect the overlap
+    for i, c in enumerate(chunks):
+        print(f"\n--- Chunk {i + 1} ({len(c)} chars) ---")
+        print(c[:120] + ("…" if len(c) &gt; 120 else ""))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">311 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.</p>
+                    <pre><code data-lang="python">"""Flask server exposing embeddings, chunking, RAG Q&amp;A, reranking, and PDF chat endpoints.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime
+  URL prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/embeddings",
+  etc.  In production Nginx forwards ``/rag/...`` traffic to the container
+  and PATH_PREFIX is set to "/rag", keeping every URL consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from chunk import chunk_text
+from embeddings import compare_similarity
+from index import build_index
+from rag import rag_answer
+from rerank import retrieve_with_rerank
+from pdf_chat import build_pdf_text_index, ask_pdf
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. "/rag") so the
+# app works correctly behind an Nginx location block.  Locally it is empty
+# string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+MAX_TEXTAREA_CHARS = 1000
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin.  In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes.  We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① rate-limit only POST requests because they run the demo features
+    if request.method == "POST":
+        # ② ask the shared limiter whether this request exceeds the quota
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a 429 response with retry timing when the quota is spent
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+# Server-side state for PDF chat — stores the in-memory Chroma index per
+# session.  In a production multi-user app this would use a session store;
+# for this learning project a single shared state is fine. It's a dict
+# (not a plain variable) so the route functions below can mutate it in
+# place without needing a `global` declaration.
+_pdf_state = {"db": None}
+
+
+def validate_textarea(value: str, label: str):
+    """Validate required textarea content and enforce the shared size cap."""
+    # ① reject missing text before the feature code runs
+    if not value:
+        return jsonify({"error": f"{label} is required."}), 400
+    # ② reject oversized text so demos stay responsive
+    if len(value) &gt; MAX_TEXTAREA_CHARS:
+        return jsonify({"error": f"{label} must be {MAX_TEXTAREA_CHARS} characters or fewer."}), 400
+    # ③ signal that validation passed
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from disk
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetch calls hit the API
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally).  For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the customized HTML response
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+@bp.route("/embeddings", methods=["POST"])
+def embeddings_route():
+    """Compare two texts and return their cosine similarity.
+
+    Request body (JSON): ``{ "text_a": "&lt;text&gt;", "text_b": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "similarity": 0.87 } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize both input texts before validation
+    text_a = (data.get("text_a") or "").strip()
+    text_b = (data.get("text_b") or "").strip()
+    # ③ require both texts so the similarity comparison is meaningful
+    if not text_a or not text_b:
+        return jsonify({"error": "Both text_a and text_b are required."}), 400
+    try:
+        # ④ compute cosine similarity and return a rounded JSON result
+        score = compare_similarity(text_a, text_b)
+        return jsonify({"result": {"similarity": round(score, 4)}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/chunk", methods=["POST"])
 def chunk_route():
     """Split text into overlapping chunks.
 
@@ -143,57 +514,168 @@ def chunk_route():
     Response (JSON):     ``{ "result": { "chunks": ["...", ...], "count": 3 } }``
     Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
     """
-    # Step 1: Parse incoming JSON request
+    # ① parse the JSON request body
     data = request.get_json(force=True)
+    # ② normalize the submitted text before validation
     text = (data.get("text") or "").strip()
-
-    # Step 2: Validate input boundary (reject empty or whitespace-only text)
+    # ③ enforce required text and the shared textarea size limit
     validation = validate_textarea(text, "Text")
     if validation:
         return validation
-
-    # Step 3: Execute chunking and return chunk list with count
     try:
+        # ④ split the text and return both chunks and count
         chunks = chunk_text(text)
         return jsonify({"result": {"chunks": chunks, "count": len(chunks)}})
     except Exception as e:
-        # Return error message on failure
-        return jsonify({"error": str(e)}), 500</code></pre>
+        return jsonify({"error": str(e)}), 500
 
-            </div>
-        </section>
+
+@bp.route("/rag", methods=["POST"])
+def rag_route():
+    """Answer a question using a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    # ④ require a question so the RAG chain has a query
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        # ⑤ turn each non-blank knowledge-base line into one document
+        # One "document" per non-blank line of the pasted knowledge base.
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
+        # persist_directory=None keeps the index in memory only — it's rebuilt
+        # fresh from the request body on every call, nothing is written to disk.
+        db, _ = build_index(docs, persist_directory=None)
+        # ⑦ answer the question using the freshly built index
+        answer = rag_answer(question, db=db)
+        # ⑧ return the grounded answer as JSON
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/rerank", methods=["POST"])
+def rerank_route():
+    """Retrieve and rerank results from a user-provided knowledge base.
+
+    Request body (JSON): ``{ "knowledge_base": "&lt;text&gt;", "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": { "results": ["...", ...] } }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the knowledge base and question
+    knowledge = (data.get("knowledge_base") or "").strip()
+    question = (data.get("question") or "").strip()
+    # ③ validate the knowledge base before building an index
+    validation = validate_textarea(knowledge, "Knowledge base")
+    if validation:
+        return validation
+    # ④ require a question so retrieval has a query
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    try:
+        # ⑤ turn each non-blank knowledge-base line into one document
+        docs = [line.strip() for line in knowledge.splitlines() if line.strip()]
+        # ⑥ build an in-memory index from this request only
+        db, _ = build_index(docs, persist_directory=None)
+        # ⑦ retrieve and rerank the top chunks for the question
+        reranked = retrieve_with_rerank(db, question, top_k=3)  # top_k is fixed here, not exposed as a request parameter
+        # ⑧ extract plain text so the browser receives simple JSON
+        results = [doc.page_content for doc in reranked]
+        # ⑨ return the reranked results as JSON
+        return jsonify({"result": {"results": results}})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-index", methods=["POST"])
+def pdf_index():
+    """Index pasted PDF text in an in-memory vector store.
+
+    Request body (JSON): ``{ "pdf_text": "&lt;text copied from a PDF&gt;" }``
+    Response (JSON): ``{ "result": "PDF text indexed. Ask me anything about it." }``
+    Error response:  ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize the pasted PDF text before validation
+    pdf_text = (data.get("pdf_text") or "").strip()
+    # ③ validate required PDF text and the shared size limit
+    validation = validate_textarea(pdf_text, "PDF text")
+    if validation:
+        return validation
+    try:
+        # ④ build and store the in-memory PDF index for later questions
+        _pdf_state["db"] = build_pdf_text_index(pdf_text)
+        # ⑤ confirm that the PDF text is ready for chat
+        return jsonify({"result": "PDF text indexed. Ask me anything about it."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/pdf-chat", methods=["POST"])
+def pdf_chat():
+    """Answer a question about the previously indexed PDF text.
+
+    Request body (JSON): ``{ "question": "&lt;text&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;answer&gt;" }``
+    Error response:      ``{ "error": "&lt;message&gt;" }`` with HTTP 400 or 500
+    """
+    # ① parse the JSON request body
+    data = request.get_json(force=True)
+    # ② normalize and validate the question
+    question = (data.get("question") or "").strip()
+    if not question:
+        return jsonify({"error": "A question is required."}), 400
+    # ③ require a previously indexed PDF before answering
+    if _pdf_state["db"] is None:
+        return jsonify({"error": "Please add PDF text first."}), 400
+    try:
+        # ④ answer from the stored PDF index
+        answer = ask_pdf(_pdf_state["db"], question)
+        # ⑤ return the PDF-grounded answer as JSON
+        return jsonify({"result": answer})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix.  This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/rag") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server.  0.0.0.0 makes the app reachable from
+    # outside the container; port 5000 is mapped to host port 8082 by
+    # docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">RAG Lab &mdash; ✂️ Chunking &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

@@ -4,112 +4,289 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Warehouse Check · AI Agents on AWS</title>
     <meta name="description" content="Explanation of Warehouse Check." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Agents on AWS</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AWS Strands Lab</a>
         </nav>
     </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x26A1; Warehouse Check</h1>
-                <p class="subtitle">async parallel tools via Strands + Bedrock</p>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-warehouse-agent-py">warehouse_agent.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x26A1; Warehouse Check<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">async parallel tools via Strands + Bedrock. Open a topic to see the idea, the request path
+                and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
-        <section>
-            <div class="container info-content">
-                <h2>Concept</h2>
-                <p>
-                    Three warehouse lookups at ~2 seconds each would take ~6 seconds when executed sequentially. By
-                    defining the tool as an asynchronous function (<code>async def</code>) and calling
-                    <code>agent.invoke_async()</code>, the tool calls run in parallel, finishing in ~2 seconds instead
-                    of ~6.
-                </p>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-                <h2>Theory &amp; Concepts</h2>
-                <p>The <strong>Warehouse Check</strong> demo highlights asynchronous tool concurrency for reducing
-                    latency bottlenecks in agentic workflows:</p>
-                <ul>
-                    <li><strong>Parallel Tool Invocation:</strong> When Amazon Nova Pro recognizes it needs stock data
-                        from east, west, and central locations, it emits three independent tool calls simultaneously
-                        rather than waiting for each to finish.</li>
-                    <li><strong>Asynchronous Python Concurrency:</strong> By declaring
-                        <code>check_warehouse_inventory</code> with <code>async def</code> and driving the loop with
-                        <code>agent.invoke_async()</code>, Strands dispatches all queries concurrently on Python's event
-                        loop.</li>
-                    <li><strong>Latency Optimization:</strong> Because all network queries overlap, the total round trip
-                        is bounded by the slowest single query (~2s) rather than the sum of all queries (~6s), making
-                        agent responses responsive.</li>
-                </ul>
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser question</span>
-                        <span class="flow-detail">POST /warehouse</span>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls
+                        that answer it.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">warehouse_agent.py lookup()</span>
-                        <span class="flow-detail">asyncio.run</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Agent.invoke_async</span>
-                        <span class="flow-detail">Bedrock</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">check_warehouse_inventory called for east, west, central in parallel
-                            (all ~2s)</span>
-                        <span class="flow-detail">answers merged</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Browser</span>
-                        <span class="flow-detail">JSON result</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        Three warehouse lookups at ~2 seconds each would take ~6 seconds when executed sequentially. By
+                        defining the tool as an asynchronous function (<code>async def</code>) and calling
+                        <code>agent.invoke_async()</code>, the tool calls run in parallel, finishing in ~2 seconds
+                        instead
+                        of ~6.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser&lt;br/&gt;warehouse question"] -->|"POST /warehouse"|
-                        B["app.py&lt;br/&gt;warehouse_route"]
-                        B -->|"question"| C["warehouse_agent.py&lt;br/&gt;lookup"]
-                        C -->|"asyncio.run"| D["Agent&lt;br/&gt;invoke_async"]
-                        D -->|"question + tool"| E["Bedrock&lt;br/&gt;Nova Pro"]
-                        E -->|"parallel tool calls"| F["check_warehouse&lt;br/&gt;east"]
-                        E -->|"parallel tool calls"| G["check_warehouse&lt;br/&gt;west"]
-                        E -->|"parallel tool calls"| H["check_warehouse&lt;br/&gt;central"]
-                        F -->|"qty"| E
-                        G -->|"qty"| E
-                        H -->|"qty"| E
-                        E -->|"merged answer"| D
-                        D -->|"answer text"| C
-                        C -->|"answer text"| B
-                        B -->|"JSON result"| A
+
+                </div>
+            </section>
+            <!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink"
+                                href="#theory-concepts" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <strong>Warehouse Check</strong> demo highlights asynchronous tool concurrency for reducing
+                        latency bottlenecks in agentic workflows:</p>
+                    <ul>
+                        <li><strong>Parallel Tool Invocation:</strong> When Amazon Nova Pro recognizes it needs stock
+                            data
+                            from east, west, and central locations, it emits three independent tool calls simultaneously
+                            rather than waiting for each to finish.</li>
+                        <li><strong>Asynchronous Python Concurrency:</strong> By declaring
+                            <code>check_warehouse_inventory</code> with <code>async def</code> and driving the loop with
+                            <code>agent.invoke_async()</code>, Strands dispatches all queries concurrently on Python's
+                            event
+                            loop.
+                        </li>
+                        <li><strong>Latency Optimization:</strong> Because all network queries overlap, the total round
+                            trip
+                            is bounded by the slowest single query (~2s) rather than the sum of all queries (~6s),
+                            making
+                            agent responses responsive.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">warehouse_agent.py</span>
-                <pre><code class="language-python">"""Module 2 demo — async tools (parallel execution).
+                </div>
+            </section>
+            <!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser question</span>
+                            <span class="flow-detail">POST /warehouse</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">warehouse_agent.py lookup()</span>
+                            <span class="flow-detail">asyncio.run</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Agent.invoke_async</span>
+                            <span class="flow-detail">Bedrock</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">check_warehouse_inventory called for east, west, central in
+                                parallel
+                                (all ~2s)</span>
+                            <span class="flow-detail">answers merged</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Browser</span>
+                            <span class="flow-detail">JSON result</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+            <!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser&lt;br/&gt;warehouse question"] -->|"POST /warehouse"|
+                            B["app.py&lt;br/&gt;warehouse_route"]
+                            B -->|"question"| C["warehouse_agent.py&lt;br/&gt;lookup"]
+                            C -->|"asyncio.run"| D["Agent&lt;br/&gt;invoke_async"]
+                            D -->|"question + tool"| E["Bedrock&lt;br/&gt;Nova Pro"]
+                            E -->|"parallel tool calls"| F["check_warehouse&lt;br/&gt;east"]
+                            E -->|"parallel tool calls"| G["check_warehouse&lt;br/&gt;west"]
+                            E -->|"parallel tool calls"| H["check_warehouse&lt;br/&gt;central"]
+                            F -->|"qty"| E
+                            G -->|"qty"| E
+                            H -->|"qty"| E
+                            E -->|"merged answer"| D
+                            D -->|"answer text"| C
+                            C -->|"answer text"| B
+                            B -->|"JSON result"| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature
+                        code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+            <!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-warehouse-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-warehouse-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-warehouse-agent-py" class="topic-title is-file">warehouse_agent.py<a
+                                class="headerlink" href="#source-warehouse-agent-py" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">54 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-warehouse-agent-py">
+                    <span class="file-path">src/python/warehouse_agent.py</span>
+                    <p class="file-label">Module 2 demo — async tools (parallel execution).</p>
+                    <pre><code data-lang="python">"""Module 2 demo — async tools (parallel execution).
 
 Three warehouse lookups at ~2 seconds each would take ~6 seconds one by one.
 By making the tool ``async`` and using ``agent.invoke_async()``, the calls run
@@ -118,16 +295,12 @@ in PARALLEL, so the whole thing takes about 2 seconds instead.
 
 import asyncio
 
-# Import asynchronous Agent runner and @tool decorator
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
 from config import MODEL_ID, agent_text
 
 
-# An `async def` tool allows non-blocking concurrency: when the LLM requests
-# inventory checks across multiple warehouses simultaneously, Strands executes
-# all coroutines concurrently using asyncio.gather under the hood.
 @tool
 async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
     """Check inventory at a specific warehouse.
@@ -136,70 +309,444 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
         product_id: Product ID to check
         warehouse: Warehouse identifier (e.g., "east", "west", "central")
     """
-    # Step 1: Simulate network latency (2 seconds) to demonstrate asynchronous speedup
+    # ① wait like a real warehouse api so parallel calls are visible
+    # Simulate an API call delay so parallelism is observable.
     await asyncio.sleep(2)
-
-    # Step 2: Lookup the regional inventory dictionary
+    # ② use mock stock levels for each warehouse
     data = {
         "east":    {"PROD-123": 45, "PROD-456": 12},
         "west":    {"PROD-123": 30, "PROD-456": 0},
         "central": {"PROD-123": 60, "PROD-456": 25},
     }
+    # ③ find the requested product at the requested warehouse
     quantity = data.get(warehouse, {}).get(product_id, 0)
-
-    # Step 3: Return warehouse stock count dictionary
+    # ④ return a structured lookup result for the agent
     return {"warehouse": warehouse, "product_id": product_id, "quantity": quantity}
 
 
 def lookup(question: str) -&gt; str:
     """Answer a multi-warehouse question, running the lookups in parallel."""
 
+    # ① define an async helper so Flask can run the agent from sync code
     async def run():
-        # Step 1: Initialize the agent with the asynchronous tool
+        # ① create an agent that can call the async warehouse lookup tool
         agent = Agent(
             model=BedrockModel(model_id=MODEL_ID),
             tools=[check_warehouse_inventory],
             callback_handler=None,
         )
-        # Step 2: invoke_async dispatches multiple tool calls in parallel rather than sequentially
+        # ② invoke the agent asynchronously so tool calls can overlap
         return await agent.invoke_async(question)
 
-    # Step 3: Run the async event loop to completion and extract text reply
-    return agent_text(asyncio.run(run()))
-</code></pre>
+    # ② start the event loop and return the cleaned final answer
+    return agent_text(asyncio.run(run()))</code></pre>
+                </div>
+            </section>
+            <!-- ============================================================ 6 -->
 
-            </div>
-        </section>
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink"
+                                href="#source-config-py" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">50 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and expose Bedrock model settings.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and expose Bedrock model settings.
+
+Every feature module imports MODEL_ID from here, so if a model is retired you
+change it ONCE in this file instead of editing each demo.
+
+Credentials are read from the standard AWS environment variables
+(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION) or, in
+production, the EC2 instance role — boto3 (used by the Strands SDK) picks them
+up automatically, so no key handling is needed in application code.
+"""
+
+import os
+import re
+
+from dotenv import load_dotenv
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Current, non-retired models (verified working).
+# The "us." prefix is a cross-region inference profile — required on Bedrock.
+NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # default — Amazon's own, no use-case form, cheapest
+HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # Claude, fast + cheap (needs Anthropic use-case form)
+SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # Claude, stronger reasoning (needs Anthropic use-case form)
+
+# Default used across the demos. Override with:  export MODEL_ID="..."
+# Amazon Nova avoids the Anthropic "use case details" gating and is the cheapest option.
+MODEL_ID = os.environ.get("MODEL_ID", NOVA_LITE)
+
+REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+
+def agent_text(response) -&gt; str:
+    """Extract the plain-text reply from a Strands agent response.
+
+    Strands returns a rich result object; ``str(response)`` yields the final
+    assistant text, which is what the browser needs.
+    """
+    # ① convert the rich Strands response into displayable text
+    text = str(response)
+    # ② strip hidden thinking blocks some models include before the answer
+    # Some models (e.g. Amazon Nova) wrap their reasoning in &lt;thinking&gt;...&lt;/thinking&gt;
+    # tags — strip those blocks (and any stray tags) so only the answer is shown.
+    text = re.sub(r"&lt;thinking&gt;.*?&lt;/thinking&gt;", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # ③ remove any leftover thinking tags without touching the answer text
+    text = re.sub(r"&lt;/?thinking&gt;", "", text, flags=re.IGNORECASE)
+    # ④ trim surrounding whitespace before returning text to the browser
+    return text.strip()</code></pre>
+                </div>
+            </section>
+            <!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink"
+                                href="#source-app-py" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">298 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing the AWS Strands agent demos.</p>
+                    <pre><code data-lang="python">"""Flask server exposing the AWS Strands agent demos.
+
+Each demo runs a real Strands agent on Amazon Bedrock:
+  * ``/ask``       — a plain, tool-less agent (Module 1).
+  * ``/math``      — a pre-built calculator tool (Module 2).
+  * ``/tip``       — a tool-enabled tip calculator (Module 2).
+  * ``/inventory`` — a custom tool checking stock (Module 2).
+  * ``/sales``     — multi-tool planning: query, analyse, email (Module 2).
+  * ``/stock``     — class-based, stateful inventory tools (Module 2).
+  * ``/warehouse`` — async tools running lookups in parallel (Module 2).
+  * ``/travel``    — a multi-tool travel assistant (Module 3 capstone).
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/ask", etc.
+  In production Nginx forwards ``/aws-strands/…`` traffic to the container and
+  PATH_PREFIX is set to "/aws-strands".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML page
+  can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from hello_agent import ask
+from inventory_agent import check
+from math_agent import solve
+from sales_agent import report
+from stock_agent import manage
+from tip_agent import calculate
+from travel_agent import plan
+from warehouse_agent import lookup
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+CORS(app)
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit api calls that submit work
+    if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a retryable 429 response when the quota is exhausted
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Page + asset routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the html shell from the static source directory
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the deployment path prefix before serving the page
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return html with the correct content type for the browser
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+# ---------------------------------------------------------------------------
+# Demo API routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/ask", methods=["POST"])
+def ask_route():
+    """Answer a prompt with a plain, tool-less agent (Module 1).
+
+    Request body (JSON): ``{ "message": "&lt;prompt&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the user prompt
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A prompt is required."}), 400
+    # ④ call the plain agent and return its reply as json
+    try:
+        return jsonify({"result": ask(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/tip", methods=["POST"])
+def tip_route():
+    """Answer a natural-language tip question via a tool-enabled agent (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;tip question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the tip question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the tip agent and return its reply as json
+    try:
+        return jsonify({"result": calculate(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/math", methods=["POST"])
+def math_route():
+    """Answer a math question via the pre-built calculator tool (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;math question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the math question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the math agent and return its reply as json
+    try:
+        return jsonify({"result": solve(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/inventory", methods=["POST"])
+def inventory_route():
+    """Check stock with a custom tool (Module 2). Try PROD-123, PROD-456, PROD-789.
+
+    Request body (JSON): ``{ "message": "&lt;stock question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the stock question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the inventory agent and return its reply as json
+    try:
+        return jsonify({"result": check(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/sales", methods=["POST"])
+def sales_route():
+    """Run a multi-tool sales request: query, analyse, email (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;sales request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the sales request
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    # ④ call the sales agent and return its reply as json
+    try:
+        return jsonify({"result": report(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/stock", methods=["POST"])
+def stock_route():
+    """Check or update stock with class-based, stateful tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;stock request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the stock request
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    # ④ call the stateful stock agent and return its reply as json
+    try:
+        return jsonify({"result": manage(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/warehouse", methods=["POST"])
+def warehouse_route():
+    """Look up stock across warehouses in parallel via async tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;warehouse question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the warehouse question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the warehouse agent and return its reply as json
+    try:
+        return jsonify({"result": lookup(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/travel", methods=["POST"])
+def travel_route():
+    """Plan a trip with the multi-tool travel assistant (Module 3 capstone).
+
+    Request body (JSON): ``{ "message": "&lt;trip description&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the trip description
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A trip description is required."}), 400
+    # ④ call the travel agent and return its reply as json
+    try:
+        return jsonify({"result": plan(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <footer class="study-footer">AI Agents on AWS &mdash; ⚡ Warehouse Check &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

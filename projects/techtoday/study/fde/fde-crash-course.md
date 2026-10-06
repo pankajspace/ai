@@ -70,6 +70,12 @@ There is a structural reason the gap does not close on its own. The knowledge ne
 
 ---
 
+<a id="unit-1"></a>
+
+## Unit 1 — The Role & the Engagement
+
+What the job is and how an engagement runs, from finding the real problem to shipping on day one.
+
 <a id="1-what-an-fde-actually-is"></a>
 
 ## What an FDE Actually Is
@@ -294,6 +300,12 @@ app.listen(8080);
 > **Ask for read-only first, always.** Write access multiplies the number of people who must approve you, and you do not need it to prove anything in week one. Earn it in week four with a track record behind you.
 
 ---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Building on the Customer's Data
+
+The technical core: model the domain, ground in the customer's data, act through tools and prove it works.
 
 <a id="5-the-ontology"></a>
 
@@ -676,6 +688,12 @@ export async function run(cases, baseline) {
 > Hand the eval suite over with the system. A customer who inherits the code but not the tests can keep it running and can never safely change it — which means it freezes on the day you leave and rots from there.
 
 ---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Production & Handover
+
+Getting through the enterprise, running the system in production and handing it over, then proving it in the interview.
 
 <a id="9-the-integration-wall"></a>
 

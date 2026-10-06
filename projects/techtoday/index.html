@@ -175,6 +175,8 @@
                                         Course</a></li>
                                 <li><a href="study/programming-languages/python/python-detailed-course.html">Python
                                         Detailed Course</a></li>
+                                <li><a href="study/programming-languages/python/python-my-course.html">Python My
+                                        Course</a></li>
                                 <li><a href="study/programming-languages/javascript/javascript-crash-course.html">JavaScript
                                         Crash Course</a></li>
                                 <li><a href="study/programming-languages/javascript/javascript-detailed-course.html">JavaScript
@@ -226,7 +228,7 @@
                             <ul class="hub-bullet-list">
                                 <li><a href="study/dsa/dsa-crash-course.html">DSA Crash Course</a></li>
                                 <li><a href="study/dsa/dsa-detailed-course.html">DSA Detailed Course</a></li>
-                                <li><a href="study/dsa/dsa-quick-course.html">DSA Quick Course</a></li>
+                                <li><a href="study/dsa/dsa-my-course.html">DSA My Course</a></li>
                                 <li><a href="study/dsa/dsa-advanced-course.html">DSA Advanced Course</a></li>
                                 <li><a href="study/dsa/dsa-courses.html">Show All &rarr;</a></li>
                             </ul>
@@ -268,12 +270,17 @@
                                 </span>
                                 <h2>Design Patterns</h2>
                             </div>
-                            <span class="hub-status wip">WIP</span>
+                            <span class="hub-status live">Live</span>
                         </div>
                         <div class="hub-tile-body">
-                            <p class="hub-tile-desc">
-                                coming soon...
-                            </p>
+                            <ul class="hub-bullet-list">
+                                <li><a href="study/design-patterns/design-patterns-crash-course.html">Design Patterns
+                                        Crash Course</a></li>
+                                <li><a href="study/design-patterns/design-patterns-detailed-course.html">Design Patterns
+                                        Detailed Course</a></li>
+                                <li><a href="study/design-patterns/design-patterns-courses.html">Show All &rarr;</a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -982,10 +989,10 @@
                         </div>
                     </div>
 
-                    <!-- AI Projects Tile -->
-                    <div style="display: none;" class="hub-tile is-collapsed" data-tile-id="ai-projects">
+                    <!-- AI Demos Tile -->
+                    <div class="hub-tile is-collapsed" data-tile-id="ai-demos">
                         <div class="hub-tile-header" role="button" tabindex="0" aria-expanded="false"
-                            aria-label="Expand AI Projects tile">
+                            aria-label="Expand AI Demos tile">
                             <div class="hub-tile-title">
                                 <span class="icon" aria-hidden="true">
                                     <svg class="ai-proj-icon" viewBox="0 0 24 24" width="22" height="22" fill="none"
@@ -1017,21 +1024,13 @@
                                         <circle cx="12" cy="12" r="1.3" fill="#ffffff" />
                                     </svg>
                                 </span>
-                                <h2>AI Projects</h2>
+                                <h2>AI Demos</h2>
                             </div>
                             <span class="hub-status live">Live</span>
                         </div>
                         <div class="hub-tile-body">
                             <ul class="hub-bullet-list">
-                                <li><a href="https://app.techtoday.click/basic/">AI Playground</a></li>
-                                <li><a href="https://app.techtoday.click/langchain/">LangChain Lab</a></li>
-                                <li><a href="https://app.techtoday.click/rag/">RAG Lab</a></li>
-                                <li><a href="https://app.techtoday.click/docker/">Docker Demo Lab</a></li>
-                                <li><a href="https://app.techtoday.click/aws-strands/">AWS Strands Lab</a></li>
-                                <li><a href="https://app.techtoday.click/interviewiq/">InterviewIQ</a></li>
-                                <li><a href="https://app.techtoday.click/shipment-exception-desk/">Shipment Exception
-                                        Desk</a></li>
-                                <li><a href="study/ai-projects/ai-projects.html">Show All &rarr;</a></li>
+                                <li><a href="study/ai-demos/ai-demos.html">Show All &rarr;</a></li>
                             </ul>
                         </div>
                     </div>
@@ -1111,8 +1110,44 @@
             const STORAGE_KEY = 'tt_expanded_tiles';
             try { localStorage.removeItem('tt_collapsed_tiles'); } catch (e) { }
 
-            const tiles = document.querySelectorAll('.hub-tile');
+            const grid = document.querySelector('.hub-grid');
+            const tiles = Array.from(document.querySelectorAll('.hub-tile'));
             const toggleAllBtn = document.getElementById('toggle-all-tiles');
+
+            function getColumnCount() {
+                if (window.matchMedia('(max-width: 640px)').matches) return 1;
+                if (window.matchMedia('(max-width: 1100px)').matches) return 2;
+                return 3;
+            }
+
+            let currentCols = 0;
+            function updateColumns() {
+                if (!grid) return;
+                const cols = getColumnCount();
+                if (cols === currentCols) return;
+                currentCols = cols;
+
+                const colContainers = Array.from({ length: cols }, () => {
+                    const col = document.createElement('div');
+                    col.className = 'hub-column';
+                    return col;
+                });
+
+                tiles.forEach((tile, index) => {
+                    colContainers[index % cols].appendChild(tile);
+                });
+
+                grid.replaceChildren(...colContainers);
+                grid.classList.add('is-masonry');
+            }
+
+            updateColumns();
+
+            const mqlMobile = window.matchMedia('(max-width: 640px)');
+            const mqlTablet = window.matchMedia('(max-width: 1100px)');
+            mqlMobile.addEventListener('change', updateColumns);
+            mqlTablet.addEventListener('change', updateColumns);
+            window.addEventListener('resize', updateColumns);
 
             function getExpandedSet() {
                 try {

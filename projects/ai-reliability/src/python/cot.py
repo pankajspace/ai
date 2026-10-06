@@ -92,44 +92,57 @@ def cot_prompt(question: str) -> str:
 
 def ask(prompt: str, temperature: float = TEMPERATURE) -> tuple[str, float]:
     """Return (response_text, elapsed_seconds); failures become 'Error: ...'."""
+    # ① start a timer so the demo can show the latency cost of each prompt
     start = time.perf_counter()
     try:
+        # ② send the prompt to the selected chat model with the chosen randomness
         response = get_openai_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
         )
+        # ③ trim the model reply so scoring sees only the answer text
         text = (response.choices[0].message.content or "").strip()
     except Exception as e:
+        # ④ convert provider failures into reportable text instead of crashing
         text = f"Error: {e}"
+    # ⑤ return both the reply and its measured runtime
     return text, time.perf_counter() - start
 
 
 def is_correct(response: str, correct_answers: list[str]) -> bool:
     """Score only the final non-empty line(s) against the accepted answers."""
+    # ① treat captured provider failures as incorrect answers
     if response.startswith("Error:"):
         return False
+    # ② keep only non-empty lines so blank formatting does not affect scoring
     lines = [ln for ln in response.splitlines() if ln.strip()]
     if not lines:
         return False
+    # ③ compare the final answer line against all accepted answer variants
     tail = "\n".join(lines[-TAIL_LINES:]).lower()
     return any(ans.lower() in tail for ans in correct_answers)
 
 
 def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPERATURE) -> str:
     """Run Direct and/or CoT on one preset problem and return a text report."""
+    # ① load the chosen reasoning problem and start with both prompt styles
     problem = PROBLEMS[problem_key]
     strategies = [("direct", "Direct", direct_prompt), ("cot", "CoT   ", cot_prompt)]
     if strategy != "both":
+        # ② narrow to the requested prompt style when the learner filters the demo
         strategies = [s for s in strategies if s[0] == strategy]
 
+    # ③ build repeated prompts for each strategy and run the API calls in parallel
     prompts = [fn(problem["question"]) for _, _, fn in strategies for _ in range(RUNS_PER_STRATEGY)]
     outputs = parallel_map(lambda p: ask(p, temperature), prompts)
 
     def last_line(text: str) -> str:
+        # ① extract a compact final-answer sample for the report
         lines = [ln for ln in text.splitlines() if ln.strip()]
         return (lines[-1] if lines else text)[:200]
 
+    # ④ begin the report with the problem, accepted answer, and explanation
     lines = [
         f"{problem['title']} · {RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
         f"Correct answer: {problem['correct_answers'][0]}",
@@ -138,6 +151,7 @@ def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPE
     ]
     stats = {}
     for i, (key, label, _) in enumerate(strategies):
+        # ⑤ score each strategy's batch and record its average latency
         runs = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
         ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in runs)
         avg_t = sum(t for _, t in runs) / len(runs)
@@ -145,6 +159,7 @@ def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPE
         lines.append(f"{label}  {bar(ok, RUNS_PER_STRATEGY)} · avg {avg_t:.1f}s")
         lines.append(f"  sample final line: {last_line(runs[0][0])}")
 
+    # ⑥ finish with either the accuracy-latency trade-off or a comparison tip
     lines.append("")
     if len(stats) == 2:
         (d_ok, d_t), (c_ok, c_t) = stats["direct"], stats["cot"]
@@ -157,5 +172,6 @@ def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPE
 
 
 if __name__ == "__main__":
+    # ① run every preset problem when this module is executed directly
     for key in PROBLEMS:
         print(run_cot(key), end="\n\n")

@@ -53,11 +53,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply the limit only to API actions, not static page loads
     if request.method == "POST":
+        # ② ask the shared limiter whether this request should be blocked
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
         if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -72,12 +75,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured Flask static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally). For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified HTML with an explicit text/html response type
     return app.response_class(html, mimetype="text/html")
 
 
@@ -101,14 +107,18 @@ def info(filename):
 
 def read_message() -> str:
     """Return the trimmed ``message`` field from the JSON body, or ''."""
+    # ① parse JSON leniently so missing or malformed bodies become empty data
     data = request.get_json(force=True, silent=True) or {}
+    # ② normalize the message field into a stripped string for route validation
     return str(data.get("message") or "").strip()
 
 
 def read_choice(name: str, allowed, default: str) -> str | None:
     """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    # ① parse JSON leniently and fall back to the route's default choice
     data = request.get_json(force=True, silent=True) or {}
     value = str(data.get(name) or default)
+    # ② accept only known UI choices so feature modules receive valid selectors
     return value if value in allowed else None
 
 
@@ -119,18 +129,23 @@ def invalid_choice(name: str, allowed):
 @bp.route("/variance", methods=["POST"])
 def variance_route():
     """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
+    # ① validate that the learner supplied review text to analyze
     message = read_message()
     if not message:
         return jsonify({"error": "A customer review is required."}), 400
+    # ② read and validate the selected extraction strategy
     strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
     if strategy is None:
         return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    # ③ read and validate the selected temperature
     temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
     if temperature is None:
         return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
+        # ④ run the variance feature and return its text report as JSON
         return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("variance failed")
         return jsonify({"error": "Variance test failed. Please try again later."}), 500
 
@@ -138,20 +153,25 @@ def variance_route():
 @bp.route("/cot", methods=["POST"])
 def cot_route():
     """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    # ① read the requested problem key and normalize it for lookup
     message = read_message().lower()
     if not message:
         return jsonify({"error": "A problem name is required."}), 400
     if message not in PROBLEMS:
         return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    # ② read and validate the selected prompt strategy
     strategy = read_choice("strategy", COT_STRATEGIES, "both")
     if strategy is None:
         return invalid_choice("strategy", COT_STRATEGIES)
+    # ③ read and validate the selected temperature
     temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
     if temperature is None:
         return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
+        # ④ run the CoT feature and return its text report as JSON
         return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("cot failed")
         return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
 
@@ -159,18 +179,23 @@ def cot_route():
 @bp.route("/routing", methods=["POST"])
 def routing_route():
     """Route a weather question under the names x descriptions 2x2."""
+    # ① validate that the learner supplied a weather-routing question
     message = read_message()
     if not message:
         return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate the selected tool-name condition
     names = read_choice("names", NAME_CHOICES, "both")
     if names is None:
         return invalid_choice("names", NAME_CHOICES)
+    # ③ read and validate the selected tool-description condition
     descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
     if descriptions is None:
         return invalid_choice("descriptions", DESCRIPTION_CHOICES)
     try:
+        # ④ run the routing feature and return its text report as JSON
         return jsonify({"result": run_routing(message, names, descriptions)})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("routing failed")
         return jsonify({"error": "Routing test failed. Please try again later."}), 500
 
@@ -178,19 +203,24 @@ def routing_route():
 @bp.route("/errors", methods=["POST"])
 def errors_route():
     """Run the tool-error injection scenarios on a weather question."""
+    # ① validate that the learner supplied a weather question for the agent
     message = read_message()
     if not message:
         return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate which system-prompt scenario to run
     prompt = read_choice("prompt", PROMPT_CHOICES, "both")
     if prompt is None:
         return invalid_choice("prompt", PROMPT_CHOICES)
+    # ③ derive valid failure-injection choices from the shared labels
     fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
     fail_on_call = read_choice("fail_on_call", fail_choices, "2")
     if fail_on_call is None:
         return invalid_choice("fail_on_call", fail_choices)
     try:
+        # ④ run the error-injection feature and return its text report as JSON
         return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("error injection failed")
         return jsonify({"error": "Error-injection test failed. Please try again later."}), 500
 

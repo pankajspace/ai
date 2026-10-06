@@ -4,108 +4,276 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Travel Assistant · AI Agents on AWS</title>
-    <meta name="description" content="Explanation of Travel Assistant." />
+    <meta name="description"
+        content="Explanation of Travel Assistant." />
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F916;</text></svg>" />
-    <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Agents on AWS</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AWS Strands Lab</a>
         </nav>
     </header>
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x2708;&#xFE0F; Travel Assistant</h1>
-                <p class="subtitle">multi-tool capstone via Strands + Bedrock</p>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-travel-agent-py">travel_agent.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x2708;&#xFE0F; Travel Assistant<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede">multi-tool capstone via Strands + Bedrock. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
-        <section>
-            <div class="container info-content">
-                <h2>Concept</h2>
-                <p>
-                    The capstone demo: a multi-tool agent that checks weather forecasts, suggests a customized packing
-                    list based on those conditions, prices the trip, and compares costs against a budget. The agent
-                    chains four tools (plus a pre-built calculator) in the correct logical sequence without hardcoded
-                    orchestration scripts.
-                </p>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-                <h2>Theory &amp; Concepts</h2>
-                <p>The <strong>Travel Assistant</strong> demo illustrates end-to-end multi-tool orchestration with
-                    dynamic dependency resolution:</p>
-                <ul>
-                    <li><strong>Autonomous Dependency Resolution:</strong> The system prompt instructs the agent to
-                        check weather, suggest packing, and estimate costs. Amazon Nova Pro determines on the fly that
-                        packing suggestions depend on weather results, calling <code>get_weather_forecast</code> first
-                        before invoking <code>suggest_packing_list</code>.</li>
-                    <li><strong>Heterogeneous Tool Pipeline:</strong> The agent unifies diverse capabilities—combining
-                        mock API lookups (weather), rule-based recommendation logic (packing lists), and exact
-                        mathematical computation (budget calculations)—into a single turn-by-turn workflow.</li>
-                    <li><strong>Goal-Driven Autonomous Loop:</strong> The agent cycles through observation, thought, and
-                        tool execution until all requirements of the prompt are satisfied, returning a complete, unified
-                        travel itinerary to the user.</li>
-                </ul>
-                <h2>Request flow</h2>
-                <div class="flow-diagram">
-                    <div class="flow-step">
-                        <span class="flow-title">Browser trip query</span>
-                        <span class="flow-detail">POST /travel</span>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">travel_agent.py plan()</span>
-                        <span class="flow-detail">Agent</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">Bedrock: get_weather_forecast</span>
-                        <span class="flow-detail">suggest_packing_list</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">estimate_trip_cost</span>
-                        <span class="flow-detail">calculator (if needed)</span>
-                    </div>
-                    <div class="flow-arrow">&rarr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">final answer</span>
-                        <span class="flow-detail">Browser</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        The capstone demo: a multi-tool agent that checks weather forecasts, suggests a customized packing
+                        list based on those conditions, prices the trip, and compares costs against a budget. The agent
+                        chains four tools (plus a pre-built calculator) in the correct logical sequence without hardcoded
+                        orchestration scripts.
+                    </p>
 
-                <h2>Code flow</h2>
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-                        flowchart TD
-                        A["Browser&lt;br/&gt;trip description"] -->|"POST /travel"| B["app.py&lt;br/&gt;travel_route"]
-                        B -->|"trip description"| C["travel_agent.py&lt;br/&gt;plan"]
-                        C -->|"query + tools"| D["Bedrock&lt;br/&gt;Nova Pro"]
-                        D -->|"tool call"| E["get_weather_forecast&lt;br/&gt;city, days"]
-                        E -->|"high/low/conditions"| D
-                        D -->|"tool call"| F["suggest_packing_list&lt;br/&gt;temp + conditions"]
-                        F -->|"items list"| D
-                        D -->|"tool call"| G["estimate_trip_cost&lt;br/&gt;city, days, travellers"]
-                        G -->|"cost breakdown"| D
-                        D -->|"final answer"| C
-                        C -->|"final answer"| B
-                        B -->|"JSON result"| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p>The <strong>Travel Assistant</strong> demo illustrates end-to-end multi-tool orchestration with
+                        dynamic dependency resolution:</p>
+                    <ul>
+                        <li><strong>Autonomous Dependency Resolution:</strong> The system prompt instructs the agent to
+                            check weather, suggest packing, and estimate costs. Amazon Nova Pro determines on the fly that
+                            packing suggestions depend on weather results, calling <code>get_weather_forecast</code> first
+                            before invoking <code>suggest_packing_list</code>.</li>
+                        <li><strong>Heterogeneous Tool Pipeline:</strong> The agent unifies diverse capabilities—combining
+                            mock API lookups (weather), rule-based recommendation logic (packing lists), and exact
+                            mathematical computation (budget calculations)—into a single turn-by-turn workflow.</li>
+                        <li><strong>Goal-Driven Autonomous Loop:</strong> The agent cycles through observation, thought, and
+                            tool execution until all requirements of the prompt are satisfied, returning a complete, unified
+                            travel itinerary to the user.</li>
+                    </ul>
 
-                <h2>Backend</h2>
-                <span class="file-label">travel_agent.py</span>
-                <pre><code class="language-python">"""Module 3 (capstone) demo — a multi-tool Travel Assistant.
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">Browser trip query</span>
+                            <span class="flow-detail">POST /travel</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">travel_agent.py plan()</span>
+                            <span class="flow-detail">Agent</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Bedrock: get_weather_forecast</span>
+                            <span class="flow-detail">suggest_packing_list</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">estimate_trip_cost</span>
+                            <span class="flow-detail">calculator (if needed)</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">final answer</span>
+                            <span class="flow-detail">Browser</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A["Browser&lt;br/&gt;trip description"] -->|"POST /travel"| B["app.py&lt;br/&gt;travel_route"]
+                            B -->|"trip description"| C["travel_agent.py&lt;br/&gt;plan"]
+                            C -->|"query + tools"| D["Bedrock&lt;br/&gt;Nova Pro"]
+                            D -->|"tool call"| E["get_weather_forecast&lt;br/&gt;city, days"]
+                            E -->|"high/low/conditions"| D
+                            D -->|"tool call"| F["suggest_packing_list&lt;br/&gt;temp + conditions"]
+                            F -->|"items list"| D
+                            D -->|"tool call"| G["estimate_trip_cost&lt;br/&gt;city, days, travellers"]
+                            G -->|"cost breakdown"| D
+                            D -->|"final answer"| C
+                            C -->|"final answer"| B
+                            B -->|"JSON result"| A
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-travel-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-travel-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-travel-agent-py" class="topic-title is-file">travel_agent.py<a class="headerlink" href="#source-travel-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">114 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-travel-agent-py">
+                    <span class="file-path">src/python/travel_agent.py</span>
+                    <p class="file-label">Module 3 (capstone) demo — a multi-tool Travel Assistant.</p>
+                    <pre><code data-lang="python">"""Module 3 (capstone) demo — a multi-tool Travel Assistant.
 
 The agent chains three custom tools plus a pre-built calculator: it checks the
 weather first, feeds those numbers into a packing list, then prices the trip
@@ -113,7 +281,6 @@ and compares it to the budget. Nobody wrote that sequence — the agentic loop
 works it out.
 """
 
-# Import Strands Agent class, @tool decorator, Bedrock model, and calculator
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
@@ -121,7 +288,6 @@ from strands_tools import calculator
 from config import MODEL_ID, agent_text
 
 
-# Tool 1: Lookup city weather metrics and forecast description
 @tool
 def get_weather_forecast(city: str, days: int) -&gt; dict:
     """Get the weather forecast for a city over a number of days.
@@ -130,18 +296,20 @@ def get_weather_forecast(city: str, days: int) -&gt; dict:
         city: Destination city name (e.g., "Goa", "Bangalore")
         days: Number of days in the trip
     """
-    # Mock data — in production query a live weather API
+    # ① use mock forecasts in place of a live weather api
+    # Mock data — swap in a real weather API to take this further.
     forecasts = {
         "goa":       {"high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"},
         "bangalore": {"high_c": 27, "low_c": 18, "conditions": "mild, light evening rain"},
         "jaipur":    {"high_c": 38, "low_c": 25, "conditions": "hot and dry"},
         "manali":    {"high_c": 14, "low_c": 3,  "conditions": "cold, chance of snow"},
     }
+    # ② choose the requested city's forecast or a moderate default
     data = forecasts.get(city.lower(), {"high_c": 28, "low_c": 20, "conditions": "moderate"})
+    # ③ return the forecast with the original city and trip length
     return {"city": city, "days": days, **data}
 
 
-# Tool 2: Rule-based recommendation engine for clothing and trip gear
 @tool
 def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list:
     """Suggest what to pack based on temperatures, trip length and conditions.
@@ -152,24 +320,28 @@ def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&
         days: Number of days in the trip
         conditions: Short description of expected weather
     """
+    # ① start with essentials every trip needs
     items = [f"{days + 1} sets of clothes", "toiletries", "phone charger"]
-    # Hot-weather threshold adjustments
-    if high_c &gt;= 30:
+    # ② add hot-weather items when daytime highs are high
+    if high_c &gt;= 30:  # hot-weather threshold
         items += ["light cotton clothing", "sunscreen", "sunglasses", "reusable water bottle"]
-    # Cold / mild night adjustments
-    if low_c &lt;= 15:
+    # ③ add evening layers based on the expected low temperature
+    if low_c &lt;= 15:  # cold-night threshold
         items += ["warm jacket", "thermal layer"]
-    elif low_c &lt;= 22:
+    elif low_c &lt;= 22:  # mild-night threshold — lighter layer than the cold case above
         items += ["light jacket for evenings"]
-    # Precipitation condition matching
+    # ④ add rain gear by scanning the forecast wording for wet weather
+    # Keyword match on the forecast text rather than a structured field — fragile
+    # if get_weather_forecast's wording changes, but keeps the tool signature simple.
     if "rain" in conditions.lower() or "shower" in conditions.lower():
         items += ["compact umbrella", "quick-dry footwear"]
+    # ⑤ add snow gear when the conditions mention snow
     if "snow" in conditions.lower():
         items += ["gloves", "woollen cap", "waterproof boots"]
+    # ⑥ return the complete packing list for the agent to explain
     return items
 
 
-# Tool 3: Budget calculator estimating total lodging, food, and transit costs
 @tool
 def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
     """Estimate the cost of a trip in Indian rupees.
@@ -179,11 +351,15 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
         days: Number of days
         travellers: Number of people travelling (default: 1)
     """
+    # ① choose a per-night stay estimate for the destination
     per_night = {"goa": 3500, "bangalore": 3000, "jaipur": 2500, "manali": 2800}
+    # ② calculate stay, food, and local travel costs
     stay = per_night.get(city.lower(), 3000) * days
     food = 1200 * days * travellers  # flat per-person, per-day food estimate (INR)
     local_travel = 800 * days  # flat per-day local transport estimate (INR), not per traveller
+    # ③ add the cost categories into one trip total
     total = stay + food + local_travel
+    # ④ return a structured cost breakdown for the agent
     return {
         "city": city,
         "days": days,
@@ -197,7 +373,7 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
 
 def plan(question: str) -&gt; str:
     """Plan a trip end-to-end, letting the agent chain its tools as needed."""
-    # Step 1: Configure agent with domain tools, calculator, and execution instructions
+    # ① create a travel agent with weather, packing, budget, and math tools
     agent = Agent(
         model=BedrockModel(model_id=MODEL_ID),
         tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
@@ -209,44 +385,415 @@ def plan(question: str) -&gt; str:
         ),
         callback_handler=None,
     )
+    # ② send the trip request and return the agent's final itinerary advice
+    return agent_text(agent(question))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-    # Step 2: Multi-step ReAct loop: model chains weather -> packing -> cost calculation
-    # and synthesizes a complete travel recommendation.
-    return agent_text(agent(question))
-</code></pre>
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">50 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and expose Bedrock model settings.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and expose Bedrock model settings.
 
-            </div>
-        </section>
+Every feature module imports MODEL_ID from here, so if a model is retired you
+change it ONCE in this file instead of editing each demo.
+
+Credentials are read from the standard AWS environment variables
+(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION) or, in
+production, the EC2 instance role — boto3 (used by the Strands SDK) picks them
+up automatically, so no key handling is needed in application code.
+"""
+
+import os
+import re
+
+from dotenv import load_dotenv
+
+# Read key=value pairs from the .env file and inject them into os.environ.
+# Safe to call at import time — if no .env exists (e.g. in production where
+# env vars are set directly), python-dotenv simply does nothing.
+load_dotenv()
+
+# Current, non-retired models (verified working).
+# The "us." prefix is a cross-region inference profile — required on Bedrock.
+NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # default — Amazon's own, no use-case form, cheapest
+HAIKU = "us.anthropic.claude-haiku-4-5-20251001-v1:0"    # Claude, fast + cheap (needs Anthropic use-case form)
+SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # Claude, stronger reasoning (needs Anthropic use-case form)
+
+# Default used across the demos. Override with:  export MODEL_ID="..."
+# Amazon Nova avoids the Anthropic "use case details" gating and is the cheapest option.
+MODEL_ID = os.environ.get("MODEL_ID", NOVA_LITE)
+
+REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+
+
+def agent_text(response) -&gt; str:
+    """Extract the plain-text reply from a Strands agent response.
+
+    Strands returns a rich result object; ``str(response)`` yields the final
+    assistant text, which is what the browser needs.
+    """
+    # ① convert the rich Strands response into displayable text
+    text = str(response)
+    # ② strip hidden thinking blocks some models include before the answer
+    # Some models (e.g. Amazon Nova) wrap their reasoning in &lt;thinking&gt;...&lt;/thinking&gt;
+    # tags — strip those blocks (and any stray tags) so only the answer is shown.
+    text = re.sub(r"&lt;thinking&gt;.*?&lt;/thinking&gt;", "", text, flags=re.DOTALL | re.IGNORECASE)
+    # ③ remove any leftover thinking tags without touching the answer text
+    text = re.sub(r"&lt;/?thinking&gt;", "", text, flags=re.IGNORECASE)
+    # ④ trim surrounding whitespace before returning text to the browser
+    return text.strip()</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">298 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server exposing the AWS Strands agent demos.</p>
+                    <pre><code data-lang="python">"""Flask server exposing the AWS Strands agent demos.
+
+Each demo runs a real Strands agent on Amazon Bedrock:
+  * ``/ask``       — a plain, tool-less agent (Module 1).
+  * ``/math``      — a pre-built calculator tool (Module 2).
+  * ``/tip``       — a tool-enabled tip calculator (Module 2).
+  * ``/inventory`` — a custom tool checking stock (Module 2).
+  * ``/sales``     — multi-tool planning: query, analyse, email (Module 2).
+  * ``/stock``     — class-based, stateful inventory tools (Module 2).
+  * ``/warehouse`` — async tools running lookups in parallel (Module 2).
+  * ``/travel``    — a multi-tool travel assistant (Module 3 capstone).
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``.  This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/", "/ask", etc.
+  In production Nginx forwards ``/aws-strands/…`` traffic to the container and
+  PATH_PREFIX is set to "/aws-strands".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML page
+  can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from hello_agent import ask
+from inventory_agent import check
+from math_agent import solve
+from sales_agent import report
+from stock_agent import manage
+from tip_agent import calculate
+from travel_agent import plan
+from warehouse_agent import lookup
+from rate_limiter import check_rate_limit
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+CORS(app)
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit api calls that submit work
+    if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        # ③ return a retryable 429 response when the quota is exhausted
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Page + asset routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the html shell from the static source directory
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the deployment path prefix before serving the page
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return html with the correct content type for the browser
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+# ---------------------------------------------------------------------------
+# Demo API routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/ask", methods=["POST"])
+def ask_route():
+    """Answer a prompt with a plain, tool-less agent (Module 1).
+
+    Request body (JSON): ``{ "message": "&lt;prompt&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the user prompt
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A prompt is required."}), 400
+    # ④ call the plain agent and return its reply as json
+    try:
+        return jsonify({"result": ask(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/tip", methods=["POST"])
+def tip_route():
+    """Answer a natural-language tip question via a tool-enabled agent (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;tip question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the tip question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the tip agent and return its reply as json
+    try:
+        return jsonify({"result": calculate(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/math", methods=["POST"])
+def math_route():
+    """Answer a math question via the pre-built calculator tool (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;math question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the math question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the math agent and return its reply as json
+    try:
+        return jsonify({"result": solve(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/inventory", methods=["POST"])
+def inventory_route():
+    """Check stock with a custom tool (Module 2). Try PROD-123, PROD-456, PROD-789.
+
+    Request body (JSON): ``{ "message": "&lt;stock question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the stock question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the inventory agent and return its reply as json
+    try:
+        return jsonify({"result": check(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/sales", methods=["POST"])
+def sales_route():
+    """Run a multi-tool sales request: query, analyse, email (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;sales request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the sales request
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    # ④ call the sales agent and return its reply as json
+    try:
+        return jsonify({"result": report(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/stock", methods=["POST"])
+def stock_route():
+    """Check or update stock with class-based, stateful tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;stock request&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the stock request
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A request is required."}), 400
+    # ④ call the stateful stock agent and return its reply as json
+    try:
+        return jsonify({"result": manage(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/warehouse", methods=["POST"])
+def warehouse_route():
+    """Look up stock across warehouses in parallel via async tools (Module 2).
+
+    Request body (JSON): ``{ "message": "&lt;warehouse question&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the warehouse question
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A question is required."}), 400
+    # ④ call the warehouse agent and return its reply as json
+    try:
+        return jsonify({"result": lookup(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/travel", methods=["POST"])
+def travel_route():
+    """Plan a trip with the multi-tool travel assistant (Module 3 capstone).
+
+    Request body (JSON): ``{ "message": "&lt;trip description&gt;" }``
+    Response (JSON):     ``{ "result": "&lt;agent reply&gt;" }``
+    """
+    # ① read the json request body sent by the browser
+    data = request.get_json(force=True)
+    # ② extract and clean the trip description
+    message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
+    if not message:
+        return jsonify({"error": "A trip description is required."}), 400
+    # ④ call the travel agent and return its reply as json
+    try:
+        return jsonify({"result": plan(message)})
+    # ⑤ turn runtime errors into a json error response for the page
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: {
-                nodeSpacing: 45,
-                rankSpacing: 50,
-                padding: 12,
-            },
-        });
-    </script>
+    <footer class="study-footer">AI Agents on AWS &mdash; ✈️ Travel Assistant &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

@@ -67,6 +67,12 @@ The whole language, section by section, each one depending only on the ones befo
 42. [Pattern-Recognition Playbook](#42-playbook)
 43. [Practice Roadmap](#43-roadmap)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Getting Started
+
+What JavaScript is, where it runs, and how the parser reads your code.
+
 <a id="1-what-javascript-is"></a>
 
 ## 1. What JavaScript Is — Engines, Runtimes & ECMAScript
@@ -254,6 +260,12 @@ rows = [render(i) if i.active else None for i in items]
 # JavaScript's arrow has no such limit, which is why JS leans on
 # expressions far more heavily than Python does.
 ```
+
+<a id="unit-2"></a>
+
+## Unit 2 — Values, Types & Control Flow
+
+Primitives, coercion, variables, operators and the statements that direct a program.
 
 <a id="4-primitive-types"></a>
 
@@ -842,6 +854,12 @@ match kind:
 >
 > **Never use `for…in` on an array.** It yields indices as *strings*, includes any enumerable properties added to the array or its prototype, and gives no ordering guarantee. Use `for…of` for values, `.entries()` when you need the index, or a classic `for` when you need arithmetic.
 
+<a id="unit-3"></a>
+
+## Unit 3 — Functions & Scope
+
+Functions in all their forms, scope, closures and the rules for this.
+
 <a id="11-functions"></a>
 
 ## 11. Functions — Declarations, Expressions & Arrows
@@ -1245,6 +1263,12 @@ Counter.increment(c)
 > **Warning**
 >
 > **Never write an object method as an arrow.** `{ name: 'x', get: () => this.name }` has no enclosing method to inherit from, so `this` is the module scope's `this` — `undefined` in ESM. The mirror mistake is writing a callback as a `function` expression inside a method and then wondering where the receiver went.
+
+<a id="unit-4"></a>
+
+## Unit 4 — Objects, Collections & Iteration
+
+Objects, prototypes and classes, the built-in collections, iteration protocols and errors.
 
 <a id="16-objects"></a>
 
@@ -2123,6 +2147,12 @@ except* ValueError as eg:
 >
 > **The discipline that keeps error handling sane:** catch only what you can actually handle, rethrow everything else with `cause` so the original stack survives, never use exceptions for ordinary control flow, and never leave an empty `catch` — a swallowed error is a bug that will be reported to you as "it just does nothing".
 
+<a id="unit-5"></a>
+
+## Unit 5 — Asynchronous JavaScript
+
+The call stack and event loop, from callbacks to promises, async/await and concurrency patterns.
+
 <a id="25-call-stack"></a>
 
 ## 25. The Call Stack & Execution Contexts
@@ -2595,6 +2625,12 @@ from concurrent.futures import ProcessPoolExecutor
 > **Key idea**
 >
 > The mental model worth carrying: **a promise is a value that arrives later; concurrency is just having several of them in flight at once.** Start the work early, await it as late as possible, bound the parallelism so you do not overwhelm the far end, and attach an `AbortSignal` to anything a user can navigate away from.
+
+<a id="unit-6"></a>
+
+## Unit 6 — Modules, Runtimes & Practice
+
+Modules, memory, the standard built-ins, the browser and Node, tooling and performance, plus the revision material.
 
 <a id="31-modules"></a>
 

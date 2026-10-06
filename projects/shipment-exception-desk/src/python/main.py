@@ -16,6 +16,7 @@ from session import generate_daily_summary, get_triage_log
 
 
 def print_result(res: dict) -> None:
+    # ① print the high-level report and policy inputs
     print("\n" + "=" * 65)
     print("NORTHWIND LOGISTICS — EXCEPTION TRIAGE RESULT")
     print("=" * 65)
@@ -23,27 +24,32 @@ def print_result(res: dict) -> None:
     print(f"Shipment Value     : ${res['shipment_value']:.2f}")
     print(f"Customer Tier      : {res['customer_tier'].capitalize()}")
     print("-" * 65)
+    # ② print classification, compensation, and escalation details
     print(f"Classified Category: {res['category'].upper()}")
     print(f"Compensation Amount: ${res['compensation_amount']:.2f}")
     print(f"Compensation Reason: {res['compensation'].get('reason', 'N/A')}")
     print(f"Escalation Status  : {'[ESCALATED]' if res['escalated'] else '[AUTO-RESOLVED]'}")
     print(f"Escalation Details : {res['escalation_reason']}")
     print("-" * 65)
+    # ③ replay the pipeline decision trail for the operator
     print("Decision Trail:")
     for step in res["steps"]:
         print(f"  • {step}")
     print("-" * 65)
+    # ④ label the draft based on whether this case escalated
     action_label = (
         "INTERNAL MANAGER ESCALATION BRIEFING"
         if res["escalated"]
         else "CUSTOMER RESOLUTION EMAIL DRAFT"
     )
+    # ⑤ print the generated draft for review
     print(f"Generated Draft ({action_label}):\n")
     print(res["draft"])
     print("=" * 65 + "\n")
 
 
 def main() -> None:
+    # ① define command-line options for report, value, tier, and demo mode
     parser = argparse.ArgumentParser(
         description="Northwind Logistics Shipment Exception Desk CLI"
     )
@@ -71,14 +77,16 @@ def main() -> None:
         help="Run a standard delay demo scenario",
     )
 
+    # ② parse user arguments before choosing an input source
     args = parser.parse_args()
 
+    # ③ use the supplied report when the caller provides one
     if args.report:
         report_text = args.report
         value = args.value
         tier = args.tier
+    # ④ run the default demo when no report is supplied
     elif args.demo or len(sys.argv) == 1:
-        # Default demo
         print("Running demo exception report...")
         report_text = (
             "Hi, my package was supposed to arrive 3 days ago. "
@@ -87,21 +95,24 @@ def main() -> None:
         value = 120.0
         tier = "standard"
     else:
+        # ⑤ otherwise collect the report details interactively
         report_text = input("Enter shipment exception report: ").strip()
         val_input = input("Enter shipment value in USD (default 100): ").strip()
         value = float(val_input) if val_input else 100.0
         tier_input = input("Enter customer tier (standard/premium, default standard): ").strip()
         tier = tier_input.lower() if tier_input in ["standard", "premium"] else "standard"
 
+    # ⑥ run the triage pipeline and log the case in the session
     res = process_exception(
         report_text=report_text,
         shipment_value=value,
         customer_tier=tier,
         log_to_session=True,
     )
+    # ⑦ print the result in a learner-friendly cli format
     print_result(res)
 
 
 if __name__ == "__main__":
+    # ① run the cli entry point when invoked as a script
     main()
-

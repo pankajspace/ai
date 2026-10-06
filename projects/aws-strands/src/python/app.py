@@ -57,10 +57,13 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① only rate-limit api calls that submit work
     if request.method == "POST":
+        # ② ask the limiter whether this client has exceeded the hourly quota
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=10, window_seconds=3600
         )
+        # ③ return a retryable 429 response when the quota is exhausted
         if blocked:
             resp = jsonify({"error": msg})
             resp.status_code = 429
@@ -76,9 +79,12 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the html shell from the static source directory
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② inject the deployment path prefix before serving the page
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return html with the correct content type for the browser
     return app.response_class(html, mimetype="text/html")
 
 
@@ -112,12 +118,17 @@ def ask_route():
     Request body (JSON): ``{ "message": "<prompt>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the user prompt
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A prompt is required."}), 400
+    # ④ call the plain agent and return its reply as json
     try:
         return jsonify({"result": ask(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -129,12 +140,17 @@ def tip_route():
     Request body (JSON): ``{ "message": "<tip question>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the tip question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the tip agent and return its reply as json
     try:
         return jsonify({"result": calculate(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -146,12 +162,17 @@ def math_route():
     Request body (JSON): ``{ "message": "<math question>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the math question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the math agent and return its reply as json
     try:
         return jsonify({"result": solve(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -163,12 +184,17 @@ def inventory_route():
     Request body (JSON): ``{ "message": "<stock question>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the stock question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the inventory agent and return its reply as json
     try:
         return jsonify({"result": check(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -180,12 +206,17 @@ def sales_route():
     Request body (JSON): ``{ "message": "<sales request>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the sales request
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A request is required."}), 400
+    # ④ call the sales agent and return its reply as json
     try:
         return jsonify({"result": report(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -197,12 +228,17 @@ def stock_route():
     Request body (JSON): ``{ "message": "<stock request>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the stock request
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A request is required."}), 400
+    # ④ call the stateful stock agent and return its reply as json
     try:
         return jsonify({"result": manage(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -214,12 +250,17 @@ def warehouse_route():
     Request body (JSON): ``{ "message": "<warehouse question>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the warehouse question
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A question is required."}), 400
+    # ④ call the warehouse agent and return its reply as json
     try:
         return jsonify({"result": lookup(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -231,12 +272,17 @@ def travel_route():
     Request body (JSON): ``{ "message": "<trip description>" }``
     Response (JSON):     ``{ "result": "<agent reply>" }``
     """
+    # ① read the json request body sent by the browser
     data = request.get_json(force=True)
+    # ② extract and clean the trip description
     message = (data.get("message") or "").strip()
+    # ③ reject empty input before calling the agent
     if not message:
         return jsonify({"error": "A trip description is required."}), 400
+    # ④ call the travel agent and return its reply as json
     try:
         return jsonify({"result": plan(message)})
+    # ⑤ turn runtime errors into a json error response for the page
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

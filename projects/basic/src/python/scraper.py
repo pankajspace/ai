@@ -42,12 +42,14 @@ def fetch_website_contents(url: str) -> str:
 
         …or an error message prefixed with "Could not fetch the website."
     """
+    # ① add https:// to bare domains so requests receives a valid URL
     # Users often paste bare domains like "example.com"; add a scheme so
     # requests doesn't raise an invalid-URL error.
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
     try:
+        # ② download the page with browser-like headers and a safety timeout
         # timeout=15 prevents the endpoint from hanging indefinitely on slow
         # or unresponsive servers.
         response = requests.get(url, headers=HEADERS, timeout=15)
@@ -59,13 +61,16 @@ def fetch_website_contents(url: str) -> str:
         # text straight to the model (or the API can surface it to the UI).
         return f"Could not fetch the website. Error: {e}"
 
+    # ③ parse the raw HTML with BeautifulSoup's built-in parser
     # Parse the raw HTML with BeautifulSoup's built-in html.parser (no extra
     # C libraries required, unlike lxml).
     soup = BeautifulSoup(response.text, "html.parser")
 
+    # ④ extract the page title before removing any elements
     # Extract the page title before decomposing anything.
     title = soup.title.string if soup.title else "No title found"
 
+    # ⑤ remove noisy page chrome so the model receives mostly readable content
     # Remove tags that add noise but no useful content for an LLM:
     #   script / style  — code and CSS, not human-readable text
     #   nav / header / footer — repeated site chrome that inflates token count
@@ -73,6 +78,7 @@ def fetch_website_contents(url: str) -> str:
     for tag in soup(["script", "style", "nav", "footer", "header", "img", "input"]):
         tag.decompose()
 
+    # ⑥ extract readable text and return it with the title for summarization
     # get_text with separator="\n" produces one block of readable plain text
     # from what remains; strip=True removes leading/trailing whitespace from
     # each extracted string chunk.

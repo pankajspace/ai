@@ -39,6 +39,7 @@ def detect_filler_words(answer: str) -> dict[str, Any]:
     Returns a structured dict with detected fillers, total count, density per
     100 words, and a verdict message.
     """
+    # ① reject empty answers before running pattern matching
     if not answer or not answer.strip():
         return {
             "detected_fillers": {},
@@ -48,10 +49,12 @@ def detect_filler_words(answer: str) -> dict[str, Any]:
             "message": "No answer provided or answer is empty.",
         }
 
+    # ② normalize the answer and prepare filler counters
     text_lower = answer.lower()
     detected_fillers: dict[str, int] = {}
     total_count = 0
 
+    # ③ count each filler pattern and accumulate totals
     for name, pattern in FILLER_PATTERNS:
         matches = re.findall(pattern, text_lower, flags=re.IGNORECASE)
         count = len(matches)
@@ -59,11 +62,12 @@ def detect_filler_words(answer: str) -> dict[str, Any]:
             detected_fillers[name] = count
             total_count += count
 
-    # Compute word count for density calculation.
+    # ④ compute word count for density calculation
     words = re.findall(r"\b\w+\b", text_lower)
     word_count = len(words)
     density = round((total_count / max(word_count, 1)) * 100, 1)
 
+    # ⑤ build a learner-friendly message based on detected fillers
     if total_count > 0:
         details = ", ".join(
             f"{k} ({v})"
@@ -73,6 +77,7 @@ def detect_filler_words(answer: str) -> dict[str, Any]:
     else:
         message = "Excellent! No filler words detected in this answer."
 
+    # ⑥ return structured score data for the agent and UI
     return {
         "detected_fillers": detected_fillers,
         "total_filler_count": total_count,
@@ -119,6 +124,7 @@ def check_star_structure(answer: str) -> dict[str, Any]:
     Returns a structured dict with per-component coverage, a percentage score,
     and a recommendation message.
     """
+    # ① reject empty answers before checking STAR components
     if not answer or not answer.strip():
         return {
             "situation": False,
@@ -132,11 +138,13 @@ def check_star_structure(answer: str) -> dict[str, Any]:
             "message": "Answer is empty. Please provide a detailed response.",
         }
 
+    # ② normalize the answer and prepare component tracking buckets
     text_lower = answer.lower()
     covered: list[str] = []
     missing: list[str] = []
     components_status: dict[str, bool] = {}
 
+    # ③ scan each STAR component's cue patterns in the answer
     for component, patterns in STAR_PATTERNS.items():
         found = any(
             re.search(pattern, text_lower, flags=re.IGNORECASE)
@@ -148,9 +156,11 @@ def check_star_structure(answer: str) -> dict[str, Any]:
         else:
             missing.append(component)
 
+    # ④ convert covered components into a percentage completion score
     star_score = round((len(covered) / 4) * 100, 1)
     is_complete = len(covered) == 4
 
+    # ⑤ choose a coaching message based on STAR coverage
     if is_complete:
         message = "Outstanding! All 4 STAR components are clearly present."
     elif len(covered) >= 2:
@@ -158,6 +168,7 @@ def check_star_structure(answer: str) -> dict[str, Any]:
     else:
         message = f"Weak structure ({star_score}% STAR). Missing: {', '.join(missing)}."
 
+    # ⑥ return per-component status for feedback and aggregation
     return {
         "situation": components_status.get("situation", False),
         "task": components_status.get("task", False),
@@ -178,28 +189,28 @@ def check_star_structure(answer: str) -> dict[str, Any]:
 
 def _build_keyword_pattern(kw_clean: str) -> str:
     """Build a regex pattern that matches a keyword and common inflections."""
-    # Multi-word phrases and hyphenated/underscored terms.
+    # ① handle multi-word phrases and hyphenated/underscored terms
     if " " in kw_clean or "-" in kw_clean or "_" in kw_clean:
         tokens = [re.escape(t) for t in re.split(r"[\s\-_]+", kw_clean) if t]
         return r"\b" + r"[\s\-_]+".join(tokens) + r"\b"
 
-    # -tion → verb forms (resolution → resolve, resolving, …)
+    # ② expand -tion into verb forms (resolution → resolve, resolving, …)
     if kw_clean.endswith("tion") and len(kw_clean) > 5:
         stem = re.escape(kw_clean[:-4])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}t(?:e|es|ed|ing)?|{stem[:-1]}v(?:e|es|ed|ing)?)\b"
-    # -ment → verb forms (alignment → align, aligning, …)
+    # ③ expand -ment into verb forms (alignment → align, aligning, …)
     if kw_clean.endswith("ment") and len(kw_clean) > 5:
         stem = re.escape(kw_clean[:-4])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:s|ed|ing|e)?)\b"
-    # -e ending (cache → caching, cached, …)
+    # ④ expand -e endings (cache → caching, cached, …)
     if kw_clean.endswith("e") and len(kw_clean) > 3:
         stem = re.escape(kw_clean[:-1])
         return rf"\b(?:{re.escape(kw_clean)}s?|{stem}(?:ing|ed|es|able|ability)?)\b"
-    # -y ending (delivery → deliveries, …)
+    # ⑤ expand -y endings (delivery → deliveries, …)
     if kw_clean.endswith("y") and len(kw_clean) > 3:
         stem = re.escape(kw_clean[:-1])
         return rf"\b(?:{re.escape(kw_clean)}|{stem}(?:ies|ied|ying))\b"
-    # Default: base + common suffixes.
+    # ⑥ default to base plus common suffixes
     base = re.escape(kw_clean)
     return rf"\b(?:{base}|{base}(?:s|es|ed|ing)?)\b"
 
@@ -210,6 +221,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
     Uses regex-based matching with grammatical inflection support and a
     calibrated tiered scoring curve.
     """
+    # ① reject empty answers and mark all expected keywords as unmatched
     if not answer or not answer.strip():
         return {
             "score": 0,
@@ -221,6 +233,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
             "message": "Answer is empty. Relevance score is 0.",
         }
 
+    # ② give full credit when no keyword rubric was supplied
     if not expected_keywords:
         return {
             "score": 100,
@@ -232,10 +245,12 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
             "message": "No expected keywords specified.",
         }
 
+    # ③ normalize the answer and prepare matched/unmatched buckets
     text_lower = answer.lower()
     matched_keywords: list[str] = []
     unmatched_keywords: list[str] = []
 
+    # ④ match each expected keyword using an inflection-aware regex
     for kw in expected_keywords:
         kw_clean = kw.lower().strip()
         if not kw_clean:
@@ -246,11 +261,12 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
         else:
             unmatched_keywords.append(kw)
 
+    # ⑤ compute coverage totals used by the scoring curve
     total_expected = len(expected_keywords)
     total_matched = len(matched_keywords)
     coverage_ratio = total_matched / max(total_expected, 1)
 
-    # Calibrated scoring curve:
+    # ⑥ apply the calibrated scoring curve
     #   >= 70% coverage -> 90-100 score
     #   >= 45% coverage -> 75-89 score
     #   >= 25% coverage -> 50-74 score
@@ -268,6 +284,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
     else:
         score = max(5, int(round((coverage_ratio / 0.25) * 45)))
 
+    # ⑦ write the feedback message for the score band
     if score >= 80:
         message = f"High relevance ({score}/100). Hit {total_matched}/{total_expected} expected concepts."
     elif score >= 50:
@@ -277,6 +294,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
         tops = ", ".join(unmatched_keywords[:4])
         message = f"Low relevance ({score}/100). Hit only {total_matched}/{total_expected}. Missed: {tops}."
 
+    # ⑧ return structured relevance data for the agent and UI
     return {
         "score": score,
         "matched_keywords": matched_keywords,
@@ -286,4 +304,3 @@ def score_relevance(answer: str, expected_keywords: list[str]) -> dict[str, Any]
         "total_matched": total_matched,
         "message": message,
     }
-

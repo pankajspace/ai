@@ -39,6 +39,12 @@ This course is written for the person who *writes the application*, not the pers
 14. [Making It Production-Ready](#14-production)
 15. [The Whole Thing on One Page](#15-one-page)
 
+<a id="unit-1"></a>
+
+## Unit 1 — Building Images
+
+What a container really is, and how to build images that are fast to rebuild, small and reproducible.
+
 <a id="1-what-a-container-is"></a>
 
 ## 1. What a Container Actually Is
@@ -512,6 +518,12 @@ npm ls lodash --all
 >
 > **Check your images for leaked build secrets today, not eventually.** `docker history --no-trunc <image>` prints every build instruction and requires only pull access — no layer download. If a token appears there, it is compromised: revoke it first, then fix the Dockerfile. Rewriting or deleting the image does not help, because anyone who pulled it already has the bytes.
 
+<a id="unit-2"></a>
+
+## Unit 2 — Running Containers Together
+
+Ports, networks, persistent data, and running an app alongside its real dependencies.
+
 <a id="7-ports"></a>
 
 ## 7. Ports & Talking to Other Containers
@@ -886,6 +898,12 @@ grep -rn 'DATABASE_URL' services/*/  | sort
 > **Key idea**
 >
 > **The test for a good boundary is deployability, not tidiness.** If two services must be released together, share a database, or break each other when either changes shape, they are one service that has been given a network in the middle. Splitting is cheap to do and expensive to undo — so split along seams that already exist in your teams and your data, and leave everything else in one deployable until it hurts.
+
+<a id="unit-3"></a>
+
+## Unit 3 — Shipping & Operating
+
+Shipping images and running them reliably: shutdown, registries, debugging and production hardening.
 
 <a id="11-signals"></a>
 

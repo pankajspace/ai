@@ -4,145 +4,389 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Chain-of-Thought vs Direct · AI Reliability Lab</title>
     <meta name="description"
         content="How the Chain-of-Thought vs Direct demo works: repeated runs of a reasoning puzzle, final-line scoring, and the accuracy-for-latency trade-off." />
-    <link rel="icon" href="../css/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="icon"
+        href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
 </head>
 
 <body>
-    <header>
-        <nav class="nav container">
-            <a href="../" class="brand">
-                <span class="logo" aria-hidden="true"></span>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
                 <span>AI Reliability Lab</span>
             </a>
             <a href="../" class="nav-back-link">&larr; AI Reliability Lab</a>
         </nav>
     </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-cot-py">cot.py</a></li>
+                    <li><a href="#source-config-py">config.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">&#x1F9E0; Chain-of-Thought vs Direct<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>&#x1F9E0; Chain-of-Thought vs Direct</h1>
-                <p class="subtitle">gpt-4o-mini (non-reasoning) · temperature 0.7 · 2 prompts × 5 runs · final-line
-                    scoring</p>
+            <p class="lede">gpt-4o-mini (non-reasoning) · temperature 0.7 · 2 prompts × 5 runs · final-line scoring. Open a topic to see the idea, the request path and the
+                function calls behind the demo, then read the complete Python source file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-        </section>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
 
-        <section>
-            <div class="container info-content">
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
 
-                <h2>Concept</h2>
-                <p>
-                    One multi-step reasoning puzzle is asked 10 times: 5 times with a prompt that forbids working
-                    ("answer in one short sentence") and 5 times with "think step by step, then state your final
-                    answer on the last line". Each response is scored automatically against a known answer, and the
-                    report shows accuracy, average latency, and the trade-off between them.
-                </p>
-                <p>
-                    The demo deliberately uses a <strong>non-reasoning</strong> model. Reasoning models think
-                    internally even when told not to show working, which would erase the gap this demo measures.
-                </p>
+<!-- ============================================================ 1 -->
 
-                <h2>Theory &amp; Concepts</h2>
-                <p><strong>1. CoT is a reliability lever, not a style choice</strong></p>
-                <p>
-                    Each puzzle (grid navigation, family tree, scheduling constraints, inventory state, truth-teller
-                    boxes) needs several dependent steps. A direct answer has to get all of them right in one jump;
-                    CoT forces the model to commit to intermediate state, which catches compounding errors before
-                    they reach the final answer.
-                </p>
-                <p><strong>2. Distributions, not anecdotes</strong></p>
-                <p>
-                    At temperature 0.7 a single run can be lucky or unlucky. Repeating each strategy and showing the
-                    hit rate makes the difference visible as a distribution.
-                </p>
-                <p><strong>3. Score only the final line</strong></p>
-                <p>
-                    A CoT trace often raises a candidate answer and then rejects it. Matching anywhere in the text
-                    would credit CoT for an answer it explicitly discarded, inflating the very number being measured.
-                    Both prompts ask for the answer at the end, so only the last non-empty line is checked.
-                </p>
-                <p><strong>4. The cost side</strong></p>
-                <p>
-                    CoT produces many more tokens, so it is slower and more expensive. The report prints the
-                    accuracy gain in percentage points next to the latency increase so the trade-off is explicit.
-                </p>
-
-                <h2>Request flow</h2>
-                <div class="flow-diagram flow-vertical">
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Enter a preset (grid, family, schedule, inventory, boxes)</span>
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
                     </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">POST /cot</span>
-                        <span class="flow-detail">Flask route rejects unknown presets with 400</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">run_cot()</span>
-                        <span class="flow-detail">10 prompts in parallel</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-branch">
-                        <div class="flow-step">
-                            <span class="flow-title">Direct × 5</span>
-                            <span class="flow-detail">No working allowed</span>
-                        </div>
-                        <div class="flow-step">
-                            <span class="flow-title">CoT × 5</span>
-                            <span class="flow-detail">Think step by step</span>
-                        </div>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">is_correct()</span>
-                        <span class="flow-detail">Final line vs accepted answers</span>
-                    </div>
-                    <div class="flow-arrow-down">&darr;</div>
-                    <div class="flow-step">
-                        <span class="flow-title">&#x1F9D1; Browser</span>
-                        <span class="flow-detail">Accuracy bars, latency, trade-off</span>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        One multi-step reasoning puzzle is asked 10 times: 5 times with a prompt that forbids working
+                        ("answer in one short sentence") and 5 times with "think step by step, then state your final
+                        answer on the last line". Each response is scored automatically against a known answer, and the
+                        report shows accuracy, average latency, and the trade-off between them.
+                    </p>
+                    <p>
+                        The demo deliberately uses a <strong>non-reasoning</strong> model. Reasoning models think
+                        internally even when told not to show working, which would erase the gap this demo measures.
+                    </p>
 
-                <h2>Code flow</h2>
-                <!-- beautify ignore:start -->
-                <!-- prettier-ignore -->
-                <div class="mermaid-wrap">
-                    <div class="mermaid">
-flowchart TD
-    A[Browser<br/>preset name] -->|POST /cot| B[app.py<br/>cot_route]
-    B -->|problem key| C[cot.py<br/>run_cot]
-    C -->|question| P[direct_prompt<br/>cot_prompt]
-    P -->|10 prompts| C
-    C -->|prompts| D[config.py<br/>parallel_map]
-    D -->|prompt| E[ask]
-    E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
-    F -->|text| E
-    E -->|text + seconds| C
-    C -->|response| G[is_correct]
-    G -->|pass / fail| C
-    C -->|text report| B
-    B -->|JSON result| A
+
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
                     </div>
                 </div>
-                <!-- beautify ignore:end -->
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. CoT is a reliability lever, not a style choice</strong></p>
+                    <p>
+                        Each puzzle (grid navigation, family tree, scheduling constraints, inventory state, truth-teller
+                        boxes) needs several dependent steps. A direct answer has to get all of them right in one jump;
+                        CoT forces the model to commit to intermediate state, which catches compounding errors before
+                        they reach the final answer.
+                    </p>
+                    <p><strong>2. Distributions, not anecdotes</strong></p>
+                    <p>
+                        At temperature 0.7 a single run can be lucky or unlucky. Repeating each strategy and showing the
+                        hit rate makes the difference visible as a distribution.
+                    </p>
+                    <p><strong>3. Score only the final line</strong></p>
+                    <p>
+                        A CoT trace often raises a candidate answer and then rejects it. Matching anywhere in the text
+                        would credit CoT for an answer it explicitly discarded, inflating the very number being measured.
+                        Both prompts ask for the answer at the end, so only the last non-empty line is checked.
+                    </p>
+                    <p><strong>4. The cost side</strong></p>
+                    <p>
+                        CoT produces many more tokens, so it is slower and more expensive. The report prints the
+                        accuracy gain in percentage points next to the latency increase so the trade-off is explicit.
+                    </p>
 
-                <h2>Backend</h2>
-                <span class="file-label">The two prompt strategies, the timed call, and final-line scoring.</span>
-                <pre><code class="language-python">def direct_prompt(question: str) -> str:
+
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram flow-vertical">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Enter a preset (grid, family, schedule, inventory, boxes)</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">POST /cot</span>
+                            <span class="flow-detail">Flask route rejects unknown presets with 400</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">run_cot()</span>
+                            <span class="flow-detail">10 prompts in parallel</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-branch">
+                            <div class="flow-step">
+                                <span class="flow-title">Direct × 5</span>
+                                <span class="flow-detail">No working allowed</span>
+                            </div>
+                            <div class="flow-step">
+                                <span class="flow-title">CoT × 5</span>
+                                <span class="flow-detail">Think step by step</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">is_correct()</span>
+                            <span class="flow-detail">Final line vs accepted answers</span>
+                        </div>
+                        <div class="flow-arrow-down">&darr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Accuracy bars, latency, trade-off</span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                                    <!-- beautify ignore:start -->
+                                    <!-- prettier-ignore -->
+                                    <div class="mermaid-wrap">
+                                        <div class="mermaid">
+                    flowchart TD
+                        A[Browser<br/>preset name] -->|POST /cot| B[app.py<br/>cot_route]
+                        B -->|problem key| C[cot.py<br/>run_cot]
+                        C -->|question| P[direct_prompt<br/>cot_prompt]
+                        P -->|10 prompts| C
+                        C -->|prompts| D[config.py<br/>parallel_map]
+                        D -->|prompt| E[ask]
+                        E -->|chat.completions| F[OpenAI API<br/>gpt-4o-mini]
+                        F -->|text| E
+                        E -->|text + seconds| C
+                        C -->|response| G[is_correct]
+                        G -->|pass / fail| C
+                        C -->|text report| B
+                        B -->|JSON result| A
+                                        </div>
+                                    </div>
+                                    <!-- beautify ignore:end -->
+
+
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature code first, then the shared Flask routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-cot-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-cot-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-cot-py" class="topic-title is-file">cot.py<a class="headerlink" href="#source-cot-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">177 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-cot-py">
+                    <span class="file-path">src/python/cot.py</span>
+                    <p class="file-label">Chain-of-Thought vs. Direct Answer: CoT as a reliability lever.</p>
+                    <pre><code data-lang="python">"""Chain-of-Thought vs. Direct Answer: CoT as a reliability lever.
+
+Adapted from ``study/09-ai-reliability/cot-vs-direct-answer.py``. One preset
+multi-step reasoning problem runs N times under two prompts at temperature
+0.7, and only the final line of each response is scored, so a CoT trace is
+not credited for a candidate answer it raised and then rejected.
+"""
+
+import time
+
+from config import CHAT_MODEL, bar, get_openai_client, parallel_map
+
+RUNS_PER_STRATEGY = 5
+TEMPERATURE = 0.7
+TAIL_LINES = 1
+
+STRATEGY_CHOICES = ("both", "direct", "cot")
+
+PROBLEMS = {
+    "grid": {
+        "title": "Spatial Navigation (Grid)",
+        "question": (
+            "Start at origin (0,0) facing North (+Y direction). "
+            "Move forward 3 units. Turn right 90 degrees. Move forward 2 units. "
+            "Turn right 90 degrees. Move forward 5 units. "
+            "Turn left 90 degrees. Move backward 2 units. "
+            "What are your exact final (X,Y) coordinates? Format as (X, Y)."
+        ),
+        "correct_answers": ["(0, -2)", "(0,-2)"],
+        "explanation": "N: (0,3) → E: (2,3) → S: (2,-2) → E, backwards 2: (0,-2).",
+    },
+    "family": {
+        "title": "Relational Logic (Family Tree)",
+        "question": (
+            "Alice is the sister of Bob. Bob is the father of Charlie. "
+            "Charlie is the brother of Diana. Diana is the mother of Eve. "
+            "What is the exact biological relationship of Alice to Eve?"
+        ),
+        "correct_answers": ["great-aunt", "great aunt", "grand-aunt", "grand aunt"],
+        "explanation": "Alice is Diana's aunt; Diana is Eve's mother, so Alice is Eve's great-aunt.",
+    },
+    "schedule": {
+        "title": "Temporal Scheduling",
+        "question": (
+            "Five speakers (A, B, C, D, E) present one after another. "
+            "E must speak exactly third. B must speak immediately after D. "
+            "D cannot be the first speaker. C must speak at some point before A. "
+            "What is the exact sequence of the 5 speakers from first to last? "
+            "Format as a comma-separated list."
+        ),
+        "correct_answers": ["c, a, e, d, b", "c,a,e,d,b"],
+        "explanation": "E is 3rd; the D-B block must be 4-5; C before A fills 1-2 → C, A, E, D, B.",
+    },
+    "inventory": {
+        "title": "Inventory State Tracking",
+        "question": (
+            "An empty box is given to you. You put in an Apple, a Banana, and a Carrot. "
+            "You remove the Apple and add a Date. You remove the Carrot and put the Apple back in. "
+            "You swap the Banana for an Eggplant. Finally, you take out the Date. "
+            "List exactly the items currently in the box."
+        ),
+        "correct_answers": ["apple, eggplant", "eggplant, apple", "apple and eggplant", "eggplant and apple"],
+        "explanation": "[A,B,C] → [B,C,D] → [A,B,D] → [A,D,E] → [A,E].",
+    },
+    "boxes": {
+        "title": "Logic Puzzle (Truth-Tellers)",
+        "question": (
+            "There are three boxes: X, Y, and Z. Exactly one contains a diamond. "
+            "Box X says: 'The diamond is in Box Y.' "
+            "Box Y says: 'The diamond is not in Box Y.' "
+            "Box Z says: 'The diamond is not in Box X.' "
+            "Exactly one box's statement is true. Which box contains the diamond? "
+            "Answer with the exact phrase 'Box X', 'Box Y', or 'Box Z'."
+        ),
+        "correct_answers": ["box x"],
+        "explanation": "Diamond in X: X false, Y true, Z false - exactly one true statement.",
+    },
+}
+
+
+def direct_prompt(question: str) -&gt; str:
     return f"{question}\n\nAnswer in one short sentence only. Do not show any working or reasoning."
 
 
-def cot_prompt(question: str) -> str:
+def cot_prompt(question: str) -&gt; str:
     return (
         f"{question}\n\n"
         "Think step by step. Show each step of your reasoning clearly, "
@@ -150,97 +394,453 @@ def cot_prompt(question: str) -> str:
     )
 
 
-def ask(prompt: str) -> tuple[str, float]:
+def ask(prompt: str, temperature: float = TEMPERATURE) -&gt; tuple[str, float]:
     """Return (response_text, elapsed_seconds); failures become 'Error: ...'."""
+    # ① start a timer so the demo can show the latency cost of each prompt
     start = time.perf_counter()
     try:
+        # ② send the prompt to the selected chat model with the chosen randomness
         response = get_openai_client().chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=TEMPERATURE,
+            temperature=temperature,
         )
+        # ③ trim the model reply so scoring sees only the answer text
         text = (response.choices[0].message.content or "").strip()
     except Exception as e:
+        # ④ convert provider failures into reportable text instead of crashing
         text = f"Error: {e}"
+    # ⑤ return both the reply and its measured runtime
     return text, time.perf_counter() - start
 
 
-def is_correct(response: str, correct_answers: list[str]) -> bool:
+def is_correct(response: str, correct_answers: list[str]) -&gt; bool:
     """Score only the final non-empty line(s) against the accepted answers."""
+    # ① treat captured provider failures as incorrect answers
     if response.startswith("Error:"):
         return False
+    # ② keep only non-empty lines so blank formatting does not affect scoring
     lines = [ln for ln in response.splitlines() if ln.strip()]
     if not lines:
         return False
+    # ③ compare the final answer line against all accepted answer variants
     tail = "\n".join(lines[-TAIL_LINES:]).lower()
-    return any(ans.lower() in tail for ans in correct_answers)</code></pre>
+    return any(ans.lower() in tail for ans in correct_answers)
 
-                <h2>Orchestration</h2>
-                <span class="file-label">Runs both strategies in parallel and computes accuracy and latency.</span>
-                <pre><code class="language-python">def run_cot(problem_key: str) -> str:
-    """Run Direct vs CoT on one preset problem and return a text report."""
+
+def run_cot(problem_key: str, strategy: str = "both", temperature: float = TEMPERATURE) -&gt; str:
+    """Run Direct and/or CoT on one preset problem and return a text report."""
+    # ① load the chosen reasoning problem and start with both prompt styles
     problem = PROBLEMS[problem_key]
-    prompts = [direct_prompt(problem["question"])] * RUNS_PER_STRATEGY + [
-        cot_prompt(problem["question"])
-    ] * RUNS_PER_STRATEGY
-    outputs = parallel_map(ask, prompts)
+    strategies = [("direct", "Direct", direct_prompt), ("cot", "CoT   ", cot_prompt)]
+    if strategy != "both":
+        # ② narrow to the requested prompt style when the learner filters the demo
+        strategies = [s for s in strategies if s[0] == strategy]
 
-    direct, cot = outputs[:RUNS_PER_STRATEGY], outputs[RUNS_PER_STRATEGY:]
-    d_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in direct)
-    c_ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in cot)
-    d_t = sum(t for _, t in direct) / len(direct)
-    c_t = sum(t for _, t in cot) / len(cot)
-    ...
-    lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
-    latency = (c_t / d_t - 1) * 100 if d_t else 0</code></pre>
+    # ③ build repeated prompts for each strategy and run the API calls in parallel
+    prompts = [fn(problem["question"]) for _, _, fn in strategies for _ in range(RUNS_PER_STRATEGY)]
+    outputs = parallel_map(lambda p: ask(p, temperature), prompts)
 
-                <h2>API route</h2>
-                <span class="file-label">Exposes the demo as <code>POST /cot</code>; only preset problems can be
-                    scored.</span>
-                <pre><code class="language-python">@bp.route("/cot", methods=["POST"])
+    def last_line(text: str) -&gt; str:
+        # ① extract a compact final-answer sample for the report
+        lines = [ln for ln in text.splitlines() if ln.strip()]
+        return (lines[-1] if lines else text)[:200]
+
+    # ④ begin the report with the problem, accepted answer, and explanation
+    lines = [
+        f"{problem['title']} · {RUNS_PER_STRATEGY} runs per strategy · {CHAT_MODEL} · temperature {temperature}",
+        f"Correct answer: {problem['correct_answers'][0]}",
+        f"Why: {problem['explanation']}",
+        "",
+    ]
+    stats = {}
+    for i, (key, label, _) in enumerate(strategies):
+        # ⑤ score each strategy's batch and record its average latency
+        runs = outputs[i * RUNS_PER_STRATEGY:(i + 1) * RUNS_PER_STRATEGY]
+        ok = sum(is_correct(r, problem["correct_answers"]) for r, _ in runs)
+        avg_t = sum(t for _, t in runs) / len(runs)
+        stats[key] = (ok, avg_t)
+        lines.append(f"{label}  {bar(ok, RUNS_PER_STRATEGY)} · avg {avg_t:.1f}s")
+        lines.append(f"  sample final line: {last_line(runs[0][0])}")
+
+    # ⑥ finish with either the accuracy-latency trade-off or a comparison tip
+    lines.append("")
+    if len(stats) == 2:
+        (d_ok, d_t), (c_ok, c_t) = stats["direct"], stats["cot"]
+        lift = (c_ok - d_ok) / RUNS_PER_STRATEGY * 100
+        latency = (c_t / d_t - 1) * 100 if d_t else 0
+        lines.append(f"Trade-off: CoT bought {lift:+.0f}pp accuracy for {latency:+.0f}% latency.")
+    else:
+        lines.append("Tip: pick 'Both' to see the accuracy-for-latency trade-off.")
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    # ① run every preset problem when this module is executed directly
+    for key in PROBLEMS:
+        print(run_cot(key), end="\n\n")</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-config-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-config-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-config-py">
+                    <span class="file-path">src/python/config.py</span>
+                    <p class="file-label">Shared configuration: load .env and build the OpenAI client.</p>
+                    <pre><code data-lang="python">"""Shared configuration: load .env and build the OpenAI client.
+
+This module is the single place that knows about secrets and model names.
+Every feature module imports from here instead of reading ``os.environ`` or
+constructing API clients itself.
+"""
+
+import os
+from concurrent.futures import ThreadPoolExecutor
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+
+def get_env(name: str, default: str = "") -&gt; str:
+    """Return an environment variable, falling back to ``default``."""
+    return os.environ.get(name, default)
+
+
+# A NON-reasoning model: reasoning models think internally even when told not
+# to, which erases the gaps these demos measure.
+CHAT_MODEL = get_env("OPENAI_MODEL", "gpt-4o-mini")
+
+# Upper bound on parallel API calls per request; keeps each demo well under
+# the 60 s Nginx proxy timeout without hammering the provider.
+MAX_WORKERS = 8
+
+# Temperatures selectable from the UI, keyed by the string the browser sends.
+TEMPERATURE_CHOICES = {"0": 0.0, "0.7": 0.7, "1.2": 1.2}
+
+_client = None
+
+
+def get_openai_client() -&gt; OpenAI:
+    """Return a shared OpenAI client built from OPENAI_API_KEY."""
+    global _client
+    if _client is None:
+        # ① read the API key lazily so tests/imports do not require credentials
+        api_key = get_env("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY is not set. Add it to your .env file.")
+        # ② create one reusable client with bounded timeout and retries
+        _client = OpenAI(api_key=api_key, timeout=30, max_retries=2)
+    return _client
+
+
+def parallel_map(fn, items):
+    """Run ``fn`` over ``items`` concurrently, preserving input order."""
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        return list(pool.map(fn, items))
+
+
+def bar(correct: int, total: int, width: int = 10) -&gt; str:
+    """Render a text accuracy bar with a count and percentage."""
+    # ① avoid dividing by zero when a filtered comparison has no examples
+    if total == 0:
+        return "n/a"
+    # ② convert the score into filled and empty bar characters
+    filled = round(correct / total * width)
+    return f"{'█' * filled}{'░' * (width - filled)}  {correct}/{total} ({round(correct / total * 100)}%)"</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">241 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask server for AI Reliability Lab: four measured LLM reliability demos.</p>
+                    <pre><code data-lang="python">"""Flask server for AI Reliability Lab: four measured LLM reliability demos.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at "/",
+  "/variance", etc. In production Nginx forwards ``/ai-reliability/...``
+  traffic to the container and PATH_PREFIX is set to "/ai-reliability".
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+"""
+
+import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from config import TEMPERATURE_CHOICES
+from cot import PROBLEMS, run_cot
+from cot import STRATEGY_CHOICES as COT_STRATEGIES
+from rate_limiter import check_rate_limit
+from tool_errors import FAIL_ON_CALL_LABELS, PROMPT_CHOICES, run_error_injection
+from tool_routing import DESCRIPTION_CHOICES, NAME_CHOICES, run_routing
+from variance import STRATEGY_CHOICES as VARIANCE_STRATEGIES
+from variance import run_variance
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment ("/ai-reliability") so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
+CORS(app)
+
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    # ① apply the limit only to API actions, not static page loads
+    if request.method == "POST":
+        # ② ask the shared limiter whether this request should be blocked
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=10, window_seconds=3600
+        )
+        if blocked:
+            # ③ return a 429 with retry guidance when the hourly quota is exhausted
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/")
+def index():
+    """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① read the static HTML shell from the configured Flask static folder
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    # ② inject the runtime path prefix so browser fetches target the right API base
+    # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ return the modified HTML with an explicit text/html response type
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/&lt;path:filename&gt;")
+def css(filename):
+    """Serve stylesheets from the src/css directory."""
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/&lt;path:filename&gt;")
+def js(filename):
+    """Serve scripts from the src/js directory."""
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/info/&lt;path:filename&gt;")
+def info(filename):
+    """Serve the "how this demo works" explainer pages from src/info."""
+    return app.send_static_file(os.path.join("info", filename))
+
+
+def read_message() -&gt; str:
+    """Return the trimmed ``message`` field from the JSON body, or ''."""
+    # ① parse JSON leniently so missing or malformed bodies become empty data
+    data = request.get_json(force=True, silent=True) or {}
+    # ② normalize the message field into a stripped string for route validation
+    return str(data.get("message") or "").strip()
+
+
+def read_choice(name: str, allowed, default: str) -&gt; str | None:
+    """Return a dropdown value from the JSON body, ``default`` if absent, or None if not allowed."""
+    # ① parse JSON leniently and fall back to the route's default choice
+    data = request.get_json(force=True, silent=True) or {}
+    value = str(data.get(name) or default)
+    # ② accept only known UI choices so feature modules receive valid selectors
+    return value if value in allowed else None
+
+
+def invalid_choice(name: str, allowed):
+    return jsonify({"error": f"Invalid {name}. Choose one of: {', '.join(map(str, allowed))}."}), 400
+
+
+@bp.route("/variance", methods=["POST"])
+def variance_route():
+    """Run Unconstrained vs Prompt-JSON vs Schema-enforced extraction on a review."""
+    # ① validate that the learner supplied review text to analyze
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A customer review is required."}), 400
+    # ② read and validate the selected extraction strategy
+    strategy = read_choice("strategy", VARIANCE_STRATEGIES, "all")
+    if strategy is None:
+        return invalid_choice("strategy", VARIANCE_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
+    try:
+        # ④ run the variance feature and return its text report as JSON
+        return jsonify({"result": run_variance(message, strategy, TEMPERATURE_CHOICES[temperature])})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("variance failed")
+        return jsonify({"error": "Variance test failed. Please try again later."}), 500
+
+
+@bp.route("/cot", methods=["POST"])
 def cot_route():
     """Run Direct vs Chain-of-Thought prompting on one preset problem."""
+    # ① read the requested problem key and normalize it for lookup
     message = read_message().lower()
     if not message:
         return jsonify({"error": "A problem name is required."}), 400
     if message not in PROBLEMS:
         return jsonify({"error": f"Unknown problem. Choose one of: {', '.join(PROBLEMS)}."}), 400
+    # ② read and validate the selected prompt strategy
+    strategy = read_choice("strategy", COT_STRATEGIES, "both")
+    if strategy is None:
+        return invalid_choice("strategy", COT_STRATEGIES)
+    # ③ read and validate the selected temperature
+    temperature = read_choice("temperature", TEMPERATURE_CHOICES, "0.7")
+    if temperature is None:
+        return invalid_choice("temperature", TEMPERATURE_CHOICES)
     try:
-        return jsonify({"result": run_cot(message)})
+        # ④ run the CoT feature and return its text report as JSON
+        return jsonify({"result": run_cot(message, strategy, TEMPERATURE_CHOICES[temperature])})
     except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
         app.logger.exception("cot failed")
-        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500</code></pre>
+        return jsonify({"error": "CoT comparison failed. Please try again later."}), 500
 
-            </div>
-        </section>
+
+@bp.route("/routing", methods=["POST"])
+def routing_route():
+    """Route a weather question under the names x descriptions 2x2."""
+    # ① validate that the learner supplied a weather-routing question
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate the selected tool-name condition
+    names = read_choice("names", NAME_CHOICES, "both")
+    if names is None:
+        return invalid_choice("names", NAME_CHOICES)
+    # ③ read and validate the selected tool-description condition
+    descriptions = read_choice("descriptions", DESCRIPTION_CHOICES, "both")
+    if descriptions is None:
+        return invalid_choice("descriptions", DESCRIPTION_CHOICES)
+    try:
+        # ④ run the routing feature and return its text report as JSON
+        return jsonify({"result": run_routing(message, names, descriptions)})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("routing failed")
+        return jsonify({"error": "Routing test failed. Please try again later."}), 500
+
+
+@bp.route("/errors", methods=["POST"])
+def errors_route():
+    """Run the tool-error injection scenarios on a weather question."""
+    # ① validate that the learner supplied a weather question for the agent
+    message = read_message()
+    if not message:
+        return jsonify({"error": "A weather question is required."}), 400
+    # ② read and validate which system-prompt scenario to run
+    prompt = read_choice("prompt", PROMPT_CHOICES, "both")
+    if prompt is None:
+        return invalid_choice("prompt", PROMPT_CHOICES)
+    # ③ derive valid failure-injection choices from the shared labels
+    fail_choices = [str(k) for k in FAIL_ON_CALL_LABELS]
+    fail_on_call = read_choice("fail_on_call", fail_choices, "2")
+    if fail_on_call is None:
+        return invalid_choice("fail_on_call", fail_choices)
+    try:
+        # ④ run the error-injection feature and return its text report as JSON
+        return jsonify({"result": run_error_injection(message, prompt, int(fail_on_call))})
+    except Exception:
+        # ⑤ log server-side detail while returning a safe client-facing error
+        app.logger.exception("error injection failed")
+        return jsonify({"error": "Error-injection test failed. Please try again later."}), 500
+
+
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. "/variance") and the prefix is prepended here.
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+
+if __name__ == "__main__":
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
     </main>
+    <footer class="study-footer">AI Reliability Lab &mdash; 🧠 Chain-of-Thought vs Direct &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-    <footer>
-        <div class="container">
-        </div>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: "base",
-            themeVariables: {
-                background: "#1e1e1e",
-                primaryColor: "#2a2a2a",
-                primaryTextColor: "#e0e0e0",
-                primaryBorderColor: "#90caf9",
-                lineColor: "#90caf9",
-                secondaryColor: "#2a2a2a",
-                tertiaryColor: "#2a2a2a",
-                edgeLabelBackground: "#1e1e1e",
-                fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif",
-                fontSize: "12px",
-            },
-            flowchart: { nodeSpacing: 45, rankSpacing: 50, padding: 12 },
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>
 </body>
 

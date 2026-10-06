@@ -119,7 +119,7 @@ The `techtoday` project is the public-facing home page for the TechToday site. I
 ```
 projects/techtoday/
 ├── README.md
-├── index.html                   ← Software and AI Engineering homepage (19 hub tiles)
+├── index.html                   ← Software and AI Engineering homepage (22 hub tiles)
 ├── style.css                    ← home-page & hub tile styles
 ├── site-header.css              ← shared Study nav header
 ├── css/
@@ -127,34 +127,36 @@ projects/techtoday/
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
 ├── info/
+│   ├── ai-reliability.html      ← AI Reliability Lab deep-dive explanation
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
-    ├── ai-projects/             ← ai-projects.html catalog + LLM, RAG, Docker, Strands guides
+    ├── ai-demos/             ← ai-demos.html catalog + LLM, RAG, Docker, Strands guides
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
+    ├── design-patterns/         ← design-patterns-courses.html catalog + crash course + detailed course
     ├── devops/                  ← devops-courses.html catalog (4 cards)
     │   ├── devops/              ← crash course + detailed course
     │   ├── docker/              ← developer-centric crash course
     │   └── kubernetes/          ← developer-centric crash course
     ├── distributed-communication-patterns/ ← distributed-communication-patterns-courses.html catalog + crash course + detailed course
-    ├── dsa/                     ← dsa-courses.html catalog + crash, detailed, quick and advanced courses
+    ├── dsa/                     ← dsa-courses.html catalog + crash, detailed, my and advanced courses
     ├── fde/                     ← fde-courses.html catalog + crash course + detailed course + advanced course
     ├── git/                     ← git-courses.html catalog + crash course + detailed course
     ├── networking/              ← networking-courses.html catalog + crash course + detailed course
     ├── os/                      ← os-courses.html catalog + crash course + detailed course
-    └── programming-languages/   ← programming-languages.html catalog (4 cards)
+    └── programming-languages/   ← programming-languages.html catalog (5 cards)
         ├── javascript/          ← crash course + detailed course
-        └── python/              ← crash course + full course
+        └── python/              ← my course + crash course + detailed course
 ```
 
 ---
 
 ## Design
 
-1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200).
+1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200), with warm amber (`#f59e0b`) accents and borders on homepage course tiles.
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 22 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, Forward Deployed Engineer, AI Projects). Eleven are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 22 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, Forward Deployed Engineer, AI Demos). Twelve are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
@@ -162,7 +164,7 @@ projects/techtoday/
 
 ## Adding a New Project Card
 
-1. Open `study/ai-projects/ai-projects.html`.
+1. Open `study/ai-demos/ai-demos.html`.
 2. Inside the `<div class="grid">` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and theory/explanation link.
-4. Update `index.html` under the **AI Projects** tile's `.hub-item-list` to include the new project shortcut.
+4. Update `index.html` under the **AI Demos** tile's `.hub-bullet-list` to include the new project shortcut.

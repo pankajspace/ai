@@ -79,6 +79,12 @@ The second thing worth knowing early: JavaScript is **compiled, not interpreted 
 >
 > Two settings decide how strict the language is with you, and modern code turns both on without you noticing. **Strict mode** (automatic inside modules and classes) makes silent failures throw — assigning to an undeclared variable, duplicate parameter names, `this` defaulting to the global object. **Module scope** means your top-level `const` is not a global. If you are writing a `<script type="module">` or a file in a `"type": "module"` package, you already have both.
 
+<a id="unit-1"></a>
+
+## Unit 1 — The Language Core
+
+Values, variables, objects and functions: the everyday language you write in.
+
 <a id="1-values-and-types"></a>
 
 ## Values, Types & the Two Equalities
@@ -472,6 +478,12 @@ last_wins = list({i["id"]: i for i in items}.values())
 unique = list(dict.fromkeys([1, 2, 2, 3]))   # order-preserving
 ```
 
+<a id="unit-2"></a>
+
+## Unit 2 — How JavaScript Really Works
+
+The machinery behind the syntax: the call stack, closures and the prototype chain.
+
 <a id="6-the-call-stack"></a>
 
 ## The Call Stack & the Single Thread
@@ -682,6 +694,12 @@ class Dog(Animal):
 >
 > **Never extend built-in prototypes.** `Array.prototype.last = …` works, and then breaks the moment a library iterates keys with `for…in`, or a future spec adds a method with the same name and different behaviour. If you need a helper, write a plain function.
 
+<a id="unit-3"></a>
+
+## Unit 3 — Asynchronous JavaScript
+
+How one thread handles many things at once: the event loop, promises and async/await.
+
 <a id="9-the-event-loop"></a>
 
 ## The Event Loop
@@ -847,6 +865,12 @@ asyncio.run(main())
 # 1, 4, 2, 3 - Python's loop has a single ready queue rather than
 # JavaScript's split macrotask/microtask priority, so the order differs.
 ```
+
+<a id="unit-4"></a>
+
+## Unit 4 — Modules & the Browser
+
+Organising code into modules, and putting it to work in the browser.
 
 <a id="11-modules"></a>
 
